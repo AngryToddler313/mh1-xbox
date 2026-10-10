@@ -263,6 +263,29 @@ void rt_player_tick(int no)
                     tk, p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
         }
     }
+    if (getenv("RT_PL_ITEMS_MIN")) {    /* test aid "tick:id:n": at that player tick, if the pouch holds fewer than n of item id,
+                                         * top it up to n (a scripted delivery that must not depend on a carve roll) */
+        static int tk;
+        int t, id, n, k, have = 0, slot = -1;
+        PLW *p = &player_work[no];
+        tk++;
+        if (sscanf(getenv("RT_PL_ITEMS_MIN"), "%d:%i:%i", &t, &id, &n) == 3 && tk == t) {
+            for (k = 0; k < 20 && slot < 0; k++)            /* the slot that holds it, else the first empty one */
+                if (PF(p, s16, 0x828 + 4 * k) == id) {
+                    slot = k;
+                    have = PF(p, s16, 0x82A + 4 * k);
+                }
+            for (k = 0; k < 20 && slot < 0; k++)
+                if (PF(p, s16, 0x828 + 4 * k) == 0)
+                    slot = k;
+            if (have < n && slot >= 0) {
+                PF(p, s16, 0x828 + 4 * slot) = (s16)id;
+                PF(p, s16, 0x82A + 4 * slot) = (s16)n;
+            }
+            fprintf(stderr, "rt_player: tick %d item %d: %d in the pouch%s\n", tk, id, have,
+                    have < n ? " (test aid: topped up)" : "");
+        }
+    }
     if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[,ang][;...]": put the hunter at x,z (same height), facing ang (hex) at those player ticks */
         static int tk;
         const char *s = getenv("RT_PL_WARP");

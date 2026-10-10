@@ -845,7 +845,7 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   `RT_FONT_TRACE=1` (each text drawn), `RT_TEX_TRACE=1`,
   `RT_TEX_DUMP=dir` (raw RGBA of every 2D texture), `RT_EM_HP=n` (monster
   0's hit points), `RT_PL_WARP_EM=tick` (put the hunter at monster 0 at
-  that tick), `RT_PL_ITEMS="id:n,..."` (pouch; no save data),
+  that tick), `RT_PL_ITEMS="id:n,..."` (pouch; no save data), `RT_PL_ITEMS_MIN="tick:id:n"` (at that player tick, top the pouch up to n of item id when it holds fewer: test_quest_loop's delivery does not depend on its carve rolls),
   `RT_PL_GOD` also clears the stun gauge.
 - Verified 6 Oct 2026 (quest 10, scripted --input, traces + shots in
   build/show/A/quest/): HUD with items (hud_items.png); kill with
