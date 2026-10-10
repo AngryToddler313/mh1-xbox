@@ -820,5 +820,12 @@ replaced by matched C (faint camera, bowgun upgrades, chat phrases, item pool); 
 rooms solo per game rule, town weapons, event quest download+start, patch refusal, personal data
 not sent). Survey of other games: docs/survey/mhg_vs_mh1.md (G ~52% reuse, MH2 ~17%, MHP ~0%; no
 US MH1 disc on this machine).
-Running: B round 4 (event quest reward, Wine, hostable mh1-server); F (Monoblos tail cut, Lao back
-riding, 3 risky overrides).
+Then (4d6c683b, all 21 checks pass): B rounds 4-6 (event quest to reward + saved; Windows/Wine vs
+mh1-server; invite-only server with SQLite accounts/hunters, stored mail, crash recovery, config file,
+"Run your own server" + public-launch gap list in docs/server.md; room rules = players/password/
+message, enforced by server; game's HTML message renderer ported; password join tested with
+clients via RT_SK_TEXT). F: Monoblos tail cut verified; Lao-Shan riding fixed (riders carried);
+get_joint_pos family now game C (host fills joint arrays); village entry frees effects/shells;
+scripted hunt luck-proof (RT_PL_ITEMS_MIN); monster-slot model-work leak fixed; carving checked
+(no lost items). Left: Material_set_sub, get_mdlw_ptr, init_eft/shell_work in char editor.
+Agents idle; online next steps wait on owner decisions (hosting, name, PS2 cross-play).
