@@ -639,5 +639,5 @@ How to find dead PC code without guessing (used for the 10 Oct clean-up, see doc
   its own model works, the game's light03.c indexes the PS2 model heap. get_joint_* are the game's since 12 Oct
   (rt_actor_nodes_fill keeps every live actor's node array filled).
 - Still host no-ops: init_eft_work / init_shell_work (all_reset in the character editor): making them real moves
-  the random stream of the whole boot (the scripted tests would need new seeds). Each em_work clear (village entry,
-  clr_em_work) drops the slots' model works and new ones are allocated (a leak of ~50 KB per slot per clear).
+  the random stream of the whole boot. (The em_work model-work leak on each clear was fixed on 12 Oct: rt_motion.c
+  reuses each slot's model work.)

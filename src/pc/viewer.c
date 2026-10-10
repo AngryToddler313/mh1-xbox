@@ -1611,6 +1611,7 @@ static void village_step(void)
 }
 
 /* RT_MEM="t1,t2,...": the memory report (rt_memstat.c) at those host ticks */
+void rt_motion_report(void);
 static void mem_tick(int t)
 {
     const char *m = getenv("RT_MEM");
@@ -1619,6 +1620,7 @@ static void mem_tick(int t)
         if (atoi(m) == t) {
             snprintf(where, sizeof where, "tick %d", t);
             rt_ms_report(where);
+            rt_motion_report();
             rt_area_report();
             rt_stack_report(where);
         }

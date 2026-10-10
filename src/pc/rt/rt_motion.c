@@ -27,6 +27,7 @@
 #include "game.h"
 #include "pl.h"
 #include "frame.h"
+#include "em.h"
 #include "../fl/fl.h"
 
 #include <stdio.h>
@@ -214,10 +215,26 @@ void rt_motion_load_pl(int no, const uint8_t *tbl)
     create_pl_motion(no);
 }
 
+/* Model works are kept per em_work slot: clr_em_work / the village entry clear the whole monster work (model pointer
+ * included) and em_work_set / rt_actor_nodes_fill then attach a new one; the slot's old one is reused (cleared, as a
+ * new one would be) instead of allocating another ~52 KB each time. */
+static rt_actor_motion *em_am[20];
+static int am_allocs, am_reuses;
 void *rt_motion_attach(void *work)
 {
-    rt_actor_motion *am = calloc(1, sizeof *am);
+    int slot = (int)(((u8 *)work - (u8 *)em_work) / (int)sizeof(EMW));
+    int is_em = (u8 *)work >= (u8 *)em_work && slot < 20 && (u8 *)work == (u8 *)&em_work[slot];
+    rt_actor_motion *am = is_em ? em_am[slot] : NULL;
     FRW *w = work;
+    if (am) {
+        memset(am, 0, sizeof *am);
+        am_reuses++;
+    } else {
+        am = calloc(1, sizeof *am);
+        am_allocs++;
+        if (is_em)
+            em_am[slot] = am;
+    }
     am->mdl.skl = (FRSKL *)am->skl;
     am->mdl.mot0 = (FRMOT *)&am->mot0;
     am->mdl.mot1 = (FRMOT *)&am->mot1;
@@ -225,6 +242,12 @@ void *rt_motion_attach(void *work)
     am->mot1.xD0 = (s32)(intptr_t)&am->mot1;
     w->mdl = &am->mdl;
     return am;
+}
+
+void rt_motion_report(void)        /* RT_MEM */
+{
+    fprintf(stderr, "memstat: host model works: %d allocated, %d reused (%u bytes each)\n", am_allocs, am_reuses,
+            (unsigned)sizeof(rt_actor_motion));
 }
 
 void rt_motion_pose(fl_skel *s, const void *work)
