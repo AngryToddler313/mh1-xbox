@@ -24,9 +24,12 @@ RT_PL_TARGET="0:0,1250:1" RT_PL_WARP="10,12250,10000;2400,6750,11900;2500,10350,
 RT_PL_WARP_EM=90-520,600,1270-1700,1780 RT_DMG_MUL=40 RT_PL_ITEMS_MIN=2450:18:2 \
     $RUN $BIN disc/mh1 --boot --input "$S" --shot $OUT/end1.png --time 316 2> $OUT/run1.log >/dev/null
 grep -E "money \+(1500|32) |rt_village: enter|item 18: " $OUT/run1.log
-# the carves: each of the two Aptonoth is carved once, raw meat (18) or a small wyvern bone (227) by a random roll; the
-# delivery needs 2 raw meat, so RT_PL_ITEMS_MIN tops the pouch up to 2 before the camp box when the rolls gave fewer.
-# What is checked here is that both carves landed in the pouch, whatever they gave.
+# the carves: an Aptonoth corpse gives two carves (pick point with 2 picks, item table 212), each raw meat (18) or a
+# small wyvern bone (227) by a random roll. The script's first target is usually still alive when its carve window comes,
+# so both carves come from the second one; the delivery needs 2 raw meat, so RT_PL_ITEMS_MIN tops the pouch up to 2 before
+# the camp box when the rolls gave fewer. Hunting on does not help: a killed Aptonoth is erased (enemy_mv state 3) and the
+# area's small monsters only come back when the hunter enters the area again. Checked here: both carves landed in the
+# pouch, whatever they gave.
 C=$(sed -n '/item 18: /q; s/^rt_flow: tick [0-9]* pouch://p' $OUT/run1.log | tail -1 | tr ' ' '\n' | awk -F: '$1 == 18 || $1 == 227 {n += $2} END {print n + 0}')
 if [ "$C" -lt 2 ]; then echo "loop FAILED: $C of 2 carves in the pouch (see $OUT)"; exit 1; fi
 RT_QUEST_TRACE=1 $RUN $BIN disc/mh1 --boot --input "$(cat $D/continue.txt)" --shot $OUT/end2.png --time 60 \

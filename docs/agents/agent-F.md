@@ -641,3 +641,16 @@ How to find dead PC code without guessing (used for the 10 Oct clean-up, see doc
 - Still host no-ops: init_eft_work / init_shell_work (all_reset in the character editor): making them real moves
   the random stream of the whole boot. (The em_work model-work leak on each clear was fixed on 12 Oct: rt_motion.c
   reuses each slot's model work.)
+
+## Carving check (12 Oct 2026)
+- Question: in an 8-round scripted hunt on quest 131 / stage 39 later rounds seemed to carve without an item. Traced with
+  a temporary per-carve dump of the pick points in reach (StiEM_data, the order Ext_pick_point_ck2 tries them): every
+  carve that started gave an item (Aptonoth: one pick point, item table 212, 2 picks; 18 or 227). The "empty carve" was
+  my mistake reading the logs (the pouch lines are in host ticks, the script in player ticks, ~2300 apart).
+- Why later rounds got nothing: no carve started. A killed Aptonoth is erased after it fades (enemy_mv state 3,
+  em_erase; the slot keeps its old fields, so a test aid that looks at hit points sees it as alive), and the area's
+  small monsters only come back when the hunter enters the area again (Quest_next_em_set). The game's rule, not a PC bug.
+- Game rules worth knowing for carving: Ext_pick_point_ck2 takes the first pick point (index order) whose radius holds the
+  hunter, not the nearest; a point with no picks left that is still set returns 0xFFFE (the carve motion, no item), so a
+  carved-out corpse lying over a fresh one would hide it until it is erased. Not seen in the tests.
+
