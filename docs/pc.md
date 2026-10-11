@@ -466,6 +466,14 @@ position, render states, hit position, nearest bone, per-kind fields: motion id 
 the monster or hunter), and the game state (tick, mode, step, stage, quest, map areas, camera eye / target / fov,
 the hunter's position / angle / motion / HP, every monster of the area with position, motion, mode, HP).
 `python3 tools/show_report.py REPORT_DIR [--log] [--replay]` prints it readably.
+`--replay --build-match` (11 Oct 2026) replays it headless twice and compares the frozen state with report.json
+(tick, stage, quest, mode; hunter position, angle, motion, hp; the monsters in the area): once with the build that
+made the report (the report's "build" commit, checked out into a temporary git worktree under build/replay/, built
+with tools/build_pc.sh and kept in build/replay/bin/<commit>/mhview, so the next replay of that build starts at
+once; the worktree is removed) and once with build/pc/mhview (HEAD). The first line says whether the recording
+replays exactly, the second whether today's build still reaches the same state with the same inputs. The runs use
+--shot/--time (no window) and their own MH1_LOG_DIR / MH1_SAVE_DIR under build/replay/run_*/. Checked on the owner's
+water-dust report (build d1071ca9, tick 7804): both match; first run 4 minutes (the build), then 4 s.
 
 **Replay.** The pad state of every game tick since the start (one `rt_pad_set` call per tick, run-length coded) is
 saved as `input.txt` in the --input script format, extended with `xBITS:lx:ly:rx:ry*n` (analog sticks, hex fl pad

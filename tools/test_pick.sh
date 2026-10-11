@@ -50,7 +50,7 @@ assert len(d['marks'])==2 and d['objects'], d['marks']
 " || fail "UI path report content"
 # replay determinism
 env MH1_SAVE_DIR="$PWD/$OUT/r3/card" MH1_LOG_DIR="$PWD/$OUT/r3/logs" RT_PICK_AT=900 RT_PICK_CLICKS="320,240" RT_PICK_NOTE=replay \
-    RT_PICK_EXIT=1 RT_SEED=$(python3 -c "import json;print(json.load(open(\"$R1/report.json\"))[\"random_seed\"])") $RUN $BIN disc/mh1 --quest 10 --play --input "@$R1/input.txt" --size 640x480 > $OUT/c.out 2>&1
+    RT_PICK_EXIT=1 RT_SEED=$(python3 -c "import json;print(json.load(open(\"$R1/report.json\"))[\"random_seed\"])") $RUN $BIN disc/mh1 --quest 10 --play --input "@$R1/input.txt" --size 640x480 --shot $OUT/c.png --time 90 > $OUT/c.out 2>&1
 R3=$(ls -d $OUT/r3/reports/report_* 2>/dev/null | head -1)
 [ -n "$R3" ] || fail "replay: no report"
 python3 - "$R1/report.json" "$R3/report.json" <<'PY' || fail "replay differs from the recorded session"
