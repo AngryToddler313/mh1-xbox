@@ -36,12 +36,20 @@ int main(void)
 
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     debugPrint("MH1 bench: BIOS flash dump (read only)\n");
+    /* each step on screen: the first run on 11 Oct froze with nothing after the
+     * title line, so where it stops is the next thing to learn */
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
+    debugPrint("E: mounted\n");
     f = MmMapIoSpace(FLASH_BASE, FLASH_SIZE, PAGE_READONLY | PAGE_NOCACHE);
+    debugPrint("flash window mapped at %p\n", (void *)f);
     if (f) {
-        for (i = 0; i < (int)FLASH_SIZE; i++)
+        for (i = 0; i < (int)FLASH_SIZE; i++) {
             flash[i] = f[i];
+            if ((i & 0x3FFFF) == 0x3FFFF)
+                debugPrint("read %d KB\n", (i + 1) >> 10);
+        }
         MmUnmapIoSpace((PVOID)f, FLASH_SIZE);
+        debugPrint("writing %s\n", DUMP_FILE);
         if ((o = fopen(DUMP_FILE, "wb")) != NULL) {
             ok = fwrite(HEAD, 1, strlen(HEAD), o) == strlen(HEAD) && fwrite(flash, 1, FLASH_SIZE, o) == FLASH_SIZE;
             ok = fclose(o) == 0 && ok;

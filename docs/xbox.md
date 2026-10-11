@@ -664,7 +664,7 @@ power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appeari
   Launch Applications, Microsoft Dashboard, Skin, System Configuration (-> System Settings,
   Lock/Unlock Harddisk, Power Cycle, Flash BIOS: never select the lock/flash items), Reboot, Power Off.
 - Network: works since 11 Oct after a port swap and a power-strip change (a tripped breaker had
-  been cutting power). DHCP gives 192.168.1.115 (MAC 00:0D:3A:31:08:AB); FTP (21), telnet (23)
+  been cutting power). DHCP gives it an address (192.168.1.115, then .116 after a router restart on 11 Oct; MAC 00:0D:3A:31:08:AB; XBOX_IP=... for xbox_upload.sh); FTP (21), telnet (23)
   and 731 answer. It sits behind a mesh node (ping TTL 63), so a MAC sweep from the laptop never
   shows its MAC; find it on the System Settings page (main menu: 7 downs, A, A) or ping .115.
 - FTP (Evolution X server): passive mode fails (EPSV and PASV both answer 502), active mode
