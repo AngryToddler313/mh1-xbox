@@ -66,9 +66,14 @@ def main():
         args = rep.get('arguments', '').split()
         if '--input' in args:       # the original run's own --input (a test script) is replaced by the recording
             k = args.index('--input'); del args[k:k + 2]
-        print('  RT_SEED=%s RT_PICK_AT=%s RT_PICK_EXIT=1 build/pc/mhview %s --input @%s' % (rep.get('random_seed'), g.get('tick'), ' '.join(args), os.path.join(d, 'input.txt')))
-        print('  (freezes at game tick %s and writes a new report whose game state, hunter and monsters equal this one, screenshot included; RT_PICK_NOTE=text; RT_PICK_EXIT=1 quits after the report;' % g.get('tick'))
-        print('   do not stop with --shot --time: --time counts frames, and the recorded pad ticks are fewer than the game tick)')
+        # --shot hides the window and --time T fixes the clock, so the game runs every tick up to
+        # 30*T as fast as it can (2 s for a 4-minute hunt) instead of in real time on the owner's
+        # screen; RT_PICK_EXIT stops it at the pick tick, so T only has to be past it
+        tsec = int(int(g.get('tick', 0)) / 30 * 1.5) + 60
+        print('  mkdir -p build/replay && RT_SEED=%s RT_PICK_AT=%s RT_PICK_EXIT=1 MH1_LOG_DIR=build/replay/logs build/pc/mhview %s --input @%s --shot build/replay/end.png --time %d' % (
+            rep.get('random_seed'), g.get('tick'), ' '.join(args), os.path.join(d, 'input.txt'), tsec))
+        print('  (no window, faster than real time; freezes at game tick %s and writes a new report under build/replay/reports whose game state,' % g.get('tick'))
+        print('   hunter and monsters equal this one, screenshot included; RT_PICK_NOTE=text. Without --shot/--time it plays in a window in real time)')
     if '--log' in sys.argv:
         print('LOG TAIL')
         print(open(os.path.join(d, 'log_tail.txt'), errors='replace').read())
