@@ -161,3 +161,6 @@ anything the coordinator must know to merge. Then stop.
   (`grep -rn 'old text' tools/`) and update them in the same commit. Another agent's
   branch may add a new test that reads it too, so say so in your report. (11 Oct:
   F changed the money trace and B's new test_online_event still grepped the old line.)
+
+- Never run the game in a visible window (e.g. mhview --play without --shot): it plays on the
+  owner's screen in real time. Replays: use the command tools/show_report.py --replay prints.
