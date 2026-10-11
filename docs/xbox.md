@@ -757,3 +757,18 @@ cannot read the MCPX boot ROM (hidden after start-up).
 Why not over the network: a program started right after one that used the
 NIC hangs in nxNetInit, because nothing called nxNetShutdown() before
 XLaunchXBE. The loader source now does; the copy installed on 11 Oct does not.
+
+### xemu works (11 Oct 2026)
+
+The owner supplied an MCPX 1.0 boot ROM (md5 d49c52a4102f6df7bcf8d0617ac475ed)
+and a Complex 4627 BIOS (1 MB, md5 ec00e31e746de2473acfe7903c5a4cb7) as
+xbox_files/mcpx.bin and bios.bin (git-ignored; the BIOS can be swapped for this
+Xbox's own dump later: the dumper read 768 KB of the top MB then froze in the
+MCPX overlay; it now reads the mirror at 0xFFE00000, untested). xemu 0.8.136
+runs hidden on its own Xvfb display (tools/run_xemu.sh, Xvfb unpacked without
+sudo into ~/xboxdev/xvfb/root, Mesa llvmpipe): no window on the owner's
+screen. `tools/run_xemu.sh --gfx nv2a --data disc/mh1 --shot out.png --after 32`
+shows the ACCESS screen; the Xbox boot animation at ~10 s, Sofdec/ADX at ~30 s.
+Open: an earlier run showed only black at 60-100 s (hang or very slow software
+rendering), and the HDD image is blank (E: saves and the log need a formatted
+disk).

@@ -15,15 +15,18 @@
 #             builds build/xbox/mh1_data.iso holding the XBE plus them as D:\data (about 925 MB,
 #             local only), which the XBE finds at start-up. Without it the ISO holds only the XBE
 #             (the game then reports missing files, which already tests the boot).
-#   --shot    after --after seconds (default 60) save a screenshot and quit: through xemu's QMP
-#             socket (screendump; xemu 0.8.136 has no such command), else ffmpeg x11grab of the whole display; xemu always opens a window
-#             (no Xvfb on this machine; with Xvfb installed run under xvfb-run).
+#   --shot    after --after seconds (default 60) save a screenshot and quit (ffmpeg x11grab of
+#             the hidden display; xemu 0.8.136 has no QMP screendump).
+#   --show    run on the desktop instead of hidden (debugging by hand only)
+# xemu always opens a window, so by default it runs on its own hidden X display: Xvfb unpacked
+# from the Ubuntu package into ~/xboxdev/xvfb/root (no sudo; `apt-get download xvfb`, `dpkg -x`),
+# OpenGL through Mesa llvmpipe (software, slow). Nothing shows on the owner's screen.
 # Everything xemu writes (its config, saves of the emulated HDD) lives in xbox_files/xemu_home/.
 set -e
 cd "$(dirname "$0")/.."
 XF=$(realpath -m "${XBOX_FILES:-xbox_files}")
 XEMU=${XEMU:-$HOME/xboxdev/xemu/xemu-0.8.136-x86_64.AppImage}
-GFX=null; DATA=""; SHOT=""; AFTER=60
+GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=
 while [ $# -gt 0 ]; do
     case "$1" in
     --gfx) GFX=$2; shift 2 ;;
@@ -31,6 +34,7 @@ while [ $# -gt 0 ]; do
     --shot) SHOT=$2; shift 2 ;;
     --after) AFTER=$2; shift 2 ;;
     --xemu) XEMU=$2; shift 2 ;;
+    --show) SHOW=1; shift ;;
     *) echo "unknown option $1"; exit 2 ;;
     esac
 done
@@ -72,32 +76,24 @@ dvd_path = '$PWD/$ISO'
 TOML
 
 export XDG_DATA_HOME="$HOME_X"
+XVFB=${XVFB:-$HOME/xboxdev/xvfb/root/usr/bin/Xvfb}
+if [ -z "$SHOW" ]; then
+    [ -x "$XVFB" ] || { echo "no Xvfb at $XVFB (see the header; or --show to use the desktop)"; exit 1; }
+    DNUM=$(( 70 + $$ % 20 ))
+    "$XVFB" :$DNUM -screen 0 1280x960x24 -nolisten tcp >/dev/null 2>&1 &
+    XPID=$!
+    export DISPLAY=:$DNUM
+    sleep 2
+fi
 if [ -z "$SHOT" ]; then
-    exec "$XEMU"
+    [ -n "$SHOW" ] && exec "$XEMU"
+    trap 'kill $XPID 2>/dev/null' EXIT
+    "$XEMU"
+    exit
 fi
-SOCK=/tmp/xemu_mh1_qmp.$$
-"$XEMU" -qmp unix:$SOCK,server,nowait >"$XF/xemu.log" 2>&1 &
+"$XEMU" >"$XF/xemu.log" 2>&1 &
 PID=$!
-trap 'kill $(pgrep -P $PID) $PID 2>/dev/null; rm -f $SOCK' EXIT
+trap 'kill $(pgrep -P $PID) $PID ${XPID:-} 2>/dev/null' EXIT
 sleep "$AFTER"
-python3 - "$SOCK" "$SHOT" <<'PY' || FALLBACK=1
-import json, socket, sys
-s = socket.socket(socket.AF_UNIX); s.connect(sys.argv[1])
-f = s.makefile("rw")
-f.readline()
-def cmd(c, **a):
-    f.write(json.dumps({"execute": c, "arguments": a}) + "\n"); f.flush()
-    while True:
-        r = json.loads(f.readline())
-        if "return" in r or "error" in r:
-            return r
-cmd("qmp_capabilities")
-r = cmd("screendump", filename=sys.argv[2], format="png")
-print(r)
-sys.exit(0 if "return" in r else 1)
-PY
-if [ -n "$FALLBACK" ] || [ ! -s "$SHOT" ]; then
-    echo "QMP screendump failed: grabbing the display with ffmpeg (whole screen)"
-    ffmpeg -v error -y -f x11grab -i "${DISPLAY:-:0}" -frames:v 1 "$SHOT"
-fi
+ffmpeg -v error -y -f x11grab -i "${DISPLAY:-:0}" -frames:v 1 "$SHOT"
 echo "screenshot: $SHOT"
