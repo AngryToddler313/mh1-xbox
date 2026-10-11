@@ -91,6 +91,8 @@ void xbox_log_start(void)
 {
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     debugPrint("MH1 starting\n");
+    CreateDirectoryA("E:\\Games", NULL);          /* the network loader's folder; a freshly formatted */
+    CreateDirectoryA("E:\\Games\\MH1", NULL);     /* disk (xemu, tools/xbox_fatx.py) has none */
     if (freopen(XBOX_LOG, "w", stderr))
         setvbuf(stderr, NULL, _IONBF, 0);
     else

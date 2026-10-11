@@ -20,6 +20,7 @@
  */
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <windows.h>
 
@@ -33,7 +34,23 @@ static int new_card = 1;
 static FILE *fds[8];
 static char title_dir[64], save_dir[96];
 
-static void done(int cmd, int res) { pending = 1; last_cmd = cmd; last_res = res; }
+/* RT_MC_TRACE=1 (env.txt on the Xbox, xbox_env.c): every command's result, as rt_mc.c */
+static int trace(void)
+{
+    static int t = -1;
+    if (t < 0)
+        t = getenv("RT_MC_TRACE") != NULL;
+    return t;
+}
+
+static void done(int cmd, int res)
+{
+    pending = 1;
+    last_cmd = cmd;
+    last_res = res;
+    if (trace())
+        fprintf(stderr, "mc_xbox: cmd %d -> %d\n", cmd, res);
+}
 
 static void ensure_dirs(void)
 {
@@ -246,13 +263,23 @@ int sceMcOpen(int port, int slot, const char *name, int mode)
         done(3, -7);
         return 0;
     }
-    if (mode & 0x200)
-        m = GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES ? "r+b" : "w+b";
-    else if ((mode & 3) == 1)
+    if (mode & 0x200) {
+        /* create: not "w+b", which nxdk's pdclib turns into CreateFile(CREATE_ALWAYS |
+         * TRUNCATE_EXISTING), an invalid disposition that always fails (no save could be
+         * made, seen in xemu 12 Oct 2026); make the empty file, then open it "r+b" */
+        if (GetFileAttributesA(path) == INVALID_FILE_ATTRIBUTES) {
+            FILE *c = fopen(path, "wb");
+            if (c)
+                fclose(c);
+        }
+        m = "r+b";
+    } else if ((mode & 3) == 1)
         m = "rb";
     else
         m = "r+b";
     if (!(fds[fd] = fopen(path, m))) {
+        if (trace())
+            fprintf(stderr, "mc_xbox: cannot open %s (%s)\n", path, m);
         done(3, -4);
         return 0;
     }
