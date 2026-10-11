@@ -672,6 +672,9 @@ power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appeari
   script cannot see the drives and copies to E:\Games\MH1 (where the game looks). About
   0.4 MB/s over the laptop's Wi-Fi via the mesh node: ~40 min for the 925 MB of disc files.
   The owner types the login; agents never enter it.
+- The HDMI adapter in the capture chain is powered by the tall monitor: do
+  not blank or switch off the tall monitor (e.g. `tie 1 1`) while capturing,
+  or the capture card shows only colour bars.
 - Pad presses only reach the Xbox while the KVM has it active (`goto xbox`); the owner's mouse
   pulls focus back to the laptop.
 - Menu presses: take a capture after every press before pressing A. Main menu order is Play Games
