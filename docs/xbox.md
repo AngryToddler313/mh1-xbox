@@ -722,3 +722,16 @@ screen on the real Xbox: Japanese text with its outline, correct (owner's photo
 of the TV). The next frame halted the GPU on SET_TEXTURE_CONTROL1 pitch 4
 (fixed: pitches padded to 64 bytes). To check: the background looked grey in
 the photo (camera exposure or the clear colour).
+
+### Boot sequence on hardware (11 Oct 2026, nv2a build)
+
+Seen through the capture card, in order: memory card check, violence warning,
+Sofdec/ADX logos, ACCESS AVE-TCP, CAPCOM logo, page turn, opening movie
+(CAPCOM Presents, sky, Aptonoth and Apceros herds) with correct colours after
+the movie moved to RGBA textures (docs/REVIEW.md). Open:
+- CAPCOM logo: a correct small copy top left plus a magnified, wrapped copy
+  ("CAPC" / "OM"); the PC draws one centred logo. Not a 2D draw (RT_2D_TRACE)
+  and no UV scroll (RT_UV_TRACE): a clay. Under investigation.
+- The violence warning's parchment background is much darker than on the PC.
+- One frame after the page turn shows a plain light screen; check against PC.
+- Movie smoothness not measured yet (captures were 1 per second).
