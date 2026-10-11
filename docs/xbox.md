@@ -714,3 +714,11 @@ button. First results (11 Oct): the null-graphics build boots, finds D:\data
 and the controller, sets up quest 10 and runs (about 13,000 loops a second with
 nothing drawn); Back + Start exits cleanly.
 Untested on hardware until the owner installs it.
+
+### First frame on hardware (11 Oct 2026)
+
+The nv2a build (served by the network loader) drew the memory card check
+screen on the real Xbox: Japanese text with its outline, correct (owner's photo
+of the TV). The next frame halted the GPU on SET_TEXTURE_CONTROL1 pitch 4
+(fixed: pitches padded to 64 bytes). To check: the background looked grey in
+the photo (camera exposure or the clear colour).
