@@ -852,3 +852,7 @@ Running (owner away, coordinator's judgement): helper in worktree F = scripted i
 going as far into the game as possible; helper in worktree E = float printf on Xbox + the dark
 violence-warning screen. Waiting on owner: a remote power button for the Xbox (idea: servo or
 optocoupler on a hub Atom), Tab5 not reconnecting after the router restart.
+Done (worktree E, merged): printf with floats on the Xbox (xbox_libc.c). The violence warning
+is NOT darker in our renderer (xemu = PC); the hardware capture is ~25-30 levels darker on every
+screen: the video chain (NTSC-J black level vs the HDMI adapter, or adapter/capture brightness).
+Owner check when convenient: capture a retail game's dark scene through the same chain.
