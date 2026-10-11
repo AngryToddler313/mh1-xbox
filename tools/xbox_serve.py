@@ -7,11 +7,14 @@ Serves build/xbox/default.xbe (the null-graphics build; --xbe for another) to th
 (size and time of that file, plus build/xbox/rerun.txt when present, so
 touching that file makes a waiting loader start the same build again).
 Logs the Xbox sends (POST /log) are saved to build/xbox/logs/<time>.txt and
-printed. Only these paths are served; nothing else in the repo is reachable.
+printed. A log that starts with "MH1DUMP <name>" (src/pc/xbox/dumper: the BIOS
+flash, for xemu) is saved to build/xbox/dump/<name> instead; Microsoft's file, so it stays out of git
+(build/ is ignored). Only these paths are served; nothing else in the repo is reachable.
 """
 import argparse
 import http.server
 import os
+import re
 import sys
 import time
 
@@ -19,6 +22,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build', '
 XBE = os.path.join(ROOT, 'default.xbe')
 RERUN = os.path.join(ROOT, 'rerun.txt')
 LOGS = os.path.join(ROOT, 'logs')
+DUMPS = os.path.join(ROOT, 'dump')
 
 
 def version():
@@ -47,7 +51,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = self.rfile.read(int(self.headers.get('Content-Length', 0)))
-        if self.path == '/log':
+        if self.path == '/log' and body.startswith(b'MH1DUMP '):    # src/pc/xbox/dumper: name line + data
+            head, _, data = body.partition(b'\n')
+            name = head[8:].decode('ascii', 'replace').strip()
+            if not re.fullmatch(r'[a-z0-9_]{1,24}\.bin', name):
+                self.send_error(400)
+                return
+            os.makedirs(DUMPS, exist_ok=True)
+            open(os.path.join(DUMPS, name), 'wb').write(data)
+            print('== Xbox dump -> %s (%d bytes)' % (os.path.join(DUMPS, name), len(data)))
+        elif self.path == '/log':
             os.makedirs(LOGS, exist_ok=True)
             name = os.path.join(LOGS, time.strftime('%Y%m%d-%H%M%S') + '.txt')
             open(name, 'wb').write(body)

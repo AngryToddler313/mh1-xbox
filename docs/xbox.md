@@ -735,3 +735,17 @@ the movie moved to RGBA textures (docs/REVIEW.md). Open:
 - The violence warning's parchment background is much darker than on the PC.
 - One frame after the page turn shows a plain light screen; check against PC.
 - Movie smoothness not measured yet (captures were 1 per second).
+
+### Dumping the BIOS for xemu (11 Oct 2026)
+
+src/pc/xbox/dumper (`make -C src/pc/xbox/dumper`) reads the top 1 MB of the
+flash window (physical 0xFFF00000, read-only mapping) and writes it to
+E:\Games\MH1\mh1log.txt after a "MH1DUMP flash.bin" line. Serve it with
+`tools/xbox_serve.py --xbe build/xbox/dumper/default.xbe`, start Monster Hunter
+twice from the pad (once to run the dumper, once so the loader sends the file);
+the server saves build/xbox/dump/flash.bin (git-ignored, Microsoft's file).
+It does not dump the EEPROM (this console's keys; xemu makes its own) and
+cannot read the MCPX boot ROM (hidden after start-up).
+Why not over the network: a program started right after one that used the
+NIC hangs in nxNetInit, because nothing called nxNetShutdown() before
+XLaunchXBE. The loader source now does; the copy installed on 11 Oct does not.

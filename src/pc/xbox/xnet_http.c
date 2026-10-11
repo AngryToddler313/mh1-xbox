@@ -1,0 +1,120 @@
+/* xnet_http.c - see xnet_http.h */
+#include "xnet_http.h"
+#include <lwip/sockets.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char xh_host[64] = "192.168.1.166";
+int xh_port = 8765;
+
+void xh_read_host(const char *file)
+{
+    char line[96], *colon;
+    FILE *f = fopen(file, "r");
+    if (!f)
+        return;
+    if (fgets(line, sizeof line, f)) {
+        line[strcspn(line, "\r\n ")] = 0;
+        if ((colon = strchr(line, ':')) != NULL) {
+            *colon = 0;
+            xh_port = atoi(colon + 1);
+        }
+        if (line[0])
+            snprintf(xh_host, sizeof xh_host, "%s", line);
+    }
+    fclose(f);
+}
+
+/* connect with a 3 s limit; -1 when the laptop does not answer */
+static int dial(void)
+{
+    struct sockaddr_in a;
+    struct timeval tv = { 3, 0 };
+    fd_set w;
+    int s = lwip_socket(AF_INET, SOCK_STREAM, 0), err = 0;
+    socklen_t el = sizeof err;
+
+    if (s < 0)
+        return -1;
+    memset(&a, 0, sizeof a);
+    a.sin_family = AF_INET;
+    a.sin_port = htons(xh_port);
+    a.sin_addr.s_addr = inet_addr(xh_host);
+    lwip_fcntl(s, F_SETFL, O_NONBLOCK);
+    if (lwip_connect(s, (struct sockaddr *)&a, sizeof a) < 0 && errno != EINPROGRESS) {
+        lwip_close(s);
+        return -1;
+    }
+    FD_ZERO(&w);
+    FD_SET(s, &w);
+    if (lwip_select(s + 1, NULL, &w, NULL, &tv) <= 0 ||
+        lwip_getsockopt(s, SOL_SOCKET, SO_ERROR, &err, &el) < 0 || err) {
+        lwip_close(s);
+        return -1;
+    }
+    lwip_fcntl(s, F_SETFL, 0);
+    tv.tv_sec = 10;
+    lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
+    return s;
+}
+
+static int send_all(int s, const void *p, int n)
+{
+    const char *c = p;
+    while (n > 0) {
+        int k = lwip_send(s, c, n, 0);
+        if (k <= 0)
+            return -1;
+        c += k;
+        n -= k;
+    }
+    return 0;
+}
+
+/* one HTTP/1.0 request; returns the body (malloc'd, NUL-terminated) or NULL
+ * on any error or a status other than 200 */
+char *xh_http(const char *method, const char *path, const void *body, int nbody, int *nout)
+{
+    char req[256], *buf = NULL, *p;
+    int s, cap = 0, n = 0, k;
+
+    if ((s = dial()) < 0)
+        return NULL;
+    snprintf(req, sizeof req, "%s %s HTTP/1.0\r\nHost: %s\r\nContent-Length: %d\r\n\r\n",
+             method, path, xh_host, nbody);
+    if (send_all(s, req, strlen(req)) < 0 || (nbody && send_all(s, body, nbody) < 0))
+        goto fail;
+    for (;;) {
+        if (cap - n < 65536) {
+            cap = cap ? cap * 2 : 1 << 20;
+            if (!(p = realloc(buf, cap + 1)))
+                goto fail;
+            buf = p;
+        }
+        if ((k = lwip_recv(s, buf + n, cap - n, 0)) < 0)
+            goto fail;
+        if (k == 0)
+            break;
+        n += k;
+    }
+    lwip_close(s);
+    s = -1;
+    if (!buf || n < 12 || strncmp(buf + 9, "200", 3))
+        goto fail;
+    buf[n] = 0;
+    if (!(p = strstr(buf, "\r\n\r\n")))
+        goto fail;
+    p += 4;
+    if ((k = strstr(buf, "Content-Length:") ? atoi(strstr(buf, "Content-Length:") + 15) : -1) >= 0 &&
+        k != n - (p - buf))
+        goto fail;   /* cut short */
+    *nout = n - (p - buf);
+    memmove(buf, p, *nout + 1);
+    return buf;
+fail:
+    if (s >= 0)
+        lwip_close(s);
+    free(buf);
+    return NULL;
+}

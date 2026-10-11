@@ -37,5 +37,8 @@ obvious workarounds.
   start.
 - **Why:** the Xbox's network froze after 5 polls (ping dead too), cause
   unknown; it then needed a power cycle each time.
-- **To revisit:** with a remote power button (planned) or once the lwIP
-  freeze is understood, polling would make the loop fully hands-off again.
+- **To revisit:** likely cause found the same night: no program called
+  nxNetShutdown() before XLaunchXBE, so the NIC kept running into the next
+  program (the dumper then hung in nxNetInit right after the loader). The
+  loader source now shuts the network down first; after the owner reinstalls
+  it, polling could come back.
