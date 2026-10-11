@@ -9,8 +9,10 @@
  * log file, after a "MH1DUMP <name>" line; the next loader start sends that
  * file and xbox_serve.py saves it as build/xbox/dump/<name>.
  *
- * Dumped: the top 1 MB of the flash window (physical 0xFFF00000; a 256 KB chip
- * shows up 4 times). Not the EEPROM: it holds this console's keys, and xemu
+ * Dumped: 1 MB of the flash window from physical 0xFFE00000. The flash repeats
+ * through the top 16 MB (a 256 KB chip 4 times per MB); the very top MB was
+ * tried first and reading froze in its last 256 KB, where the MCPX boot ROM
+ * overlays the flash, so the mirror below it is read instead. Not the EEPROM: it holds this console's keys, and xemu
  * makes its own. The MCPX boot ROM is hidden after start-up.
  */
 #include <hal/debug.h>
@@ -22,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FLASH_BASE 0xFFF00000u
+#define FLASH_BASE 0xFFE00000u   /* the mirror below the top MB (see above) */
 #define FLASH_SIZE 0x100000u
 #define DUMP_FILE        "E:\\Games\\MH1\\mh1log.txt"
 #define HEAD       "MH1DUMP flash.bin\n"
