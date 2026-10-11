@@ -677,3 +677,32 @@ power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appeari
 - Menu presses: take a capture after every press before pressing A. Main menu order is Play Games
   from Hard Drive, Trainers, Emulators, DVD, Launch Applications, MS Dashboard, Skin, System
   Configuration, Reboot, Power Off.
+
+## Network loader (11 Oct 2026)
+
+So builds reach the real Xbox without the FTP login (agents never type it), a
+small loader (src/pc/xbox/loader/main.c, built by `make -C src/pc/xbox/loader`
+after `. ~/xboxdev/env.sh`) is installed once as `E:\Games\MH1\default.xbe`
+by `tools/xbox_upload.sh` (the owner runs it and types the login). Evolution X
+lists it as "Monster Hunter". On each start the loader:
+
+1. gets an address by DHCP (nxdk lwIP), reads the laptop address from
+   `E:\Games\MH1\loader.txt` (written by xbox_upload.sh);
+2. POSTs the last game log (`mh1log.txt`, the game's stderr) to the laptop and
+   deletes it;
+3. compares `GET /version` with `mh1.ver`; when different downloads
+   `GET /mh1.xbe` to `E:\Games\MH1\mh1.xbe`;
+4. starts mh1.xbe (D: is then E:\Games\MH1, so the game finds D:\data).
+
+When the game exits, src/pc/xbox/xbox_log.c shows the log tail for 10 s and
+starts the loader again with launch data "MH1X"; the loader then sends the log
+and waits (polling every 3 s) for a new version before starting the game again.
+If the laptop does not answer, a dashboard start runs the copy already on the
+disk and a start after the game goes back to the dashboard.
+
+Laptop side: `tools/xbox_serve.py` (port 8765) serves build/xbox/default.xbe,
+saves each log to build/xbox/logs/<time>.txt and prints it. Writing anything
+into build/xbox/rerun.txt changes the version, so a waiting loader reruns the
+same build. Loop for testing on hardware: build_xbox.py, then watch the server
+output (and the capture card). A hang (no exit) still needs the pad or power.
+Untested on hardware until the owner installs it.
