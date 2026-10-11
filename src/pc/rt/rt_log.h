@@ -6,7 +6,7 @@
 #define RT_LOG_H
 
 #ifdef __GNUC__
-#define RT_LOG_PRINTF(a, b) __attribute__((format(printf, a, b)))
+#define RT_LOG_PRINTF(a, b) __attribute__((format(__printf__, a, b)))
 #else
 #define RT_LOG_PRINTF(a, b)
 #endif

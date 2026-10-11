@@ -829,3 +829,30 @@ get_joint_pos family now game C (host fills joint arrays); village entry frees e
 scripted hunt luck-proof (RT_PL_ITEMS_MIN); monster-slot model-work leak fixed; carving checked
 (no lost items). Left: Material_set_sub, get_mdlw_ptr, init_eft/shell_work in char editor.
 Agents idle; online next steps wait on owner decisions (hosting, name, PS2 cross-play).
+
+## 2026-10-11: real Xbox and xemu
+
+Hardware bench (docs/xbox.md "Real Xbox bench setup" and later sections): Evolution X Xbox on
+DHCP (192.168.1.116 now; was .115), capture card, RetroKM pad Atom. Laptop has 192.168.1.166 as
+a second address saved in the HomePage_EXT Wi-Fi profile (the router moved it to .100 after its
+5 am restart; owner ran the nmcli commands).
+- Network loader (src/pc/xbox/loader, tools/xbox_serve.py, tools/xbox_upload.sh): builds and logs
+  over HTTP, no FTP login for agents. Installed twice by the owner; current one stops the NIC
+  before launching (nxNetShutdown).
+- On hardware: boot through memory-card check, warning, logos, CAPCOM logo (vertex-cache fix),
+  opening movie in correct colours (CPU YUV->RGBA, docs/REVIEW.md). Back + Start exits.
+- xemu: owner's MCPX 1.0 + Complex 4627 BIOS in xbox_files/ (git-ignored). tools/run_xemu.sh
+  runs xemu on a hidden Xvfb display (no window on the owner's screen). Whole opening movie plays
+  (movie times itself by the tick when xemu's AC97 stalls; audio over-read fix). Serial log from
+  xemu: xbox_files/xemu_debug.txt.
+- Dumper (src/pc/xbox/dumper): own BIOS dump not done yet (top-MB read froze; reads the mirror at
+  0xFFE00000 now, untested). EEPROM deliberately not dumped (console keys).
+- docs/REVIEW.md: changes that drop old code, for the owner to review (owner's request).
+Running (owner away, coordinator's judgement): helper in worktree F = scripted input in xemu and
+going as far into the game as possible; helper in worktree E = float printf on Xbox + the dark
+violence-warning screen. Waiting on owner: a remote power button for the Xbox (idea: servo or
+optocoupler on a hub Atom), Tab5 not reconnecting after the router restart.
+Done (worktree E, merged): printf with floats on the Xbox (xbox_libc.c). The violence warning
+is NOT darker in our renderer (xemu = PC); the hardware capture is ~25-30 levels darker on every
+screen: the video chain (NTSC-J black level vs the HDMI adapter, or adapter/capture brightness).
+Owner check when convenient: capture a retail game's dark scene through the same chain.

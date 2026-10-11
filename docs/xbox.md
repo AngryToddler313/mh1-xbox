@@ -740,7 +740,8 @@ the movie moved to RGBA textures (docs/REVIEW.md). Open:
   here said "a clay": wrong, the trace had stopped before the logo. Use
   `RT_STEP=1 ... --boot --frames 470 --time 100` for a repeatable logo frame.)
   The light frame after the page turn went away with the same fix.
-- The violence warning's parchment background is much darker than on the PC.
+- The violence warning's parchment background is much darker than on the PC:
+  not the renderer, see "Violence warning darker on hardware" below.
 - One frame after the page turn shows a plain light screen; check against PC.
 - Movie smoothness not measured yet (captures were 1 per second).
 
@@ -803,4 +804,46 @@ somewhat slower than real time.
 
 Also seen in that log: nxdk's printf has no floating point (%f is skipped
 without taking its argument, so everything after it in the line is garbage),
-e.g. the summary line and the prof: lines. Not fixed.
+e.g. the summary line and the prof: lines. Fixed the same day (next section).
+
+### Floats in Xbox logs; violence warning brightness (12 Oct 2026)
+
+printf with floating point: nxdk's pdclib skips %f/%e/%g/%a without taking
+the argument (_PDCLIB_print.c), so everything after a float in a line was
+garbage ("fps (2225186295 frames)", empty prof: lines). xbox_libc.c now has
+the whole printf family (printf, fprintf, sprintf, snprintf and the v*
+forms): float conversions are formatted there (digits from a scaled 64-bit
+integer: 15-17 significant digits, ties to even), every other conversion is
+handed, one at a time, to pdclib's snprintf. xbox_compat.h renames the
+names before <stdio.h> declares them; it is force-included in every C file
+of the Xbox build (front end and game C; not xbox_libc.c / xbox_log.c). The
+game C itself prints no floats (its sprintf/vsprintf are for on-screen text
+with %d/%s), but goes through the same functions. rt_log.h's format attribute
+says __printf__ so the rename does not disable the format checks. Checked
+against glibc on 200,000 random values (differences only in the 17th digit
+and in values just next to a rounding tie) and in xemu: the prof: lines and
+the summary show correct numbers.
+
+Violence warning darker on hardware: not the renderer. How it is drawn
+(violence_logo, demo.c): one flps0008 sprite, the 256x256 parchment texture
+(P8 on the Xbox) stretched over the 512x448 frame, vertex colour 0xFF606060
+(fl's 0xFF = 1.0 scale, so 0.38 of the texture, the same on PS2, PC and
+Xbox), then the two lines of text. Measured (mean RGB of the 4:3 picture):
+PC (RT_SHOTS=240 ... --boot --time 14) 60,28,17; xemu nv2a build (at about
+42 s of xemu time this run; boot timing in xemu varies by 10 s between runs,
+so take a shot every second) 59,27,17: the same, and the picture matches
+the PC's (emblem clearly visible). The capture-card picture of the real Xbox
+(seq_tile.jpg, 11 Oct) has 30,9,4. Comparing percentiles of the hardware
+capture with xemu, the hardware picture is the xemu picture minus about
+25-30 levels at every brightness: parchment median red 60 -> 31, green
+23 -> 3, blue 13 -> 0; the ACCESS screen's white 255 -> 225-239. A uniform
+level drop over every screen (ACCESS is a different texture path) points at
+the video output chain, not at our drawing: the framebuffer is right (xemu
+reads the same surfaces), pbkit and XVideoSetMode load an identity gamma
+ramp. The Evolution X dashboard capture (xbox2.jpg) also has its dark
+background text almost invisible. Candidates for the owner to check: the
+console's video standard (NTSC-J has no 7.5 IRE black-level setup; an
+adapter expecting NTSC-M's setup would crush the darkest ~20 levels), and the
+HDMI adapter / capture card brightness. Dark game screens (this one, night
+areas, caves) will look too dark through this chain; a check with a retail
+game's dark scene through the same chain would settle it.
