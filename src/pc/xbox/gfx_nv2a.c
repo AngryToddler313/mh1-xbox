@@ -630,11 +630,25 @@ static vtx *ring_alloc(int n)
     return v;
 }
 
+/* NV2A keeps fetched vertices in a cache keyed by memory address and does not
+ * notice the CPU rewriting that memory. The vertex ring starts at offset 0
+ * every frame, so without this a draw reads the vertices an earlier frame
+ * left at the same address: on the real Xbox (11 Oct 2026) the CAPCOM logo's
+ * first quad came out with the ACCESS screen's full-screen quad (texture
+ * spread over the screen) and its second quad with the fade's vertices
+ * (confirmed on hardware the same day: one centred logo after this fix). Broken before every
+ * draw's arrays: one method, and static or reused buffers are covered too. */
+static uint32_t *break_vertex_cache(uint32_t *p)
+{
+    return pb_push1(p, NV097_BREAK_VERTEX_BUFFER_CACHE, 0);
+}
+
 static void set_arrays(const vtx *v)
 {
     uint32_t base = (uint32_t)(uintptr_t)v & 0x03ffffff, *p;
     int i;
     p = pb_begin();
+    p = break_vertex_cache(p);
     pb_push(p++, NV097_SET_VERTEX_DATA_ARRAY_FORMAT, 16);
     for (i = 0; i < 16; i++)
         *p++ = NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F;       /* size 0: unused */
@@ -1077,6 +1091,7 @@ static void set_skin_arrays(const uint8_t *v)
     };
     int i;
     p = pb_begin();
+    p = break_vertex_cache(p);     /* see set_arrays */
     pb_push(p++, NV097_SET_VERTEX_DATA_ARRAY_FORMAT, 16);
     for (i = 0; i < 16; i++)
         *p++ = NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F;

@@ -732,9 +732,14 @@ Seen through the capture card, in order: memory card check, violence warning,
 Sofdec/ADX logos, ACCESS AVE-TCP, CAPCOM logo, page turn, opening movie
 (CAPCOM Presents, sky, Aptonoth and Apceros herds) with correct colours after
 the movie moved to RGBA textures (docs/REVIEW.md). Open:
-- CAPCOM logo: a correct small copy top left plus a magnified, wrapped copy
-  ("CAPC" / "OM"); the PC draws one centred logo. Not a 2D draw (RT_2D_TRACE)
-  and no UV scroll (RT_UV_TRACE): a clay. Under investigation.
+- CAPCOM logo: was a small copy plus a magnified, wrapped one. Fixed: the
+  logo is two 2D quads from a 256x256 P8 texture (capcom_logo, demo.c), and
+  the NV2A vertex cache kept the previous screen's full-screen quad because
+  the vertex ring restarts at offset 0 every frame; gfx_nv2a.c now sends
+  NV097_BREAK_VERTEX_BUFFER_CACHE before each draw's arrays. (An earlier note
+  here said "a clay": wrong, the trace had stopped before the logo. Use
+  `RT_STEP=1 ... --boot --frames 470 --time 100` for a repeatable logo frame.)
+  The light frame after the page turn went away with the same fix.
 - The violence warning's parchment background is much darker than on the PC.
 - One frame after the page turn shows a plain light screen; check against PC.
 - Movie smoothness not measured yet (captures were 1 per second).
