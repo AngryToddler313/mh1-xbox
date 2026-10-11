@@ -649,3 +649,21 @@ screenshot fallback and the clean-up of xemu's processes work); nothing with rea
 Untested: real boot, the --data ISO build (extract-xiso on a 925 MB tree), HDD formatting, the
 nv2a build. The first things to look for: the BIOS logo, then our XBE starting (title screen from
 power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appearing after a save.
+
+## Real Xbox bench setup (11 Oct 2026)
+
+- Console: modded, Evolution X V4.3935, HDD C: free ~328 MB, MAC 00:0D:3A:31:08:AB.
+- Video: MacroSilicon USB capture card on the laptop (/dev/video2). Use raw mode:
+  `ffmpeg -f v4l2 -input_format yuyv422 -video_size 1280x720 -i /dev/video2 -frames:v 30 -update 1 shot.jpg`
+  (MJPEG mode and the first frames give colour bars; only one program may hold the device).
+- Input: RetroKM pad player (MULTI KM/xboxpad, Atom S3R as a Controller S). Drive it via the hub:
+  `printf 'goto xbox\n' | nc -q0 127.0.0.1 24851`, then `printf 'pad <hex>\n'` and `pad 0`
+  (A=1 B=2 X=4 Y=8 back=40 start=80 up=800 down=1000 left=2000 right=4000). Use one short tap
+  (~50 ms) per step; longer holds auto-repeat in Evolution X menus.
+- Evolution X main menu (one scrolling list): Play Games from HD, Trainers, Emulators, DVD,
+  Launch Applications, Microsoft Dashboard, Skin, System Configuration (-> System Settings,
+  Lock/Unlock Harddisk, Power Cycle, Flash BIOS: never select the lock/flash items), Reboot, Power Off.
+- Network: link 100/Full but no DHCP address (IP 0.0.0.0) even after a reboot. evox.ini has
+  StaticIP = No with fallback IP 192.168.1.10/255.255.255.0, gateway 192.168.1.11 (leftover).
+  Evolution X cannot edit network settings in its UI. Owner asked to check the cable/port; else
+  edit evox.ini [Network] StaticIP=Yes, Gateway=192.168.1.1 off-console, or boot a file manager.
