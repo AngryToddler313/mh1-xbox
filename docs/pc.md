@@ -574,8 +574,9 @@ src/pc/rt/:
   set_mdlw; the set object pool (pull/push_set_work, 64 entries of 0x80: a
   guess; pull_set_work(n) also gives n 512-byte heap blocks as sw->u.work,
   like 0x155290); prims and ordering tables ot0..ot4 (get_prim,
-  release_prim, add_prim; drawn ot0 first, ot4 last, low priority first
-  inside a table: a guess); ran_suu (same generator as 0x161230);
+  release_prim, add_prim; drawn in trans()'s order ot1, ot3, ot0, ot4 with
+  the effect passes between them (see "F8 report: dust as blocks on the
+  water" below), low priority first inside a table: a guess); ran_suu (same generator as 0x161230);
   rt_game_init (calls stage_set_set) / move / draw. Static asserts check
   the struct layouts.
 - `rt_fl.c`: flSetRenderState (0x0D blend op, 0x19 texture matrix, 0x1A
@@ -2280,6 +2281,25 @@ Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (no
   pushed out the first tick the wall flag drops. Faithful to the code; whether the original keeps the wall flag set for a monster standing
   still against a wall (the PC's GetWallHitBitEm / PushAdjust3 are near-matches) is not verified [open]. RT_EM_TRACE now ends with
   `wall <0x74C>/<0x7EA>`.
+
+### F8 report "dust particles appearing as blocks on top of the water" (quest 152 stage 21) (agent F, 10 Oct 2026)
+- **Replay** (headless, the command tools/show_report.py --replay prints; RT_SHOTS=7804 for a shot of the report's tick): a light-blue
+  block with stepped edges in the swamp water beside the hunter. Its colour is the frame's clear colour plus a faint dust tint.
+- **Not the picked object.** The pick named set19's water sheet (clay handle 7). Skipping that clay did not remove the block. The
+  block went away only when the eft13 prims on ot0 were skipped (eft13_t: the hunter's footstep dust, type 4, clay 74 of the
+  effect model set, 256x256 texture, colour Eft_kemuri_rgb, alpha 0x80, alpha ref 0). Like the game, eft13_t leaves z-write on.
+- **Cause: the PC's draw order.** rt_game_draw drew every effect first, then ot0, ot1, ot3, ot4. The game's trans() (weapon/trans.c)
+  draws trans_stage, trans_eft_up, GameTrans (actors), trans_shell, ot1, ot3, ot0, trans_set, trans_eft, ot4. Each dust billboard on
+  ot0 wrote depth over its whole quad (its texture alpha is above 0 nearly everywhere). Then set19's water on ot3 failed the
+  depth test there, so the clear colour showed through in the shape of the dust's alpha. Any translucent ot0 prim or effect in
+  front of an ot1/ot3 sheet (swamp water, set14 waterfalls, set16/17/22/08 parts) could do the same. Not a recent regression:
+  older builds show the same block.
+- **Fix (general path):** rt_game_draw now uses trans()'s order: shells, ot1, ot3, ot0, trans_eft, ot4. trans_eft_up (type 4 arg 0
+  effects) moved into rt_stage_draw, after the stage and before the viewer draws the actors. trans_set is not called: no set
+  object in the port sets the SETW +0x14 callback. Replay after the fix: the water is unbroken and the dust blends over it;
+  pixel (397,552) went from (144,165,195) to (45,56,50).
+- **Behaviour change:** draw order only. Game state and traces are unchanged. Effects now draw after the ot1/ot3 prims instead of
+  before all prims, and ot0 draws after ot1/ot3.
 
 ## History (superseded plans, gaps and workarounds)
 

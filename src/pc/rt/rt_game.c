@@ -351,6 +351,8 @@ void rt_fl_reset_states(void);
 void rt_eft_init(void);
 void rt_eft_move(void);
 void rt_eft_draw(void);
+void rt_eft_draw_up(void);
+void rt_eft_draw_shells(void);
 void rt_eft_trace(void);
 
 void *Stage_data_get(int stg);
@@ -481,6 +483,25 @@ void rt_stage_draw(void)
     PICK(PK_OTHER, 0, 0, 0, 0);
     trans_stage();
     rt_fl_reset_states();
+    rt_eft_draw_up();       /* trans_eft_up: before the actors (GameTrans) as in trans() */
+    rt_fl_reset_states();
+}
+
+static void draw_ot(int t)
+{
+    int k;
+    for (k = 0; k < nqueue[t]; k++) {
+        PRIM *p = queue[t][k].p;
+        static int skip = -2;
+        if (skip == -2) skip = getenv("RT_SKIP_TYPE") ? atoi(getenv("RT_SKIP_TYPE")) : -1;
+        if (skip >= 0 && p->owner && ((SETW *)p->owner)->type == skip)
+            continue;           /* RT_SKIP_TYPE=n: debugging, skip prims of owner type n */
+        if (gfx_pick_pass)
+            pick_prim_tag(t, k, p);
+        if (p->trans)
+            p->trans(p);
+        rt_fl_reset_states();
+    }
 }
 
 void rt_game_draw(void)
@@ -499,23 +520,24 @@ void rt_game_draw(void)
                         o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
             }
     }
+    /* The 3D half of the game's trans() (weapon/trans.c) after GameTrans:
+     * trans_shell, ot1, ot3, ot0, trans_set, trans_eft, ot4 (ot2 and ot5-8:
+     * rt_game_draw_2d). The order matters because the translucent prims write
+     * depth: ot0 (dust, eft13) used to be drawn before ot3 (set19's swamp
+     * water), so each dust puff cut a hole in the water. trans_set calls the
+     * set objects' +0x14 callbacks, which no set object in the port sets. */
     rt_prof_begin(RTP_EFT_DRAW);
-    rt_eft_draw();          /* trans_shell, trans_eft, trans_eft_up (before the prims: a guess) */
+    rt_eft_draw_shells();
     rt_prof_end(RTP_EFT_DRAW);
     rt_fl_reset_states();
-    for (t = 0; t < 5; t++)
-        for (k = 0; k < (t == 2 ? 0 : nqueue[t]); k++) {   /* ot2: screen layer (rt_game_draw_2d) */
-            PRIM *p = queue[t][k].p;
-            static int skip = -2;
-            if (skip == -2) skip = getenv("RT_SKIP_TYPE") ? atoi(getenv("RT_SKIP_TYPE")) : -1;
-            if (skip >= 0 && p->owner && ((SETW *)p->owner)->type == skip)
-                continue;           /* RT_SKIP_TYPE=n: debugging, skip prims of owner type n */
-            if (gfx_pick_pass)
-                pick_prim_tag(t, k, p);
-            if (p->trans)
-                p->trans(p);
-            rt_fl_reset_states();
-        }
+    draw_ot(1);
+    draw_ot(3);
+    draw_ot(0);
+    rt_prof_begin(RTP_EFT_DRAW);
+    rt_eft_draw();
+    rt_prof_end(RTP_EFT_DRAW);
+    rt_fl_reset_states();
+    draw_ot(4);
     PICK(PK_OTHER, 0, 0, 0, 0);
 }
 

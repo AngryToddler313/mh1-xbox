@@ -772,12 +772,10 @@ void rt_eft_move(void)
     move_eft();
 }
 
-void rt_eft_draw(void)
-{
-    trans_shell();
-    trans_eft(0);
-    trans_eft(1);
-}
+/* The three effect passes, called where the game's trans() calls them (rt_game.c) */
+void rt_eft_draw_up(void) { trans_eft(1); }
+void rt_eft_draw_shells(void) { trans_shell(); }
+void rt_eft_draw(void) { trans_eft(0); }
 
 /* RT_TRACE: list live effects and shells once */
 void rt_eft_trace(void)

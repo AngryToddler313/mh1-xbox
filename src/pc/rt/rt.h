@@ -246,7 +246,8 @@ void rt_game_init(int stage);
 /* One game tick (the PS2 game logic runs at 30 per second). */
 void rt_game_move(void);
 /* Draw the stage like the game's trans_stage: area model parts (sky,
- * per-stage placed/spun/scrolled parts) and the set-model parts it places. */
+ * per-stage placed/spun/scrolled parts) and the set-model parts it places;
+ * then trans_eft_up (type 4 arg 0 effects), which trans() draws before the actors. */
 void rt_stage_draw(void);
 /* Walk the ordering tables queued by the last tick and call each prim's
  * trans(). VIEW/PROJECTION must already be set; render states touched by
