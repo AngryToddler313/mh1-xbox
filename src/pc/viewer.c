@@ -1863,12 +1863,15 @@ int main(int argc, char **argv)
     if (!shot)
         gfx_opts_finish(size_given, &W, &H);        /* the remembered window, else 960x720 (4:3) / 1280x720 (widescreen) */
 #endif
-    if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0) {
+    /* scripted runs (--input: tests, bug-report replays) never show a window on the desktop;
+     * MH1_SHOW=1 shows one anyway for debugging by hand */
+    int hide = shot != NULL || ((script != NULL || getenv("MH1_HIDDEN")) && !getenv("MH1_SHOW"));
+    if (gfx_init(W, H, "MH1 PC viewer", hide) != 0) {
         rt_warn("graphics start-up failed (no window / OpenGL context)");
         return 1;
     }
     gfx_size(&W, &H);
-    rt_log("boot: window %dx%d%s", W, H, shot ? " (hidden, screenshot run)" : "");
+    rt_log("boot: window %dx%d%s", W, H, shot ? " (hidden, screenshot run)" : hide ? " (hidden, scripted run)" : "");
     { extern void rt_seed_random(int); rt_seed_random(script != NULL); }
     if (script && !pad_script_set(script)) {
         fprintf(stderr, "bad --input script\n");
