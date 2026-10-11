@@ -663,7 +663,10 @@ power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appeari
 - Evolution X main menu (one scrolling list): Play Games from HD, Trainers, Emulators, DVD,
   Launch Applications, Microsoft Dashboard, Skin, System Configuration (-> System Settings,
   Lock/Unlock Harddisk, Power Cycle, Flash BIOS: never select the lock/flash items), Reboot, Power Off.
-- Network: link 100/Full but no DHCP address (IP 0.0.0.0) even after a reboot. evox.ini has
-  StaticIP = No with fallback IP 192.168.1.10/255.255.255.0, gateway 192.168.1.11 (leftover).
-  Evolution X cannot edit network settings in its UI. Owner asked to check the cable/port; else
-  edit evox.ini [Network] StaticIP=Yes, Gateway=192.168.1.1 off-console, or boot a file manager.
+- Network: works since 11 Oct after a port swap and a power-strip change (a tripped breaker had
+  been cutting power). DHCP gives 192.168.1.115 (MAC 00:0D:3A:31:08:AB); FTP (21), telnet (23)
+  and 731 answer. It sits behind a mesh node (ping TTL 63), so a MAC sweep from the laptop never
+  shows its MAC; find it on the System Settings page (main menu: 7 downs, A, A) or ping .115.
+- Menu presses: take a capture after every press before pressing A. Main menu order is Play Games
+  from Hard Drive, Trainers, Emulators, DVD, Launch Applications, MS Dashboard, Skin, System
+  Configuration, Reboot, Power Off.
