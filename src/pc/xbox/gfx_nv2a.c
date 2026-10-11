@@ -73,6 +73,8 @@ struct gfx_clay {
 #define SKIN_STRIDE 80          /* pos 3f, nrm 3f, col 4ub, st 2f, w 4f, slot*3 4f, flag 2f */
 
 
+#define PITCH64(n) (((n) + 63u) & ~63u)
+
 static struct {
     int w, h;
     float view[16], proj[16], world[16], texmat[16], viewport[16];
@@ -364,7 +366,7 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
                     t->mem[oy | deposit((uint32_t)x, mx)] = idx[y * w + x];
             }
             free(idx);
-            t->pitch = (uint32_t)w;
+            t->pitch = PITCH64((uint32_t)w);   /* unused when swizzled, but checked */
             t->bytes = (size_t)w * h + 1024;
             rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", (long)t->bytes);
             rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
@@ -375,7 +377,10 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
             MmFreeContiguousMemory(t->pal);
         t->pal = NULL;
     }
-    t->pitch = (uint32_t)w * 4;
+    /* NV2A: a texture pitch must be a multiple of 64 bytes, or SET_TEXTURE_CONTROL1
+     * stops the GPU ("invalid data", seen on the real Xbox on 11 Oct 2026 for
+     * the 1x1 white texture: pitch 4). Linear rows are padded to it. */
+    t->pitch = PITCH64((uint32_t)w * 4);
     size = (size_t)t->pitch * h;
     t->mem = MmAllocateContiguousMemoryEx(size, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
     if (!t->mem) {
@@ -386,7 +391,9 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", (long)size);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
     if (t->rect) {
-        memcpy(t->mem, rgba, size);
+        int y;
+        for (y = 0; y < h; y++)
+            memcpy(t->mem + (size_t)y * t->pitch, rgba + (size_t)y * w * 4, (size_t)w * 4);
     } else {
         uint32_t mx, my, *dst = (uint32_t *)t->mem;
         const uint32_t *src = (const uint32_t *)rgba;
@@ -1187,7 +1194,7 @@ gfx_texture *gfx_create_texture_yuv(int w, int h)
     t->h = h;
     t->rect = 1;                    /* linear, texel coordinates */
     t->yuv = 1;
-    t->pitch = (uint32_t)w * 2;
+    t->pitch = PITCH64((uint32_t)w * 2);
     t->bytes = (size_t)t->pitch * h;
     t->mem = MmAllocateContiguousMemoryEx(t->bytes, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
     if (!t->mem) {
