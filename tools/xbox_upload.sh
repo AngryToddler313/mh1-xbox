@@ -15,6 +15,9 @@ else
 	printf 'machine %s login %s password %s\n' "$XBOX" "$u" "$p" > "$NETRC"
 	AUTH=(--netrc-file "$NETRC")
 fi
+# Evolution X's FTP server has no EPSV; use plain PASV, or active mode (XBOX_FTP_ACTIVE=1)
+AUTH+=(--disable-epsv)
+[ -n "$XBOX_FTP_ACTIVE" ] && AUTH+=(--ftp-port -)
 drives=$(curl -sS "${AUTH[@]}" --list-only "ftp://$XBOX/" | tr -d "\r")
 echo "Xbox drives: $(echo $drives)"
 if echo "$drives" | grep -qxE 'F:?'; then URL=ftp://$XBOX/F/Games/MH1; else URL=ftp://$XBOX/E/Games/MH1; fi
