@@ -694,15 +694,23 @@ lists it as "Monster Hunter". On each start the loader:
    `GET /mh1.xbe` to `E:\Games\MH1\mh1.xbe`;
 4. starts mh1.xbe (D: is then E:\Games\MH1, so the game finds D:\data).
 
-When the game exits, src/pc/xbox/xbox_log.c shows the log tail for 10 s and
-starts the loader again with launch data "MH1X"; the loader then sends the log
-and waits (polling every 3 s) for a new version before starting the game again.
-If the laptop does not answer, a dashboard start runs the copy already on the
-disk and a start after the game goes back to the dashboard.
+When the game exits (or Back + Start is held for 2 s: the box has no in-game
+reset), src/pc/xbox/xbox_log.c shows the log tail for 10 s and goes back to the
+dashboard; the next start (pad: A on "Play Games from Hard Drive", A on
+"Monster Hunter") sends the log and fetches the newest build. A first version
+let the game start the loader again, which then polled the laptop every 3 s:
+on 11 Oct the Xbox's network froze after 5 such connections (ping dead too,
+cause unknown; nxdk's lwIP debug output is off by default, so not that). Each
+start now makes at most 3 connections. The loader installed on the Xbox on
+11 Oct is the polling version, so the game no longer starts it with launch
+data; the source has the fixed version for the next install.
+If the laptop does not answer, the loader runs the copy already on the disk.
 
 Laptop side: `tools/xbox_serve.py` (port 8765) serves build/xbox/default.xbe,
-saves each log to build/xbox/logs/<time>.txt and prints it. Writing anything
-into build/xbox/rerun.txt changes the version, so a waiting loader reruns the
-same build. Loop for testing on hardware: build_xbox.py, then watch the server
-output (and the capture card). A hang (no exit) still needs the pad or power.
+saves each log to build/xbox/logs/<time>.txt and prints it. `--xbe build/xbox/nv2a/default.xbe` serves the graphics build. Loop for
+testing on hardware: build_xbox.py, start from the pad, watch the server output
+and the capture card. A hang (no exit) still needs the owner at the power
+button. First results (11 Oct): the null-graphics build boots, finds D:\data
+and the controller, sets up quest 10 and runs (about 13,000 loops a second with
+nothing drawn); Back + Start exits cleanly.
 Untested on hardware until the owner installs it.

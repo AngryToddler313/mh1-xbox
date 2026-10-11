@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Laptop side of the Xbox network loader (src/pc/xbox/loader, docs/xbox.md "Network loader").
 
-    tools/xbox_serve.py [--port 8765]
+    tools/xbox_serve.py [--port 8765] [--xbe build/xbox/nv2a/default.xbe]
 
-Serves build/xbox/default.xbe to the loader as /mh1.xbe, with /version
+Serves build/xbox/default.xbe (the null-graphics build; --xbe for another) to the loader as /mh1.xbe, with /version
 (size and time of that file, plus build/xbox/rerun.txt when present, so
 touching that file makes a waiting loader start the same build again).
 Logs the Xbox sends (POST /log) are saved to build/xbox/logs/<time>.txt and
@@ -68,7 +68,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--port', type=int, default=8765)
+    ap.add_argument('--xbe', help='the build to serve (default build/xbox/default.xbe)')
     a = ap.parse_args()
+    if a.xbe:
+        global XBE
+        XBE = os.path.abspath(a.xbe)
     print('serving %s as /mh1.xbe on port %d (version %s)' % (os.path.normpath(XBE), a.port, version()))
     sys.stdout.flush()
     http.server.ThreadingHTTPServer(('0.0.0.0', a.port), Handler).serve_forever()

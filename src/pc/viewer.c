@@ -2418,8 +2418,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Back + Start held: exit at frame %d\n", frame_no);
                 running = 0;
             }
-            if (frame_no % 30 == 0)
-                xbox_log_frame(frame_no, SDL_GetTicks());
+            xbox_log_frame(frame_no, SDL_GetTicks());
         }
 #endif
         if (getenv("RT_FPS")) {         /* drawn frames per second (the game ticks at 30 regardless) */

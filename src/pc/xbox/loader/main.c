@@ -6,8 +6,10 @@
  *   2. downloads the newest game build (mh1.xbe) when the laptop has a new one,
  *   3. starts the game.
  * When the game exits it starts this loader again (launch data "MH1X"); then
- * the loader waits for a new build before starting the game again, so the
- * laptop side (tools/xbox_serve.py) can test builds without anyone at the pad.
+ * the loader only sends the log and goes back to the dashboard. (A first
+ * version polled the laptop every 3 s for a new build; the Xbox's network
+ * froze after 5 connections, ping included, cause unknown. So each start
+ * makes at most 3 connections, and the next start comes from the pad.)
  * The laptop is found at the address in E:\Games\MH1\loader.txt
  * ("192.168.1.166:8765" when the file is missing). Only our own build files
  * travel this way; there is no login.
@@ -191,7 +193,7 @@ int main(void)
 {
     unsigned long ldt;
     const unsigned char *ld;
-    int after_game, n, waited = 0;
+    int after_game, n;
     char *log, *ver, *have, *xbe;
 
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
@@ -214,37 +216,23 @@ int main(void)
         free(log);
     }
 
-    for (;;) {
-        ver = http("GET", "/version", NULL, 0, &n);
-        if (!ver) {
-            debugPrint("The laptop does not answer.\n");
-            if (after_game) {
-                debugPrint("Back to the dashboard.\n");
-                Sleep(5000);
-                XLaunchXBE(NULL);
-            }
-            launch_game();
-        }
-        have = read_file(GAME_VER, &n);
-        if (!have || strcmp(have, ver)) {
-            debugPrint("Downloading build %s ...\n", ver);
-            if ((xbe = http("GET", "/mh1.xbe", NULL, 0, &n)) != NULL &&
-                write_file(GAME, xbe, n) == 0 && write_file(GAME_VER, ver, strlen(ver)) == 0) {
-                debugPrint("Got %d bytes.\n", n);
-                http("POST", "/note", "downloaded", 10, &n);
-                launch_game();
-            }
-            debugPrint("Download failed.\n");
-            free(xbe);
-            Sleep(5000);
-        } else if (!after_game) {
-            launch_game();
-        } else {
-            if (!waited++)
-                debugPrint("Game exited. Waiting for a new build (or press the Xbox's power button).\n");
-            Sleep(3000);
-        }
-        free(have);
-        free(ver);
+    if (after_game) {
+        debugPrint("Game exited. Back to the dashboard.\n");
+        Sleep(3000);
+        XLaunchXBE(NULL);
     }
+    if (!(ver = http("GET", "/version", NULL, 0, &n))) {
+        debugPrint("The laptop does not answer.\n");
+        launch_game();
+    }
+    have = read_file(GAME_VER, &n);
+    if (!have || strcmp(have, ver)) {
+        debugPrint("Downloading build %s ...\n", ver);
+        if ((xbe = http("GET", "/mh1.xbe", NULL, 0, &n)) != NULL &&
+            write_file(GAME, xbe, n) == 0 && write_file(GAME_VER, ver, strlen(ver)) == 0)
+            debugPrint("Got %d bytes.\n", n);
+        else
+            debugPrint("Download failed; starting the copy on the disk.\n");
+    }
+    launch_game();
 }
