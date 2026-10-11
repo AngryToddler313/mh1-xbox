@@ -9,12 +9,19 @@
 #   xbox_files/eeprom.bin optional (xemu makes one)
 # (all in xbox_files/, gitignored; override the dir with XBOX_FILES=...).
 #
-# usage: tools/run_xemu.sh [--gfx null|nv2a] [--data DISCDIR] [--shot out.png] [--after SECONDS] [--xemu PATH]
+# usage: tools/run_xemu.sh [--gfx null|nv2a] [--data DISCDIR] [--input FILE|SCRIPT] [--env FILE]
+#                          [--shot out.png] [--after SECONDS] [--xemu PATH]
 #   --gfx     which build to boot: build/xbox/ (null graphics, default) or build/xbox/nv2a/
 #   --data    DISCDIR = the owner's game files (AFS_DATA.AFS, AFS00.AFS, AFS01.AFS, SLPM_654.95):
 #             builds build/xbox/mh1_data.iso holding the XBE plus them as D:\data (about 925 MB,
 #             local only), which the XBE finds at start-up. Without it the ISO holds only the XBE
 #             (the game then reports missing files, which already tests the boot).
+#   --input   a pad script (with --data): a file, or the script itself; the format of the PC
+#             viewer's --input (src/pc/pad/pad_sdl.c pad_script_set, tools/mk_input.py). It goes
+#             into the ISO as D:\data\input.txt, which the Xbox build plays from power-on
+#             instead of the controller (viewer.c).
+#   --env     a file of NAME=VALUE lines (with --data): D:\data\env.txt, the environment the
+#             Xbox build's getenv sees (RT_* test aids and traces, docs/pc.md; xbox_env.c)
 #   --shot    after --after seconds (default 60) save a screenshot and quit (ffmpeg x11grab of
 #             the hidden display; xemu 0.8.136 has no QMP screendump).
 #   --after   one time, or a list ("36 40 45 60"): one screenshot at each time since start,
@@ -30,11 +37,13 @@ set -e
 cd "$(dirname "$0")/.."
 XF=$(realpath -m "${XBOX_FILES:-xbox_files}")
 XEMU=${XEMU:-$HOME/xboxdev/xemu/xemu-0.8.136-x86_64.AppImage}
-GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=
+GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""
 while [ $# -gt 0 ]; do
     case "$1" in
     --gfx) GFX=$2; shift 2 ;;
     --data) DATA=$2; shift 2 ;;
+    --input) INPUT=$2; shift 2 ;;
+    --env) ENVF=$2; shift 2 ;;
     --shot) SHOT=$2; shift 2 ;;
     --after) AFTER=$2; shift 2 ;;
     --xemu) XEMU=$2; shift 2 ;;
@@ -50,6 +59,7 @@ if [ -n "$miss" ]; then
     echo "(MCPX ROM and BIOS dumps from the owner's own console; docs/xbox.md, 'Running in xemu')"
     exit 1
 fi
+[ -z "$INPUT$ENVF" ] || [ -n "$DATA" ] || { echo "--input / --env need --data"; exit 2; }
 case "$GFX" in null) B=build/xbox ;; nv2a) B=build/xbox/nv2a ;; *) echo "--gfx null|nv2a"; exit 2 ;; esac
 [ -f $B/default.xbe ] || { echo "no $B/default.xbe: run  . ~/xboxdev/env.sh; python3 tools/build_xbox.py $( [ $GFX = nv2a ] && echo --gfx nv2a )"; exit 1; }
 
@@ -59,6 +69,8 @@ if [ -n "$DATA" ]; then
     D=$B/iso_data; rm -rf $D; mkdir -p $D/data
     cp $B/default.xbe $D/default.xbe
     for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95; do ln -s "$(cd "$DATA" && pwd)/$f" $D/data/$f 2>/dev/null || cp "$DATA/$f" $D/data/; done
+    if [ -f "$INPUT" ]; then cp "$INPUT" $D/data/input.txt; elif [ -n "$INPUT" ]; then printf '%s\n' "$INPUT" > $D/data/input.txt; fi
+    [ -z "$ENVF" ] || cp "$ENVF" $D/data/env.txt
     ISO=$B/mh1_data.iso; rm -f $ISO
     ~/xboxdev/nxdk/tools/extract-xiso/build/extract-xiso -c $D $ISO >/dev/null
 fi

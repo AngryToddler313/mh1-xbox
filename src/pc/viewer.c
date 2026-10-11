@@ -38,6 +38,7 @@
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
 void xbox_log_frame(int frame, unsigned ms);
+void xbox_env_load(const char *path);
 #endif
 
 /* ------------------------------------------------------------ data */
@@ -876,6 +877,28 @@ static const char *nettest;               /* --nettest SCENARIO: headless online
 #endif
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
 static const char *script = NULL;
+
+/* a --input script kept in a file (--input @file; on the Xbox D:\data\input.txt):
+ * the whole file, trailing blanks and line ends cut. NULL when it cannot be read. */
+static char *script_file_read(const char *path)
+{
+    FILE *sf = fopen(path, "rb");
+    size_t n, cap = 1 << 16, len = 0;
+    char *b;
+    if (!sf)
+        return NULL;
+    b = malloc(cap);
+    while ((n = fread(b + len, 1, cap - len - 1, sf)) > 0) {
+        len += n;
+        if (len + 2 >= cap)
+            b = realloc(b, cap *= 2);
+    }
+    b[len] = 0;
+    while (len && (b[len - 1] == '\n' || b[len - 1] == '\r' || b[len - 1] == ' '))
+        b[--len] = 0;
+    fclose(sf);
+    return b;
+}
 static float hunter_yoff = 0;
 
 /* ------------------------------------------------------------ boot hunters
@@ -1675,21 +1698,10 @@ int main(int argc, char **argv)
             script = argv[++i];
             play = 1;
             if (script[0] == '@') {         /* --input @file: the script is in a file (the bug reporter's input.txt) */
-                FILE *sf = fopen(script + 1, "rb");
-                if (sf) {
-                    size_t n, cap = 1 << 16, len = 0;
-                    char *b = malloc(cap);
-                    while ((n = fread(b + len, 1, cap - len - 1, sf)) > 0) {
-                        len += n;
-                        if (len + 2 >= cap)
-                            b = realloc(b, cap *= 2);
-                    }
-                    b[len] = 0;
-                    while (len && (b[len - 1] == '\n' || b[len - 1] == '\r' || b[len - 1] == ' '))
-                        b[--len] = 0;
-                    fclose(sf);
+                char *b = script_file_read(script + 1);
+                if (b)
                     script = b;
-                } else
+                else
                     fprintf(stderr, "cannot read the input script %s\n", script + 1);
             }
         }
@@ -1731,6 +1743,15 @@ int main(int argc, char **argv)
         xbox_log_note(disc ? disc : "no AFS_DATA.AFS in D:\\data or E:\\Games\\MH1\\data");
         boot = 1;
         play = 1;
+        /* test runs (xemu, tools/run_xemu.sh --input/--env): a pad script in the data folder,
+         * the same format as the PC's --input; env.txt sets RT_* test aids (xbox_env.c) */
+        if (disc) {
+            snprintf(path, sizeof path, "%s\\env.txt", disc);
+            xbox_env_load(path);
+            snprintf(path, sizeof path, "%s\\input.txt", disc);
+            if ((script = script_file_read(path)) != NULL)
+                xbox_log_note("input.txt: scripted pad input");
+        }
     }
 #endif
 #ifndef XBOX
