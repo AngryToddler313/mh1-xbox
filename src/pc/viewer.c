@@ -37,6 +37,7 @@
 #include <nxdk/mount.h>
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
+void xbox_log_frame(int frame, unsigned ms);
 #endif
 
 /* ------------------------------------------------------------ data */
@@ -2056,8 +2057,10 @@ int main(int argc, char **argv)
         static const int em_kinds[1] = { 1 };
         rt_snd_stage(stage_no, em_kinds, 1);
     }
+#ifndef XBOX                            /* no mouse on the Xbox: nxdk's SDL asserts in relative mode */
     if (!shot)
         SDL_SetRelativeMouseMode(SDL_TRUE);
+#endif
     rt_flow_set_core(sim_tick);
     rt_set_stage_loader(load_stage_models);
     rt_flow_set_back(quest_back);
@@ -2406,6 +2409,19 @@ int main(int argc, char **argv)
 
         frame_no++;
         rt_log_frame();
+#ifdef XBOX
+        {   /* bench aids (docs/xbox.md "Network loader"): a live frame counter on the text screen,
+             * and Back + Start held 2 s quits to the loader (the Xbox has no in-game reset) */
+            static int held;
+            held = pad_combo_held() ? held + 1 : 0;
+            if (held == 60) {
+                fprintf(stderr, "Back + Start held: exit at frame %d\n", frame_no);
+                running = 0;
+            }
+            if (frame_no % 30 == 0)
+                xbox_log_frame(frame_no, SDL_GetTicks());
+        }
+#endif
         if (getenv("RT_FPS")) {         /* drawn frames per second (the game ticks at 30 regardless) */
             static Uint32 fps_t0; static int fps_n;
             Uint32 now = SDL_GetTicks();

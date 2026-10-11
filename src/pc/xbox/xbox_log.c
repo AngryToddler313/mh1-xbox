@@ -6,6 +6,7 @@
 #include <hal/video.h>
 #include <hal/xbox.h>
 #include <windows.h>
+#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,6 +41,15 @@ static void xbox_log_show(void)
     }
 }
 
+/* SDL's own checks: log them and go on (its default asks Abort/Retry/Ignore on
+ * a console nobody can answer, then aborts) */
+static SDL_AssertState xbox_sdl_assert(const SDL_AssertData *d, void *u)
+{
+    (void)u;
+    fprintf(stderr, "SDL assert %s:%d %s: %s\n", d->filename, d->linenum, d->function, d->condition);
+    return SDL_ASSERTION_ALWAYS_IGNORE;
+}
+
 /* after E: is mounted */
 void xbox_log_start(void)
 {
@@ -49,6 +59,7 @@ void xbox_log_start(void)
         setvbuf(stderr, NULL, _IONBF, 0);
     else
         debugPrint("cannot write %s\n", XBOX_LOG);
+    SDL_SetAssertionHandler(xbox_sdl_assert, NULL);
     atexit(xbox_log_show);
 }
 
@@ -56,4 +67,13 @@ void xbox_log_note(const char *msg)
 {
     debugPrint("%s\n", msg);
     fprintf(stderr, "%s\n", msg);
+}
+
+/* liveness on the text screen (the null-graphics build draws nothing else) */
+void xbox_log_frame(int frame, unsigned ms)
+{
+    debugMoveCursor(0, 400);
+    debugPrint("frame %d, %u s   ", frame, ms / 1000);
+    if (frame % 900 == 0)
+        fprintf(stderr, "alive: frame %d, %u s\n", frame, ms / 1000);
 }
