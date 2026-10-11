@@ -52,6 +52,9 @@
 
 const char *rt_mc_root(void);                       /* rt_mc.c / mc_xbox.c: the save directory */
 const char *rt_host_symname(const void *addr, unsigned *off);   /* rt_symtab.c (tools/gen_symtab.py) */
+#ifdef MH1_XBOX
+void xbox_serial_write(const char *s, int n);       /* xbox_log.c */
+#endif
 
 #ifndef MH1_VERSION
 #define MH1_VERSION "unknown"
@@ -249,6 +252,9 @@ static void put_line(char level, const char *text)
     line[n + 1] = 0;
     memcpy(r, line, (size_t)n + 2);
     ring_n++;
+#ifdef MH1_XBOX
+    xbox_serial_write(line, n + 1);         /* xemu: serial port (xbox_log.c) */
+#endif
     if (lf) {
         fwrite(line, 1, (size_t)n + 1, lf);
         if (level == 'W' || now_ms() - last_flush > 3000) {

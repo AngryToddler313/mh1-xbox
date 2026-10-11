@@ -47,6 +47,11 @@ static struct {
     double t_audio_end;         /* clock when the audio stopped driving it */
     long ticks_audio_end;
     int audio_active;
+    int driving;                /* audio_driving() this tick */
+    int audio_stalled;          /* the device stopped taking the movie's samples */
+    uint64_t consumed;          /* audio_stream_consumed when it last moved */
+    long ticks_moving;          /* mv.ticks then */
+    long dropped;               /* audio frames thrown away (nobody listening) */
     gfx_texture *tex[NTEX];
     int tw, th, ti;
     float vol;
@@ -140,18 +145,25 @@ int movie_status_ck(void)
     return mv.s && !mv.ended ? 2 : 3;
 }
 
+static double clock_now(void);
+
 /* audio: keep about half a second queued in the mixer */
 static void audio_feed(void)
 {
     int16_t out[32 * 2 * 64];
     int room, n;
-    int live = audio_live();
+    int live = mv.driving;
     sfd_audio_fill(mv.s, 1 << 15);
     if (!sfd_audio_rate(mv.s))
         return;
-    if (!live) {                        /* nobody listens: just keep the queue short */
-        while (sfd_audio_pull(mv.s, out, 32 * 64) > 0)
-            ;
+    if (!live) {
+        /* nobody listens: throw the audio away as the movie's time passes.
+         * (Throwing all of it away every tick made sfd_audio_fill read
+         * about a second of the stream per tick, and the video piled up
+         * unread: 13 MB after 2 s in xemu, where malloc failed.) */
+        long want = (long)((clock_now() + 0.5) * sfd_audio_rate(mv.s));
+        while (mv.dropped < want && (n = sfd_audio_pull(mv.s, out, 32 * 64)) > 0)
+            mv.dropped += n;
         return;
     }
     for (room = audio_stream_free(AUDIO_STREAM_MOVIE) - AUDIO_RATE / 2; room >= 32 * 64; room -= 32 * 64) {
@@ -163,10 +175,35 @@ static void audio_feed(void)
     }
 }
 
+/* Does the audio device take the movie's samples? A device that is open but
+ * has played nothing of a queued stream for a second has stopped (xemu
+ * 0.8.136: nxdk's AC97 driver gets one buffer callback and no interrupt
+ * after it, so the movie stayed on its black first frame for the whole 3
+ * minutes): the movie then runs on the game tick, silent, to its end. */
+static int audio_driving(void)
+{
+    uint64_t c;
+    if (!audio_live() || mv.audio_stalled)
+        return 0;
+    c = audio_stream_consumed(AUDIO_STREAM_MOVIE);
+    if (c != mv.consumed || audio_stream_free(AUDIO_STREAM_MOVIE) >= AUDIO_RATE - 1) {   /* playing, or nothing queued */
+        mv.consumed = c;
+        mv.ticks_moving = mv.ticks;
+        return 1;
+    }
+    if (mv.ticks - mv.ticks_moving < 30)
+        return 1;
+    mv.audio_stalled = 1;
+    audio_stream_clear(AUDIO_STREAM_MOVIE);
+    rt_warn("movie %d: the audio device stopped playing it (%lu frames played); timing the movie by the game tick, silent",
+            mv.no, (unsigned long)c);
+    return 0;
+}
+
 static double clock_now(void)
 {
     int rate = sfd_audio_rate(mv.s);
-    if (audio_live() && rate && !sfd_audio_done(mv.s)) {
+    if (mv.driving && rate && !sfd_audio_done(mv.s)) {
         double t = (double)audio_stream_consumed(AUDIO_STREAM_MOVIE) / rate;
         mv.audio_active = 1;
         mv.t_audio_end = t;
@@ -216,6 +253,7 @@ int movie_server(void)
         fprintf(stderr, "movie: tick %ld frame %d, audio %.2f s, wall %.2f s, decode %.2f ms/frame (worst %.1f ms)\n", mv.ticks, fr,
                 (double)audio_stream_consumed(AUDIO_STREAM_MOVIE) / AUDIO_RATE, wall_s() - mv.wall0, tot / (fr ? fr : 1), mx);
     }
+    mv.driving = audio_driving();
     rt_prof_begin(RTP_MOVIE_AUDIO);
     audio_feed();
     rt_prof_end(RTP_MOVIE_AUDIO);

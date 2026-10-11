@@ -15,6 +15,44 @@
 #define XBOX_LOG "E:\\Games\\MH1\\mh1log.txt"
 #define TAIL 24
 
+/* xemu: the game's log lines also go out of the first serial port (COM1,
+ * 0x3F8, the LPC47M157 Super I/O xemu emulates; tools/run_xemu.sh starts xemu
+ * with -serial file:xbox_files/xemu_debug.txt), because xemu's blank HDD
+ * image has no E: for the log file. Retail Xbox hardware has no UART there:
+ * the line status register reads 0xFF, so this stays off on hardware (only a
+ * read is made to find out). */
+#define COM1 0x3F8
+static int serial = -1;
+
+static unsigned char port_in(unsigned short p)
+{
+    unsigned char v;
+    __asm__ volatile("inb %1, %0" : "=a"(v) : "Nd"(p));
+    return v;
+}
+
+void xbox_serial_write(const char *s, int n)
+{
+    if (serial < 0) {
+        unsigned char lsr = port_in(COM1 + 5);
+        serial = !(lsr & 0x80) && (lsr & 0x60) == 0x60;    /* idle UART: transmitter empty */
+    }
+    if (!serial)
+        return;
+    while (n-- > 0) {
+        int spin = 100000;
+        while (!(port_in(COM1 + 5) & 0x20) && --spin)
+            ;
+        __asm__ volatile("outb %0, %1" : : "a"((unsigned char)*s++), "Nd"((unsigned short)COM1));
+    }
+}
+
+static void serial_line(const char *s)
+{
+    xbox_serial_write(s, (int)strlen(s));
+    xbox_serial_write("\n", 1);
+}
+
 static void xbox_log_show(void)
 {
     static char lines[TAIL][96];
@@ -65,13 +103,14 @@ void xbox_log_note(const char *msg)
 {
     debugPrint("%s\n", msg);
     fprintf(stderr, "%s\n", msg);
+    serial_line(msg);
 }
 
 /* liveness (the null-graphics build draws nothing else): once a second on the
  * text screen, every 30 s in the log */
 void xbox_log_frame(int frame, unsigned ms)
 {
-    static unsigned shown, logged;
+    static unsigned shown, logged, dlogged;
     if (ms / 1000 != shown) {
         shown = ms / 1000;
         debugPrint("frame %d, %u s\n", frame, shown);
@@ -79,5 +118,11 @@ void xbox_log_frame(int frame, unsigned ms)
     if (ms / 30000 != logged) {
         logged = ms / 30000;
         fprintf(stderr, "alive: frame %d, %u s\n", frame, ms / 1000);
+    }
+    if (ms / 5000 != dlogged) {
+        char b[64];
+        dlogged = ms / 5000;
+        snprintf(b, sizeof b, "alive: frame %d, %u s", frame, ms / 1000);
+        serial_line(b);
     }
 }

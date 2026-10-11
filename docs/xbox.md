@@ -769,6 +769,38 @@ runs hidden on its own Xvfb display (tools/run_xemu.sh, Xvfb unpacked without
 sudo into ~/xboxdev/xvfb/root, Mesa llvmpipe): no window on the owner's
 screen. `tools/run_xemu.sh --gfx nv2a --data disc/mh1 --shot out.png --after 32`
 shows the ACCESS screen; the Xbox boot animation at ~10 s, Sofdec/ADX at ~30 s.
-Open: an earlier run showed only black at 60-100 s (hang or very slow software
-rendering), and the HDD image is blank (E: saves and the log need a formatted
-disk).
+Open: the HDD image is blank (E: saves and the log file need a formatted disk).
+
+### Black screen after the CAPCOM logo in xemu (11 Oct 2026, fixed)
+
+The game's log in xemu: the HDD has no E:, so xbox_log.c also writes the log
+lines (rt_log, notes, "alive: frame N, S s" every 5 s) to COM1. xemu emulates
+the debug kit's LPC47M157 Super I/O when started with `-device lpc47m157
+-serial file:...`, which tools/run_xemu.sh now does: the log is
+xbox_files/xemu_debug.txt. The game checks the UART's line status register
+first (a read only; a retail Xbox has nothing there and reads 0xFF), so
+nothing is written on hardware. `--after "34 36 40"` takes a series of
+screenshots (out_34s.png ...).
+
+What happened: CAPCOM logo at ~33 s, then black for the whole opening movie
+(the demo's own timer, 5625 ticks, then the title). The game was running all
+along (60 frames a second). The movie stayed on its first frame (black)
+because its clock is the audio: nxdk's AC97 driver gets one buffer callback
+in xemu 0.8.136 and then no interrupt (also with `-audio none` or
+SDL_AUDIO_DRIVER=dummy), so the mixer never consumed a sample. That part is
+an xemu limitation (all game audio is silent there). Fix in rt_movie.c: when
+the audio device has an open stream queued but has played nothing of it for
+a second, the movie is timed by the game tick instead (silent), with a log
+warning. That then showed a second bug: with nobody listening, audio_feed
+threw away all queued audio every tick, so sfd_audio_fill read about a
+second of the stream per tick and the unread video piled up (13 MB after 2 s;
+malloc failed and the Xbox stopped with a fatal error 0x1E, a memcpy to
+NULL). The audio is now thrown away only as fast as the movie plays (also
+the PC's headless runs). With both, xemu shows the whole opening movie
+(CAPCOM Presents at ~38 s, the herds, Rathalos, the hunters) and then goes
+on to the title and the logo loop. xemu decodes it at about 20 fps, so it runs
+somewhat slower than real time.
+
+Also seen in that log: nxdk's printf has no floating point (%f is skipped
+without taking its argument, so everything after it in the line is garbage),
+e.g. the summary line and the prof: lines. Not fixed.

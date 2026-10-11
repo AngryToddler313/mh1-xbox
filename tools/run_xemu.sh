@@ -17,7 +17,11 @@
 #             (the game then reports missing files, which already tests the boot).
 #   --shot    after --after seconds (default 60) save a screenshot and quit (ffmpeg x11grab of
 #             the hidden display; xemu 0.8.136 has no QMP screendump).
+#   --after   one time, or a list ("36 40 45 60"): one screenshot at each time since start,
+#             named out_36s.png ... when more than one is given; quits after the last.
 #   --show    run on the desktop instead of hidden (debugging by hand only)
+# The game's log (rt_log lines, notes, a liveness line every 5 s) comes out of the emulated
+# serial port into xbox_files/xemu_debug.txt (src/pc/xbox/xbox_log.c).
 # xemu always opens a window, so by default it runs on its own hidden X display: Xvfb unpacked
 # from the Ubuntu package into ~/xboxdev/xvfb/root (no sudo; `apt-get download xvfb`, `dpkg -x`),
 # OpenGL through Mesa llvmpipe (software, slow). Nothing shows on the owner's screen.
@@ -76,6 +80,11 @@ dvd_path = '$PWD/$ISO'
 TOML
 
 export XDG_DATA_HOME="$HOME_X"
+# the game's log lines go out of the emulated serial port (COM1, src/pc/xbox/xbox_log.c): xemu's
+# blank HDD image has no E: for E:\Games\MH1\mh1log.txt
+DBG="$XF/xemu_debug.txt"; : > "$DBG"
+set -- -device lpc47m157 -serial "file:$DBG"
+[ -n "$SHOW" ] || set -- "$@" -audio none     # hidden runs make no sound
 XVFB=${XVFB:-$HOME/xboxdev/xvfb/root/usr/bin/Xvfb}
 if [ -z "$SHOW" ]; then
     [ -x "$XVFB" ] || { echo "no Xvfb at $XVFB (see the header; or --show to use the desktop)"; exit 1; }
@@ -86,14 +95,28 @@ if [ -z "$SHOW" ]; then
     sleep 2
 fi
 if [ -z "$SHOT" ]; then
-    [ -n "$SHOW" ] && exec "$XEMU"
+    [ -n "$SHOW" ] && exec "$XEMU" "$@"
     trap 'kill $XPID 2>/dev/null' EXIT
-    "$XEMU"
+    "$XEMU" "$@"
     exit
 fi
-"$XEMU" >"$XF/xemu.log" 2>&1 &
+"$XEMU" "$@" >"$XF/xemu.log" 2>&1 &
 PID=$!
-trap 'kill $(pgrep -P $PID) $PID ${XPID:-} 2>/dev/null' EXIT
-sleep "$AFTER"
-ffmpeg -v error -y -f x11grab -i "${DISPLAY:-:0}" -frames:v 1 "$SHOT"
-echo "screenshot: $SHOT"
+# xemu sometimes ignores SIGTERM (11 Oct 2026, left running after the script ended): KILL
+# what is left after 5 s
+stop() {
+    P="$(pgrep -P $PID || :) $PID"
+    kill $P 2>/dev/null || :
+    for i in 1 2 3 4 5; do kill -0 $P 2>/dev/null || break; sleep 1; done
+    kill -9 $P 2>/dev/null || :
+    kill ${XPID:-} 2>/dev/null || :
+}
+trap stop EXIT
+T=0
+for A in $AFTER; do
+    sleep $(( A - T )); T=$A
+    OUT=$SHOT; [ "$A" = "$AFTER" ] || OUT="${SHOT%.png}_${A}s.png"
+    ffmpeg -v error -y -f x11grab -i "${DISPLAY:-:0}" -frames:v 1 "$OUT"
+    echo "screenshot: $OUT"
+done
+echo "game log (serial port): $DBG"
