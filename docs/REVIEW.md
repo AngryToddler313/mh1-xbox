@@ -12,6 +12,14 @@ obvious workarounds.
 
 ## Open
 
+### xemu screenshots: QMP screendump attempt dropped (11 Oct 2026, commit 44bfcddb)
+- **Dropped:** tools/run_xemu.sh first asked xemu for a screenshot over its QMP
+  socket, then fell back to grabbing the whole desktop.
+- **Now:** xemu runs on its own hidden Xvfb display and the screenshot grabs
+  that display. No window on the owner's screen.
+- **Why:** xemu 0.8.136 has no screendump command, and grabbing the desktop
+  meant xemu's window was on the owner's screen.
+
 ### Xbox movies: GPU YUV conversion dropped (11 Oct 2026, commit 7b611983)
 - **Dropped:** gfx_nv2a.c kept one YUY2 texture per movie and let the NV2A
   convert YUV to RGB (`gfx_yuv_capable`, `gfx_create_texture_yuv`,
