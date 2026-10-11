@@ -24,7 +24,8 @@ RELAX = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', 
 FRONT = ['src/pc/viewer.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
          'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/aan.c', 'src/pc/fmt/hits.c',
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
-         'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c']
+         'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c',
+         'src/pc/xbox/xbox_log.c']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
 SKIP = {'rt_mc', 'rt_save', 'rt_symtab', 'rt_memstat'}
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
@@ -158,7 +159,7 @@ def main():
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl
         if f != 'src/pc/rt/rt_memstat.c':
             args += ['-include', 'src/pc/rt/rt_memstat.h']
-        if 'xbox_libc' not in f:
+        if 'xbox_libc' not in f and 'xbox_log' not in f:
             args += ['-include', COMPAT]
         jobs.append((b, args + ['-c', f, '-o', '%s/%s.obj' % (OBJ, b)]))
     res = list(cf.ThreadPoolExecutor(4).map(run, jobs))

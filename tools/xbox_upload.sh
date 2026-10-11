@@ -1,7 +1,7 @@
 #!/bin/bash
 # xbox_upload.sh [--data] : copy build/xbox/default.xbe to the real Xbox over FTP
-# (F:\Games\MH1, or E:\Games\MH1 when the Xbox has no F: partition). --data also
-# copies the game files from disc/mh1 into its data folder (about 925 MB, skipped when the Xbox already has the same size).
+# (E:\Games\MH1, where the game looks; XBOX_DIR=F/Games/MH1 for another folder). --data
+# also copies the game files from disc/mh1 into its data folder (about 925 MB, skipped when the Xbox already has the same size).
 # Login: ~/.netrc ("machine <ip> login .. password ..") or asked for here; never stored.
 set -e
 cd "$(dirname "$0")/.."
@@ -15,12 +15,9 @@ else
 	printf 'machine %s login %s password %s\n' "$XBOX" "$u" "$p" > "$NETRC"
 	AUTH=(--netrc-file "$NETRC")
 fi
-# Evolution X's FTP server has no EPSV; use plain PASV, or active mode (XBOX_FTP_ACTIVE=1)
-AUTH+=(--disable-epsv)
-[ -n "$XBOX_FTP_ACTIVE" ] && AUTH+=(--ftp-port -)
-drives=$(curl -sS "${AUTH[@]}" --list-only "ftp://$XBOX/" | tr -d "\r")
-echo "Xbox drives: $(echo $drives)"
-if echo "$drives" | grep -qxE 'F:?'; then URL=ftp://$XBOX/F/Games/MH1; else URL=ftp://$XBOX/E/Games/MH1; fi
+# Evolution X's FTP server answers 502 to EPSV, PASV and listings: active mode only
+AUTH+=(--ftp-port -)
+URL=ftp://$XBOX/${XBOX_DIR:-E/Games/MH1}
 echo "copying to $URL"
 put() { echo "-> $2"; curl -sS "${AUTH[@]}" --ftp-create-dirs -T "$1" "$URL/$2"; }
 put build/xbox/default.xbe default.xbe

@@ -35,6 +35,8 @@
 #include <string.h>
 #ifdef XBOX
 #include <nxdk/mount.h>
+void xbox_log_start(void);
+void xbox_log_note(const char *msg);
 #endif
 
 /* ------------------------------------------------------------ data */
@@ -1724,6 +1726,8 @@ int main(int argc, char **argv)
                 disc = dirs[d];
             }
         }
+        xbox_log_start();
+        xbox_log_note(disc ? disc : "no AFS_DATA.AFS in D:\\data or E:\\Games\\MH1\\data");
         boot = 1;
         play = 1;
     }

@@ -668,7 +668,7 @@ power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appeari
   and 731 answer. It sits behind a mesh node (ping TTL 63), so a MAC sweep from the laptop never
   shows its MAC; find it on the System Settings page (main menu: 7 downs, A, A) or ping .115.
 - FTP (Evolution X server): passive mode fails (EPSV and PASV both answer 502), active mode
-  works: `XBOX_FTP_ACTIVE=1 tools/xbox_upload.sh --data`. NLST/listing also answers 502, so the
+  works: `tools/xbox_upload.sh --data` (active mode is the default). NLST/listing also answers 502, so the
   script cannot see the drives and copies to E:\Games\MH1 (where the game looks). About
   0.4 MB/s over the laptop's Wi-Fi via the mesh node: ~40 min for the 925 MB of disc files.
   The owner types the login; agents never enter it.
