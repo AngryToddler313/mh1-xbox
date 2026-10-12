@@ -1051,3 +1051,16 @@ known, so not trimmed), audio packs 1.7 MB, host models 3-4 MB, audio streams
 unknown size, kept), the 6 MB vertex ring (gfx_nv2a.c). Load cost to watch:
 monster, NPC and motion files are now read again on area changes and village
 visits.
+
+### First quest loop on the real Xbox (12 Oct 2026)
+
+With the /test loader installed (owner, Xbox at 192.168.1.118 that day), tools/xbox_serve.py
+--input/--env with tools/xemu_quest_loop.sh's input1/env1 ran the whole loop on hardware with
+nobody at the pad: character creation, the house, quest 131, hunt and carve, reward, village
+(money 1500 -> 1550, carved items in the pouch), bed save (owner saw it save). Recording:
+build/show/hw/run1.mp4 (local). Hardware numbers from the game's log (sent by the loader):
+about 30 drawn frames a second in the field and village (890-950 frames per 30 s), no warnings.
+After the save the hunter ended up standing at the Forest and Hills camp; the script had ended,
+so probably one of the run's later RT_* warp aids firing (to check on the PC with the same env).
+Not yet measured on hardware: free memory per stage (the KB-free lines go to the serial port,
+which the retail Xbox lacks), movie decode time, audio.
