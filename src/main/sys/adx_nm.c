@@ -51,7 +51,11 @@ void Adx_init(void) {
 retry:
         while (ADXF_LoadPartitionNw(i, afs_tbl[i].name, 0, afs_tbl[i].size) < 0) {
         }
-        while ((st = ADXF_GetPtStat(i)) != 3) {
+        for (;;) {
+            st = ADXF_GetPtStat(i);
+            if (st == 3) {
+                break;
+            }
             if (st == 4) {
                 goto retry;
             }

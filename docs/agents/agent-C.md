@@ -1478,3 +1478,7 @@ Start: main 42.150% (639224 bytes).
   the original relies on a1 = 1 left from the format check.
 - plCreateInitMotionSetFromAHI 9 -> 4 (store order tmp+2, tmp+4, node, tmp+8); system_hard_init stays 4 (argument load order of
   the last flPS2IopModuleLoad; probably string literals in the source).
+### fl/tx08.c: flPS2GetTextureVramBlock matches (1176 bytes, written fresh from the asm in one go)
+- `int pw, ph` (page size per pixel format; `ph = pw` for the square pages), `s16 w = t->w, h = t->h, n = 0`, `u32 i`,
+  `n += (s16)((((w + (s16)pw - 1) / (s16)pw) * ((h + (s16)ph - 1) / (s16)ph)) << 5); w >>= 1; h >>= 1;` (MWCC unrolls it 8x
+  with divide traps). Operand order inside the first division mattered (w first).
