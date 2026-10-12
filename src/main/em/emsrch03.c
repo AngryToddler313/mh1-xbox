@@ -1,7 +1,4 @@
-/* emsrch03 - monster effect prim set-up and area lookup (SLPM_654.95 0x0010B6C0-0x0010B7E8): em_effect_pull, Em_max_parts_get, Em_area_ck. Whole file in emsrch_nm.c. */
-/* emsrch_nm - SLPM_654.95 0x00109E30-0x0010A200 (g_em_search_set.s): monster target search over the four players
-   (em_search_set), the per-monster "durability" (hit-point) slots (em_dur_init / em_dur_set) and joint matrix
-   accessors (get_joint_pos / wmat / mat, plus the *_em duplicates that tail-call them). Working file. */
+/* emsrch03 - monster effect prim set-up and area lookup (SLPM_654.95 0x0010B6C0-0x0010B7E8): em_effect_pull, Em_max_parts_get, Em_area_ck. */
 #include "types.h"
 #include "em.h"
 #include "pl.h"

@@ -29,7 +29,6 @@ static void once(const char *n) { rt_log_standin(n); if (getenv("RT_TRACE")) fpr
 #define PF(p, o) (*(f32 *)((u8 *)(p) + (o)))
 #define PP(p, o) (*(void **)((u8 *)(p) + (o)))
 
-extern s16 *em_dur_tbl[];
 void rt_motion_attach(void *w);
 void *Stage_data_get(int);
 
@@ -432,16 +431,6 @@ WEAK void net_receive_em_act(EMW *em) { (void)em; }
 WEAK void net_send_em(EMW *em, int a, int b) { (void)em; (void)a; (void)b; }
 
 /* ------------------------------------------------ callees of em01 AI / em_cmd / Em_Dmg_Sys */
-/* em_dur_set (main 0x10A0F0): refill part n's durability (+0x308 of the
- * 8-byte part slot) from em_dur_tbl[kind][n], if the part is on. */
-void em_dur_set(EMW *em, int n)
-{
-    u8 *e = (u8 *)em + 8 * n;
-    if ((unsigned)n >= 9 || e[0x304] == 0)
-        return;
-    *(s16 *)(e + 0x308) = em_dur_tbl[em->kind][n];
-}
-
 /* GetWaterData (main 0x16AB80): byte +0xC of the ground entry the work
  * stands on (ground_tbl_add[stage +0x736][+0x70C]): non-zero = water.
  * em_cmd_water_ck calls it with no arguments (a0 = em left over); its

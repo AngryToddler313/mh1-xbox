@@ -12,6 +12,25 @@ obvious workarounds.
 
 ## Open
 
+### f_pl as one file; em_dur_set's host copy; rodata slots renamed .data (12 Oct 2026, agent B)
+- **Dropped:** the 57 per-run files of the player file f_pl (src/main/pl/pl01..pl48.c, plx03/04/09/12.c,
+  pl_wall.c, pldmv.c, plegg.c, plegg2.c, pl_demo.c) and their 57 text / 17 rodata lines in config/c_files.txt;
+  in src/main/pl/pl_nm.c the near-match copies of player_init0, pl_work_clr, pl_dm_value_sub, wall_act_ck,
+  wall_vec_set, pl_mv060, pl_at009, pl_at012, pl_demo000, egg_com_ck, pl_egg03 (stale: matched C existed) and of
+  the nine functions matched now; the host em_dur_set in src/pc/rt/rt_em.c; emsrch01.c / emsrch02.c (now
+  em/emsrch.c).
+- **Now:** src/main/pl/f_pl.c is the whole file (0x134950-0x14D1C8) as one TU, byte-identical, with six functions
+  kept as original bytes (c_rawfuncs). The PC build compiles it with its statics made global (sed in
+  tools/build_pc.sh) so pl_nm.c's remaining near-matches call it. The PC runs the game's em_dur_set C (near-match,
+  emsrch_nm.c) instead of the host's copy. tools/build.py split_rodata_objects also handles objects whose rodata
+  is renamed .data (a rodata slot in a data region) when they have several slots. include/plf.h: blend_calc
+  takes s8, blend_set u16 (proven by the callers' code).
+- **Why:** functions of one original source file compile differently alone (MWCC uses what it knows about earlier
+  functions of the same file); as one file nine more player functions match. Fewer, truer files.
+- **Cost / to watch:** the PC's player code now comes from one object; a behaviour change in the player would
+  point here first (all PC tests passed: quest_loop, progression, urgent, activities, save, soak, all_quests).
+  Revert: the commit "f_pl: the player file as one TU".
+
 ### Host caches kept for the whole run replaced by frees at stage loads (12 Oct 2026, agent F)
 - **Dropped:** monster models cached per kind (em_kind_model), village NPC
   models, the common motion files (plcom / lbcom / selcom) and the NPC

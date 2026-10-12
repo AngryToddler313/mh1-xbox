@@ -85,6 +85,7 @@ main 0x187DF0 0x21c flPS2GetTextureInfoFromContext
 main 0x188330 0xf0 flPS2GetVramTransAdrs
 main 0x188570 0x178 flPS2GetPaletteInfoFromContext
 main 0x192E40 0x80 plFCVFcurveInterpolateHermite
+main 0x0010A0F0 0x58 em_dur_set
 main 0x00280D50 0xFC McActAvailSet
 main 0x00276170 0xCF4 DispFrameMessageA
 main 0x002785E0 0x2D8 disp_chat_log_sub
@@ -139,3 +140,9 @@ lobby 0x0059BD50 0x598 plaza_mailBoxTrans
 lobby 0x0059C330 0x328 plaza_setMyCommentTrans
 lobby 0x0059C750 0x548 plaza_setChatModeTrans
 lobby 0x0059D320 0x358 plaza_trans_ot0
+main 0x135B00 0x6A4 timer_calc_sub_pl
+main 0x1398F0 0x940 basic_com_ck
+main 0x13B8D0 0x3DC pl_mv021
+main 0x147E10 0x240 pl_dm003
+main 0x148780 0xE8 pl_dm008
+main 0x14C500 0x860 pl_move_sub

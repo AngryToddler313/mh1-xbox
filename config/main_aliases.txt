@@ -80,3 +80,5 @@ g2jodo = 0x0023FF10;
 kouho_set_num = 0x00246DA0;
 bytesin_kana_buf = 0x002492C0;
 get_kouhostr = 0x00249630;
+pl_ride_ck = 0x00137000;   /* f_pl.c static, named in the data (action tables) */
+pl_mv083 = 0x00140100;     /* f_pl.c static, named in the data */

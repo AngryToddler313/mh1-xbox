@@ -1066,3 +1066,58 @@ Details in docs/network.md 3.5 and 5.8. Notes:
   mh1_testserver.py and get the store through those hooks.
 - A client whose run function is backgrounded (`run ... &`) is a subshell: killing its PID leaves the game running.
   Use `timeout -s KILL N` to crash a client in a test.
+
+## Gameplay round (agent B, 12 Oct 2026): emsrch and f_pl as whole-file TUs
+Assignment: raise main's matched share on the gameplay side (pl, em, emw, weapon, item, quest, hit, set, eft, npc, stage,
+game, cam, reward, menu, plsel). Scratch work lives in build/bscr/ (gitignored; NOT in src/: rebuild.sh compiles every
+src/**/*.c, a broken scratch file there fails the module).
+- em/emsrch.c (0x109E30-0x10A208): one TU replacing emsrch01/02. em_search_set matches (the angle test needs a temp
+  `t = ((calc_vec_ang(..) & 0xFFFF) - 0x4000) & 0xFFFF` (the permuter found it as an inline helper), the tie test is
+  if / else if with one shared `best = i`, `return (u8)best`). em_dur_set stays raw (2 of 22 off: the table address lands
+  in v1, the original reuses a0; spellings, inline helpers and a 10-minute permuter run did not get it). The PC now runs
+  that near-match C (emsrch_nm.c via PICK_X) instead of the host copy in rt_em.c (removed).
+- pl/f_pl.c (0x134950-0x14D1C8, 224 functions): ONE TU replacing 57 run files (pl01..pl48, plx03/04/09/12, pl_wall,
+  pldmv, plegg, plegg2, pl_demo). Assembled by tools/mktu.py from the run files in address order (dedups
+  top-level declarations, generates the file's own prototypes from the definitions, `static` for LOCAL symbols, adds
+  the unused second argument to handlers the dispatchers call as (pl, 0)). Everything that matched as runs still
+  matches in the TU; newly matched: pl_at009, pl_at012 (they need blend_set defined earlier in the same file),
+  gun_adj_sub, sougun_adj_sub, pl_turn_sub, pl_horm_sub, pl_egg05, em_ninshiki_ck, pl_at008.
+  Still raw (c_rawfuncs + near-match in pl_nm.c): timer_calc_sub_pl, basic_com_ck, pl_mv021, pl_dm003, pl_dm008,
+  pl_move_sub.
+- Link rules met on the way: two statics are named in the data (pl_ride_ck, pl_mv083: aliases in main_aliases.txt);
+  the TU has 25 jump-table sections with asm data between them (basic_com_ck's raw tables), i.e. one
+  `main:rodata` line per section; main's slots lie in a data region, so the object's rodata is renamed .data and
+  tools/build.py split_rodata_objects now also maps the k-th renamed .data section to the k-th slot (it only knew .rodata).
+- PC: f_pl.c is in MATCHED_A and compiled with `s/^static //` (its statics global) so pl_nm.c's near-matches of the raw
+  functions call the TU's functions; pl_nm.c lost its stale copies of every function the TU now matches.
+Matching lessons (function that shows it):
+- `#pragma opt_propagation off` around a function: the original negates a constant-initialised s8 at run time
+  (dsll32/dsra32/negu) where our build folds it (gun_adj_sub, sougun_adj_sub). Same family as normal_char_set's
+  opt_common_subs.
+- A callee's parameter type shows in the CALLER: blend_calc(PLW *, s8) (no extension of an s8 argument at the call,
+  `+=` in the body so the callee does not extend either), blend_set(PLW *, u16, u16) (pl_at008's table halfwords are
+  passed with lhu). Fixed in include/plf.h.
+- `v = (s8)v;` after `if (c) v = -v;` reproduces the original's second sign extension at the join (gun_adj_sub).
+- A u16 step variable used as `x -= r` / `x += r` (compound) has no andi; `x = x - r` re-masks it (pl_turn_sub).
+- Field read as lhu where PLW declares s16: `*(u16 *)&pl->ang_y`, `#define W81A (*(u16 *)&pl->work81A)`; the compound
+  `W81A -= 0x400` reloads it where `W81A = W81A - 0x400` reuses an earlier load (pl_horm_sub).
+- `beq ...; <delay>; nop` followed by the fall-through code = a switch with `default:` first (pl_egg05: `switch (arg1)
+  { default: ...; case 1: ... }` instead of if/else).
+- Var-var compare form: `if (t <= ang) W = ang; else W = t;` gave the original `slt at` + branch sense where the other
+  five spellings did not (pl_horm_sub).
+- Open: in pl_dm003, pl_dm008 and pl_mv021 the original reloads a0 = pl (daddu a0,s0) at the start of a switch's
+  DEFAULT block (fall-through after the compare chain) but not in the case blocks; our build keeps a0. Tried default
+  first/last, shared/separate case bodies, if/else, goto, K&R definition, a 10-minute permuter run: no change.
+Tools (all standard library, run from the worktree root):
+- tools/mktu.py MODULE START END OUT.c [NM.c..]: whole-file TU from the registered runs (+ near-match files for the
+  unmatched functions); env TU_RENAME (header prototypes to keep out), TU_DROP (declarations to drop, regex|regex),
+  TU_ADDARG (handlers called with an extra argument), TU_RAW (functions to emit as c_rawfuncs `asm` stubs).
+- tools/tu_subnm.py TU.c NM.c OUT.c: the TU with its raw stubs replaced by the near-match C (scratch copy to work on).
+- tools/tryfn.py BASE.c FUNC VARIANT.c..: compile BASE with FUNC replaced by each variant, print the real difference
+  count; tools/align.py build/_tryfn.c FUNC then shows the last variant's hunks.
+- tools/tu_put.py TU.c NM.c NAME VARIANT.c "comment": put a matched variant into the TU in place of its raw stub
+  (static if LOCAL), drop the c_rawfuncs line and the near-match copy.
+- tools/realdiff.py FILE.c: differing functions only, ignoring check.py's unnamed overlay-call false positives.
+- tools/rodmap.py OBJ MODULE: one `MODULE:rodata` slot line per .rodata section of a compiled TU (original address
+  from the lui/addiu pair of the matched function that uses it).
+- tools/rmfn.py FILE NAME..: delete function definitions (and the comment block above) from a near-match file.

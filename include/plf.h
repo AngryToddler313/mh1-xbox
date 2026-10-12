@@ -138,8 +138,8 @@ s32 em_ninshiki_ck2(PLW *);
 s32 func_639DD0(PLW *);
 int pl_ride_ck(PLW *);
 s32 shell_chg_ck(PLW *);
-void blend_calc(PLW *, int);
-void blend_set(PLW *, s16, s16);
+void blend_calc(PLW *, s8);   /* s8: gun_adj_sub passes v without extending it */
+void blend_set(PLW *, u16, u16);   /* u16: pl_at008 passes table halfwords loaded with lhu */
 void scope_add(PLW *, int);
 void gun_adj_sub(PLW *);
 void sougun_adj_sub(PLW *, u16);

@@ -69,7 +69,7 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/game/eft/eft04_nm.c \
      src/game/shell/shell12.c src/game/shell/shell13.c src/game/shell/shell14.c src/game/shell/shell15.c \
      src/game/shell/shell16.c src/game/shell/shell17.c src/game/shell/shell18.c src/game/shell/shell19.c \
      src/game/shell/shell20.c src/game/shell/shell21.c src/game/shell/shell22_nm.c src/game/shell/shell23.c"
-# Player code (f_pl, agent F): every matched plNN.c plus pl_nm.c (the
+# Player code: f_pl.c (MATCHED_A, the f_pl file), the other matched plNN.c and pl_nm.c (the
 # near-matches: pl_move_sub, pl_turn_sub, basic_com_ck, ...).
 PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/pl/pl_normal.c \
     src/main/pl/normal_char_set.c src/main/pl/pl_stg_ck_tw.c \
@@ -262,7 +262,7 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_dur_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 # the matched cp math library (cp01-cp03, agent B 8 Oct)
 GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 # Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
@@ -270,8 +270,7 @@ GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 MATCHED_A="src/main/eft/eft02.c \
     src/main/eft/eft02b.c \
     src/main/eft/eft20b.c \
-    src/main/em/emsrch01.c \
-    src/main/em/emsrch02.c \
+    src/main/em/emsrch.c \
     src/main/em/emsrch03.c \
     src/main/emw/ems01.c \
     src/main/emw/emt02.c \
@@ -300,27 +299,19 @@ MATCHED_A="src/main/eft/eft02.c \
     src/main/item/item04.c \
     src/main/model/light01.c \
     src/main/model/light02.c \
+    src/main/pl/f_pl.c \
     src/main/pl/pl_ammo.c \
-    src/main/pl/pl_demo.c \
     src/main/pl/pl_flagck.c \
     src/main/pl/pl_itemck.c \
     src/main/pl/pl_snd01.c \
-    src/main/pl/pl_wall.c \
-    src/main/pl/pldmv.c \
-    src/main/pl/plegg.c \
-    src/main/pl/plegg2.c \
     src/main/pl/plx01.c \
     src/main/pl/plx02.c \
-    src/main/pl/plx03.c \
-    src/main/pl/plx04.c \
     src/main/pl/plx05.c \
     src/main/pl/plx06.c \
     src/main/pl/plx07.c \
     src/main/pl/plx08.c \
-    src/main/pl/plx09.c \
     src/main/pl/plx10.c \
     src/main/pl/plx11.c \
-    src/main/pl/plx12.c \
     src/main/quest/f_quest.c \
     src/main/quest/f_quest01.c \
     src/main/quest/f_quest02.c \
@@ -611,10 +602,11 @@ for f in $GAME; do
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef char \*va_list;/#include <stdarg.h>/; s/^#include "va.h"/#include <stdarg.h>/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
-    # item_action_set calls Get_Active_itemnum() with a0 = pl left over
-    src/main/pl/pl10.c)
+    # item_action_set calls Get_Active_itemnum() with a0 = pl left over; the file's static functions are global
+    # on the PC so that pl_nm.c's near-matches of the 13 raw functions call these (pl_nm.c holds no copies of them)
+    src/main/pl/f_pl.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
-        sed 's/(s16)Get_Active_itemnum()/(s16)Get_Active_itemnum(pl)/' "$f" > "$src"
+        sed 's/(s16)Get_Active_itemnum()/(s16)Get_Active_itemnum(pl)/; s/^static //' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     # lobby C that gcc rejects as is: a 128-bit quadword copy (lq/sq on the
     # PS2), a static that the header declares global, a call without the

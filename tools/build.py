@@ -241,25 +241,30 @@ def main():
 def split_rodata_objects(module):
     """An object whose .rodata sections are interleaved with other objects' rodata in the linker script (one slot per
     original function, e.g. a merged TU) gets its k-th .rodata section renamed .rodata.k in a copy under build/rn/ and
-    the k-th script entry pointed at it. Returns the script path to link with."""
+    the k-th script entry pointed at it. Returns the script path to link with.
+    The same for an object whose rodata is renamed .data (config/c_renames.txt, a rodata slot in a data region) and
+    which has several slot entries: its k-th .data section goes to the k-th entry (such objects have no other .data)."""
     import re, struct
     ld = os.path.join(ROOT, "build/%s.ld" % module)
     lines = open(ld).read().split("\n")
-    pat = re.compile(r"^(\s*)(build/\S+\.c\.o)\(\.rodata\);\s*$")
-    cnt = {}
-    for l in lines:
+    pat = re.compile(r"^(\s*)(build/\S+\.c\.o)\((\.rodata|\.data)\);\s*$")
+    rn_data = set(o for o, ren in RENAMES.items() if (".rodata", ".data") in ren) if isinstance(RENAMES, dict) else set()
+    def match(l):
         m = pat.match(l)
-        if m:
-            cnt[m.group(2)] = cnt.get(m.group(2), 0) + 1
+        if m and (m.group(3) == ".data") == (m.group(2) in rn_data):
+            return m
+        return None
+    secname = {}
     multi = set()
-    last = None
     prev = {}
     for i, l in enumerate(lines):
-        m = pat.match(l)
+        m = match(l)
         if m:
             o = m.group(2)
+            secname[o] = m.group(3)
             # interleaved: another rodata entry (any object) sits between two entries of the same object
-            if o in prev and prev[o] != i - 1 and any("(.rodata" in x and o not in x for x in lines[prev[o] + 1:i]):
+            if o in prev and prev[o] != i - 1 and any(("(.rodata" in x or "(.data" in x) and o not in x
+                                                      for x in lines[prev[o] + 1:i]):
                 multi.add(o)
             prev[o] = i
     if not multi:
@@ -269,12 +274,12 @@ def split_rodata_objects(module):
         for o in multi:
             if "\t" + o + "(" in l or " " + o + "(" in l:
                 lines[i] = l = l.replace(o, o.replace("build/", "build/rn/", 1))
-        m = pat.match(l.replace("build/rn/", "build/", 1))
+        m = match(l.replace("build/rn/", "build/", 1))
         if m and m.group(2) in multi:
             o = m.group(2)
             k = seen.get(o, 0)
             seen[o] = k + 1
-            lines[i] = "%s%s(.rodata.%d);" % (m.group(1), o.replace("build/", "build/rn/", 1), k)
+            lines[i] = "%s%s(%s.%d);" % (m.group(1), o.replace("build/", "build/rn/", 1), secname[o], k)
     for o in multi:
         src = os.path.join(ROOT, o)
         dst = os.path.join(ROOT, o.replace("build/", "build/rn/", 1))
@@ -289,9 +294,9 @@ def split_rodata_objects(module):
         k = 0
         for h in hdr:
             nm = tab[h[0]:tab.index(b"\0", h[0])]
-            if nm == b".rodata":
+            if nm == secname[o].encode():
                 h[0] = len(tab) + len(add)
-                add += (".rodata.%d" % k).encode() + b"\0"
+                add += ("%s.%d" % (secname[o], k)).encode() + b"\0"
                 k += 1
         while len(d) % 4:
             d.append(0)
