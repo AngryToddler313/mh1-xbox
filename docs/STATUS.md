@@ -866,3 +866,11 @@ xemu HDD (tools/xbox_fatx.py), pdclib fixes (fopen w+/r+, sscanf floats), hunter
 (village 10 MB free -> 6 MB after one loop); a helper is on it in worktree F. Audio untestable in
 xemu (AC97 stalls). Next on hardware: run the same loop on the real Xbox (needs input.txt in
 E:\Games\MH1\data, i.e. one FTP copy or a loader that fetches it).
+
+12 Oct (b494a2ff, rebuild OK x5, all 22 PC tests incl. the new test_soak + online, both Xbox builds):
+worker F memory round merged: free memory flat over quest loops (xemu: village 16.5 MB, after
+quest 3 15.8 MB; was 10 -> 6 MB after one loop). 2D texture GC, motion/NPC file GC, host model
+GC, collision areas 1 MB -> 288 KB. Gameplay bugs fixed on the way: village motions overwrote
+the hunter's weapon motions (rebuilt per quest now), second delivery quest cleared at once
+(delivery stock reset at quest start). Soak tests: tools/test_soak.sh, tools/xemu_soak.sh.
+Open: ~130 KB/loop still lost in xemu only (allocator?). Recording: run_xemu.sh --record.
