@@ -1498,3 +1498,10 @@ Start: main 42.150% (639224 bytes).
 - Parked (raw): mode_sel (case ladder order of the nested switch), disp_mode_menu (index arithmetic/registers),
   disp_omake_menu (original reloads omake_str[i] after strlen; `#pragma opt_intrinsicfunctioncallscanhavesideeffects on`
   and other strlen prototypes did not bring it back).
+### fl/fltex02.c registered (0x18AC90-0x18B3B0): PageConv4to32 / PageConv8to32 match; 4 raw holdouts
+- The old near-match PageConv* was WRONG, not just unmatched: it stepped one buffer row (64/128 bytes) per block row
+  where the original steps 16 rows. Matching form: `for (tp = block_table4, by = 0; by < 8; by++) for (bx ..)
+  BlockConv4to32(buf + ((by * 16) << 6) + bx * 16, dst + bw * (idx32_v[t] << 11) + (idx32_h[t] << 5), bw);`
+  (the `(by * 16) << 6` keeps by*16 as its own induction register). Not linked on PC.
+- Parked: Conv4to32/Conv8to32 (28 lines, d and the stride register swap; declhill2 order kept), BlockConv8to32 (the
+  original steps e after every pair: no C form found that stops MWCC merging the steps), BlockConv4to32.

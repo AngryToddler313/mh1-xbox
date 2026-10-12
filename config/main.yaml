@@ -721,7 +721,7 @@ segments:
       - [0x08A4E8, asm, text/flPS2ConvertTextureFromContext]
       - [0x08A4F0, c, fl/tx10]
       - [0x08A914, asm, text/flPS2ConvertContext]
-      - [0x08B3A4, asm, text/g_flPS2VramInit]
+      - [0x08AC90, c, fl/fltex02]
       - [0x08B3B0, c, fl/vr01]
       - [0x08BAE0, asm, text/flPS2SearchVramChange]
       - [0x08BD90, c, fl/flsys02]
