@@ -52,23 +52,25 @@ void release_tex_all(void) {
 
 void light_change_normal(int n) {
     u8 *w = light_work + n * 0x140;
-    u8 *tbl = pl_light_tbl + 8;
     f32 *s;
 
-    s = *(f32 **)(tbl + game_w.stage * 0x14);
+    s = *(f32 **)(pl_light_tbl + game_w.stage * 0x14 + 8);
     *(f32 *)(w + 0x1C) = s[0];
     *(f32 *)(w + 0x20) = s[1];
-    s += 2;
+    s++;
+    s++;
     *(f32 *)(w + 0x24) = s[0];
-    s = (f32 *)(*(u8 **)(tbl + game_w.stage * 0x14) + 0x10);
+    s = *(f32 **)(pl_light_tbl + game_w.stage * 0x14 + 8) + 4;
     *(f32 *)(w + 0x84) = s[0];
     *(f32 *)(w + 0x88) = s[1];
-    s += 2;
+    s++;
+    s++;
     *(f32 *)(w + 0x8C) = s[0];
-    s = (f32 *)(*(u8 **)(tbl + game_w.stage * 0x14) + 0x20);
+    s = *(f32 **)(pl_light_tbl + game_w.stage * 0x14 + 8) + 8;
     *(f32 *)(w + 0xEC) = s[0];
     *(f32 *)(w + 0xF0) = s[1];
-    s += 2;
+    s++;
+    s++;
     *(f32 *)(w + 0xF4) = s[0];
 }
 

@@ -1450,3 +1450,19 @@ Start: main 42.150% (639224 bytes).
 - `for (i = 0; i < n; i++) { if (i >= num) break; q += align(p, 0x30); q += *(u32 *)r; r = q; } return r;` with the locals declared
   `int i; u8 *p = q; u8 *r;` (that order). GetTim2ClutData (2: an extra `b` before the return-0 block) and CheckTIM2FileHeader (the
   original keeps the dead CLT2 compare chain; every if/else/goto/switch shape tried) stay raw.
+### sound/hdmerge.c HdMerge (0x21E310, 4280 bytes; Sony .hd bank merger) - in progress
+- Written from the asm with typed structs (sdhd-style). Notes that got the structure to 0 differences:
+  - struct copies in the original are member-wise lw/lhu/lbu/lb copies through two LOCAL pointers loaded once
+    (`{ T *d; T *s; s = SrcHd[0].x; d = DstHd.x; d->a = s->a; ... }`); a struct assignment `*d = *s` gives lwc1/swc1 block copies.
+  - `SrcHd[i].field` with `src[i]` (compiler IVs created after the loop pretest) instead of `for (i = 0, s = SrcHd; ...; s++)`.
+  - `o + (s32)base` (int first) for record addresses; `p + o` is canonicalised to base+o.
+  - `q = (u8 *)DstHd.prog->offset; q += (max + 1) * 4;` (two statements; one expression gets reassociated).
+- Register allocation: one `u8 *q` reused for all chunks gave 465 differing instructions; a SEPARATE pointer variable per chunk
+  (q0..q4) gave 329, a separate `base` per chunk 302. LESSON: when one C variable is reused in independent sections of a long
+  function, MWCC's colouring follows the variable; the original source apparently had distinct variables per section.
+  A greedy search over which variables to split per section is running (scratch scripts split1.py/greedy.py).
+### sound/bgm05.c: em_status_ck matches (0x21D470, file-static in the original, own run now)
+- The second loop reuses the first loop's variables: `e = player_work; for (i = 0; ...; i++) { ... e += 0xA00; }` (same `s16 i`,
+  same `u8 *e` as the monster loop); separate `p`/`j` locals gave the original instructions with other registers.
+  Same change in bgm_nm.c (PC build). Also light_nm.c light_change_normal 39 -> 17 (`s++; s++;` instead of `s += 2`; the +8 of the
+  table row inline), mcact_nm.c McActAvailSet: `sz += (n + 1) / 2; f->blocks = sz + 2;` (registers still differ).

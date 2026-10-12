@@ -589,7 +589,8 @@ void McActAvailSet(s32 *img)
             n++;
         }
     }
-    f->blocks = sz + (n + 1) / 2 + 2;
+    sz += (n + 1) / 2;
+    f->blocks = sz + 2;
 }
 
 void mc_icon_sys_set(w)

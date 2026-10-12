@@ -1264,7 +1264,7 @@ segments:
       - [0x11BF50, asm, text/eft20_pos_set]
       - [0x11CD40, c, eft/eft20d]
       - [0x11D464, asm, text/em_status_ck]
-      - [0x11D470, asm, text/f_adx]
+      - [0x11D470, c, sound/bgm05]
       - [0x11D5E0, c, sound/bgm01]
       - [0x11DBE0, c, sound/bgm03]
       - [0x11DDC0, c, sound/bgm02]
