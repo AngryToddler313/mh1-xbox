@@ -11,7 +11,11 @@
  *    water, ceiling and lava polygons, GetWallHitLine/GetEyeHitLine line of
  *    sight, GetFloorSlide the slide on steep floors, HitWallPlayer the per
  *    entity wall pass. Names are the original symbols; meanings are guesses
- *    from the code. */
+ *    from the code.
+ * 25 of the 34 functions match; the 9 others are kept as original bytes on the
+ * PS2 (config/c_rawfuncs.txt) with their near-match C in the #else branch,
+ * which the PC/Xbox build compiles. Data tables (slide_tbl, push00, the three
+ * initialised offset tables @180/@425/@638) are still in the asm data. */
 #include "types.h"
 #include "hit3.h"
 #include "game.h"
@@ -55,9 +59,14 @@ typedef struct WMAT {
 typedef struct HENT {
     u8 _pad000[2];
     u8 kind;            /* 0x002 */
-    u8 _pad003[0x10 - 3];
+    u8 _pad003[0xC - 3];
+    u16 x0C;            /* 0x00C player index (row of pl_wall_mat) */
+    u8 _pad00E[0x10 - 0xE];
     u8 mon;             /* 0x010 non-zero: monster */
-    u8 _pad011[0xA4 - 0x11];
+    u8 _pad011[0x14 - 0x11];
+    u8 x14;             /* 0x014 zero, with x15 in 0x27-0x2B: wall mask 0x7FFF (GetWallHitBitPl) */
+    u8 x15;             /* 0x015 */
+    u8 _pad016[0xA4 - 0x16];
     s32 ang_y;          /* 0x0A4 */
     u8 _pad0A8[4];
     f32 pos[3];         /* 0x0AC */
@@ -128,7 +137,7 @@ int GroundFieldInCheck(f32 *);
 int WallFieldInCheck(f32 *);
 s32 *GetWallTblAdrs(f32 *);
 s32 *GetGroundTblAdrs(f32 *);
-void GetWallHitBitPl(f32, f32 *, int, void *);
+void GetWallHitBitPl(f32, f32 *, u16, HENT *);
 void GetWallHitBitEm(f32, f32 *, u16, void *);
 static void WallHitInit(u32 *);
 static void GroundHitInit(u32 *);
@@ -161,7 +170,6 @@ static void WallHitInit(u32 *h) {
     u32 j;
     s32 **cell;
     int k;
-    s32 *p;
 
     diorama_w.wcsx = h[2];
     diorama_w.wcsz = h[3];
@@ -173,13 +181,8 @@ static void WallHitInit(u32 *h) {
         for (j = 0; j < *(u32 *)(base + 0xC); j++) {
             cell = &diorama_w.wtbl[j + i * *(u32 *)(base + 0xC)];
             *cell = (s32 *)((u8 *)*cell + (s32)base);
-            k = 0;
-            if (**cell != -1) {
-                do {
-                    p = (s32 *)((u8 *)*cell + k);
-                    k += 4;
-                    *p = (s32)((u8 *)*p + (s32)diorama_w.warea);
-                } while (*(s32 *)((u8 *)*cell + k) != -1);
+            for (k = 0; (*cell)[k] != -1; k++) {
+                (*cell)[k] += (s32)diorama_w.warea;
             }
         }
     }
@@ -191,7 +194,6 @@ static void GroundHitInit(u32 *h) {
     u32 j;
     s32 **cell;
     int k;
-    s32 *p;
 
     diorama_w.gcsx = h[2];
     diorama_w.gcsz = h[3];
@@ -203,13 +205,8 @@ static void GroundHitInit(u32 *h) {
         for (j = 0; j < *(u32 *)(base + 0xC); j++) {
             cell = &diorama_w.gtbl[j + i * *(u32 *)(base + 0xC)];
             *cell = (s32 *)((u8 *)*cell + (s32)base);
-            k = 0;
-            if (**cell != -1) {
-                do {
-                    p = (s32 *)((u8 *)*cell + k);
-                    k += 4;
-                    *p = (s32)((u8 *)*p + (s32)diorama_w.garea);
-                } while (*(s32 *)((u8 *)*cell + k) != -1);
+            for (k = 0; (*cell)[k] != -1; k++) {
+                (*cell)[k] += (s32)diorama_w.garea;
             }
         }
     }
@@ -217,129 +214,152 @@ static void GroundHitInit(u32 *h) {
 
 /* GetWallHitBitPl: 2 x 2 cells, player wall mask 0x7FFF (stage 0x27-0x2B in
  * the arena: 0xFFFF otherwise). r is the player radius. */
-void GetWallHitBitPl(f32 r, f32 *seg, int mask, void *pl) {
+/* GetWallHitBitPl: original bytes kept (build/raw/GetWallHitBitPl.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (51 lines off, tools/align.py). */
+#ifdef __MWERKS__
+asm void GetWallHitBitPl(f32 r, f32 *seg, u16 mask, HENT *pl)
+{
+#include "GetWallHitBitPl.inc"
+}
+#else
+void GetWallHitBitPl(f32 r, f32 *seg, u16 mask, HENT *pl) {
+    HV3 c;
     HSWEEP sw;
-    f32 q[8];
-    f32 p[2][2];
-    f32 pt[3];
-    HPOLY *ring[20];
-    u8 flag = 0;
-    int nr = 0;
-    int nh = 0;
-    int found = 0;
-    int ix, iz, i;
+    HPOLY *seen[20];
+    f32 ofs[8] = { -1.0f, -1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f };
+    u8 flag;
+    int m;
+    int i;
+    int cx;
+    int cz;
     int quad;
-    int ix0, iz0;
-    u32 m2;
+    int k;
+    int j;
+    int found;
+    int nseen;
+    int nwall;
+    HPOLY *hp;
+    HPOLY **cell;
     f32 *pos;
-    s32 *cp;
-    HPOLY *poly;
-    int n;
-    int sp;
-    WMAT *wm;
-    s8 a;
-    u16 ang;
-    WMAT t;
+    u16 wm;
+    u8 n;
+    HPOLY *hp2;
+    u8 special;
+    s8 w;
+    u32 dir;
+    u16 f;
+    u8 kd;
+    u16 a;
+    f32 *nn;
 
-    for (i = 0; i < 8; i++) q[i] = lit_180_002E85D0[i];
-    if (WallFieldInCheck(seg + 3) == 0) return;
+    flag = 0;
+    if (!WallFieldInCheck(seg + 3)) return;
     hit_poly_num = 0;
     hited_poly_num = 0;
-    pos = (f32 *)((u8 *)pl + 0xAC);
-    sw.p0[0] = seg[3];
-    sw.p0[1] = seg[4];
-    sw.p0[2] = seg[5];
-    sw.p1[0] = seg[0];
-    sw.p1[1] = seg[1];
-    sw.p1[2] = seg[2];
+    *(HV3 *)sw.p0 = *(HV3 *)(seg + 3);
+    *(HV3 *)sw.p1 = *(HV3 *)seg;
+    nseen = 0;
+    nwall = 0;
+    found = 0;
+    pos = pl->pos;
     sw.r = r;
     sw.w20 = 1;
     sw.w22 = 1;
     sw.len = flvecCalcDistance(sw.p0, sw.p1);
-    if (EF(pl, u8, 0x14) != 0 || EF(pl, u8, 0x15) < 0x27 || EF(pl, u8, 0x15) >= 0x2C) {
-        m2 = 0xFFFF;
+    if (pl->x14 != 0 || pl->x15 < 0x27 || pl->x15 > 0x2B) {
+        wm = 0xFFFF;
     } else {
-        m2 = 0x7FFF;
+        wm = 0x7FFF;
     }
     quad = BlockPlaceCgeck(seg + 3);
-    ix0 = (int)(seg[3] / (f32)(u32)diorama_w.wcsx);
-    iz0 = (int)(seg[5] / (f32)(u32)diorama_w.wcsz);
-    for (ix = 0; ix < 2; ix++) {
-        for (iz = 0; iz < 2; iz++) {
-            pt[0] = (f32)(u32)diorama_w.wcsx * ((f32)ix0 + q[quad * 2]);
-            pt[2] = (f32)(u32)diorama_w.wcsz * ((f32)iz0 + q[quad * 2 + 1]);
-            pt[0] += (f32)(((u32)diorama_w.wcsx >> 1) + (u32)diorama_w.wcsx * ix);
-            pt[2] += (f32)(((u32)diorama_w.wcsz >> 1) + (u32)diorama_w.wcsz * iz);
-            if (WallFieldInCheck(pt) == 1) {
-                cp = GetWallTblAdrs(pt);
-                if (*cp != -1) {
-                    do {
-                        poly = (HPOLY *)*cp;
-                        if (!((mask & 0xFFFF) & (poly->h2 & m2))) {
-                            if (nr != 0) {
-                                found = 0;
-                                for (i = 0; i < nr; i++) {
-                                    if (poly == ring[i]) found = 1;
-                                }
-                            }
-                            if (nr == 0 || found == 0) {
-                                if (nh != 0) {
-                                    found = 0;
-                                    for (i = 0; i < nh; i++) {
-                                        if (poly == hit_wall[i]) found = 1;
-                                    }
-                                }
-                                if (found == 0) {
-                                    if (sphr_face_o3(&sw, poly, pos) != 0) {
-                                        hit_wall[nh++] = poly;
-                                    }
-                                    ring[nr++] = poly;
-                                    if (nr >= 0x14) nr = 0;
-                                }
-                            }
+    cx = (int)(seg[3] / (f32)diorama_w.wcsx);
+    cz = (int)(seg[5] / (f32)diorama_w.wcsz);
+    c = *(HV3 *)(seg + 3);
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 2; j++) {
+            c.x = (f32)diorama_w.wcsx * ((f32)cx + ofs[quad * 2]);
+            c.z = (f32)diorama_w.wcsz * ((f32)cz + ofs[quad * 2 + 1]);
+            c.x += (f32)((diorama_w.wcsx >> 1) + diorama_w.wcsx * i);
+            c.z += (f32)((diorama_w.wcsz >> 1) + diorama_w.wcsz * j);
+            if (WallFieldInCheck(&c.x) == 1) {
+                cell = (HPOLY **)GetWallTblAdrs(&c.x);
+                for (k = 0; (s32)cell[k] != -1; k++) {
+                    hp = cell[k];
+                    if ((hp->h2 & wm) & mask) continue;
+                    if (nseen != 0) {
+                        found = 0;
+                        for (m = 0; m < nseen; m++) {
+                            if (hp == seen[m]) found = 1;
                         }
-                        cp++;
-                    } while (*cp != -1);
+                        if (found) continue;
+                    }
+                    if (nwall != 0) {
+                        found = 0;
+                        for (m = 0; m < nwall; m++) {
+                            if (hp == hit_wall[m]) found = 1;
+                        }
+                    }
+                    if (found) continue;
+                    if (sphr_face_o3(&sw, hp, pos)) {
+                        hit_wall[nwall++] = hp;
+                    }
+                    seen[nseen++] = hp;
+                    if (nseen >= 20) nseen = 0;
                 }
             }
         }
     }
     PushAdjust3(&sw, pos, &flag);
-    if (flag != 0) flag = 0;
+    if (flag) flag = 0;
     n = 0;
-    wm = pl_wall_mat[EF(pl, u16, 0xC)];
-    wm[0].flags = 0;
-    sp = 0;
+    pl_wall_mat[pl->x0C][0].flags = 0;
+    special = 0;
     if (hited_poly_num != 0) {
-        for (i = 0; i < hited_poly_num; i++) {
-            a = hited_wall_no[i];
-            poly = hit_wall[a];
-            ang = (u16)(((((calc_vec_ang(hit_near_point[a][0], hit_near_point[a][2], pos[0], pos[2]) & 0xFFFF) + 0x4000) & 0xFFFF) - EF(pl, s32, 0xA4)) & 0xFFFF) - 0x400;
-            wm[i].flags = 1;
-            if (wall_tbl_add[game_w.stage][poly->kind * 8] != 0) {
-                sp = 1;
-                wm[i].flags |= 2;
+        for (k = 0; k < hited_poly_num; k++) {
+            w = hited_wall_no[k];
+            hp2 = hit_wall[w];
+            dir = (u16)((u16)((u16)(calc_vec_ang(hit_near_point[w][0], hit_near_point[w][2], pos[0], pos[2]) + 0x4000) - pl->ang_y) - 0x400);
+            pl_wall_mat[pl->x0C][n].flags = 1;
+            if (*(wall_tbl_add[game_w.stage] + hp2->kind * 8) != 0) {
+                special = 1;
+                pl_wall_mat[pl->x0C][n].flags |= 2;
             }
-            n = (n + 1) & 0xFF;
-            wm[i].kind = poly->b1;
-            wm[i].ang = ang;
-            wm[i].n = poly->n;
-            if (sp != 0) {
-                sp = 0;
-                if (n != 1) {
-                    t = wm[0];
-                    wm[0] = wm[n - 1];
-                    wm[n - 1] = t;
-                }
+            pl_wall_mat[pl->x0C][n].kind = hp2->b1;
+            pl_wall_mat[pl->x0C][n].ang = dir;
+            pl_wall_mat[pl->x0C][n].n = hp2->n;
+            n++;
+            if (special && n != 1) {
+                special = 0;
+                f = pl_wall_mat[pl->x0C][0].flags;
+                kd = pl_wall_mat[pl->x0C][0].kind;
+                nn = pl_wall_mat[pl->x0C][0].n;
+                a = pl_wall_mat[pl->x0C][0].ang;
+                pl_wall_mat[pl->x0C][0].flags = pl_wall_mat[pl->x0C][(u8)(n - 1)].flags;
+                pl_wall_mat[pl->x0C][0].kind = pl_wall_mat[pl->x0C][(u8)(n - 1)].kind;
+                pl_wall_mat[pl->x0C][0].ang = pl_wall_mat[pl->x0C][(u8)(n - 1)].ang;
+                pl_wall_mat[pl->x0C][0].n = pl_wall_mat[pl->x0C][(u8)(n - 1)].n;
+                pl_wall_mat[pl->x0C][(u8)(n - 1)].flags = f;
+                pl_wall_mat[pl->x0C][(u8)(n - 1)].kind = kd;
+                pl_wall_mat[pl->x0C][(u8)(n - 1)].ang = a;
+                pl_wall_mat[pl->x0C][(u8)(n - 1)].n = nn;
             }
-            EF(pl, s32, 0x74C) |= 1 << (ang >> 11);
+            pl->hitdir |= 1 << (dir >> 11);
         }
-        wm[n].flags = 0;
+        pl_wall_mat[pl->x0C][n].flags = 0;
     }
 }
+#endif
 
 /* GetWallHitBitEm: monsters; the grid area is sized by the sphere (n x n
  * cells, 2x2 when small). */
+/* GetWallHitBitEm: original bytes kept (build/raw/GetWallHitBitEm.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (406 lines off, tools/align.py). */
+#ifdef __MWERKS__
+asm void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, void *em)
+{
+#include "GetWallHitBitEm.inc"
+}
+#else
 void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, void *em) {
     HSWEEP sw;
     f32 q[8];
@@ -447,105 +467,97 @@ void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, void *em) {
         }
     }
 }
+#endif
 
-int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, int mask) {
+/* GetWallHitBit2: original bytes kept (build/raw/GetWallHitBit2.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (32 lines off, tools/align.py). */
+#ifdef __MWERKS__
+asm int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask)
+{
+#include "GetWallHitBit2.inc"
+}
+#else
+int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask) {
+    HV3 c;
     HSWEEP sw;
-    f32 q[8];
-    f32 p[3];
-    HPOLY *ring[20];
-    u8 tmp[8];
-    int n2;
-    int nr = 0;
-    int nh = 0;
-    int found = 0;
-    int ix;
-    int iz;
+    HPOLY *seen[20];
+    f32 ofs[8] = { -1.0f, -1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f };
+    u8 flag;
+    HPOLY **cell;
+    int k;
+    int m;
     int i;
-    int quad = 0;
-    int half;
-    f32 cs;
-    f32 *cell;
+    int j;
     HPOLY *pl;
-    s32 *cp;
+    int n;
+    int quad;
+    int nseen;
+    int nwall;
+    int found;
 
-    q[0] = lit_638_002E8610[0];
-    q[1] = lit_638_002E8610[1];
-    q[2] = lit_638_002E8610[2];
-    q[3] = lit_638_002E8610[3];
-    q[4] = lit_638_002E8610[4];
-    q[5] = lit_638_002E8610[5];
-    q[6] = lit_638_002E8610[6];
-    q[7] = lit_638_002E8610[7];
-    if (WallFieldInCheck(b) == 0) return -1;
+    if (!WallFieldInCheck(b)) return -1;
     hit_poly_num = 0;
-    sw.p0[0] = b[0];
-    sw.p0[1] = b[1];
-    sw.p0[2] = b[2];
-    sw.p1[0] = a[0];
-    sw.p1[1] = a[1];
-    sw.p1[2] = a[2];
+    *(HV3 *)sw.p0 = *(HV3 *)b;
+    *(HV3 *)sw.p1 = *(HV3 *)a;
+    nseen = 0;
+    nwall = 0;
+    found = 0;
     sw.r = r;
     sw.w20 = 0;
     sw.w22 = 0;
     sw.len = flvecCalcDistance(sw.p0, sw.p1);
-    if ((u32)diorama_w.wcsz >= (u32)diorama_w.wcsx) {
-        cs = (u32)diorama_w.wcsx;
+    if ((u32)diorama_w.wcsx <= (u32)diorama_w.wcsz) {
+        n = (int)((sw.len + 2.0f * r) / (f32)(u32)diorama_w.wcsx) + 2;
     } else {
-        cs = (u32)diorama_w.wcsz;
+        n = (int)((sw.len + 2.0f * r) / (f32)(u32)diorama_w.wcsz) + 2;
     }
-    n2 = (int)((sw.len + 2.0f * r) / cs) + 2;
-    if (n2 == 2) quad = BlockPlaceCgeck(b);
-    for (ix = 0; ix < n2; ix++) {
-        half = n2 / 2;
-        for (iz = 0; iz < n2; iz++) {
-            p[0] = a[0];
-            p[1] = a[1];
-            p[2] = a[2];
-            if (n2 == 2) {
-                p[0] += (u32)diorama_w.wcsx * q[quad * 2];
-                p[2] += (u32)diorama_w.wcsz * q[quad * 2 + 1];
+    if (n == 2) quad = BlockPlaceCgeck(b);
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            if (n == 2) {
+                c = *(HV3 *)a;
+                c.x += (f32)(u32)diorama_w.wcsx * ofs[quad * 2];
+                c.z += (f32)(u32)diorama_w.wcsz * ofs[quad * 2 + 1];
+                c.x += (f32)(u32)(diorama_w.wcsx * i);
+                c.z += (f32)(u32)(diorama_w.wcsz * j);
             } else {
-                p[0] -= half * (f32)(u32)diorama_w.wcsx;
-                p[2] -= half * (f32)(u32)diorama_w.wcsz;
+                c = *(HV3 *)a;
+                c.x -= (f32)(n / 2) * (f32)(u32)diorama_w.wcsx;
+                c.z -= (f32)(n / 2) * (f32)(u32)diorama_w.wcsz;
+                c.x += (f32)(u32)(diorama_w.wcsx * i);
+                c.z += (f32)(u32)(diorama_w.wcsz * j);
             }
-            p[0] += (f32)((u32)diorama_w.wcsx * ix);
-            p[2] += (f32)((u32)diorama_w.wcsz * iz);
-            if (WallFieldInCheck(p) == 1) {
-                cp = GetWallTblAdrs(p);
-                if (*cp != -1) {
-                    do {
-                        pl = (HPOLY *)*cp;
-                        if (!(pl->h2 & (mask & 0xFFFF))) {
-                            if (nr != 0) {
-                                found = 0;
-                                for (i = 0; i < nr; i++) {
-                                    if (pl == ring[i]) found = 1;
-                                }
-                            }
-                            if (nr == 0 || found == 0) {
-                                if (nh != 0) {
-                                    found = 0;
-                                    for (i = 0; i < nh; i++) {
-                                        if (pl == hit_wall[i]) found = 1;
-                                    }
-                                }
-                                if (found == 0) {
-                                    if (sphr_face_o4(&sw, pl, pos) != 0) {
-                                        hit_wall[nh++] = pl;
-                                    }
-                                    ring[nr++] = pl;
-                                    if (nr >= 0x14) nr = 0;
-                                }
-                            }
+            if (WallFieldInCheck(&c.x) == 1) {
+                cell = (HPOLY **)GetWallTblAdrs(&c.x);
+                for (k = 0; (s32)cell[k] != -1; k++) {
+                    pl = cell[k];
+                    if (pl->h2 & mask) continue;
+                    if (nseen != 0) {
+                        found = 0;
+                        for (m = 0; m < nseen; m++) {
+                            if (pl == seen[m]) found = 1;
                         }
-                        cp++;
-                    } while (*cp != -1);
+                        if (found) continue;
+                    }
+                    if (nwall != 0) {
+                        found = 0;
+                        for (m = 0; m < nwall; m++) {
+                            if (pl == hit_wall[m]) found = 1;
+                        }
+                    }
+                    if (found) continue;
+                    if (sphr_face_o4(&sw, pl, pos)) {
+                        hit_wall[nwall++] = pl;
+                    }
+                    seen[nseen++] = pl;
+                    if (nseen >= 20) nseen = 0;
                 }
             }
         }
     }
-    return PushAdjust3(&sw, pos, tmp);
+    return PushAdjust3(&sw, pos, &flag);
 }
+#endif
 
 static int BlockPlaceCgeck(f32 *p) {
     f32 x;
@@ -610,6 +622,14 @@ s32 *GetWallTblAdrs(f32 *p) {
 
 /* sphr_face_o3 (0x00116A00): same test for players (no radius-adjusted height
  * test, nearest points keep their own y). */
+/* sphr_face_o3: original bytes kept (build/raw/sphr_face_o3.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (541 lines off, tools/align.py). */
+#ifdef __MWERKS__
+static asm int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos)
+{
+#include "sphr_face_o3.inc"
+}
+#else
 static int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos) {
     f32 e[3];
     f32 q[3];
@@ -727,8 +747,17 @@ static int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos) {
     }
     return 0;
 }
+#endif
 
 /* sphr_face_o4 (0x00117190): monsters. */
+/* sphr_face_o4: original bytes kept (build/raw/sphr_face_o4.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (551 lines off, tools/align.py). */
+#ifdef __MWERKS__
+static asm int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos)
+{
+#include "sphr_face_o4.inc"
+}
+#else
 static int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos) {
     f32 e[3];
     f32 q[3];
@@ -849,6 +878,7 @@ static int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos) {
     }
     return 0;
 }
+#endif
 
 /* 0x00117970: where does the edge e0-e1 reach plane (normal n) near p?
  * Returns 0 when both ends are on the same side, 1 / 2 and the crossing
@@ -933,6 +963,14 @@ static inline int share_edge(HPOLY *pa, HPOLY *pb, f32 *odd) {
     return 2;
 }
 
+/* PushAdjust3: original bytes kept (build/raw/PushAdjust3.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (1027 lines off, tools/align.py). */
+#ifdef __MWERKS__
+static asm int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp)
+{
+#include "PushAdjust3.inc"
+}
+#else
 static int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
     s8 A[0x20];         /* face contacts (hit_area_out == 0) */
     s8 B[0x20];         /* edge contacts */
@@ -1100,6 +1138,7 @@ static int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
     }
     return hit_poly_num;
 }
+#endif
 
 static int hosei_sub(HSWEEP *sw, f32 *out, s8 idx, u8 *flagp) {
     f32 e[4];
@@ -1963,39 +2002,55 @@ s32 *GetGroundTblAdrs(f32 *p) {
     return (s32 *)diorama_w.gtbl[iz + ix * diorama_w.gnz];
 }
 
-int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
-    HPOLY *seen[20];
-    f32 e[6];           /* {b, a}: the segment for FaceLinePos */
-    f32 dir[3];
+/* GetWallHitLine: original bytes kept (build/raw/GetWallHitLine.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (132 lines off, tools/align.py). */
+#ifdef __MWERKS__
+asm int GetWallHitLine(f32 *a, f32 *b, f32 *out, u16 mask)
+{
+#include "GetWallHitLine.inc"
+}
+#else
+int GetWallHitLine(f32 *a, f32 *b, f32 *out, u16 mask) {
+    HV3 hp;
     f32 d[3];
-    f32 hp[3];
-    f32 cen[3];
-    f32 q[3];
+    HV3 dir;
+    HV3 cen;
+    HV3 q;
+    f32 e[6];
+    HPOLY *seen[20];
+    HPOLY **cell;
+    HPOLY *pl;
     f32 best;
-    int cx, cz;
     f32 margin;
     f32 t;
-    int nx, nz, sx, sz;
-    int ix, iz, i, j, k;
-    int hit = 0;
-    int ns = 0;
-    int found;
-    s32 *cp;
-    HPOLY *pl;
+    int cx;
+    int cz;
+    int nx;
+    int nz;
+    int sx;
+    int sz;
+    int i;
+    int j;
+    int ix;
+    int iz;
+    int ns;
+    int hit;
+    int k;
 
+    hit = 0;
     best = flvecCalcDistance(a, b);
-    if (WallFieldInCheck(a) == 0) {
+    if (!WallFieldInCheck(a)) {
         SetVector(out, a[0], a[1], a[2]);
         return 1;
     }
-    if (WallFieldInCheck(b) == 0) {
+    if (!WallFieldInCheck(b)) {
         SetVector(out, b[0], b[1], b[2]);
         return 1;
     }
-    cx = (int)(a[0] / (f32)GCSX);
-    cz = (int)(a[2] / (f32)GCSZ);
-    nx = (int)(b[0] / (f32)GCSX) - cx;
-    nz = (int)(b[2] / (f32)GCSZ) - cz;
+    cx = (int)(a[0] / (f32)diorama_w.gcsx);
+    cz = (int)(a[2] / (f32)diorama_w.gcsz);
+    nx = (int)(b[0] / (f32)diorama_w.gcsx) - cx;
+    nz = (int)(b[2] / (f32)diorama_w.gcsz) - cz;
     if (nx < 0) {
         sx = -1;
         nx = 1 - nx;
@@ -2010,62 +2065,74 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
         sz = 1;
         nz = nz + 1;
     }
-    SetVector(e + 3, a[0], a[1], a[2]);
+    SetVector(&e[3], a[0], a[1], a[2]);
     SetVector(e, b[0], b[1], b[2]);
     PointToPoint(d, b, a);
-    SetVector(dir, d[0], d[1], d[2]);
-    flvecNormalize(dir);
-    if (dir[0] == -0.0f) dir[0] = 0.0f;
-    if (dir[2] == -0.0f) dir[2] = 0.0f;
-    margin = (f32)(int)(GCSZ / 10) + ((f32)(int)(GCSX / 10) + flSqrt((f32)GCSX * (f32)GCSX + (f32)(GCSZ * GCSZ)));
-    for (ix = 0, i = 0; ix < nx; ix++, i += sx) {
-        for (iz = 0, j = 0; iz < nz; iz++, j += sz) {
-            cen[0] = (f32)(GCSX >> 1) + (f32)GCSX * (f32)(cx + i);
-            cen[2] = (f32)(GCSZ >> 1) + (f32)GCSZ * (f32)(cz + j);
-            cen[1] = 0.0f;
-            if (dir[0] == 0.0f && dir[2] == 0.0f) {
-                t = (-dir[0] * (a[0] - cen[0])) - (dir[2] * (a[2] - cen[2]));
+    SetVector(&dir.x, d[0], 0.0f, d[2]);
+    flvecNormalize(&dir.x);
+    if (dir.x == -0.0f) dir.x = 0.0f;
+    if (dir.z == -0.0f) dir.z = 0.0f;
+    ns = 0;
+    margin = (f32)(diorama_w.gcsz / 10) + ((f32)(diorama_w.gcsx / 10) + flSqrt((f32)diorama_w.gcsx * (f32)diorama_w.gcsx + (f32)(diorama_w.gcsz * diorama_w.gcsz)));
+    for (i = 0, ix = 0; i < nx; i++) {
+        for (j = 0, iz = 0; j < nz; j++) {
+            cen.x = (f32)(diorama_w.gcsx >> 1) + (f32)diorama_w.gcsx * (f32)(cx + ix);
+            cen.z = (f32)(diorama_w.gcsz >> 1) + (f32)diorama_w.gcsz * (f32)(cz + iz);
+            cen.y = 0.0f;
+            if (dir.x == 0.0f && dir.z == 0.0f) {
+                t = -dir.x * (a[0] - cen.x) - dir.z * (a[2] - cen.z);
             } else {
-                t = ((-dir[0] * (a[0] - cen[0])) - (dir[2] * (a[2] - cen[2]))) / (dir[0] * dir[0] + dir[2] * dir[2]);
+                t = (-dir.x * (a[0] - cen.x) - dir.z * (a[2] - cen.z)) / (dir.x * dir.x + dir.z * dir.z);
             }
-            q[0] = a[0] + dir[0] * t;
-            q[2] = a[2] + dir[2] * t;
-            q[1] = 0.0f;
-            if (flvecCalcDistance(cen, q) <= margin) {
-                cp = GetWallTblAdrs(cen);
-                if (cp != (s32 *)-1 && *cp != -1) {
+            q.x = a[0] + dir.x * t;
+            q.z = a[2] + dir.z * t;
+            q.y = 0.0f;
+            if (flvecCalcDistance(&cen.x, &q.x) <= margin) {
+                cell = (HPOLY **)GetWallTblAdrs(&cen.x);
+                if (cell != (HPOLY **)-1 && (s32)*cell != -1) {
                     do {
-                        pl = (HPOLY *)*cp;
-                        if (!(pl->h2 & (mask & 0xFFFF))) {
-                            SEEN(pl, ns, seen, found);
-                            if (!found) {
-                                if (FaceLinePos(e, pl->n, pl->v[0], hp) != 0) {
-                                    if (NormalClipFace(hp, pl->v[0], pl->n) != 0) {
-                                        hit = 1;
-                                        t = flvecCalcDistance(a, hp);
-                                        if (!(best <= t)) {
-                                            best = t;
-                                            SetVector(out, hp[0], hp[1], hp[2]);
-                                        }
-                                    } else {
-                                        goto next;
-                                    }
+                        pl = *cell;
+                        if (!(pl->h2 & mask)) {
+                            if (ns != 0) {
+                                for (k = 0; k < ns; k++) {
+                                    if (pl == seen[k]) goto next;
+                                    break;
                                 }
-                                if (ns < 0x14) seen[ns++] = pl;
-                                if (hit != 0) return 1;
                             }
+                            if (FaceLinePos(e, pl->n, pl->v[0], &hp.x)) {
+                                if (!NormalClipFace(&hp.x, pl->v[0], pl->n)) goto next;
+                                hit = 1;
+                                t = flvecCalcDistance(a, &hp.x);
+                                if (!(best <= t)) {
+                                    best = t;
+                                    SetVector(out, hp.x, hp.y, hp.z);
+                                }
+                            }
+                            if (ns < 20) seen[ns++] = pl;
+                            if (hit) return 1;
                         }
                     next:
-                        cp++;
-                    } while (*cp != -1);
+                        cell++;
+                    } while ((s32)*cell != -1);
                 }
             }
+            iz += sz;
         }
+        ix += sx;
     }
     SetVector(out, b[0], b[1], b[2]);
     return 0;
 }
+#endif
 
+/* GetEyeHitLine: original bytes kept (build/raw/GetEyeHitLine.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (338 lines off, tools/align.py). */
+#ifdef __MWERKS__
+asm int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask)
+{
+#include "GetEyeHitLine.inc"
+}
+#else
 int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     HPOLY *seen[20];
     f32 e[6];
@@ -2210,6 +2277,7 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     SetVector(out, b[0], b[1], b[2]);
     return 0;
 }
+#endif
 
 int GetFloorSlide(HENT *ent, f32 *out, int flag) {
     HPOLY *pp[8];
@@ -2344,6 +2412,14 @@ static void check_angle(f32 *n, s32 *out) {
     *out = (s32)(0.5f + 65536.0f * flArcCos(flvecInnerProduct(n, up)) / 6.2831855f) & 0xFFFF;
 }
 
+/* HitWallPlayer: original bytes kept (build/raw/HitWallPlayer.inc, config/c_rawfuncs.txt); the C below is the
+ * near-match the PC build uses (4 lines off, tools/align.py). */
+#ifdef __MWERKS__
+asm void HitWallPlayer(HENT *ent, int keep)
+{
+#include "HitWallPlayer.inc"
+}
+#else
 void HitWallPlayer(HENT *ent, int keep) {
     SV3 ang;
     HV3 o;
@@ -2402,4 +2478,5 @@ void HitWallPlayer(HENT *ent, int keep) {
         }
     }
 }
+#endif
 

@@ -1,6 +1,6 @@
 /*
- * rt_hit.c - what the game's stage collision C (src/main/hit/shit*.c,
- * f_sphr 0x114AE0-0x11CA74, agent D) needs from the PS2 side, so the
+ * rt_hit.c - what the game's stage collision C (src/main/hit/f_sphr.c,
+ * 0x114AE0-0x11CDE4) needs from the PS2 side, so the
  * game's own ground queries, wall sweeps and PushAdjust3 run on the PC.
  *
  * Here: the hit file areas and load_file_mdl (AFS entry -> Meltw ->
@@ -114,7 +114,7 @@ int load_file_mdl(s32 dst, s32 idx)
     return 1;
 }
 
-void load_stage_hit(int stg);       /* src/main/hit/shit1_nm.c */
+void load_stage_hit(int stg);       /* src/main/hit/f_sphr.c */
 
 /* Load the stage's wall and ground collision with the game's own
  * load_stage_hit (WallHitInit / GroundHitInit fix the cell pointers). */

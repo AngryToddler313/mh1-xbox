@@ -245,3 +245,20 @@ obvious workarounds.
 - **To watch:** peak memory at a stage change (old and new textures overlap
   until the next frames; the retry covers an allocation failure). Revert the
   commit that adds `gpu_free_later` to go back.
+
+### Stage collision: 19 shit*.c / *_nm.c files replaced by one f_sphr.c (12 Oct 2026, agent C)
+- **Dropped:** src/main/hit/shit1.c, shit2a.c, shit5.c, shit6.c, shit7.c, shit15.c,
+  shit16.c, shit401.c (matched runs) and shit1_nm.c, shit3_nm.c, shit4_nm.c,
+  shit8_nm.c ... shit14_nm.c, hitw_nm.c (near-match copies the PC linked).
+- **Now:** src/main/hit/f_sphr.c is the whole original file (0x114AE0-0x11CDE4)
+  as one translation unit, 25 of 34 functions matching C; the other 9 are
+  kept as original bytes on the PS2 (config/c_rawfuncs.txt) and their
+  near-match C (in the `#else` branches) is what the PC/Xbox build runs.
+  GetWallHitBitPl, GetWallHitBit2, sphr_face_o3 and GetWallHitLine there are
+  fresh rewrites from the asm (32-190 lines off), the rest the old copies.
+- **Why:** one TU in address order with the statics is what the original
+  compiler saw; it took 13 functions to matching C and replaced the PC's
+  near-match collision code with the matched code (ground queries, wall
+  init, floor slide, hosei_sub ...). Tests: quest_loop, progression, menu,
+  name_entry, activities (38), save pass; Xbox build 0 failed.
+- **To revert:** revert the commit that adds src/main/hit/f_sphr.c to config/c_files.txt.

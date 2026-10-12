@@ -32,14 +32,10 @@ GAME="src/game/set/set14.c src/game/set/set00.c src/main/stage/stage_set.c \
 # PICK_MAIN: like PICK (below) for main/game files: only the named functions
 # are linked from them (adxs05.c's draw helpers are the host's in rt_eft.c)
 PICK_MAIN="src/main/sys/adxs05.c:Kaeru_ck"
-# Stage collision (f_sphr, agent D): the whole-file near-matches where they
-# exist (shit1_nm has load_stage_hit + WallHitInit/GroundHitInit, shit3_nm
-# GetGroundTblAdrs, shit4_nm NormalClipFace/add_vec_sub2/check_angle); the
-# grid helpers and GetWallTblAdrs are matched (shit2a.c, shit15.c).
-HIT="src/main/hit/shit1_nm.c src/main/hit/shit3_nm.c src/main/hit/shit4_nm.c \
-     src/main/hit/shit8_nm.c src/main/hit/shit9_nm.c src/main/hit/shit10_nm.c src/main/hit/shit11_nm.c \
-     src/main/hit/shit12_nm.c src/main/hit/shit13_nm.c src/main/hit/shit14_nm.c \
-     src/main/hit/tri_nm.c src/main/hit/hitw_nm.c"
+# Stage collision (f_sphr) is one matched translation unit, src/main/hit/f_sphr.c
+# (MATCHED_A); its functions still kept as original bytes on the PS2 compile
+# their near-match C here (the #else branches).
+HIT="src/main/hit/tri_nm.c"
 # Game camera (f_cam, f_cam_223B50: agent D; camarea_nm.c: camera areas).
 # cam_nm.c holds the whole f_cam file; the matching camd.c repeats some of
 # its functions, so cam_nm is in WEAK. The f_hit_28CE00 tests (hit_sphr_sphr3
@@ -285,14 +281,7 @@ MATCHED_A="src/main/eft/eft02.c \
     src/main/hit/hit2all.c \
     src/main/hit/hit3.c \
     src/main/hit/hitc.c \
-    src/main/hit/shit1.c \
-    src/main/hit/shit15.c \
-    src/main/hit/shit16.c \
-    src/main/hit/shit2a.c \
-    src/main/hit/shit401.c \
-    src/main/hit/shit5.c \
-    src/main/hit/shit6.c \
-    src/main/hit/shit7.c \
+    src/main/hit/f_sphr.c \
     src/main/hit/tri01.c \
     src/main/item/item01.c \
     src/main/item/item02.c \
@@ -394,7 +383,7 @@ MATCHED_A="$MATCHED_A $MATCHED_B"
 WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
 GAME="$GAME $MATCHED_A src/main/em/emride_nm.c"   # em_ride_sub (agent B): written from the asm, near-match
-WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm tri_nm shit1_nm shit3_nm shit4_nm f_quest_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_sound_nm eft20_nm"
+WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm tri_nm f_quest_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_sound_nm eft20_nm"
 WEAK="$WEAK $WEAK_A $WEAK_B"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
