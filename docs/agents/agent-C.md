@@ -1520,3 +1520,8 @@ Start: main 42.150% (639224 bytes).
 - flps0F00 has the flPS2ConvScreenFX/FY/FZ bodies written inline (the others call them); ST words are float bits
   (`*(u32 *)&st`, through the stack). GS words with Sony-style SET_RGBAQ/SET_XYZ/SET_UV/SET_ST macros.
 - Local order: `f32 v[4]; FMTX m;` puts m below v (m at sp+0x70) as the original.
+### fl/vr01.c extended to 0x18BD90: flPS2SearchVramChange written from the asm (raw holdout, 38 lines off)
+- Structure equal after: `while ((u32)(w->page - start) < len) {..}` (MWCC rotates it into the test-at-top +
+  test-at-bottom form), `if (pass != 0) break; pass++; } while (1); return -1;` for the two passes, and
+  `e = list[i]` indexing (not a walking pointer). Per-scan variables (e/k/tp vs e2/k2/tp2) and pair.py
+  (scratch: every position pair for two declaration lines) took it from 52 to 38; the rest is the second scan's temps.

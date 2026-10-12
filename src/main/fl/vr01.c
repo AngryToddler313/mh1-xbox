@@ -283,3 +283,120 @@ pre:
     mask = ~align;
     goto loop;
 }
+
+/* Looks for resident entries that can be pushed out to make room for t: a run of entries starting on an
+ * aligned page, none of them used by the handles of the list (and, on the first pass, only entries of
+ * kind 1 or 4), long enough for t. Returns the first entry of the run, 1 when the end of VRAM has room,
+ * 0 for an empty list, -1 when nothing fits on either pass. */
+/* near-match (register choice in the second scan: 38 lines, structure equal), original bytes linked; the C is the
+ * reading copy */
+#ifdef __MWERKS__
+asm int flPS2SearchVramChange(TEXH *t, u32 *list, int n)
+{
+#include "flPS2SearchVramChange.inc"
+}
+#else
+int flPS2SearchVramChange(TEXH *t, u32 *list, int n) {
+    VRC *w;
+    VRC *v;
+    VRC *last;
+    int i;
+    u32 e;
+    VRC *best;
+    int pass;
+    int k;
+    int k2;
+    TEXH *tp;
+    TEXH *tp2;
+    int a;
+    int start;
+    u32 e2;
+    VRC *head;
+
+    head = flVramList;
+    pass = 0;
+    do {
+        v = head;
+        if (v == 0) {
+            return 0;
+        }
+        do {
+            if (pass == 0 && v->x10 != 1 && v->x10 != 4) {
+                goto next;
+            }
+            for (i = 0; i < n; i++) {
+                e = list[i];
+                if ((e & 0xFFFF) != 0) {
+                    k = (e & 0xFFFF) - 1;
+                    tp = &flTexture[k];
+                    if (tp == v->owner) {
+                        goto next;
+                    }
+                }
+                if ((e & 0xFFFF0000) >> 16 != 0) {
+                    k = ((e & 0xFFFF0000) >> 16) - 1;
+                    tp = &flPalette[k];
+                    if (tp == v->owner) {
+                        goto next;
+                    }
+                }
+            }
+            a = t->align - 1;
+            start = ~a & (v->page + a);
+            if (v->page != start) {
+                goto next;
+            }
+            w = v->next;
+            if (w == 0) {
+                if ((u32)(0x4000 - start) < (u32)t->len) {
+                    goto next;
+                }
+                return (int)v;
+            }
+            best = v;
+            while ((u32)(w->page - start) < (u32)t->len) {
+                v = w;
+                if (pass == 0 && w->x10 != 1 && w->x10 != 4) {
+                    goto next;
+                }
+                for (i = 0; i < n; i++) {
+                    e2 = list[i];
+                    if ((e2 & 0xFFFF) != 0) {
+                        k2 = (e2 & 0xFFFF) - 1;
+                        tp2 = &flTexture[k2];
+                        if (tp2 == w->owner) {
+                            goto next;
+                        }
+                    }
+                    if ((e2 & 0xFFFF0000) >> 16 != 0) {
+                        k2 = ((e2 & 0xFFFF0000) >> 16) - 1;
+                        tp2 = &flPalette[k2];
+                        if (tp2 == w->owner) {
+                            goto next;
+                        }
+                    }
+                }
+                w = w->next;
+                if (w == 0) {
+                    if ((u32)(0x4000 - start) < (u32)t->len) {
+                        goto next;
+                    }
+                    return (int)best;
+                }
+            }
+            return (int)best;
+        next:
+            last = v;
+            v = v->next;
+        } while (v != 0);
+        if (!(0x4000 - (last->page + last->len) < t->len)) {
+            return 1;
+        }
+        if (pass != 0) {
+            break;
+        }
+        pass++;
+    } while (1);
+    return -1;
+}
+#endif
