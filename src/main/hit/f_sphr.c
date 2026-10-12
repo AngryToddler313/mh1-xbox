@@ -599,7 +599,7 @@ s32 *GetWallTblAdrs(f32 *p) {
 /* sphr_face_o3 (0x00116A00): same test for players (no radius-adjusted height
  * test, nearest points keep their own y). */
 /* sphr_face_o3: original bytes kept (build/raw/sphr_face_o3.inc, config/c_rawfuncs.txt); the C below is the
- * near-match the PC build uses (541 lines off, tools/align.py). */
+ * near-match the PC build uses (33 lines off, tools/align.py). */
 #ifdef __MWERKS__
 static asm int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos)
 {
@@ -607,117 +607,133 @@ static asm int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos)
 }
 #else
 static int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos) {
+    HV3 q;
     f32 e[3];
-    f32 q[3];
-    f32 d[3];
-    f32 best[3];
+    HV3 d;
+    HV3 best;
     f32 c[3];
-    f32 tri[4][3];
+    HV3 vt[4];
+    HPOLY *hd;
     f32 t;
-    f32 bd;
-    f32 *vp;
-    int k;
-    int s4;
+    f32 dist;
+    int r;
     s8 side;
-    f32 *pt;
+    HV3 *v;
+    int i;
+    int r2;
+    int i2;
 
     if (sw->w22 != 0) {
         t = pos[1];
         if (!(t < pl->v[0][1]) && !(t < pl->v[1][1]) && !(t < pl->v[2][1])) return 0;
     }
     PointToPoint(e, sw->p1, pl->v[0]);
-    if (flvecInnerProduct(e, pl->n) <= 0.0f) return 0;
+    if ((s8)!(flvecInnerProduct(e, pl->n) > 0.0f)) return 0;
     PointToPoint(e, sw->p0, pl->v[0]);
     t = flvecInnerProduct(e, pl->n);
-    side = 0;
-    if (t <= 0.0f) side = 1;
-    q[0] = sw->p0[0];
-    q[1] = sw->p0[1];
-    q[2] = sw->p0[2];
-    if (flAbs(t) < sw->r) {
-        ScaleVector(c, pl->n, t);
-        PointToPoint(c, sw->p0, c);
+    if (!(t <= 0.0f)) {
+        side = 0;
     } else {
-        if (FaceLinePos(sw->p0, pl->n, pl->v[0], c) == 0) return 0;
-        side = (s8)(side | 2);
+        side = 1;
     }
-    if (NormalClipFace(c, pl->v[0], pl->n) != 0) {
-        if (hit_poly_num >= 0x13) return 0;
-        hit_decision[hit_poly_num] = *pl;
-        NvecFloatAdjust(hit_decision[hit_poly_num].n, hit_decision[hit_poly_num].n, &hit_decision[hit_poly_num]);
-        hit_hosei_base[hit_poly_num][0] = q[0];
-        hit_hosei_base[hit_poly_num][1] = q[1];
-        hit_hosei_base[hit_poly_num][2] = q[2];
+    d = *(HV3 *)sw->p0;
+    if (flAbs(t) < sw->r) {
+        ScaleVector(&q.x, pl->n, t);
+        PointToPoint(&q.x, sw->p0, &q.x);
+    } else {
+        if (!FaceLinePos(sw->p0, pl->n, pl->v[0], &q.x)) return 0;
+        side |= 2;
+    }
+    if (NormalClipFace(&q.x, pl->v[0], pl->n)) {
+        if (hit_poly_num >= 19) return 0;
+        hd = &hit_decision[hit_poly_num];
+        *hd = *pl;
+        NvecFloatAdjust(hd->n, hd->n, hd);
+        *(HV3 *)hit_hosei_base[hit_poly_num] = d;
         hit_side[hit_poly_num] = side;
         hit_area_out[hit_poly_num] = 0;
-        hit_near_point[hit_poly_num][0] = c[0];
-        hit_near_point[hit_poly_num][1] = c[1];
-        hit_near_point[hit_poly_num][2] = c[2];
+        *(HV3 *)hit_near_point[hit_poly_num] = q;
         hit_poly_num++;
         return 1;
     }
-    bd = 8000.0f;
+    dist = 8000.0f;
     hit_area_out[hit_poly_num] = 1;
-    for (k = 0; k < 3; k++) {
-        tri[k][0] = pl->v[k][0];
-        tri[k][1] = pl->v[k][1];
-        tri[k][2] = pl->v[k][2];
-    }
-    tri[3][0] = pl->v[0][0];
-    tri[3][1] = pl->v[0][1];
-    tri[3][2] = pl->v[0][2];
-    SetVector(d, c[0], c[1], c[2]);       /* d = projected centre (spB0) */
-    pt = (side & 2) ? d : sw->p0;
-    vp = tri[0];
-    for (k = 0; k < 3; k++, vp += 3) {
-        s4 = 0;
-        PointToPoint(e, pt, vp);
-        PointToPoint(q, vp + 3, vp);
-        flvecNormalize(q);
-        if (flvecInnerProduct(e, q) < 0.0f) s4 = 1;
-        PointToPoint(e, pt, vp + 3);
-        t = flvecInnerProduct(e, q);
-        if (!(t <= 0.0f)) s4 |= 2;
-        switch (s4) {
-        case 0:
-            ScaleVector(c, q, t);
-            AddVector(c, c, vp + 3);
-            break;
-        case 1:
-            c[0] = vp[0];
-            c[1] = vp[1];
-            c[2] = vp[2];
-            break;
-        case 2:
-            c[0] = vp[3];
-            c[1] = vp[4];
-            c[2] = vp[5];
-            break;
-        case 3:
-            return 0;
+    v = vt;
+    vt[0] = *(HV3 *)pl->v[0];
+    vt[1] = *(HV3 *)pl->v[1];
+    vt[2] = *(HV3 *)pl->v[2];
+    vt[3] = *(HV3 *)pl->v[0];
+    SetVector(c, q.x, q.y, q.z);
+    if (!(side & 2)) {
+        for (i = 0; i < 3; i++, v++) {
+            r = 0;
+            PointToPoint(e, sw->p0, &v->x);
+            PointToPoint(&d.x, &v[1].x, &v->x);
+            flvecNormalize(&d.x);
+            if (flvecInnerProduct(e, &d.x) < 0.0f) r |= 1;
+            PointToPoint(e, sw->p0, &v[1].x);
+            t = flvecInnerProduct(e, &d.x);
+            if (!(t <= 0.0f)) r |= 2;
+            switch (r) {
+            case 0:
+                ScaleVector(&q.x, &d.x, t);
+                AddVector(&q.x, &q.x, &v[1].x);
+                break;
+            case 1:
+                q = v[0];
+                break;
+            case 2:
+                q = v[1];
+                break;
+            case 3:
+                return 0;
+            }
+            t = flvecCalcDistance(sw->p0, &q.x);
+            if (t < dist) {
+                dist = t;
+                best = q;
+            }
         }
-        t = flvecCalcDistance(pt, c);
-        if (t < bd) {
-            bd = t;
-            best[0] = c[0];
-            best[1] = c[1];
-            best[2] = c[2];
+    } else {
+        for (i2 = 0; i2 < 3; i2++, v++) {
+            r2 = 0;
+            PointToPoint(e, c, &v->x);
+            PointToPoint(&d.x, &v[1].x, &v->x);
+            flvecNormalize(&d.x);
+            if (flvecInnerProduct(e, &d.x) < 0.0f) r2 |= 1;
+            PointToPoint(e, c, &v[1].x);
+            t = flvecInnerProduct(e, &d.x);
+            if (!(t <= 0.0f)) r2 |= 2;
+            switch (r2) {
+            case 0:
+                ScaleVector(&q.x, &d.x, t);
+                AddVector(&q.x, &q.x, &v[1].x);
+                break;
+            case 1:
+                q = v[0];
+                break;
+            case 2:
+                q = v[1];
+                break;
+            case 3:
+                return 0;
+            }
+            t = flvecCalcDistance(c, &q.x);
+            if (t < dist) {
+                dist = t;
+                best = q;
+            }
         }
     }
-    if (bd < sw->r) {
-        if (hit_poly_num >= 0x13) return 0;
-        hit_decision[hit_poly_num] = *pl;
-        NvecFloatAdjust(hit_decision[hit_poly_num].n, hit_decision[hit_poly_num].n, &hit_decision[hit_poly_num]);
-        hit_hosei_base[hit_poly_num][0] = sw->p0[0];
-        hit_hosei_base[hit_poly_num][1] = sw->p0[1];
-        hit_hosei_base[hit_poly_num][2] = sw->p0[2];
+    if (dist < sw->r) {
+        if (hit_poly_num >= 19) return 0;
+        hd = &hit_decision[hit_poly_num];
+        *hd = *pl;
+        NvecFloatAdjust(hd->n, hd->n, hd);
+        *(HV3 *)hit_hosei_base[hit_poly_num] = *(HV3 *)sw->p0;
         hit_side[hit_poly_num] = side;
-        hit_near_point[hit_poly_num][0] = best[0];
-        hit_near_point[hit_poly_num][1] = best[1];
-        hit_near_point[hit_poly_num][2] = best[2];
-        hit_kouten[hit_poly_num][0] = d[0];
-        hit_kouten[hit_poly_num][1] = d[1];
-        hit_kouten[hit_poly_num][2] = d[2];
+        *(HV3 *)hit_near_point[hit_poly_num] = best;
+        *(HV3 *)hit_kouten[hit_poly_num] = *(HV3 *)c;
         hit_poly_num++;
         return 1;
     }
@@ -727,7 +743,7 @@ static int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos) {
 
 /* sphr_face_o4 (0x00117190): monsters. */
 /* sphr_face_o4: original bytes kept (build/raw/sphr_face_o4.inc, config/c_rawfuncs.txt); the C below is the
- * near-match the PC build uses (551 lines off, tools/align.py). */
+ * near-match the PC build uses (37 lines off, tools/align.py). */
 #ifdef __MWERKS__
 static asm int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos)
 {
@@ -735,120 +751,135 @@ static asm int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos)
 }
 #else
 static int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos) {
+    HV3 q;
     f32 e[3];
-    f32 q[3];
-    f32 d[3];
-    f32 best[3];
+    HV3 d;
+    HV3 best;
     f32 c[3];
-    f32 tri[4][3];
+    HV3 vt[4];
+    HPOLY *hd;
     f32 t;
-    f32 bd;
-    f32 *vp;
-    int k;
-    int s4;
+    f32 dist;
+    int r;
     s8 side;
-    f32 *pt;
+    HV3 *v;
+    int i;
+    int r2;
+    int i2;
 
     if (sw->w22 != 0) {
         t = pos[1] - sw->r;
         if (!(t <= pl->v[0][1]) && !(t <= pl->v[1][1]) && !(t <= pl->v[2][1])) return 0;
     }
     PointToPoint(e, sw->p1, pl->v[0]);
-    if (flvecInnerProduct(e, pl->n) <= 0.0f) return 0;
+    if ((s8)!(flvecInnerProduct(e, pl->n) > 0.0f)) return 0;
     PointToPoint(e, sw->p0, pl->v[0]);
     t = flvecInnerProduct(e, pl->n);
-    side = 0;
-    if (t <= 0.0f) side = 1;
-    q[0] = sw->p0[0];
-    q[1] = sw->p0[1];
-    q[2] = sw->p0[2];
-    if (flAbs(t) < sw->r) {
-        ScaleVector(c, pl->n, t);
-        PointToPoint(c, sw->p0, c);
+    if (!(t <= 0.0f)) {
+        side = 0;
     } else {
-        if (FaceLinePos(sw->p0, pl->n, pl->v[0], c) == 0) return 0;
-        side = (s8)(side | 2);
+        side = 1;
     }
-    if (NormalClipFace(c, pl->v[0], pl->n) != 0) {
-        if (hit_poly_num >= 0x13) return 0;
-        hit_decision[hit_poly_num] = *pl;
-        NvecFloatAdjust(hit_decision[hit_poly_num].n, hit_decision[hit_poly_num].n, &hit_decision[hit_poly_num]);
-        hit_hosei_base[hit_poly_num][0] = q[0];
-        hit_hosei_base[hit_poly_num][1] = q[1];
-        hit_hosei_base[hit_poly_num][2] = q[2];
+    d = *(HV3 *)sw->p0;
+    if (flAbs(t) < sw->r) {
+        ScaleVector(&q.x, pl->n, t);
+        PointToPoint(&q.x, sw->p0, &q.x);
+    } else {
+        if (!FaceLinePos(sw->p0, pl->n, pl->v[0], &q.x)) return 0;
+        side |= 2;
+    }
+    if (NormalClipFace(&q.x, pl->v[0], pl->n)) {
+        if (hit_poly_num >= 19) return 0;
+        hd = &hit_decision[hit_poly_num];
+        *hd = *pl;
+        NvecFloatAdjust(hd->n, hd->n, hd);
+        *(HV3 *)hit_hosei_base[hit_poly_num] = d;
         hit_side[hit_poly_num] = side;
         hit_area_out[hit_poly_num] = 0;
-        hit_near_point[hit_poly_num][0] = c[0];
-        hit_near_point[hit_poly_num][1] = c[1];
-        hit_near_point[hit_poly_num][2] = c[2];
-        hit_near_point[hit_poly_num][1] = q[1];
+        *(HV3 *)hit_near_point[hit_poly_num] = q;
+        hit_near_point[hit_poly_num][1] = d.y;
         hit_poly_num++;
         return 1;
     }
-    bd = 8000.0f;
+    dist = 8000.0f;
     hit_area_out[hit_poly_num] = 1;
-    for (k = 0; k < 3; k++) {
-        tri[k][0] = pl->v[k][0];
-        tri[k][1] = pl->v[k][1];
-        tri[k][2] = pl->v[k][2];
-    }
-    tri[3][0] = pl->v[0][0];
-    tri[3][1] = pl->v[0][1];
-    tri[3][2] = pl->v[0][2];
-    SetVector(d, c[0], c[1], c[2]);       /* d = projected centre (spB0) */
-    pt = (side & 2) ? d : sw->p0;
-    vp = tri[0];
-    for (k = 0; k < 3; k++, vp += 3) {
-        s4 = 0;
-        PointToPoint(e, pt, vp);
-        PointToPoint(q, vp + 3, vp);
-        flvecNormalize(q);
-        if (flvecInnerProduct(e, q) < 0.0f) s4 = 1;
-        PointToPoint(e, pt, vp + 3);
-        t = flvecInnerProduct(e, q);
-        if (!(t <= 0.0f)) s4 |= 2;
-        switch (s4) {
-        case 0:
-            ScaleVector(c, q, t);
-            AddVector(c, c, vp + 3);
-            break;
-        case 1:
-            c[0] = vp[0];
-            c[1] = vp[1];
-            c[2] = vp[2];
-            break;
-        case 2:
-            c[0] = vp[3];
-            c[1] = vp[4];
-            c[2] = vp[5];
-            break;
-        case 3:
-            return 0;
+    v = vt;
+    vt[0] = *(HV3 *)pl->v[0];
+    vt[1] = *(HV3 *)pl->v[1];
+    vt[2] = *(HV3 *)pl->v[2];
+    vt[3] = *(HV3 *)pl->v[0];
+    SetVector(c, q.x, q.y, q.z);
+    if (!(side & 2)) {
+        for (i = 0; i < 3; i++, v++) {
+            r = 0;
+            PointToPoint(e, sw->p0, &v->x);
+            PointToPoint(&d.x, &v[1].x, &v->x);
+            flvecNormalize(&d.x);
+            if (flvecInnerProduct(e, &d.x) < 0.0f) r |= 1;
+            PointToPoint(e, sw->p0, &v[1].x);
+            t = flvecInnerProduct(e, &d.x);
+            if (!(t <= 0.0f)) r |= 2;
+            switch (r) {
+            case 0:
+                ScaleVector(&q.x, &d.x, t);
+                AddVector(&q.x, &q.x, &v[1].x);
+                break;
+            case 1:
+                q = v[0];
+                break;
+            case 2:
+                q = v[1];
+                break;
+            case 3:
+                return 0;
+            }
+            t = flvecCalcDistance(sw->p0, &q.x);
+            if (t < dist) {
+                dist = t;
+                best = q;
+            }
         }
-        t = flvecCalcDistance(pt, c);
-        if (t < bd) {
-            bd = t;
-            best[0] = c[0];
-            best[1] = c[1];
-            best[2] = c[2];
+    } else {
+        for (i2 = 0; i2 < 3; i2++, v++) {
+            r2 = 0;
+            PointToPoint(e, c, &v->x);
+            PointToPoint(&d.x, &v[1].x, &v->x);
+            flvecNormalize(&d.x);
+            if (flvecInnerProduct(e, &d.x) < 0.0f) r2 |= 1;
+            PointToPoint(e, c, &v[1].x);
+            t = flvecInnerProduct(e, &d.x);
+            if (!(t <= 0.0f)) r2 |= 2;
+            switch (r2) {
+            case 0:
+                ScaleVector(&q.x, &d.x, t);
+                AddVector(&q.x, &q.x, &v[1].x);
+                break;
+            case 1:
+                q = v[0];
+                break;
+            case 2:
+                q = v[1];
+                break;
+            case 3:
+                return 0;
+            }
+            t = flvecCalcDistance(c, &q.x);
+            if (t < dist) {
+                dist = t;
+                best = q;
+            }
         }
     }
-    if (bd < sw->r) {
-        if (hit_poly_num >= 0x13) return 0;
-        hit_decision[hit_poly_num] = *pl;
-        NvecFloatAdjust(hit_decision[hit_poly_num].n, hit_decision[hit_poly_num].n, &hit_decision[hit_poly_num]);
-        hit_hosei_base[hit_poly_num][0] = sw->p0[0];
-        hit_hosei_base[hit_poly_num][1] = sw->p0[1];
-        hit_hosei_base[hit_poly_num][2] = sw->p0[2];
+    if (dist < sw->r) {
+        if (hit_poly_num >= 19) return 0;
+        hd = &hit_decision[hit_poly_num];
+        *hd = *pl;
+        NvecFloatAdjust(hd->n, hd->n, hd);
+        *(HV3 *)hit_hosei_base[hit_poly_num] = *(HV3 *)sw->p0;
         hit_side[hit_poly_num] = side;
-        hit_near_point[hit_poly_num][0] = best[0];
-        hit_near_point[hit_poly_num][1] = best[1];
-        hit_near_point[hit_poly_num][2] = best[2];
-        hit_kouten[hit_poly_num][0] = d[0];
-        hit_kouten[hit_poly_num][1] = d[1];
-        hit_kouten[hit_poly_num][2] = d[2];
-        hit_near_point[hit_poly_num][1] = hit_hosei_base[hit_poly_num][1];
-        hit_kouten[hit_poly_num][1] = hit_hosei_base[hit_poly_num][1];
+        *(HV3 *)hit_near_point[hit_poly_num] = best;
+        *(HV3 *)hit_kouten[hit_poly_num] = *(HV3 *)c;
+        hit_near_point[hit_poly_num][1] = hit_kouten[hit_poly_num][1] = hit_hosei_base[hit_poly_num][1];
         hit_poly_num++;
         return 1;
     }
@@ -1979,7 +2010,7 @@ s32 *GetGroundTblAdrs(f32 *p) {
 }
 
 /* GetWallHitLine: original bytes kept (build/raw/GetWallHitLine.inc, config/c_rawfuncs.txt); the C below is the
- * near-match the PC build uses (132 lines off, tools/align.py). */
+ * near-match the PC build uses (124 lines off, tools/align.py). */
 #ifdef __MWERKS__
 asm int GetWallHitLine(f32 *a, f32 *b, f32 *out, u16 mask)
 {
@@ -2070,9 +2101,9 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, u16 mask) {
                         pl = *cell;
                         if (!(pl->h2 & mask)) {
                             if (ns != 0) {
-                                for (k = 0; k < ns; k++) {
+                                k = 0;
+                                if (k < ns) {
                                     if (pl == seen[k]) goto next;
-                                    break;
                                 }
                             }
                             if (FaceLinePos(e, pl->n, pl->v[0], &hp.x)) {
