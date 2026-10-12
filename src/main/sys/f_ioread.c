@@ -1,9 +1,11 @@
-/* Main loop and system init. SLPM_654.95 0x0011F3F0-0x00120234 (f_ioread): ACRMain is the
- * per frame entry (first call initialises the library, memory map and the first task), then
- * reads the pads, runs the task scheduler, draws and flips. InitCommonWork lays out the big
- * work areas (offsets from app_mem_top = 0x8A0000). */
+/* f_ioread - main loop, system init and pad reading (SLPM_654.95 main 0x0011F3F0-0x00120234), the whole original file as one
+ * translation unit: ACRMain (per frame entry), MakeMediaVersion (version string from the build date), system_w_set, InitSystemData,
+ * setBGcolor, ioRead/ioRead_sub/ioRead2 (PS2 pad -> Psw), NetDisp, InitCommonWork (work area layout from app_mem_top = 0x8A0000).
+ * Replaces the runs io01-io04 and ior01 and the near-match files ioread_nm.c and mmv_nm.c. Field names are guesses. */
 #include "types.h"
 #include "sysw.h"
+
+#include "ioread.h"
 
 extern int xxx;                 /* 0 first call, 1 running */
 extern u16 System_flag, System_flag_old, System_timer;
@@ -11,7 +13,7 @@ extern u8 game_w[];
 extern u8 RecvMailInfo[0x4D0];
 extern s8 option_w[];
 extern u8 bg_col_tbl[][3];
-extern u8 *flpad_adr;
+extern FPADI *flpad_adr;
 extern int quest_price;
 extern u8 view_mat[];
 extern u32 mem_tex[0x159];
@@ -62,7 +64,7 @@ void func_533A00(void);
 void SoftKeyboard_init(void);
 void MakeMediaVersion(void);
 void Snd_server(void);
-void InitCommonWork(void);
+static void InitCommonWork(void);
 void setBGcolor(int);
 void flSetRenderState(int, u32);
 void system_w_init(void);
@@ -81,6 +83,26 @@ int CpInetTcpConnected(void);
 void CpInetInterfaceProblem(int, int);
 void ioRead2(void);
 void ioRead(void);
+static void ioRead_sub(int);
+
+extern char MediaVersion[];
+extern char lit_144_00358360[];
+extern char lit_145_00358368[];
+extern char lit_146_00358370[];
+extern char lit_147_00358378[];
+extern char lit_148_00358390[];
+extern char lit_149_003583B0[];
+extern char lit_150_003583C8[];
+extern char lit_151_003583D0[];
+extern char media_date_tbl[];
+extern char media_time_tbl[];
+extern char *month_str_tbl[12];
+char *strcpy();
+char *strtok();
+int strcmp();
+int strlen();
+int sprintf();
+int scePrintf();
 
 int ACRMain(void) {
     switch (xxx) {
@@ -150,6 +172,67 @@ int ACRMain(void) {
     return 0;
 }
 
+void MakeMediaVersion(void) {
+    char delim[5] = " :\t\n";
+    char date[0x20];
+    char time[0x20];
+    char yr[8];
+    char mon[8];
+    char day[8];
+    char hh[8];
+    char mm[8];
+    char yr2[8];
+    char mo2[8];
+    char dd2[8];
+    char hh2[8];
+    char mm2[8];
+    int i;
+    int j;
+    char **mp;
+    char *p;
+    strcpy(date, media_date_tbl);
+    strcpy(time, media_time_tbl);
+    strcpy(mon, strtok(date, delim));
+    strcpy(day, strtok(0, delim));
+    strcpy(yr, strtok(0, delim));
+    strcpy(yr2, yr + 2);
+    mp = month_str_tbl;
+    i = 0;
+    for (;;) {
+        if (strcmp(*mp, mon) == 0) {
+            sprintf(mo2, lit_144_00358360, i + 1);
+            break;
+        }
+        i++;
+        mp++;
+        if (i >= 12) {
+            break;
+        }
+    }
+    if (strlen(day) == 1) {
+        sprintf(dd2, lit_145_00358368, day);
+    } else {
+        sprintf(dd2, lit_146_00358370, day);
+    }
+    strcpy(hh, strtok(time, delim));
+    strcpy(mm, strtok(0, delim));
+    sprintf(hh2, lit_146_00358370, hh);
+    sprintf(mm2, lit_146_00358370, mm);
+    sprintf(MediaVersion, lit_147_00358378, yr2, mo2, dd2, hh2, mm2);
+    scePrintf(lit_148_00358390);
+    scePrintf(lit_149_003583B0);
+    p = MediaVersion;
+    j = 0;
+    do {
+        scePrintf(lit_150_003583C8, *p);
+        j++;
+        p++;
+    } while (j < 10);
+    scePrintf(lit_151_003583D0);
+    scePrintf(lit_148_00358390);
+}
+
+
 void system_w_set(void) {
     system_w.x1A = 0;
     system_w.x3C = 0;
@@ -194,9 +277,13 @@ void setBGcolor(int n) {
     flSetRenderState(0x14, (r << 16) | 0xFF000000 | (g << 8) | b);
 }
 
+/* PS2 pad state of pad n (flpad_adr[n], 0x88 bytes). The test has no effect in the retail build. */
 static void ioread_sub(int n) {
-    int a = 1;
-    u8 b = flpad_adr[n * 0x88];
+    u8 st = flpad_adr[n].state;
+
+    if (st == 1) {
+        return;
+    }
 }
 
 void ioRead(void) {
@@ -208,11 +295,118 @@ void ioRead(void) {
     ioRead2();
 }
 
-u16 pad_pow_fix(u32 v) {
+static u16 pad_pow_fix(u32 v) {
     if (v < 0x2D) {
         v = 0;
     }
     return v;
+}
+
+/* Converts pad n's PS2 buttons and sticks into the game's pad word Psw[n]: buttons (on/old/trg/rel), the two analog sticks
+   as directions (an) plus angle (0x10000 = full turn) and strength, and the repeat state. */
+static void ioRead_sub(int n) {
+    u32 b;
+    u16 v;
+    PSWE *p = &((PSWE *)Psw)[n];
+
+    p->x1E = p->x1C;
+    if (flpad_adr[n].state == 1) {
+        p->x1C = (flpad_adr[n].x02 & 3) != 0;
+    } else {
+        p->x1C = 0;
+    }
+    p->x20 = 0;
+    if (flpad_adr[n].state == 1) {
+        p->old = p->on;
+        p->aold = p->an;
+        b = flpad_adr[n].btn;
+        v = 0;
+        if (b & 0x1) v |= 0x2000;
+        if (b & 0x2) v |= 0x1000;
+        if (b & 0x4) v |= 0x800;
+        if (b & 0x8) v |= 0x400;
+        if (b & 0x100) v |= 0x200;
+        if (b & 0x200) v |= 0x100;
+        if (b & 0x400) v |= 0x80;
+        if (b & 0x10) v |= 0x40;
+        if (b & 0x20) v |= 0x20;
+        if (b & 0x40) v |= 0x10;
+        if (b & 0x800) v |= 0x8;
+        if (b & 0x80) v |= 0x4;
+        if (b & 0x1000) v |= 0x2;
+        if (b & 0x2000) v |= 0x1;
+        if (b & 0x8000) v |= 0x8000;
+        if (b & 0x4000) v |= 0x4000;
+        p->on = v;
+        v = 0;
+        if (flpad_adr[n].mode & 0x30) {
+            if (b & 0x10000) v |= 0x2000;
+            if (b & 0x20000) v |= 0x1000;
+            if (b & 0x40000) v |= 0x800;
+            if (b & 0x80000) v |= 0x400;
+            p->ang0 = (flpad_adr[n].ang0 << 16) / 360;
+            p->pow0 = pad_pow_fix(flpad_adr[n].pow0);
+        }
+        if (flpad_adr[n].mode & 0x50) {
+            if (b & 0x100000) v |= 0x20;
+            if (b & 0x200000) v |= 0x10;
+            if (b & 0x400000) v |= 0x8;
+            if (b & 0x800000) v |= 0x4;
+            p->ang1 = (flpad_adr[n].ang1 << 16) / 360;
+            p->pow1 = pad_pow_fix(flpad_adr[n].pow1);
+        }
+        p->an = v;
+    } else {
+        p->on = 0;
+        p->an = 0;
+        p->ang1 = 0;
+        p->ang0 = 0;
+        p->pow1 = 0;
+        p->pow0 = 0;
+    }
+    p->trg = ~p->old & p->on;
+    p->rel = p->old & ~p->on;
+    p->atrg = ~p->aold & p->an;
+    p->arel = p->aold & ~p->an;
+    p->rep = 0;
+    if (p->old == p->on) {
+        p->rcnt++;
+        if (p->rcnt > 10) {
+            if (p->rcnt > 12) {
+                p->rcnt = 10;
+                p->rep = p->on;
+            }
+        }
+    } else {
+        p->rcnt = 0;
+    }
+}
+
+void ioRead2(void) {
+    int i;
+    u16 t;
+
+    for (i = 0; i < 4; i++) {
+        ioRead_sub(i);
+    }
+    if (pub_flag != 0) {
+        t = ((PSWE *)Psw)[1].trg;
+        if (t & 0x8000) {
+            pub_pause ^= 1;
+        }
+        if (pub_pause != 0) {
+            if (t & 0x20) {
+                System_flag = 0;
+            } else if (((PSWE *)Psw)[1].on & 0x40) {
+                System_flag = ((System_flag + 1) & 0xFF) % 4;
+            } else {
+                System_flag = 0x8000;
+            }
+        } else {
+            pub_pause = 0;
+            System_flag = 0;
+        }
+    }
 }
 
 void NetDisp(void) {
@@ -225,7 +419,7 @@ void DebugProgram(void) {
     /* empty in the retail build */
 }
 
-void InitCommonWork(void) {
+static void InitCommonWork(void) {
     int i;
 
     app_mem_top = 0x8A0000;
@@ -235,9 +429,9 @@ void InitCommonWork(void) {
     material_heap_area = app_mem_top + 0x2D200;
     hierarchy_heap_area = app_mem_top + 0x41200;
     mdlw_heap_area = app_mem_top + 0x109200;
+    sprite_area = app_mem_top + 0x10D200;
     stage_hit_area_f = app_mem_top + 0x112200;
     stage_hit_area_w = app_mem_top + 0x142200;
-    sprite_area = app_mem_top + 0x10D200;
     mission_area = app_mem_top + 0x15A200;
     cam_data_area = app_mem_top + 0x162200;
     pl_area_top = 0xA06200;

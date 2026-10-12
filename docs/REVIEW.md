@@ -12,6 +12,29 @@ obvious workarounds.
 
 ## Open
 
+### Host pad driver and system_w_set replaced by the matched game C (12 Oct 2026, agent C)
+- **Dropped:** src/pc/rt/rt_pad.c's own copy of ioRead_sub (read_port0 built
+  Psw from the host pad: bit table, stick angle/power, trg/rel, key repeat)
+  and src/pc/rt/rt_boot.c's copy of system_w_set.
+- **Now:** src/main/sys/f_ioread.c (the whole original f_ioread file, all 13
+  functions matching) is in the PC/Xbox build for ioRead, ioRead2 (with the
+  static ioRead_sub) and system_w_set (PICK_X in tools/build_pc.sh). The
+  host only plays the fl pad library: it fills flpad_adr[0] (buttons, stick
+  direction bits beyond half way as before, stick angle in degrees and power)
+  and calls the game's ioRead once per tick; ports 1-3 read as unplugged.
+  The pad structures are in include/ioread.h.
+- **Why:** owner's rule: matched game C over host imitations. Behaviour is
+  the same by construction (same bit table, same angle formula, same repeat);
+  ports 1-3 now get the game's own "unplugged" update every tick instead of
+  staying untouched zeros.
+- **Checked:** test_quest_loop, test_progression, test_menu, test_name_entry,
+  test_pick, test_urgent, test_frog, test_activities (37) pass; Xbox build
+  links (0 failed). Not run in xemu.
+- **Also dropped:** the runs sys/io01-io04, ior01 and the near-match copies
+  ioread_nm.c / mmv_nm.c (replaced by f_ioread.c).
+- **To revert:** the agent-C commit "sys: f_ioread.c whole-file TU; PC uses
+  the game's ioRead/system_w_set".
+
 ### Model work file: 13 runs and 6 near-match copies replaced by one translation unit (12 Oct 2026, agent C)
 - **Dropped:** the runs model/gm01-gm05, mkm01, hp01-hp04, light03 (get_mdlw_ptr),
   crmdl03 (Pl_model_id_set) and clay/get_clay_ptr, and the near-match working

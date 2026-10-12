@@ -1426,3 +1426,23 @@ Start: main 42.150% (639224 bytes).
   and all 24 orders of the four inits: nothing).
 - crmdl_nm.c em_create_model now matches (not yet linked at this point): no `kp` pointer local, write `g->em_kind[slot]` every time
   (the compiler's CSE temp gets the original register); `load_enemy_sub_model()` is called with ONE argument (K&R, stale a1/a2).
+### sys/f_ioread.c (0x11F3F0-0x120234, whole original file, all 13 functions match; rebuild OK x5)
+- New: MakeMediaVersion, ioread_sub, ioRead, ioRead_sub (1140 bytes), ioRead2, InitCommonWork.
+  - MakeMediaVersion: `char delim[5] = " :\t\n";` (initialised local; MWCC copies its .sdata initialiser with lwc1/swc1 + lbu).
+    The initialiser lands in the object's .sdata, placed with a new kind of slot: `main:sdata 0x003876C0 0x003876C8 sys/f_ioread`
+    (setup_split already supports any data region; END must reach the next 8-byte boundary or the remaining sdata asm object
+    is pushed up by its alignment).
+  - ioread_sub: the original keeps a dead `lbu` and `li 1`: `u8 st = flpad_adr[n].state; if (st == 1) { return; }`.
+  - ioRead_sub: straight from the asm; `u32 b; u16 v;` declared before `PSWE *p` (register of p); one `u16 v` reused for the
+    stick bits; `(ang << 16) / 360`; `if (rcnt > 10) { if (rcnt > 12) ... }` (slti at).
+  - ioRead / ioRead2 keep the loop counter in a2 / t1 because the static callee is defined before them (TU order matters).
+  - InitCommonWork (permuter, 7000 iterations): the source stores sprite_area BEFORE stage_hit_area_f/_w; MWCC's scheduler moves the
+    store. LESSON: independent global stores are reordered by the scheduler, so the source order can differ from the store order.
+- PC: f_ioread.c is now in the PC build (PICK_X: ioRead, ioRead2, system_w_set); rt_pad.c fills the fl pad data (flpad_adr) and
+  calls the game's ioRead instead of its own ioRead_sub copy; rt_boot.c's system_w_set copy is gone. include/ioread.h holds
+  FPADI/PSWE. Tests: quest_loop, progression, menu, name_entry, pick, urgent, frog, activities pass; Xbox build 0 failed.
+### model/crmdl05.c (0x124820-0x124C48): em_create_model, npc_create_model match (rebuild OK).
+- npc_create_model: pl_model_work_set is called with SEVEN arguments (K&R: `pl_shader_tbl0[0], 0x100, 0`), the switch labels 0..3
+  in source order; matched first try.
+- release_enemy_model (still in crmdl_nm.c, 73/90): K&R `s16 slot` keeps the raw a0 for em_motion_free(slot); the original does not
+  CSE `slot * 2` between the two halves (mine does, one extra saved register). Not solved.

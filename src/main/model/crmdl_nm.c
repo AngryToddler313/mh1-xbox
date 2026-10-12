@@ -198,32 +198,49 @@ void load_enemy_model(int);
 void load_enemy_sub_model();
 void load_npc_model(int);
 MDLW *em_model_work_set(int, int, int, int, int, int);
-MDLW *pl_model_work_set(int, int, int, int, int, int);
+MDLW *pl_model_work_set();
+extern s32 pl_shader_tbl0[];
 
-void release_enemy_model(int no) {
+void release_enemy_model(slot)
+s16 slot;
+{
     GWM *g = &game_w;
-    s16 slot = no;
     s16 i;
     s16 t;
     int end;
+    u8 *h;
 
-    for (i = game_w.mdl_no[slot], end = i + game_w.mdl_n[slot]; i < end; i++) {
-        t = i;
-        model_work_free(t);
-        if (mdlw_heap[i] != 0) {
-            clr_used_mdlw(t, 1);
-        }
-    }
-    if (g->sub_n[slot] != -1) {
-        for (i = g->sub_no[slot], end = i + g->sub_n[slot]; i < end; i++) {
+    i = game_w.mdl_no[slot];
+    end = i + game_w.mdl_n[slot];
+    if (i < end) {
+        h = mdlw_heap + i;
+        do {
             t = i;
             model_work_free(t);
-            if (mdlw_heap[i] != 0) {
+            if (*h != 0) {
                 clr_used_mdlw(t, 1);
             }
+            i++;
+            h++;
+        } while (i < end);
+    }
+    if (g->sub_n[slot] != -1) {
+        i = g->sub_no[slot];
+        end = i + g->sub_n[slot];
+        if (i < end) {
+            h = mdlw_heap + i;
+            do {
+                t = i;
+                model_work_free(t);
+                if (*h != 0) {
+                    clr_used_mdlw(t, 1);
+                }
+                i++;
+                h++;
+            } while (i < end);
         }
     }
-    em_motion_free(no);
+    em_motion_free(slot);
     g->em_kind[slot] = 0;
 }
 
@@ -268,31 +285,32 @@ void em_create_model(int slot) {
 }
 
 void npc_create_model(int slot) {
-    int h;
+    GWM *g = &game_w;
     int area;
+    int h;
 
     load_npc_model(slot);
     area = pl_area_top;
     h = get_start_mdlw(1);
-    if ((s16)h >= 0) {
-        game_w.mdl_no[slot] = h;
-        game_w.mdl_n[slot] = 1;
-        game_w.mdl_ptr[slot] = (s32)get_mdlw_ptr((s16)h);
-        set_used_mdlw((s16)h, 1);
+    if (h >= 0) {
+        g->mdl_no[slot] = h;
+        g->mdl_n[slot] = 1;
+        g->mdl_ptr[slot] = (s32)get_mdlw_ptr(h);
+        set_used_mdlw(h, 1);
         switch (slot) {
         case 0:
-            pl_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
-            return;
+            pl_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], pl_shader_tbl0[0], 0x100, 0);
+            break;
         case 1:
-            em_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 0xA);
-            return;
+            break;
         case 2:
-            em_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 9);
-            return;
+            break;
         case 3:
-            em_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 0x20);
             break;
         }

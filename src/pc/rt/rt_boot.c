@@ -2,7 +2,7 @@
  * rt_boot.c - power-on to the village: the game's own boot tasks on the
  * port runtime.
  *
- * On the PS2, ACRMain (main 0x11F3F0, src/main/sys/ioread_nm.c) sets up the
+ * On the PS2, ACRMain (main 0x11F3F0, src/main/sys/f_ioread.c) sets up the
  * system work (InitSystemData), loads select.bin and starts its Init_task
  * in the task scheduler (src/main/sys/tsk_nm.c). From there everything is
  * the game's own code, run by the Scheduler once per frame:
@@ -47,9 +47,7 @@ void option_default_set(void);
 void User_data_init(void);
 void SoftKeyboard_init(void);
 void Default_reibun_set(void);
-void str_outmode(int);
-void str_master_vol(int);
-void flAdjustScreen(int, int);
+void system_w_set(void);       /* src/main/sys/f_ioread.c */
 void rt_font_tick_begin(void);
 void rt_font_set_draw(int on);
 void rt_prims_reset(void);
@@ -79,32 +77,7 @@ int rt_boot_title(void)
     return 0;
 }
 
-/* ------------------------------------------------------------ system work
- * system_w_set (main, src/main/sys/ioread_nm.c): the options into system_w */
-void system_w_set(void)
-{
-    system_w[0x1A] = 0;
-    system_w[0x3C] = 0;
-    system_w[0x22] = 1;
-    system_w[0x39] = 5;
-    system_w[0x2F] = 0xFF;
-    system_w[0x38] = 0;
-    system_w[0x3A] = 0;
-    system_w[0x3B] = 0;
-    system_w[0x07] = 1;
-    system_w[0x04] = 0;
-    system_w[0x24] = 0;
-    system_w[0x14] = 1;
-    system_w[0x31] = 1;
-    system_w[0x06] = 0;
-    system_w[0x05] = 0;
-    system_w[0x17] = (u8)option_w[0];   /* outmode, se_vol, bgm_vol (sysw.h) */
-    system_w[0x36] = (u8)option_w[1];
-    system_w[0x37] = (u8)option_w[2];
-    str_outmode(option_w[0]);
-    str_master_vol(0);
-    flAdjustScreen(option_w[5], option_w[6]);
-}
+/* system_w_set (the options into system_w) is the game's own, src/main/sys/f_ioread.c */
 
 /* Card_task / init_card_w (main 0x100E20, src/main/sys/adxs04.c) */
 void Card_task(void *t) { (void)t; }
@@ -174,7 +147,7 @@ int PatchLoadinDNAS_Main(void) { return 1; }
 /* ------------------------------------------------------------ boot */
 void rt_boot_init(void)
 {
-    /* InitSystemData (ioread_nm.c) */
+    /* InitSystemData (f_ioread.c) */
     system_w_init();
     option_default_set();
     User_data_init();

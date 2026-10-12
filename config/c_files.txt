@@ -548,10 +548,8 @@ main 0x00161C20 0x00161C9C font/fs2_02
 main 0x00161D40 0x00161DE0 font/fs2_03
 main 0x00162640 0x00162DA8 font/gfs01
 main 0x0015A520 0x0015A6C4 sprite/calcpoint
-main 0x0011F3F0 0x0011F668 sys/io01
-main 0x0011F8A0 0x0011F9DC sys/io02
-main 0x0011FAA0 0x0011FAB8 sys/io03
-main 0x00120020 0x00120078 sys/io04
+main 0x0011F3F0 0x00120234 sys/f_ioread
+main:sdata 0x003876C0 0x003876C8 sys/f_ioread
 main 0x00125060 0x00125074 sys/tsk01
 main 0x00125200 0x00125340 sys/tsk02
 main 0x00169A80 0x00169C20 sys/vw01
@@ -1472,13 +1470,13 @@ main 0x00169990 0x00169A7C sys/view201
 main 0x00114A90 0x00114AD8 hit/hitid01
 main 0x0012A110 0x0012A1CC menu/menu39
 main 0x001246E0 0x00124818 model/crmdl01
+main 0x00124820 0x00124C48 model/crmdl05
 main 0x00124DC0 0x00124F74 model/crmdl02
 main 0x0028CC40 0x0028CE00 hit/hitpk01
 main 0x00290E50 0x00290E7C reward/rwkey01
 main 0x00293370 0x00293418 reward/rwkey02
 main 0x0014E0C0 0x0014E2C4 plsel/plsel00
 main 0x00154D00 0x00154D90 pl/pl_ammo
-main 0x0011F9E0 0x0011FA24 sys/ior01
 main 0x00163D20 0x00163E3C weapon/wtrans01
 main 0x0014EF60 0x0014EF94 pl/pl_flagck
 main 0x00159380 0x001593B8 pl/taru01
