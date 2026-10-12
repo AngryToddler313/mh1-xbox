@@ -69,6 +69,8 @@ struct gfx_clay {
     float *pose;                /* nbone * 16, or NULL = bind pose */
     int posed;
     gfx_light light;
+    float (*bsph)[GFX_SKIN_PALETTE + 1][4];   /* per skin batch: bind-space sphere (xyz, r; r < 0 none) of the vertices
+                                                 each palette slot moves, [GFX_SKIN_PALETTE] the rigid ones (batch_in_front) */
 };
 #define SKIN_STRIDE 80          /* pos 3f, nrm 3f, col 4ub, st 2f, w 4f, slot*3 4f, flag 2f */
 
@@ -245,8 +247,11 @@ int gfx_init(int width, int height, const char *title, int hidden)
     return 0;
 }
 
+static void gpu_free_pending(int all);
+
 void gfx_shutdown(void)
 {
+    gpu_free_pending(1);
     pb_kill();
     if (G.ring)
         MmFreeContiguousMemory(G.ring);
@@ -269,12 +274,72 @@ static void wait_idle(void)
         SwitchToThread();
 }
 
+/* GPU memory given back late (textures, palettes, vertex buffers): NV2A caches texels and the palette by address and
+ * does not notice the CPU writing a new texture where a freed one was (the vertex cache has a method for that,
+ * NV097_BREAK_VERTEX_BUFFER_CACHE; no texture cache method is known here). Freed at once, a texture's memory was
+ * often reused by the next screen's texture in the same tick, which could then show stale texels or palette colours
+ * for its first frames on hardware (owner report, 12 Oct 2026: "screens flash as they fade in"; xemu re-reads memory
+ * and showed every fade frame like the PC). Kept for DEFER_FRAMES drawn frames, then freed; when an allocation
+ * fails, everything pending is freed first (the GPU waited for) and the allocation tried again. Also spares the
+ * wait for the GPU at every release (a stage change releases hundreds). */
+#define DEFER_FRAMES 3
+static struct { void *p; uint32_t frame; } *deferred;
+static int ndeferred, capdeferred;
+static uint32_t frame_no;
+
+static void gpu_free_pending(int all)
+{
+    int i, k = 0;
+    if (!ndeferred)
+        return;
+    if (all)
+        wait_idle();
+    for (i = 0; i < ndeferred; i++)
+        if (all || frame_no - deferred[i].frame >= DEFER_FRAMES)
+            MmFreeContiguousMemory(deferred[i].p);
+        else
+            deferred[k++] = deferred[i];
+    ndeferred = k;
+}
+
+static void gpu_free_later(void *p)
+{
+    if (!p)
+        return;
+    if (ndeferred == capdeferred) {
+        int cap = capdeferred ? 2 * capdeferred : 256;
+        void *n = realloc(deferred, sizeof *deferred * (size_t)cap);
+        if (!n) {                           /* no room to remember it: the old way */
+            wait_idle();
+            MmFreeContiguousMemory(p);
+            return;
+        }
+        deferred = n;
+        capdeferred = cap;
+    }
+    deferred[ndeferred].p = p;
+    deferred[ndeferred].frame = frame_no;
+    ndeferred++;
+}
+
+static void *gpu_alloc(size_t n)
+{
+    void *p = MmAllocateContiguousMemoryEx(n, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+    if (!p && ndeferred) {
+        gpu_free_pending(1);
+        p = MmAllocateContiguousMemoryEx(n, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+    }
+    return p;
+}
+
 void gfx_begin_frame(uint32_t c)
 {
     pb_wait_for_vbl();
     pb_reset();
     pb_target_back_buffer();
     wait_idle();
+    frame_no++;
+    gpu_free_pending(0);                       /* the GPU is idle: what was released DEFER_FRAMES frames ago goes */
     G.ring_used = 0;
     push1(NV097_SET_DEPTH_MASK, 1);
     pb_erase_depth_stencil_buffer(0, 0, G.w, G.h);
@@ -352,9 +417,8 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
         uint8_t *idx = malloc((size_t)w * h);
         int np = idx ? gfx_to_indexed((const uint32_t *)rgba, w * h, pal, idx) : -1;
         if (np >= 0) {
-            t->pal = MmAllocateContiguousMemoryEx(1024, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
-            t->mem = t->pal ? MmAllocateContiguousMemoryEx((size_t)w * h, 0, GPU_MAXRAM, 0,
-                                                            PAGE_READWRITE | PAGE_WRITECOMBINE) : NULL;
+            t->pal = gpu_alloc(1024);
+            t->mem = t->pal ? gpu_alloc((size_t)w * h) : NULL;
         }
         if (np >= 0 && t->mem) {
             uint32_t mx, my;
@@ -386,7 +450,7 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
      * the 1x1 white texture: pitch 4). Linear rows are padded to it. */
     t->pitch = PITCH64((uint32_t)w * 4);
     size = (size_t)t->pitch * h;
-    t->mem = MmAllocateContiguousMemoryEx(size, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+    t->mem = gpu_alloc(size);
     if (!t->mem) {
         free(t);
         return NULL;
@@ -416,12 +480,10 @@ void gfx_release_texture(gfx_texture *t)
 {
     if (!t)
         return;
-    wait_idle();                       /* the GPU may still read it this frame */
     rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", -(long)t->bytes);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", -(long)t->src);
-    MmFreeContiguousMemory(t->mem);
-    if (t->pal)
-        MmFreeContiguousMemory(t->pal);
+    gpu_free_later(t->mem);             /* not reused while the GPU may still read it or cache it */
+    gpu_free_later(t->pal);
     if (G.tex == t)
         G.tex = NULL;
     free(t);
@@ -754,7 +816,7 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
         c->radius = sqrtf(r2);
     }
     if (!d->dynamic && d->nvert > 0) {      /* static geometry (the stage): its vertices stay in GPU-visible memory */
-        c->vb = MmAllocateContiguousMemoryEx(sizeof(vtx) * (size_t)d->nvert, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+        c->vb = gpu_alloc(sizeof(vtx) * (size_t)d->nvert);
         if (c->vb) {
             int i;
             rt_ms_add("static vertex buffers (GPU)", (long)(sizeof(vtx) * (size_t)d->nvert));
@@ -991,17 +1053,13 @@ void gfx_release_clay(gfx_clay *c)
 {
     if (!c)
         return;
-    if (c->vb) {
-        wait_idle();
-        MmFreeContiguousMemory(c->vb);
-    }
+    gpu_free_later(c->vb);
     if (c->skin) {
-        wait_idle();
         gfx_skin_free(c->skin);
         free(c->skin);
-        if (c->svb)
-            MmFreeContiguousMemory(c->svb);
+        gpu_free_later(c->svb);
         free(c->pose);
+        free(c->bsph);
     }
     free(c->pos);
     free(c->st);
@@ -1035,7 +1093,7 @@ int gfx_clay_set_skin(gfx_clay *c, const gfx_skin_desc *s)
         free(m);
         return -1;              /* stays a CPU clay (fl_model skins it) */
     }
-    c->svb = MmAllocateContiguousMemoryEx((size_t)m->nv * SKIN_STRIDE, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+    c->svb = gpu_alloc((size_t)m->nv * SKIN_STRIDE);
     if (!c->svb) {
         gfx_skin_free(m);
         free(m);
@@ -1054,6 +1112,45 @@ int gfx_clay_set_skin(gfx_clay *c, const gfx_skin_desc *s)
             f[k] = 3.0f * m->slot[4 * i + k];
         memcpy(v + 52, f, 16);
         memcpy(v + 68, m->flag + 2 * i, 8);
+    }
+    c->bsph = malloc(sizeof *c->bsph * (size_t)(m->nbatch > 0 ? m->nbatch : 1));
+    for (i = 0; c->bsph && i < m->nbatch; i++) {    /* the slot spheres: box centre, largest distance */
+        const gfx_skin_batch *bt = &m->batch[i];
+        int sl, v2;
+        for (sl = 0; sl <= GFX_SKIN_PALETTE; sl++) {
+            float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, r2 = 0, *o = c->bsph[i][sl];
+            int any = 0, q;
+            for (v2 = bt->vfirst; v2 < bt->vfirst + bt->nv; v2++) {
+                const float *pp = m->pos + 3 * v2;
+                int uses = sl == GFX_SKIN_PALETTE ? m->flag[2 * v2] != 0.0f : 0;
+                for (q = 0; q < 4 && !uses; q++)
+                    uses = m->slot[4 * v2 + q] == sl && m->w[4 * v2 + q] != 0.0f;
+                if (!uses)
+                    continue;
+                any = 1;
+                for (q = 0; q < 3; q++) {
+                    if (pp[q] < lo[q]) lo[q] = pp[q];
+                    if (pp[q] > hi[q]) hi[q] = pp[q];
+                }
+            }
+            if (!any) {
+                o[0] = o[1] = o[2] = 0;
+                o[3] = -1;
+                continue;
+            }
+            for (q = 0; q < 3; q++)
+                o[q] = (lo[q] + hi[q]) * 0.5f;
+            for (v2 = bt->vfirst; v2 < bt->vfirst + bt->nv; v2++) {
+                const float *pp = m->pos + 3 * v2;
+                float dx = pp[0] - o[0], dy = pp[1] - o[1], dz = pp[2] - o[2];
+                int uses = sl == GFX_SKIN_PALETTE ? m->flag[2 * v2] != 0.0f : 0;
+                for (q = 0; q < 4 && !uses; q++)
+                    uses = m->slot[4 * v2 + q] == sl && m->w[4 * v2 + q] != 0.0f;
+                if (uses && dx * dx + dy * dy + dz * dz > r2)
+                    r2 = dx * dx + dy * dy + dz * dz;
+            }
+            o[3] = sqrtf(r2);
+        }
     }
     /* the mesh keeps only what drawing needs (batches, indices) */
     free(m->pos); free(m->nrm); free(m->st); free(m->w); free(m->slot); free(m->col); free(m->flag); free(m->src);
@@ -1125,6 +1222,155 @@ static void push_consts(uint32_t first, const float *v, int n4)
     pb_end(p);
 }
 
+/* ------------------------------------------------------------ skinned batches at the camera
+ * skin.vs.cg divides by w like vs.vs.cg, so a skinned triangle with a corner at or behind the eye comes out
+ * wrapped across the screen, which execute_cpu's near clipping prevents for the CPU clays. NV2A itself does not
+ * clip it (xemu draws through OpenGL, which does: the frames there looked right). Owner report from the real
+ * Xbox, 12 Oct 2026: "carcasses flicker" - a hunter carving a carcass has the camera right at the body (PC trace:
+ * the Aptonoth's body part has vertices behind w = 1 in most frames of a carve). Such a batch is skinned here on
+ * the CPU with the shader's math (gfx_skin_eval), from its own vertex buffer, cut at w = CLIP_W and drawn through
+ * vs.vs.cg; the other batches keep the GPU path. */
+
+/* every vertex of batch b in front of w = CLIP_W? A vertex is its rigid part plus the weighted sum of its bind
+ * position through its palette bones, so it lies in the hull of the slot spheres (bind-space spheres of the
+ * vertices each slot moves, gfx_clay_set_skin) moved by their bones and of the rigid sphere [weights as stored sum
+ * to about 1, not exactly: 10% margin on the radius]. */
+static int batch_in_front(const gfx_clay *c, int b, const float *mvp)
+{
+    const gfx_skin_batch *bt = &c->skin->batch[b];
+    const float (*sp)[4] = c->bsph[b];
+    float len = sqrtf(mvp[3] * mvp[3] + mvp[7] * mvp[7] + mvp[11] * mvp[11]);
+    int i, k;
+    if (sp[GFX_SKIN_PALETTE][3] >= 0 && clip_w_of(mvp, sp[GFX_SKIN_PALETTE]) - 1.1f * sp[GFX_SKIN_PALETTE][3] * len < CLIP_W)
+        return 0;
+    for (i = 0; i < bt->nbone; i++) {
+        static const float id[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+        const float *M = c->pose ? c->pose + 16 * bt->bone[i] : id;
+        float p[3], s2 = 0;
+        if (sp[i][3] < 0)
+            continue;
+        for (k = 0; k < 3; k++) {
+            float r = M[4 * k] * M[4 * k] + M[4 * k + 1] * M[4 * k + 1] + M[4 * k + 2] * M[4 * k + 2];
+            p[k] = sp[i][0] * M[k] + sp[i][1] * M[4 + k] + sp[i][2] * M[8 + k] + M[12 + k];
+            if (r > s2)
+                s2 = r;             /* largest row length: an upper bound of the bone's scale */
+        }
+        if (clip_w_of(mvp, p) - 1.1f * sp[i][3] * sqrtf(s2) * len < CLIP_W)
+            return 0;
+    }
+    return 1;
+}
+
+/* batch b skinned on the CPU (skin.vs.cg's math, as gfx_skin_eval), cut at w = CLIP_W, drawn through vs.vs.cg.
+ * The skinned vertex buffer is only read (the GPU never writes it). */
+static void draw_batch_cpu(gfx_clay *c, int b, const float *mvp, gfx_texture *t)
+{
+    static const float id[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+    const gfx_skin_mesh *m = c->skin;
+    const gfx_skin_batch *bt = &m->batch[b];
+    const gfx_light *L = &c->light;
+    float tm[16], *w;
+    vtx *v;
+    int i, j, k, l, nv = bt->nv, ncross = bt->count / 3, nidx = 0, nnew = nv;
+    if (nv + 2 * ncross > 65535 || !(w = malloc(sizeof(float) * (size_t)(nv + 1))))
+        return;
+    if (!(v = ring_alloc(nv + 2 * ncross))) {      /* worst case: every triangle cut (2 new vertices each) */
+        free(w);
+        return;
+    }
+    for (i = 0; i < nv; i++) {
+        const uint8_t *s = c->svb + (size_t)(bt->vfirst + i) * SKIN_STRIDE;
+        float f[18], rows[3][4], n[3], lc[3] = { 1, 1, 1 };
+        uint8_t col[4];
+        memcpy(f, s, 24);                           /* pos, normal */
+        memcpy(col, s + 24, 4);
+        memcpy(f + 6, s + 28, 8);                   /* st */
+        memcpy(f + 8, s + 36, 32);                  /* weights, 3 * slot */
+        memcpy(f + 16, s + 68, 8);                  /* rigid, tinted */
+        for (j = 0; j < 3; j++)
+            for (k = 0; k < 4; k++)
+                rows[j][k] = f[16] * (j == k ? 1.0f : 0.0f);
+        for (k = 0; k < 4; k++) {
+            int slot = (int)(f[12 + k] / 3.0f + 0.5f);
+            const float *M = c->pose && slot < bt->nbone ? c->pose + 16 * bt->bone[slot] : id;
+            for (j = 0; j < 3; j++) {
+                rows[j][0] += M[j] * f[8 + k];
+                rows[j][1] += M[4 + j] * f[8 + k];
+                rows[j][2] += M[8 + j] * f[8 + k];
+                rows[j][3] += M[12 + j] * f[8 + k];
+            }
+        }
+        for (j = 0; j < 3; j++) {
+            v[i].pos[j] = f[0] * rows[j][0] + f[1] * rows[j][1] + f[2] * rows[j][2] + rows[j][3];
+            n[j] = f[3] * rows[j][0] + f[4] * rows[j][1] + f[5] * rows[j][2];
+        }
+        if (L->lit) {
+            float len2 = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+            if (len2 > 0) {
+                float r = 1.0f / sqrtf(len2);
+                n[0] *= r; n[1] *= r; n[2] *= r;
+            }
+            memcpy(lc, L->ambient, sizeof lc);
+            for (l = 0; l < 3; l++) {
+                float dd = -(n[0] * L->dir[l][0] + n[1] * L->dir[l][1] + n[2] * L->dir[l][2]);
+                if (dd > 0)
+                    for (j = 0; j < 3; j++)
+                        lc[j] += dd * L->col[l][j];
+            }
+        }
+        for (j = 0; j < 3; j++) {
+            float x;
+            if (lc[j] > 1)
+                lc[j] = 1;
+            if (L->tint && f[17] > 0.5f)
+                lc[j] *= L->tint_rgb[j];
+            x = col[j] * lc[j];
+            v[i].col[j] = (uint8_t)(x > 255 ? 255 : x < 0 ? 0 : x);
+        }
+        v[i].col[3] = col[3];
+        v[i].st[0] = f[6];
+        v[i].st[1] = f[7];
+        w[i] = clip_w_of(mvp, v[i].pos);
+    }
+    if (bt->count + 3 * ncross > clip_cap) {
+        free(clip_buf);
+        clip_buf = malloc(sizeof *clip_buf * (size_t)(bt->count + 3 * ncross));
+        clip_cap = clip_buf ? bt->count + 3 * ncross : 0;
+    }
+    if (!clip_buf) {
+        free(w);
+        return;
+    }
+    for (i = 0; i + 2 < bt->count; i += 3) {        /* as execute_cpu */
+        const uint16_t *tr = m->index + bt->first + i;
+        uint16_t poly[4];
+        float tw[3] = { w[tr[0]], w[tr[1]], w[tr[2]] }, tt[4];
+        int np, e, ea[4], eb[4];
+        np = gfx_clip_tri(tw, CLIP_W, ea, eb, tt);
+        for (e = 0; e < np; e++)
+            if (tt[e] == 0.0f) {
+                poly[e] = tr[ea[e]];
+            } else {
+                vtx_lerp(&v[nnew], &v[tr[ea[e]]], &v[tr[eb[e]]], tt[e]);
+                poly[e] = (uint16_t)nnew++;
+            }
+        for (e = 1; e + 1 < np; e++) {
+            clip_buf[nidx++] = poly[0];
+            clip_buf[nidx++] = poly[e];
+            clip_buf[nidx++] = poly[e + 1];
+        }
+    }
+    free(w);
+    if (!nidx)
+        return;
+    use_program(0);
+    set_arrays(v);
+    bind_texture(t);
+    tex_matrix(t, tm, c);
+    upload_constants(mvp, tm, 1);
+    draw_indexed(clip_buf, nidx);
+}
+
 /* skin.vs.cg's constants (tools/build_xbox.py checks cgc's layout):
  * c0 mvp, c4 texture matrix, c8 fog (k, b), c9 fog colour, c10-12 light
  * directions, c13-15 light colours, c16 ambient, c17 tint, c18 mode
@@ -1132,6 +1378,8 @@ static void push_consts(uint32_t first, const float *v, int n4)
 static void draw_skinned(gfx_clay *c, const float *mvp)
 {
     static const float id[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+    static int noclip = -1, tr;
+    static uint32_t nclip, nskin, vclip, f0;
     gfx_skin_mesh *m = c->skin;
     float k[20 * 4], tm[16], rows[GFX_SKIN_PALETTE * 3 * 4], c91[4] = { 1, 0, 0.5f, 0 };
     int b, i, j, l;
@@ -1154,6 +1402,16 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
     k[72] = c->light.lit ? 1.0f : 0.0f;
     for (i = 0; i < 4; i++)                  /* fl state 0x67, as the CPU path multiplies it in */
         k[76 + i] = G.fade == 0xFFFFFFFFu ? 1.0f : ((G.fade >> (i == 3 ? 24 : 16 - 8 * i)) & 255) / 255.0f;
+    if (noclip < 0) {
+        noclip = getenv("RT_SKIN_NOCLIP") != NULL;     /* test aid: the old look (no near clipping of skinned clays) */
+        tr = getenv("RT_SKIN_CLIP_TRACE") != NULL;     /* test aid: how many skinned batches take the CPU path */
+    }
+    if (tr && frame_no - f0 >= 300) {
+        fprintf(stderr, "gfx: %u skinned batches (%u vertices) clipped on the CPU, %u on the GPU in the last %u frames\n",
+                (unsigned)nclip, (unsigned)vclip, (unsigned)nskin, (unsigned)(frame_no - f0));
+        f0 = frame_no;
+        nclip = nskin = vclip = 0;
+    }
     use_program(1);
     push_consts(92, c91, 1);
     for (b = 0; b < m->nbatch; b++) {
@@ -1163,6 +1421,17 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
             continue;
         if (!c->st)
             t = NULL;
+        if (!noclip && c->bsph && !batch_in_front(c, b, mvp)) {
+            draw_batch_cpu(c, b, mvp, t);   /* at the camera: CPU skinning and near clipping */
+            if (tr) {
+                nclip++;
+                vclip += (uint32_t)bt->nv;
+            }
+            continue;
+        }
+        use_program(1);
+        if (tr)
+            nskin++;
         for (i = 0; i < bt->nbone; i++) {
             const float *M = c->pose ? c->pose + 16 * bt->bone[i] : id;
             for (j = 0; j < 3; j++) {           /* row j = column j of the row-vector matrix */
@@ -1184,163 +1453,6 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
     use_program(0);
 }
 
-/* ------------------------------------------------------------ skinned clays at the camera
- * skin.vs.cg divides by w like vs.vs.cg, so a skinned triangle with a corner at or behind the eye comes out
- * wrapped across the screen, as execute_cpu's near clipping prevents for the CPU clays. NV2A itself does not
- * clip it (xemu draws it through OpenGL, which does: the frames there looked right). Owner report from the real
- * Xbox, 12 Oct 2026: "carcasses flicker" - a hunter carving a carcass has the camera right at the body (PC trace:
- * the Aptonoth's body part has vertices behind w = 1 in most frames of a carve). Such a clay is skinned here on
- * the CPU, the shader's math (gfx_skin_eval), from its own vertex buffer, cut at w = CLIP_W and drawn through
- * vs.vs.cg; the others keep the GPU path. */
-
-/* could some vertex of the posed clay be in front of w = CLIP_W? Each vertex is the rigid part plus a weighted sum
- * of its bind position through palette bones, so it lies in the hull of the bind sphere moved by each bone
- * (and by the identity for the rigid part) [weights as stored are near 1 in sum, not exactly: a margin of 10%]. */
-static int skinned_in_front(const gfx_clay *c, const float *mvp)
-{
-    float len = sqrtf(mvp[3] * mvp[3] + mvp[7] * mvp[7] + mvp[11] * mvp[11]);
-    int b;
-    if (clip_w_of(mvp, c->center) - 1.1f * c->radius * len < CLIP_W)
-        return 0;
-    for (b = 0; c->pose && b < c->nbone; b++) {
-        const float *M = c->pose + 16 * b;
-        float p[3], sc, s2 = 0;
-        int k;
-        for (k = 0; k < 3; k++)
-            p[k] = c->center[0] * M[k] + c->center[1] * M[4 + k] + c->center[2] * M[8 + k] + M[12 + k];
-        for (k = 0; k < 3; k++) {           /* largest row length: an upper bound of the scale */
-            float r = M[4 * k] * M[4 * k] + M[4 * k + 1] * M[4 * k + 1] + M[4 * k + 2] * M[4 * k + 2];
-            if (r > s2)
-                s2 = r;
-        }
-        sc = sqrtf(s2);
-        if (clip_w_of(mvp, p) - 1.1f * c->radius * sc * len < CLIP_W)
-            return 0;
-    }
-    return 1;
-}
-
-static void draw_skinned_clipped(gfx_clay *c, const float *mvp)
-{
-    static const float id[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-    gfx_skin_mesh *m = c->skin;
-    const gfx_light *L = &c->light;
-    float tm[16];
-    int b, i, k, j, l;
-    wait_idle();                            /* reads the skinned vertex buffer the GPU may still read */
-    for (b = 0; b < m->nbatch; b++) {
-        const gfx_skin_batch *bt = &m->batch[b];
-        gfx_texture *t = G.batch_tex ? G.batch_tex : bt->tex ? bt->tex : G.tex;
-        float *w;
-        vtx *v;
-        int nv = bt->nv, ncross = 0, nidx = 0, nnew;
-        if (bt->src < 32 && (G.batch_hide >> bt->src & 1))
-            continue;
-        if (!c->st)
-            t = NULL;
-        if (!(w = malloc(sizeof(float) * (size_t)(nv + 1))))
-            continue;
-        ncross = bt->count / 3;             /* worst case: every triangle cut (2 new vertices each) */
-        if (nv + 2 * ncross > 65535 || !(v = ring_alloc(nv + 2 * ncross))) {
-            free(w);
-            continue;
-        }
-        for (i = 0; i < nv; i++) {          /* skin.vs.cg on the CPU (gfx_skin_eval) */
-            const uint8_t *s = c->svb + (size_t)(bt->vfirst + i) * SKIN_STRIDE;
-            float f[20], rows[3][4], n[3], lc[3] = { 1, 1, 1 };
-            uint8_t col[4];
-            memcpy(f, s, 24);                       /* pos, normal */
-            memcpy(col, s + 24, 4);
-            memcpy(f + 6, s + 28, 8);               /* st */
-            memcpy(f + 8, s + 36, 32);              /* weights, 3 * slot */
-            memcpy(f + 16, s + 68, 8);              /* rigid, tinted */
-            for (j = 0; j < 3; j++)
-                for (k = 0; k < 4; k++)
-                    rows[j][k] = f[16] * (j == k ? 1.0f : 0.0f);
-            for (k = 0; k < 4; k++) {
-                int slot = (int)(f[12 + k] / 3.0f + 0.5f);
-                const float *M = c->pose && slot < bt->nbone ? c->pose + 16 * bt->bone[slot] : id;
-                for (j = 0; j < 3; j++) {
-                    rows[j][0] += M[j] * f[8 + k];
-                    rows[j][1] += M[4 + j] * f[8 + k];
-                    rows[j][2] += M[8 + j] * f[8 + k];
-                    rows[j][3] += M[12 + j] * f[8 + k];
-                }
-            }
-            for (j = 0; j < 3; j++) {
-                v[i].pos[j] = f[0] * rows[j][0] + f[1] * rows[j][1] + f[2] * rows[j][2] + rows[j][3];
-                n[j] = f[3] * rows[j][0] + f[4] * rows[j][1] + f[5] * rows[j][2];
-            }
-            if (L->lit) {
-                float len2 = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
-                if (len2 > 0) {
-                    float r = 1.0f / sqrtf(len2);
-                    n[0] *= r; n[1] *= r; n[2] *= r;
-                }
-                memcpy(lc, L->ambient, sizeof lc);
-                for (l = 0; l < 3; l++) {
-                    float dd = -(n[0] * L->dir[l][0] + n[1] * L->dir[l][1] + n[2] * L->dir[l][2]);
-                    if (dd > 0)
-                        for (j = 0; j < 3; j++)
-                            lc[j] += dd * L->col[l][j];
-                }
-            }
-            for (j = 0; j < 3; j++) {
-                float x;
-                if (lc[j] > 1)
-                    lc[j] = 1;
-                if (L->tint && f[17] > 0.5f)
-                    lc[j] *= L->tint_rgb[j];
-                x = col[j] * lc[j];
-                v[i].col[j] = (uint8_t)(x > 255 ? 255 : x < 0 ? 0 : x);
-            }
-            v[i].col[3] = col[3];
-            v[i].st[0] = f[6];
-            v[i].st[1] = f[7];
-            w[i] = clip_w_of(mvp, v[i].pos);
-        }
-        /* the batch's triangles cut at w = CLIP_W (as execute_cpu) */
-        nidx = 0;
-        nnew = nv;
-        if (bt->count + 3 * ncross > clip_cap) {
-            free(clip_buf);
-            clip_buf = malloc(sizeof *clip_buf * (size_t)(bt->count + 3 * ncross));
-            clip_cap = clip_buf ? bt->count + 3 * ncross : 0;
-        }
-        if (!clip_buf) {
-            free(w);
-            continue;
-        }
-        for (i = 0; i + 2 < bt->count; i += 3) {
-            const uint16_t *tr = m->index + bt->first + i;
-            uint16_t poly[4];
-            float tw[3] = { w[tr[0]], w[tr[1]], w[tr[2]] }, tt[4];
-            int np, e, ea[4], eb[4];
-            np = gfx_clip_tri(tw, CLIP_W, ea, eb, tt);
-            for (e = 0; e < np; e++)
-                if (tt[e] == 0.0f) {
-                    poly[e] = tr[ea[e]];
-                } else {
-                    vtx_lerp(&v[nnew], &v[tr[ea[e]]], &v[tr[eb[e]]], tt[e]);
-                    poly[e] = (uint16_t)nnew++;
-                }
-            for (e = 1; e + 1 < np; e++) {
-                clip_buf[nidx++] = poly[0];
-                clip_buf[nidx++] = poly[e];
-                clip_buf[nidx++] = poly[e + 1];
-            }
-        }
-        free(w);
-        if (!nidx)
-            continue;
-        set_arrays(v);
-        bind_texture(t);
-        tex_matrix(t, tm, c);
-        upload_constants(mvp, tm, 1);
-        draw_indexed(clip_buf, nidx);
-    }
-}
-
 void gfx_execute_clay(gfx_clay *c)
 {
     float mvp[16];
@@ -1353,19 +1465,7 @@ void gfx_execute_clay(gfx_clay *c)
     mat_mul(mvp, G.world, G.view);
     mat_mul(mvp, mvp, G.proj);
     mat_mul(mvp, mvp, G.viewport);
-    static int noclip = -1;
-    if (noclip < 0)
-        noclip = getenv("RT_SKIN_NOCLIP") != NULL;     /* test aid: the old look (no near clipping of skinned clays) */
-    if (noclip || skinned_in_front(c, mvp))
-        draw_skinned(c, mvp);
-    else {
-        static int traced;
-        if (traced < 20 && getenv("RT_SKIN_CLIP_TRACE")) {     /* test aid: the first CPU-clipped skinned draws */
-            traced++;
-            fprintf(stderr, "gfx: skinned clay %p (%d vertices) at the camera: skinned and clipped on the CPU\n", (void *)c, c->nvert);
-        }
-        draw_skinned_clipped(c, mvp);       /* at the camera: CPU skinning and near clipping */
-    }
+    draw_skinned(c, mvp);
 }
 
 /* ------------------------------------------------------------ video */

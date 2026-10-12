@@ -41,5 +41,5 @@ run() {     # run N INPUT ENV "times"
 }
 run 1 $OUT/input1.txt $OUT/env1.txt "60 120 180 240 300 360 420 480"
 grep -E "quest 131 (START|CLEAR)|money \+|back in the village" $OUT/serial1.txt $OUT/stderr1.txt | sed 's/^[^:]*://'
-run 2 $D/continue.txt $OUT/env2.txt "60 90"
+run 2 $D/continue.txt $OUT/env2.txt "60 90 120"
 if grep -q "money 1550" $OUT/stderr2.txt; then echo "xemu loop OK: CONTINUE has 1550z (see $OUT)"; else echo "xemu loop FAILED (see $OUT)"; exit 1; fi
