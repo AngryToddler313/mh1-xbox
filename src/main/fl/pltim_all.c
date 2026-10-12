@@ -426,26 +426,23 @@ void plMemmove(s8 *dst, s8 *src, int n) {
 }
 #endif
 
-/* original bytes: build/raw/plCalcAddress.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm int plCalcAddress(int x, int y, PLCTX *c)
-{
-#include "plCalcAddress.inc"
-}
-#else
 int plCalcAddress(int x, int y, PLCTX *c) {
+    int a;
+
     if (x < 0 || y < 0 || x >= c->w || y >= c->h) {
         return 0;
     }
     if (c->bpp == 0) {
         if (c->flags & 0x40) {
-            return c->base + c->stride * y + x;
+            a = c->base + c->stride * y;
+            return a + x;
         }
-        return c->base + c->stride * y + x / 2;
+        a = c->base + c->stride * y;
+        return a + x / 2;
     }
-    return c->base + c->stride * y + x * c->bpp;
+    a = c->base + c->stride * y;
+    return a + x * c->bpp;
 }
-#endif
 
 int plDrawPixel(PLCTX *c, PLPIX *p) {
     u8 *a;

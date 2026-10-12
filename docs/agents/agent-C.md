@@ -1466,3 +1466,15 @@ Start: main 42.150% (639224 bytes).
   same `u8 *e` as the monster loop); separate `p`/`j` locals gave the original instructions with other registers.
   Same change in bgm_nm.c (PC build). Also light_nm.c light_change_normal 39 -> 17 (`s++; s++;` instead of `s += 2`; the +8 of the
   table row inline), mcact_nm.c McActAvailSet: `sz += (n + 1) / 2; f->blocks = sz + 2;` (registers still differ).
+### fl raw holdouts closed (rebuild OK x5): plGetInitMotionSetSizeFromAHI, plCalcAddress, flPS2GetTextureInfoFromContext,
+### flPS2GetVramTransAdrs, flPS2GetPaletteInfoFromContext (fltex01.c is all C now)
+- plGetInitMotionSetSizeFromAHI: `n = plAHIGetTreeModelNum(..); return n * 64 + 16;` (call result in a local first) + early `return 0`.
+- plCalcAddress: `a = c->base + c->stride * y; return a + x;` in each branch keeps the add operand order (base first); any one-line
+  expression is canonicalised to x + base.
+- flPS2GetTextureInfoFromContext: real bug in the old near-match: pixel format 3 sets x0C = 3 (the compare constant is reused), not 2.
+- flPS2GetVramTransAdrs: `default: return -1;` written FIRST in the switch (laid out at the end of the ladder), and
+  `if (t->mips <= level)` for the `sltu at` form.
+- flPS2GetPaletteInfoFromContext: same default-first switch, and the first flPS2GetTextureBuffWidth call passes ONE argument (K&R):
+  the original relies on a1 = 1 left from the format check.
+- plCreateInitMotionSetFromAHI 9 -> 4 (store order tmp+2, tmp+4, node, tmp+8); system_hard_init stays 4 (argument load order of
+  the last flPS2IopModuleLoad; probably string literals in the source).
