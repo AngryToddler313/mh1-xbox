@@ -1207,3 +1207,34 @@ pl_mv021 (the default-block a0 reload).
   return 0, `(u16)(sw & 0xC00)`; left: the x54 load goes to v1 instead of a0).
 - Parked: ZoomRateCalc (8: z[2] in f0 instead of f1), WallHitInit (6), cam_rail_move (41: the original keeps `sec`
   in a stack slot), HitWallPlayer (27).
+
+## Lobby round (agent B, 12 Oct 2026): online town code, lb_cli.c whole unit
+Assignment: the lobby overlay, functions the ONLINE=1 PC build runs as stand-ins / near-match copies first.
+- lb_cli.c now covers its whole original compilation unit 0x5B7020-0x5C1B5C (the literal numbers @NNNN keep rising
+  through it; the next unit starts at net_time_str's @273 / @291, 0x5C1B60). Added: the HTML text renderer
+  (Split_TagCode, Analysis_TagCode, Analysis_StringData, Display_StringData, nwDispStr_Html: all byte-matched,
+  check_halfcode raw) and the 29 b/ runs 0x5C0680-0x5C1B5C (merged unchanged; per-run typedef / macro names got a
+  `_<run>` suffix, objects a run declared with its own type are aliases in config/lobby_aliases.txt).
+  CallBack_Event_MatchEntryUser (6 lines) and CallBack_Event_RoomLeaver (15: s0/s2 swap) stay raw: the TU context
+  did not change them (checked).
+- Rodata: the two new jump tables (Analysis_TagCode @3631 0x65EB70, Display_StringData @3836 0x65EBA0) each need a
+  `lobby:rodata` line for f/lb_cli; the "END" literal (@3529) is used through its extern symbol (a literal in C gets
+  inlined by MWCC's strcpy: lwc1/swc1 of 4 bytes).
+- Lessons (function that shows it):
+  - The Shift-JIS lead-byte test `(c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100)` appears as two temporaries
+    (a2/a3, `daddu a2,a3`) and `slti c,0x100` that is not folded: it is an `inline static int` function, not a macro
+    (nwDispStr_Html, Split_TagCode, Analysis_StringData). The loop test on it wants `while (f(..) == 0)`; `!f(..)`
+    gives sltu/xori (Split_TagCode).
+  - `if (!line_h)` (not `line_h == 0.0f`) gives the original's `c.eq.s f20, f0` operand order (Display_StringData).
+  - A late load scheduled after a float table expression: the permuter's `tbl[(long long)html_size]` index reproduced
+    it (Display_StringData's last line); nothing cleaner found.
+  - `char c = *p;` loaded once but `if (!f(*p))` with the inline helper re-reading *p, then `if (c == 0)` gave the
+    original register pair (Analysis_StringData, from the permuter); n++ placed after the first store in each block.
+  - check.py ignores gp-relative addends: nwDispStr_Html matched in check.py but rebuild failed until
+    `html_default_x = html_x = x` (store order html_x first).
+  - equip_ok_chk (lb_tu_ib.c) was matched C but still listed in config/c_rawfuncs.txt (not counted): line dropped.
+    `grep '#include "NAME.inc"'` for every c_rawfuncs entry finds such leftovers.
+- Parked: check_halfcode (2 lines: the original has an extra `b end; nop` after the do-while; 12 loop spellings and a
+  permuter run did not get it), disp_string_handle (7: `v = 4; if (a != b) v = 0;` in an int temp, then (s8) into s1;
+  every spelling folds the constant straight into s1), itembox_sellout (34 instructions, register choice; perm.py
+  cannot run on it: raw functions have no asm/lobby/*.s).

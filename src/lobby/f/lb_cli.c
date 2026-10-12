@@ -1,4 +1,4 @@
-/* lb_cli - one translation unit 0x005B7020-0x005C0678 (lbtu3): the lobby client, then the small HTML text renderer (nwDispStr_Html). */
+/* lb_cli - one translation unit 0x005B7020-0x005C1B5C (lbtu3): the lobby client, the small HTML text renderer (nwDispStr_Html), the mail / comment requests and the server notice callbacks. */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #include "lobby_b.h"
 #undef Lbs_MatchStart
@@ -4818,5 +4818,674 @@ void nwDispStr_Html(f32 x, f32 y, f32 z, u8 *str) {
         }
         cnWrap_SetFontColor(0);
         flfntSetSize(20, 20);
+    }
+}
+
+/* ===== 0x005C0680-0x005C1B5C: mail / net comment requests and the server notice callbacks (merged from the b/ runs,
+ * 12 Oct 2026; the same compilation unit as above: the literal numbers continue, @4622 in CallBack_Event_RoomLeaver). */
+/* ---- formerly b/lb_by95.c ---- */
+/* lb_by95 - agent B promoted near-match 0x005C0680-0x005C079C: net_ToNetworkLobby (first drafted by tools/lbauto.py). */
+typedef struct { u8 pad0[0x2C0E]; s8 x2C0E; u8 pad2C0F[0x22]; s8 x2C31; s8 x2C32; s8 x2C33; s8 x2C34; s8 x2C35; s8 x2C36; s8 x2C37; s8 x2C38; u8 pad2C39[0xB]; s8 x2C44; u8 pad2C45[0x339]; u8 x2F7E; u8 pad2F7F[0x656]; s8 x35D5; } CWS_nn_by95;
+extern u8 RecvMailInfo_by95[];
+extern s8 BsLbsErrNum_by95;
+#define CWX_by95 ((CWS_nn_by95 *)cw)
+
+void net_ToNetworkLobby(void) {
+    int i;
+    u8 *p;
+
+    pNet = (LBNETW_B *)network_work;
+    cw = client_work;
+    CWX_by95->x2C31 = 0;
+    CWX_by95->x2C32 = 0;
+    CWX_by95->x2C33 = 0;
+    CWX_by95->x2C34 = 0;
+    CWX_by95->x2C35 = 0;
+    CWX_by95->x2C36 = 0;
+    CWX_by95->x2C37 = 0;
+    CWX_by95->x2C38 = 0;
+    cnLbc_SetIspRestTime(cw + 0x35F8);
+    *(s32 *)(cw + 0x35F4) = 0xE10;
+    CWX_by95->x2C0E = 0;
+    CWX_by95->x2C44 = 0;
+    CWX_by95->x35D5 = 0;
+    Lb_clearChatList();
+    BsLbsErrNum_by95 = 0;
+    cnLBS_Init_LoginLobbyServer();
+    i = 0;
+    p = RecvMailInfo_by95;
+    CWX_by95->x2F7E = 0;
+    do {
+        if (*(s8 *)(p + 1) != 0) {
+            CWX_by95->x2F7E = CWX_by95->x2F7E + 1;
+        }
+        i++;
+        p += 0x9A;
+    } while (i < 8);
+    memset(cw + 0x3019, 0, 0x9A);
+    memset(cw + 0x2F7F, 0, 0x9A);
+    Lb_clearChatList();
+}
+
+/* ---- formerly b/lb_by34.c ---- */
+/* lb_by34 - agent B promoted near-match 0x005C07A0-0x005C086C: Lbc_SendMail (first drafted by tools/lbauto.py). */
+void CallBack_Result_Mail_SendMail(CNET_RES res);
+
+s32 Lbc_SendMail(void) {
+    s32 temp_a0;
+    u8 temp_v1_2;
+    int temp_v0;
+    int temp_v1;
+    int temp_v1_3;
+
+    temp_v1 = (int)cw;
+    temp_a0 = temp_v1 + 0x2C35;
+    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    switch (temp_v1_2) {                            /* irregular */
+    case 0:
+        CallBackWaitInit(temp_a0);
+        F(s8, (u8 *)cw, 0x2C45) = 0x23;
+        temp_v0 = (int)cw;
+        cnLBS_SendMessage(temp_v0 + 0x301A, temp_v0 + 0x3033, &CallBack_Result_Mail_SendMail);
+        temp_v1_3 = (int)cw;
+        F(u8, temp_v1_3, 0x2C35) = (u8) (F(u8, temp_v1_3, 0x2C35) + 1);
+        break;
+    case 1:
+        Check_CallBackWait(temp_a0);
+        break;
+    case 2:
+        F(u8, temp_v1, 0x2C35) = 0U;
+        return 0;
+    case 3:
+        F(u8, temp_v1, 0x2C35) = 0U;
+        return 1;
+    }
+    return 2;
+}
+
+/* ---- formerly b/lb_bz127.c ---- */
+/* lb_bz127 - lobby UI/client 0x005C0870-0x005C08EC: CallBack_Result_Mail_SendMail (first drafted by tools/lbauto.py). */
+
+void CallBack_Result_Mail_SendMail(CNET_RES res) {
+    u8 *temp_a0;
+    u8 *temp_a1;
+
+    temp_a1 = (u8 *)cw;
+    if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 0x23)) {
+        F(u8, temp_a1, 0x2C45) = 0U;
+        if (res.val == 0) {
+            temp_a0 = (u8 *)cw;
+            F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
+            return;
+        }
+        F(u8, (u8 *)cw, 0x2C35) = 3U;
+        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
+    }
+}
+
+/* ---- formerly b/lb_bz160.c ---- */
+/* lb_bz160 - lobby UI/client 0x005C08F0-0x005C092C: Lbc_RequestNetComment (first drafted by tools/lbauto.py). */
+typedef struct { u8 pad2C08[0x2C08]; s8 x2C08; u8 pad2C09[0x2C43 - 0x2C09]; u8 x2C43; } CWS_b3_bz160;
+extern u8 sendDat[];
+extern u8 D_3C73B4[];
+void CallBack_Result_netComment();
+void CallBack_Result_netCommentSend();
+int cnLBS_Get_RoomMemberList();
+
+int Lbc_RequestNetComment(int a) {
+    sendDat[0] = 7;
+    cnLBS_Send_ChatBinaryTU(a, sendDat, 1, CallBack_Result_netComment);
+    return 0;
+}
+
+/* ---- formerly b/lb_bz49.c ---- */
+/* lb_bz49 - lobby UI/client 0x005C0930-0x005C0938: CallBack_Result_netComment (first drafted by tools/lbauto.py). */
+
+void CallBack_Result_netComment(void) {
+
+}
+
+/* ---- formerly b/lb_bz161.c ---- */
+/* lb_bz161 - lobby UI/client 0x005C0940-0x005C09A0: Lbc_SendNetComment (first drafted by tools/lbauto.py). */
+typedef struct { u8 pad2C08[0x2C08]; s8 x2C08; u8 pad2C09[0x2C43 - 0x2C09]; u8 x2C43; } CWS_b3_bz161;
+extern u8 sendDat[];
+extern u8 D_3C73B4[];
+void CallBack_Result_netComment();
+void CallBack_Result_netCommentSend();
+int cnLBS_Get_RoomMemberList();
+
+void Lbc_SendNetComment(int a) {
+    sendDat[0] = 8;
+    memcpy(sendDat + 1, D_3C73B4, 0x62);
+    cnLBS_Send_ChatBinaryTU(a, sendDat, 0x62, CallBack_Result_netCommentSend);
+}
+
+/* ---- formerly b/lb_bz50.c ---- */
+/* lb_bz50 - lobby UI/client 0x005C09A0-0x005C09A8: CallBack_Result_netCommentSend (first drafted by tools/lbauto.py). */
+
+void CallBack_Result_netCommentSend(void) {
+
+}
+
+/* ---- formerly b/lb_by39.c ---- */
+/* lb_by39 - agent B promoted near-match 0x005C09B0-0x005C0A08: cnLbc_CheckInFloorOrder (first drafted by tools/lbauto.py). */
+extern u8 ClassInfo_by39[];
+
+s32 cnLbc_CheckInFloorOrder(s32 arg0) {
+    s32 r;
+    switch (arg0 & 0xFF) {
+    case 0:
+        r = ClassInfo_by39[0];
+        break;
+    case 1:
+        r = ClassInfo_by39[4];
+        break;
+    case 2:
+        r = ClassInfo_by39[8];
+        break;
+    }
+    return r;
+}
+
+/* ---- formerly b/lb_by01.c ---- */
+/* lb_by01 - agent B promoted near-match 0x005C0A10-0x005C0A8C: CallBack_Event_System_ShutDown, CallBack_Event_LobbyFull (first drafted by tools/lbauto.py). */
+
+void CallBack_Event_System_ShutDown(CNET_RES res) {
+    void *temp_a1;
+
+    temp_a1 = (u8 *)cw;
+    if (F(u8, temp_a1, 0x2C31) != 5) {
+        F(s8, temp_a1, 0x2C0E) = 1;
+        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+    }
+}
+
+void CallBack_Event_LobbyFull(CNET_RES res) {
+    void *temp_a1;
+    
+
+    temp_a1 = (u8 *)cw;
+    if (F(u8, temp_a1, 0x2C31) != 5) {
+        F(s8, temp_a1, 0x2C0E) = 2;
+        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+    }
+}
+
+/* ---- formerly b/lb_bz51.c ---- */
+/* lb_bz51 - lobby UI/client 0x005C0A90-0x005C0AC0: CallBack_Event_ShutDownOpponent (first drafted by tools/lbauto.py). */
+
+void CallBack_Event_ShutDownOpponent(void) {
+    u8 temp_a0;
+    void *temp_a1;
+
+    temp_a1 = (u8 *)cw;
+    temp_a0 = F(u8, temp_a1, 0x2C31);
+    if ((temp_a0 != 5) && (temp_a0 == 4)) {
+        F(s8, temp_a1, 0x2C0D) = 1;
+    }
+}
+
+/* ---- formerly b/lb_by03.c ---- */
+/* lb_by03 - agent B promoted near-match 0x005C0AC0-0x005C0B04: CallBack_Event_MatchCancel (first drafted by tools/lbauto.py). */
+
+void CallBack_Event_MatchCancel(CNET_RES res) {
+    u8 temp_a0;
+    int temp_a1;
+
+    temp_a1 = (int)cw;
+    temp_a0 = F(u8, temp_a1, 0x2C31);
+    if ((temp_a0 != 5) && (temp_a0 == 4)) {
+        cnLBS_Get_ServerMessage(temp_a1 + 0x32D1, temp_a1);
+        F(s8, (u8 *)cw, 0x2C0D) = 2;
+    }
+}
+
+/* ---- formerly b/lb_cb05.c ---- */
+/* lb_cb05 - agent C 0x005C0B10-0x005C0C8C: get_font_col (static, formerly lb_by21), CallBack_Event_ChatMessage and ...TU, one TU. The static callee and the 8-byte CNET_RES by-value parameter (spilled, 16-byte frame hole) both matter. */
+typedef struct { u8 pad[0x11D]; u8 b, c, d; } CHATL_cb05;
+
+extern s8 D_35C7B1[];
+extern u8 color_tbl[8];
+
+static s32 get_font_col(s32 arg0) {
+    s32 temp_v1;
+
+    temp_v1 = arg0 & 0xFF;
+    if (temp_v1 == 0 || !(D_35C7B1[temp_v1] & 4)) {
+        arg0 = 0;
+    } else {
+        arg0 = color_tbl[(temp_v1 - 0x30) & 7];
+    }
+    return arg0;
+}
+
+
+void CallBack_Event_ChatMessage(CNET_RES res) {
+    CHATL_cb05 chat;
+
+    cnLBS_Get_ChatMessage(&chat);
+    chat.b = get_font_col(chat.b);
+    chat.c = get_font_col(chat.c);
+    chat.d = get_font_col(chat.d);
+    if (F(u8, (u8 *)cw, 0x35D5) != 0) {
+        Lb_chat_receipt(&chat);
+        return;
+    }
+    Plaza_chat_log_add(&chat);
+}
+
+void CallBack_Event_ChatMessageTU(CNET_RES res) {
+    CHATL_cb05 chat;
+
+    cnLBS_Get_ChatMessage(&chat);
+    chat.b = get_font_col(chat.b);
+    chat.c = get_font_col(chat.c);
+    chat.d = get_font_col(chat.d);
+    if (chat.b == 0 && chat.c == 0 && chat.d == 0) {
+        chat.c = 0;
+        chat.b = 0;
+        chat.d = 5;
+    }
+    if (F(u8, (u8 *)cw, 0x35D5) != 0) {
+        Lb_chat_receipt(&chat);
+        return;
+    }
+    Plaza_chat_log_add(&chat);
+}
+
+/* ---- formerly b/lb_by02.c ---- */
+/* lb_by02 - agent B promoted near-match 0x005C0C90-0x005C0DAC: CallBack_Event_PlazaRemove, CallBack_Event_LobbyRemove, CallBack_Event_RoomRemove (first drafted by tools/lbauto.py). */
+
+void CallBack_Event_PlazaRemove(CNET_RES res) {
+    u8 temp_a0;
+    void *temp_a1;
+
+    temp_a1 = (u8 *)cw;
+    temp_a0 = F(u8, temp_a1, 0x2C31);
+    if ((temp_a0 != 5) && (temp_a0 == 2) && (F(s8, temp_a1, 0x2C09) == 0)) {
+        F(s8, temp_a1, 0x2C09) = 1;
+        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+    }
+}
+
+void CallBack_Event_LobbyRemove(CNET_RES res) {
+    u8 temp_a0;
+    void *temp_a1;
+
+    temp_a1 = (u8 *)cw;
+    temp_a0 = F(u8, temp_a1, 0x2C31);
+    if ((temp_a0 != 5) && (temp_a0 == 3) && (F(s8, temp_a1, 0x2C0A) == 0)) {
+        F(s8, temp_a1, 0x2C0A) = 1;
+        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+    }
+}
+
+void CallBack_Event_RoomRemove(CNET_RES res) {
+    u8 temp_a0;
+    void *temp_a1;
+
+    temp_a1 = (u8 *)cw;
+    temp_a0 = F(u8, temp_a1, 0x2C31);
+    if ((temp_a0 != 5) && (temp_a0 == 3) && (F(s8, temp_a1, 0x2C0C) == 0) && (F(s8, temp_a1, 0x2C0B) == 0)) {
+        F(s8, temp_a1, 0x2C0B) = 1;
+        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+    }
+}
+
+/* ---- formerly b/lb_cb04.c ---- */
+/* lb_cb04 - agent C 0x005C0DB0-0x005C0EAC: CallBack_Event_MatchStart (copy the four room members into room_member_* tables, start stage). */
+extern char room_member_id[];
+extern char room_member_handle[];
+extern char room_member_mini_data[];
+void CallBack_Event_MatchStart(CNET_RES res) {
+    s8 i;
+    s32 off;
+    char *id;
+    char *handle;
+    char *mini;
+
+    F(s8, (u8 *)cw, 0x2C0C) = 1;
+    Lbc_set_prim(0, 0, 0);
+    *(s8 *)0x3F3404 = 0;
+    Lb_send_stage();
+    fade_set(0xA);
+    i = 0;
+    off = 0;
+    id = room_member_id;
+    handle = room_member_handle;
+    mini = room_member_mini_data;
+    do {
+        memcpy(id, cw + off + 0x73C, 8);
+        memcpy(handle, cw + off + 0x744, 0x11);
+        memcpy(mini, cw + off + 0x756, 0x40);
+        off += 0x2FC;
+        id += 8;
+        i++;
+        handle += 0x11;
+        mini += 0x40;
+    } while (i < 4);
+}
+
+/* ---- formerly b/lb_rm01.c ---- */
+/* lb_rm01 - agent C 0x005C0EB0-0x005C112C: CallBack_Event_RecvMail (received lobby mail: shift 8-slot inbox down with 0x9A-byte struct copies; (char *)&m + n arguments avoid CSE into saved registers). */
+typedef struct { u8 flag; char id[8]; char name[0x11]; char body[0x80]; } MAIL_rm01;
+extern MAIL_rm01 RecvMailInfo[8];
+typedef struct { char id[8]; char name[0x14]; char body[0x80]; } RMSG_rm01;
+void CallBack_Event_RecvMail(CNET_RES res) {
+    RMSG_rm01 m;
+    s32 i;
+    s32 n;
+    MAIL_rm01 *p;
+    u8 *c;
+
+    n = 0;
+    i = 0;
+    p = RecvMailInfo;
+    do {
+        if (p->flag != 0) {
+            n++;
+        }
+        i++;
+        p++;
+    } while (i < 8);
+    if (n == 0) {
+        cnWrap_SoundRequest(5);
+    }
+    memset(&m, 0, 0x9C);
+    cnLBS_Get_RecvMessage(&m, m.name, m.body);
+    RecvMailInfo[7] = RecvMailInfo[6];
+    RecvMailInfo[6] = RecvMailInfo[5];
+    RecvMailInfo[5] = RecvMailInfo[4];
+    RecvMailInfo[4] = RecvMailInfo[3];
+    RecvMailInfo[3] = RecvMailInfo[2];
+    RecvMailInfo[2] = RecvMailInfo[1];
+    RecvMailInfo[1] = RecvMailInfo[0];
+    strncpy(RecvMailInfo[0].id, m.id, 8);
+    strncpy(RecvMailInfo[0].name, (char *)&m + 8, 0x10);
+    strncpy(RecvMailInfo[0].body, (char *)&m + 0x1C, 0x80);
+    KinshiYogo_chk(RecvMailInfo[0].body);
+    RecvMailInfo[0].flag = 1;
+    cw[0x2F7E]++;
+    c = cw + 0x2F7E;
+    if (cw[0x2F7E] > 8) {
+        *c = 8;
+    }
+}
+
+/* ---- formerly b/lb_by04.c ---- */
+/* lb_by04 - agent B promoted near-match 0x005C1130-0x005C1178: CallBack_Event_AdminMessage (first drafted by tools/lbauto.py). */
+
+void CallBack_Event_AdminMessage(CNET_RES res) {
+    char sp20[32];
+    int temp_v0;
+
+    memset((u8 *)cw + 0x2C5C, 0, 0x31C);
+    temp_v0 = (int)cw;
+    cnLBS_Get_RecvMessage(&sp20, temp_v0 + 0x2C5D, temp_v0 + 0x2C6E);
+    F(s8, (u8 *)cw, 0x2C5C) = 1;
+}
+
+/* ---- formerly b/lb_bz52.c ---- */
+/* lb_bz52 - lobby UI/client 0x005C1180-0x005C11C0: CallBack_Event_PlazaName (first drafted by tools/lbauto.py). */
+extern char PlazaInfo[];
+
+void CallBack_Event_PlazaName(void) {
+    u16 sp1E;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    cnLBS_Read_PlazaName(sp1E, (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C) + 0x14);
+}
+
+/* ---- formerly b/lb_bz53.c ---- */
+/* lb_bz53 - lobby UI/client 0x005C11C0-0x005C1204: CallBack_Event_PlazaJoinUser (first drafted by tools/lbauto.py). */
+extern char PlazaInfo[];
+
+void CallBack_Event_PlazaJoinUser(void) {
+    u16 sp1E;
+    int temp_v0;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    temp_v0 = (int)&PlazaInfo + ((sp1E - 1) * 0x15C);
+    cnLBS_Get_mhPlazaJoinUser(sp1E, (void *)(temp_v0 + 2), (void *)(temp_v0 + 0xE));
+}
+
+/* ---- formerly b/lb_bz54.c ---- */
+/* lb_bz54 - lobby UI/client 0x005C1210-0x005C1254: CallBack_Event_LobbyJoinUser (first drafted by tools/lbauto.py). */
+extern char LobbyInfo_bz54[];
+
+void CallBack_Event_LobbyJoinUser(void) {
+    u16 sp1E;
+    int temp_v0;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    temp_v0 = (int)&LobbyInfo_bz54 + ((sp1E - 1) * 0x15C);
+    cnLBS_Get_mhLobbyJoinUser(sp1E, (void *)(temp_v0 + 2), (void *)(temp_v0 + 0xE));
+}
+
+/* ---- formerly b/lb_cb02.c ---- */
+/* lb_cb02 - agent C 0x005C1260-0x005C13BC: CallBack_Event_LobbyCommer (add a lobby member to lbCommer + chat log line; local 0x5C user record, 0x120 chat record). */
+extern char lit_4327[];
+typedef struct { u8 pad[0x1C]; char msg[0x100]; u8 a, b, c, d; } CHATM_cb02;
+typedef struct { char id[8]; char name[0x10]; u8 pad[0x5C - 0x18]; } LUSER_cb02;
+void CallBack_Event_LobbyCommer(CNET_RES res) {
+    LUSER_cb02 user;
+    CHATM_cb02 chat;
+    s32 i;
+    u8 *p;
+    u8 *q;
+    s32 j;
+    u8 *p3;
+
+    cnLBS_Get_RoomLeaveUser(&user);
+    if ((p3 = cw + 3, *(s8 *)p3 == 0) || 0 > memcmp(p3, &user, 8)) {
+        memcpy(cw + 3, &user, 8);
+    }
+    i = 0;
+    p = (u8 *)lbCommer;
+    do {
+        if (memcmp(p, &user, 8) == 0) {
+            return;
+        }
+        i++;
+        p += 0x5C;
+    } while (i < 8);
+    j = 0;
+    q = (u8 *)lbCommer;
+    do {
+        if (*(s8 *)q == 0) {
+            memcpy(&lbCommer[j], &user, 0x5C);
+            break;
+        }
+        j++;
+        q += 0x5C;
+    } while (j < 8);
+    if (cw[0x35D5] != 0 && user.name[0] != 0) {
+        memset(&chat, 0, 0x120);
+        chat.d = 6;
+        chat.c = 6;
+        chat.b = 6;
+        sprintf(chat.msg, lit_4327, user.name);
+        Chat_log_add(0, &chat);
+    }
+}
+
+/* ---- formerly b/lb_cb01.c ---- */
+/* lb_cb01 - agent C 0x005C13C0-0x005C14E4: CallBack_Event_LobbyLeaver (drop leaver from lbCommer, recompute cw+3 min id; '0 > memcmp()' + p3 local, see lb_p01.c). */
+typedef struct { u8 pad0[3]; s8 x03; } CWS_ll_cb01;
+#define CWX_cb01 ((CWS_ll_cb01 *)cw)
+void CallBack_Event_LobbyLeaver(CNET_RES res) {
+    char user[0x5C];
+    s32 i;
+    u8 *p;
+    s32 off;
+    s32 j;
+
+    cnLBS_Get_RoomLeaveUser(user);
+    i = 0;
+    p = (u8 *)lbCommer;
+    do {
+        if (memcmp(p, user, 8) == 0) {
+            memset(&lbCommer[i], 0, 0x5C);
+            break;
+        }
+        i++;
+        p += 0x5C;
+    } while (i < 8);
+    if (memcmp(cw + 3, user, 8) == 0) {
+        j = 0;
+        off = 0;
+        cw[3] = 0;
+        do {
+            u8 *k;
+            u8 *p3;
+            u8 *e;
+            e = cw + off;
+            if ((s8)e[0x132C] != 0 && ((p3 = (k = cw) + 3, *(s8 *)p3 == 0) || 0 > memcmp(p3, e + 0x132C, 8))) {
+                memcpy(cw + 3, cw + off + 0x132C, 8);
+            }
+            j++;
+            off += 0x2FC;
+        } while (j < 8);
+    }
+}
+
+/* ---- formerly b/lb_bz55.c ---- */
+/* lb_bz55 - lobby UI/client 0x005C14F0-0x005C1530: CallBack_Event_RoomName (first drafted by tools/lbauto.py). */
+extern char RoomInfo[];
+
+void CallBack_Event_RoomName(void) {
+    u16 sp1E;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    cnLBS_Get_RoomName(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x14);
+}
+
+/* ---- formerly b/lb_bz56.c ---- */
+/* lb_bz56 - lobby UI/client 0x005C1530-0x005C1570: CallBack_Event_RoomStatus (first drafted by tools/lbauto.py). */
+extern char RoomInfo[];
+
+void CallBack_Event_RoomStatus(void) {
+    u16 sp1E;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    cnLBS_Get_RoomStatus(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x10);
+}
+
+/* ---- formerly b/lb_bz57.c ---- */
+/* lb_bz57 - lobby UI/client 0x005C1570-0x005C15B0: CallBack_Event_RoomProperty (first drafted by tools/lbauto.py). */
+extern char RoomInfo[];
+
+void CallBack_Event_RoomProperty(void) {
+    u16 sp1E;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    cnLBS_Get_RoomProperty(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x158);
+}
+
+/* ---- formerly b/lb_bz58.c ---- */
+/* lb_bz58 - lobby UI/client 0x005C15B0-0x005C15F4: CallBack_Event_RoomJoinUser (first drafted by tools/lbauto.py). */
+extern char RoomInfo[];
+
+void CallBack_Event_RoomJoinUser(void) {
+    u16 sp1E;
+    int temp_v0;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    temp_v0 = (int)&RoomInfo + ((sp1E - 1) * 0x15C);
+    cnLBS_Get_mhRoomJoinUser(sp1E, (void *)(temp_v0 + 2), (void *)(temp_v0 + 0xE));
+}
+
+/* ---- formerly b/lb_by05.c ---- */
+/* lb_by05 - agent B promoted near-match 0x005C1600-0x005C1650: CallBack_Event_RoomCapacity (first drafted by tools/lbauto.py). */
+extern char RoomInfo[];
+
+void CallBack_Event_RoomCapacity(CNET_RES res) {
+    u16 sp1E;
+    int temp_v0;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    temp_v0 = (int)&RoomInfo + ((sp1E - 1) * 0x15C);
+    cnLBS_Get_RoomJoinInfo(sp1E, (void *)(temp_v0 + 4), (void *)(temp_v0 + 6), (void *)(temp_v0 + 8), (void *)(temp_v0 + 10), (void *)(temp_v0 + 12));
+}
+
+/* ---- formerly b/lb_bz59.c ---- */
+/* lb_bz59 - lobby UI/client 0x005C1650-0x005C1690: CallBack_Event_RoomPasswordInfo (first drafted by tools/lbauto.py). */
+extern char RoomInfo[];
+
+void CallBack_Event_RoomPasswordInfo(void) {
+    u16 sp1E;
+
+    cnetGet_Room_LastRecvNumber(&sp1E);
+    cnLBS_Get_RoomPasswordInfo(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x11);
+}
+
+/* CallBack_Event_MatchEntryUser: original bytes (2 / 15 lines off as C: see docs/agents/agent-B.md); the PC takes the C in lb_online_nm.c */
+#ifdef __MWERKS__
+asm void CallBack_Event_MatchEntryUser(CNET_RES res)
+{
+#include "CallBack_Event_MatchEntryUser.inc"
+}
+#endif
+
+/* ---- formerly b/lb_cb03.c ---- */
+/* lb_cb03 - agent C 0x005C17A0-0x005C18A0: CallBack_Event_RoomCommer (add a room member record to cw table + chat log line). */
+extern char lit_4548[];
+typedef struct { u8 pad[0x1C]; char msg[0x100]; u8 a, b, c, d; } CHATM_cb03;
+typedef struct { char id[8]; char name[0x10]; u8 pad18[4]; char mini[0x40]; } LUSER_cb03;
+void CallBack_Event_RoomCommer(CNET_RES res) {
+    LUSER_cb03 user;
+    CHATM_cb03 chat;
+    u8 *c;
+    s32 i;
+    u8 *p;
+    s32 off;
+
+    cnLBS_Get_RoomLeaveUser(&user);
+    c = cw;
+    i = 0;
+    p = c;
+    do {
+        if ((s8)p[0x73C] == 0) {
+            off = i * 0x2FC;
+            strcpy(c + off + 0x73C, user.id);
+            strcpy(cw + off + 0x744, user.name);
+            memcpy(cw + off + 0x756, user.mini, 0x40);
+            break;
+        }
+        i++;
+        p += 0x2FC;
+    } while (i < 4);
+    if (cw[0x35D5] != 0 && user.name[0] != 0) {
+        memset(&chat, 0, 0x120);
+        chat.d = 6;
+        chat.c = 6;
+        chat.b = 6;
+        sprintf(chat.msg, lit_4548, user.name);
+        Chat_log_add(0, &chat);
+    }
+}
+
+/* CallBack_Event_RoomLeaver: original bytes (2 / 15 lines off as C: see docs/agents/agent-B.md); the PC takes the C in lb_online_nm.c */
+#ifdef __MWERKS__
+asm void CallBack_Event_RoomLeaver(CNET_RES res)
+{
+#include "CallBack_Event_RoomLeaver.inc"
+}
+#endif
+
+/* ---- formerly b/lb_by06.c ---- */
+/* lb_by06 - agent B promoted near-match 0x005C1B00-0x005C1B5C: CallBack_Event_LbsBinary (first drafted by tools/lbauto.py). */
+typedef struct { u8 pad0000[0x2C0C]; s8 x2C0C; u8 pad2C0D[0x24]; u8 x2C31; } CWS_CallBack_Event_LbsBinary_by06;
+
+void CallBack_Event_LbsBinary(CNET_RES res) {
+    char sp20[784];
+    u8 temp_a0;
+    temp_a0 = ((CWS_CallBack_Event_LbsBinary_by06 *)cw)->x2C31;
+    if (temp_a0 != 5) {
+        if ((temp_a0 == 4) || (((CWS_CallBack_Event_LbsBinary_by06 *)cw)->x2C0C != 0)) {
+            return;
+        }
+        cnLBS_Get_ChatBinary(sp20, ((CWS_CallBack_Event_LbsBinary_by06 *)cw));
+        Lb_check_receipt(sp20, sp20 + 8);
     }
 }

@@ -120,6 +120,8 @@ main 0x002617D0 0x694 DispSoftkeyboard
 main 0x00262170 0x1E0 palette_ng_sub
 lobby 0x005BF4F0 0x70 tk_logout_message_sub
 lobby 0x005BFC80 0xD4 check_halfcode
+lobby 0x005C1690 0x108 CallBack_Event_MatchEntryUser
+lobby 0x005C18A0 0x260 CallBack_Event_RoomLeaver
 lobby 0x005B74C0 0x42C lbc_login_init
 lobby 0x005BC150 0x284 Lbc_GetRoomRule
 lobby 0x00597640 0x4C4 Plaza_add_friend
