@@ -12,7 +12,7 @@ obvious workarounds.
 
 ## Open
 
-### Hunter ground height: viewer's min_y_of dropped (12 Oct 2026, commit see git log "hunter floated")
+### Hunter ground height: viewer's min_y_of dropped (12 Oct 2026, commit 22c82ad3)
 - **Dropped:** viewer.c min_y_of read the lowest vertex from each part's CPU
   skinning buffer (skinpos), or the unposed vertices when there was none.
 - **Now:** fl_model_min_y (fl_model.c) skins the vertices on the CPU for the
