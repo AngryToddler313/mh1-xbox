@@ -1238,3 +1238,15 @@ Assignment: the lobby overlay, functions the ONLINE=1 PC build runs as stand-ins
   permuter run did not get it), disp_string_handle (7: `v = 4; if (a != b) v = 0;` in an int temp, then (s8) into s1;
   every spelling folds the constant straight into s1), itembox_sellout (34 instructions, register choice; perm.py
   cannot run on it: raw functions have no asm/lobby/*.s).
+- lb_url.c (0x5E8890-0x5E9960, browser URL helpers + kanji conversion): whole TU matched, 12 files replaced.
+  Lessons: (1) KanjiSjis2EucEx / bs_url_to_absolute_url / BsUrlParse keep i/j/len/end in a2/a3/t0 across calls to
+  the file-static callees: only matches with the static callee in the same TU AND the callee itself matched (a
+  near-match bs_url_extension that used a3 moved the caller's len out of a3). (2) `while (*--p != '/')` (pre-decrement
+  in the condition) is what makes MWCC reload *p in the body (bs_url_extension); `p--; while (*p != '/')` caches it.
+  (3) `p <= base` gives the original's `sltu; xori; xori` (bs_url_last_slash); `!(p > base)` does not. (4) A u8
+  function result kept unmasked in a register and masked at each test = an `int` local compared as `(u8)sch`
+  (bs_url_to_absolute_url); BsUrlSchemeGet returns int with a (u8) cast inside. (5) `i = 0; j = 0; for (; i < len;
+  i++)` sets the registers in the original order; `j = 0; for (i = 0; ...)` swaps them (Kanji*). (6) Reusing one
+  variable for two roles (rel -> path in BsUrlParse, n -> len in bs_url_to_absolute_url) fixed s-register swaps.
+  (7) `switch (x) { case 2: ...; break; default: ...; }` gives `beq x,2 -> case; b default` where if/else gives
+  `bne -> else` (BsUrlParse).

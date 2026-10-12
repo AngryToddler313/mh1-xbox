@@ -12,6 +12,17 @@ obvious workarounds.
 
 ## Open
 
+### Browser URL helpers: one TU lb_url.c (12 Oct 2026, agent B)
+- **Dropped:** the runs src/lobby/f/lb_{m12,z135,z19,ap01,z106,z20,gdr12,gap01,z21,gap02,ap02}.c and agent F's
+  whole-file near-match src/lobby/f/lb_ap.c (not built anywhere).
+- **Now:** src/lobby/f/lb_url.c, 0x5E8890-0x5E9960, all 25 functions byte-matched (BsUrl*, bs_url_*, the
+  Shift-JIS/EUC kanji conversion). The draft-style run C (F(s8, ...) offsets, int pointers) was rewritten as plain C;
+  it still matches. Linked on the PC too (tools/pc_lobby_matched.txt): KanjiEuc2SjisEx and bs_url_cmp_list were
+  stand-ins there.
+- **Why:** the static helpers must share the TU with their callers (MWCC keeps caller values in a3/t0 across calls
+  to a static whose register use it knows); one TU replaces 12 files.
+- **To revert:** the commit "lobby: browser URL helpers matched as one TU (lb_url.c)".
+
 ### Lobby client: 29 b/ run files merged into lb_cli.c (12 Oct 2026, agent B)
 - **Dropped:** src/lobby/b/lb_{by95,by34,bz127,bz160,bz49,bz161,bz50,by39,by01,bz51,by03,cb05,by02,cb04,rm01,by04,bz52,
   bz53,bz54,cb02,cb01,bz55,bz56,bz57,bz58,by05,bz59,cb03,by06}.c (one or a few matched functions each, 0x5C0680-0x5C1B5C:
