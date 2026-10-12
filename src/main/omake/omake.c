@@ -70,29 +70,29 @@ void cursor_se();
 void decide_se();
 void cancel_se();
 void Sel_back_disp();
-void disp_mode_menu();
-void csub00();
-void init_mode_sel();
-void mode_sel();
-void mode_sel_end();
-void mode_sel_exit();
+static void disp_mode_menu();
+static void csub00();
+static void init_mode_sel();
+static void mode_sel();
+static void mode_sel_end();
+static void mode_sel_exit();
 int ck_start_sw();
 int key_rept_du(int, u16, u16);
-void sel_sel_sub();
+static void sel_sel_sub();
 
 int key_rept_du(int, u16, u16);
-void sel_sel_sub();
+static void sel_sel_sub();
 
 typedef struct SPR {
     s16 x, y, w, h;     /* 0x00 */
     u32 col;            /* 0x08 */
     s16 u, v, u2, v2;   /* 0x0C */
 } SPR;
+void Put_2TF(SPR *, ...);
 
 void SetFilterMode();
 void reload_tex();
 void SetTextureStage();
-void Put_2TF();
 
 typedef struct CSR { s16 x0, y0, x1, y1; u32 col[4]; } CSR;
 
@@ -115,7 +115,7 @@ extern char lit_409_0036D1A0[];
 void flfntSetSize();
 void flfntLocate();
 void font_set_palette();
-void font_print_ex();
+void font_print_ex(s16, s16, s16, char *, ...);
 void font_reset();
 void DispFrameMessage();
 void Disp_button(f32, int, int, int, int); /* was K&R: 1.0f went as a double (PC) */
@@ -143,7 +143,7 @@ void Select_Tsk_Execute();
 void disp_omake_menu();
 void Sel_menu_disp();
 void Sel_csr_disp();
-int omake_check();
+static int omake_check();
 
 void Select_task(tsk)
 SELT *tsk;
@@ -184,7 +184,7 @@ SELT *tsk;
     }
 }
 
-void csub00(tsk)
+static void csub00(tsk)
 SELT *tsk;
 {
     switch (tsk->x0A) {
@@ -226,7 +226,7 @@ int ck_start_sw(void)
     return r;
 }
 
-void init_mode_sel(tsk)
+static void init_mode_sel(tsk)
 SELT *tsk;
 {
     if (mem_tex[2] == 0) {
@@ -241,7 +241,7 @@ SELT *tsk;
     tsk->x0B = 0;
 }
 
-void sel_sel_sub(held, push, p, n)
+static void sel_sel_sub(held, push, p, n)
 u16 held;
 u16 push;
 u8 *p;
@@ -268,7 +268,14 @@ u8 n;
     }
 }
 
-void mode_sel(tsk, held, push)
+/* near-match (case ladder of the menu switches laid out differently (branch order): structure), original bytes linked; the C is the PC/reading copy */
+#ifdef __MWERKS__
+static asm void mode_sel()
+{
+#include "mode_sel.inc"
+}
+#else
+static void mode_sel(tsk, held, push)
 SELT *tsk;
 int held;
 int push;
@@ -377,8 +384,9 @@ int push;
         break;
     }
 }
+#endif
 
-void mode_sel_end(tsk)
+static void mode_sel_end(tsk)
 SELT *tsk;
 {
     switch (tsk->sel) {
@@ -429,7 +437,7 @@ SELT *tsk;
     }
 }
 
-void mode_sel_exit(tsk)
+static void mode_sel_exit(tsk)
 SELT *tsk;
 {
     switch (tsk->x0B) {
@@ -469,8 +477,7 @@ int key_rept_du(int pad, u16 held, u16 push) {
             w = &key_wait[pad];
             *w = 10;
         }
-        n = key_timer[pad].cnt + 1;
-        key_timer[pad].cnt = n;
+        n = ++key_timer[pad].cnt;
         if (*w < n) {
             key_timer[pad].cnt = 0;
             key_timer[pad].on = 1;
@@ -483,7 +490,14 @@ int key_rept_du(int pad, u16 held, u16 push) {
     return v;
 }
 
-void disp_mode_menu(void)
+/* near-match (index arithmetic and register choice), original bytes linked; the C is the PC/reading copy */
+#ifdef __MWERKS__
+static asm void disp_mode_menu(void)
+{
+#include "disp_mode_menu.inc"
+}
+#else
+static void disp_mode_menu(void)
 {
     SELT *t = (SELT *)(tcb_w + 0x20);
     char **msgs;
@@ -560,12 +574,13 @@ void disp_mode_menu(void)
     }
     font_reset();
 }
+#endif
 
 void Sel_back_disp(a)
 int a;
 {
     SPR spr;
-
+    u32 c;
     SetFilterMode(1);
     reload_tex(1, 7);
     SetTextureStage(7);
@@ -574,11 +589,12 @@ int a;
     spr.h = 0x1C0;
     spr.y = 0;
     spr.v = 0;
-    spr.col = (a & 0xFF) | ((a & 0xFF) << 8) | (((a & 0xFF) << 16) | 0xFF000000);
+    c = a & 0xFF;
+    spr.col = (c << 16 | 0xFF000000 | c << 8) | c;
     spr.u2 = 0xFF;
     spr.v2 = 0xFF;
     spr.u = 0;
-    Put_2TF(&spr, a & 0xFF);
+    Put_2TF(&spr);
 }
 
 void Sel_menu_disp(n)
@@ -590,17 +606,17 @@ s16 n;
     s16 v;
 
     p = menu_str_00349330[n];
-    if (n != 4 && n != 5) {
-        x = (0x280 - menu_str_num[n] * 0x30) / 2;
-        spr.w = 0x30;
-        spr.h = 0x30;
-    } else {
+    if (n == 4 || n == 5) {
         x = (0x280 - (menu_str_num[n] << 5)) / 2;
         spr.w = 0x20;
         spr.h = 0x20;
+    } else {
+        x = (0x280 - menu_str_num[n] * 0x30) / 2;
+        spr.w = 0x30;
+        spr.h = 0x30;
     }
     if (n == 3) {
-        x = x + 0xE;
+        x += 0xE;
     }
     SetFilterMode(1);
     spr.y = 0x20;
@@ -610,13 +626,13 @@ s16 n;
         p++;
         switch (v) {
         case 0xFF:
-            x = x + 0x30;
+            x += 0x30;
             break;
         case 0xFE:
-            x = x + 0x14;
+            x += 0x14;
             break;
         case 0xFC:
-            x = x + 0x20;
+            x += 0x20;
             break;
         default:
             reload_tex(1, 8);
@@ -627,7 +643,7 @@ s16 n;
             spr.u2 = spr.u + 0x1F;
             spr.v2 = spr.v + 0x1F;
             Put_2TF(&spr);
-            x = x + spr.w;
+            x += spr.w;
             break;
         }
         v = *p;
@@ -682,7 +698,7 @@ u32 rgb;
     flSetRenderState(0x60, 0);
 }
 
-int omake_check(i)
+static int omake_check(i)
 int i;
 {
     u16 b = check_bit_no[i];
@@ -693,12 +709,18 @@ int i;
     return Omake_flag_ck(b);
 }
 
+/* near-match (the original reloads omake_str[i] after strlen; register choice), original bytes linked; the C is the PC/reading copy */
+#ifdef __MWERKS__
+asm void disp_omake_menu()
+{
+#include "disp_omake_menu.inc"
+}
+#else
 void disp_omake_menu(tsk)
 SELT *tsk;
 {
-    char **s;
     s16 i;
-    s16 x;
+    int x;
     s16 y;
     s16 col;
 
@@ -706,7 +728,6 @@ SELT *tsk;
     Sel_menu_disp(6);
     flfntSetSize(0x18, 0x18);
     i = 0;
-    s = omake_str;
     do {
         x = 0xA0;
         if (i < 4) {
@@ -720,28 +741,25 @@ SELT *tsk;
                 y = 0x120;
             }
         }
-        col = 9;
-        if (tsk->sel == i) {
-            col = 0;
-        }
+        col = (tsk->sel == i) ? 0 : 9;
         if (omake_check(i) == 1) {
-            font_print_ex(x - ((u32)(strlen(*s) * 0xC) >> 1), y, col, lit_408_0036D190, *s);
+            font_print_ex((s16)x - ((u32)(strlen(omake_str[i]) * 0xC) >> 1), y, col, lit_408_0036D190, omake_str[i]);
         } else {
-            font_print_ex(x - ((u32)(strlen(omake_str[9]) * 0xC) >> 1), y, col, lit_408_0036D190, omake_str[9]);
+            font_print_ex((s16)x - ((u32)(strlen(omake_str[9]) * 0xC) >> 1), y, col, lit_408_0036D190, omake_str[9]);
         }
         if (tsk->sel == i) {
-            Sel_csr_disp(x, y - 3, 0xF0, 0x20);
+            Sel_csr_disp(x, y - 3, 0xF0, 0x20, 0xFF20C0C0);
         }
         i++;
-        s++;
     } while (i < 9);
     font_print_ex(0x70, 0x168, 0, lit_582_0036D1B8);
     font_print_ex(0x190, 0x168, 0, lit_583_0036D1C8);
     Disp_button(1.0f, 0, 0x58, 0x168, 8);
     Disp_button(1.0f, 1, 0x178, 0x168, 8);
 }
+#endif
 
-void omake_init(tsk)
+static void omake_init(tsk)
 SELT *tsk;
 {
     if (Fade_busy_ck() != 1) {
@@ -756,7 +774,7 @@ SELT *tsk;
     }
 }
 
-void omake_main(tsk)
+static void omake_main(tsk)
 SELT *tsk;
 {
     u16 a;
@@ -826,7 +844,7 @@ SELT *tsk;
     disp_omake_menu(tsk);
 }
 
-void omake_play(tsk)
+static void omake_play(tsk)
 SELT *tsk;
 {
     switch (tsk->sub) {
@@ -880,7 +898,7 @@ SELT *tsk;
     }
 }
 
-void omake_exit(tsk)
+static void omake_exit(tsk)
 SELT *tsk;
 {
     if (Fade_busy_ck() != 1) {

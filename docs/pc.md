@@ -1245,7 +1245,7 @@ frames per second.
 - Boot (src/pc/rt/rt_boot.c): the game's own task scheduler (tsk_nm.c) runs
   select.bin's Init_task (card check, options auto-load CardAtld), Demo_task
   (rating screen, middleware and Capcom logos, title), main's Select_task
-  (omake_nm.c: NEW GAME / CONTINUE / GALLERY / OPTIONS, then the village /
+  (omake.c: NEW GAME / CONTINUE / GALLERY / OPTIONS, then the village /
   town choice), Edit_task (character creation) or Cont_task (load a hunter),
   plus Fade_task / Card_task. When a task starts Game_task the host takes
   over: game mode 6 = the village (Game_task's offline path). "Go to town"
@@ -1910,7 +1910,7 @@ config/c_files.txt was touched):
 - Float passed to a function with no prototype (gcc promotes it to a
   double, so the callee reads the wrong 4 bytes and every later argument is
   shifted). `-Wdouble-promotion` finds exactly these:
-  * src/main/omake/omake_nm.c `Disp_button();` called with 1.0f: the button
+  * src/main/omake/omake.c `Disp_button();` called with 1.0f: the button
     icons of the mode/extras menu got scale 0 and a wrong kind. Prototype added.
   * src/main/eft/eft13_nm.c `flvecRotY(v, angle)` implicit (the angle went as
     a double): effect directions of eft13 (shell/chr-relative offsets) wrong.
@@ -1943,7 +1943,7 @@ config/c_files.txt was touched):
 ### Idiom sweep, second round (agent D, 7 Oct 2026)
 Screens checked (shots in build/show/d1/, scripted with the existing aids):
 - Extras/gallery menu: the button icons at the bottom (circle "play movie", cross
-  "cancel") draw (omake_nm.c Disp_button fix). The mode menu and options show no icons.
+  "cancel") draw (omake.c Disp_button fix). The mode menu and options show no icons.
 - Weapon workshop buy list (RT_LB_WARP to 9700,12120, then square, circle x3):
   the rarity line under the item icon shows "RARE-1" (was RARE-0 before the s8 fix).
   The detail window (square) is EquipmentCompareWindow, still a no-op stand-in.
@@ -1992,7 +1992,7 @@ player fields past PLW.part[2] and set00's tbl[i][2] on arrays declared too shor
 the hunter has no item: the PS2 reads the next bytes, as the PC does), the HAGI
 tables read with index 8 (see -fno-aggressive-loop-optimizations).
 -Wmaybe-uninitialized: the player/monster/menu ones read (pl_nm Pl_item_stack,
-f_frame_nm frame_init, f_stage stage_mv_ck, em_core/em_cmd locals, omake_nm
+f_frame_nm frame_init, f_stage stage_mv_ck, em_core/em_cmd locals, omake
 disp_mode_menu, menu_disp_nm Pit_disp_item_list): all are switch paths without a
 default or a branch that cannot happen (system_error); none was a live bug.
 

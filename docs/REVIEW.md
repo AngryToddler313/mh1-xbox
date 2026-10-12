@@ -12,6 +12,25 @@ obvious workarounds.
 
 ## Open
 
+### Mode menu / extras menu near-match copy replaced by omake.c (12 Oct 2026, agent C)
+- **Dropped:** src/main/omake/omake_nm.c (the whole-file near-match copy the
+  PC linked for the title mode menu and the extras menu) and the four
+  matched run files omakeb.c, omakec.c, omaked.c, omakee.c.
+- **Now:** src/main/omake/omake.c, the whole original file (0x23A0F0-0x23BE10)
+  as one translation unit with its statics. 17 of 20 functions match;
+  mode_sel, disp_mode_menu and disp_omake_menu link the original bytes on
+  the PS2 build and use their near-match C on PC/Xbox. key_rept_du,
+  Sel_back_disp and Sel_menu_disp are newly matched. The PC BOOT list in
+  tools/build_pc.sh and tools/pc_patch.py's Tsk_Exit(tsk) fix now name
+  omake.c; omake_nm left WEAK_B.
+- **Why:** owner's rule: matched game C over near-match copies. The C is the
+  same code as omake_nm with source-level rewrites that keep the meaning
+  (Sel_back_disp builds the colour from one byte, Put_2TF gets only the
+  sprite; key_rept_du uses ++cnt; disp_omake_menu computes x as int).
+- **Checked:** tools/build_pc.sh, test_menu, test_name_entry,
+  test_quest_loop, test_progression, test_movie.
+- **To revert:** the agent-C commit "omake: whole-file omake.c TU".
+
 ### Host pad driver and system_w_set replaced by the matched game C (12 Oct 2026, agent C)
 - **Dropped:** src/pc/rt/rt_pad.c's own copy of ioRead_sub (read_port0 built
   Psw from the host pad: bit table, stick angle/power, trg/rel, key repeat)

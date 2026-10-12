@@ -1489,3 +1489,12 @@ Start: main 42.150% (639224 bytes).
   The same pattern shows in flPS2UnlockTexture (two PLCTX for plConvertContext) and omake Sel_menu_disp (SPR).
 - The redundant stores in the original (R/B shift set and then swapped) are written out as they are.
 - `void flMemcpy(u8 *, u8 *, u32)` as the prototype fixed the argument load order (with `void *` the src load came first).
+### omake/omake.c: whole-file TU (0x23A0F0-0x23BE10), 17/20 match; replaces omakeb-e runs and omake_nm on PC
+- Sel_menu_disp: `void Put_2TF(SPR *, ...)` (variadic prototype) plus `if (n == 4 || n == 5)` first and `x += ..`.
+- Sel_back_disp: `u32 c = a & 0xFF; spr.col = (c << 16 | 0xFF000000 | c << 8) | c;` and `Put_2TF(&spr)` (one argument).
+- key_rept_du: `n = ++key_timer[pad].cnt; if (*w < n)` (the `n = cnt + 1; cnt = n` form swaps two registers).
+- LESSON: a raw asm holdout that is `static asm` changed the register choice of LATER functions that call it
+  (omake_main, omake_exit call disp_omake_menu); making the asm stub non-static (`asm void disp_omake_menu()`) fixed it.
+- Parked (raw): mode_sel (case ladder order of the nested switch), disp_mode_menu (index arithmetic/registers),
+  disp_omake_menu (original reloads omake_str[i] after strlen; `#pragma opt_intrinsicfunctioncallscanhavesideeffects on`
+  and other strlen prototypes did not bring it back).

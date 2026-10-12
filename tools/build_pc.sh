@@ -152,11 +152,12 @@ MC="src/main/mc/mclow_nm.c src/main/mc/mcact_nm.c src/main/mc/mcdisp_nm.c src/ma
 MC="$MC src/main/ud/udmisc_nm.c"
 # Power-on (rt_boot.c): select.bin's boot tasks (Init_task, the logos and
 # title, character creation and the continue screen: select00/demo
-# matched, edit_nm the whole edit file), main's mode menu (omake_nm),
+# matched, edit_nm the whole edit file), main's mode menu (omake.c, matched
+# but for 3 near-match C bodies),
 # screen fade (fade_nm), the task scheduler (tsk_nm)
 # and TransSet/GameTrans (weapon/trans.c; its trans() is the host's,
 # rt_boot.c)
-BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake_nm.c \
+BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake.c \
       src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
 # Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
 # agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
@@ -417,14 +418,10 @@ MATCHED_B="src/main/cam/cam.c \
     src/main/menu/menu41.c \
     src/main/menu/pit02.c \
     src/main/menu/pit04.c \
-    src/main/omake/omakeb.c \
-    src/main/omake/omakec.c \
-    src/main/omake/omaked.c \
-    src/main/omake/omakee.c \
     src/main/option/option01.c \
     src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/cam/camarea_gnps.c src/main/menu/menu_ftime.c"
 MATCHED_A="$MATCHED_A $MATCHED_B"
-WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm omake_nm ud_nm udmisc_nm"
+WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
 GAME="$GAME $MATCHED_A src/main/em/emride_nm.c"   # em_ride_sub (agent B): written from the asm, near-match
 WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm tri_nm shit1_nm shit3_nm shit4_nm f_quest_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_sound_nm eft20_nm"
