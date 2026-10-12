@@ -1514,6 +1514,8 @@ lobby 0x005DD3E0 0x005DD4C8 f/lb_gdr05
 lobby 0x005E5F90 0x005E8330 f/lb_tu_browser
 lobby:rodata 0x006660D0 0x006660EC f/lb_tu_browser
 lobby:rodata 0x006660F0 0x00666144 f/lb_tu_browser
+lobby:rodata 0x00666150 0x00666174 f/lb_tu_browser
+lobby:rodata 0x00666180 0x006661B0 f/lb_tu_browser
 lobby:rodata 0x006661B0 0x006661C8 f/lb_tu_browser
 lobby:rodata 0x006661D0 0x006661F4 f/lb_tu_browser
 lobby 0x005E5E20 0x005E5F90 f/lb_gdr06

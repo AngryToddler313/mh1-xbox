@@ -322,7 +322,14 @@ void bs_image_cache_clear(BSNODE *n) {
     n->x11A = 0;
 }
 
-typedef struct BCSRC { struct BCSRC *next; u8 _pad04[0x108]; u8 *buf; u8 _pad110[4]; } BCSRC;    /* 0x114 */
+typedef struct BCSRC {      /* html source cache node, 0x114 bytes */
+    struct BCSRC *next;     /* 0x000 */
+    char url[0x100];        /* 0x004 */
+    s32 used;               /* 0x104 */
+    u8 x108[4];             /* 0x108 page counter, status flags */
+    u8 *buf;                /* 0x10C */
+    s32 size;               /* 0x110 */
+} BCSRC;
 typedef struct BCIMG { struct BCIMG *next; u8 _pad04[0x118]; } BCIMG;                          /* 0x11C */
 typedef struct BCRT { struct BCRT *next; u8 _pad04[0x108]; } BCRT;                             /* 0x10C */
 extern BCSRC *BcSource;
@@ -659,7 +666,7 @@ typedef struct BCIMGN {
     u8 *data;               /* 0x10C file data */
     s32 size;               /* 0x110 */
     s32 tex;                /* 0x114 texture | palette handle << 16 */
-    s16 w, h;               /* 0x118 */
+    u16 w, h;               /* 0x118 */
 } BCIMGN;
 int flCreateTextureFromPNG_mem_err();
 int flCreateTextureFromBMP_mem_err();
@@ -989,12 +996,186 @@ void BsRequestTask(void) {
 }
 
 /* original bytes: build/raw/BsRequestCheck.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int BsRequestCheck()
-{
-#include "BsRequestCheck.inc"
+/* the current page as BsRequestCheck hands it out (BcCurrentPage, 0x14 bytes) */
+typedef struct BCPAGE {
+    u8 x00;
+    u8 _pad01[3];
+    void *data;             /* 0x04 html source, image texture handle or error text */
+    s8 err;                 /* 0x08 */
+    s8 result;              /* 0x09 */
+    s16 w;                  /* 0x0A */
+    s16 h;                  /* 0x0C */
+} BCPAGE;
+#define CURPAGE ((BCPAGE *)BcCurrentPage)
+extern char BsCacheSourceError[0x200];
+extern char BsCacheTmpUrlstr[];
+void HttpTaskPush(BSTASK *t);
+char *BsStrtblGet(int kind, int idx);
+void CpInetHttpResolvCacheInitialize(void);
+void **BsRequestCheck(char **purl) {
+    BSREQ *r;
+    BCSRC *c;
+    BCIMGN *im;
+
+    r = (BSREQ *)&BcRequest_head;
+    for (;;) {
+        r = r->next;
+        if (r == 0 || r->used == 0) {
+            break;
+        }
+        if (strncmp(r->url, *purl, 0x100) != 0) {
+            continue;
+        }
+        switch (r->used) {
+        case 5:
+            switch (r->x10D) {
+            case 1:
+                c = (BCSRC *)r->cache;
+                if (c->used == 3) {
+                    c->size = r->size;
+                    *(PAIR2 *)c->x108 = *(PAIR2 *)r->x108;
+                    HttpTaskPush(r->task);
+                    r->task = 0;
+                }
+                bs_route_commit(&BcRoute_head, (BSNODE *)r, c->url);
+                c->used = 5;
+                CURPAGE->data = c->buf;
+                CURPAGE->err = r->x124;
+                CURPAGE->result = r->x125;
+                CURPAGE->w = 0;
+                CURPAGE->h = 0;
+                break;
+            case 2:
+                im = (BCIMGN *)r->cache;
+                if (im->used == 3) {
+                    im->data = r->data;
+                    im->size = r->size;
+                    *(PAIR2 *)&im->page = *(PAIR2 *)r->x108;
+                    r->x124 = bs_cache_request_create_texture(im);
+                    if (r->x124 != 0) {
+                        r->used = 6;
+                        r->x125 = 0;
+                        return 0;
+                    }
+                    HttpTaskPush(r->task);
+                    r->task = 0;
+                    im->used = 2;
+                    return 0;
+                }
+                *(PAIR2 *)&im->page = *(PAIR2 *)r->x108;
+                im->used = 5;
+                CURPAGE->data = &im->tex;
+                CURPAGE->err = r->x124;
+                CURPAGE->result = r->x125;
+                CURPAGE->w = im->w;
+                CURPAGE->h = im->h;
+                break;
+            }
+            bs_request_cache_clear((BSNODE *)r);
+            return &CURPAGE->data;
+        case 6:
+            switch (r->x10D) {
+            case 1:
+                c = (BCSRC *)r->cache;
+                switch (r->x124) {
+                case 4:
+                    bs_route_commit(&BcRoute_head, (BSNODE *)r, c->url);
+                    switch (r->x125) {
+                    case 0:
+                    case 1:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 1), 0x200);
+                        break;
+                    case 2:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 2), 0x200);
+                        break;
+                    case 3:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 3), 0x200);
+                        break;
+                    case 4:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 4), 0x200);
+                        CpInetHttpResolvCacheInitialize();
+                        break;
+                    case 5:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 5), 0x200);
+                        break;
+                    case 6:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 6), 0x200);
+                        break;
+                    case 7:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 7), 0x200);
+                        break;
+                    case 8:
+                        strncpy(BsCacheSourceError, BsStrtblGet(2, 8), 0x200);
+                        break;
+                    }
+                    CURPAGE->data = BsCacheSourceError;
+                    break;
+                case 9:
+                    BsUrlCopy_SS(BsCacheTmpUrlstr, c->buf);
+                    CURPAGE->data = BsCacheTmpUrlstr;
+                    break;
+                case 8:
+                    bs_route_commit(&BcRoute_head, (BSNODE *)r, 0);
+                    strncpy(BsCacheSourceError, BsStrtblGet(2, 0), 0x200);
+                    CURPAGE->data = BsCacheSourceError;
+                    break;
+                case 2:
+                    CURPAGE->data = 0;
+                    break;
+                case 1:
+                    CURPAGE->data = 0;
+                    break;
+                case 5:
+                    CURPAGE->data = 0;
+                    break;
+                case 7:
+                    CURPAGE->data = 0;
+                    break;
+                case 10:
+                    CURPAGE->data = 0;
+                    break;
+                case 11:
+                    CURPAGE->data = 0;
+                    break;
+                case 0:
+                case 3:
+                case 6:
+                default:
+                    CURPAGE->data = 0;
+                    break;
+                }
+                CURPAGE->err = r->x124;
+                CURPAGE->result = r->x125;
+                if (c != 0) {
+                    bs_source_cache_clear((BSNODE *)c);
+                }
+                break;
+            case 2:
+                im = (BCIMGN *)r->cache;
+                CURPAGE->data = 0;
+                CURPAGE->err = r->x124;
+                CURPAGE->result = r->x125;
+                if (im != 0) {
+                    if (r->x124 != 7) {
+                        bs_image_cache_clear((BSNODE *)im);
+                    } else if (im->tex != 0) {
+                        im->used = 5;
+                    } else {
+                        bs_image_cache_clear((BSNODE *)im);
+                    }
+                }
+                break;
+            }
+            if (r->task != 0) {
+                HttpTaskPush(r->task);
+                r->task = 0;
+            }
+            bs_request_cache_clear((BSNODE *)r);
+            return &CURPAGE->data;
+        }
+    }
+    return 0;
 }
-#endif
 
 void BsRequestCancelHtml(void) {
     switch (BcCurrentPage[0]) {
