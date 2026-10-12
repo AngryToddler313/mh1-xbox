@@ -22,12 +22,14 @@ unsigned char rt_light_blk[3][0x68];       /* flLIGHT[0..2] as flSetRenderState(
 
 /* Defaults the host draw uses (viewer.c); restored after every prim. */
 #define RT_ALPHA_REF 0x40
+static uint32_t cur_fade = 0xFFFFFFFFu;  /* the last 0x67 (rt_clay_mat_draw multiplies it in) */
 
 void rt_fl_reset_states(void)
 {
     gfx_set_render_state(GFX_RS_TEXMAT, 0);
     gfx_set_render_state(GFX_RS_ALPHA_REF, RT_ALPHA_REF);
     gfx_set_render_state(GFX_RS_FADE_COLOR, 0xFFFFFFFFu);
+    cur_fade = 0xFFFFFFFFu;
     gfx_set_render_state(GFX_RS_ZWRITE, 1);
     gfx_set_render_state(GFX_RS_ZFUNC, 3);
     gfx_set_render_state(GFX_RS_ALPHA_FUNC, 4);
@@ -36,6 +38,9 @@ void rt_fl_reset_states(void)
     gfx_set_render_state(GFX_RS_FILTER, 0);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
 }
+
+static void *mat_pend[32];          /* flSetRenderState(0x3A + k): the next clay's material k */
+static uint32_t mat_mask;
 
 void flSetRenderState(int state, u32 value)
 {
@@ -57,6 +62,7 @@ void flSetRenderState(int state, u32 value)
                   * from its RGB bytes and eft14 passes 0xFF5F00 for fire orange.
                   * Alpha 0xFF = 1.0 (eft_trans_sub sends 255 * a). */
         gfx_set_render_state(GFX_RS_FADE_COLOR, value);
+        cur_fade = value;
         break;
     case 0x04: { /* texture (mem_tex handle from flCreateTextureFromApx_mem, rt_2d.c) */
         void rt_2d_set_texture(u32 h);
@@ -87,9 +93,13 @@ void flSetRenderState(int state, u32 value)
             memcpy(rt_light_blk[state - 0x5A], (const void *)(uintptr_t)value, 0x68);
         break;
     default:
-        if (state >= 0x3A && state < 0x5A)     /* material m - 0x3A of the next clay (em_material_sub, em20_material_sub):
-                                                   the host reads the per-kind state from rt_em_materials instead */
+        if (state >= 0x3A && state < 0x5A) {   /* material m - 0x3A of the next clay (em_material_sub, em20_material_sub:
+                                                   the host reads the monsters' state from rt_em_materials instead;
+                                                   pl_item_trans_sub: drawn by rt_clay_mat_draw) */
+            mat_pend[state - 0x3A] = (void *)(uintptr_t)value;
+            mat_mask |= 1u << (state - 0x3A);
             break;
+        }
         if (state >= 0 && state < 0x100 && !warned[state]) {
             warned[state] = 1;
             fprintf(stderr, "rt: flSetRenderState 0x%X not mapped yet\n", state);
@@ -119,10 +129,13 @@ f32 flFloor(f32 x)
 void flExecuteClay(s32 handle, int flag)
 {
     gfx_clay *c = rt_clay(handle);
+    uint32_t mm = mat_mask;
     (void)flag;
+    mat_mask = 0;                       /* the material states are for this clay only */
     if (c) {
         PICK_HANDLE(handle);
-        gfx_execute_clay(c);
+        if (!mm || !rt_clay_mat_draw(handle, c, mat_pend, mm, cur_fade))
+            gfx_execute_clay(c);
     }
 }
 

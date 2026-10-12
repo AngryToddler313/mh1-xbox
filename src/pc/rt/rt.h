@@ -113,7 +113,23 @@ int rt_clay_claimed(int handle);
 
 /* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
  * the game C; attr as for rt_bind_set_model. */
-void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
+/* mats (or NULL): per clay its material list (CLAY+8: material numbers, which
+ * flSetRenderState(0x3A + k) addresses), which list entry each gfx batch
+ * draws (-1 none) and the file's diffuse colour per material number (nmat
+ * of them): the game's material colours are then drawn (rt_clay_mat_draw). */
+typedef struct {
+    int n;
+    uint32_t no[32];
+    int8_t bk[32];
+} rt_clay_mats;
+void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n,
+                       const rt_clay_mats *mats, const float (*diffuse)[4], int nmat);
+/* flExecuteClay with material states pending (flSetRenderState 0x3A + k,
+ * pend[k] = the game's flMATERIAL, 0x4C bytes, diffuse RGB at +4, alpha at
+ * +0x10), fade = the current fl 0x67 colour: 1 = drawn here with the colours,
+ * 0 = not a clay with known materials (drawn plainly). */
+int rt_clay_mat_draw(int handle, gfx_clay *c, void *const pend[32], uint32_t mask, uint32_t fade);
+extern int rt_clay_mat_on;          /* rt_clay_mat_draw is used only while set (the hand item, rt_player_item_draw) */
 void rt_bind_eft_skin(int k, int nbone, void (*cb)(int k, const float *mats, int n));
 /* Files the game C loads by AFS index (load_file_mdl): fn returns the
  * Meltw-decompressed entry (malloc'd, the caller frees) and its size. */
@@ -209,6 +225,7 @@ int rt_em_materials(const void *em, int clay, int n, rt_em_mat *out);
 int rt_em_cut_tail(const void *em, float pos[3], float *yaw);
 void rt_hit_check(void);                /* the game's hit_check (shells vs monsters/players) */
 int rt_player_weapon(int no, float *root0, float *root1);   /* weapon root matrices (weapon_trans) */
+void rt_player_item_draw(int no);     /* pl_item_trans: the item in the hunter's hand (field) */
 int rt_player_weapon_model(int no);     /* PLW+0x34C */
 int rt_weapon_afs(int model, int tex);  /* weapon_model_data / WEAPON_TEX entry */
 int rt_player_job(int no);              /* weapon class PLW+2 (0 GS, 1/5 bowgun, 2 hammer, 3 lance, 4 SnS) */

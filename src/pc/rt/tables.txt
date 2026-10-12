@@ -119,6 +119,9 @@ eft10_time_tbl
 eft10_type0_pos
 eft11_def
 eft12_bone_col
+# pl_item_trans_sub (weapon3_nm.c): the roast's meat / bone colour by doneness
+bone_col
+meat_col
 eft12_data
 eft12_meat_col
 eft12_smoke_col

@@ -456,8 +456,8 @@ void pl_item_trans_sub(PLX *pl, CLAY *c, FLMAT *m, u8 *mat, u8 type) {
         case 4:
             g = 0xFF;
             break;
-        default:
-            return;
+        default:        /* type 0 (the spit's stand, the cooked roast) is drawn too: the asm (0x164FEC) branches to the draw */
+            break;
         }
     } else {
         g = 0x9F;

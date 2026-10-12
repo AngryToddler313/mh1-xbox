@@ -262,7 +262,7 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans,pl_item_trans,pl_item_trans_sub"
 # the matched cp math library (cp01-cp03, agent B 8 Oct)
 GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 # Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
@@ -552,7 +552,7 @@ for f in $GAME; do
     # declaration orders float and int arguments unlike the definition
     ABI=""
     case "$f" in
-    src/main/pl/*|src/game/pl/*|src/main/hit/hit*.c|src/main/weapon/weapon_nm.c|src/main/sound/*)
+    src/main/pl/*|src/game/pl/*|src/main/hit/hit*.c|src/main/weapon/weapon_nm.c|src/main/weapon/weapon3_nm.c|src/main/sound/*)
         ABI="-Dframe_check=rtabi_frame_check -Dframe_check2=rtabi_frame_check2 -Dframe_check3=rtabi_frame_check3 \
              -Dframe_check_001263F0=rtabi_frame_check_real -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
