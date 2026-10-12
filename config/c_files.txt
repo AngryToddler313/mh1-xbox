@@ -249,7 +249,7 @@ main 0x00114280 0x00114318 hit/hitb
 main 0x00114320 0x00114878 hit/hitd
 main 0x00114880 0x00114A88 hit/hitc
 main 0x00114AE0 0x0011CDE4 hit/f_sphr
-main:data 0x002E85F0 0x002E8610 hit/f_sphr
+main:data 0x002E85F0 0x002E8630 hit/f_sphr
 main 0x0028CE00 0x00290560 hit/hit2all
 main 0x00290560 0x002907B4 hit/hit3
 main 0x0010FC70 0x00110C30 game/f_game

@@ -454,31 +454,23 @@ void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, HENT *em) {
     }
 }
 
-/* GetWallHitBit2: original bytes kept (build/raw/GetWallHitBit2.inc, config/c_rawfuncs.txt); the C below is the
- * near-match the PC build uses (32 lines off, tools/align.py). */
-#ifdef __MWERKS__
-asm int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask)
-{
-#include "GetWallHitBit2.inc"
-}
-#else
 int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask) {
     HV3 c;
     HSWEEP sw;
     HPOLY *seen[20];
     f32 ofs[8] = { -1.0f, -1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f };
     u8 flag;
-    HPOLY **cell;
     int k;
     int m;
     int i;
-    int j;
-    HPOLY *pl;
     int n;
-    int quad;
+    int j;
+    int found;
     int nseen;
     int nwall;
-    int found;
+    int quad;
+    HPOLY *pl;
+    HPOLY **cell;
 
     if (!WallFieldInCheck(b)) return -1;
     hit_poly_num = 0;
@@ -542,7 +534,6 @@ int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask) {
     }
     return PushAdjust3(&sw, pos, &flag);
 }
-#endif
 
 static int BlockPlaceCgeck(f32 *p) {
     f32 x;

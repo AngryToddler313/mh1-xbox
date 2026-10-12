@@ -1665,7 +1665,7 @@ segments:
       - [0x193B80, bin, vu1_code]
       - [0x1E5EA0, data, data/game_data]
       - [0x1E85F0, .data, hit/f_sphr]
-      - [0x1E8610, data, data/game_data_2E8610]
+      - [0x1E8630, data, data/game_data_2E8630]
       - [0x206640, data, data/data_306640]
       - [0x2081E8, data, data/data_3081E8]
       - [0x2081F8, data, data/data_3081F8]
