@@ -86,13 +86,7 @@ int flCreateTextureHandle(TEXCTX *c, int b) {
     return h;
 }
 
-/* original bytes: build/raw/flPS2GetTextureInfoFromContext.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm int flPS2GetTextureInfoFromContext(TEXCTX *c, int a, int h, int b)
-{
-#include "flPS2GetTextureInfoFromContext.inc"
-}
-#else
+/* flPS2GetTextureInfoFromContext: matches (format 3 sets x0C = 3; the old near-match had 2) */
 int flPS2GetTextureInfoFromContext(TEXCTX *c, int a, int h, int b) {
     TEXH *t = &flTexture[(h & 0xFFFF) - 1];
     int n;
@@ -122,7 +116,7 @@ int flPS2GetTextureInfoFromContext(TEXCTX *c, int a, int h, int b) {
         break;
     case 3:
         t->pix = 1;
-        t->x0C = 2;
+        t->x0C = 3;
         break;
     case 4:
         t->pix = 0;
@@ -162,7 +156,6 @@ int flPS2GetTextureInfoFromContext(TEXCTX *c, int a, int h, int b) {
     t->size = flPS2GetTextureSize(t->pix, t->w, t->h, t->mips);
     return 1;
 }
-#endif
 
 int flPS2CreateTextureHandle(int h, int mode) {
     TEXH *t = &flTexture[(h & 0xFFFF) - 1];
@@ -239,13 +232,7 @@ static void flPS2VramTrans(TEXH *t) {
     }
 }
 
-/* original bytes: build/raw/flPS2GetVramTransAdrs.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm int flPS2GetVramTransAdrs(TEXH *t, u32 level)
-{
-#include "flPS2GetVramTransAdrs.inc"
-}
-#else
+/* flPS2GetVramTransAdrs: matches */
 int flPS2GetVramTransAdrs(TEXH *t, u32 level) {
     int sz;
     int base;
@@ -253,7 +240,7 @@ int flPS2GetVramTransAdrs(TEXH *t, u32 level) {
     int w;
     int h;
 
-    if (level >= t->mips) {
+    if (t->mips <= level) {
         return -1;
     }
     w = t->w;
@@ -263,6 +250,8 @@ int flPS2GetVramTransAdrs(TEXH *t, u32 level) {
     if (0 < (int)level) {
         do {
             switch (t->pix) {
+            default:
+                return -1;
             case 0x14:
                 sz = (w * h) >> 1;
                 break;
@@ -278,8 +267,6 @@ int flPS2GetVramTransAdrs(TEXH *t, u32 level) {
             case 0:
                 sz = w * h * 4;
                 break;
-            default:
-                return -1;
             }
             base += (sz + 0xFF) / 256;
             i++;
@@ -289,7 +276,6 @@ int flPS2GetVramTransAdrs(TEXH *t, u32 level) {
     }
     return base;
 }
-#endif
 
 int flPS2GetTextureHandle(void) {
     int i;
@@ -331,13 +317,7 @@ u32 flCreatePaletteHandle(TEXCTX *c, int b) {
     return h >> 16;
 }
 
-/* original bytes: build/raw/flPS2GetPaletteInfoFromContext.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm int flPS2GetPaletteInfoFromContext(TEXCTX *c, u32 h, int b)
-{
-#include "flPS2GetPaletteInfoFromContext.inc"
-}
-#else
+/* flPS2GetPaletteInfoFromContext: matches */
 int flPS2GetPaletteInfoFromContext(TEXCTX *c, u32 h, int b) {
     TEXH *t = &flPalette[((h & 0xFFFF0000) >> 16) - 1];
 
@@ -346,6 +326,9 @@ int flPS2GetPaletteInfoFromContext(TEXCTX *c, u32 h, int b) {
         return 0;
     }
     switch (c->fmt) {
+    default:
+        flLogOut(lit_555_0035BF70, 1);
+        return 0;
     case 2:
         t->pix = 2;
         t->x0C = 2;
@@ -358,9 +341,6 @@ int flPS2GetPaletteInfoFromContext(TEXCTX *c, u32 h, int b) {
         t->pix = 0;
         t->x0C = 4;
         break;
-    default:
-        flLogOut(lit_555_0035BF70, 1);
-        return 0;
     }
     if (c->w == 0x100) {
         t->w = 0x10;
@@ -372,7 +352,7 @@ int flPS2GetPaletteInfoFromContext(TEXCTX *c, u32 h, int b) {
     t->x4 = c->x0;
     t->x0 = b;
     t->used = 1;
-    t->x16 = flPS2GetTextureBuffWidth(t->w, 1);
+    t->x16 = flPS2GetTextureBuffWidth(t->w);   /* the original passes a1 = 1 left from the format check */
     t->x18 = flPS2GetTextureBuffWidth(t->h);
     t->x36 = 0;
     t->sysmem = 0;
@@ -384,7 +364,6 @@ int flPS2GetPaletteInfoFromContext(TEXCTX *c, u32 h, int b) {
     t->size = flPS2GetTextureSize(t->pix, t->w, t->h, t->mips);
     return 1;
 }
-#endif
 
 int flPS2CreatePaletteHandle(int h, int mode) {
     TEXH *t = &flPalette[(((u32)h & 0xFFFF0000) >> 16) - 1];

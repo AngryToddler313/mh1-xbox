@@ -31,11 +31,9 @@ int str_stop();
 int str_volume();
 
 int em_status_ck(void) {
-    u8 *p;
     s16 i;
     u8 *e = em_work;
     u8 *pp = player_work + game_w[0xD1] * 0xA00;
-    s16 j;
 
     if (game_w[0x21F] != 0) {
         return 0;
@@ -50,12 +48,12 @@ int em_status_ck(void) {
         }
         e += 0xA10;
     }
-    p = player_work;
-    for (j = 0; j < game_w[0xD3]; j++) {
-        if (p[0] != 0 && p[0x81E] != 0 && p[0x736] == game_w[0x14]) {
+    e = player_work;
+    for (i = 0; i < game_w[0xD3]; i++) {
+        if (e[0] != 0 && e[0x81E] != 0 && e[0x736] == game_w[0x14]) {
             return 1;
         }
-        p += 0xA00;
+        e += 0xA00;
     }
     return 0;
 }

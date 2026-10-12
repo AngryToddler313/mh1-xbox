@@ -14,7 +14,8 @@ typedef struct MDLW {
     s16 tex_start;              /* 0x0A */
     s16 mat_n;                  /* 0x0C materials used */
     s16 mat_start;              /* 0x0E first material slot */
-    u8 _pad10[0x20 - 0x10];
+    u8 *mat;                    /* 0x10 material records (0x4C bytes each, mkMaterial) */
+    u8 _pad14[0x20 - 0x14];
     s16 hier_n;                 /* 0x20 hierarchy entries */
     s16 hier_no;                /* 0x22 first hierarchy slot */
     u8 *hier0;                  /* 0x24 hierarchy set A */

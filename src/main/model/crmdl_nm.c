@@ -1,5 +1,5 @@
-/* crmdl_nm - SLPM_654.95 0x00123DC0-0x00125060: model creation per kind (player parts, weapon, armor, monster,
-   npc, set, edit) and the matching releases. mdlw slots come from get_start_mdlw/set_used_mdlw. Working file. */
+/* crmdl_nm - SLPM_654.95 0x001246D4-0x00125060: model creation per kind (monster, npc, set, edit) and the matching
+   releases (pl_create_model / weapon_create_model are in f_get.c). mdlw slots come from get_start_mdlw/set_used_mdlw. Working file. */
 #include "types.h"
 #include "mdlw.h"
 
@@ -50,36 +50,6 @@ void set_used_mdlw(int, int);
 void clr_used_mdlw(int, int);
 MDLW *model_work_set(int, int, int, int, int, int);
 void model_work_free(int);
-
-void pl_create_model(int pl_no) {
-    PLM *pl = &player_work[pl_no];
-    int i;
-    u8 *blk;
-
-    blk = parts_work + pl->id * 0x1600;
-    for (i = 0; i < 0x20; i += 2) {
-        pl->part[i] = blk;
-        pl->part[i + 1] = blk + 0xB0;
-        blk += 0x160;
-    }
-    pl->id = pl_no;
-    pl->x4E4 = 0;
-}
-
-void weapon_create_model(int wpn, int pl_no, int slot) {
-    PLM *pl = &player_work[pl_no];
-    int h;
-
-    load_weapon_model(wpn);
-    h = get_start_mdlw(1);
-    if (h >= 0) {
-        pl->wpn_no[slot] = h;
-        pl->wpn_n[slot] = 1;
-        pl->wpn_ptr[slot] = (s32)get_mdlw_ptr(h);
-        set_used_mdlw(h, 1);
-        model_work_set((s16)h, pl_area_top, (s16)(slot + (pl_no * 4 + 0x1A)), WEAPON_TEX[wpn], 0x900, 1);
-    }
-}
 
 typedef struct STW {
     u8 _pad00[0x34];
@@ -225,127 +195,122 @@ extern s32 em_sub_model_data[];
 void em_motion_free(int);
 void em_motion_load(int, int);
 void load_enemy_model(int);
-void load_enemy_sub_model(int, int, int);
+void load_enemy_sub_model();
 void load_npc_model(int);
 MDLW *em_model_work_set(int, int, int, int, int, int);
-MDLW *pl_model_work_set(int, int, int, int, int, int);
+MDLW *pl_model_work_set();
+extern s32 pl_shader_tbl0[];
 
-void release_enemy_model(s16 slot) {
+void release_enemy_model(slot)
+s16 slot;
+{
+    GWM *g = &game_w;
     s16 i;
-    s16 j;
-    u8 *h;
+    s16 t;
     int end;
-    int end2;
-    int t;
+    u8 *h;
 
-    t = slot * 2;
-    i = *(s16 *)((u8 *)game_w.mdl_no + t - (int)0 );
-    end = i + *(s16 *)((u8 *)game_w.mdl_n + t);
+    i = game_w.mdl_no[slot];
+    end = i + game_w.mdl_n[slot];
     if (i < end) {
         h = mdlw_heap + i;
         do {
-            model_work_free(i);
+            t = i;
+            model_work_free(t);
             if (*h != 0) {
-                clr_used_mdlw(i, 1);
+                clr_used_mdlw(t, 1);
             }
             i++;
             h++;
         } while (i < end);
     }
-    if (game_w.sub_n[slot] != -1) {
-        j = game_w.sub_no[slot];
-        end2 = j + game_w.sub_n[slot];
-        if (j < end2) {
-            h = mdlw_heap + j;
+    if (g->sub_n[slot] != -1) {
+        i = g->sub_no[slot];
+        end = i + g->sub_n[slot];
+        if (i < end) {
+            h = mdlw_heap + i;
             do {
-                model_work_free(j);
+                t = i;
+                model_work_free(t);
                 if (*h != 0) {
-                    clr_used_mdlw(j, 1);
+                    clr_used_mdlw(t, 1);
                 }
-                j++;
+                i++;
                 h++;
-            } while (j < end2);
+            } while (i < end);
         }
     }
     em_motion_free(slot);
-    game_w.em_kind[slot] = 0;
+    g->em_kind[slot] = 0;
 }
 
 void em_create_model(int slot) {
-    int area;
-    int o20;
     GWM *g = &game_w;
-    int o4;
-    int o2;
+    int area;
     int h;
-    u8 *kp;
 
-    if (g->em_kind[slot] == 0) {
+    if (game_w.em_kind[slot] == 0) {
         g->mdl_no[slot] = 0;
         g->mdl_n[slot] = 0;
         g->mdl_ptr[slot] = 0;
         return;
     }
-    kp = &g->em_kind[slot];
-    load_enemy_model(*kp);
+    load_enemy_model(g->em_kind[slot]);
     area = pl_area_top;
     h = get_start_mdlw(1);
-    if (h < 0) {
-        return;
-    }
-    o2 = slot * 2;
-    g->mdl_no[slot] = h;
-    g->mdl_n[slot] = 1;
-    o4 = slot * 4;
-    g->mdl_ptr[slot] = (s32)get_mdlw_ptr(h);
-    set_used_mdlw(h, 1);
-    o20 = (o4 + slot) * 4;
-    em_model_work_set((s16)h, area, (s16)(o20 + 0x9A), ENEMY_TEX[*kp], 0x900, slot & 0xFF);
-    em_motion_load(slot, *kp);
-    if (em_sub_model_data[*kp] != -1) {
-        load_enemy_sub_model(*kp, -1, *kp * 4);
-        area = pl_area_top;
-        h = get_start_mdlw(1);
-        if (h < 0) {
-            g->sub_n[slot] = -1;
-            return;
-        }
-        g->sub_no[slot] = h;
-        g->sub_n[slot] = 1;
-        g->sub_ptr[slot] = (s32)get_mdlw_ptr(h);
+    if (h >= 0) {
+        g->mdl_no[slot] = h;
+        g->mdl_n[slot] = 1;
+        g->mdl_ptr[slot] = (s32)get_mdlw_ptr(h);
         set_used_mdlw(h, 1);
-        model_work_set((s16)h, area, (s16)(o20 + 0xA6), ENEMY_SUB_TEX[*kp], 0x900, 0);
-        return;
+        em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), ENEMY_TEX[g->em_kind[slot]], 0x900, slot & 0xFF);
+        em_motion_load(slot, g->em_kind[slot]);
+        if (em_sub_model_data[g->em_kind[slot]] != -1) {
+            load_enemy_sub_model(g->em_kind[slot]);
+            area = pl_area_top;
+            h = get_start_mdlw(1);
+            if (h < 0) {
+                g->sub_n[slot] = -1;
+                return;
+            }
+            g->sub_no[slot] = h;
+            g->sub_n[slot] = 1;
+            g->sub_ptr[slot] = (s32)get_mdlw_ptr(h);
+            set_used_mdlw(h, 1);
+            model_work_set((s16)h, area, (s16)(slot * 20 + 0xA6), ENEMY_SUB_TEX[g->em_kind[slot]], 0x900, 0);
+        } else {
+            g->sub_n[slot] = -1;
+        }
     }
-    g->sub_n[slot] = -1;
 }
 
 void npc_create_model(int slot) {
-    int h;
+    GWM *g = &game_w;
     int area;
+    int h;
 
     load_npc_model(slot);
     area = pl_area_top;
     h = get_start_mdlw(1);
-    if ((s16)h >= 0) {
-        game_w.mdl_no[slot] = h;
-        game_w.mdl_n[slot] = 1;
-        game_w.mdl_ptr[slot] = (s32)get_mdlw_ptr((s16)h);
-        set_used_mdlw((s16)h, 1);
+    if (h >= 0) {
+        g->mdl_no[slot] = h;
+        g->mdl_n[slot] = 1;
+        g->mdl_ptr[slot] = (s32)get_mdlw_ptr(h);
+        set_used_mdlw(h, 1);
         switch (slot) {
         case 0:
-            pl_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
-            return;
+            pl_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], pl_shader_tbl0[0], 0x100, 0);
+            break;
         case 1:
-            em_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 0xA);
-            return;
+            break;
         case 2:
-            em_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 9);
-            return;
+            break;
         case 3:
-            em_model_work_set((s16)h, area, (s16)(slot * 0x14 + 0x9A), NPC_TEX[slot], 0x900, 1);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 0x20);
             break;
         }

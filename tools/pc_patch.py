@@ -119,7 +119,7 @@ PATCHES = {
         ("    flfntLocate();", "    flfntLocate(arg0, arg1);"),
     ],
     # mode_sel_end's default case exits its own task (a0 = tsk left over)
-    "src/main/omake/omake_nm.c": [
+    "src/main/omake/omake.c": [
         ("        Tsk_Exit();\n        Tsk_Execute(D_533BE0, 3);", "        Tsk_Exit(tsk);\n        Tsk_Execute(D_533BE0, 3);"),
     ],
     # the mc_* step machines call mc_sync() with a0 = w left over

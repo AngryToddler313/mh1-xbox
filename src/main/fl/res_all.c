@@ -539,24 +539,15 @@ u8 *GetModelDataAHI(u8 *f, u32 idx) {
     return 0;
 }
 
-/* original bytes: build/raw/plGetInitMotionSetSizeFromAHI.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm int plGetInitMotionSetSizeFromAHI(void *f, int tree)
-{
-#include "plGetInitMotionSetSizeFromAHI.inc"
-}
-#else
 int plGetInitMotionSetSizeFromAHI(void *f, int tree) {
-    int r;
+    int n;
 
     if (tree >= plAHIGetTreeNum(f)) {
-        r = 0;
-    } else {
-        r = plAHIGetTreeModelNum(f, tree) * 64 + 16;
+        return 0;
     }
-    return r;
+    n = plAHIGetTreeModelNum(f, tree);
+    return n * 64 + 16;
 }
-#endif
 
 /* original bytes: build/raw/plCreateInitMotionSetFromAHI.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
@@ -583,9 +574,9 @@ int plCreateInitMotionSetFromAHI(u8 *out, u8 *tmp, u8 *ahi, int tree) {
     *(int *)(tmp + 0xC) = plGetInitMotionSetSizeFromAHI(ahi, tree);
     n = plAHIGetTreeModelNum(ahi, tree);
     *(s16 *)(tmp + 2) = n;
-    *(int *)(tmp + 8) = 0;
     *(int *)(tmp + 4) = 0x10;
     node = tmp + 0x10;
+    *(int *)(tmp + 8) = 0;
     for (i = 0, q = node; i < n; i++) {
         nm = (f32 (*)[4])(q + 0x10);
         for (j = 0; j < 4; j++) {

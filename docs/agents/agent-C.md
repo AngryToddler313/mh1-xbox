@@ -1398,3 +1398,160 @@ placement of the literal-address lui/addiu and one inner-loop `andi` (r masked a
 quest_condition_prog: the stores in case -1 are emitted in SOURCE order by the original (sh x182, sb x06, sb D5, sh x184, sh x186, sb x181,
 each with its own `lui at`) while MWCC here groups the three sh stores first; casts through `(u8 *)&quest_w + off` or literal addresses did
 not fix it (not understood). No fresh rewrite was attempted beyond this; k_HitEmCamera untouched.
+
+## Round 21 (agent C, 12 Oct 2026: engine side of main)
+Start: main 42.150% (639224 bytes).
+### model/f_get.c (0x121B70-0x1246D4, whole original file, rebuild OK x5)
+- One TU in address order with the LOCAL symbols as statics. 34 of 41 functions are C matches; 7 are raw (get_start_* x4, pl_create_model,
+  weapon_create_model, armor_create_model) with their near-match C in the `#else`.
+- New matches and what did it:
+  - mkModel/mkModel3/mkModel4 (3.1 KB, fresh from m2c): K&R definitions with `u16 flags` (the callee masks with andi, callers pass raw ints);
+    the clay slot `h` is the SAME variable as the loop counter i (`i = get_start_clay(..); if (i >= 0) ... for (i = 0; ...)`), arrays declared
+    `u8 img[40]; int attr[20]; u8 frame[8];` (that order gives the original stack layout), `CLAY *c` declared after the ints,
+    `w->clay = (u8 *)(c = get_clay_ptr(i));` (assignment inside the store), `k = (flags & 0x100) / 256` (bgez/addiu 0xFF/sra).
+    mkModel4: amo declared last. load_enemy_sub_model-style K&R calls with stale registers do not appear here.
+  - Sethierarchy (127 -> 0): `amo = (int)((u8 *)amo + 0x128000);` reusing the parameter (`daddu s6,a0; addu s6,s6,at` in the prologue);
+    a separate `ahi` local or a plain `amo += 0x128000` gives other code (the int add is rematerialised at every use). `if (0 < w->num)`
+    (slt at,zero) instead of `w->num > 0` (blez).
+  - model_work_set2: the real parameter order is (idx, mat, tex, texlist, flags, skin, type) (getm_nm had skin/flags swapped);
+    `s16 tex` parameter + `load_texlist_pl(pl, (int)tex, 0, skin)` with an ANSI `(int *, s16, int, u16)` prototype.
+  - model_work_free: `release_texture(w->tex_start, (int)w->tex_n)` with an s16 prototype.
+    LESSON: `(int)x` of an s16 value passed to an s16 prototype makes MWCC re-extend (dsll32/dsra32) at the call; a plain s16 value does not.
+  - release_model: index form `clay[i].handle` (no pointer local).
+  - get_start_*: from 16 to 7 diffs: `#pragma opt_unroll_loops off` showed that the original sum loop is NOT unrolled because the counter
+    start is not a known constant: `j = sum = 0; for (; j < n; j++)` (exactly that; `sum = j = 0` unrolls), `break` + one `return pos` at the
+    end, `j = pos + n; if (j > SIZE)` (permuter). Left: register names of j and the compiler's pointer (a2/a3 swapped).
+- Parked (raw): pl_create_model (original loop unrolled 4x with a running block pointer, ours 8x with offsets; a do-while is not unrolled
+  at all), weapon_create_model (10: pl_area_top load scheduled before the slot sum), armor_create_model (register numbering only; declhill2
+  and all 24 orders of the four inits: nothing).
+- crmdl_nm.c em_create_model now matches (not yet linked at this point): no `kp` pointer local, write `g->em_kind[slot]` every time
+  (the compiler's CSE temp gets the original register); `load_enemy_sub_model()` is called with ONE argument (K&R, stale a1/a2).
+### sys/f_ioread.c (0x11F3F0-0x120234, whole original file, all 13 functions match; rebuild OK x5)
+- New: MakeMediaVersion, ioread_sub, ioRead, ioRead_sub (1140 bytes), ioRead2, InitCommonWork.
+  - MakeMediaVersion: `char delim[5] = " :\t\n";` (initialised local; MWCC copies its .sdata initialiser with lwc1/swc1 + lbu).
+    The initialiser lands in the object's .sdata, placed with a new kind of slot: `main:sdata 0x003876C0 0x003876C8 sys/f_ioread`
+    (setup_split already supports any data region; END must reach the next 8-byte boundary or the remaining sdata asm object
+    is pushed up by its alignment).
+  - ioread_sub: the original keeps a dead `lbu` and `li 1`: `u8 st = flpad_adr[n].state; if (st == 1) { return; }`.
+  - ioRead_sub: straight from the asm; `u32 b; u16 v;` declared before `PSWE *p` (register of p); one `u16 v` reused for the
+    stick bits; `(ang << 16) / 360`; `if (rcnt > 10) { if (rcnt > 12) ... }` (slti at).
+  - ioRead / ioRead2 keep the loop counter in a2 / t1 because the static callee is defined before them (TU order matters).
+  - InitCommonWork (permuter, 7000 iterations): the source stores sprite_area BEFORE stage_hit_area_f/_w; MWCC's scheduler moves the
+    store. LESSON: independent global stores are reordered by the scheduler, so the source order can differ from the store order.
+- PC: f_ioread.c is now in the PC build (PICK_X: ioRead, ioRead2, system_w_set); rt_pad.c fills the fl pad data (flpad_adr) and
+  calls the game's ioRead instead of its own ioRead_sub copy; rt_boot.c's system_w_set copy is gone. include/ioread.h holds
+  FPADI/PSWE. Tests: quest_loop, progression, menu, name_entry, pick, urgent, frog, activities pass; Xbox build 0 failed.
+### model/crmdl05.c (0x124820-0x124C48): em_create_model, npc_create_model match (rebuild OK).
+- npc_create_model: pl_model_work_set is called with SEVEN arguments (K&R: `pl_shader_tbl0[0], 0x100, 0`), the switch labels 0..3
+  in source order; matched first try.
+- release_enemy_model (still in crmdl_nm.c, 73/90): K&R `s16 slot` keeps the raw a0 for em_motion_free(slot); the original does not
+  CSE `slot * 2` between the two halves (mine does, one extra saved register). Not solved.
+### fl/pltim_all.c: GetTim2PictureHead matches (was raw, 30 lines off)
+- `for (i = 0; i < n; i++) { if (i >= num) break; q += align(p, 0x30); q += *(u32 *)r; r = q; } return r;` with the locals declared
+  `int i; u8 *p = q; u8 *r;` (that order). GetTim2ClutData (2: an extra `b` before the return-0 block) and CheckTIM2FileHeader (the
+  original keeps the dead CLT2 compare chain; every if/else/goto/switch shape tried) stay raw.
+### sound/hdmerge.c HdMerge (0x21E310, 4280 bytes; Sony .hd bank merger) - in progress
+- Written from the asm with typed structs (sdhd-style). Notes that got the structure to 0 differences:
+  - struct copies in the original are member-wise lw/lhu/lbu/lb copies through two LOCAL pointers loaded once
+    (`{ T *d; T *s; s = SrcHd[0].x; d = DstHd.x; d->a = s->a; ... }`); a struct assignment `*d = *s` gives lwc1/swc1 block copies.
+  - `SrcHd[i].field` with `src[i]` (compiler IVs created after the loop pretest) instead of `for (i = 0, s = SrcHd; ...; s++)`.
+  - `o + (s32)base` (int first) for record addresses; `p + o` is canonicalised to base+o.
+  - `q = (u8 *)DstHd.prog->offset; q += (max + 1) * 4;` (two statements; one expression gets reassociated).
+- Register allocation: one `u8 *q` reused for all chunks gave 465 differing instructions; a SEPARATE pointer variable per chunk
+  (q0..q4) gave 329, a separate `base` per chunk 302. LESSON: when one C variable is reused in independent sections of a long
+  function, MWCC's colouring follows the variable; the original source apparently had distinct variables per section.
+  A greedy search over which variables to split per section is running (scratch scripts split1.py/greedy.py).
+### sound/bgm05.c: em_status_ck matches (0x21D470, file-static in the original, own run now)
+- The second loop reuses the first loop's variables: `e = player_work; for (i = 0; ...; i++) { ... e += 0xA00; }` (same `s16 i`,
+  same `u8 *e` as the monster loop); separate `p`/`j` locals gave the original instructions with other registers.
+  Same change in bgm_nm.c (PC build). Also light_nm.c light_change_normal 39 -> 17 (`s++; s++;` instead of `s += 2`; the +8 of the
+  table row inline), mcact_nm.c McActAvailSet: `sz += (n + 1) / 2; f->blocks = sz + 2;` (registers still differ).
+### fl raw holdouts closed (rebuild OK x5): plGetInitMotionSetSizeFromAHI, plCalcAddress, flPS2GetTextureInfoFromContext,
+### flPS2GetVramTransAdrs, flPS2GetPaletteInfoFromContext (fltex01.c is all C now)
+- plGetInitMotionSetSizeFromAHI: `n = plAHIGetTreeModelNum(..); return n * 64 + 16;` (call result in a local first) + early `return 0`.
+- plCalcAddress: `a = c->base + c->stride * y; return a + x;` in each branch keeps the add operand order (base first); any one-line
+  expression is canonicalised to x + base.
+- flPS2GetTextureInfoFromContext: real bug in the old near-match: pixel format 3 sets x0C = 3 (the compare constant is reused), not 2.
+- flPS2GetVramTransAdrs: `default: return -1;` written FIRST in the switch (laid out at the end of the ladder), and
+  `if (t->mips <= level)` for the `sltu at` form.
+- flPS2GetPaletteInfoFromContext: same default-first switch, and the first flPS2GetTextureBuffWidth call passes ONE argument (K&R):
+  the original relies on a1 = 1 left from the format check.
+- plCreateInitMotionSetFromAHI 9 -> 4 (store order tmp+2, tmp+4, node, tmp+8); system_hard_init stays 4 (argument load order of
+  the last flPS2IopModuleLoad; probably string literals in the source).
+### fl/tx08.c: flPS2GetTextureVramBlock matches (1176 bytes, written fresh from the asm in one go)
+- `int pw, ph` (page size per pixel format; `ph = pw` for the square pages), `s16 w = t->w, h = t->h, n = 0`, `u32 i`,
+  `n += (s16)((((w + (s16)pw - 1) / (s16)pw) * ((h + (s16)ph - 1) / (s16)ph)) << 5); w >>= 1; h >>= 1;` (MWCC unrolls it 8x
+  with divide traps). Operand order inside the first division mattered (w first).
+### fl/tx10.c: flPS2ConvertTextureFromContext matches (1060 bytes, file-static in the original, own run)
+- LESSON: a LOCAL struct whose address is passed to a function (`flPS2ConvertContext(s, &ctx, ..)`) is accessed by MWCC with
+  `addiu rX, sp, off; sw val, 0(rX)` for every member at a non-zero offset (the member at offset 0 is a direct `sw val, off(sp)`).
+  Write `ctx.field = ..` on the local itself: going through a `FLCTX *d = &ctx` pointer makes MWCC keep d in a register instead.
+  The same pattern shows in flPS2UnlockTexture (two PLCTX for plConvertContext) and omake Sel_menu_disp (SPR).
+- The redundant stores in the original (R/B shift set and then swapped) are written out as they are.
+- `void flMemcpy(u8 *, u8 *, u32)` as the prototype fixed the argument load order (with `void *` the src load came first).
+### omake/omake.c: whole-file TU (0x23A0F0-0x23BE10), 17/20 match; replaces omakeb-e runs and omake_nm on PC
+- Sel_menu_disp: `void Put_2TF(SPR *, ...)` (variadic prototype) plus `if (n == 4 || n == 5)` first and `x += ..`.
+- Sel_back_disp: `u32 c = a & 0xFF; spr.col = (c << 16 | 0xFF000000 | c << 8) | c;` and `Put_2TF(&spr)` (one argument).
+- key_rept_du: `n = ++key_timer[pad].cnt; if (*w < n)` (the `n = cnt + 1; cnt = n` form swaps two registers).
+- LESSON: a raw asm holdout that is `static asm` changed the register choice of LATER functions that call it
+  (omake_main, omake_exit call disp_omake_menu); making the asm stub non-static (`asm void disp_omake_menu()`) fixed it.
+- Parked (raw): mode_sel (case ladder order of the nested switch), disp_mode_menu (index arithmetic/registers),
+  disp_omake_menu (original reloads omake_str[i] after strlen; `#pragma opt_intrinsicfunctioncallscanhavesideeffects on`
+  and other strlen prototypes did not bring it back).
+### fl/fltex02.c registered (0x18AC90-0x18B3B0): PageConv4to32 / PageConv8to32 match; 4 raw holdouts
+- The old near-match PageConv* was WRONG, not just unmatched: it stepped one buffer row (64/128 bytes) per block row
+  where the original steps 16 rows. Matching form: `for (tp = block_table4, by = 0; by < 8; by++) for (bx ..)
+  BlockConv4to32(buf + ((by * 16) << 6) + bx * 16, dst + bw * (idx32_v[t] << 11) + (idx32_h[t] << 5), bw);`
+  (the `(by * 16) << 6` keeps by*16 as its own induction register). Not linked on PC.
+- Parked: Conv4to32/Conv8to32 (28 lines, d and the stride register swap; declhill2 order kept), BlockConv8to32 (the
+  original steps e after every pair: no C form found that stops MWCC merging the steps), BlockConv4to32.
+### pad/usbkbdm.c: f_usbkbdm (0x23D370-0x23D870) all 9 functions match, written fresh from the asm
+- USB keyboard step machine over Sony's usbkb library. Data (usbkbdm_init_tbl etc.) stays extern (asm data).
+- `return info.status[port] == 0 ? -1 : 0;` gives the xor/sltiu/negu form; `-(x == 0)` does not.
+- pds_kdt is 12 bytes {mkey, led, key[6], kinfo}: the original writes a 7th key code at +8, over kinfo's low byte
+  (kinfo is stored first). Kept as written (key[6]). Not linked on PC (the PC has no USB keyboard path).
+### fl/flps0.c: f_flps0 whole file (0x175120-0x177540, 12 functions) matches, written from the asm
+- flPS2psAddQueue + flPS2CheckGSClip + the GS primitive builders flps0002..flps1600; replaces flpsm01.c, flps_misc01.c
+  and the flps_misc_nm.c near-match. The PC keeps rt_2d.c (it draws with GL, not GS packets).
+- LESSON: flPS2CheckGSClip is LOCAL (static) in the original. MWCC only uses its knowledge of a callee's register use
+  for STATIC functions defined earlier in the TU: with it static, flps0002 keeps y in v1 across the call as the
+  original does; global, y goes to a saved register. (`#pragma internal on` does not do the same.)
+- `flPS2CheckGSClip((int)x, y, 1.0f)` with s16 x re-extends x at the call (the original's dsll32/dsra32 pair).
+- flps0F00 has the flPS2ConvScreenFX/FY/FZ bodies written inline (the others call them); ST words are float bits
+  (`*(u32 *)&st`, through the stack). GS words with Sony-style SET_RGBAQ/SET_XYZ/SET_UV/SET_ST macros.
+- Local order: `f32 v[4]; FMTX m;` puts m below v (m at sp+0x70) as the original.
+### fl/vr01.c extended to 0x18BD90: flPS2SearchVramChange written from the asm (raw holdout, 38 lines off)
+- Structure equal after: `while ((u32)(w->page - start) < len) {..}` (MWCC rotates it into the test-at-top +
+  test-at-bottom form), `if (pass != 0) break; pass++; } while (1); return -1;` for the two passes, and
+  `e = list[i]` indexing (not a walking pointer). Per-scan variables (e/k/tp vs e2/k2/tp2) and pair.py
+  (scratch: every position pair for two declaration lines) took it from 52 to 38; the rest is the second scan's temps.
+### fl/tx04.c extended to 0x189CC0: flPS2UnlockTexture written from the asm (raw holdout, 4 instructions off)
+- `buf = t->sysmem != 0 ? flPS2GetSystemBuffAdrs(t->sysmem) : mflTemporaryUse(t->size);` (ternary: the result
+  stays in v0 at the join, which the original uses for d.base and the memcpy); `PLCTX s; PLCTX d;` (s declared first
+  sits higher on the stack); prototype `flPS2VIF1MakeLoadImage(.., s16 vram, ..)` fixed the argument load order
+  (with `long vram` the lh of t->x14 was scheduled first). `case 0x14: case 0x13:` order gives the 0x13-first ladder.
+- Left: the original copies v0 into buf's saved register inside both branches; ours sinks the copy below the join.
+### fl/tx03.c extended to 0x189690: flPS2LockTexture (2548 bytes) matches, written from the asm
+- Same PLCTX patterns as tx10/tx04. Keys: prototype `flPS2StoreImageB(u8 *, int, s16 vram, s16 bw, s16 fmt, long,
+  long, s16 w, s16 h)` (s16 w: the lh value goes straight to t3; long/int made MWCC re-extend it);
+  `c->base = t->x2C = t->sysmem == 0 ? mflTemporaryUse(..) : flPS2GetSystemBuffAdrs(..);` (chained, no reload);
+  `PLCTX s; u8 *dst; u8 *src;` order. The four lock modes repeat the format switch (written out, generated).
+### fl/flswap.c: flPS2SwapDBuff (1772 bytes) matches, written from the asm
+- GS privileged registers through Sony-style macros; the casts inside the macros decide the code: DISPFB needs
+  `(long)(fbw) << 9` (fbw = flWidth / 64; u64 schedules the fbp part first), DISPLAY needs `(long)(dx)` with the
+  rest u64. `dx = x3B4 + (u32)x3BC * (u32)x14` (u32 operands give the original load order).
+- intr == 0 means "called from the vsync interrupt": iFlushCache.
+- Run END must be the function's real end when the next file starts after alignment padding (flswap: 0x18D5EC, not 0x18D5F0), or everything after shifts by 4.
+### fl/pv03.c: plSetupFOVClipPlanes matches first try (float tan through double: `(float)tan(half)`)
+### fl/tarpad02.c: PADRead_for_PS2 written from the asm (raw holdout, ~260 lines: loop strength reduction)
+- The original indexes `tarpad_root[port].field` / `ps2pad_state[port].field` every time (no record pointer):
+  each access is its own lui/addiu of (array + field offset) plus the cached port*0x34. `x / 2` on a u8 gives srl
+  (`>> 1` gave sra). A switch whose labels are written 1, 2, 4, 8, 0x10, 0x20 compares 0x20 first (MWCC emits the
+  ladder in reverse label order).
+### Round 21 summary (end)
+- main 42.150% -> 44.054%. This stretch: omake.c whole file (replaces omake_nm on PC), fltex02 TU, usbkbdm.c (new,
+  9 functions), flps0.c (12, whole f_flps0 file), flPS2LockTexture, flPS2SwapDBuff, plSetupFOVClipPlanes; raw-holdout
+  reading copies for flPS2SearchVramChange, flPS2UnlockTexture, PADRead_for_PS2; HdMerge / flPS2ConvertContext parked
+  as hdmerge_nm.c / tx09_nm.c.
+- Writing fresh C straight from the asm (flps0, usbkbdm, LockTexture, SwapDBuff) paid off far better than polishing
+  old 50-300 line near-matches. Sony-style macros with the right casts and s16 prototype parameters were the keys.

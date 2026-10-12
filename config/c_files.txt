@@ -12,7 +12,8 @@ game 0x0059A2C0 0x0059A674 em/em08_ai_r01
 # Functions must byte-match before they are listed here.
 main 0x00152030 0x00152044 pl/pl_stg_ck_tw
 main 0x0014FC20 0x0014FC38 pl/pl_master_ck
-main 0x00123A40 0x00123A60 clay/get_clay_ptr
+main 0x00121B70 0x001246D4 model/f_get
+main:rodata 0x00358480 0x00358498 model/f_get
 main 0x00171E90 0x00171EA0 fl/flmatSetTrans
 main 0x0016ABB0 0x0016ACC8 fl/fms
 main 0x001567C0 0x001569D8 set/set12
@@ -299,6 +300,10 @@ main 0x0023B2E0 0x0023B4F4 omake/omaked
 main 0x0023B790 0x0023BE10 omake/omakee
 main:rodata 0x0036D1E0 0x0036D1F8 omake/omakee
 main 0x0023D870 0x0023E4E0 npc/npc
+main 0x0023A0F0 0x0023BE10 omake/omake
+main:rodata 0x0036D1E0 0x0036D1F8 omake/omake
+main 0x0023DAB0 0x0023DEA8 npc/npcb
+main 0x0023E260 0x0023E4E0 npc/npcc
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2
@@ -457,15 +462,6 @@ main 0x00120C80 0x00120F84 cp/cp02
 main 0x0011EBA0 0x0011EC20 load/lf01
 main 0x0011ED20 0x0011EF04 load/lf02
 main 0x0011EF90 0x0011F3EC load/lf03
-main 0x001235D0 0x00123728 model/hp01
-main 0x00123800 0x00123968 model/hp02
-main 0x00123A60 0x00123B98 model/hp03
-main 0x00123C80 0x00123DB8 model/hp04
-main 0x00121B70 0x00121F10 model/gm01
-main 0x00122E70 0x00122F38 model/gm02
-main 0x00123040 0x00123298 model/gm03
-main 0x00123310 0x00123388 model/gm04
-main 0x00123460 0x001234F8 model/gm05
 main 0x0010EC20 0x0010ED6C fade/fd01
 main 0x0010ED70 0x0010EDD8 fade/fd03
 main 0x0010EDE0 0x0010F044 fade/fd02
@@ -474,10 +470,8 @@ main 0x00161C20 0x00161C9C font/fs2_02
 main 0x00161D40 0x00161DE0 font/fs2_03
 main 0x00162640 0x00162DA8 font/gfs01
 main 0x0015A520 0x0015A6C4 sprite/calcpoint
-main 0x0011F3F0 0x0011F668 sys/io01
-main 0x0011F8A0 0x0011F9DC sys/io02
-main 0x0011FAA0 0x0011FAB8 sys/io03
-main 0x00120020 0x00120078 sys/io04
+main 0x0011F3F0 0x00120234 sys/f_ioread
+main:sdata 0x003876C0 0x003876C8 sys/f_ioread
 main 0x00125060 0x00125074 sys/tsk01
 main 0x00125200 0x00125340 sys/tsk02
 main 0x00169A80 0x00169C20 sys/vw01
@@ -503,10 +497,11 @@ main 0x0018D880 0x0018D9C8 fl/fm02
 main 0x0016D9C0 0x0016DC98 fl/dmatag
 main 0x0016F5F0 0x0016F680 fl/fs01
 main 0x0016F770 0x0016F8FC fl/fs02
-main 0x0018B3B0 0x0018BAE0 fl/vr01
+main 0x0018AC90 0x0018B3B0 fl/fltex02
+main 0x0018B3B0 0x0018BD90 fl/vr01
 main 0x00188800 0x00188B38 fl/tx02
-main 0x00188B40 0x00188C84 fl/tx03
-main 0x00189690 0x00189764 fl/tx04
+main 0x00188B40 0x00189690 fl/tx03
+main 0x00189690 0x00189CC0 fl/tx04
 main 0x00189CC0 0x00189CD8 fl/tx05
 main 0x00189F30 0x00189FF0 fl/tx06
 main 0x00134950 0x0014D1C8 pl/f_pl
@@ -537,6 +532,7 @@ main:rodata 0x0035AE50 0x0035AE68 pl/f_pl
 main:rodata 0x0035AE70 0x0035AE9C pl/f_pl
 main:rodata 0x0035AEA0 0x0035AEE4 pl/f_pl
 main:rodata 0x0035AEF0 0x0035AF0C pl/f_pl
+main 0x00189FF0 0x0018A488 fl/tx08
 main 0x0014D1D0 0x0014D318 pl/pl49
 main 0x0014DC90 0x0014DEA0 pl/pl50
 main 0x0014EB00 0x0014EF58 pl/pl51
@@ -627,7 +623,7 @@ main 0x00155000 0x00155138 set/setwork
 main 0x00155140 0x001554D8 set/setwork2
 main 0x00158F20 0x00159378 pl/shell_work
 main 0x001593C0 0x00159408 pl/shell_work2
-main 0x00193150 0x00193344 fl/pv03
+main 0x00193150 0x001935BC fl/pv03
 lobby 0x005C5200 0x005C5378 f/lb_a01
 lobby 0x005C55D0 0x005C5678 f/lb_a02
 lobby 0x005C5B40 0x005C5D4C f/lb_a03
@@ -827,6 +823,7 @@ lobby 0x00601460 0x00601488 f/lb_z127
 lobby 0x00604CC0 0x00604D14 f/lb_z128
 lobby 0x005FFD20 0x005FFD8C f/lb_z129
 lobby 0x00604200 0x0060423C f/lb_z130
+main 0x0021D470 0x0021D5E0 sound/bgm05
 main 0x0021D5E0 0x0021DBE0 sound/bgm01
 main 0x0021DDC0 0x0021DF74 sound/bgm02
 main:rodata 0x003674B0 0x003674E0 sound/bgm01
@@ -1427,20 +1424,18 @@ main 0x00169990 0x00169A7C sys/view201
 main 0x00114A90 0x00114AD8 hit/hitid01
 main 0x0012A110 0x0012A1CC menu/menu39
 main 0x001246E0 0x00124818 model/crmdl01
+main 0x00124820 0x00124C48 model/crmdl05
 main 0x00124DC0 0x00124F74 model/crmdl02
 main 0x0028CC40 0x0028CE00 hit/hitpk01
 main 0x00290E50 0x00290E7C reward/rwkey01
 main 0x00293370 0x00293418 reward/rwkey02
 main 0x0014E0C0 0x0014E2C4 plsel/plsel00
 main 0x00154D00 0x00154D90 pl/pl_ammo
-main 0x0011F9E0 0x0011FA24 sys/ior01
 main 0x00163D20 0x00163E3C weapon/wtrans01
 main 0x0014EF60 0x0014EF94 pl/pl_flagck
-main 0x00122D50 0x00122E64 model/mkm01
 main 0x00159380 0x001593B8 pl/taru01
 main 0x0011E4C0 0x0011E540 model/light01
 main 0x0011E860 0x0011E904 model/light02
-main 0x00123C70 0x00123C80 model/light03
 main 0x00230060 0x002306BC net/cnmsg01
 main 0x002306C0 0x00230704 net/cnmsg02
 main 0x00230710 0x00230758 net/cnmsg03
@@ -1579,6 +1574,7 @@ lobby 0x00605F10 0x00606070 f/lb_gdr23
 lobby 0x00601ED0 0x00601F4C f/lb_gz10
 main 0x00235B70 0x00235BE4 net/cpinet12
 main 0x0018A490 0x0018A4E8 fl/tx07
+main 0x0018A4F0 0x0018A914 fl/tx10
 main 0x00154FF0 0x00155000 set/setwork3
 main 0x001635E0 0x00163668 font/disp103
 main 0x001541A0 0x00154238 pl/plx01
@@ -1785,7 +1781,7 @@ main 0x00174940 0x00174A1C fl/flnode05b
 main 0x00174B40 0x00174B5C fl/flnode05c
 main 0x00174C90 0x00174EB8 fl/flnode05d
 main 0x00174F70 0x00175120 fl/flnode05e
-main 0x001751D0 0x00175288 fl/flps_misc01
+main 0x00175120 0x00177540 fl/flps0
 main 0x00163420 0x001635D8 font/disp2_02
 main 0x001BC200 0x001BC688 net/netsyn09
 main:rodata 0x0035ECB0 0x0035ECE4 net/netsyn09
@@ -1803,8 +1799,6 @@ lobby 0x005B3ED0 0x005B4330 b/lb_by151
 lobby:rodata 0x0065E6A0 0x0065E720 b/lb_by151
 lobby 0x005B4B20 0x005B4D2C b/lb_by152
 main 0x0011DE60 0x0011E278 model/light05
-main 0x00123F60 0x00124310 model/crmdl03
-main:rodata 0x00358480 0x00358498 model/crmdl03
 main 0x00121280 0x00121380 cp/cp03
 main 0x00113E50 0x00114280 hit/hite
 main 0x00152260 0x001523D8 pl/plx10
@@ -1819,7 +1813,6 @@ main 0x00162F80 0x00163048 font/disp1_01
 main:rodata 0x0036E580 0x0036E5C0 sk/f_sk
 main 0x00217550 0x00217618 flfnt/flfntx01
 main 0x00217D70 0x00217DD8 flfnt/flfntx02
-main 0x00175120 0x001751CC fl/flpsm01
 main 0x00290AE0 0x00290C54 staff/staff01
 main 0x00216DE0 0x00216F90 flfnt/flfnty01
 lobby 0x005CA230 0x005CA3D0 f/lb_ky01
@@ -2049,3 +2042,6 @@ main 0x001319D0 0x00131FA4 menu/menu_gunmes
 main 0x001313A0 0x0013157C menu/menu_slash
 main 0x00223870 0x00223978 cam/camarea_gnps
 main 0x0012B690 0x0012BC98 menu/menu_ftime
+main 0x0023D370 0x0023D870 pad/usbkbdm
+main 0x0018CF00 0x0018D5EC fl/flswap
+main 0x00195000 0x00195510 fl/tarpad02

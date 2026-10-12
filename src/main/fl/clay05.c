@@ -68,7 +68,7 @@ void flCompact();
 void flPS2ReloadTexture();
 void flPS2RetouchMaterialTexData();
 void flPS2MakeMaterialDmaData();
-void func_0016AD48();
+void flPS2_Mem_move16_16A();
 void flPS2ClayMakeTextureList(struct CLAYT *, int);
 
 extern CLAYT flPS2Clay[0x180];
@@ -546,7 +546,7 @@ int flExecuteClay(int h) {
         }
     } else if (c->flags & 2) {
         buf = flPS2GetSystemTmpBuff(c->size, 0x10);
-        func_0016AD48(base + c->tagOfs, buf, c->size >> 4);
+        flPS2_Mem_move16_16A(base + c->tagOfs, buf, c->size >> 4);
         if (c->ntex != 0) {
             flPS2ReloadTexture(c->ntex, c->texlist);
             flPS2RetouchMaterialTexData(c->cnt, c->v->mode, buf, c->mattex);

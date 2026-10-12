@@ -39,6 +39,13 @@ int mode;
     }
 }
 
+/* near-match (register choice: d and the row stride swap, 28 lines), original bytes linked; the C is the reading copy */
+#ifdef __MWERKS__
+static asm void Conv4to32()
+{
+#include "Conv4to32.inc"
+}
+#else
 static void Conv4to32(w, h, src, dst)
 int w;
 int h;
@@ -49,20 +56,18 @@ u8 *dst;
     int bw;
     int bh;
     int i;
-    int j;
-    int k;
     u8 *fp;
     u8 *d;
+    int j;
     u8 *s;
     u8 *b;
-    int off;
+    int k;
 
     bw = (w - 1) / 128 + 1;
     bh = (h - 1) / 128 + 1;
     for (i = 0; i < bh; i++) {
-        off = bw * (i * 0x2000);
-        fp = src + off;
-        d = dst + off;
+        fp = src + bw * (i * 0x2000);
+        d = dst + bw * (i * 0x2000);
         for (j = 0; j < bw; j++) {
             s = fp;
             b = buf;
@@ -77,24 +82,30 @@ u8 *dst;
         }
     }
 }
+#endif
 
 static void PageConv4to32(u8 *buf, u8 *dst, int bw) {
-    int *tp = block_table4;
-    int r;
-    int c;
-    u8 *p;
+    
+    int by;
+    int bx;
     int t;
+    int *tp;
 
-    for (r = 0; r < 8; r++) {
-        p = buf + (r << 6);
-        for (c = 0; c < 4; c++) {
+    for (tp = block_table4, by = 0; by < 8; by++) {
+        for (bx = 0; bx < 4; bx++) {
             t = *tp++;
-            BlockConv4to32(p, dst + bw * (idx32_v[t] << 11) + (idx32_h[t] << 5), bw);
-            p += 0x10;
+            BlockConv4to32(buf + ((by * 16) << 6) + bx * 16, dst + bw * (idx32_v[t] << 11) + (idx32_h[t] << 5), bw);
         }
     }
 }
 
+/* near-match (nibble select order and registers), original bytes linked; the C is the reading copy */
+#ifdef __MWERKS__
+static asm void BlockConv4to32(u8 *src, u8 *dst, int bw)
+{
+#include "BlockConv4to32.inc"
+}
+#else
 static void BlockConv4to32(u8 *src, u8 *dst, int bw) {
     CLMP **tp = clm_tbl4_ptr;
     CLMP *e;
@@ -129,7 +140,15 @@ static void BlockConv4to32(u8 *src, u8 *dst, int bw) {
         src += 0x100;
     }
 }
+#endif
 
+/* near-match (register choice, as Conv4to32), original bytes linked; the C is the reading copy */
+#ifdef __MWERKS__
+static asm void Conv8to32()
+{
+#include "Conv8to32.inc"
+}
+#else
 static void Conv8to32(w, h, src, dst)
 int w;
 int h;
@@ -168,24 +187,29 @@ u8 *dst;
         }
     }
 }
+#endif
 
 static void PageConv8to32(u8 *buf, u8 *dst, int bw) {
-    int *tp = block_table8;
-    int r;
-    int c;
-    u8 *p;
+    int by;
+    int bx;
     int t;
+    int *tp;
 
-    for (r = 0; r < 4; r++) {
-        p = buf + (r << 7);
-        for (c = 0; c < 8; c++) {
+    for (tp = block_table8, by = 0; by < 4; by++) {
+        for (bx = 0; bx < 8; bx++) {
             t = *tp++;
-            BlockConv8to32(p, dst + bw * (idx32_v[t] << 11) + (idx32_h[t] << 5), bw);
-            p += 0x10;
+            BlockConv8to32(buf + ((by * 16) << 7) + bx * 16, dst + bw * (idx32_v[t] << 11) + (idx32_h[t] << 5), bw);
         }
     }
 }
 
+/* near-match (the original steps the table pointer after every pair; MWCC merges the steps here), original bytes linked; the C is the reading copy */
+#ifdef __MWERKS__
+static asm void BlockConv8to32(u8 *src, u8 *dst, int bw)
+{
+#include "BlockConv8to32.inc"
+}
+#else
 static void BlockConv8to32(u8 *src, u8 *dst, int bw) {
     CLMP **tp = clm_tbl8_ptr;
     CLMP *e;
@@ -215,3 +239,4 @@ static void BlockConv8to32(u8 *src, u8 *dst, int bw) {
         src += 0x200;
     }
 }
+#endif

@@ -90,7 +90,7 @@ mcsls stack stays available for a later "talk to a PS2" mode.
 
 | State | Where it lives | Set by (PS2) | Read by |
 |---|---|---|---|
-| online flag | `system_w.online` (+0x10), `Online_ck()` | `mode_sel_end` (omake_nm.c) | everything below |
+| online flag | `system_w.online` (+0x10), `Online_ck()` | `mode_sel_end` (omake.c) | everything below |
 | player count | `game_w.pl_num` (+0xD3) | `Game_task` step 3 = `AQ_join_num_get()` | monster sight / hate loops, `Em_Master_Change`, quest judging |
 | per-slot state | `game_w.pl_state[8]` (+0x208): 1 in, 0 empty, 0xFF dropped | `Game_task` step 3 | `stage_load`, `net_start_ck`, `host_change` |
 | local slot | `game_w.master` (+0xD1). Despite the name: **this machine's** slot | lobby member list, then `AQSession_wait` = `CngNetAQConnectIdGet()` | `Pl_master_ck`, `pl_sw_set`, `game2`, every send |
@@ -476,7 +476,7 @@ the town = the village code with `Online_ck() == 1`, `src/lobby/f/lb_village_nm.
 `ONLINE=1` build; `src/pc/rt/rt_online.c` replaces only what the PS2 did outside the game (the network settings, DNAS,
 the KDDI portal and its browser) and hands the matched room to the co-op session.
 
-**How the PS2 gets there** (read from `Game_task`, f_game_nm.c, and `mode_sel_end`, omake_nm.c): the title menu's
+**How the PS2 gets there** (read from `Game_task`, f_game_nm.c, and `mode_sel_end`, omake.c): the title menu's
 "new game / continue" each have a second choice; `sel2 == 0` sets `system_w+0x10` (= `Online_ck()`), and `Game_task`
 step 2 runs `ms_network_sub` (settings, device, DNAS), `server_connect` (= `internet_browser`: the portal pages, which
 leave the server table in `bsCsvWork`, the MMBB id in `D_3A3B71` and the server list in `BsLbsInfo`;

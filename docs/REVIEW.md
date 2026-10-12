@@ -69,6 +69,67 @@ obvious workarounds.
 - **Cost / to watch:** the PC's player code now comes from one object; a behaviour change in the player would
   point here first (all PC tests passed: quest_loop, progression, urgent, activities, save, soak, all_quests).
   Revert: the commit "f_pl: the player file as one TU".
+### Mode menu / extras menu near-match copy replaced by omake.c (12 Oct 2026, agent C)
+- **Dropped:** src/main/omake/omake_nm.c (the whole-file near-match copy the
+  PC linked for the title mode menu and the extras menu) and the four
+  matched run files omakeb.c, omakec.c, omaked.c, omakee.c.
+- **Now:** src/main/omake/omake.c, the whole original file (0x23A0F0-0x23BE10)
+  as one translation unit with its statics. 17 of 20 functions match;
+  mode_sel, disp_mode_menu and disp_omake_menu link the original bytes on
+  the PS2 build and use their near-match C on PC/Xbox. key_rept_du,
+  Sel_back_disp and Sel_menu_disp are newly matched. The PC BOOT list in
+  tools/build_pc.sh and tools/pc_patch.py's Tsk_Exit(tsk) fix now name
+  omake.c; omake_nm left WEAK_B.
+- **Why:** owner's rule: matched game C over near-match copies. The C is the
+  same code as omake_nm with source-level rewrites that keep the meaning
+  (Sel_back_disp builds the colour from one byte, Put_2TF gets only the
+  sprite; key_rept_du uses ++cnt; disp_omake_menu computes x as int).
+- **Checked:** tools/build_pc.sh, test_menu, test_name_entry,
+  test_quest_loop, test_progression, test_movie.
+- **To revert:** the agent-C commit "omake: whole-file omake.c TU".
+
+### Host pad driver and system_w_set replaced by the matched game C (12 Oct 2026, agent C)
+- **Dropped:** src/pc/rt/rt_pad.c's own copy of ioRead_sub (read_port0 built
+  Psw from the host pad: bit table, stick angle/power, trg/rel, key repeat)
+  and src/pc/rt/rt_boot.c's copy of system_w_set.
+- **Now:** src/main/sys/f_ioread.c (the whole original f_ioread file, all 13
+  functions matching) is in the PC/Xbox build for ioRead, ioRead2 (with the
+  static ioRead_sub) and system_w_set (PICK_X in tools/build_pc.sh). The
+  host only plays the fl pad library: it fills flpad_adr[0] (buttons, stick
+  direction bits beyond half way as before, stick angle in degrees and power)
+  and calls the game's ioRead once per tick; ports 1-3 read as unplugged.
+  The pad structures are in include/ioread.h.
+- **Why:** owner's rule: matched game C over host imitations. Behaviour is
+  the same by construction (same bit table, same angle formula, same repeat);
+  ports 1-3 now get the game's own "unplugged" update every tick instead of
+  staying untouched zeros.
+- **Checked:** test_quest_loop, test_progression, test_menu, test_name_entry,
+  test_pick, test_urgent, test_frog, test_activities (37) pass; Xbox build
+  links (0 failed). Not run in xemu.
+- **Also dropped:** the runs sys/io01-io04, ior01 and the near-match copies
+  ioread_nm.c / mmv_nm.c (replaced by f_ioread.c).
+- **To revert:** the agent-C commit "sys: f_ioread.c whole-file TU; PC uses
+  the game's ioRead/system_w_set".
+
+### Model work file: 13 runs and 6 near-match copies replaced by one translation unit (12 Oct 2026, agent C)
+- **Dropped:** the runs model/gm01-gm05, mkm01, hp01-hp04, light03 (get_mdlw_ptr),
+  crmdl03 (Pl_model_id_set) and clay/get_clay_ptr, and the near-match working
+  files mkm_nm.c, getm_nm.c, getsh_nm.c, heap_nm.c, armor_nm.c; the copies of
+  pl_create_model / weapon_create_model in crmdl_nm.c and of get_mdlw_ptr in
+  light_nm.c. None of them was in the PC build.
+- **Now:** src/main/model/f_get.c is the whole original file 0x121B70-0x1246D4
+  in address order with its statics. Newly matching: Sethierarchy, mkModel,
+  mkModel3, mkModel4, model_work_set2, release_model, model_work_free. Seven
+  functions stay as original bytes (config/c_rawfuncs.txt) with their
+  near-match C beside them: get_start_material/hierarchy/clay/mdlw,
+  pl_create_model, weapon_create_model, armor_create_model.
+- **Also:** getm_nm.c had model_work_set2's parameters in the wrong order
+  (skin and the mkModel flags swapped); the matched version is
+  (idx, mat, tex, texlist, flags, skin, type).
+- **Why:** one TU per original file is what makes MWCC allocate registers
+  like the original; old runs and copies would only drift.
+- **To revert:** the agent-C commit "model: f_get.c whole-file TU".
+
 ### Xbox Back + Start: the normal shutdown is skipped (12 Oct 2026, commit 583d10b5)
 - **Dropped:** Back + Start set `running = 0` and let main end normally (SDL audio close,
   gfx shutdown, then the atexit log screen).

@@ -152,11 +152,12 @@ MC="src/main/mc/mclow_nm.c src/main/mc/mcact_nm.c src/main/mc/mcdisp_nm.c src/ma
 MC="$MC src/main/ud/udmisc_nm.c"
 # Power-on (rt_boot.c): select.bin's boot tasks (Init_task, the logos and
 # title, character creation and the continue screen: select00/demo
-# matched, edit_nm the whole edit file), main's mode menu (omake_nm),
+# matched, edit_nm the whole edit file), main's mode menu (omake.c, matched
+# but for 3 near-match C bodies),
 # screen fade (fade_nm), the task scheduler (tsk_nm)
 # and TransSet/GameTrans (weapon/trans.c; its trans() is the host's,
 # rt_boot.c)
-BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake_nm.c \
+BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake.c \
       src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
 # Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
 # agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
@@ -262,7 +263,7 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/em/emmk01.c:ride_ofs_calc,old_pos_save src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_dur_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans,pl_item_trans,pl_item_trans_sub"
+PICK_X="src/main/em/emmk01.c:ride_ofs_calc,old_pos_save src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_dur_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans,pl_item_trans,pl_item_trans_sub src/main/sys/f_ioread.c:ioRead,ioRead2,system_w_set"
 # the matched cp math library (cp01-cp03, agent B 8 Oct)
 GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 # Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
@@ -387,14 +388,10 @@ MATCHED_B="src/main/cam/cam.c \
     src/main/menu/menu41.c \
     src/main/menu/pit02.c \
     src/main/menu/pit04.c \
-    src/main/omake/omakeb.c \
-    src/main/omake/omakec.c \
-    src/main/omake/omaked.c \
-    src/main/omake/omakee.c \
     src/main/option/option01.c \
     src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/menu/menu_gage.c src/main/menu/menu_slash.c src/main/menu/menu_gunmes.c src/main/cam/camarea_gnps.c src/main/menu/menu_ftime.c"
 MATCHED_A="$MATCHED_A $MATCHED_B"
-WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm omake_nm ud_nm udmisc_nm"
+WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
 GAME="$GAME $MATCHED_A src/main/em/emride_nm.c"   # em_ride_sub (agent B): written from the asm, near-match
 WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm tri_nm shit1_nm shit3_nm shit4_nm f_quest_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_sound_nm eft20_nm"
