@@ -24,6 +24,8 @@
 #             Xbox build's getenv sees (RT_* test aids and traces, docs/pc.md; xbox_env.c)
 #   --shot    after --after seconds (default 60) save a screenshot and quit (ffmpeg x11grab of
 #             the hidden display; xemu 0.8.136 has no QMP screendump).
+#   --record  FILE.mp4: also record the hidden display from start to the last --after time
+#             (10 fps, 640x480; needs --shot)
 #   --after   one time, or a list ("36 40 45 60"): one screenshot at each time since start,
 #             named out_36s.png ... when more than one is given; quits after the last.
 #   --show    run on the desktop instead of hidden (debugging by hand only)
@@ -46,6 +48,7 @@ while [ $# -gt 0 ]; do
     --env) ENVF=$2; shift 2 ;;
     --shot) SHOT=$2; shift 2 ;;
     --after) AFTER=$2; shift 2 ;;
+    --record) REC=$2; shift 2 ;;
     --xemu) XEMU=$2; shift 2 ;;
     --show) SHOW=1; shift ;;
     *) echo "unknown option $1"; exit 2 ;;
@@ -121,9 +124,15 @@ stop() {
     kill $P 2>/dev/null || :
     for i in 1 2 3 4 5; do kill -0 $P 2>/dev/null || break; sleep 1; done
     kill -9 $P 2>/dev/null || :
+    [ -n "${RPID:-}" ] && kill -INT $RPID 2>/dev/null && sleep 2
     kill ${XPID:-} 2>/dev/null || :
 }
 trap stop EXIT
+if [ -n "${REC:-}" ]; then
+    ffmpeg -v error -y -f x11grab -framerate 10 -video_size 1280x960 -i "${DISPLAY:-:0}" \
+        -vf scale=640:480 -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p "$REC" </dev/null &
+    RPID=$!
+fi
 T=0
 for A in $AFTER; do
     sleep $(( A - T )); T=$A

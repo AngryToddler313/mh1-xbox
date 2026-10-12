@@ -10,6 +10,7 @@
 # Screenshots: build/show/xloop/run1_*.png, run2_*.png; game logs (serial port and the
 # game's stderr from E:) next to them. About 10 minutes.
 #   usage: tools/xemu_quest_loop.sh [--gfx null|nv2a]   (default nv2a)
+#   RECORD=1 also records each run to build/show/xloop/run1.mp4, run2.mp4 (run_xemu.sh --record)
 cd "$(dirname "$0")/.."
 GFX=nv2a; [ "$1" = "--gfx" ] && GFX=$2
 OUT=build/show/xloop; rm -rf $OUT; mkdir -p $OUT
@@ -33,7 +34,8 @@ EOF
 echo RT_QUEST_TRACE=1 > $OUT/env2.txt
 tools/xbox_fatx.py format xbox_files/hdd.img || exit 1
 run() {     # run N INPUT ENV "times"
-    tools/run_xemu.sh --gfx $GFX --data disc/mh1 --input $2 --env $3 --shot $OUT/run$1.png --after "$4" >/dev/null 2>&1
+    tools/run_xemu.sh --gfx $GFX --data disc/mh1 --input $2 --env $3 --shot $OUT/run$1.png --after "$4" \
+        ${RECORD:+--record $OUT/run$1.mp4} >/dev/null 2>&1
     cp xbox_files/xemu_debug.txt $OUT/serial$1.txt
     tools/xbox_fatx.py get xbox_files/hdd.img Games/MH1/mh1log.txt $OUT/stderr$1.txt
 }
