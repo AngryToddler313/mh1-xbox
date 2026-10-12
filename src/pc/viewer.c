@@ -787,6 +787,7 @@ static float fixed_time = -1;
 static const char *shot_list;     /* RT_SHOTS */
 static int shot_next;
 static int tick_trace;
+#define CATCH_UP 4                  /* ticks a drawn frame may run to catch up with real time */
 static char path[1024];
 static size_t n;
 static fmt_blob stage_link, stage_tex, set_link, set_tex;
@@ -2228,6 +2229,24 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         if (shot && shot_next > 2 + (int)fr)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
+        /* real time: at most CATCH_UP ticks behind the clock. When ticks cost more than their
+         * 33 ms (xemu on a busy host: the opening movie's decode), catching up every lost tick
+         * means a frame only every few seconds and never recovering; the game slows down
+         * instead, as on the PS2. Load pauses no longer come back as a burst of ticks either. */
+        if (fixed_time < 0 && 2 + (int)fr - ticks > CATCH_UP
+            && !pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !test_hold_ticks(ticks)) {     /* (a hold stops the clock itself) */
+            static Uint32 told, lost_sum;
+            Uint32 lost = (Uint32)((2 + (int)fr - ticks - CATCH_UP) * 1000 / 30);
+            t0 += lost;
+            t = (SDL_GetTicks() - t0) / 1000.0f;
+            fr = t * 30.0f;
+            lost_sum += lost;
+            if (lost_sum > 1000 && SDL_GetTicks() - told > 10000) {
+                told = SDL_GetTicks();
+                rt_log("slow: game time fell %u ms behind real time by tick %d (the game slowed down)", (unsigned)lost_sum, ticks);
+                lost_sum = 0;
+            }
+        }
         /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
          * per drawn frame, every 300 ticks */
         while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !test_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
