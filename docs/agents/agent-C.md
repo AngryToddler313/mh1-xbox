@@ -1541,3 +1541,5 @@ Start: main 42.150% (639224 bytes).
   `(long)(fbw) << 9` (fbw = flWidth / 64; u64 schedules the fbp part first), DISPLAY needs `(long)(dx)` with the
   rest u64. `dx = x3B4 + (u32)x3BC * (u32)x14` (u32 operands give the original load order).
 - intr == 0 means "called from the vsync interrupt": iFlushCache.
+- Run END must be the function's real end when the next file starts after alignment padding (flswap: 0x18D5EC, not 0x18D5F0), or everything after shifts by 4.
+### fl/pv03.c: plSetupFOVClipPlanes matches first try (float tan through double: `(float)tan(half)`)

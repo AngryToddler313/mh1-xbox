@@ -1,4 +1,4 @@
-/* pv03 - pl vec math 0x00193150-0x00193344: plvecCalcLength, plvecNormalize, plvecInnerProduct, plvecOuterProduct, plMakePlaneFromPoints. Whole file in plvec_nm.c. */
+/* pv03 - pl vec math 0x00193150-0x001935BC: plvecCalcLength, plvecNormalize, plvecInnerProduct, plvecOuterProduct, plMakePlaneFromPoints, plSetupFOVClipPlanes. Whole file in plvec_nm.c. */
 #include "types.h"
 
 float sqrtf(float);
@@ -63,4 +63,46 @@ void plMakePlaneFromPoints(float *plane, float *p0, float *p1, float *p2) {
     plane[1] = n[1];
     plane[2] = n[2];
     plane[3] = -plvecInnerProduct(n, e1);
+}
+
+double tan(double);
+
+/* The four side planes of a view frustum (fov in radians, aspect, near, far) through the eye: each plane goes through
+ * the origin and two corners of the far rectangle; planes[0x10] / [0x11] get -near and -far. */
+void plSetupFOVClipPlanes(float *planes, float fov, float aspect, float nearz, float farz) {
+    float o[4];
+    float p1[4];
+    float p2[4];
+    float half;
+    float nf;
+
+    half = 0.5f * fov;
+    o[0] = 0.0f;
+    o[1] = 0.0f;
+    o[2] = 0.0f;
+    nf = -farz;
+    p2[2] = nf;
+    p1[2] = nf;
+    p1[0] = farz * ((float)tan(half) / aspect);
+    p1[1] = nf * (float)tan(half);
+    p2[0] = p1[0];
+    p2[1] = -p1[1];
+    plMakePlaneFromPoints(planes, o, p1, p2);
+    p1[0] = nf * ((float)tan(half) / aspect);
+    p1[1] = farz * (float)tan(half);
+    p2[0] = p1[0];
+    p2[1] = -p1[1];
+    plMakePlaneFromPoints(planes + 4, o, p1, p2);
+    p1[0] = farz * ((float)tan(half) / aspect);
+    p1[1] = farz * (float)tan(half);
+    p2[0] = -p1[0];
+    p2[1] = p1[1];
+    plMakePlaneFromPoints(planes + 8, o, p1, p2);
+    p1[0] = nf * ((float)tan(half) / aspect);
+    p1[1] = nf * (float)tan(half);
+    p2[0] = -p1[0];
+    p2[1] = p1[1];
+    plMakePlaneFromPoints(planes + 12, o, p1, p2);
+    planes[0x11] = nf;
+    planes[0x10] = -nearz;
 }
