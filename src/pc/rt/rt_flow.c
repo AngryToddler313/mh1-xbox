@@ -126,11 +126,13 @@ int rt_flow_tick(void)
  * itself (viewer.c registers the loader). The sound joint loads count as
  * done at once. */
 static int (*stage_loader)(int);
+void rt_motion_gc(void);
 void rt_set_stage_loader(int (*fn)(int)) { stage_loader = fn; }
 void st_model_load(int stage)
 {
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "rt_flow: st_model_load(%d)\n", stage);
+    rt_motion_gc();         /* the last stage's motion sets (rt_motion.c) */
     if (stage_loader)
         stage_loader(stage);
 }

@@ -37,6 +37,7 @@
 /* ------------------------------------------------------------ motion sets */
 typedef struct {
     aan_motion m;
+    int used;                   /* 0: freed (rt_motion_gc), the slot is free */
 } rt_mset;
 
 static rt_mset *msets;
@@ -44,7 +45,7 @@ static int nmsets, capmsets;
 
 static const aan_motion *mset_get(u32 h)
 {
-    if (h == 0 || (int)h > nmsets)
+    if (h == 0 || (int)h > nmsets || !msets[h - 1].used)
         return NULL;
     return &msets[h - 1].m;
 }
@@ -64,20 +65,27 @@ u32 flCreateMotionSetHandle(void *tmp)
 {
     u8 *aan;
     fmt_blob b;
+    int h;
     memcpy(&aan, tmp, sizeof aan);
     if (!aan)
         return 0;
-    if (nmsets == capmsets) {
+    for (h = 0; h < nmsets && msets[h].used; h++)     /* a released slot first */
+        ;
+    if (h == capmsets) {
         capmsets = capmsets ? capmsets * 2 : 256;
         msets = realloc(msets, capmsets * sizeof *msets);
     }
     b.p = aan;
     b.n = fmt_u32(aan + 8, FMT_LE);
-    if (fmt_aan_load(&msets[nmsets].m, b, FMT_LE) != 0) {
+    if (fmt_aan_load(&msets[h].m, b, FMT_LE) != 0) {
         fprintf(stderr, "rt: motion set at %p does not parse\n", (void *)aan);
+        memset(&msets[h].m, 0, sizeof msets[h].m);
         return 0;
     }
-    return (u32)++nmsets;
+    msets[h].used = 1;
+    if (h == nmsets)
+        nmsets++;
+    return (u32)h + 1;
 }
 
 f32 flGetMotionSetTime(u32 h)
@@ -95,6 +103,18 @@ s32 flGetMotionSetLoopInfo(u32 h, f32 *loop_start)
     }
     *loop_start = 0.0f;
     return 0;
+}
+
+/* a set's curves freed, its slot free for the next flCreateMotionSetHandle (rt_motion_gc).
+ * Not flReleaseMotionSetHandle: the game's all_motion_free (character screen) would then
+ * free the player's weapon motions, which the host loads once (rt_motion_load_pl) and the
+ * game does not create again (the quest loop's carving broke). */
+static void mset_free(int h)
+{
+    if (h <= 0 || h > nmsets || !msets[h - 1].used)
+        return;
+    fmt_aan_free(&msets[h - 1].m);
+    msets[h - 1].used = 0;
 }
 
 /* ------------------------------------------------------------ players */
@@ -455,4 +475,56 @@ u8 *rt_actor_nodes(const void *work, int *max)
     if (max)
         *max = RT_NODE_MAX;
     return w->mdl ? (u8 *)w->mdl->skl : NULL;
+}
+
+/* Motion sets nobody can reach any more, freed (called at each stage load, rt_flow.c).
+ * create_plcom_motion / create_pl_motion / create_em_motion (f_frame.c) write new handles
+ * over the table entries of the last load; on the PS2 those sets were released first
+ * (all_reset / stage_free / em_motion_free), here those callers are stand-ins, so every
+ * quest and village visit left its sets behind (~0.5 MB a loop; the Xbox ran out after
+ * one quest loop, xemu 12 Oct 2026). all_motion_free's release stays a stand-in (mset_free). A set is kept while motion_set_handle_tbl holds its
+ * handle or a player's / monster's motion player (pl_am, em_am) still plays it. */
+void rt_motion_gc(void)
+{
+    static u8 *mark;
+    static int cap;
+    int i, k, g, freed = 0;
+    if (!nmsets)
+        return;
+    if (cap < nmsets + 1) {
+        free(mark);
+        cap = capmsets + 1;
+        mark = malloc((size_t)cap);
+        if (!mark) {
+            cap = 0;
+            return;
+        }
+    }
+    memset(mark, 0, (size_t)nmsets + 1);
+    for (i = 0; i < 0x1004; i++)
+        if (motion_set_handle_tbl[i] && (int)motion_set_handle_tbl[i] <= nmsets)
+            mark[motion_set_handle_tbl[i]] = 1;
+    for (k = 0; k < 28; k++) {
+        rt_actor_motion *am = k < 8 ? pl_am[k] : em_am[k - 8];
+        const RT_MPLAY *mp[2];
+        int j;
+        if (!am)
+            continue;
+        mp[0] = (const RT_MPLAY *)&am->mot0;
+        mp[1] = (const RT_MPLAY *)&am->mot1;
+        for (j = 0; j < 2; j++)
+            for (g = 0; g < 4; g++) {
+                if (mp[j]->set[g] && (int)mp[j]->set[g] <= nmsets)
+                    mark[mp[j]->set[g]] = 1;
+                if (mp[j]->bset[g] && (int)mp[j]->bset[g] <= nmsets)
+                    mark[mp[j]->bset[g]] = 1;
+            }
+    }
+    for (i = 1; i <= nmsets; i++)
+        if (msets[i - 1].used && !mark[i]) {
+            mset_free(i);
+            freed++;
+        }
+    if (freed && getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_motion: %d unreachable motion sets freed\n", freed);
 }
