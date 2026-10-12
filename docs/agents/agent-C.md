@@ -1482,3 +1482,10 @@ Start: main 42.150% (639224 bytes).
 - `int pw, ph` (page size per pixel format; `ph = pw` for the square pages), `s16 w = t->w, h = t->h, n = 0`, `u32 i`,
   `n += (s16)((((w + (s16)pw - 1) / (s16)pw) * ((h + (s16)ph - 1) / (s16)ph)) << 5); w >>= 1; h >>= 1;` (MWCC unrolls it 8x
   with divide traps). Operand order inside the first division mattered (w first).
+### fl/tx10.c: flPS2ConvertTextureFromContext matches (1060 bytes, file-static in the original, own run)
+- LESSON: a LOCAL struct whose address is passed to a function (`flPS2ConvertContext(s, &ctx, ..)`) is accessed by MWCC with
+  `addiu rX, sp, off; sw val, 0(rX)` for every member at a non-zero offset (the member at offset 0 is a direct `sw val, off(sp)`).
+  Write `ctx.field = ..` on the local itself: going through a `FLCTX *d = &ctx` pointer makes MWCC keep d in a register instead.
+  The same pattern shows in flPS2UnlockTexture (two PLCTX for plConvertContext) and omake Sel_menu_disp (SPR).
+- The redundant stores in the original (R/B shift set and then swapped) are written out as they are.
+- `void flMemcpy(u8 *, u8 *, u32)` as the prototype fixed the argument load order (with `void *` the src load came first).
