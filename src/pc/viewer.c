@@ -38,7 +38,8 @@
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
 void xbox_log_frame(int frame, unsigned ms);
-void xbox_env_load(const char *path);
+void xbox_env_load(void);
+void xbox_env_note(void);
 #endif
 
 /* ------------------------------------------------------------ data */
@@ -1696,6 +1697,10 @@ int main(int argc, char **argv)
         }
     }
 #endif
+#ifdef XBOX
+    nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
+    xbox_env_load();        /* before any switch is read (xbox_env.c) */
+#endif
     rt_stack_paint();
 #ifndef XBOX
     gfx_opts_load(argc, argv);      /* mh1pc.ini; the display flags below override it */
@@ -1751,7 +1756,6 @@ int main(int argc, char **argv)
         static const char *dirs[] = { "D:\\data", "E:\\Games\\MH1\\data" };
         FILE *t;
         int d;
-        nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
         for (d = 0; d < 2 && !disc; d++) {
             snprintf(path, sizeof path, "%s\\AFS_DATA.AFS", dirs[d]);
             if ((t = fopen(path, "rb")) != NULL) {
@@ -1764,10 +1768,9 @@ int main(int argc, char **argv)
         boot = 1;
         play = 1;
         /* test runs (xemu, tools/run_xemu.sh --input/--env): a pad script in the data folder,
-         * the same format as the PC's --input; env.txt sets RT_* test aids (xbox_env.c) */
+         * the same format as the PC's --input; env.txt (loaded at the start of main) set RT_* test aids */
         if (disc) {
-            snprintf(path, sizeof path, "%s\\env.txt", disc);
-            xbox_env_load(path);
+            xbox_env_note();
             snprintf(path, sizeof path, "%s\\input.txt", disc);
             if ((script = script_file_read(path)) != NULL)
                 xbox_log_note("input.txt: scripted pad input");

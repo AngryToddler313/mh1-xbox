@@ -8,15 +8,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#ifdef XBOX
+#include <xboxkrnl/xboxkrnl.h>
+#endif
 
 #define NCAT 48
 static struct { const char *name; long cur, peak; } cats[NCAT];
 static const char *ctx;
 
+#ifdef XBOX
+#define HBITS 16                /* the table is RT_MEM's own cost: 768 KB of the Xbox's 64 MB (12 MB with 20 bits:
+                                 * the game ran out of memory entering the village, xemu 12 Oct 2026) */
+#else
 #define HBITS 20
+#endif
 #define HN (1u << HBITS)
 static struct { void *p; uint32_t n; uint8_t cat; } *tab;
 static int enabled = -1;
+static uint32_t live, untracked;   /* allocations in the table; not tracked because it was 3/4 full */
 
 static int on(void)
 {
@@ -62,6 +71,11 @@ static int cat_of(const char *file)
 static void track(void *p, size_t n, int c)
 {
     uint32_t h = (uint32_t)(((uintptr_t)p >> 3) * 2654435761u) >> (32 - HBITS);
+    if (live >= HN - HN / 4) {
+        untracked++;
+        return;
+    }
+    live++;
     while (tab[h].p)
         h = (h + 1) & (HN - 1);
     tab[h].p = p;
@@ -81,6 +95,7 @@ static int untrack(void *p)        /* returns the category or -1 */
     if (!tab[h].p)
         return -1;
     c = tab[h].cat;
+    live--;
     cats[c].cur -= (long)tab[h].n;
     tab[h].p = NULL;
     for (j = (h + 1) & (HN - 1); tab[j].p; j = (j + 1) & (HN - 1)) {   /* re-insert the cluster after the hole */
@@ -163,7 +178,21 @@ void rt_ms_report(const char *where)
         fclose(f);
     }
     fprintf(stderr, "memstat: %-38s %8ld\n", "tracked heap total (CPU)", tot / 1024);
+    if (untracked)
+        fprintf(stderr, "memstat: %u allocations not tracked (table full)\n", (unsigned)untracked);
     fprintf(stderr, "memstat: %-38s %8ld   (whole process incl. SDL/GL driver, libc, binary)\n", "process RSS", rss);
+#ifdef XBOX
+    {   /* the kernel's page counts: what is really left of the 64 MB */
+        MM_STATISTICS ms;
+        memset(&ms, 0, sizeof ms);
+        ms.Length = sizeof ms;
+        if (NT_SUCCESS(MmQueryStatistics(&ms)))
+            fprintf(stderr, "memstat: %-38s %8lu of %lu   (stack %lu, image %lu, pool %lu)\n", "Xbox physical KB free",
+                    (unsigned long)ms.AvailablePages * 4, (unsigned long)ms.TotalPhysicalPages * 4,
+                    (unsigned long)ms.StackPagesCommitted * 4, (unsigned long)ms.ImagePagesCommitted * 4,
+                    (unsigned long)ms.PoolPagesCommitted * 4);
+    }
+#endif
 }
 
 /* ------------------------------------------------------------ stack

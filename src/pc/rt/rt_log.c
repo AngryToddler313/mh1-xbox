@@ -89,6 +89,25 @@ static unsigned long now_ms(void)
 #endif
 }
 
+#ifdef MH1_XBOX
+#include <xboxkrnl/xboxkrnl.h>
+#endif
+/* the memory left: the Xbox's free physical pages (stage-change lines); nothing elsewhere */
+static void free_note(char *out, size_t n)
+{
+#ifdef MH1_XBOX
+    MM_STATISTICS ms;
+    memset(&ms, 0, sizeof ms);
+    ms.Length = sizeof ms;
+    if (NT_SUCCESS(MmQueryStatistics(&ms))) {
+        snprintf(out, n, ", %lu KB free", (unsigned long)ms.AvailablePages * 4);
+        return;
+    }
+#endif
+    if (n)
+        out[0] = 0;
+}
+
 static unsigned long cpu_ms(void)               /* CPU time of the whole process */
 {
 #ifdef MH1_WINDOWS
@@ -334,8 +353,11 @@ void rt_log_game(int mode, int step, int stage, int quest, int result)
     cur_step = step;
     cur_result = result;
     if (stage != cur_stage) {
-        if (cur_stage >= 0 || mode >= 2)
-            rt_log("stage %d -> %d (mode %d)", cur_stage, stage, mode);
+        if (cur_stage >= 0 || mode >= 2) {
+            char fr[40];
+            free_note(fr, sizeof fr);
+            rt_log("stage %d -> %d (mode %d)%s", cur_stage, stage, mode, fr);
+        }
         cur_stage = stage;
     }
     if (mode != cur_mode) {
