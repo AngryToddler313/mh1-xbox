@@ -25,7 +25,7 @@
 #   --shot    after --after seconds (default 60) save a screenshot and quit (ffmpeg x11grab of
 #             the hidden display; xemu 0.8.136 has no QMP screendump).
 #   --record  FILE.mp4: also record the hidden display from start to the last --after time
-#             (10 fps, 640x480; needs --shot)
+#             (10 fps, REC_FPS=n for another rate; 640x480; needs --shot)
 #   --after   one time, or a list ("36 40 45 60"): one screenshot at each time since start,
 #             named out_36s.png ... when more than one is given; quits after the last.
 #   --show    run on the desktop instead of hidden (debugging by hand only)
@@ -129,7 +129,7 @@ stop() {
 }
 trap stop EXIT
 if [ -n "${REC:-}" ]; then
-    ffmpeg -v error -y -f x11grab -framerate 10 -video_size 1280x960 -i "${DISPLAY:-:0}" \
+    ffmpeg -v error -y -f x11grab -framerate ${REC_FPS:-10} -video_size 1280x960 -i "${DISPLAY:-:0}" \
         -vf scale=640:480 -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p "$REC" </dev/null &
     RPID=$!
 fi

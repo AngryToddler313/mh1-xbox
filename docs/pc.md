@@ -2272,8 +2272,11 @@ Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (no
   actor's own movement and never more than 40 from it (the bind offset of that bone), was 297 / 393. Test: `test_activities.py herbivore_rewind`
   (40 s of quest 131 stage 39, five Aptonoths walking; fails without the fix: 297 per tick, 393 away). The same joint matrices feed the
   game's hit checks (rt_monster_joints), so hunter attacks on a walking small monster or non-Rathian boss were tested against a body
-  up to 390 units ahead of where it stands; they now hit where it is drawn and where it is. Village NPCs (`npc_mdl`) are still
-  posed without root_lock: not checked whether any of their motions has root travel.
+  up to 390 units ahead of where it stands; they now hit where it is drawn and where it is. Village NPCs (`npc_mdl`) were still
+  posed without root_lock; the owner saw them on the Xbox (12 Oct 2026, "walk too fast, then teleport back"; the PC had it too). The
+  walkers (village slots 8/9) move by their root motion like the monsters: drawn without the lock, the root bone ran up to 300 units
+  from the actor and jumped ~200 in one tick at each loop wrap (`RT_EM_DRAW_TRACE` now also prints `npcdraw` lines: the bone in model
+  space). npc_model_load sets root_lock now (0 units off; `RT_EM_ROOT_FREE` covers NPCs too). Test: `test_activities.py npc_walk`.
 - **"Walking into walls" (left as it is, faithful).** The wandering walk is em12's `em_mov00` (matched em12.c): 210-300 ticks of walk turning
   0x40 per tick, never looking at walls; HitWallPlayer slides it along (slot 0 lost ~200 of 300 units per loop to the wall push). With the
   body drawn ahead it looked as if it walked into the rock; with the fix it stays outside. Seen in a 40 s run: two Aptonoths jump ~100 units

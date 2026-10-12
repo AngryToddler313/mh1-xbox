@@ -683,7 +683,7 @@ int rt_actor_joint_count(const void *chr)
 typedef struct {                     /* MDLW (get_mdlw_ptr) as the eft code sees it */
     u8 flag;                         /* 0x00 */
     u8 _pad01[0x0F];
-    void *mat;                       /* 0x10 material table (unused by the port) */
+    void *mat;                       /* 0x10 material table (flMATERIAL 0x4C each; ef_00's: rt_clay_mat_draw) */
     u8 _pad14[0x10];
     u8 *skin;                        /* 0x24 skeleton nodes, 0x190 bytes each, world
                                         matrix first; +0xC2 s16 node count (eft05_t) */
@@ -729,20 +729,122 @@ void flSetSkinTrans(void *skin)
     eft_skin_cb(k, &mats[0][0], n);
 }
 
-void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n)
+/* the effect models' clays with their materials (rt_clay_mat_draw): per handle the list entry each batch draws and the
+ * file's diffuse colour of each list entry */
+typedef struct {
+    int handle;
+    rt_clay_mats m;
+    float base[32][3];
+} eft_clay_mat;
+static eft_clay_mat *ecm;
+static int necm;
+
+void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n,
+                       const rt_clay_mats *mats, const float (*diffuse)[4], int nmat)
 {
     CLAY *cl;
-    int i;
+    int i, j;
     if (k < 0 || k >= 5)
         return;
     cl = calloc((size_t)(n > 0 ? n : 1), sizeof *cl);
+    if (mats && nmat > 0 && !eft_mdl[k].mat) {
+        /* the material table the game C writes colours into (flMATERIAL, 0x4C bytes: diffuse RGB +4, alpha +0x10) */
+        u8 *mt = calloc((size_t)nmat, 0x4C);
+        for (j = 0; j < nmat && mt; j++) {
+            memcpy(mt + 0x4C * j + 4, diffuse[j], 12);
+            *(f32 *)(mt + 0x4C * j + 0x10) = 1.0f;
+        }
+        eft_mdl[k].mat = mt;
+    }
     for (i = 0; i < n; i++) {
         cl[i].handle = rt_register_clay(c[i]);
         cl[i].attr = attr ? (s32)attr[i] : 0;
+        if (mats && eft_mdl[k].mat && mats[i].n > 0) {
+            eft_clay_mat *e;
+            int ok = 1;
+            for (j = 0; j < mats[i].n && j < 32; j++)
+                ok &= mats[i].no[j] < (uint32_t)nmat;
+            if (!ok || !(e = realloc(ecm, sizeof *ecm * (size_t)(necm + 1))))
+                continue;
+            ecm = e;
+            e = &ecm[necm++];
+            e->handle = cl[i].handle;
+            e->m = mats[i];
+            cl[i].mat_num = mats[i].n < 32 ? mats[i].n : 32;
+            for (j = 0; j < cl[i].mat_num; j++) {
+                cl[i].mat_no[j] = (s32)mats[i].no[j];
+                memcpy(e->base[j], diffuse[mats[i].no[j]], 12);
+            }
+        }
     }
     eft_mdl[k].flag = 1;
     eft_mdl[k].clay = cl;
     eft_mdlw[k] = &eft_mdl[k];
+}
+
+/* A clay of the effect models drawn with the material colours the game set (pl_item_trans_sub: the roast's meat and bone
+ * colour by doneness), only while rt_clay_mat_on (rt_player_item_draw): the effects that also set material states on ef_00
+ * clays (eft01_material_set, ...) stay drawn as before, as it is not known whether the PS2's pre-lit shader families use
+ * the material colour at all (docs/pc.md "Lighting mapping": the lit family 0001 does). Each batch takes its list entry's colour against the file's diffuse as a fade
+ * colour (the PS2's VU1 programs scale the lighting by the material diffuse, viewer.c em_model_col), alpha from +0x10;
+ * batches of entries the game did not set are drawn plainly. */
+int rt_clay_mat_on;
+
+int rt_clay_mat_draw(int handle, gfx_clay *c, void *const pend[32], uint32_t mask, uint32_t fade)
+{
+    const eft_clay_mat *e = NULL;
+    uint32_t all = 0, done = 0;
+    int i, b, k;
+    if (!rt_clay_mat_on || getenv("RT_NO_MAT"))
+        return 0;
+    for (i = 0; i < necm; i++)
+        if (ecm[i].handle == handle) {
+            e = &ecm[i];
+            break;
+        }
+    if (!e)
+        return 0;
+    for (b = 0; b < 32; b++)
+        if (e->m.bk[b] >= 0)
+            all |= 1u << b;
+    for (k = 0; k < e->m.n && k < 32; k++) {
+        uint32_t grp = 0;
+        unsigned u[4];
+        const u8 *mm = pend[k];
+        int ch;
+        if (!(mask >> k & 1) || !mm)
+            continue;
+        for (b = 0; b < 32; b++)
+            if (e->m.bk[b] == k)
+                grp |= 1u << b;
+        if (!grp)
+            continue;
+        done |= grp;
+        for (ch = 0; ch < 3; ch++) {
+            float v = *(const f32 *)(mm + 4 + 4 * ch), base = e->base[k][ch];
+            v = base > 0.0f ? v / base : v;
+            u[ch] = (unsigned)(v <= 0 ? 0 : v >= 1 ? 255 : v * 255.0f + 0.5f);
+        }
+        {
+            float a = *(const f32 *)(mm + 0x10);
+            u[3] = (unsigned)(a <= 0 ? 0 : a >= 1 ? 255 : a * 255.0f + 0.5f);
+        }
+        if (u[3] == 0)
+            continue;
+        if (fade != 0xFFFFFFFFu)            /* times the fade colour the caller set (0x67) */
+            for (ch = 0; ch < 4; ch++)
+                u[ch] = u[ch] * ((fade >> (ch == 3 ? 24 : 16 - 8 * ch)) & 255) / 255;
+        gfx_set_render_state(GFX_RS_FADE_COLOR, u[3] << 24 | u[0] << 16 | u[1] << 8 | u[2]);
+        gfx_set_render_state(GFX_RS_BATCH_HIDE, all & ~grp);
+        gfx_execute_clay(c);
+    }
+    gfx_set_render_state(GFX_RS_FADE_COLOR, fade);
+    if (all & ~done) {                      /* the rest as they are */
+        gfx_set_render_state(GFX_RS_BATCH_HIDE, done);
+        gfx_execute_clay(c);
+    }
+    gfx_set_render_state(GFX_RS_BATCH_HIDE, 0);
+    return 1;
 }
 
 /* ------------------------------------------------------------ loop */

@@ -38,6 +38,7 @@
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
 void xbox_log_frame(int frame, unsigned ms);
+void xbox_log_quit(void);
 void xbox_env_load(void);
 void xbox_env_note(void);
 #endif
@@ -338,6 +339,8 @@ static void load_eft_models(void)
         fmt_blob tex = load_stage_file(0x2EF2A0, k, &eft_keep[2 * k + 1]); /* EFT_TEX */
         gfx_clay **c;
         uint32_t *at;
+        rt_clay_mats *mats;
+        float (*dif)[4];
         int i;
         if (!link.p || fl_model_create(&eft_models[k], fmt_link_entry(link, 0, FMT_LE),
                                        fmt_link_entry(link, 1, FMT_LE), tex, 0, FMT_LE) != 0) {
@@ -346,11 +349,31 @@ static void load_eft_models(void)
         }
         c = calloc((size_t)eft_models[k].npart + 1, sizeof *c);
         at = calloc((size_t)eft_models[k].npart + 1, sizeof *at);
+        mats = calloc((size_t)eft_models[k].npart + 1, sizeof *mats);
+        dif = calloc((size_t)eft_models[k].amo.nmat + 1, sizeof *dif);
         for (i = 0; i < eft_models[k].npart; i++) {
+            const amo_part *ap = &eft_models[k].amo.part[i];
+            const fl_part *fp = &eft_models[k].part[i];
+            int j, b;
             c[i] = eft_models[k].part[i].clay;
             at[i] = part_attr(&eft_models[k], i);
+            mats[i].n = ap->nmatlist < 32 ? ap->nmatlist : 32;     /* the materials the game can colour (rt_clay_mat_draw) */
+            for (j = 0; j < mats[i].n; j++)
+                mats[i].no[j] = ap->matlist[j];
+            for (b = 0; b < 32; b++) {
+                mats[i].bk[b] = -1;
+                for (j = 0; j < mats[i].n && fp->batch_mat[b] >= 0; j++)
+                    if (ap->matlist[j] == (uint32_t)fp->batch_mat[b]) {
+                        mats[i].bk[b] = (int8_t)j;
+                        break;
+                    }
+            }
         }
-        rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        for (i = 0; i < eft_models[k].amo.nmat; i++)
+            memcpy(dif[i], eft_models[k].amo.mat[i].col_b, sizeof dif[i]);
+        rt_bind_eft_model(k, c, at, eft_models[k].npart, mats, (const float (*)[4])dif, eft_models[k].amo.nmat);
+        free(mats);
+        free(dif);
         drop(&eft_keep[2 * k]);
         drop(&eft_keep[2 * k + 1]);
         if (eft_models[k].skel.nbone > 0)
@@ -1563,6 +1586,10 @@ static void npc_model_load(int slot, int amh, int tex)
         fprintf(stderr, "npc model %d (%s): load failed\n", slot, afs.name[amh]);
         return;
     }
+    /* NPCs move by their root motion too (the village's walkers): keep the root bone's X/Z at its bind value as for
+     * the monsters (em_kind_model). Without it they were drawn walking ahead of their position and jumping back at
+     * every walk loop (owner report from the Xbox, 12 Oct 2026; the PC had it too) */
+    e->skel.root_lock = !getenv("RT_EM_ROOT_FREE");
     npc_have[slot] = 1;
     drop(&e->mem[0]);
     drop(&e->mem[1]);
@@ -1650,6 +1677,18 @@ static void npc_draw(const fl_light *L)
             continue;
         m = &npc_mdl[kind];
         rt_monster_pose(i, &m->skel);
+        if (getenv("RT_EM_DRAW_TRACE") && m->skel.skel.nbone > 1) {
+            /* test aid: the NPC's root motion bone in world space next to its game position (as emdraw for monsters) */
+            int b, n = 0;
+            for (b = 0; b < m->skel.skel.nbone; b++)
+                if (m->skel.skel.bone[b].group == 0 && n++ == 1)
+                    break;
+            if (b < m->skel.skel.nbone) {
+                float bp[3] = { m->skel.world[b][12], m->skel.world[b][13], m->skel.world[b][14] };
+                printf("npcdraw t%d slot %d kind %d mot %d pos %.1f %.1f local %.1f %.1f %.1f\n", rt_log_tick(), i, kind,
+                       ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0xAC), *(float *)(em + 0xB4), bp[0], bp[1], bp[2]);
+            }
+        }
         for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
             m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
         fl_model_pose(&m->model, (const flmat *)m->skel.world, light_for(em, 0));
@@ -1811,6 +1850,21 @@ int main(int argc, char **argv)
 #ifdef XBOX
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
     xbox_env_load();        /* before any switch is read (xbox_env.c) */
+    if (getenv("RT_ARGS")) {
+        /* test aid (xemu, docs/xbox.md): RT_ARGS="--quest 131 --follow 250,150,-0.35 ..." in env.txt is the command
+         * line the Xbox does not have; the run then starts as the PC's (straight into the quest, no power-on boot) */
+        static char buf[512];
+        static char *av[32];
+        char *t;
+        int n = 0;
+        av[n++] = argv[0];
+        snprintf(buf, sizeof buf, "%s", getenv("RT_ARGS"));
+        for (t = strtok(buf, " "); t && n < 31; t = strtok(NULL, " "))
+            av[n++] = t;
+        av[n] = NULL;
+        argc = n;
+        argv = av;
+    }
 #endif
     rt_stack_paint();
 #ifndef XBOX
@@ -1876,7 +1930,8 @@ int main(int argc, char **argv)
         }
         xbox_log_start();
         xbox_log_note(disc ? disc : "no AFS_DATA.AFS in D:\\data or E:\\Games\\MH1\\data");
-        boot = 1;
+        if (!getenv("RT_ARGS"))
+            boot = 1;       /* RT_ARGS: as on the PC, --boot only when given */
         play = 1;
         /* test runs (xemu, tools/run_xemu.sh --input/--env): a pad script in the data folder,
          * the same format as the PC's --input; env.txt (loaded at the start of main) set RT_* test aids */
@@ -2555,6 +2610,8 @@ int main(int argc, char **argv)
             pick_owner(PK_WEAPON, lp, 0, NULL);
             draw_model_attr(&weapon.model, -1);
         }
+        if (pl.game && play && !rt_village_active())
+            rt_player_item_draw(lp);    /* the item in the hand (BBQ spit, pickaxe, net, ...) */
         /* The game's own order (trans(), weapon/trans.c): stage, then the actors (GameTrans), then the shells, prims, set
          * objects and effects. The translucent ones (smoke, dust, sparks, breath) blend over the monsters and the hunter, and the
          * depth they write does not hide the actors behind them (they used to be drawn first, which cut holes in monsters). */
@@ -2579,7 +2636,7 @@ int main(int argc, char **argv)
             held = pad_combo_held() ? held + 1 : 0;
             if (held == 60) {
                 fprintf(stderr, "Back + Start held: exit at frame %d\n", frame_no);
-                running = 0;
+                xbox_log_quit();        /* not the normal shutdown: it hung on hardware (12 Oct) */
             }
             xbox_log_frame(frame_no, SDL_GetTicks());
         }

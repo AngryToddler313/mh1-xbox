@@ -69,6 +69,13 @@ obvious workarounds.
 - **Cost / to watch:** the PC's player code now comes from one object; a behaviour change in the player would
   point here first (all PC tests passed: quest_loop, progression, urgent, activities, save, soak, all_quests).
   Revert: the commit "f_pl: the player file as one TU".
+### Xbox Back + Start: the normal shutdown is skipped (12 Oct 2026, commit 583d10b5)
+- **Dropped:** Back + Start set `running = 0` and let main end normally (SDL audio close,
+  gfx shutdown, then the atexit log screen).
+- **Now:** it calls xbox_log_quit(): the log screen, then straight to the dashboard.
+- **Why:** the normal end hung on hardware while the audio thread was starved. With the GPU
+  waits yielding (same commit) it would likely work again, but nothing in that shutdown
+  matters when the console reboots, and the short path can't hang.
 
 ### Host caches kept for the whole run replaced by frees at stage loads (12 Oct 2026, agent F)
 - **Dropped:** monster models cached per kind (em_kind_model), village NPC
@@ -161,3 +168,19 @@ obvious workarounds.
   program (the dumper then hung in nxNetInit right after the loader). The
   loader source now shuts the network down first; after the owner reinstalls
   it, polling could come back.
+
+### nv2a: GPU memory freed at once, with a wait for the GPU (12 Oct 2026, agent E)
+- **Dropped:** gfx_release_texture / gfx_release_clay waited for the GPU to go
+  idle (`wait_idle`) and gave textures, palettes and vertex buffers back to
+  the kernel immediately.
+- **Now:** they go on a list and are freed 3 drawn frames later
+  (`gpu_free_later`, `gpu_free_pending` in gfx_begin_frame); an allocation
+  that fails frees the whole list first and tries again.
+- **Why:** NV2A caches texels and the palette by address and has no known
+  method to drop that cache; freed at once, the next screen's texture often
+  landed on the address the last one had, in the same tick. Suspected cause of
+  the owner's "screens flash as they fade in" on hardware (not visible in
+  xemu, which re-reads memory). Also spares a GPU wait per release.
+- **To watch:** peak memory at a stage change (old and new textures overlap
+  until the next frames; the retry covers an allocation failure). Revert the
+  commit that adds `gpu_free_later` to go back.
