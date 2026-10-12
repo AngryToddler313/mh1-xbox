@@ -7,6 +7,7 @@
 #include <hal/video.h>
 #include <hal/xbox.h>
 #include <windows.h>
+#include <xboxkrnl/xboxkrnl.h>
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,8 +124,14 @@ void xbox_log_frame(int frame, unsigned ms)
     }
     if (ms / 5000 != dlogged) {
         char b[64];
+        MM_STATISTICS st;           /* the memory left (tools/xemu_soak.sh follows it) */
+        memset(&st, 0, sizeof st);
+        st.Length = sizeof st;
         dlogged = ms / 5000;
-        snprintf(b, sizeof b, "alive: frame %d, %u s", frame, ms / 1000);
+        if (NT_SUCCESS(MmQueryStatistics(&st)))
+            snprintf(b, sizeof b, "alive: frame %d, %u s, %lu KB free", frame, ms / 1000, (unsigned long)st.AvailablePages * 4);
+        else
+            snprintf(b, sizeof b, "alive: frame %d, %u s", frame, ms / 1000);
         serial_line(b);
     }
 }

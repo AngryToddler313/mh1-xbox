@@ -45,9 +45,11 @@ int rt_village_active(void) { return active; }
 #endif
 
 /* Game_task mode 6 (offline): what the PS2 does before Local_main runs */
+void rt_motion_em_release(void);
 void rt_village_enter(void)
 {
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
+    rt_motion_em_release();             /* and their motions (all_reset -> em_motion_free; rt_motion.c) */
     clr_set_work();                     /* and the quest stage's set objects (all_reset -> clr_stg_work) */
     {   /* and every effect and shell (all_reset -> init_move_work): a quest's shell kept moving in the village, reading
          * the joints of its cleared monster (shell08_i after quest 140) */
@@ -277,6 +279,7 @@ int rt_village_tick(void)
         void com_motion_load(int n);
         active = 0;
         game_w[0x1DC] = 0;
+        rt_motion_em_release();         /* the NPCs' motions go with the village */
         com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
         return r == 1 ? *(s16 *)(select_w + 0xAC) : -1;
     }
@@ -290,23 +293,42 @@ void Disp_NowLoading(void) {}
 /* com_motion_load (main 0x111A80): the common motion set n
  * (common_motion_data, 0x2EBC70: 0 plcom_tbl, 1 lbcom_tbl the village's,
  * 2 selcom_tbl) through load_plcom_motion + create_plcom_motion. The files
- * stay loaded (the motion handles point into them). */
+ * stay loaded while motion sets point into them (rt_village_files_gc). */
 uint8_t *rt_file_load(int idx, size_t *n);
 void rt_motion_load_plcom(const uint8_t *tbl);
+int rt_motion_refs(const void *p, size_t n);
+static struct kept { uint8_t *p; size_t n; } com_keep[3], em_keep[64];
+/* The motion files above whose motion sets rt_motion_gc has freed, freed too (at each stage
+ * load, rt_flow.c; loaded again when the game asks for them): on the PS2 the quest's player
+ * motions (plcom, 1 MB) and the village's (lbcom, 1 MB) take turns in one area, and the NPC
+ * motion files go with the village. Here all of them stayed loaded (docs/xbox.md memory). */
+void rt_village_files_gc(void)
+{
+    struct kept *k[2] = { com_keep, em_keep };
+    int nk[2] = { 3, 64 }, a, i;
+    for (a = 0; a < 2; a++)
+        for (i = 0; i < nk[a]; i++)
+            if (k[a][i].p && !rt_motion_refs(k[a][i].p, k[a][i].n)) {
+                if (getenv("RT_QUEST_TRACE"))
+                    fprintf(stderr, "rt_village: %s motion file %d freed (%zu bytes)\n", a ? "monster/NPC" : "common", i, k[a][i].n);
+                free(k[a][i].p);
+                k[a][i].p = NULL;
+            }
+}
+
 void com_motion_load(int n)
 {
-    static uint8_t *keep[3];
+    struct kept *keep = com_keep;
     const uint8_t *p = rt_addr(0x2EBC70 + 4 * (uint32_t)n, 4);
     int32_t idx;
-    size_t sz;
     if (n < 0 || n > 2 || !p)
         return;
     memcpy(&idx, p, 4);
-    if (!keep[n] && !(keep[n] = rt_file_load(idx, &sz))) {
+    if (!keep[n].p && !(keep[n].p = rt_file_load(idx, &keep[n].n))) {
         fprintf(stderr, "rt_village: common motions %d (AFS %d) not loaded\n", n, idx);
         return;
     }
-    rt_motion_load_plcom(keep[n]);
+    rt_motion_load_plcom(keep[n].p);
 }
 
 /* ------------------------------------------------------------ village NPCs
@@ -319,22 +341,19 @@ void com_motion_load(int n)
 static void (*npc_model_fn)(int slot, int amh, int tex);
 void rt_set_npc_model_loader(void (*fn)(int slot, int amh, int tex)) { npc_model_fn = fn; }
 
-extern u8 *pl_area_top;
-void create_em_motion(int no, int em);
+void rt_em_motion_create(int slot, int kind, const uint8_t *tbl);
 /* em_motion_load (main 0x111AE0): em_motion_data[n] -> create_em_motion */
 void em_motion_load(int slot, int n)
 {
-    static uint8_t *keep[64];
+    struct kept *keep = em_keep;
     const uint8_t *p = rt_addr(0x2EC830 + 4 * (uint32_t)n, 4);
     int32_t idx;
-    size_t sz;
     if (n < 0 || n >= 64 || !p)
         return;
     memcpy(&idx, p, 4);
-    if (!keep[n] && !(keep[n] = rt_file_load(idx, &sz)))
+    if (!keep[n].p && !(keep[n].p = rt_file_load(idx, &keep[n].n)))
         return;
-    pl_area_top = keep[n];
-    create_em_motion(slot, n);
+    rt_em_motion_create(slot, n, keep[n].p);
 }
 
 void npc_create_model(int slot)

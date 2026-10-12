@@ -42,9 +42,11 @@ uint8_t *rt_file_load(int idx, size_t *n)
 /* The PS2 loads the wall / ground HITS files into fixed RAM areas
  * (stage_hit_area_w / _f hold their addresses). Here: two host buffers.
  * The largest files on the disc, decompressed: lg045.bin 164352 bytes
- * (ground), lw032.bin 81204 (wall), so 512 KB each leaves room (was 4 MB
- * each; docs/xbox.md memory). RT_MEM reports how much the game used. */
-#define HIT_AREA_SIZE (512u << 10)
+ * (ground), lw032.bin 81204 (wall), checked over every lw / lg entry of
+ * AFS_DATA (12 Oct 2026), so 96 KB and 192 KB (were 512 KB each, 4 MB
+ * before that; docs/xbox.md memory). load_file_mdl refuses a file that
+ * does not fit; RT_MEM reports how much the game used. */
+static const unsigned hit_area_size[2] = { 96u << 10, 192u << 10 };     /* wall, ground */
 s32 stage_hit_area_w;
 s32 stage_hit_area_f;
 static uint8_t *hit_area[2];
@@ -121,13 +123,13 @@ int rt_load_stage_hit(int stage)
     int k;
     for (k = 0; k < 2; k++)
         if (!hit_area[k]) {
-            if (!(hit_area[k] = malloc(HIT_AREA_SIZE)))
+            if (!(hit_area[k] = malloc(hit_area_size[k])))
                 return -1;
-            rt_area_register(hit_area[k], HIT_AREA_SIZE, k ? "ground collision" : "wall collision");
+            rt_area_register(hit_area[k], hit_area_size[k], k ? "ground collision" : "wall collision");
         }
     if (getenv("RT_MEM")) {         /* fill pattern for the high-water check below */
-        memset(hit_area[0], 0xCD, HIT_AREA_SIZE);
-        memset(hit_area[1], 0xCD, HIT_AREA_SIZE);
+        memset(hit_area[0], 0xCD, hit_area_size[0]);
+        memset(hit_area[1], 0xCD, hit_area_size[1]);
     }
     memset(hit_area[0], 0xFF, 64);
     memset(hit_area[1], 0xFF, 64);
@@ -139,11 +141,11 @@ int rt_load_stage_hit(int stage)
     load_stage_hit(stage);
     if (getenv("RT_MEM"))
         for (k = 0; k < 2; k++) {
-            size_t top = HIT_AREA_SIZE;
+            size_t top = hit_area_size[k];
             while (top > 0 && hit_area[k][top - 1] == 0xCD)
                 top--;
             fprintf(stderr, "memstat: stage %d %s collision area used %zu of %u bytes\n", stage,
-                    k ? "ground" : "wall", top, HIT_AREA_SIZE);
+                    k ? "ground" : "wall", top, hit_area_size[k]);
         }
     return diorama_w.gtbl ? 0 : -1;
 }

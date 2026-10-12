@@ -373,6 +373,8 @@ static uint8_t *afs_entry(int idx, size_t *n)
         rt_ms_pop(o);
         if (!p)
             rt_warn("file %s (AFS_DATA entry %d) could not be read / decompressed", afs.name[idx], idx);
+        else if (getenv("RT_MEM_FILES"))
+            fprintf(stderr, "memstat: loader file %s %zu\n", afs.name[idx], *n);
         return p;
     }
 }
@@ -985,10 +987,12 @@ static void ed_hunter_hook(int no)
  * through main's per-stage tables (stage 4 = st04, st04_1, lg004). Used at
  * start-up and, as st_model_load, when the game changes stage (game2 steps
  * 2-6: area exits, the cart back to camp). */
+static void host_models_gc(void);
 static int load_stage_models(int st)
 {
     fl_model old_stage = stage, old_set = set;
     int k, reload = stage.npart > 0;
+    host_models_gc();
     for (k = 0; k < 4; k++)
         if (reload) {
             free(keep[k]);
@@ -1105,6 +1109,44 @@ __attribute__((unused)) static void weapon_follow(monster *w, int no, int *have)
     *have = m;
 }
 
+/* The local hunter's weapon class motions (ids >= 1000): wNN_tbl.bin, NN = job (PLW+2), through
+ * create_pl_motion, at the start and at every quest start as the PS2's quest set-up does
+ * (pl_motion_load): the village's lbcom motions run past the common part of the motion table
+ * into the hunter's (entries 500-521) and replaced some of them. The file stays while its
+ * sets live; another class's file replaces it (a bought weapon). */
+int rt_motion_refs(const void *p, size_t n);
+static void weapon_motions(void)
+{
+    static uint8_t *wmem, *old;
+    static size_t wn, oldn;
+    static int job = -1;
+    char wname[32];
+    fmt_blob wt;
+    if (old && !rt_motion_refs(old, oldn)) {
+        free(old);
+        old = NULL;
+    }
+    if (!wmem || rt_player_job(lp) != job) {
+        if (wmem) {
+            free(old);              /* (a third class within one stage: not seen) */
+            old = wmem;
+            oldn = wn;
+            wmem = NULL;
+        }
+        job = rt_player_job(lp);
+        snprintf(wname, sizeof wname, "w%02d_tbl.bin", job);
+        wt = load(wname, &wmem);
+        wn = wt.n;
+        if (!wt.p) {
+            fprintf(stderr, "no %s: weapon motions missing\n", wname);
+            return;
+        }
+    }
+    rt_motion_load_pl(lp, wmem);
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "viewer: weapon motions w%02d_tbl created\n", job);
+}
+
 /* ------------------------------------------------------------ co-op hunters
  * The other players' hunters (ONLINE=1, rt_np.c): their player works are moved by the
  * game's own code from the packets (net_receive_pl -> Pl_act_set, Pl_adj_calc); the host
@@ -1130,7 +1172,7 @@ static void remote_motion_start(void)
 {
     int s;
     for (s = 0; s < 4 && s < rt_np_players(); s++)
-        if (s != lp && pl.tbl.p)
+        if (s != lp && pl.game)     /* (plcom is loaded by then: pl.tbl may be gone, host_models_gc) */
             rt_player_motion_start(s, pl.tbl.p, 1, 101);
 }
 static void remote_weapons(void)
@@ -1338,6 +1380,7 @@ static void quest_back(void)
     remote_motion_start();
     rt_player_game_init(lp);
     remote_weapons();
+    weapon_motions();
     if (game_cam)
         rt_cam_init(stage_no);
     {   /* game13's last step: the hunt fades in */
@@ -1440,15 +1483,16 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
                    kind, ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0x19C), t[0], t[2], jw[i][b][12],
                    jw[i][b][13], jw[i][b][14]);
     }
-    if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i)) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
-        static float hmax[40][1200];
+    static float (*hmax)[1200], (*lmin)[1200];     /* RT_POSE_CHECK, per kind and motion: allocated for the test aid only (375 KB) */
+    if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i) && (hmax || (hmax = calloc(80, sizeof *hmax)))) {
+        lmin = hmax + 40;
+        /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
         int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
         float hh = 0;
         for (j = 0; j < nb; j++)
             if (jw[i][j][13] - t[1] > hh)
                 hh = jw[i][j][13] - t[1];
         {   /* lowest joint: a body sunk into the ground (hit reactions, death) */
-            static float lmin[40][1200];
             float lo = 0;
             for (j = 0; j < nb; j++)
                 if (jw[i][j][13] - t[1] < lo)
@@ -1526,6 +1570,68 @@ static void npc_model_load(int slot, int amh, int tex)
         fprintf(stderr, "village: npc model %d = %s, %d parts, %d bones\n", slot, afs.name[amh], e->model.npart, e->skel.skel.nbone);
 }
 
+/* Monster and NPC models nobody uses any more, freed (at each stage load, load_stage_models;
+ * em_create_model / npc_create_model load them again when a stage asks for them, as the PS2
+ * does). They were cached per kind for the whole run, ~0.5-2 MB a kind with its motion file
+ * (docs/xbox.md memory). A monster kind stays while an em_work entry of that kind lives (also
+ * on another area: large monsters roam) or a motion set still reads its motion file (the
+ * game's motion table keeps a model slot's sets until another kind is created there); the
+ * NPC models stay while the village or the town is up or an NPC uses them. */
+int rt_motion_refs(const void *p, size_t n);
+static void host_models_gc(void)
+{
+    extern uint8_t em_work[];
+    int k, i;
+    for (k = 1; k < 40; k++) {
+        monster *e = &em_mdl[k];
+        if (!em_have[k])
+            continue;
+        for (i = 0; i < 20; i++) {
+            const uint8_t *em = em_work + 0xA10 * i;
+            if (em[0] && !em[0x1E] && em[2] == k)
+                break;
+        }
+        if (i < 20 || (e->mem[2] && rt_motion_refs(e->mem[2], e->tbl.n)))
+            continue;
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "viewer: monster kind %d model freed\n", k);
+        fl_model_release(&e->model);
+        fl_skel_release(&e->skel);
+        free(e->mem[2]);
+        memset(e, 0, sizeof *e);
+        em_have[k] = 0;
+    }
+    if (pl.game && pl.tbl.p && !rt_motion_refs(pl.tbl.p, pl.tbl.n)) {
+        /* the hunter's copy of plcom_tbl (hunter_load): in game mode it only gave the first common motion
+         * sets (rt_player_motion_start); com_motion_load keeps its own copy (1 MB) */
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "viewer: the hunter's plcom_tbl copy freed\n");
+        fl_skel_drop_motions(&pl.master);
+        free(pl.mem[2 * HUNTER_PARTS]);
+        pl.mem[2 * HUNTER_PARTS] = NULL;
+        memset(&pl.tbl, 0, sizeof pl.tbl);
+    }
+    if (rt_village_active() || rt_online_town())
+        return;
+    for (k = 0; k < 4; k++) {
+        if (!npc_have[k])
+            continue;
+        for (i = 0; i < 20; i++) {
+            const uint8_t *em = em_work + 0xA10 * i;
+            if (em[0] && em[0x1E] && em[0x34F] == k)
+                break;
+        }
+        if (i < 20)
+            continue;
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "viewer: npc model %d freed\n", k);
+        fl_model_release(&npc_mdl[k].model);
+        fl_skel_release(&npc_mdl[k].skel);
+        memset(&npc_mdl[k], 0, sizeof npc_mdl[k]);
+        npc_have[k] = 0;
+    }
+}
+
 /* The NPCs on this stage (em_work slots with +0x1E): their model, posed by
  * the game's motion player, placed and scaled like Lb_npc_mk; villagers
  * (kind 0) show only their own parts (+0x4E6 per part, lb_npc_trans). */
@@ -1569,6 +1675,7 @@ static void npc_draw(const fl_light *L)
  * the PS2): Quest_init + Quest_start (rt_quest_load), the hunt starts on
  * the quest's own start stage (the base camp, game_w.stage), the hunter at
  * its start position (pl_init), the stage's monsters (Quest_em_init_set). */
+int rt_tick_count(void);
 static void quest_from_village(void)
 {
     int st;
@@ -1588,7 +1695,9 @@ static void quest_from_village(void)
     remote_motion_start();
     rt_player_game_init(lp);
     remote_weapons();
+    weapon_motions();
     rt_monster_spawn(1, p, 0);
+    pad_script_event(PAD_EV_QUEST);
     if (game_cam)
         rt_cam_init(stage_no);
     {   /* game13's last step: the hunt fades in */
@@ -1596,7 +1705,7 @@ static void quest_from_village(void)
         fade_set(2);
     }
     if (getenv("RT_QUEST_TRACE"))
-        fprintf(stderr, "village: quest %d starts on stage %d\n", quest_no, stage_no);
+        fprintf(stderr, "village: quest %d starts on stage %d (player tick %d)\n", quest_no, stage_no, rt_tick_count());
 }
 
 /* After the reward screen (game mode 6): the village, as on the PS2
@@ -1644,8 +1753,10 @@ static void village_step(void)
         }
     }
 #endif
-    if (!rt_village_active())
+    if (!rt_village_active()) {
         rt_village_enter();
+        pad_script_event(PAD_EV_VILLAGE);
+    }
     q = rt_village_tick();
     if (q > 0) {
         if (getenv("RT_QUEST_TRACE"))
@@ -2071,20 +2182,10 @@ int main(int argc, char **argv)
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
                 rt_player_set_ang(lp, (int)(2.6f * 65536.0f / 6.2831853f));
                 if (play) {
-                    /* the weapon class's own motions (ids >= 1000): wNN_tbl.bin,
-                     * NN = job (PLW+2), like create_pl_motion's table */
-                    static uint8_t *wmem;
-                    char wname[32];
-                    fmt_blob wt;
                     remote_motion_start();
                     rt_player_game_init(lp);    /* the game's pl_init: start position, idle */
                     remote_weapons();
-                    snprintf(wname, sizeof wname, "w%02d_tbl.bin", rt_player_job(lp));
-                    wt = load(wname, &wmem);
-                    if (wt.p)
-                        rt_motion_load_pl(lp, wt.p);
-                    else
-                        fprintf(stderr, "no %s: weapon motions missing\n", wname);
+                    weapon_motions();
                     weapon_load(&weapon, lp);
                     weapon_have = rt_player_weapon_model(lp);
                 }

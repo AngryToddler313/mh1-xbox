@@ -958,3 +958,86 @@ that is the cached monster models/textures and kept files above.
   its own village warps).
 - The slow-motion fallback only hides a CPU problem: on hardware, check the
   movie decode time (prof lines) and the field frame rate.
+
+### Memory stays flat over quest loops (agent F, 12 Oct 2026)
+
+**Soak test.** `tools/test_soak.sh [LOOPS]` (PC, RT_MEM, ~25 s a loop) and
+`tools/xemu_soak.sh [LOOPS]` (xemu, hidden, ~4 + 2.5 min a loop) play NEW GAME
+and then LOOPS times village -> Elder (quest 131 accepted again) -> gate ->
+camp -> area 1 -> two Aptonoth carved -> delivered -> reward -> village, in one
+run. tools/mk_soak.py writes the pad script and env: later loops repeat loop
+1's aids with `RT_AID_PER_QUEST=1` (player-tick aids count from each quest's
+start) and the pad script waits for the game with `@villageN` / `@questN`
+(pad_sdl.c), because a quest's clear comes up to 10 ticks earlier or later
+from loop to loop. On the PC every "stage a -> b" log line now ends with the
+tracked heap and the textures as the Xbox keeps them (with RT_MEM); on the
+Xbox with the free physical memory, as do the serial "alive" lines (every 5 s).
+
+A bug the soak found first: the second delivery quest of a session was
+cleared 4 ticks after it started. init_pl_work clears each player work before
+a quest (memset 0xA00); the host's rt_player_game_init did not, so the
+delivery stock (PLW+0x8F4) still held the first quest's two raw meat. It is
+cleared now (only that field; the host keeps its own fields in the work).
+
+**What leaked and what was done** (docs/REVIEW.md has the entry):
+- 2D textures: every load_pit / load_texlist / mkTexture wrote new handles
+  over mem_tex slots (release_texture is a stand-in): 10 textures, ~0.8 MB a
+  loop, and the 1024-entry table would have filled after ~100 loops.
+  rt_2d_gc frees what no mem_tex slot holds (24 title textures at the first
+  stage load, 5 per stage change after that).
+- Motion files: plcom (1 MB), lbcom (1 MB), selcom (250 KB) and the NPC motion
+  files (930 KB) stayed loaded; also a second plcom copy in the hunter
+  (hunter_load, 1 MB). rt_village_files_gc frees a file once no live motion
+  set reads it; the motion table's part for a model is emptied before
+  create_*_motion fills it again (lbcom has more motions than plcom: its tail
+  kept the old sets), and rt_motion_gc no longer counts the motion players of
+  unused works, mot1 outside a blend or an unmixed bset.
+- lbcom's motions run past the common part of the table into the hunter's
+  (entries 500-521), replacing some weapon motions after the first village
+  visit; the weapon motions are now made again at every quest start
+  (weapon_motions in viewer.c, as the PS2's pl_motion_load).
+- Monster models per kind (em_kind_model, with the free-play Rathian loaded at
+  start: ~1.6 MB with its 1 MB motion file) and the NPC models stayed loaded;
+  host_models_gc frees them at stage loads when nothing uses them, the game
+  loads them again (em_create_model / npc_create_model).
+- Static/heap trims: collision areas 96 KB + 192 KB (were 2 x 512 KB; the
+  largest lw / lg files on the disc are 81204 / 164352 bytes, checked over all
+  AFS entries); the RT_POSE_CHECK tables (375 KB of .bss) are allocated only
+  when that test aid is on.
+
+**PC numbers** (tools/test_soak.sh 3, KB when the village is left for the
+quest, tracked heap + textures as the Xbox keeps them): before 29175 / 30747 /
+31588 (+841 a loop); after 20672 / 20671 / 20671. Heap alone when leaving the
+village: 22926 / 23441 / 23440 before, 18140 / 18139 / 18139 after; textures
+6249 / 7306 / 8148 before, 2532 after.
+
+**xemu numbers** (free physical KB on the "stage a -> b" lines, nv2a build):
+
+| | before (12 Oct, after the motion fix) | after |
+|---|---|---|
+| village (first visit) | 9.9-10.0 MB | 16.5 MB |
+| leaving for quest 1 | 7.6 MB | 17.1 MB |
+| area 1 | 7.4 MB | 19.2 MB |
+| back in the village after quest 1 | 6.1 MB | 16.2 MB |
+| leaving for quest 2 | 5.9 MB | 16.3 MB |
+| back in the village after quest 2 | - | 15.7 MB |
+| leaving for quest 3 / area 1 / village after 3 | - | 16.2 / 18.2 / 15.8 MB |
+
+tools/xemu_quest_loop.sh passes (CONTINUE 1550z). The PC heap is flat to the
+KB from loop 2 on; in xemu loop 2 -> 3 still lost ~130 KB at every point
+(16320 -> 16188 leaving the village, 18364 -> 18220 in area 1). Not found:
+nothing the PC tracks grows, so it is something the Xbox build has alone
+(pdclib's malloc keeping freed pages fragmented, nxdk/SDL, contiguous GPU
+allocations, which are page-rounded: textures cost ~10% more than counted).
+At 130 KB a loop that is ~100 loops of headroom; a longer xemu soak would
+show whether it levels off.
+
+**Biggest remaining users** (PC tracked heap 18.1 MB leaving the village;
+.bss 4.8 MB on the Xbox): main data image 1.2 MB, rt_data tables 1.2 MB,
+overlay binaries 1.4 MB + data copies 0.5 MB, rt_lb_mem 2.2 MB (.bss),
+data_load_ptr 2 MB (838 KB used; what can be loaded there disc-wide is not
+known, so not trimmed), audio packs 1.7 MB, host models 3-4 MB, audio streams
+576 KB (.bss), mission_buf 256 KB (also takes downloaded event quests of
+unknown size, kept), the 6 MB vertex ring (gfx_nv2a.c). Load cost to watch:
+monster, NPC and motion files are now read again on area changes and village
+visits.

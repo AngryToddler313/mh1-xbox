@@ -92,9 +92,12 @@ static unsigned long now_ms(void)
 #ifdef MH1_XBOX
 #include <xboxkrnl/xboxkrnl.h>
 #endif
-/* the memory left: the Xbox's free physical pages (stage-change lines); nothing elsewhere */
+/* the memory left: the Xbox's free physical pages (stage-change lines); elsewhere, with RT_MEM on,
+ * the tracked heap and the textures as the Xbox keeps them (rt_memstat.c) */
+int rt_ms_totals(long *heap_kb, long *tex_kb);
 static void free_note(char *out, size_t n)
 {
+    long hk, tk;
 #ifdef MH1_XBOX
     MM_STATISTICS ms;
     memset(&ms, 0, sizeof ms);
@@ -104,6 +107,10 @@ static void free_note(char *out, size_t n)
         return;
     }
 #endif
+    if (rt_ms_totals(&hk, &tk)) {
+        snprintf(out, n, ", heap %ld KB, textures %ld KB", hk, tk);
+        return;
+    }
     if (n)
         out[0] = 0;
 }
@@ -354,7 +361,7 @@ void rt_log_game(int mode, int step, int stage, int quest, int result)
     cur_result = result;
     if (stage != cur_stage) {
         if (cur_stage >= 0 || mode >= 2) {
-            char fr[40];
+            char fr[64];
             free_note(fr, sizeof fr);
             rt_log("stage %d -> %d (mode %d)%s", cur_stage, stage, mode, fr);
         }
