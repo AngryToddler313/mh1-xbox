@@ -184,7 +184,7 @@ static void bs_page_status_flag_set(u8 *p, int bit, int on) {
     }
 }
 
-s32 bs_page_status_flag_get(u8 *arg0, s32 arg1) {
+static s32 bs_page_status_flag_get(u8 *arg0, s32 arg1) {
     return F(u8, arg0, 1) & (arg1 & 0xFFFF) & 0xFF;
 }
 
@@ -273,13 +273,31 @@ void bs_cache_queue_free_node(BSNODE *head, BSNODE *node) {
     }
 }
 
-/* original bytes: build/raw/bs_cache_queue_get.inc (config/c_rawfuncs.txt); near-match C is in lb_am.c */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_cache_queue_get()
-{
-#include "bs_cache_queue_get.inc"
+BSNODE *bs_cache_queue_get(BSNODE *head, char *url) {
+    BSNODE *s0;
+    BSNODE *p;
+    BSNODE *prev;
+
+    p = head;
+    for (;;) {
+        s0 = p->next;
+        if (s0 == 0) {
+            return 0;
+        }
+        prev = p;
+        p = s0;
+        if (s0->used == 0) {
+            if (prev != head) {
+                prev->next = s0->next;
+                s0->next = head->next;
+                head->next = s0;
+            }
+            BsUrlCopy_SS(s0->url, url);
+            s0->used = 1;
+            return s0;
+        }
+    }
 }
-#endif
 
 void bs_source_cache_clear(BSNODE *arg0) {
     bs_cache_queue_free_node(&BcSource_head, arg0);
@@ -304,13 +322,57 @@ void bs_image_cache_clear(BSNODE *n) {
     n->x11A = 0;
 }
 
-/* original bytes: build/raw/BsCacheInitialize.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int BsCacheInitialize()
-{
-#include "BsCacheInitialize.inc"
+typedef struct BCSRC { struct BCSRC *next; u8 _pad04[0x108]; u8 *buf; u8 _pad110[4]; } BCSRC;    /* 0x114 */
+typedef struct BCIMG { struct BCIMG *next; u8 _pad04[0x118]; } BCIMG;                          /* 0x11C */
+typedef struct BCRT { struct BCRT *next; u8 _pad04[0x108]; } BCRT;                             /* 0x10C */
+extern BCSRC *BcSource;
+extern BCIMG *BcImage;
+extern BCRT *BcRoute;
+extern BSNODE *BcRequest;
+extern u8 *BcImageBuf;
+extern BCSRC BsCacheSource[3];
+extern BCIMG BsCacheImage[32];
+extern BCRT BsCacheRoute[32];
+extern BSNODE BsCacheRequest[20];
+extern u8 BsCacheImageBuf[0x4000];
+extern u8 BsCacheSourceBuf[0x18000];
+void BsUrlBaseClear();
+void BsRequestPostClear();
+void BsCacheInitialize(void) {
+    int i;
+
+    BcSource = BsCacheSource;
+    BcImage = BsCacheImage;
+    BcRoute = BsCacheRoute;
+    BcRequest = BsCacheRequest;
+    BcImageBuf = BsCacheImageBuf;
+    memset(BcSource, 0, sizeof(BsCacheSource));
+    BcSource_head.next = (BSNODE *)BcSource;
+    BcSource[0].next = &BcSource[1];
+    BcSource[1].next = &BcSource[2];
+    BcSource[0].buf = BsCacheSourceBuf;
+    BcSource[1].buf = BsCacheSourceBuf + 0x8000;
+    BcSource[2].buf = BsCacheSourceBuf + 0x10000;
+    memset(BcImage, 0, sizeof(BsCacheImage));
+    BcImage_head.next = (BSNODE *)BcImage;
+    for (i = 0; i < 31; i++) {
+        BcImage[i].next = &BcImage[i + 1];
+    }
+    memset(BcRoute, 0, sizeof(BsCacheRoute));
+    BcRoute_head.next = (BSNODE *)BcRoute;
+    BcRoute_cur = (BSNODE *)BcRoute;
+    for (i = 0; i < 31; i++) {
+        BcRoute[i].next = &BcRoute[i + 1];
+    }
+    memset(BsCacheRequest, 0, sizeof(BsCacheRequest));
+    BcRequest_head.next = BsCacheRequest;
+    for (i = 0; i < 19; i++) {
+        BsCacheRequest[i].next = &BsCacheRequest[i + 1];
+    }
+    memset(BcCurrentPage, 0, 0x14);
+    BsUrlBaseClear();
+    BsRequestPostClear();
 }
-#endif
 
 void BsCacheCleanup(void) {
     bs_cache_queue_image_free_all(&BcImage_head);
@@ -436,12 +498,48 @@ void BsRequestHtmlPost(char **a) {
 }
 
 /* original bytes: build/raw/BsRequestPostAdd.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int BsRequestPostAdd()
-{
-#include "BsRequestPostAdd.inc"
+u32 strlen();
+char *strncpy();
+void KanjiSjis2EucEx();
+int BsUrlEncode();
+int BsRequestPostAdd(char *name, char *val) {
+    char buf[0x100];
+    int n;
+    u32 nl;
+    u32 vl;
+
+    n = strlen(BsCachePost);
+    nl = strlen(name);
+    vl = strlen(val);
+    if ((int)(n + nl + vl + 2) > 0xFFF) {
+        return -1;
+    }
+    if (vl >= 0x100 || nl >= 0x100) {
+        return -1;
+    }
+    if (n != 0) {
+        BsCachePost[n++] = '&';
+    }
+    if (bs_page_status_flag_get(bs_route_current_page_status(), 4) == 0) {
+        memset(buf, 0, 0x100);
+        strncpy(buf, name, 0x100);
+        KanjiSjis2EucEx(buf);
+        nl = strlen(buf);
+        memcpy(BsCachePost + n, buf, nl);
+        n += nl;
+        BsCachePost[n++] = '=';
+        memset(buf, 0, 0x100);
+        strncpy(buf, val, 0x100);
+        KanjiSjis2EucEx(buf);
+        n += BsUrlEncode(BsCachePost + n, buf);
+    } else {
+        memcpy(BsCachePost + n, name, nl);
+        n += nl;
+        BsCachePost[n++] = '=';
+        n += BsUrlEncode(BsCachePost + n, val);
+    }
+    return n;
 }
-#endif
 
 void BsRequestPostClear(void) {
     memset(BsCachePost, 0, 0x1000);
@@ -468,20 +566,76 @@ int BsRequestImage(char **a) {
 }
 
 /* original bytes: build/raw/bs_cache_request_html_core.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_cache_request_html_core()
-{
-#include "bs_cache_request_html_core.inc"
+BSNODE *bs_cache_request_html_core(char *url, int mode, u8 *st) {
+    BSNODE *n;
+
+    switch ((u8)BsUrlSchemeGet(url)) {
+    case 4:
+        if (mode == 1) {
+            mode = 2;
+        }
+        break;
+    }
+    n = bs_cache_queue_check(&BcSource_head, url);
+    switch (mode) {
+    case 4:
+    case 5:
+        if (n == 0 && bs_page_status_flag_get(st, 1) != 0) {
+            return 0;
+        }
+    case 1:
+        if (n != 0) {
+            n->used = 2;
+            return n;
+        }
+        break;
+    case 6:
+        if (bs_page_status_flag_get(st, 1) != 0) {
+            return 0;
+        }
+        break;
+    case 0:
+    case 2:
+    case 3:
+        break;
+    }
+    if (n == 0) {
+        n = bs_cache_queue_get(&BcSource_head, url);
+        if (n == 0) {
+            bs_source_cache_clear(bs_cache_queue_get_last(&BcSource_head));
+            n = bs_cache_queue_get(&BcSource_head, url);
+        }
+    }
+    n->used = 3;
+    return n;
 }
-#endif
 
 /* original bytes: build/raw/bs_cache_request_image_core.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_cache_request_image_core()
-{
-#include "bs_cache_request_image_core.inc"
+BSNODE *bs_cache_request_image_core(char *url, int mode, u8 *st) {
+    BSNODE *n;
+
+    n = bs_cache_queue_check(&BcImage_head, url);
+    if (n != 0) {
+        if (n->used == 5) {
+            if (BcCurrentPage[0] == 5 && n->x108 != *st) {
+                bs_image_cache_clear(n);
+                return 0;
+            }
+            n->used = 2;
+            return n;
+        }
+        return 0;
+    }
+    if (n == 0) {
+        n = bs_cache_queue_get(&BcImage_head, url);
+        if (n == 0) {
+            bs_image_cache_clear(bs_cache_queue_get_last(&BcImage_head));
+            n = bs_cache_queue_get(&BcImage_head, url);
+        }
+    }
+    n->used = 3;
+    return n;
 }
-#endif
 
 void bs_cache_queue_image_free_all(BSNODE *arg0) {
     BSNODE *var_a0;
