@@ -1321,8 +1321,6 @@ lobby 0x005F2C90 0x005F2DD4 f/lb_au03
 lobby 0x005F7260 0x005F72C8 f/lb_au04
 lobby 0x005F87D0 0x005F8844 f/lb_au05
 lobby 0x005FD2C0 0x005FD3A4 f/lb_au06
-lobby 0x005E9A20 0x005E9D44 f/lb_av01
-lobby 0x005E9DF0 0x005E9EC8 f/lb_av02
 lobby 0x00602E40 0x00602E70 f/lb_aw01
 lobby 0x00604790 0x00604990 f/lb_aw02
 lobby 0x00609460 0x00609748 f/lb_aw03
@@ -1453,7 +1451,6 @@ lobby:rodata 0x00664D80 0x00664D98 f/lb_gae02
 lobby 0x005E1630 0x005E1888 f/lb_gak02
 lobby 0x005E1A50 0x005E1BEC f/lb_gak03
 lobby 0x005F2DE0 0x005F2E78 f/lb_gau02
-lobby 0x005E9960 0x005E9A1C f/lb_gav01
 lobby 0x005D4960 0x005D4A94 f/lb_gl02
 lobby 0x005D62F0 0x005D639C f/lb_gn01
 lobby 0x005C7350 0x005C74A4 f/lb_gv02
@@ -1497,7 +1494,6 @@ lobby 0x0060D810 0x0060D918 f/lb_gpc02
 lobby 0x0060DFA0 0x0060E180 f/lb_gpc03
 lobby 0x0060D750 0x0060D80C f/lb_gpc04
 lobby 0x0060E180 0x0060E2A4 f/lb_gpc05
-lobby 0x005E9DA0 0x005E9DE8 f/lb_gz01
 lobby 0x005F3840 0x005F391C f/lb_gz02
 lobby 0x005F6B30 0x005F6C50 f/lb_gz03
 lobby 0x005FFFC0 0x00600018 f/lb_gz04
@@ -2006,3 +2002,4 @@ main 0x0023D370 0x0023D870 pad/usbkbdm
 main 0x0018CF00 0x0018D5EC fl/flswap
 main 0x00195000 0x00195510 fl/tarpad02
 lobby 0x005E8890 0x005E9960 f/lb_url
+lobby 0x005E9960 0x005E9EC8 f/lb_bswork

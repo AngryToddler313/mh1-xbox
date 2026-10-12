@@ -12,6 +12,13 @@ obvious workarounds.
 
 ## Open
 
+### Browser draw-work pool: one TU lb_bswork.c (12 Oct 2026, agent B)
+- **Dropped:** runs src/lobby/f/lb_{gav01,av01,gz01,av02}.c and agent F's unbuilt whole-file copy lb_av.c.
+- **Now:** src/lobby/f/lb_bswork.c (0x5E9960-0x5E9EC8), all 11 functions byte-matched (BsTextureAdd new). It and
+  lb_ao01.c (the browser allocator) are linked on the PC (tools/pc_lobby_matched.txt): seven functions there were
+  stand-ins (BsWorkInitAll, BsWorkMove, BsWorkTrans, BsTextureFreeAll, BsMemAlloc / Free / Realloc ...).
+- **To revert:** the commit "lobby: browser draw-work pool as one TU (lb_bswork.c)".
+
 ### Browser allocator: unbuilt near-match copy lb_ao.c removed (12 Oct 2026, agent B)
 - **Dropped:** src/lobby/f/lb_ao.c (agent F's whole-file near-match of the browser cell allocator, not built).
 - **Now:** all six functions are byte-matched in src/lobby/f/lb_ao01.c (BsMemRealloc added, 0x5E8330-0x5E867C).
