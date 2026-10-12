@@ -974,63 +974,6 @@ void menu_option_i(void) {
     PitMenu.x10 = 0;
 }
 
-#define OPT(i) (((i) + (u8 *)lpPit)[0x88])
-int menu_option_mv(int sw) {
-    u8 c;
-
-    ListSelect(&lpPit->x43, sw, 5);
-    if ((u16)sw & 0xC00) {
-        c = lpPit->x43;
-        switch (c) {
-        case 1:
-            if (lpPit->x88 != 0) {
-                se_req(7, 0x15, 0);
-            } else {
-        case 0:
-                OPT(c) ^= 1;
-                se_req(7, 0x16, 0);
-            }
-            break;
-        case 2:
-        case 3:
-            if ((u16)sw & 0x800) {
-                if (OPT(c) == 0) {
-                    OPT(c) = 2;
-                } else {
-                    OPT(c)--;
-                }
-            } else {
-                OPT(c)++;
-                if (OPT(lpPit->x43) >= 3) {
-                    OPT(lpPit->x43) = 0;
-                }
-            }
-            se_req(7, 0x16, 0);
-            break;
-        case 4:
-            if (FLD16(Psw, 4) & 0xC00) {
-                lpPit->x8C ^= 1;
-                se_req(7, 0x16, 0);
-            }
-            break;
-        }
-    }
-    c = lpPit->x8A;
-    FLD8(option_w, 4) = c;
-    GW8(0x1DD) = c;
-    c = lpPit->x8B;
-    FLD8(option_w, 7) = c;
-    GW8(0xF) = c;
-    c = lpPit->x8C;
-    if (c != FLDS8(option_w, 3)) {
-        FLDS8(option_w, 3) = c;
-        if (FLDS8(option_w, 3) != 0) {
-            vib_set(0, 1);
-            vib_set(1, 1);
-        }
-    }
-    return (u16)((u16)sw & 0x8040);
-}
 
 #undef OPT
 int ItemPickingDeclaration(int arg, s16 *code) {
@@ -1120,21 +1063,18 @@ int item_stock_mv(int sw) {
     case 1:
         if (p->x54 == 0xFF) {
             lpPit->x54 = set01_set(1, 0, p->x52);
-            return 0;
-        }
-        if (p->x54 == game_w.info_now) {
+        } else if (p->x54 == game_w.info_now) {
             (*st)++;
             lpPit->x55 = 6;
             return 1;
-        }
-        if (Info_stack_ck() == 0) {
+        } else if (Info_stack_ck() == 0) {
             lpPit->x07++;
             return 1;
         }
         return 0;
     case 2:
-        if (p->x55 != 0) {
-            p->x55--;
+        if (lpPit->x55 != 0) {
+            lpPit->x55--;
         }
         if (lpPit->x54 == game_w.info_now) {
             return 1;
@@ -1149,19 +1089,22 @@ int item_stock_mv(int sw) {
         } else {
             lpPit->x50 = (u16)lpPit->x52 + 0x18;
         }
-        sw = sw & 0xFFFF;
-        Menu_select_mv(&lpPit->x49, sw & 0xC00, 0x14);
+        sw = (u16)sw;
+        Menu_select_mv(&lpPit->x49, (u16)(sw & 0xC00), 0x14);
         if (sw & 0x3000) {
             lpPit->x4F = (lpPit->x4F + 1) & 1;
             se_req(7, 0x16, 0);
         }
         if (sw & 0x20) {
-            if (lpPit->x4F == 0) {
+            switch (lpPit->x4F) {
+            case 0:
                 lpPit->x50 = 0x15;
                 lpPit->x56 = 0;
                 lpPit->x07++;
-            } else if (lpPit->x4F == 1) {
+                break;
+            case 1:
                 lpPit->x07 = 6;
+                break;
             }
             se_req(7, 0x13, 0);
         }
@@ -1202,7 +1145,7 @@ int item_stock_mv(int sw) {
             if (lpPit->yn == 0) {
                 pl = lpPit->pl;
                 Pl_item_erase(pl, lpPit->x49);
-                Pl_item_stack(pl, lpPit->x52, 1);
+                Pl_item_stack(pl, (u16)lpPit->x52, 1);
                 lpPit->x07 = 6;
                 se_req(7, 0x13, 0);
             } else {
@@ -1301,44 +1244,6 @@ int Menu_chatcnfg_i(void) {
     return 0;
 }
 
-int Menu_chatcnfg_mv(int sw) {
-    int r;
-    int t;
-
-    switch (lpPit->x7E) {
-    case 0:
-        t = sw & 0xFFFF;
-        if (t & 0x3000) {
-            lpPit->x7D = (lpPit->x7D + 1) & 1;
-            se_req(7, 0x16, 0);
-        }
-        r = sw & 0xFFFF;
-        PitMenu.x12 = lpPit->x7D;
-        if (t & 0x20) {
-            lpPit->x7E++;
-            lpPit->x7F = 0;
-            lpPit->x80 = -1;
-            se_req(7, 0x13, 0);
-        }
-        break;
-    case 1:
-        switch (lpPit->x7D) {
-        case 0:
-            r = menu_chcnfg_sendpl(sw) & 0xFFFF;
-            break;
-        case 1:
-            r = menu_chcnfg_reibun(sw) & 0xFFFF;
-            break;
-        }
-        if (r & 0x40) {
-            r = r & 0xFFBF & 0xFFFF;
-            lpPit->x7E = 0;
-            se_req(7, 0x14, 0);
-        }
-        break;
-    }
-    return r;
-}
 
 int menu_chcnfg_sendpl(int sw) {
     int a = sw & 0xFFFF;

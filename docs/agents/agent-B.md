@@ -1200,3 +1200,10 @@ pl_mv021 (the default-block a0 reload).
 - Parked: GetYouganHit (20: u8 r, `*(HPOLY **)cell`; the original saves s0-s7/fp, likely a shared template with
   more locals), point_cam_sub (24: the command pointer is copied to a3 and then a2 per call; declperm no gain),
   get_start_heap (44: our sum loop unrolls, the original's does not).
+- Matched: menu_option_mv (menu09.c; needs `option_w.x03` as a real OPTION_W member in include/flow.h, the FLDS8
+  offset macro makes MWCC keep the address in a register; option rows as `(&lpPit->x88)[i]`), Menu_chatcnfg_mv
+  (menu12.c; u16 r / t from sw, u16 return, the state reset before `r &= 0xFFBF`). item_stock_mv improved 23 -> 3
+  (the 0/1 test of x4F is a switch, the x54 == 0xFF / info_now / Info_stack_ck tests one if-else chain sharing the
+  return 0, `(u16)(sw & 0xC00)`; left: the x54 load goes to v1 instead of a0).
+- Parked: ZoomRateCalc (8: z[2] in f0 instead of f1), WallHitInit (6), cam_rail_move (41: the original keeps `sec`
+  in a stack slot), HitWallPlayer (27).

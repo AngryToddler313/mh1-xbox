@@ -1,4 +1,4 @@
-/* f_menu run (SLPM_654.95 0x0012A390-0x0012A4B4): Menu_equipment_i, Menu_equipment_mv, menu_option_i. Whole file in menu_nm.c. */
+/* f_menu run (SLPM_654.95 0x0012A390-0x0012A6D0): Menu_equipment_i, Menu_equipment_mv, menu_option_i, menu_option_mv. Whole file in menu_nm.c. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -97,4 +97,64 @@ int Menu_equipment_mv(int sw) {
 void menu_option_i(void) {
     lpPit->x43 = 0;
     PitMenu.x10 = 0;
+}
+
+/* 0x12A4C0: option screen: ListSelect over the 5 rows, toggle / cycle the setting, copy them to option_w and
+ * game_w, start the pad vibration when it was switched on. */
+#define lpPit_opt(i) ((&lpPit->x88)[i])   /* option row values, lpPit+0x88.. */
+int menu_option_mv(int sw) {
+    u8 c;
+
+    ListSelect(&lpPit->x43, sw, 5);
+    if ((u16)sw & 0xC00) {
+        c = lpPit->x43;
+        switch (c) {
+        case 1:
+            if (lpPit->x88 != 0) {
+                se_req(7, 0x15, 0);
+            } else {
+        case 0:
+                lpPit_opt(c) ^= 1;
+                se_req(7, 0x16, 0);
+            }
+            break;
+        case 2:
+        case 3:
+            if ((u16)sw & 0x800) {
+                if (lpPit_opt(c) == 0) {
+                    lpPit_opt(c) = 2;
+                } else {
+                    lpPit_opt(c)--;
+                }
+            } else {
+                lpPit_opt(c)++;
+                if (lpPit_opt(lpPit->x43) > 2) {
+                    lpPit_opt(lpPit->x43) = 0;
+                }
+            }
+            se_req(7, 0x16, 0);
+            break;
+        case 4:
+            if (FLD16(Psw, 4) & 0xC00) {
+                lpPit->x8C ^= 1;
+                se_req(7, 0x16, 0);
+            }
+            break;
+        }
+    }
+    c = lpPit->x8A;
+    option_w.x04 = c;
+    GW8(0x1DD) = c;
+    c = lpPit->x8B;
+    option_w.x07 = c;
+    GW8(0xF) = c;
+    c = lpPit->x8C;
+    if (c != option_w.x03) {
+        option_w.x03 = c;
+        if (option_w.x03 != 0) {
+            vib_set(0, 1);
+            vib_set(1, 1);
+        }
+    }
+    return (u16)((u16)sw & 0x8040);
 }

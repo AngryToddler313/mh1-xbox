@@ -267,10 +267,10 @@ main 0x001324B0 0x0013250C menu/menu16
 main 0x0012DD20 0x0012DDF4 menu/menu15
 main 0x0012CAF0 0x0012CCCC menu/menu14
 main 0x001331D0 0x001332E4 menu/menu13
-main 0x0012AFC0 0x0012B054 menu/menu12
+main 0x0012AFC0 0x0012B1AC menu/menu12
 main 0x0012ADE0 0x0012AE60 menu/menu11
 main 0x0012A6D0 0x0012A944 menu/menu10
-main 0x0012A390 0x0012A4B4 menu/menu09
+main 0x0012A390 0x0012A6D0 menu/menu09
 main 0x0012A270 0x0012A2E8 menu/menu08
 main 0x00129F00 0x00129F4C menu/menu07
 main 0x00129470 0x001296A4 menu/menu06

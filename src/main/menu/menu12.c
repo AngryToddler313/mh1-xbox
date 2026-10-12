@@ -1,4 +1,4 @@
-/* f_menu run (SLPM_654.95 0x0012AFC0-0x0012B054): MapSignRequest, Menu_chatcnfg_i. Whole file in menu_nm.c. */
+/* f_menu run (SLPM_654.95 0x0012AFC0-0x0012B1AC): MapSignRequest, Menu_chatcnfg_i, Menu_chatcnfg_mv. Whole file in menu_nm.c. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -82,4 +82,47 @@ int Menu_chatcnfg_i(void) {
     PitMenu.x12 = lpPit->x7D;
     PitMenu.x1B = 0;
     return 0;
+}
+
+int menu_chcnfg_sendpl(int sw);
+int menu_chcnfg_reibun(int sw);
+
+/* 0x12B060: chat settings: row 0 toggles between the two pages, row 1 runs the page; returns the pad bits left. */
+u16 Menu_chatcnfg_mv(int sw) {
+    u16 r;
+    u16 t;
+
+    switch (lpPit->x7E) {
+    case 0:
+        t = sw;
+        if (t & 0x3000) {
+            lpPit->x7D = (lpPit->x7D + 1) & 1;
+            se_req(7, 0x16, 0);
+        }
+        r = sw;
+        PitMenu.x12 = lpPit->x7D;
+        if (t & 0x20) {
+            lpPit->x7E++;
+            lpPit->x7F = 0;
+            lpPit->x80 = -1;
+            se_req(7, 0x13, 0);
+        }
+        break;
+    case 1:
+        switch (lpPit->x7D) {
+        case 0:
+            r = menu_chcnfg_sendpl(sw);
+            break;
+        case 1:
+            r = menu_chcnfg_reibun(sw);
+            break;
+        }
+        if (r & 0x40) {
+            lpPit->x7E = 0;
+            r &= 0xFFBF;
+            se_req(7, 0x14, 0);
+        }
+        break;
+    }
+    return r;
 }
