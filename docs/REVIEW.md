@@ -12,6 +12,14 @@ obvious workarounds.
 
 ## Open
 
+### Xbox Back + Start: the normal shutdown is skipped (12 Oct 2026, commit 583d10b5)
+- **Dropped:** Back + Start set `running = 0` and let main end normally (SDL audio close,
+  gfx shutdown, then the atexit log screen).
+- **Now:** it calls xbox_log_quit(): the log screen, then straight to the dashboard.
+- **Why:** the normal end hung on hardware while the audio thread was starved. With the GPU
+  waits yielding (same commit) it would likely work again, but nothing in that shutdown
+  matters when the console reboots, and the short path can't hang.
+
 ### Host caches kept for the whole run replaced by frees at stage loads (12 Oct 2026, agent F)
 - **Dropped:** monster models cached per kind (em_kind_model), village NPC
   models, the common motion files (plcom / lbcom / selcom) and the NPC
