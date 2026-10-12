@@ -704,14 +704,6 @@ int bs_cache_request_create_texture(BCIMGN *n) {
 }
 
 /* original bytes: build/raw/bs_request_check_task_http.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_request_check_task_http()
-{
-#include "bs_request_check_task_http.inc"
-}
-#endif
-
-/* original bytes: build/raw/bs_request_set_task_core.inc (config/c_rawfuncs.txt) */
 typedef struct BSTASK {
     u8 x00;         /* 0x00 1 = set */
     u8 x01;
@@ -732,13 +724,116 @@ typedef struct BSTASK {
     u8 *x30;        /* 0x30 post data */
     s8 x34;
     s8 x35;
-    u8 _pad36[0x10];
+    u8 _pad36[2];
+    s32 size;       /* 0x38 bytes received */
+    s8 result;      /* 0x3C */
+    s8 err;         /* 0x3D error kind (0 = done) */
+    s8 x3E;
+    s8 x3F;
+    u8 _pad40[6];
     s8 buf;         /* 0x46 image buffer index */
+    u8 _pad47[0x1D];
+    void (*proc)(struct BSTASK *);  /* 0x64 */
+    s8 state;       /* 0x68 2 = finished */
 } BSTASK;
 extern s8 BsProxyUseFlag;
 extern char BsProxyUrlstr[];
 extern char BsProxyUrlstr_S[];
 BSTASK *HttpTaskPull(void);
+/* a request node seen from the request task (0x11C / 0x120: received data and size) */
+typedef struct BSREQ {
+    struct BSREQ *next;     /* 0x000 */
+    char url[0x100];        /* 0x004 */
+    s32 used;               /* 0x104 */
+    u8 x108[4];             /* 0x108 page counter, status flags */
+    s8 x10C;                /* 0x10C request kind */
+    s8 x10D;                /* 0x10D 1 = html, 2 = image */
+    u8 _pad10E[2];
+    char *x110;             /* 0x110 */
+    u32 cache;              /* 0x114 cache node */
+    BSTASK *task;           /* 0x118 */
+    u8 *data;               /* 0x11C */
+    s32 size;               /* 0x120 */
+    s8 x124, x125;          /* 0x124 error kind, result */
+} BSREQ;
+void bs_request_check_task_http(BSREQ *r) {
+    BSTASK *t;
+
+    t = r->task;
+    if (t->state != 2) {
+        return;
+    }
+    switch (t->err) {
+    case 0:
+        r->used = 5;
+        r->data = t->x10;
+        r->size = t->size;
+        r->x124 = 0;
+        r->x125 = t->result;
+        if (t->x34) {
+            if (t->x3F) {
+                bs_page_status_flag_set(r->x108, 4, 1);
+            } else {
+                bs_page_status_flag_set(r->x108, 4, 0);
+            }
+        }
+        if (t->x3E) {
+            r->x125 = 9;
+        }
+        break;
+    case 4:
+    case 5:
+    case 6:
+        r->used = 6;
+        r->x124 = 4;
+        r->x125 = t->result;
+        break;
+    case 1:
+    case 2:
+    case 3:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 16:
+        r->used = 6;
+        r->x124 = 2;
+        r->x125 = t->result;
+        break;
+    case 15:
+        r->used = 6;
+        r->x124 = 1;
+        r->x125 = t->result;
+        break;
+    case 17:
+        r->used = 6;
+        r->x124 = 7;
+        r->x125 = t->result;
+        break;
+    case 18:
+        r->used = 6;
+        r->data = t->x10;
+        r->x124 = 9;
+        r->x125 = t->result;
+        break;
+    case 19:
+        r->used = 6;
+        r->x124 = 10;
+        r->x125 = t->result;
+        break;
+    case 20:
+        r->used = 6;
+        r->x124 = 11;
+        r->x125 = t->result;
+        break;
+    }
+}
+
+/* original bytes: build/raw/bs_request_set_task_core.inc (config/c_rawfuncs.txt) */
 void bs_request_set_task_core(BSTASK *t, char *a, s8 b, char *c, char *d, s8 e, u8 *f, s32 g, char *url, s32 h, s32 i,
                               s32 j, s32 k, s8 post, u8 *l, s8 m) {
     t->x00 = 1;
@@ -857,12 +952,41 @@ void bs_request_set_task_image(BSNODE *r) {
 }
 
 /* original bytes: build/raw/BsRequestTask.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int BsRequestTask()
-{
-#include "BsRequestTask.inc"
+int HttpTaskPullCheck(void);
+void BsRequestTask(void) {
+    BSREQ *r;
+
+    r = (BSREQ *)&BcRequest_head;
+    for (;;) {
+        r = r->next;
+        if (r == 0) {
+            return;
+        }
+        switch (r->used) {
+        case 3:
+            r->task->proc(r->task);
+            bs_request_check_task_http(r);
+            if (r->used != 3) {
+                return;
+            }
+            break;
+        case 4:
+            if (HttpTaskPullCheck() != 0) {
+                switch (r->x10D) {
+                case 1:
+                    bs_request_set_task_html((BSNODE *)r);
+                    break;
+                case 2:
+                    bs_request_set_task_image((BSNODE *)r);
+                    break;
+                }
+            }
+            break;
+        case 0:
+            return;
+        }
+    }
 }
-#endif
 
 /* original bytes: build/raw/BsRequestCheck.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */

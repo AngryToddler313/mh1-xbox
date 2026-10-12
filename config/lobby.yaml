@@ -2132,6 +2132,8 @@ segments:
       - [0x132744, rodata, data/rodata_6660C4]
       - [0x132750, .rodata, f/lb_tu_browser]
       - [0x13276C, rodata, data/rodata_6660EC]
+      - [0x132770, .rodata, f/lb_tu_browser]
+      - [0x1327C4, rodata, data/rodata_666144]
       - [0x132830, .rodata, f/lb_tu_browser]
       - [0x132848, rodata, data/rodata_6661C8]
       - [0x132850, .rodata, f/lb_tu_browser]

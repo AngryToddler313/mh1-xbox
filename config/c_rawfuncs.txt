@@ -5,8 +5,6 @@ lobby 0x00609E20 0x874 itembox_pickup
 lobby 0x0060B190 0x670 itembox_sellout
 lobby 0x0060BF10 0xD0C ItemboxWindowX
 lobby 0x0060CE50 0x5B8 Disp_lb_item_box
-lobby 0x005E74F0 0x1A4 bs_request_check_task_http
-lobby 0x005E7A90 0xE0 BsRequestTask
 lobby 0x005E7B70 0x5AC BsRequestCheck
 main 0x28CEB0 0x100 hit_sphr_sphr2
 main 0x28D0A0 0x1394 hit_cap_cap2_m
