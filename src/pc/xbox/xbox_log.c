@@ -87,6 +87,16 @@ static SDL_AssertState xbox_sdl_assert(const SDL_AssertData *d, void *u)
     return SDL_ASSERTION_ALWAYS_IGNORE;
 }
 
+/* Back + Start: straight to the log screen and the dashboard. The normal end of main
+ * (SDL audio close, gfx shutdown) hung on the real Xbox on 12 Oct 2026 (nothing after
+ * "Back + Start held" in the log; most likely closing the audio device, whose callback
+ * thread waits on an AC97 interrupt that no longer comes), and nothing there matters
+ * when the console reboots anyway. Does not return. */
+void xbox_log_quit(void)
+{
+    xbox_log_show();
+}
+
 /* after E: is mounted */
 void xbox_log_start(void)
 {

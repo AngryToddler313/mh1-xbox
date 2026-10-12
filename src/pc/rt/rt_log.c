@@ -280,6 +280,8 @@ static void put_line(char level, const char *text)
     ring_n++;
 #ifdef MH1_XBOX
     xbox_serial_write(line, n + 1);         /* xemu: serial port (xbox_log.c) */
+    fwrite(line, 1, (size_t)n + 1, stderr); /* hardware: E:\Games\MH1\mh1log.txt, which the network loader
+                                             * sends to the laptop (the log file under logs\ never leaves the box) */
 #endif
     if (lf) {
         fwrite(line, 1, (size_t)n + 1, lf);

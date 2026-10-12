@@ -1051,3 +1051,108 @@ known, so not trimmed), audio packs 1.7 MB, host models 3-4 MB, audio streams
 unknown size, kept), the 6 MB vertex ring (gfx_nv2a.c). Load cost to watch:
 monster, NPC and motion files are now read again on area changes and village
 visits.
+
+### First quest loop on the real Xbox (12 Oct 2026)
+
+With the /test loader installed (owner, Xbox at 192.168.1.118 that day), tools/xbox_serve.py
+--input/--env with tools/xemu_quest_loop.sh's input1/env1 ran the whole loop on hardware with
+nobody at the pad: character creation, the house, quest 131, hunt and carve, reward, village
+(money 1500 -> 1550, carved items in the pouch), bed save (owner saw it save). Recording:
+build/show/hw/run1.mp4 (local). Hardware numbers from the game's log (sent by the loader):
+about 30 drawn frames a second in the field and village (890-950 frames per 30 s), no warnings.
+After the save the hunter ended up standing at the Forest and Hills camp; the script had ended,
+so probably one of the run's later RT_* warp aids firing (to check on the PC with the same env).
+Not yet measured on hardware: free memory per stage (the KB-free lines go to the serial port,
+which the retail Xbox lacks), movie decode time, audio.
+
+### Sound on the real Xbox (12 Oct 2026)
+
+The game was silent on hardware, like in xemu. Cause on hardware: the waits for the GPU in
+gfx_nv2a.c (`while (pb_busy());`, `while (pb_finished());`) spun without giving the CPU away,
+and the SDL audio thread never ran. A build that also wrote every log line to the disk played
+sound (the disk writes paused the main thread), which pointed at it. Fix: SwitchToThread() in
+those waits (and once per frame in the null backend). Confirmed by the owner on hardware with
+a build without the log-to-disk mirror: music and effects sound right. The same starvation
+made the Back + Start quit hang (closing the audio device waited on the audio thread); the quit
+now also goes straight to the log screen and the dashboard (xbox_log_quit), and works.
+xemu stays silent with the fix (its AC97 still stops after one buffer): that part really is
+xemu's, so the movie's audio_driving fallback stays for xemu.
+The log mirror (rt_log.c: every log line also to stderr = E:\Games\MH1\mh1log.txt, which the
+loader sends) stays: it is how hardware logs reach the laptop.
+
+### Owner's hardware report: spit, carcasses, fades, NPCs (agent E, 12 Oct 2026)
+
+Four things the owner saw playing the nv2a build on the real Xbox. Each was first
+looked for on the PC and in xemu at the same game tick (frames in agent E's scratch
+folder, not committed).
+
+**New Xbox test aid: `RT_ARGS`** in env.txt is the command line the Xbox lacks, e.g.
+`RT_ARGS=--quest 131 --stage 39 --follow 250,150,-0.35 --cam 0,0,0,0,0`: the run then
+starts like the PC test runs (straight into the quest, no power-on boot), so the
+PC's tests/aids (tools/test_activities.py scenarios) run unchanged in xemu with
+`RT_HOLD`. `REC_FPS=30 tools/run_xemu.sh ... --record` records faster than 10 fps.
+
+1. **The BBQ spit did not show - on the PC either.** Not the renderer: no build drew
+   the hunter's hand items at all (pl_item_trans was never called). Now the host
+   calls it after the hunter in the field (rt_player_item_draw; weapon3_nm.c, with
+   pl_item_trans_sub, PICK_X). Its near-match had `default: return` where the asm
+   (0x164FEC) draws: type 0 items (the spit's stand and fire ring, the stool) were
+   never drawn. The roast's colour by doneness (meat_col / bone_col: raw 255,210,192
+   -> rare 216,180,141 -> well-done 177,150,90 -> burnt 99,79,65) is drawn from the
+   material states the game sets (flSetRenderState 0x3A+k: ef_00 got a material
+   table, rt_clay_mat_draw multiplies each batch by colour / file diffuse, only for
+   the hand item). Before: camp, hunter crouched at an empty fire (PC and xemu).
+   After: stool, stand with fire ring, the roast turning, darkening as it cooks; the
+   xemu nv2a frames at ticks 330 and 400 (`--quest 131`, square at 70 and 250,
+   `RT_PL_ITEMS=129:1,18:2`, `RT_PL_POKE=240:888:1`) match the PC's. Also draws
+   pickaxe, bug net, whetstone, drinks, ... (whatever pl_item_trans places). The
+   colour step is a guess about how the PS2's shader uses the material colour on
+   this model (the lit family 0001 multiplies the light by it); the doneness change
+   is subtle on the red meat texture.
+
+2. **Carcasses flicker - not reproduced in xemu; cause found by reasoning, fixed.**
+   PC and xemu frames of a carve (quest 131 stage 39, the carve_small aids, RT_HOLD at
+   ticks 600-1150) match. skin.vs.cg divides by w and NV2A does not clip, so a
+   GPU-skinned triangle with a corner at or behind the eye is drawn wrapped across the
+   screen; the CPU clays had near clipping (execute_cpu), skinned monsters/hunters
+   not. Carving puts the camera at the body: a PC trace (since removed) found the
+   Aptonoth body with vertices behind w = 1 in ~1960 draws of a 40 s carve run. xemu
+   draws through OpenGL, which clips, so it never showed there. Now each skin batch is
+   tested with bind-space spheres per palette slot moved by their bones; a batch that
+   may reach w < 1 is skinned on the CPU (skin.vs.cg's math, read from its vertex
+   buffer) and cut at w = 1 like execute_cpu. Held xemu frames are the same with and
+   without it (`RT_SKIN_NOCLIP=1` brings the old path back). Carve scenario: ~17% of
+   skinned batches (~2100 vertices a frame) take the CPU path; in xemu that added
+   15-25 ms a frame (TCG-emulated float code), on a 733 MHz P3 it should be 1-3 ms
+   (reads of write-combined memory are slow; to measure: `RT_SKIN_CLIP_TRACE=1`,
+   RT_PROF). **Owner to check:** carving a carcass and standing inside a big
+   monster's body with the camera close: no more triangles across the screen.
+
+3. **Screens flash as they fade in - not reproduced (PC and xemu fades match).**
+   `RT_FADE_TRACE=1` prints the fade (req, alpha) of every drawn frame. Boot fades
+   held in xemu at ticks 134-322 have the PC's brightness at the same tick (ACCESS
+   screen 13/41/68/123 vs PC 14/41/68/123), and a 30 fps xemu recording of the boot
+   fades has no bright frame. Things seen on both builds, faithful to the game code:
+   the GAME MENU appears at full brightness one tick after the title's fade-out (no
+   fade-in of its own); pressing start during a logo's fade-in restarts a fade-out at
+   alpha 16 (a jump from dark to almost full). Hardware-only suspect fixed blind:
+   textures were freed at once and the next screen's textures, created in the same
+   tick, got the same addresses; NV2A caches texels and the palette by address (no
+   cache-flush method is known here; xemu re-reads memory). Freed GPU memory is now
+   kept 3 frames (docs/REVIEW.md). **Owner to check:** which screens flash (boot
+   logos, title, menus, area changes?), whether the flash is the whole new screen at
+   full brightness for a frame or wrong colours/blocks; with that the next step is
+   clear (whole-screen flash: a frame drawn before its fade starts; wrong colours:
+   the texture/palette cache).
+
+4. **Village NPCs walk too fast and jump back - also on the PC; fixed in the host.**
+   NPC models were posed without root_lock (the monsters got it on 9 Oct): the
+   walkers' root motion was drawn on top of the game's movement (root bone up to 300
+   units from the actor, ~200-unit jumps at each loop). npc_model_load sets it
+   (docs/pc.md; test `test_activities.py npc_walk`).
+
+Checks: tools/build_pc.sh, build_xbox.py (null and nv2a) 0 failed; PC
+test_quest_loop and test_activities (bbq, carve_small, potion, whetstone, gather_*,
+fishing, herbivore_rewind, npc_walk) pass; tools/xemu_quest_loop.sh passes with all
+of it (CONTINUE 1550z). One earlier run failed only because run 2 ran out of its 90 s
+under host load average 12 before CONTINUE; run 2 now gets 120 s.

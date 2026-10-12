@@ -2,6 +2,7 @@
  * gfx_null.c - a gfx.h backend that draws nothing (first Xbox link, and
  * headless tests). The real Xbox backend will be on pbkit (docs/xbox.md).
  */
+#include <windows.h>
 #include "../gfx/gfx.h"
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +23,7 @@ void gfx_shutdown(void) {}
 int gfx_project(const float in[3], float out[4]) { (void)in; out[0] = out[1] = out[2] = out[3] = 0; return 0; }
 void gfx_size(int *w, int *h) { *w = W; *h = H; }
 void gfx_begin_frame(uint32_t clear_rgb) { (void)clear_rgb; }
-void gfx_end_frame(void) {}
+void gfx_end_frame(void) { SwitchToThread(); }    /* no vblank wait here: let the audio thread run (gfx_nv2a.c wait_idle) */
 int gfx_read_pixels(uint8_t *rgb) { memset(rgb, 0, (size_t)W * H * 3); return 0; }
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
 {

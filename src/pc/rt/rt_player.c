@@ -677,6 +677,20 @@ unsigned rt_player_hair_col(int no)
     return *(u32 *)((u8 *)&player_work[no] + 0x5FC);
 }
 
+/* The item in the hunter's hand (pl_item_trans, weapon3_nm.c, as player_trans calls it after the armour): the BBQ spit
+ * with its roast, pickaxe, bug net, whetstone, drink, ... from the effect model ef_00 (eft_mdlw[0], bound by the viewer),
+ * placed on hand joint 0xE / 0x12 by action id. The PC never drew these until 12 Oct 2026 (owner report from the Xbox:
+ * the spit does not show, so the roast cannot be timed). States it leaves (texture matrix, fade, alpha ref) are reset. */
+void pl_item_trans(PLW *pl);
+void rt_fl_reset_states(void);
+void rt_player_item_draw(int no)
+{
+    rt_clay_mat_on = 1;             /* the roast's colour by doneness (pl_item_trans_sub's material colours) */
+    pl_item_trans(&player_work[no]);
+    rt_clay_mat_on = 0;
+    rt_fl_reset_states();
+}
+
 int rt_player_weapon_model(int no)
 {
     return player_work[no].work34C;

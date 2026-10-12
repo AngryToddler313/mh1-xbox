@@ -164,6 +164,16 @@ void rt_boot_init(void)
     boot_ticks = 0;
 }
 
+/* test aid RT_FADE_TRACE: the fade as it is drawn (fade_w: req, alpha 0..256, state) */
+static void fade_trace(const char *where)
+{
+    extern u8 fade_w[];
+    int rt_log_tick(void);
+    if (getenv("RT_FADE_TRACE") && *(s16 *)(fade_w + 4))
+        fprintf(stderr, "fade: tick %d %s req %d alpha %d state %d\n", rt_log_tick(), where, *(s16 *)(fade_w + 4),
+                *(s16 *)(fade_w + 8), fade_w[0]);
+}
+
 /* One ACRMain frame. Returns 1 once Game_task has been started (the boot
  * is over: the caller starts the village), else 0. */
 int rt_boot_tick(void)
@@ -177,6 +187,7 @@ int rt_boot_tick(void)
     gfx_rec_begin();
     rt_font_set_draw(1);
     Scheduler();
+    fade_trace("boot");
     fade_draw();
     rt_font_set_draw(0);
     gfx_rec_end();
@@ -261,6 +272,7 @@ void rt_fade_draw(void)
     if (!getenv("RT_NO_FADE")) {
         PICK(PK_FADE, 0, 0, 0, 0);
         gfx_set_2d_anchor(GFX_A_STRETCH);       /* the fade covers the whole window, not just the 4:3 part */
+        fade_trace("host");
         fade_draw();
         gfx_set_2d_anchor(GFX_A_CENTER);
         PICK(PK_OTHER, 0, 0, 0, 0);
