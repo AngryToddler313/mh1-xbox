@@ -1525,3 +1525,9 @@ Start: main 42.150% (639224 bytes).
   test-at-bottom form), `if (pass != 0) break; pass++; } while (1); return -1;` for the two passes, and
   `e = list[i]` indexing (not a walking pointer). Per-scan variables (e/k/tp vs e2/k2/tp2) and pair.py
   (scratch: every position pair for two declaration lines) took it from 52 to 38; the rest is the second scan's temps.
+### fl/tx04.c extended to 0x189CC0: flPS2UnlockTexture written from the asm (raw holdout, 4 instructions off)
+- `buf = t->sysmem != 0 ? flPS2GetSystemBuffAdrs(t->sysmem) : mflTemporaryUse(t->size);` (ternary: the result
+  stays in v0 at the join, which the original uses for d.base and the memcpy); `PLCTX s; PLCTX d;` (s declared first
+  sits higher on the stack); prototype `flPS2VIF1MakeLoadImage(.., s16 vram, ..)` fixed the argument load order
+  (with `long vram` the lh of t->x14 was scheduled first). `case 0x14: case 0x13:` order gives the 0x13-first ladder.
+- Left: the original copies v0 into buf's saved register inside both branches; ours sinks the copy below the join.
