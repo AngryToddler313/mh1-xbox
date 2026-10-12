@@ -1555,3 +1555,38 @@ Start: main 42.150% (639224 bytes).
   as hdmerge_nm.c / tx09_nm.c.
 - Writing fresh C straight from the asm (flps0, usbkbdm, LockTexture, SwapDBuff) paid off far better than polishing
   old 50-300 line near-matches. Sony-style macros with the right casts and s16 prototype parameters were the keys.
+
+## Round 22 (agent C, 12 Oct 2026: main, stage collision)
+Start: main 45.99%.
+### hit/f_sphr.c: the whole stage-collision file as one TU (0x114AE0-0x11CDE4), 27/34 match, rebuild OK x5
+- Replaces 8 matched run files (shit1/2a/5/6/7/15/16/401.c) and 11 near-match copies (shit*_nm.c, hitw_nm.c) the PC
+  linked; the PC/Xbox now compile f_sphr.c (MATCHED_A), with the near-match C of the 7 raw holdouts in `#else`.
+- Raw holdouts (c_rawfuncs): GetWallHitBitPl (51 lines off: temporaries of the wall-angle block), sphr_face_o3/o4
+  (33/37: the registers of the four vt[] copy addresses vs the hit_area_out store), PushAdjust3 (old copy, 1027),
+  GetWallHitLine (124: one spill slot and the seen[0] test), GetEyeHitLine (old copy, 338), HitWallPlayer (4: the
+  early-out branches target the loop-exit jump instead of the epilogue).
+- Data: the three initialised local offset tables (@180/@425/@638, `f32 ofs[8] = {...}` in Pl/Em/Bit2) are C
+  data; `main:data 0x002E85F0 0x002E8630 hit/f_sphr` places Em's and Bit2's (Pl's still comes from the asm).
+- Matching lessons (new):
+  - Cell lists `-1` terminated: `for (k = 0; (s32)cell[k] != -1; k++) { pl = cell[k]; ...}` (index form, MWCC
+    strength-reduces it). A `do { pl = *cell; ... cell++; } while (*cell != -1)` CSEs the test load into pl.
+  - `h[n++] = v` inside an `if` IS strength-reduced (pointer register bumped in the then-block); a hand pointer
+    `*hp++ = v` gets a different register order. Same for `hf[c++] = h[i]`.
+  - Small address-taken aggregates (2D triangle / point passed to PointHitCheckF3) were structs: members at
+    non-zero offsets are stored through `addiu rX, sp, off` registers (HV3 tri[3], HV3 pt).
+  - Stack layout rule (tested with a scratch file): locals are placed top-down by class, small ones (< 16 bytes,
+    e.g. HV3, f32[3]) above the 16-byte-multiple ones, a u8 at the very top; within a class in declaration order.
+    Use and initialisation order do not matter.
+  - s-registers: the LAST declared local gets the lowest saved register (s16 ...); reversing a declaration
+    block to the target register order fixed GetWallHitBit2 at once. A variable reused in a later loop keeps
+    its own counter alive (GetWallHitBitEm: `k` reused for the hit loop is why the cell counter s23 exists).
+  - `if (w)` vs `if (w != 0)` on a spilled u8: `!= 0` added a `daddu v0, v0, zero` (GetGroundHitStatusAreaEm).
+  - `x15 > 0x2B` instead of `x15 >= 0x2C` puts the compare result in `at` (as agent B noted).
+  - A `switch` with `default:` first and `case 1:` second gives an aligned (nop-padded) fall-through block
+    (hosei_sub: the hit_area_out test).
+  - Effects of `u16` ints: DIORAMA cell sizes are u32 (the u32->float conversions); dir angles kept as u32 with
+    (u16) casts give `srl` and full-width `lw` of ang_y.
+- check.py/align helpers I used (scratch, not committed): a per-function align count over a whole file, a
+  `try.py` that applies text replacements to one function and prints the align count, `unraw.py` to put a raw
+  function's C back into a copy of the TU for testing. build/asmkeep/main_text/f_sphr.s keeps the original asm of
+  the file (for tools/perm.py with PERM_ASM_DIR=build/asmkeep).
