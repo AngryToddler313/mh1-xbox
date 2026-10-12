@@ -502,7 +502,7 @@ segments:
       - [0x069D98, asm, text/g_RollView]
       - [0x069DA0, c, emw/emw01]
       - [0x06A004, asm, text/em_work_set]
-      - [0x06A260, c, emw/emw02]
+      - [0x06A010, c, emw/emw02]
       - [0x06A858, asm, text/GetGroundCameraData]
       - [0x06A860, c, emw/gmat01]
       - [0x06A890, asm, text/GetPlayerDiffuseData]

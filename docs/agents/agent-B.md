@@ -1193,3 +1193,10 @@ pl_mv021 (the default-block a0 reload).
   the vis test as `goto next`, `cb[i]` instead of a walking pointer, the alpha-list skip as `while (v != -1) { if
   (v >= i) break; ... }`, and `v = *(lp = em_alpha_clay[k = em->kind])`). enemy_trans is NOT linked on the PC: the
   host draws monsters itself (src/pc/rt/rt_em.c keeps its no-op enemy_trans), so weapon_em.c is PS2-only.
+- emw02.c now starts at 0x16A010: em_work_set (declaration order idx, g, h, i, acc, m and the loop's offset kept in
+  h) and pull_enemy_work (two gotos reproduce the original's block layout: the per-slot clear sits after the loop
+  and jumps back to the return). Both stay host overrides on the PC (src/pc/rt/rt_em.c: the host keeps the model
+  work), so only the PS2 build uses this C.
+- Parked: GetYouganHit (20: u8 r, `*(HPOLY **)cell`; the original saves s0-s7/fp, likely a shared template with
+  more locals), point_cam_sub (24: the command pointer is copied to a3 and then a2 per call; declperm no gain),
+  get_start_heap (44: our sum loop unrolls, the original's does not).

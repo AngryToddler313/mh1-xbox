@@ -1,4 +1,4 @@
-/* emw02 - view and monster work 0x0016A260-0x0016A858: smell_init, push_smell, pull_smell, smoke_init, push_smoke, pull_smoke, move_smoke, senko_init, push_senko, pull_senko, move_senko, ear_init, em_yobi_init, push_em_yobi, pull_em_yobi. Whole file in emwork_nm.c. */
+/* emw02 - view and monster work 0x0016A010-0x0016A858: em_work_set, pull_enemy_work, smell_init, push_smell, pull_smell, smoke_init, push_smoke, pull_smoke, move_smoke, senko_init, push_senko, pull_senko, move_senko, ear_init, em_yobi_init, push_em_yobi, pull_em_yobi. Whole file in emwork_nm.c. */
 #include "types.h"
 
 #define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
@@ -116,6 +116,74 @@ void func_539340(void *);
 
 
 
+
+/* 0x16A010: give monster work w a model work copied from its template (game_w.mdl_tmpl[x34F]) and hierarchy
+ * slots for both halves. */
+void em_work_set(EWK *w) {
+    int idx;
+    GWL *g = &game_w;
+    int h;
+    int i;
+    int acc;
+    MDLW *m;
+
+    idx = get_start_mdlw(1);
+    if (idx >= 0) {
+        w->mdl_start = idx;
+        w->mdl_num = 1;
+        w->mdl = get_mdlw_ptr(idx);
+        set_used_mdlw(idx, 1);
+        m = get_mdlw_ptr(idx);
+        memcpy(m, g->mdl_tmpl[w->x34F], 0x80);
+        m->flag = 1;
+        m->x74 = 2;
+        m->x75 = 1;
+        h = get_start_hierarchy(m->hier_n);
+        m->hier_no = h;
+        m->hier0 = get_hierarchy_ptr(h);
+        m->hier1 = get_hierarchy_ptr(h + m->hier_n / 2);
+        set_used_hierarchy(h, m->hier_n);
+        acc = 0;
+        for (i = 0; i < m->num; i++) {
+            h = acc * 400;
+            flGetHierarchySI(m->hier0 + h, m->si[i]);
+            flGetHierarchySI(m->hier1 + h, m->si[i]);
+            m->a[i] = m->hier0 + h;
+            m->b[i] = m->hier1 + h;
+            acc += S16(m->hier0, 0xC2);
+        }
+    }
+}
+
+/* 0x16A1A0: take the first free monster work slot and clear it. The two gotos give the original's block layout
+ * (the per-slot flag clear is placed after the loop and jumps back to the return). */
+EWK *pull_enemy_work(void) {
+    u32 i;
+    EWK *w = (EWK *)em_work;
+
+    for (i = 0; i < 0x14; i++) {
+        if (w->be_flag == 0) {
+            memset(w, 0, EMW_SIZE);
+            w->slot = i;
+            w->be_flag = 1;
+            w->x10 = 1;
+            w->x88D = -1;
+            w->id = i;
+            w->mdl = 0;
+            w->x8C3 = game_w.master;
+            w->x798 = 1.0f;
+            goto found;
+back:
+            return w;
+        }
+        w++;
+    }
+    return 0;
+found:
+    w->x3F8[i] = 0;
+    w->x410 = 0;
+    goto back;
+}
 
 void smell_init(void) {
     int i;
