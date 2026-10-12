@@ -12,6 +12,25 @@ obvious workarounds.
 
 ## Open
 
+### Model work file: 13 runs and 6 near-match copies replaced by one translation unit (12 Oct 2026, agent C)
+- **Dropped:** the runs model/gm01-gm05, mkm01, hp01-hp04, light03 (get_mdlw_ptr),
+  crmdl03 (Pl_model_id_set) and clay/get_clay_ptr, and the near-match working
+  files mkm_nm.c, getm_nm.c, getsh_nm.c, heap_nm.c, armor_nm.c; the copies of
+  pl_create_model / weapon_create_model in crmdl_nm.c and of get_mdlw_ptr in
+  light_nm.c. None of them was in the PC build.
+- **Now:** src/main/model/f_get.c is the whole original file 0x121B70-0x1246D4
+  in address order with its statics. Newly matching: Sethierarchy, mkModel,
+  mkModel3, mkModel4, model_work_set2, release_model, model_work_free. Seven
+  functions stay as original bytes (config/c_rawfuncs.txt) with their
+  near-match C beside them: get_start_material/hierarchy/clay/mdlw,
+  pl_create_model, weapon_create_model, armor_create_model.
+- **Also:** getm_nm.c had model_work_set2's parameters in the wrong order
+  (skin and the mkModel flags swapped); the matched version is
+  (idx, mat, tex, texlist, flags, skin, type).
+- **Why:** one TU per original file is what makes MWCC allocate registers
+  like the original; old runs and copies would only drift.
+- **To revert:** the agent-C commit "model: f_get.c whole-file TU".
+
 ### Host caches kept for the whole run replaced by frees at stage loads (12 Oct 2026, agent F)
 - **Dropped:** monster models cached per kind (em_kind_model), village NPC
   models, the common motion files (plcom / lbcom / selcom) and the NPC

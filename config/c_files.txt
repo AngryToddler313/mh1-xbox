@@ -12,7 +12,8 @@ game 0x0059A2C0 0x0059A674 em/em08_ai_r01
 # Functions must byte-match before they are listed here.
 main 0x00152030 0x00152044 pl/pl_stg_ck_tw
 main 0x0014FC20 0x0014FC38 pl/pl_master_ck
-main 0x00123A40 0x00123A60 clay/get_clay_ptr
+main 0x00121B70 0x001246D4 model/f_get
+main:rodata 0x00358480 0x00358498 model/f_get
 main 0x00171E90 0x00171EA0 fl/flmatSetTrans
 main 0x0016ABB0 0x0016ACC8 fl/fms
 main 0x001567C0 0x001569D8 set/set12
@@ -539,15 +540,6 @@ main 0x00120C80 0x00120F84 cp/cp02
 main 0x0011EBA0 0x0011EC20 load/lf01
 main 0x0011ED20 0x0011EF04 load/lf02
 main 0x0011EF90 0x0011F3EC load/lf03
-main 0x001235D0 0x00123728 model/hp01
-main 0x00123800 0x00123968 model/hp02
-main 0x00123A60 0x00123B98 model/hp03
-main 0x00123C80 0x00123DB8 model/hp04
-main 0x00121B70 0x00121F10 model/gm01
-main 0x00122E70 0x00122F38 model/gm02
-main 0x00123040 0x00123298 model/gm03
-main 0x00123310 0x00123388 model/gm04
-main 0x00123460 0x001234F8 model/gm05
 main 0x0010EC20 0x0010ED6C fade/fd01
 main 0x0010ED70 0x0010EDD8 fade/fd03
 main 0x0010EDE0 0x0010F044 fade/fd02
@@ -1489,11 +1481,9 @@ main 0x00154D00 0x00154D90 pl/pl_ammo
 main 0x0011F9E0 0x0011FA24 sys/ior01
 main 0x00163D20 0x00163E3C weapon/wtrans01
 main 0x0014EF60 0x0014EF94 pl/pl_flagck
-main 0x00122D50 0x00122E64 model/mkm01
 main 0x00159380 0x001593B8 pl/taru01
 main 0x0011E4C0 0x0011E540 model/light01
 main 0x0011E860 0x0011E904 model/light02
-main 0x00123C70 0x00123C80 model/light03
 main 0x00230060 0x002306BC net/cnmsg01
 main 0x002306C0 0x00230704 net/cnmsg02
 main 0x00230710 0x00230758 net/cnmsg03
@@ -1860,8 +1850,6 @@ lobby 0x005B3ED0 0x005B4330 b/lb_by151
 lobby:rodata 0x0065E6A0 0x0065E720 b/lb_by151
 lobby 0x005B4B20 0x005B4D2C b/lb_by152
 main 0x0011DE60 0x0011E278 model/light05
-main 0x00123F60 0x00124310 model/crmdl03
-main:rodata 0x00358480 0x00358498 model/crmdl03
 main 0x00121280 0x00121380 cp/cp03
 main 0x00134A40 0x00134C1C pl/plx09
 main 0x00113E50 0x00114280 hit/hite

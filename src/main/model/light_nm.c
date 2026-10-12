@@ -1,5 +1,5 @@
 /* light_nm - SLPM_654.95 0x0011DB04-0x0011E9D8 (light_init.s) small parts: light_set, light_change_normal, Pl_light_init,
-   release_tex_all; get_mdlw_ptr (0x00123C70). light_work: 2 sets of 0x140 bytes (3 lights of 0x68 starting at +0x18). Working file. */
+   release_tex_all (get_mdlw_ptr is matched in f_get.c). light_work: 2 sets of 0x140 bytes (3 lights of 0x68 starting at +0x18). Working file. */
 #include "types.h"
 #include "game.h"
 
@@ -13,10 +13,6 @@ void flSetRenderState(int, int);
 int flReleasePaletteHandle(u32);
 int flReleaseTextureHandle(u16);
 
-u8 *get_mdlw_ptr(int n) {
-    int a = (int)mdlw_heap_area;
-    return (u8 *)(a + (n << 7));
-}
 
 void light_set(int n) {
     u8 *p = light_work + n * 0x140 + 0x10;

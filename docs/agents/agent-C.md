@@ -1398,3 +1398,31 @@ placement of the literal-address lui/addiu and one inner-loop `andi` (r masked a
 quest_condition_prog: the stores in case -1 are emitted in SOURCE order by the original (sh x182, sb x06, sb D5, sh x184, sh x186, sb x181,
 each with its own `lui at`) while MWCC here groups the three sh stores first; casts through `(u8 *)&quest_w + off` or literal addresses did
 not fix it (not understood). No fresh rewrite was attempted beyond this; k_HitEmCamera untouched.
+
+## Round 21 (agent C, 12 Oct 2026: engine side of main)
+Start: main 42.150% (639224 bytes).
+### model/f_get.c (0x121B70-0x1246D4, whole original file, rebuild OK x5)
+- One TU in address order with the LOCAL symbols as statics. 34 of 41 functions are C matches; 7 are raw (get_start_* x4, pl_create_model,
+  weapon_create_model, armor_create_model) with their near-match C in the `#else`.
+- New matches and what did it:
+  - mkModel/mkModel3/mkModel4 (3.1 KB, fresh from m2c): K&R definitions with `u16 flags` (the callee masks with andi, callers pass raw ints);
+    the clay slot `h` is the SAME variable as the loop counter i (`i = get_start_clay(..); if (i >= 0) ... for (i = 0; ...)`), arrays declared
+    `u8 img[40]; int attr[20]; u8 frame[8];` (that order gives the original stack layout), `CLAY *c` declared after the ints,
+    `w->clay = (u8 *)(c = get_clay_ptr(i));` (assignment inside the store), `k = (flags & 0x100) / 256` (bgez/addiu 0xFF/sra).
+    mkModel4: amo declared last. load_enemy_sub_model-style K&R calls with stale registers do not appear here.
+  - Sethierarchy (127 -> 0): `amo = (int)((u8 *)amo + 0x128000);` reusing the parameter (`daddu s6,a0; addu s6,s6,at` in the prologue);
+    a separate `ahi` local or a plain `amo += 0x128000` gives other code (the int add is rematerialised at every use). `if (0 < w->num)`
+    (slt at,zero) instead of `w->num > 0` (blez).
+  - model_work_set2: the real parameter order is (idx, mat, tex, texlist, flags, skin, type) (getm_nm had skin/flags swapped);
+    `s16 tex` parameter + `load_texlist_pl(pl, (int)tex, 0, skin)` with an ANSI `(int *, s16, int, u16)` prototype.
+  - model_work_free: `release_texture(w->tex_start, (int)w->tex_n)` with an s16 prototype.
+    LESSON: `(int)x` of an s16 value passed to an s16 prototype makes MWCC re-extend (dsll32/dsra32) at the call; a plain s16 value does not.
+  - release_model: index form `clay[i].handle` (no pointer local).
+  - get_start_*: from 16 to 7 diffs: `#pragma opt_unroll_loops off` showed that the original sum loop is NOT unrolled because the counter
+    start is not a known constant: `j = sum = 0; for (; j < n; j++)` (exactly that; `sum = j = 0` unrolls), `break` + one `return pos` at the
+    end, `j = pos + n; if (j > SIZE)` (permuter). Left: register names of j and the compiler's pointer (a2/a3 swapped).
+- Parked (raw): pl_create_model (original loop unrolled 4x with a running block pointer, ours 8x with offsets; a do-while is not unrolled
+  at all), weapon_create_model (10: pl_area_top load scheduled before the slot sum), armor_create_model (register numbering only; declhill2
+  and all 24 orders of the four inits: nothing).
+- crmdl_nm.c em_create_model now matches (not yet linked at this point): no `kp` pointer local, write `g->em_kind[slot]` every time
+  (the compiler's CSE temp gets the original register); `load_enemy_sub_model()` is called with ONE argument (K&R, stale a1/a2).

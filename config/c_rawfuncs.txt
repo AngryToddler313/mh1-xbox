@@ -139,3 +139,10 @@ lobby 0x0059BD50 0x598 plaza_mailBoxTrans
 lobby 0x0059C330 0x328 plaza_setMyCommentTrans
 lobby 0x0059C750 0x548 plaza_setChatModeTrans
 lobby 0x0059D320 0x358 plaza_trans_ot0
+main 0x123500 0xD0 get_start_material
+main 0x123730 0xD0 get_start_hierarchy
+main 0x123970 0xD0 get_start_clay
+main 0x123BA0 0xD0 get_start_mdlw
+main 0x123DC0 0xA4 pl_create_model
+main 0x123E70 0xE8 weapon_create_model
+main 0x124310 0x3C4 armor_create_model
