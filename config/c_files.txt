@@ -1843,7 +1843,7 @@ lobby 0x005D22B0 0x005D25EC f/lb_fz03
 lobby 0x005CF700 0x005CFA44 f/lb_fz04
 lobby 0x005CF1C0 0x005CF5F8 f/lb_fz05
 lobby:rodata 0x00664CE0 0x00664D50 f/lb_tu_act
-main 0x001337A0 0x001338D8 menu/menu41
+main 0x001337A0 0x00133B40 menu/menu41
 lobby 0x005AF2C0 0x005AF42C b/lb_by159
 lobby 0x00539A90 0x00539E34 b/lb_by164
 lobby 0x005C3500 0x005C38C8 b/lb_by167
@@ -2040,7 +2040,7 @@ main 0x00249D20 0x0024A238 ime/imey
 main 0x0012A1D0 0x0012A26C menu/menu_dmon
 main 0x0012CCD0 0x0012D204 menu/menu_maru
 main 0x00130F50 0x0013127C menu/menu_gage
-main 0x00131C00 0x00131D48 menu/menu_gunmes
+main 0x001319D0 0x00131FA4 menu/menu_gunmes
 main 0x001313A0 0x0013157C menu/menu_slash
 main 0x00223870 0x00223978 cam/camarea_gnps
 main 0x0012B690 0x0012BC98 menu/menu_ftime

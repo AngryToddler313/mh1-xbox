@@ -1,5 +1,7 @@
-/* menu_gunmes - f_menu disp (SLPM_654.95 0x00131C00-0x00131D48): disp_gun_load_mess, the blinking "loading" text of
- * the bowguns. Matched by agent B (12 Oct 2026): the blink phase is a u32, the text position before the colour. */
+/* menu_gunmes - f_menu disp (SLPM_654.95 0x001319D0-0x00131FA4): disp_cannon (the bowgun clip icons; PLW field names,
+ * not byte offsets, so the loop does not keep field addresses), disp_gun_load_mess, the blinking "loading" text of
+ * the bowguns, and disp_menu, the pit menu frame (page title, blinking arrow). Matched by agent B (12 Oct 2026): the
+ * blink phases are u32, the text position before the colour; disp_menu keeps the page in s16 n / base / k. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -308,6 +310,56 @@ int Pl_shell_set(PLW *, u16, int);
 
 /* 0x12BCA0 */
 
+/* The bowgun ammo display: one icon per shot in the clip (loaded / empty), the loading messages. */
+void disp_cannon(void) {
+    PFLPS2 q;
+    PLW *pl;
+    f32 x;
+    u32 i;
+
+    pl = lpPit->pl;
+    if (pl->kind == 1 || pl->kind == 5) {
+        SetFilterMode(0);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        if (pl->work8BC == 0) {
+            if (pl->flag12 != 0 && (u16)Pl_shell_set(pl, pl->work88E, 1) != 0xFF) {
+                disp_gun_load_mess(2);
+            }
+            return;
+        }
+        if (lpPit->x2A != 0) {
+            x = 120.0f;
+            q.s[1] = 0x32;
+        } else {
+            x = 320.0f - 6.0f * (f32)pl->work01D;
+            q.s[1] = 0x123;
+        }
+        q.s[2] = 9;
+        q.s[3] = 0x14;
+        q.col = -1;
+        q.uv[1] = 0xEC;
+        q.uv[3] = 0xFF;
+        for (i = 0; i < pl->work01D; i++, x += 12.0f) {
+            if (i < pl->work01C) {
+                q.uv[0] = 0xCC;
+                q.uv[2] = 0xD8;
+            } else {
+                q.uv[0] = 0xE0;
+                q.uv[2] = 0xEC;
+            }
+            q.s[0] = 0.8f * x;
+            flps0008(&q);
+        }
+        if (pl->work01C <= 0 && pl->flag12 != 0) {
+            disp_gun_load_mess(0);
+        }
+        if (pl->char0 == 0x57C) {
+            disp_gun_load_mess(1);
+        }
+    }
+}
+
 /* The bowgun's "loading" message (row n of gun_load_mess), blinking with the system timer. */
 void disp_gun_load_mess(int n) {
     PFLPS2 q;
@@ -332,4 +384,52 @@ void disp_gun_load_mess(int n) {
     q.uv[2] = m[5];
     q.uv[3] = m[6];
     flps0008(&q);
+}
+
+/* The pit menu frame: page title (n of the five-item pages), the arrow blinking while the menu has the pad. */
+void disp_menu(int sw, PIT_W *p) {
+#ifdef __MWERKS__
+    char buf[32];
+#else
+    char buf[48];   /* PC: the title " ~C05menu  ~C00%01d/..." with its colour codes */
+#endif
+    s16 n;
+    s16 k;
+    u32 col;
+    s16 base;
+    u32 v;
+
+    if (game_w.x1DC != 0) {
+        func_5B4B20(sw);
+        return;
+    }
+    n = lpPit->x41 / 5;
+    base = n * 5;
+    SetTrnslMode(4, 5);
+    if (n == 0) {
+        *(void **)(pfl_menu + 0xC) = menu_str_002EF860;
+    } else {
+        k = 1;
+        if (Online_ck() == 0) {
+            k++;
+        }
+        if (Game_clear_ck(0) == 1) {
+            k += 2;
+        }
+        *(void **)(pfl_menu + 0xC) = menu_str_002EF860 + k * 0x14;
+    }
+    if ((s8)sw == 0) {
+        v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        *(u32 *)(pfl_menu + 0x10) = 0xA9182;
+        col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xAF) << 8) | 0xF0200020;
+    } else {
+        *(u32 *)(pfl_menu + 0x10) = 0x808080;
+        col = 0xA0207020;
+    }
+    sprintf(buf, (char *)lit_4454_0035A600, n + 1);
+    DispFrameList(pfl_menu, buf, lpPit->x41 - base);
+    DispFrameListOptionArrowC(pfl_menu, col);
+    if (Online_ck() == 1 && (s8)sw == 0) {
+        Disp_name_or_id(0xD1);
+    }
 }

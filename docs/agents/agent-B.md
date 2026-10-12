@@ -1171,3 +1171,9 @@ camp/bar_disp (bar_disp: control flow fixed, parameter registers g/sel swapped),
 load register and branch-threading of the inner if/else), spr_disp_sub (36 with channel order c3, c2, c0, c1),
 Quest_next_em_set (12), Em_hagi_point_cnt_ck (20), remuneration_item_set (24), em_dur_set (2), pl_dm003 / pl_dm008 /
 pl_mv021 (the default-block a0 reload).
+- menu_gunmes.c now also holds disp_cannon, disp_gun_load_mess and disp_menu (0x1319D0-0x131FA4); menu41.c gained
+  disp_option (to 0x133B40). Their near-match copies left menu_disp_nm.c. main 43.603%.
+- Parked (10-minute cap): disp_item_icon (69 lines: the original adds id*16 to the `Item_data + 5` constant and passes
+  that pointer to Item_valid_chk; neither the u8 [][16] nor a struct-array declaration of Item_data reproduced it),
+  disp_pl_vital (85 with `col` reused for the sine angle, from the permuter; the rest is s-register allocation of the
+  GAGE field pointers), load_shadow (2: dsra32 order of the m / i+0x127 arguments; 8 spellings tried), Pit_mv_lb (2).

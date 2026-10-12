@@ -1,4 +1,6 @@
-/* menu41 - SLPM_654.95 0x001337A0-0x001338D8: Pit_disp_menu_equipment (equipment page of the pit menu: cursor bar with pulsing alpha, then the description window). Names are guesses. */
+/* menu41 - SLPM_654.95 0x001337A0-0x00133B40: Pit_disp_menu_equipment (equipment page of the pit menu: cursor bar with
+   pulsing alpha, then the description window) and disp_option (the options page; matched by agent B: the page value read
+   once, y / i / vals stepped in the for header in the original order, q.s[2], q.s[1], q.s[3]). Names are guesses. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -373,4 +375,45 @@ void Pit_disp_menu_equipment(void) {
     q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xBF) << 24) | 0xA9182;
     flps0004(&q);
     EquipmentDescriptionWindow(e, 0x132, 0x12A, lpPit->x44, 0);
+}
+
+/* The options page of the pit menu: the five option values (map disabled online) and the blinking cursor. */
+void disp_option(void) {
+    PFLPS2 q;
+    s16 i;
+    int y;
+    u8 *vals;
+    u32 v;
+    int n;
+
+    SetTrnslMode(4, 5);
+    n = lpPit->x88;
+    *(void **)(pfl_option + 0xC) = option_list_str + n * 0x14;
+    DispFrameList(pfl_option, lit_5054, -1, n);
+    font_set_palette(5);
+    for (y = 0x54, i = 0, vals = option_val_str; i < 5; y = (s16)(y + 0x16), vals += 0xC, i++) {
+        flfntLocate(0x208, y);
+        if (lpPit->x88 == 0 || i != 1) {
+            font_print_uf(*(void **)(vals + ((u8 *)lpPit)[i + 0x88] * 4));
+        } else {
+            font_print_sp(opt_map_invalid_str);
+        }
+    }
+    q.s[2] = 0xE;
+    q.s[1] = lpPit->x43 * 0x16 + 0x54;
+    q.s[3] = 0x12;
+    if (lpPit->x88 == 0 || lpPit->x43 != 1) {
+        v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xAF) << 8) | 0xF0200020;
+    } else {
+        q.col = 0xF0707070;
+    }
+    q.s[0] = 0x192;
+    *(u32 *)&q.uv[0] = 0x1A00A6;
+    *(u32 *)&q.uv[2] = 0x2E0094;
+    flps0008(&q);
+    q.s[0] = 0x1DC;
+    q.uv[0] = 0x94;
+    q.uv[2] = 0xA6;
+    flps0008(&q);
 }
