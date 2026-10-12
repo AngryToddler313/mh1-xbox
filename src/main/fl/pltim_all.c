@@ -302,32 +302,23 @@ static u32 InputTim2AlignRegulation(u8 *p, u32 size) {
     return size;
 }
 
-/* original bytes: build/raw/GetTim2PictureHead.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-static asm u8 * GetTim2PictureHead(u8 *q, int n)
-{
-#include "GetTim2PictureHead.inc"
-}
-#else
 static u8 *GetTim2PictureHead(u8 *q, int n) {
+    int i;
     u8 *p = q;
     u8 *r;
-    int i;
 
     q += InputTim2AlignRegulation(q, 0x10);
     r = q;
-    if (n > 0) {
-        for (i = 0; i < *(u16 *)(p + 6); ) {
-            q += InputTim2AlignRegulation(p, 0x30);
-            q += *(u32 *)r;
-            i++;
-            r = q;
-            if (!(i < n)) break;
+    for (i = 0; i < n; i++) {
+        if (i >= *(u16 *)(p + 6)) {
+            break;
         }
+        q += InputTim2AlignRegulation(p, 0x30);
+        q += *(u32 *)r;
+        r = q;
     }
     return r;
 }
-#endif
 
 /* original bytes: build/raw/GetTim2PictureData.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__

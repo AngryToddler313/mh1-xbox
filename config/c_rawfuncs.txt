@@ -70,7 +70,6 @@ main 0x1926B0 0x718 ConvertModelMeshAMO_WeightModel
 main 0x190370 0x5c plGetInitMotionSetSizeFromAHI
 main 0x1903D0 0x228 plCreateInitMotionSetFromAHI
 main 0x193B20 0xd0 CheckTIM2FileHeader
-main 0x193C50 0x78 GetTim2PictureHead
 main 0x193CD0 0x190 GetTim2PictureData
 main 0x193E60 0x8c GetTim2ClutData
 main 0x193FF0 0x200 plMemmove

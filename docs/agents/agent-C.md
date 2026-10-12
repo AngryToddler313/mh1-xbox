@@ -1446,3 +1446,7 @@ Start: main 42.150% (639224 bytes).
   in source order; matched first try.
 - release_enemy_model (still in crmdl_nm.c, 73/90): K&R `s16 slot` keeps the raw a0 for em_motion_free(slot); the original does not
   CSE `slot * 2` between the two halves (mine does, one extra saved register). Not solved.
+### fl/pltim_all.c: GetTim2PictureHead matches (was raw, 30 lines off)
+- `for (i = 0; i < n; i++) { if (i >= num) break; q += align(p, 0x30); q += *(u32 *)r; r = q; } return r;` with the locals declared
+  `int i; u8 *p = q; u8 *r;` (that order). GetTim2ClutData (2: an extra `b` before the return-0 block) and CheckTIM2FileHeader (the
+  original keeps the dead CLT2 compare chain; every if/else/goto/switch shape tried) stay raw.
