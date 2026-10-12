@@ -1549,7 +1549,7 @@ segments:
       - [0x13BE10, asm, text/sceUsbKbInit]
       - [0x13C698, asm, text/f_setresult]
       - [0x13D218, asm, text/g_sceUsbKbSetReadMode]
-      - [0x13D370, asm, text/f_usbkbdm]
+      - [0x13D370, c, pad/usbkbdm]
       - [0x13D870, asm, text/f_npc]
       - [0x13DAB0, c, npc/npcb]
       - [0x13DEA8, asm, text/npc_move]

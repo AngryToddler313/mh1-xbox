@@ -1505,3 +1505,8 @@ Start: main 42.150% (639224 bytes).
   (the `(by * 16) << 6` keeps by*16 as its own induction register). Not linked on PC.
 - Parked: Conv4to32/Conv8to32 (28 lines, d and the stride register swap; declhill2 order kept), BlockConv8to32 (the
   original steps e after every pair: no C form found that stops MWCC merging the steps), BlockConv4to32.
+### pad/usbkbdm.c: f_usbkbdm (0x23D370-0x23D870) all 9 functions match, written fresh from the asm
+- USB keyboard step machine over Sony's usbkb library. Data (usbkbdm_init_tbl etc.) stays extern (asm data).
+- `return info.status[port] == 0 ? -1 : 0;` gives the xor/sltiu/negu form; `-(x == 0)` does not.
+- pds_kdt is 12 bytes {mkey, led, key[6], kinfo}: the original writes a 7th key code at +8, over kinfo's low byte
+  (kinfo is stored first). Kept as written (key[6]). Not linked on PC (the PC has no USB keyboard path).
