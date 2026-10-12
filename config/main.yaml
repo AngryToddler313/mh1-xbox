@@ -719,6 +719,8 @@ segments:
       - [0x08B3B0, c, fl/vr01]
       - [0x08BD90, c, fl/flsys02]
       - [0x08C304, asm, text/flPS2InitRenderBuff]
+      - [0x08CF00, c, fl/flswap]
+      - [0x08D5F0, asm, text/flPS2DrawPreparation]
       - [0x08D790, c, fl/fllog01]
       - [0x08D874, asm, text/g_flInitPhaseStarted]
       - [0x08D880, c, fl/fm02]

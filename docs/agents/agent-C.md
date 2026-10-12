@@ -1536,3 +1536,8 @@ Start: main 42.150% (639224 bytes).
   long, s16 w, s16 h)` (s16 w: the lh value goes straight to t3; long/int made MWCC re-extend it);
   `c->base = t->x2C = t->sysmem == 0 ? mflTemporaryUse(..) : flPS2GetSystemBuffAdrs(..);` (chained, no reload);
   `PLCTX s; u8 *dst; u8 *src;` order. The four lock modes repeat the format switch (written out, generated).
+### fl/flswap.c: flPS2SwapDBuff (1772 bytes) matches, written from the asm
+- GS privileged registers through Sony-style macros; the casts inside the macros decide the code: DISPFB needs
+  `(long)(fbw) << 9` (fbw = flWidth / 64; u64 schedules the fbp part first), DISPLAY needs `(long)(dx)` with the
+  rest u64. `dx = x3B4 + (u32)x3BC * (u32)x14` (u32 operands give the original load order).
+- intr == 0 means "called from the vsync interrupt": iFlushCache.
