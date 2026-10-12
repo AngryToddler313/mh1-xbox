@@ -62,7 +62,9 @@ typedef struct STGW {
     s16 x38;            /* 0x38 start mdlw index (st_model_load) */
     u8 _pad3A[2];
     struct STG_MDLS *mdls; /* 0x3C stage model set (flag byte at +0, count s16 at +0x2C, CLAY array at +0x30) */
-    u8 _pad40[0x64 - 0x40];
+    u8 _pad40[0x48 - 0x40];
+    u8 *x48;            /* 0x48 stage data: f32 floor height at +0x1C (f_sphr GetGroundHitArea outside the hit grid) */
+    u8 _pad4C[0x64 - 0x4C];
 } STGW;
 extern STGW stage_work;
 extern u8 Plsel_task[];
