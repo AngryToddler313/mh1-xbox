@@ -48,5 +48,10 @@ int pad_script_set(const char *script);
 int pad_combo_held(void);       /* Back + Start held on the controller (in-game bug report) */
 /* Next tick of the script into p; 0 once the script has ended (p idle). */
 int pad_script_next(pad_state *p);
+/* "@villageN" / "@questN" in a script: idle until the N-th village entry / quest start of the
+ * run (counted by the host through pad_script_event): loops of a soak run stay in step with
+ * the game even when a quest takes a few ticks more or less (tools/mk_soak.py). */
+enum { PAD_EV_VILLAGE, PAD_EV_QUEST, PAD_EV_N };
+void pad_script_event(int ev);
 
 #endif

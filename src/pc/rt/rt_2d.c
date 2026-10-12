@@ -31,8 +31,9 @@
 #define SCR_H 448
 
 /* ------------------------------------------------------------ textures */
+extern u32 mem_tex[];           /* the game's texture slots (0x159 handles) */
 #define TEX_MAX 1024
-static struct { gfx_texture *t; int w, h; } tex[TEX_MAX];
+static struct { gfx_texture *t; int w, h, used; } tex[TEX_MAX];
 static int ntex = 1;
 static int cur_tex;
 
@@ -41,10 +42,13 @@ void *flCreateTextureFromApx_mem(void *p, int type)
 {
     apx_image img;
     fmt_blob b;
+    int h;
     (void)type;
     b.p = p;
     b.n = *(u32 *)p;            /* +0: total size */
-    if (ntex >= TEX_MAX || fmt_apx_decode(&img, b, FMT_LE) != 0) {
+    for (h = 1; h < ntex && tex[h].used; h++)     /* a handle rt_2d_gc freed, else a new one */
+        ;
+    if (h >= TEX_MAX || fmt_apx_decode(&img, b, FMT_LE) != 0) {
         if (getenv("RT_TRACE"))
             fprintf(stderr, "rt_2d: APX not decoded (size %u)\n", (unsigned)b.n);
         return 0;
@@ -61,11 +65,41 @@ void *flCreateTextureFromApx_mem(void *p, int type)
         }
     }
     gfx_tex_src_hint = img.src_bytes;
-    tex[ntex].t = gfx_create_texture(img.w, img.h, img.rgba);
-    tex[ntex].w = img.w;
-    tex[ntex].h = img.h;
+    tex[h].t = gfx_create_texture(img.w, img.h, img.rgba);
+    tex[h].w = img.w;
+    tex[h].h = img.h;
+    tex[h].used = 1;
     free(img.rgba);
-    return (void *)(uintptr_t)ntex++;
+    if (h == ntex)
+        ntex++;
+    return (void *)(uintptr_t)h;
+}
+
+/* Textures no mem_tex slot holds any more, freed (at each stage load, rt_flow.c). The game
+ * keeps every 2D texture handle in mem_tex (load_texlist, mkTexture, mkmapTexture) and on
+ * the PS2 releases a slot's texture (release_texture, Lbc_release, all_reset) before it
+ * loads the next one there; those releases are stand-ins here, so each quest and village
+ * visit left its HUD/map textures behind (10 a loop, ~0.8 MB of the Xbox's memory; after
+ * ~100 loops the table would have been full). */
+void rt_2d_gc(void)
+{
+    static u8 mark[TEX_MAX];
+    int i, freed = 0;
+    memset(mark, 0, sizeof mark);
+    for (i = 0; i < 0x159; i++)
+        if ((mem_tex[i] & 0xFFFF) < TEX_MAX)
+            mark[mem_tex[i] & 0xFFFF] = 1;
+    for (i = 1; i < ntex; i++)
+        if (tex[i].used && !mark[i]) {
+            if (tex[i].t)
+                gfx_release_texture(tex[i].t);
+            memset(&tex[i], 0, sizeof tex[i]);
+            if (cur_tex == i)
+                cur_tex = 0;
+            freed++;
+        }
+    if (freed && getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_2d: %d textures no mem_tex slot holds freed\n", freed);
 }
 
 /* flSetRenderState(4, handle): the current texture (rt_fl.c routes it) */
@@ -100,7 +134,6 @@ void rt_2d_init(void)
 }
 
 extern u8 game_w[];
-extern u32 mem_tex[];
 extern s32 PIT_TEX[];
 void mkmapTexture(int a, int stage, int idx, int type);
 int load_file_mdl(void *dst, int id);

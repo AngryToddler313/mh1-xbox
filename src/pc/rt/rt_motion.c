@@ -117,6 +117,28 @@ static void mset_free(int h)
     msets[h - 1].used = 0;
 }
 
+/* 1 when a live motion set reads its keys from [p, p + n) (a motion file: the sets point into it,
+ * so the file can go only after rt_motion_gc freed them all) */
+int rt_motion_refs(const void *p, size_t n)
+{
+    const uint8_t *lo = p, *hi = lo + n;
+    int h, b, c;
+    for (h = 0; h < nmsets; h++) {
+        const aan_motion *m = &msets[h].m;
+        if (!msets[h].used)
+            continue;
+        for (b = 0; b < m->nbone; b++)
+            for (c = 0; c < m->ncurve[b]; c++)
+                if (m->curve[b][c].keys) {
+                    if (m->curve[b][c].keys >= lo && m->curve[b][c].keys < hi)
+                        return 1;
+                    goto next;          /* all keys of a set come from one file */
+                }
+    next:;
+    }
+    return 0;
+}
+
 /* ------------------------------------------------------------ players */
 typedef struct RT_MPLAY {
     u8 _pad00[0xD0];
@@ -221,9 +243,28 @@ typedef struct {
     u8 skl[RT_NODE_MAX * RT_NODE_SIZE];
 } rt_actor_motion;
 
+/* A model's part of motion_set_handle_tbl emptied before create_*_motion fills it again: the
+ * new file may hold fewer motions than the last one (the quest's plcom and the village's
+ * lbcom, a Rathian's slot taken by an Aptonoth), and the entries past its end would keep the
+ * old sets reachable for rt_motion_gc, and their files loaded. On the PS2 those old sets
+ * were released before (all_motion_free, em_motion_free: stand-ins here). Regions: common
+ * 0..499, player n 500 + 300n, monster model slot n 1700 + 600n (create_*_motion). */
+static void tbl_clear(int first, int n)
+{
+    memset(&motion_set_handle_tbl[first], 0, (size_t)n * sizeof motion_set_handle_tbl[0]);
+}
+
+/* the monster and NPC model slots' motions released: the village's NPCs when a quest starts,
+ * the quest's monsters when the village begins (the game creates its own again) */
+void rt_motion_em_release(void)
+{
+    tbl_clear(1700, 4 * 600);
+}
+
 void rt_motion_load_plcom(const uint8_t *tbl)
 {
     pl_area_top = (u8 *)tbl;
+    tbl_clear(0, 500);
     create_plcom_motion();
 }
 
@@ -232,6 +273,8 @@ void create_pl_motion(int pl);
 void rt_motion_load_pl(int no, const uint8_t *tbl)
 {
     pl_area_top = (u8 *)tbl;
+    if (no >= 0 && no < 4)
+        tbl_clear(500 + 300 * no, 300);
     create_pl_motion(no);
 }
 
@@ -406,6 +449,8 @@ void create_em_motion(int no, int em);
 void rt_em_motion_create(int slot, int kind, const uint8_t *tbl)
 {
     pl_area_top = (u8 *)tbl;
+    if (slot >= 0 && slot < 4)
+        tbl_clear(1700 + 600 * slot, 600);
     create_em_motion(slot, kind);
 }
 
@@ -414,8 +459,7 @@ void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, c
     EMW *em = &em_work[no];
     FRW *w = (FRW *)em;
     int g;
-    pl_area_top = (u8 *)tbl;
-    create_em_motion(mdl_no, kind);
+    rt_em_motion_create(mdl_no, kind, tbl);
     if (!w->mdl)
         rt_motion_attach(em);
     w->x10 = 1;                 /* not a player: em_mot_han_ofs path */
@@ -506,17 +550,20 @@ void rt_motion_gc(void)
             mark[motion_set_handle_tbl[i]] = 1;
     for (k = 0; k < 28; k++) {
         rt_actor_motion *am = k < 8 ? pl_am[k] : em_am[k - 8];
+        const FRW *w = k < 8 ? (const FRW *)&player_work[k] : (const FRW *)&em_work[k - 8];
         const RT_MPLAY *mp[2];
         int j;
-        if (!am)
-            continue;
+        if (!am || !w->be_flag || w->mdl != &am->mdl)
+            continue;       /* a hunter / monster / NPC work not in use: its motion player is set again before it plays */
         mp[0] = (const RT_MPLAY *)&am->mot0;
         mp[1] = (const RT_MPLAY *)&am->mot1;
         for (j = 0; j < 2; j++)
             for (g = 0; g < 4; g++) {
+                if (j == 1 && !w->mt[g].b_dir && !w->sub_on[g])
+                    continue;   /* mot1 plays only while a layer blends (frame_move); frame_init sets it first */
                 if (mp[j]->set[g] && (int)mp[j]->set[g] <= nmsets)
                     mark[mp[j]->set[g]] = 1;
-                if (mp[j]->bset[g] && (int)mp[j]->bset[g] <= nmsets)
+                if (mp[j]->blend[g] && mp[j]->bset[g] && (int)mp[j]->bset[g] <= nmsets)     /* bset: only while it is mixed in */
                     mark[mp[j]->bset[g]] = 1;
             }
     }

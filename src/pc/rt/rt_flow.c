@@ -127,12 +127,16 @@ int rt_flow_tick(void)
  * done at once. */
 static int (*stage_loader)(int);
 void rt_motion_gc(void);
+void rt_2d_gc(void);
+void rt_village_files_gc(void);
 void rt_set_stage_loader(int (*fn)(int)) { stage_loader = fn; }
 void st_model_load(int stage)
 {
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "rt_flow: st_model_load(%d)\n", stage);
     rt_motion_gc();         /* the last stage's motion sets (rt_motion.c) */
+    rt_2d_gc();             /* and its 2D textures (rt_2d.c) */
+    rt_village_files_gc();  /* motion files no set reads any more (rt_village.c) */
     if (stage_loader)
         stage_loader(stage);
 }

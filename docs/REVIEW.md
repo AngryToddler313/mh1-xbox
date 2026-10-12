@@ -12,6 +12,31 @@ obvious workarounds.
 
 ## Open
 
+### Host caches kept for the whole run replaced by frees at stage loads (12 Oct 2026, agent F)
+- **Dropped:** monster models cached per kind (em_kind_model), village NPC
+  models, the common motion files (plcom / lbcom / selcom) and the NPC
+  motion files (com_motion_load / em_motion_load), the hunter's own plcom
+  copy and every 2D texture (flCreateTextureFromApx_mem) stayed loaded until
+  the program ended. The player's weapon motions were made once at start-up.
+- **Now:** at each stage load (st_model_load, load_stage_models) the host
+  frees what nothing refers to any more and loads it again when the game
+  asks (as the PS2 does): rt_2d_gc (2D textures no mem_tex slot holds),
+  rt_village_files_gc (motion files no live motion set reads),
+  host_models_gc (monster kinds with no em_work entry and no live motion set,
+  NPC models outside the village). The motion table's part for a model is
+  emptied before create_*_motion fills it again; rt_motion_gc no longer
+  counts motion players of unused works, mot1 outside a blend, or a bset not
+  mixed in. The weapon motions (wNN_tbl) are made again at every quest start.
+- **Why:** free memory on the Xbox fell ~1.5 MB a quest loop (xemu: 9.9 MB
+  in the village before the first quest, 6.1 MB after it) and the 2D texture
+  table would have filled after ~100 loops. Also the village's lbcom motions
+  run past the common part of the motion table into the hunter's weapon
+  entries (500-521), so later quests played lbcom motions there.
+- **Cost / to watch:** monster / NPC / motion files are read again on area
+  changes (e.g. the camp's Aptonoth each time the hunter comes back): more
+  disc reads on the Xbox. A motion handle kept somewhere the GC does not look
+  would now point at a freed set (mset_get returns NULL: no pose).
+
 ### Viewer: catching up every lost tick dropped (12 Oct 2026, agent F)
 - **Dropped:** in real-time runs the viewer ran every game tick it was behind
   the clock before drawing the next frame.

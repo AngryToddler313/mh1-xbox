@@ -156,6 +156,24 @@ void rt_ms_add(const char *cat, long bytes)
         cats[c].peak = cats[c].cur;
 }
 
+/* RT_MEM on: the tracked CPU heap and the textures as the Xbox keeps them, in KB (stage-change log lines); 0 when off */
+int rt_ms_totals(long *heap_kb, long *tex_kb)
+{
+    int i;
+    *heap_kb = *tex_kb = 0;
+    if (!on())
+        return 0;
+    for (i = 0; i < NCAT && cats[i].name; i++) {
+        if (!strstr(cats[i].name, "GPU)"))
+            *heap_kb += cats[i].cur;
+        else if (strstr(cats[i].name, "Xbox keeps") || strstr(cats[i].name, "P8 or RGBA8"))
+            *tex_kb += cats[i].cur;
+    }
+    *heap_kb /= 1024;
+    *tex_kb /= 1024;
+    return 1;
+}
+
 void rt_ms_report(const char *where)
 {
     long tot = 0, vm = 0, rss = 0;

@@ -42,6 +42,7 @@ extern u8 Battle_type[];
 extern u8 User_data[];
 
 #define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
+static int pl_ticks, quest_base;    /* player ticks of the run; at the current quest's start (aid_tick) */
 
 /* Weapon: Ken_data id (sword type 6) or Gun_data id (type 7). Default:
  * Ken 156, the first sword-and-shield (job 4) in the table. RT_WEAPON=id
@@ -64,6 +65,12 @@ void rt_player_game_init(int no)
     PF(User_data, u8, 0x3CD) = (u8)type;
     PF(User_data, u16, 0x3CE) = (u16)wid;
     game_w.pl_state[no] = 1;
+    if (getenv("RT_AID_PER_QUEST"))
+        quest_base = pl_ticks;
+    /* init_pl_work clears each player work (memset 0xA00) before a quest; the host keeps its own
+     * fields in it, so only the delivery stock is cleared here: with the last quest's items still
+     * in PLW+0x8F4 a second delivery quest in one session was cleared at once (Share_item_num_ck) */
+    memset(pl->share, 0, sizeof pl->share);
 #ifdef MH1_ONLINE
     {   /* co-op (rt_np.c): the session's slots, as init_pl_work sets them up online */
         void rt_np_init_slots(void);
@@ -119,8 +126,10 @@ int rt_player_job(int no)
 /* test aids RT_PL_AIM / RT_PL_WARP_EM / RT_DMG_MUL work on monster slot 0,
  * or on the slot RT_PL_TARGET="tick:slot,tick:slot,..." names from that
  * player tick on */
-static int pl_ticks;
 int rt_tick_count(void) { return pl_ticks; }
+/* the tick the test aids count: player ticks of the run, or with RT_AID_PER_QUEST=1 of the
+ * current quest (from rt_player_game_init), so the same aids repeat in every quest of a soak */
+static int aid_tick(void) { return pl_ticks - quest_base; }
 int rt_test_target(void)
 {
     const char *s = getenv("RT_PL_TARGET");
@@ -159,7 +168,7 @@ int rt_test_target(void)
     }
     while (s && *s) {
         int t, n;
-        if (sscanf(s, "%d:%d", &t, &n) == 2 && pl_ticks >= t)
+        if (sscanf(s, "%d:%d", &t, &n) == 2 && aid_tick() >= t)
             slot = n;
         s = strchr(s, ',');
         if (s)
@@ -189,7 +198,7 @@ void rt_player_tick(int no)
         const char *s = getenv("RT_PL_WARP_EM");
         u8 *tg = em_work + 0xA10 * rt_test_target();
         int hit = 0;
-        tk++;
+        tk = aid_tick();
         for (; *s; s++) {       /* "t" or a range "t1-t2" (every tick in it) */
             int a = atoi(s), b = a;
             const char *dash = strchr(s, '-'), *comma = strchr(s, ',');
@@ -268,7 +277,7 @@ void rt_player_tick(int no)
         static int tk;
         int t, id, n, k, have = 0, slot = -1;
         PLW *p = &player_work[no];
-        tk++;
+        tk = aid_tick();
         if (sscanf(getenv("RT_PL_ITEMS_MIN"), "%d:%i:%i", &t, &id, &n) == 3 && tk == t) {
             for (k = 0; k < 20 && slot < 0; k++)            /* the slot that holds it, else the first empty one */
                 if (PF(p, s16, 0x828 + 4 * k) == id) {
@@ -289,7 +298,7 @@ void rt_player_tick(int no)
     if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[,ang][;...]": put the hunter at x,z (same height), facing ang (hex) at those player ticks */
         static int tk;
         const char *s = getenv("RT_PL_WARP");
-        tk++;
+        tk = aid_tick();
         while (s && *s) {
             int t = 0;
             unsigned a;
@@ -313,7 +322,7 @@ void rt_player_tick(int no)
                                      * first Lao-Shan Lung (kind 7) on his stage, 20 above its centre; em_ride_sub then starts the ride */
         static int tk;
         int t0 = 0, qn = 0, i;
-        tk++;
+        tk = aid_tick();
         sscanf(getenv("RT_PL_RIDE"), "%d,%d", &t0, &qn);
         if (tk == t0) {
             extern u8 em_work[];
@@ -353,7 +362,7 @@ void rt_player_tick(int no)
         static int tk, last;
         int t0 = 0, goal = -1;
         PLW *p = &player_work[no];
-        tk++;
+        tk = aid_tick();
         int goto2_active = 0;
         sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
         if (getenv("RT_PL_GOTO2")) {        /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp) */
@@ -473,7 +482,7 @@ void rt_player_tick(int no)
         static int tk;
         void Pl_die_set(PLW *pl);
         const char *s = getenv("RT_PL_DIE");
-        tk++;
+        tk = aid_tick();
         while (*s) {
             if (atoi(s) == tk) {
                 fprintf(stderr, "rt_player: tick %d faint (Pl_die_set)\n", tk);
@@ -489,7 +498,7 @@ void rt_player_tick(int no)
     if (getenv("RT_PL_HP")) {       /* test aid: "t:hp,t:hp": the hunter's vital (+0x302) set at those player ticks */
         static int tk;
         const char *s = getenv("RT_PL_HP");
-        tk++;
+        tk = aid_tick();
         while (*s) {
             int t = atoi(s), v = 0;
             while (*s && *s != ':')
@@ -510,7 +519,7 @@ void rt_player_tick(int no)
         static int tk;
         const char *s = getenv("RT_PL_POKE");
         int t, off, v, used;
-        tk++;
+        tk = aid_tick();
         while (sscanf(s, "%d:%x:%i%n", &t, &off, &v, &used) == 3) {
             if (t == tk)
                 PF(&player_work[no], s16, off) = (s16)v;

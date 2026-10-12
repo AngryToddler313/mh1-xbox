@@ -18,7 +18,8 @@ Build and check, in this order, after any change (all headless):
   `test_name_entry`, `test_movie`, `test_frog`, `test_all_quests` (every offline quest, ~1.5 min),
   `test_audio`, `test_log`, `test_activities` (gathering, fishing, carving, shops, materials, tail cuts,
   a long fight...), `test_pick` (F8 reporter), `test_save` / `test_save_import` (PS2 saves), `test_menu`
-  (F10 settings; needs test_quest_loop's save). All are `tools/<name>.sh`; each prints one OK / FAIL
+  (F10 settings; needs test_quest_loop's save), `test_soak [LOOPS]` (memory over several village -> quest
+  loops in one run, RT_MEM; ~25 s a loop; `tools/xemu_soak.sh` does the same in xemu). All are `tools/<name>.sh`; each prints one OK / FAIL
   summary (test_activities and test_all_quests one line per case) `RUN=wine BIN=build/win/mhview.exe`
   runs test_log and test_quest_loop on the Windows build.
 - Online (ONLINE=1 build): `tools/test_online.sh`, `tools/test_online_town.sh`, `tools/test_coop.sh [N]`
@@ -228,7 +229,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--stage N` | stage number (game_w.stage, 0-87, hex with 0x), default 4 |
 | `--quest N` | load quest N's mission file (questName[N], 1-0xB1) and start the hunt as the game does: on the quest's start stage (base camp; quest 10: stage 21, the Rathian in her nest on stage 40), the supply box filled. `RT_QUEST_STAGE=1` starts on the stage of the quest's own monster instead (scripted fight tests); `--stage` overrides both |
 | `--play` | the pad (controller + keyboard) drives the hunter; follow camera |
-| `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h |
+| `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h; `@villageN` / `@questN` wait (idle) until the N-th village entry / quest start of the run |
 | `--follow D,H,P` | `--play` camera: distance D behind, H above the hunter, pitch P (default 900,450,-0.3); the yaw is `--cam`'s |
 | `--audio-dump FILE.wav` | no audio device; mix 1/30 s per game tick into a 48 kHz stereo wav (for checking sound offscreen) |
 | `--mute` | no sound at all |
@@ -854,7 +855,7 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   `RT_FONT_TRACE=1` (each text drawn), `RT_TEX_TRACE=1`,
   `RT_TEX_DUMP=dir` (raw RGBA of every 2D texture), `RT_EM_HP=n` (monster
   0's hit points), `RT_PL_WARP_EM=tick` (put the hunter at monster 0 at
-  that tick), `RT_PL_ITEMS="id:n,..."` (pouch; no save data), `RT_PL_ITEMS_MIN="tick:id:n"` (at that player tick, top the pouch up to n of item id when it holds fewer: test_quest_loop's delivery does not depend on its carve rolls),
+  that tick), `RT_PL_ITEMS="id:n,..."` (pouch; no save data), `RT_PL_ITEMS_MIN="tick:id:n"` (at that player tick, top the pouch up to n of item id when it holds fewer: test_quest_loop's delivery does not depend on its carve rolls), `RT_AID_PER_QUEST=1` (the RT_PL_* aids count player ticks from each quest's start instead of the run's: one set of aids repeats in every quest, tools/mk_soak.py),
   `RT_PL_GOD` also clears the stun gauge.
 - Verified 6 Oct 2026 (quest 10, scripted --input, traces + shots in
   build/show/A/quest/): HUD with items (hud_items.png); kill with

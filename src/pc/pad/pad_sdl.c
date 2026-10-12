@@ -145,6 +145,8 @@ void pad_read(pad_state *p, int keyboard)
 /* steps grow as needed (a recorded session of the bug reporter has thousands) */
 static pad_state *steps;
 static int *ticks, nsteps, capsteps, cur, left;
+static int *waits;                      /* per step: 0, or (event + 1) << 16 | n for "@villageN" / "@questN" */
+static int ev_count[PAD_EV_N];          /* village entries / quest starts so far (pad_script_event) */
 
 static int name_to(const char *n, size_t len, pad_state *p)
 {
@@ -191,7 +193,20 @@ int pad_script_set(const char *s)
             capsteps = capsteps ? capsteps * 2 : 512;
             steps = (pad_state *)realloc(steps, (size_t)capsteps * sizeof *steps);
             ticks = (int *)realloc(ticks, (size_t)capsteps * sizeof *ticks);
+            waits = (int *)realloc(waits, (size_t)capsteps * sizeof *waits);
         }
+        waits[nsteps] = 0;
+        if (*e == '@') {            /* "@villageN" / "@questN": idle until the N-th village entry / quest start of the run */
+            static const char *const ev[PAD_EV_N] = { "village", "quest" };
+            int k, n = 0, used = 0;
+            for (k = 0; k < PAD_EV_N; k++)
+                if (!strncmp(e + 1, ev[k], strlen(ev[k])))
+                    break;
+            if (k == PAD_EV_N || sscanf(e + 1 + strlen(ev[k]), "%d%n", &n, &used) != 1 || n <= 0)
+                return 0;
+            waits[nsteps] = (k + 1) << 16 | n;
+            e += 1 + strlen(ev[k]) + used;
+        } else
         if (*e == 'x') {            /* a recorded state: xBITS:lx:ly:rx:ry (hex bits), see rt_pick.c */
             unsigned b;
             int n = 0;
@@ -225,9 +240,24 @@ int pad_script_set(const char *s)
     return 1;
 }
 
+void pad_script_event(int ev)
+{
+    if (ev >= 0 && ev < PAD_EV_N)
+        ev_count[ev]++;
+}
+
 int pad_script_next(pad_state *p)
 {
-    while (cur < nsteps && left <= 0) {
+    while (cur < nsteps && (left <= 0 || waits[cur])) {
+        if (waits[cur] && ev_count[(waits[cur] >> 16) - 1] < (waits[cur] & 0xFFFF)) {
+            memset(p, 0, sizeof *p);        /* waiting for the event */
+            return 1;
+        }
+        if (waits[cur]) {
+            waits[cur] = 0;                 /* reached: go on with the next step */
+            left = 0;
+            continue;
+        }
         cur++;
         left = cur < nsteps ? ticks[cur] : 0;
     }

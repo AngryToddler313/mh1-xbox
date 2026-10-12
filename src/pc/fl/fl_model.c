@@ -495,14 +495,21 @@ int fl_skel_create(fl_skel *s, fmt_blob ahi, int be)
 
 void fl_skel_release(fl_skel *s)
 {
-    int g;
-    for (g = 0; g < FL_MAX_GROUPS; g++)
-        if (s->has_mot[g])
-            fmt_aan_free(&s->mot[g]);
+    fl_skel_drop_motions(s);
     free(s->chan);
     free(s->world);
     fmt_ahi_free(&s->skel);
     memset(s, 0, sizeof *s);
+}
+
+void fl_skel_drop_motions(fl_skel *s)
+{
+    int g;
+    for (g = 0; g < FL_MAX_GROUPS; g++)
+        if (s->has_mot[g]) {
+            fmt_aan_free(&s->mot[g]);
+            s->has_mot[g] = 0;
+        }
 }
 
 int fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be)

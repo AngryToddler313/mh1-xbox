@@ -110,6 +110,8 @@ void fl_skel_release(fl_skel *s);
 /* Motion id as in frame_init (0x125920): bank = (id % 1000) / 100,
  * slot = id % 100, from the given *_tbl.bin. Returns 0 if found. */
 int  fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be);
+/* the motions fl_skel_set_motion gave it dropped (they read their keys from the tbl file) */
+void fl_skel_drop_motions(fl_skel *s);
 /* Evaluate at frame t (loops on end) and compute world matrices. */
 void fl_skel_update(fl_skel *s, float t);
 
