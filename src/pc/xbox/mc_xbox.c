@@ -311,6 +311,7 @@ int sceMcRead(int fd, void *buf, int size)
         done(5, -5);
         return 0;
     }
+    fseek(fds[fd], 0, SEEK_CUR);        /* see sceMcWrite */
     done(5, (int)fread(buf, 1, (size_t)size, fds[fd]));
     return 0;
 }
@@ -321,6 +322,10 @@ int sceMcWrite(int fd, const void *buf, int size)
         done(6, -5);
         return 0;
     }
+    /* a positioning call before switching between reading and writing (C's rule for "+" streams):
+     * pdclib's "r+" stream starts in read mode and refuses writes until one (every save
+     * file stayed empty in xemu, 12 Oct 2026) */
+    fseek(fds[fd], 0, SEEK_CUR);
     size = (int)fwrite(buf, 1, (size_t)size, fds[fd]);
     fflush(fds[fd]);
     done(6, size);
