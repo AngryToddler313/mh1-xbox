@@ -12,6 +12,24 @@ obvious workarounds.
 
 ## Open
 
+### Hunter ground height: viewer's min_y_of dropped (12 Oct 2026, commit see git log "hunter floated")
+- **Dropped:** viewer.c min_y_of read the lowest vertex from each part's CPU
+  skinning buffer (skinpos), or the unposed vertices when there was none.
+- **Now:** fl_model_min_y (fl_model.c) skins the vertices on the CPU for the
+  measurement itself, whatever the graphics backend does.
+- **Why:** the nv2a backend skins on the GPU and keeps no skinpos, so the
+  unposed vertices gave -104.6 instead of 0.3: on the Xbox the hunter floated
+  about 1 m above the ground everywhere (plainly visible on the bed in the
+  house, xemu 12 Oct). Same result as before on the PC (test_quest_loop OK).
+
+### Memory card create on the Xbox: fopen "w+b" dropped (12 Oct 2026, commit 6a95cc3d)
+- **Dropped:** mc_xbox.c sceMcOpen with the create flag opened a new file "w+b".
+- **Now:** it makes the empty file with "wb", then opens it "r+b".
+- **Why:** nxdk's pdclib maps "w+" to CreateFile(CREATE_ALWAYS |
+  TRUNCATE_EXISTING), an invalid disposition, so every new save failed
+  ("could not save" in xemu). A fix in xbox_libc.c's fopen wrapper would cover
+  every caller; mc_xbox.c is the only "w+" user on the Xbox today.
+
 ### xemu screenshots: QMP screendump attempt dropped (11 Oct 2026, commit 44bfcddb)
 - **Dropped:** tools/run_xemu.sh first asked xemu for a screenshot over its QMP
   socket, then fell back to grabbing the whole desktop.

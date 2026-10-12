@@ -545,19 +545,6 @@ static void weapon_pose_of(monster *weapon_m, int no, const fl_light *L)
 }
 static void weapon_pose(const fl_light *L) { weapon_pose_of(&weapon, lp, L); }
 
-static float min_y_of(const fl_model *m)
-{
-    float y = 1e30f;
-    int i, v;
-    for (i = 0; i < m->npart; i++) {
-        const float *p = m->part[i].skinpos ? m->part[i].skinpos : m->amo.part[i].pos;
-        for (v = 0; v < m->amo.part[i].nvert; v++)
-            if (p[3 * v + 1] < y)
-                y = p[3 * v + 1];
-    }
-    return y;
-}
-
 static int monster_load(monster *e, const char *amh, const char *tex, const char *tbl)
 {
     fmt_blob link = load(amh, &e->mem[0]), tx = load(tex, &e->mem[1]), tb = load(tbl, &e->mem[2]);
@@ -900,6 +887,38 @@ static char *script_file_read(const char *path)
     return b;
 }
 static float hunter_yoff = 0;
+
+/* test aid RT_HOLD="t1,t2,...": the game clock stops at each listed game tick
+ * for RT_HOLD_SECS seconds (default 20) while drawing goes on, with a log line,
+ * so a screenshot taken from outside (xemu: tools/run_xemu.sh --after) shows
+ * exactly that tick. Ascending ticks. */
+static int test_hold_ticks(int ticks)
+{
+    static const char *list;
+    static int inited, at = -1;
+    static Uint32 until;
+    if (!inited) {
+        inited = 1;
+        list = getenv("RT_HOLD");
+        if (list && *list)
+            at = (int)strtol(list, (char **)&list, 10);
+    }
+    if (at < 0 || ticks < at)
+        return 0;
+    if (!until) {
+        const char *e = getenv("RT_HOLD_SECS");
+        int secs = e ? atoi(e) : 20;
+        until = SDL_GetTicks() + (Uint32)secs * 1000u;
+        rt_log("hold: game tick %d held for %d s (RT_HOLD)", at, secs);
+    }
+    if (SDL_GetTicks() < until)
+        return 1;
+    until = 0;
+    at = -1;
+    if (list && *list == ',')
+        at = (int)strtol(list + 1, (char **)&list, 10);
+    return 0;
+}
 
 /* ------------------------------------------------------------ boot hunters
  * The character creation and continue screens draw their hunter from a
@@ -2030,7 +2049,7 @@ int main(int argc, char **argv)
         float lo = 1e30f;
         int s;
         for (s = 0; s < HUNTER_PARTS; s++) {
-            float y = min_y_of(&pl.part[s]);
+            float y = fl_model_min_y(&pl.part[s], s ? (const flmat *)pl.pw[s] : (const flmat *)pl.master.world);
             if (y < lo)
                 lo = y;
         }
@@ -2169,7 +2188,7 @@ int main(int argc, char **argv)
         {   /* the bug reporter stops the game clock while it is frozen */
             static int holding;
             static Uint32 hold_t0;
-            int hnow = pick_hold_ticks(ticks) | menu_hold_ticks(ticks);
+            int hnow = pick_hold_ticks(ticks) | menu_hold_ticks(ticks) | test_hold_ticks(ticks);
             if (hnow && !holding)
                 hold_t0 = SDL_GetTicks();
             if (!hnow && holding && fixed_time < 0) {
@@ -2211,7 +2230,7 @@ int main(int argc, char **argv)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
         /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
          * per drawn frame, every 300 ticks */
-        while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+        while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !test_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
             rt_actor_nodes_fill();      /* every actor's node array as the last tick left it (boot screens, village, quests) */
             if (booting) {      /* ACRMain: pad, then the task scheduler */

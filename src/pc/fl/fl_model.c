@@ -297,6 +297,40 @@ void fl_model_release(fl_model *m)
     memset(m, 0, sizeof *m);
 }
 
+float fl_model_min_y(const fl_model *m, const flmat *bone_world_mats)
+{
+    int pi, v, j, nb = m->skel.nbone;
+    float lo = 1e30f;
+    flmat *skin = NULL;
+    if (bone_world_mats && nb) {
+        skin = malloc(sizeof(flmat) * nb);
+        for (j = 0; j < nb; j++)
+            flmat_mul(skin[j], m->invbind[j], bone_world_mats[j]);
+    }
+    for (pi = 0; pi < m->npart; pi++) {
+        const amo_part *p = &m->amo.part[pi];
+        const fl_part *fp = &m->part[pi];
+        for (v = 0; v < p->nvert; v++) {
+            float y = p->pos[3 * v + 1];
+            if (skin && fp->skinned && p->infl_n[v]) {      /* as fl_model_pose's CPU skinning */
+                y = 0;
+                for (j = 0; j < p->infl_n[v]; j++) {
+                    int b = p->infl_bone[v * AMO_MAX_INFL + j];
+                    float tp[3];
+                    if (b < 0 || b >= nb)
+                        continue;
+                    flmat_apply(tp, p->pos + 3 * v, skin[b]);
+                    y += tp[1] * p->infl_w[v * AMO_MAX_INFL + j];
+                }
+            }
+            if (y < lo)
+                lo = y;
+        }
+    }
+    free(skin);
+    return lo;
+}
+
 void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
 {
     int pi, nb = m->skel.nbone;

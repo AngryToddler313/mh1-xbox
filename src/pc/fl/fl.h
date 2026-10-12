@@ -63,6 +63,9 @@ void fl_model_release(fl_model *m);
 /* Skin with bone world matrices (one per bone of m->skel; NULL = bind
  * pose) and light; uploads to the clays. */
 void fl_model_pose(fl_model *m, const flmat *bone_world, const fl_light *light);
+/* lowest posed vertex height (y) for these bone world matrices, skinned on the CPU whatever
+ * the graphics backend does (nv2a skins on the GPU and keeps no posed vertices) */
+float fl_model_min_y(const fl_model *m, const flmat *bone_world);
 /* Draw all parts with the current WORLD matrix. sky: 1 = only sky parts,
  * 0 = only the rest, -1 = all. */
 void fl_model_draw(fl_model *m, int sky);
