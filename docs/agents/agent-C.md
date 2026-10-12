@@ -1548,3 +1548,10 @@ Start: main 42.150% (639224 bytes).
   each access is its own lui/addiu of (array + field offset) plus the cached port*0x34. `x / 2` on a u8 gives srl
   (`>> 1` gave sra). A switch whose labels are written 1, 2, 4, 8, 0x10, 0x20 compares 0x20 first (MWCC emits the
   ladder in reverse label order).
+### Round 21 summary (end)
+- main 42.150% -> 44.054%. This stretch: omake.c whole file (replaces omake_nm on PC), fltex02 TU, usbkbdm.c (new,
+  9 functions), flps0.c (12, whole f_flps0 file), flPS2LockTexture, flPS2SwapDBuff, plSetupFOVClipPlanes; raw-holdout
+  reading copies for flPS2SearchVramChange, flPS2UnlockTexture, PADRead_for_PS2; HdMerge / flPS2ConvertContext parked
+  as hdmerge_nm.c / tx09_nm.c.
+- Writing fresh C straight from the asm (flps0, usbkbdm, LockTexture, SwapDBuff) paid off far better than polishing
+  old 50-300 line near-matches. Sony-style macros with the right casts and s16 prototype parameters were the keys.
