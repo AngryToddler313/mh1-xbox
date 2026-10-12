@@ -1510,3 +1510,13 @@ Start: main 42.150% (639224 bytes).
 - `return info.status[port] == 0 ? -1 : 0;` gives the xor/sltiu/negu form; `-(x == 0)` does not.
 - pds_kdt is 12 bytes {mkey, led, key[6], kinfo}: the original writes a 7th key code at +8, over kinfo's low byte
   (kinfo is stored first). Kept as written (key[6]). Not linked on PC (the PC has no USB keyboard path).
+### fl/flps0.c: f_flps0 whole file (0x175120-0x177540, 12 functions) matches, written from the asm
+- flPS2psAddQueue + flPS2CheckGSClip + the GS primitive builders flps0002..flps1600; replaces flpsm01.c, flps_misc01.c
+  and the flps_misc_nm.c near-match. The PC keeps rt_2d.c (it draws with GL, not GS packets).
+- LESSON: flPS2CheckGSClip is LOCAL (static) in the original. MWCC only uses its knowledge of a callee's register use
+  for STATIC functions defined earlier in the TU: with it static, flps0002 keeps y in v1 across the call as the
+  original does; global, y goes to a saved register. (`#pragma internal on` does not do the same.)
+- `flPS2CheckGSClip((int)x, y, 1.0f)` with s16 x re-extends x at the call (the original's dsll32/dsra32 pair).
+- flps0F00 has the flPS2ConvScreenFX/FY/FZ bodies written inline (the others call them); ST words are float bits
+  (`*(u32 *)&st`, through the stack). GS words with Sony-style SET_RGBAQ/SET_XYZ/SET_UV/SET_ST macros.
+- Local order: `f32 v[4]; FMTX m;` puts m below v (m at sp+0x70) as the original.
