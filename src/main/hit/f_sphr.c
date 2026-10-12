@@ -92,7 +92,8 @@ typedef struct HENT {
     u8 _pad7E4[0x7E8 - 0x7E4];
     u8 x7E8;            /* 0x7E8 cleared by GetGroundHitStatusAreaPl/Em */
     u8 gkind;           /* 0x7E9 special ground kind under the entity (HKIND x0E) */
-    u8 _pad7EA[0x95E - 0x7EA];
+    u8 _pad7EA[0x95D - 0x7EA];
+    u8 x95D;            /* 0x95D monster touches a wall whose kind has flag byte 1 set (GetWallHitBitEm) */
     u16 wmask;          /* 0x95E */
 } HENT;
 
@@ -138,7 +139,7 @@ int WallFieldInCheck(f32 *);
 s32 *GetWallTblAdrs(f32 *);
 s32 *GetGroundTblAdrs(f32 *);
 void GetWallHitBitPl(f32, f32 *, u16, HENT *);
-void GetWallHitBitEm(f32, f32 *, u16, void *);
+void GetWallHitBitEm(f32, f32 *, u16, HENT *);
 static void WallHitInit(u32 *);
 static void GroundHitInit(u32 *);
 static int BlockPlaceCgeck(f32 *);
@@ -352,122 +353,106 @@ void GetWallHitBitPl(f32 r, f32 *seg, u16 mask, HENT *pl) {
 
 /* GetWallHitBitEm: monsters; the grid area is sized by the sphere (n x n
  * cells, 2x2 when small). */
-/* GetWallHitBitEm: original bytes kept (build/raw/GetWallHitBitEm.inc, config/c_rawfuncs.txt); the C below is the
- * near-match the PC build uses (406 lines off, tools/align.py). */
-#ifdef __MWERKS__
-asm void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, void *em)
-{
-#include "GetWallHitBitEm.inc"
-}
-#else
-void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, void *em) {
+void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, HENT *em) {
+    HV3 c;
     HSWEEP sw;
-    f32 q[8];
-    f32 pt[3];
-    HPOLY *ring[20];
-    u8 tmp[8];
-    int nr = 0;
-    int nh = 0;
-    int found = 0;
-    int ix, iz, i;
-    int quad = 0;
-    int ix0, iz0;
-    int n2;
-    int half;
+    HPOLY *seen[20];
+    f32 ofs[8] = { -1.0f, -1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f };
+    u8 flag;
+    int m;
+    int i;
+    int cx;
+    int cz;
+    int quad;
+    int n;
+    int k;
+    int j;
+    int found;
+    int nseen;
+    int nwall;
+    HPOLY *hp;
+    HPOLY **cell;
     f32 *pos;
-    f32 cs;
-    s32 *cp;
-    HPOLY *poly;
-    s8 a;
-    u16 ang;
+    s8 w;
+    u32 dir;
+    u8 n8;
+    HPOLY *hp2;
 
-    for (i = 0; i < 8; i++) q[i] = lit_425_002E85F0[i];
-    if (WallFieldInCheck(seg + 3) == 0) return;
+    if (!WallFieldInCheck(seg + 3)) return;
     hit_poly_num = 0;
     hited_poly_num = 0;
-    pos = (f32 *)((u8 *)em + 0xAC);
-    sw.p0[0] = seg[3];
-    sw.p0[1] = seg[4];
-    sw.p0[2] = seg[5];
-    sw.p1[0] = seg[0];
-    sw.p1[1] = seg[1];
-    sw.p1[2] = seg[2];
+    pos = em->pos;
+    *(HV3 *)sw.p0 = *(HV3 *)(seg + 3);
+    *(HV3 *)sw.p1 = *(HV3 *)seg;
+    nseen = 0;
+    nwall = 0;
+    found = 0;
     sw.r = r;
     sw.w20 = 1;
     sw.w22 = 1;
     sw.len = flvecCalcDistance(sw.p0, sw.p1);
-    if ((u32)diorama_w.wcsz >= (u32)diorama_w.wcsx) {
-        cs = (u32)diorama_w.wcsx;
+    if (diorama_w.wcsx <= diorama_w.wcsz) {
+        n = (int)(2.0f * r / (f32)diorama_w.wcsx) + 2;
     } else {
-        cs = (u32)diorama_w.wcsz;
+        n = (int)(2.0f * r / (f32)diorama_w.wcsz) + 2;
     }
-    n2 = (int)((2.0f * r) / cs) + 2;
-    if (n2 == 2) quad = BlockPlaceCgeck(seg + 3);
-    ix0 = (int)(seg[3] / (f32)(u32)diorama_w.wcsx);
-    iz0 = (int)(seg[5] / (f32)(u32)diorama_w.wcsz);
-    if (n2 > 0) {
-        half = n2 / 2;
-        for (ix = 0; ix < n2; ix++) {
-            for (iz = 0; iz < n2; iz++) {
-                if (n2 == 2) {
-                    pt[0] = (f32)(u32)diorama_w.wcsx * ((f32)ix0 + q[quad * 2]);
-                    pt[2] = (f32)(u32)diorama_w.wcsz * ((f32)iz0 + q[quad * 2 + 1]);
-                    pt[0] += (f32)(((u32)diorama_w.wcsx >> 1) + (u32)diorama_w.wcsx * ix);
-                    pt[2] += (f32)(((u32)diorama_w.wcsz >> 1) + (u32)diorama_w.wcsz * iz);
-                } else {
-                    pt[0] = (f32)ix0 * (f32)(u32)diorama_w.wcsx - (f32)half * (f32)(u32)diorama_w.wcsx;
-                    pt[2] = (f32)iz0 * (f32)(u32)diorama_w.wcsz - (f32)half * (f32)(u32)diorama_w.wcsz;
-                    pt[0] += (f32)((u32)diorama_w.wcsx * ix);
-                    pt[2] += (f32)((u32)diorama_w.wcsz * iz);
-                }
-                if (WallFieldInCheck(pt) == 1) {
-                    cp = GetWallTblAdrs(pt);
-                    if (*cp != -1) {
-                        do {
-                            poly = (HPOLY *)*cp;
-                            if (!(poly->h2 & (mask & 0xFFFF))) {
-                                if (nr != 0) {
-                                    found = 0;
-                                    for (i = 0; i < nr; i++) {
-                                        if (poly == ring[i]) found = 1;
-                                    }
-                                }
-                                if (nr == 0 || found == 0) {
-                                    if (nh != 0) {
-                                        found = 0;
-                                        for (i = 0; i < nh; i++) {
-                                            if (poly == hit_wall[i]) found = 1;
-                                        }
-                                    }
-                                    if (found == 0) {
-                                        if (sphr_face_o3(&sw, poly, pos) != 0) { /* the original calls o3 here too (o4 is only used by GetWallHitBit2) */
-                                            hit_wall[nh++] = poly;
-                                        }
-                                        ring[nr++] = poly;
-                                        if (nr >= 0x14) nr = 0;
-                                    }
-                                }
-                            }
-                            cp++;
-                        } while (*cp != -1);
+    if (n == 2) quad = BlockPlaceCgeck(seg + 3);
+    cx = (int)(seg[3] / (f32)diorama_w.wcsx);
+    cz = (int)(seg[5] / (f32)diorama_w.wcsz);
+    c = *(HV3 *)(seg + 3);
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            if (n == 2) {
+                c.x = (f32)diorama_w.wcsx * ((f32)cx + ofs[quad * 2]);
+                c.z = (f32)diorama_w.wcsz * ((f32)cz + ofs[quad * 2 + 1]);
+                c.x += (f32)((diorama_w.wcsx >> 1) + diorama_w.wcsx * i);
+                c.z += (f32)((diorama_w.wcsz >> 1) + diorama_w.wcsz * j);
+            } else {
+                c.x = (f32)cx * (f32)diorama_w.wcsx - (f32)(n / 2) * (f32)diorama_w.wcsx;
+                c.z = (f32)cz * (f32)diorama_w.wcsz - (f32)(n / 2) * (f32)diorama_w.wcsz;
+                c.x += (f32)(diorama_w.wcsx * i);
+                c.z += (f32)(diorama_w.wcsz * j);
+            }
+            if (WallFieldInCheck(&c.x) == 1) {
+                cell = (HPOLY **)GetWallTblAdrs(&c.x);
+                for (k = 0; (s32)cell[k] != -1; k++) {
+                    hp = cell[k];
+                    if (hp->h2 & mask) continue;
+                    if (nseen != 0) {
+                        found = 0;
+                        for (m = 0; m < nseen; m++) {
+                            if (hp == seen[m]) found = 1;
+                        }
+                        if (found) continue;
                     }
+                    if (nwall != 0) {
+                        found = 0;
+                        for (m = 0; m < nwall; m++) {
+                            if (hp == hit_wall[m]) found = 1;
+                        }
+                    }
+                    if (found) continue;
+                    if (sphr_face_o3(&sw, hp, pos)) {
+                        hit_wall[nwall++] = hp;
+                    }
+                    seen[nseen++] = hp;
+                    if (nseen >= 20) nseen = 0;
                 }
             }
         }
     }
-    PushAdjust3(&sw, pos, tmp);
-    EF(em, s8, 0x95D) = 0;
-    for (i = 0; i < hited_poly_num; i++) {
-        a = hited_wall_no[i];
-        poly = hit_wall[a];
-        ang = (u16)(((((calc_vec_ang(hit_near_point[a][0], hit_near_point[a][2], pos[0], pos[2]) & 0xFFFF) + 0x4000) & 0xFFFF) - EF(em, s32, 0xA4)) & 0xFFFF) - 0x400;
-        EF(em, s32, 0x74C) |= 1 << (ang >> 11);
-        if (wall_tbl_add[game_w.stage][poly->kind * 8 + 1] != 0) {
-            EF(em, s8, 0x95D) = 1;
+    PushAdjust3(&sw, pos, &flag);
+    em->x95D = 0;
+    for (k = 0; k < hited_poly_num; k++) {
+        w = hited_wall_no[k];
+        hp2 = hit_wall[w];
+        dir = (u16)((u16)((u16)(calc_vec_ang(hit_near_point[w][0], hit_near_point[w][2], pos[0], pos[2]) + 0x4000) - em->ang_y) - 0x400);
+        em->hitdir |= 1 << (dir >> 11);
+        if ((wall_tbl_add[game_w.stage] + hp2->kind * 8)[1] != 0) {
+            em->x95D = 1;
         }
     }
 }
-#endif
 
 /* GetWallHitBit2: original bytes kept (build/raw/GetWallHitBit2.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (32 lines off, tools/align.py). */
