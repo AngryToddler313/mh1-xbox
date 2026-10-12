@@ -56,7 +56,7 @@ CAM="src/main/cam/cam_nm.c src/main/cam/camm.c src/main/cam/camd.c src/main/cam/
 EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/game/eft/eft04_nm.c \
      src/game/eft/eft05_nm.c src/main/eft/eft06.c src/main/eft/eft06b.c src/main/eft/eft06_nm.c \
      src/game/eft/eft07.c src/game/eft/eft08.c src/game/eft/eft09.c src/game/eft/eft10.c \
-     src/game/eft/eft11_nm.c src/game/eft/eft12.c src/main/eft/eft13.c src/main/eft/eft13b.c \
+     src/game/eft/eft11_nm.c src/game/eft/eft12.c src/main/eft/eft13.c src/main/eft/eft13b.c src/main/eft/eft13c.c \
      src/main/eft/eft13d.c src/main/eft/eft13e.c src/main/eft/eft13_nm.c src/game/eft/eft14.c \
      src/game/eft/eft15.c src/game/eft/eft16.c src/game/eft/eft17.c src/game/eft/eft18_nm.c \
      src/game/eft/eft19.c src/main/eft/eft20.c src/main/eft/eft20c.c src/main/eft/eft20d.c \
@@ -262,7 +262,7 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_dur_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/main/em/emmk01.c:ride_ofs_calc,old_pos_save src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_dur_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 # the matched cp math library (cp01-cp03, agent B 8 Oct)
 GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 # Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
@@ -392,7 +392,7 @@ MATCHED_B="src/main/cam/cam.c \
     src/main/omake/omaked.c \
     src/main/omake/omakee.c \
     src/main/option/option01.c \
-    src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/menu/menu_gage.c src/main/menu/menu_slash.c src/main/cam/camarea_gnps.c src/main/menu/menu_ftime.c"
+    src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/menu/menu_gage.c src/main/menu/menu_slash.c src/main/menu/menu_gunmes.c src/main/cam/camarea_gnps.c src/main/menu/menu_ftime.c"
 MATCHED_A="$MATCHED_A $MATCHED_B"
 WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm omake_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid

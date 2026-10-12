@@ -1,4 +1,6 @@
-/* menu29 - f_menu 0x0012E640-0x0012E908: item window (normal) */
+/* menu29 - f_menu 0x0012E3E0-0x0012E908: disp_item (the item panel: count and name of the selected item; matched by
+   agent B: the first two flag tests in one return, the table pointer as &Item_data[0][3] + id * 16, no width temp)
+   and the item window (normal) */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -306,6 +308,51 @@ int Pl_shell_set(PLW *, u16, int);
 
 
 /* 0x12E640 */
+/* The item / ammo panel: the selected item's count and name under the item icons. */
+void disp_item(void) {
+    PLW *pl = lpPit->pl;
+    u16 id;
+    u8 *d;
+
+    if (*(u8 *)pl == 0 || *((u8 *)pl + 1) == 0) {
+        return;
+    }
+    if (lpPit->x83 != 0) {
+        return;
+    }
+    SetFilterMode(1);
+    if (pl->work88C == 0) {
+        disp_item_sub_normal();
+    } else {
+        disp_item_sub_select();
+    }
+    if (UseItemChk(pl, pl->work888) == 1) {
+        id = pl->item[pl->work888].id;
+        if (pl->item[pl->work888].num > 0) {
+            d = (u8 *)&Item_data[0][3] + id * 16;
+            if (*d > 1) {
+                flfntSetSize(0x12, 0x12);
+                flfntLocate(0x212, 0x178);
+                font_set_palette(0);
+                if (pl->item[pl->work888].num >= *d) {
+                    font_set_palette(2);
+                }
+                font_print(lit_2264, pl->item[pl->work888].num);
+            }
+        }
+        flfntSetSize(0x14, 0x14);
+        flfntLocate((int)(419.0f + (186.0f - (f32)(strlen(item_str[pl->item[pl->work888].id]) * 10)) / 2.0f), 0x18C);
+        font_set_palette(0);
+        font_print(lit_3253, item_str[id]);
+    }
+    if (lpPit->x58 > 0) {
+        lpPit->x58--;
+    }
+    if (lpPit->x5C > 0) {
+        lpPit->x5C--;
+    }
+}
+
 void disp_item_sub_normal(void) {
     PFLPS3 q;
     PLW *pl = lpPit->pl;

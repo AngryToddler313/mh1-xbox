@@ -969,10 +969,11 @@ typedef struct W24 { s32 a, b, c, d, e, f; } W24;
 
 
 void pl_atck_data_set_shl2(HSHL *sh, u16 *hd, int idx) {
-    int amask = sh->ailment & 0xF7;
+    u8 amask = sh->ailment & 0xF7;
     int aval;
     s32 *src;
     s32 *dst;
+    int i;
     if (amask == 0) {
         aval = 0;
     } else {
@@ -981,7 +982,10 @@ void pl_atck_data_set_shl2(HSHL *sh, u16 *hd, int idx) {
     aval = (u8)aval;
     src = (s32 *)(**(u8 ***)((u8 *)sh + 0x90) + idx * 0x18);
     dst = (s32 *)&sh->hit_time;
-    *(W24 *)dst = *(W24 *)src;
+    for (i = 0; i < 3; i++) {
+        *dst++ = *src++;
+        *dst++ = *src++;
+    }
     sh->x08 = hd[6];
     sh->hit_mode = 1;
     sh->x1E = 0;
@@ -1004,9 +1008,14 @@ void pl_atck_data_set_shl2(HSHL *sh, u16 *hd, int idx) {
 void atck_data_set_shl2(HSHL *sh, int idx) {
     s32 *src;
     s32 *dst;
+    int i;
+
     src = (s32 *)(**(u8 ***)((u8 *)sh + 0x90) + idx * 0x18);
     dst = (s32 *)&sh->hit_time;
-    *(W24 *)dst = *(W24 *)src;
+    for (i = 0; i < 3; i++) {
+        *dst++ = *src++;
+        *dst++ = *src++;
+    }
     sh->x08 = 0xFF;
     sh->hit_mode = 1;
     sh->x1E = 0;

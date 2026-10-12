@@ -1,5 +1,6 @@
 /* hit_nm - NOT BUILT. The whole hit file as C. Not yet matching:
- * hit_hit_sub_em (112 instructions off), hit_hit_sub_pl (now linked from hite.c; was 2: one add.s
+ * hit_hit_sub_em (35 lines off in the whole-file TU, tools/mktu.py main 111B20 114A88: dmg is s16, `dmg /= 4`; left: the meat
+ * row address order at the start and `dmg += (s32)poison` (ours narrows poison to s16 first)), hit_hit_sub_pl (now linked from hite.c; was 2: one add.s
  * operand order), hit_calc_shl (now linked from hitd.c). The rest matches and is
  * built from hit.c / hitb.c / hitc.c.
  * hit - SLPM_654.95 0x00111B20-0x00114A88. Shell (attack) hit checks: every
@@ -630,7 +631,7 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
     f32 a;
     f32 b;
     f32 pw;
-    int dmg;
+    s16 dmg;
 
     sh->xCB = 0;
     meat = &em_meat_tbl[c->kind][eb->num];
@@ -795,7 +796,7 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
         dmg = (s16)(rate * (pw * sharp));
     }
     if (sh->own_em != 0 && c->kind != 0x1D) {
-        dmg = dmg / 4;
+        dmg /= 4;
     }
     if (dmg == 0 && sh->pow != 0) {
         dmg = 1;

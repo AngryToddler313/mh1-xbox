@@ -9,7 +9,7 @@ a = m.start(); b = s.index('\n}\n', a) + 3
 for v in sys.argv[3:]:
     t = open(v).read().strip('\n') + '\n'
     if s[a:b].startswith('static') and not t.startswith('static'): t = 'static ' + t
-    out = 'build/_tryfn.c'   # kept: tools/align.py build/_tryfn.c FUNC shows the last variant's differences
+    out = 'build/_tryfn_%d.c' % os.getpid()
     open(out, 'w').write(s[:a] + t + s[b:])
     r = subprocess.run(['python3', 'tools/check.py', out], capture_output=True, text=True).stdout
     st = [l for l in r.split('\n') if re.match(r'^(OK|--)  %s ' % re.escape(func), l)]
@@ -20,3 +20,5 @@ for v in sys.argv[3:]:
     a2 = subprocess.run(['python3', 'tools/align.py', out, func], capture_output=True, text=True).stdout
     n = sum(1 for l in a2.split('\n') if l.startswith('   ') and '(reloc)' not in l)
     print(v, n if n else 'calls')   # 'calls': only call-name differences (check.py cannot name overlay targets)
+import shutil
+shutil.move(out, 'build/_tryfn.c')   # kept: tools/align.py build/_tryfn.c FUNC shows the last variant's differences

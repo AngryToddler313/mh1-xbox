@@ -1,19 +1,136 @@
-/* emmk01 - monster matrix build and ride offset (SLPM_654.95 0x0010AEB0-0x0010B054): enemy_mk, ride_ofs_calc. Whole file in emmk_nm.c. */
-/* emmk_nm - SLPM_654.95 0x0010AEB0-0x0010B6C0 part of VectorHitCheck.s: monster matrix build (enemy_mk), ride offset
-   (ride_ofs_calc) ... Working file. */
+/* emmk01 - monster joint work (SLPM_654.95 0x0010A730-0x0010B054): old_pos_save (joint positions and matrices kept for
+   riding), mlCalcTransEM (the per-kind special joints), enemy_mk (world matrix, pose), ride_ofs_calc. old_pos_save and
+   mlCalcTransEM written from the asm by agent B (12 Oct 2026). */
 #include "types.h"
 #include "em.h"
 void flmatMakeScale(f32 *, f32, f32, f32);
 void cpRotMatrixYXZ2(s32 *, f32 *);
 void flmatSetTrans(f32 *, f32, f32, f32);
 void flmatMul33_2(f32 *, f32 *);
-void flmatCopy(f32 *, f32 *);
-void mlCalcTransEM(EMW *, u8 *, f32 *);
+void flmatCopy();
+static void mlCalcTransEM(EMW *, u8 *, f32 *);
 void flCalcTransSI(u8 *, f32 *);
 void flmatInvert(f32 *, f32 *);
 void flmatGetTrans(f32 *, f32 *);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
 extern f32 sys_old_mat[][16];
+extern f32 sys_old_pos[][3];
+#include "game.h"
+extern s8 *em_neck_tbl[];        /* game.bin 0x63FF90 (main_aliases.txt): per monster kind, its neck joint numbers at +6..+9 */
+f32 flConvertStoR(u16);
+u8 *get_joint_mat_em(EMW *, s16);
+void flmatRotX33(f32 *, f32);
+void flmatRotY33(f32 *, f32);
+void flmatRotZ33(f32 *, f32);
+void flmatInit33(f32 *);
+void flmatCopy33();
+void flmatTranspose33(f32 *);
+/* Saves every joint's position and matrix of the monster's skin (sys_old_pos / sys_old_mat, used for riding). */
+void old_pos_save(u8 *em) {
+    s16 n;
+    s16 i;
+    u8 *skin;
+
+    if (em[0] == 0 || em[1] == 0) {
+        return;
+    }
+    skin = *(u8 **)(*(u8 **)(em + 0x50C) + 0x24);
+    n = *(s16 *)(skin + 0xC2);
+    for (i = 0; i < n; i++, skin += 0x190) {
+        sys_old_pos[i][0] = *(f32 *)(skin + 0x30);
+        sys_old_pos[i][1] = *(f32 *)(skin + 0x34);
+        sys_old_pos[i][2] = *(f32 *)(skin + 0x38);
+        flmatCopy(sys_old_mat[i], (f32 *)skin);
+    }
+}
+
+/* The per-kind special joints of a monster, applied to the local joint matrices before the skeleton is posed:
+   the neck/head turn (kinds 1, 7, 0xB: four joints from the kind's joint table), the throat / wing joints that
+   follow ex+4 (kind 6), a copied head rotation (kind 0xF), the tail spin from the frame counter (kind 0x21), and
+   for kinds 8, 0x15, 0x22 four joints scaled 1.0 and turned by angles kept in the per-monster work. */
+static void mlCalcTransEM(EMW *em, u8 *bone, f32 *unused) {
+    f32 m2[16];
+    f32 m1[16];
+    s8 *t;
+    u8 *x;
+
+    t = em_neck_tbl[em->kind];
+    switch (em->kind) {
+    case 7:
+    case 1:
+    case 0xB:
+        flmatRotY33((f32 *)(bone + t[9] * 0x190 + 0x40), flConvertStoR(em->neck[3]));
+        flmatRotY33((f32 *)(bone + t[8] * 0x190 + 0x40), flConvertStoR(em->neck[2]));
+        flmatRotY33((f32 *)(bone + t[7] * 0x190 + 0x40), flConvertStoR(em->neck[1]));
+        flmatRotY33((f32 *)(bone + t[6] * 0x190 + 0x40), flConvertStoR(em->neck[0]));
+        break;
+    case 6:
+        x = (u8 *)em + 0x444;
+        if (em->x888 != 1) {
+            if (x[4] > 0) {
+                x[4]--;
+            }
+        } else if (x[4] < 30) {
+            x[4]++;
+        }
+        flmatCopy(m2, get_joint_mat_em(em, 0x25));
+        flmatInit33(m2);
+        flmatRotX33(m2, -1.30899692f + 0.04363323f * x[4]);
+        flmatCopy(get_joint_mat_em(em, 0x25), m2);
+        flmatCopy(m2, get_joint_mat_em(em, 0x26));
+        flmatInit33(m2);
+        flmatRotY33(m2, 0.52359879f - 0.0174532924f * x[4]);
+        flmatRotZ33(m2, 0.87266469f - 0.072722055f * x[4]);
+        flmatCopy(get_joint_mat_em(em, 0x26), m2);
+        flmatCopy(m2, get_joint_mat_em(em, 0x27));
+        flmatInit33(m2);
+        flmatRotY33(m2, -0.52359879f + 0.0174532924f * x[4]);
+        flmatRotZ33(m2, -0.87266469f + 0.072722055f * x[4]);
+        flmatCopy(get_joint_mat_em(em, 0x27), m2);
+        break;
+    case 0xF:
+        flmatCopy(m1, get_joint_mat_em(em, 0x23));
+        flmatTranspose33(m1);
+        flmatCopy(m2, get_joint_mat_em(em, 0x25));
+        flmatCopy33(m2, m1);
+        flmatCopy(get_joint_mat_em(em, 0x25), m2);
+        break;
+    case 0x21:
+        flmatCopy(m2, get_joint_mat_em(em, 0x18));
+        flmatInit33(m2);
+        flmatRotX33(m2, 2.0f * (3.1415927f * (((360.0f * (f32)(-((*(u16 *)&game_w.x1E & 0xF) << 12))) / 65536.0f) / 360.0f)));
+        flmatCopy33(get_joint_mat_em(em, 0x18), m2);
+        flmatCopy(m2, get_joint_mat_em(em, 0x19));
+        flmatInit33(m2);
+        flmatRotX33(m2, 2.0f * (3.1415927f * (((360.0f * (f32)(-(((*(u16 *)&game_w.x1E & 0xF) - 5) << 12))) / 65536.0f) / 360.0f)));
+        flmatCopy33(get_joint_mat_em(em, 0x19), m2);
+        break;
+    }
+    if (em->kind == 0x15 || em->kind == 8 || em->kind == 0x22) {
+    *(f32 *)(bone + 0x3AD4) = 1.0f;
+    *(f32 *)(bone + 0x3AD8) = 1.0f;
+    *(f32 *)(bone + 0x3ADC) = 1.0f;
+    *(f32 *)(bone + 0x3C64) = 1.0f;
+    *(f32 *)(bone + 0x3C68) = 1.0f;
+    *(f32 *)(bone + 0x3C6C) = 1.0f;
+    *(f32 *)(bone + 0x3DF4) = 1.0f;
+    *(f32 *)(bone + 0x3DF8) = 1.0f;
+    *(f32 *)(bone + 0x3DFC) = 1.0f;
+    *(f32 *)(bone + 0x1A04) = 1.0f;
+    *(f32 *)(bone + 0x1A08) = 1.0f;
+    *(f32 *)(bone + 0x1A0C) = 1.0f;
+    x = (u8 *)em + 0x444;
+    flmatRotX33((f32 *)(bone + 0x3A10), flConvertStoR(*(u16 *)(x + 0x52)));
+    flmatRotX33((f32 *)(bone + 0x3BA0), flConvertStoR(*(u16 *)(x + 0x56)));
+    flmatRotX33((f32 *)(bone + 0x3D30), flConvertStoR(*(u16 *)(x + 0x5A)));
+    flmatRotX33((f32 *)(bone + 0x1940), flConvertStoR(*(u16 *)(x + 0x5E)));
+    flmatRotY33((f32 *)(bone + 0x3A10), flConvertStoR(*(u16 *)(x + 0x54)));
+    flmatRotY33((f32 *)(bone + 0x3BA0), flConvertStoR(*(u16 *)(x + 0x58)));
+    flmatRotY33((f32 *)(bone + 0x3D30), flConvertStoR(*(u16 *)(x + 0x5C)));
+    flmatRotY33((f32 *)(bone + 0x1940), flConvertStoR(*(u16 *)(x + 0x60)));
+    }
+}
+
 /* Builds the monster's world matrix (scale, rotation, translation) into mat[], poses the per-kind special joints
    (mlCalcTransEM) and hands the skeleton to flCalcTransSI. */
 void enemy_mk(EMW *em) {

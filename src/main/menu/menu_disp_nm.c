@@ -65,44 +65,6 @@ extern u8 item_cmd_frame[], item_cmd_str[], item_yn_frame[], item_cmd_present[];
 extern u8 item_cmd_item_num[], D_6EAC80[];
 extern u8 frame_matA[], frame_matB[], frame_mix_cmd[], frame_mixed_item[];
 
-/* 0x12B690 */
-void disp_name(void) {
-    PLW *pl;
-    int i;
-    f32 pos[3];
-    f32 scr[3];
-    char *name;
-    u8 mat[0x40];
-
-    flfntSetSize(0x10, 0x10);
-    font_set_palette(0);
-    pl = player_work;
-    for (i = 0; i < 4; i++, pl++) {
-        if (*(u16 *)((u8 *)pl + 0xC) != game_w.master && game_w.pl_state[i] == 1 &&
-            *(u8 *)pl != 0 && *((u8 *)pl + 1) != 0 && (u8)Pl_stg_ck(pl)) {
-            flmatInit((void *)mat);
-            flSetRenderState(0x1A, (u32)mat);
-            pos[0] = *(f32 *)((u8 *)pl + 0xAC);
-            pos[1] = *(f32 *)((u8 *)pl + 0xB0) + 200.0f;
-            pos[2] = *(f32 *)((u8 *)pl + 0xB4);
-            flvecrRotTransPers(scr, pos);
-            if (scr[0] < 700.0f && scr[0] > -60.0f) {
-                if (scr[1] < 500.0f && scr[1] > -20.0f) {
-                    name = (char *)pl + 0x8D4;
-                    if (scr[2] > 0.0f) {
-                        if (Online_ck() == 1 && PitMenu.x14 != 0) {
-                            name = (char *)room_member_id + *(u16 *)((u8 *)pl + 0xC) * 8;
-                        }
-                        scr[0] -= (s16)strlen(name) / 2 * 8;
-                        flfntLocate((int)(1.25f * scr[0]), (int)scr[1]);
-                        font_print_uf(name);
-                    }
-                }
-            }
-        }
-    }
-}
-
 
 /* 0x12BBC0 */
 void font_print_quest_time(int n) {
@@ -841,49 +803,6 @@ typedef struct PFLPS3 {
     u32 uv1;
 } PFLPS3;
 
-/* 0x12E3E0 */
-void disp_item(void) {
-    PLW *pl = lpPit->pl;
-    u16 id;
-    u8 *d;
-    int w;
-
-    if (*(u8 *)pl == 0) return;
-    if (*((u8 *)pl + 1) == 0) return;
-    if (lpPit->x83 != 0) return;
-    SetFilterMode(1);
-    if (pl->work88C == 0) {
-        disp_item_sub_normal();
-    } else {
-        disp_item_sub_select();
-    }
-    if (UseItemChk(pl, pl->work888) == 1) {
-        id = pl->item[pl->work888].id;
-        if (pl->item[pl->work888].num > 0) {
-            d = &Item_data[id][3];
-            if (*d > 1) {
-                flfntSetSize(0x12, 0x12);
-                flfntLocate(0x212, 0x178);
-                font_set_palette(0);
-                if (pl->item[pl->work888].num >= *d) {
-                    font_set_palette(2);
-                }
-                font_print(lit_2264, pl->item[pl->work888].num);
-            }
-        }
-        flfntSetSize(0x14, 0x14);
-        w = strlen(item_str[pl->item[pl->work888].id]) * 10;
-        flfntLocate((int)(419.0f + (186.0f - (f32)w) / 2.0f), 0x18C);
-        font_set_palette(0);
-        font_print(lit_3253, item_str[id]);
-    }
-    if (lpPit->x58 > 0) {
-        lpPit->x58--;
-    }
-    if (lpPit->x5C > 0) {
-        lpPit->x5C--;
-    }
-}
 
 /* 0x12E640 */
 void disp_item_sub_normal(void) {
@@ -1638,31 +1557,6 @@ void disp_cannon(void) {
     }
 }
 
-/* 0x131C00 */
-void disp_gun_load_mess(int n) {
-    PFLPS2 q;
-    s16 *m = gun_load_mess[n];
-    int v = ((System_timer & 0x1F) << 11) & 0xFFFF;
-    int a = ((s8)(96.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF;
-
-    if (lpPit->x2A != 0) {
-        q.col = ((a & 0xFF) << 24) | 0xFFFFFF;
-        q.s[0] = m[0];
-        q.s[1] = 0x3A;
-    } else {
-        int b = a & 0xFF;
-        q.col = b | ((b << 16) | 0xFF000000 | (b << 8));
-        q.s[0] = m[7];
-        q.s[1] = 0xD5;
-    }
-    q.s[2] = m[1];
-    q.s[3] = m[2];
-    q.uv[0] = m[3];
-    q.uv[1] = m[4];
-    q.uv[2] = m[5];
-    q.uv[3] = m[6];
-    flps0008(&q);
-}
 
 /* 0x131D50 */
 void disp_menu(int sw, PIT_W *p) {

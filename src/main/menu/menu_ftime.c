@@ -1,4 +1,6 @@
-/* menu_ftime - f_menu disp (SLPM_654.95 0x0012B900-0x0012BC98): Pit_disp_quest (the quest page of the pit menu) and
+/* menu_ftime - f_menu disp (SLPM_654.95 0x0012B690-0x0012BC98): disp_name (the other hunters' names; matched by
+ * agent B: field names, an s16 counter, the projected vector is f32[4] and its w is tested), Pit_disp_quest (the
+ * quest page of the pit menu) and
  * font_print_quest_time, the quest timer as zenkaku "mm:ss". The `& 0xFFFFFFFF` and the int temps are what the
  * permuter found. Pit_disp_quest matched by agent B (12 Oct 2026): the page number read once into n, `return` in the
  * then-block of case 0, `break` after case 1; its buf is 40 bytes on the PS2 (frame size) and 64 on the PC. */
@@ -65,6 +67,44 @@ extern u8 quest_str[][0x34];
 extern u8 item_cmd_frame[], item_cmd_str[], item_yn_frame[], item_cmd_present[];
 extern u8 item_cmd_item_num[], D_6EAC80[];
 extern u8 frame_matA[], frame_matB[], frame_mix_cmd[], frame_mixed_item[];
+
+/* The other hunters' names above their heads (online: the room member id). */
+void disp_name(void) {
+    PLW *pl;
+    f32 pos[3];
+    f32 scr[4];
+    char *name;
+    u8 mat[0x40];
+    s16 i;
+
+    flfntSetSize(0x10, 0x10);
+    font_set_palette(0);
+    pl = player_work;
+    for (i = 0; i < 4; i++, pl++) {
+        if (pl->id != game_w.master && game_w.pl_state[i] == 1 &&
+            pl->be_flag != 0 && pl->x01 != 0 && (u8)Pl_stg_ck(pl)) {
+            flmatInit((void *)mat);
+            flSetRenderState(0x1A, (u32)mat);
+            pos[0] = pl->pos[0];
+            pos[1] = pl->pos[1] + 200.0f;
+            pos[2] = pl->pos[2];
+            flvecrRotTransPers(scr, pos);
+            if (scr[0] < 700.0f && scr[0] > -60.0f) {
+                if (scr[1] < 500.0f && scr[1] > -20.0f) {
+                    name = (char *)pl + 0x8D4;
+                    if (scr[3] > 0.0f) {
+                        if (Online_ck() == 1 && PitMenu.x14 != 0) {
+                            name = (char *)room_member_id + pl->id * 8;
+                        }
+                        scr[0] -= (s16)strlen(name) / 2 * 8;
+                        flfntLocate((int)(1.25f * scr[0]), (int)scr[1]);
+                        font_print_uf(name);
+                    }
+                }
+            }
+        }
+    }
+}
 
 /* The quest page of the pit menu: frame, title and the clear conditions, reward, time and map. */
 void Pit_disp_quest(void) {

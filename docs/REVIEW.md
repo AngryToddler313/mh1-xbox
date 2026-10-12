@@ -12,6 +12,19 @@ obvious workarounds.
 
 ## Open
 
+### PC runs more game C: monster neck joints, s16 damage (12 Oct 2026, agent B)
+- **Dropped:** the no-op stand-in for mlCalcTransEM (build/pc/rt_gen.c) that enemy_mk called on the PC; the
+  near-match files emmk_nm.c (all of it matched) and the copies of old_pos_save, init_pl_work, eft13_set_pos and
+  several menu draw functions in the *_nm.c files (matched now).
+- **Now:** mlCalcTransEM is matched game C (em/emmk01.c) and runs on the PC when game code calls enemy_mk (the tail
+  cut, em_tail_off_sub): it turns the neck joints by em->neck[] and poses kind-specific joints. It reads game.bin's
+  em_neck_tbl, now named in config/main_aliases.txt (the PC had only an empty D_63FF90 stand-in: the first build
+  crashed in test_activities tail_cut, fixed by the name). hit_hit_sub_em (hit_nm.c, still a near-match) keeps the
+  damage in an s16 as the original does.
+- **Why:** matched C instead of a stand-in; the near-match is closer to the original.
+- **To watch:** monster pose right after a tail cut; damage numbers over 32767 now wrap like on the PS2.
+  Revert: the commit "emmk01: mlCalcTransEM and old_pos_save".
+
 ### f_quest as one file (12 Oct 2026, agent B)
 - **Dropped:** the 22 per-run files of the quest file (src/main/quest/f_quest01..04.c, f_questb..r.c, qstb07.c,
   strg01.c; f_quest.c itself is now the whole file) and in src/main/quest/f_quest_nm.c the 70 near-match copies

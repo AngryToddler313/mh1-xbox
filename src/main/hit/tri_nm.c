@@ -105,33 +105,3 @@ int VectorHitCheck(f32 *tri, f32 *A, f32 *B, f32 *out) {
     return r;
 }
 
-void old_pos_save(u8 *em) {
-    u8 *skin;
-    int n;
-    s16 i;
-    f32 (*pp)[3];
-    FLMAT *mp;
-
-    if (em[0] != 0) {
-        if (em[1] == 0) {
-        } else {
-            skin = *(u8 **)(*(u8 **)(em + 0x50C) + 0x24);
-            n = *(s16 *)(skin + 0xC2);
-            i = 0;
-            if (n > 0) {
-                pp = sys_old_pos;
-                mp = sys_old_mat;
-                do {
-                    (*pp)[0] = *(f32 *)(skin + 0x30);
-                    (*pp)[1] = *(f32 *)(skin + 0x34);
-                    (*pp)[2] = *(f32 *)(skin + 0x38);
-                    flmatCopy(mp, skin);
-                    pp++;
-                    mp++;
-                    i++;
-                    skin += 0x190;
-                } while (i < n);
-            }
-        }
-    }
-}

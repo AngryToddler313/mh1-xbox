@@ -1,4 +1,6 @@
-/* SLPM_654.95 0x001118E0-0x00111B1C: init_view_work .. em_motion_load. See flow_nm.c. */
+/* SLPM_654.95 0x001116D0-0x00111B1C: init_pl_work (matched by agent B: be_flag else-branch jumps to the next slot,
+   the three weapon halfwords read before they are stored, (u16)i to a K&R Quest_pl_stage_init), init_view_work ..
+   em_motion_load. See flow_nm.c. */
 #include "flow.h"
 #include "em.h"
 
@@ -100,6 +102,77 @@ void com_motion_load();
 
 
 
+
+/* Clears the eight player works and sets up the joined hunters (id, stage, weapon, name or saved data). */
+void init_pl_work(void) {
+    s16 i;
+    PLW *pl;
+    u8 *g1;
+    u8 *g6;
+    u8 *g8;
+    s16 w;
+    s16 t;
+    s16 t1;
+    s16 t2;
+
+    memset(pl_cnt_w, 0, 0x10);
+    g1 = (u8 *)&game_w;
+    i = 0;
+    pl = player_work;
+    g6 = (u8 *)&game_w;
+    g8 = (u8 *)&game_w;
+    do {
+        memset(pl, 0, 0xA00);
+        if (i < game_w.pl_num) {
+            if (g1[0x208] == 1) {
+                pl->be_flag = 1;
+            } else {
+                pl->be_flag = 0;
+                goto next;
+            }
+            {
+                pl->id = i;
+                pl->work011 = g1[0x30];
+                EMB(pl, 0x616) = g1[0x70];
+                *(s8 *)((u8 *)pl + 0x8BF) = *(s8 *)(g1 + 0x78);
+                Quest_pl_stage_init((u16)i);
+                if (Online_ck() == 0 && i > 0) {
+                    t = *(s16 *)(g6 + 0x40);
+                    t1 = *(s16 *)(g6 + 0x42);
+                    t2 = *(s16 *)(g6 + 0x44);
+                    PLH(pl, 0x35E) = t;
+                    PLH(pl, 0x360) = t1;
+                    PLH(pl, 0x362) = t2;
+                    EMB(pl, 0x34C) = Get_weapon_id(g6 + 0x40, t);
+                    sprintf(pl->name, lit_277_00358218, i + 1);
+                } else if (g1[0x70] == 0) {
+                    if (Pl_master_ck(pl) == 1) {
+                        Set_userdata(pl);
+                    } else {
+                        Set_mini_data_to_pl(g8 + 0x1E8, pl);
+                    }
+                } else {
+                    w = *(s16 *)(g6 + 0x40);
+                    t1 = *(s16 *)(g6 + 0x42);
+                    t2 = *(s16 *)(g6 + 0x44);
+                    PLH(pl, 0x35E) = w;
+                    PLH(pl, 0x360) = t1;
+                    PLH(pl, 0x362) = t2;
+                    EMB(pl, 0x34C) = Get_weapon_id(g6 + 0x40, w);
+                    sprintf(pl->name, lit_277_00358218, i + 1);
+                }
+                Skill_set_PL(pl);
+                pl->kind = Battle_type[EMB(pl, 0x34C)];
+            }
+        }
+next:
+        pl++;
+        i++;
+        g1 += 1;
+        g6 += 6;
+        g8 += 8;
+    } while (i < 8);
+}
 
 void init_view_work(void) {
     view_reset();

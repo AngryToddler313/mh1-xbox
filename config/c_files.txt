@@ -149,7 +149,9 @@ main:rodata 0x00357A70 0x00357A98 eft/eft06b
 main 0x00158DB0 0x00158F18 set/set13c
 main 0x00105B10 0x00105B94 eft/eft13
 main 0x00106DB0 0x00107C50 eft/eft13b
+main 0x00107C50 0x00108620 eft/eft13c
 main:rodata 0x00357C50 0x00357CDC eft/eft13b
+main:rodata 0x00357CE0 0x00357D68 eft/eft13c
 main 0x00108620 0x001087C0 eft/eft13d
 main 0x001097D0 0x00109E28 eft/eft13e
 main:rodata 0x00357D70 0x00357D98 eft/eft13e
@@ -348,7 +350,7 @@ main 0x0012A2F0 0x0012A390 menu/menu26
 main:rodata 0x0035A3A0 0x0035A3B8 menu/menu26
 main 0x00129F50 0x0012A104 menu/menu27
 main 0x00127C70 0x00127D30 menu/menu28
-main 0x0012E640 0x0012E908 menu/menu29
+main 0x0012E3E0 0x0012E908 menu/menu29
 main 0x0012F830 0x0012FAEC menu/menu30
 main 0x0012FD50 0x0012FEA4 menu/menu31
 main 0x00133550 0x00133788 menu/menu32
@@ -1265,7 +1267,7 @@ main 0x0011CDF0 0x0011D328 item/item01
 main 0x0011D560 0x0011D59C item/item02
 main 0x0011D840 0x0011DB04 item/item03
 main 0x00110F10 0x001111E8 game/flow01
-main 0x001118E0 0x00111B1C game/flow02
+main 0x001116D0 0x00111B1C game/flow02
 main 0x002814E0 0x002862E4 mc/mccomb
 main:rodata 0x00384EF0 0x0038506C mc/mccomb
 main:rodata 0x0036E090 0x0036E0B4 ime/imeu
@@ -1414,7 +1416,7 @@ main 0x00100E20 0x00101508 sys/adxs04
 main 0x001018C0 0x00101E38 sys/adxs05
 main 0x00109E30 0x0010A208 em/emsrch
 main 0x0010B6C0 0x0010B7E8 em/emsrch03
-main 0x0010AEB0 0x0010B054 em/emmk01
+main 0x0010A730 0x0010B054 em/emmk01
 main 0x00161970 0x00161C18 font/fprint01
 main 0x00169990 0x00169A7C sys/view201
 main 0x00114A90 0x00114AD8 hit/hitid01
@@ -2038,6 +2040,7 @@ main 0x00249D20 0x0024A238 ime/imey
 main 0x0012A1D0 0x0012A26C menu/menu_dmon
 main 0x0012CCD0 0x0012D204 menu/menu_maru
 main 0x00130F50 0x0013127C menu/menu_gage
+main 0x00131C00 0x00131D48 menu/menu_gunmes
 main 0x001313A0 0x0013157C menu/menu_slash
 main 0x00223870 0x00223978 cam/camarea_gnps
-main 0x0012B900 0x0012BC98 menu/menu_ftime
+main 0x0012B690 0x0012BC98 menu/menu_ftime

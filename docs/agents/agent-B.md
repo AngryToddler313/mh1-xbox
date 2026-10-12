@@ -1136,3 +1136,38 @@ Tools (all standard library, run from the worktree root):
 - f_cam (0x21F3D0-0x222E20) assembles as a TU too (TU_DROP the float-first prototypes of flvecRotY/cpInterVector that
   some runs declared but never called); point_cam_sub there keeps w in a2 where the original uses a3 (decl order: no
   change). Not registered (nothing new matched).
+- Other files this round (each check.py OK + rebuild.sh OK): npc/npc.c (whole NPC file as one TU: npc_trans, npc_move
+  written from the asm), reward/f_rewardd.c (reward_itembox), menu runs grown or new: menu34 (Pit_disp_pit_effect),
+  menu_maru (camp_disp_sub, enemy_on_map), menu_ftime (disp_name, Pit_disp_quest), menu_slash (disp_slash_level),
+  menu30 (disp_shell_name), menu_gage (gage_disp), menu29 (disp_item); em/emmk01.c grown to 0x10A730 (old_pos_save,
+  mlCalcTransEM written from the asm; emmk_nm.c removed: all of it matched).
+More matching lessons (function that shows it):
+- Element addresses of a stack struct kept in s-registers across a loop = the struct member is an ARRAY indexed
+  with constants (reward_itembox's `s16 p[4]` rectangle; named fields x0/y0/x1/y1 do not get hoisted).
+- `a = b = x;` stores b first and a last: write the targets in the original's store order reversed
+  (Pit_disp_pit_effect: original stores uv[4] then uv[0] -> `q.uv[0] = q.uv[4] = ...`).
+- `addiu k,-1; bne k,zero` at the loop end = `while (--k != 0)`; `k--; } while (k != 0)` gives bgtz (Pit_disp_pit_effect).
+- A cvt.w.s at run time for 12.8 / 16.0 = the constants went through f32 variables (camp_disp_sub `w = 12.8f`).
+- A loop-invariant hoisted by the compiler can be what the original wrote inline: `-t + 2.0f * t * (f32)(i / 2)` matched,
+  separate lo / step variables did not (enemy_on_map).
+- `bne c2 -> body; nop; nop; b end` after a first test = `if (c1 == 0 || c2 == 0) return;` in ONE if (bar_disp's
+  start, disp_item, old_pos_save); separate ifs give branches straight to the end.
+- Unsigned-conversion sequence (bltz/srl/or) on an int = the variable is u32 or the expression is unsigned
+  (`(f32)(strlen(buf) * 10)` without an int temp: disp_shell_name, disp_item; `u32 v` in disp_slash_level).
+- A table pointer `&tbl[0][3] + id * 16` folds the +3 into the symbol constant (disp_item); `tbl[id] + 3` adds later.
+- A small static of the original file (<= 8 bytes, gp-relative) must be declared with its size (`extern u8
+  slash_lev_tbl[4]`) or MWCC uses lui/addiu (disp_slash_level).
+- Induction pointers created by strength reduction get initialised AFTER the loop guard; pointers written in the source
+  are initialised before it (old_pos_save: `sys_old_pos[i][0]`, `flmatCopy(sys_old_mat[i], ..)`; npc_trans:
+  `clay->mat[j]`). An increment in the for-header (`i++, skin += 0x190`) lands in the delay slot.
+- `for (i = 0; i < n; i++)` with a known-zero i gives `slt at, zero, n` (em_work_serch2, old_pos_save).
+- A buffer whose PS2 frame is too small for the PC's strings: `#ifdef __MWERKS__ char buf[40]; #else char buf[64];`
+  (Pit_disp_quest, disp_shell_name).
+- tools/tryfn.py now prints align.py line counts (0 = check OK, 'calls' = only overlay call names differ) and works on
+  a per-process copy (two runs at once used to overwrite each other's build/_tryfn.c).
+Near-matches improved but not linked: hit_hit_sub_em (106 -> 35 lines in the hit TU: s16 dmg, `dmg /= 4`),
+disp_others_info (3: the lpPit load goes to v0 instead of v1; the permuter only found dead-code tricks), Pit_mv (2),
+camp/bar_disp (bar_disp: control flow fixed, parameter registers g/sel swapped), GetPlayerDiffuseData (10: the stg
+load register and branch-threading of the inner if/else), spr_disp_sub (36 with channel order c3, c2, c0, c1),
+Quest_next_em_set (12), Em_hagi_point_cnt_ck (20), remuneration_item_set (24), em_dur_set (2), pl_dm003 / pl_dm008 /
+pl_mv021 (the default-block a0 reload).
