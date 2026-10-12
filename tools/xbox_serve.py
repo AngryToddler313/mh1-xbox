@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Laptop side of the Xbox network loader (src/pc/xbox/loader, docs/xbox.md "Network loader").
 
-    tools/xbox_serve.py [--port 8765] [--xbe build/xbox/nv2a/default.xbe]
+    tools/xbox_serve.py [--port 8765] [--xbe build/xbox/nv2a/default.xbe] [--input FILE] [--env FILE]
 
 Serves build/xbox/default.xbe (the null-graphics build; --xbe for another) to the loader as /mh1.xbe, with /version
 (size and time of that file, plus build/xbox/rerun.txt when present, so
 touching that file makes a waiting loader start the same build again).
-Logs the Xbox sends (POST /log) are saved to build/xbox/logs/<time>.txt and
+--input / --env: a test run's scripted pad input (the PC's --input format) and
+RT_* switches (NAME=VALUE lines), sent as GET /test; the loader puts them in
+E:\\Games\\MH1\\data (input.txt, env.txt; xbox_env.c, viewer.c) and removes
+them when none are given. Logs the Xbox sends (POST /log) are saved to build/xbox/logs/<time>.txt and
 printed. A log that starts with "MH1DUMP <name>" (src/pc/xbox/dumper: the BIOS
 flash, for xemu) is saved to build/xbox/dump/<name> instead; Microsoft's file, so it stays out of git
 (build/ is ignored). Only these paths are served; nothing else in the repo is reachable.
@@ -23,6 +26,7 @@ XBE = os.path.join(ROOT, 'default.xbe')
 RERUN = os.path.join(ROOT, 'rerun.txt')
 LOGS = os.path.join(ROOT, 'logs')
 DUMPS = os.path.join(ROOT, 'dump')
+TEST = {'input': None, 'env': None}
 
 
 def version():
@@ -44,6 +48,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/version':
             self.reply(version().encode(), 'text/plain')
+        elif self.path == '/test':
+            ins = open(TEST['input'], 'rb').read() if TEST['input'] else b''
+            env = open(TEST['env'], 'rb').read() if TEST['env'] else b''
+            self.reply(b'MH1TEST %d %d\n' % (len(ins), len(env)) + ins + env, 'text/plain')
         elif self.path == '/mh1.xbe':
             self.reply(open(XBE, 'rb').read())
         else:
@@ -82,7 +90,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--port', type=int, default=8765)
     ap.add_argument('--xbe', help='the build to serve (default build/xbox/default.xbe)')
+    ap.add_argument('--input', help="a test run's scripted input (PC --input format)")
+    ap.add_argument('--env', help="a test run's RT_* switches (NAME=VALUE lines)")
     a = ap.parse_args()
+    TEST['input'] = a.input and os.path.abspath(a.input)
+    TEST['env'] = a.env and os.path.abspath(a.env)
     if a.xbe:
         global XBE
         XBE = os.path.abspath(a.xbe)

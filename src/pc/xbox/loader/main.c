@@ -34,6 +34,8 @@ extern struct netif *g_pnetif;
 #define GAME_VER DIR "mh1.ver"
 #define GAME_LOG DIR "mh1log.txt"
 #define HOSTFILE DIR "loader.txt"
+#define TEST_INPUT DIR "data\\input.txt"
+#define TEST_ENV   DIR "data\\env.txt"
 
 static char *read_file(const char *path, int *n)
 {
@@ -87,6 +89,32 @@ static void launch_game(void)
     launch(GAME);
 }
 
+/* a test run's scripted input and RT_* switches (tools/xbox_serve.py --input/--env):
+ * "MH1TEST <input bytes> <env bytes>" then both; a part of length 0 removes the file,
+ * so no test script lingers on the disk for a normal start */
+static void fetch_test(void)
+{
+    int n, ni, ne;
+    char *b = xh_http("GET", "/test", NULL, 0, &n), *p;
+    if (!b)
+        return;
+    if (sscanf(b, "MH1TEST %d %d", &ni, &ne) == 2 && (p = strchr(b, '\n')) != NULL &&
+        ni >= 0 && ne >= 0 && p + 1 + ni + ne == b + n) {
+        p++;
+        if (ni)
+            write_file(TEST_INPUT, p, ni);
+        else
+            remove(TEST_INPUT);
+        if (ne)
+            write_file(TEST_ENV, p + ni, ne);
+        else
+            remove(TEST_ENV);
+        if (ni || ne)
+            debugPrint("Test run: input %d bytes, env %d bytes.\n", ni, ne);
+    }
+    free(b);
+}
+
 int main(void)
 {
     unsigned long ldt;
@@ -133,5 +161,6 @@ int main(void)
         else
             debugPrint("Download failed; starting the copy on the disk.\n");
     }
+    fetch_test();
     launch_game();
 }

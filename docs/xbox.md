@@ -958,3 +958,13 @@ that is the cached monster models/textures and kept files above.
   its own village warps).
 - The slow-motion fallback only hides a CPU problem: on hardware, check the
   movie decode time (prof lines) and the field frame rate.
+
+### Test runs on the real Xbox through the loader (12 Oct 2026)
+
+`tools/xbox_serve.py --xbe build/xbox/nv2a/default.xbe --input FILE --env FILE` serves a
+test run's scripted input and RT_* switches as GET /test ("MH1TEST <n_input> <n_env>\n" + both).
+The loader (source; needs one owner install with tools/xbox_upload.sh) writes them to
+E:\Games\MH1\data\input.txt and env.txt, which the game reads as D:\data\... (viewer.c,
+xbox_env.c), and removes them when the server has none, so a normal start never plays a stale
+script. One extra connection per start (4 in all). With this, the xemu quest loop's input
+(tools/xemu_quest_loop.sh) can run on hardware with nobody at the pad.
