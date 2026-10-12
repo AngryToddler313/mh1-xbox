@@ -1121,3 +1121,18 @@ Tools (all standard library, run from the worktree root):
 - tools/rodmap.py OBJ MODULE: one `MODULE:rodata` slot line per .rodata section of a compiled TU (original address
   from the lui/addiu pair of the matched function that uses it).
 - tools/rmfn.py FILE NAME..: delete function definitions (and the comment block above) from a near-match file.
+- quest/f_quest.c (0x226C30-0x22C66C, 83 functions): one TU replacing 22 runs; newly matched stolen_item_stack (a
+  second pointer variable p for the second loop), Ext_pick_point_init (the plain 20-step loop over StiEM_data via a
+  pointer and stiem_stack_tbl[i]; MWCC unrolls it 5x), em_work_serch2 (K&R definition: the original sign-extends both
+  s16 arguments itself; `for (i = 0; i <= quest_w.x3A; i++)` gives the original `slt at, x3A, zero` pre-test).
+  Still raw: Em_direct_set, Quest_next_em_set (12 lines: v / pointer register swap a1<->a2, no decl order or loop
+  spelling changed it), Item_regained, Share_item_stack, Net_Share_item_stack, Share_item_num_ck, Em_hagi_point_cnt_ck
+  (the original keeps em in a0 and loads x88D into a2; ours moves em to s0 first), quest_condition_prog,
+  remuneration_item_set (24 lines after the first loop became a plain 32-step loop; loop-rotation/scheduling hunks
+  left), quest_item_ck2, Quest_net_sub.
+- tools/mktu.py learned: K&R definitions (also as raw stubs: ANSI header with promoted int parameters, K&R
+  prototype), `TU_ADDARG` for (void) definitions, dropping a second, different prototype of an outside function
+  (prints `# dropped ...`; check realdiff afterwards).
+- f_cam (0x21F3D0-0x222E20) assembles as a TU too (TU_DROP the float-first prototypes of flvecRotY/cpInterVector that
+  some runs declared but never called); point_cam_sub there keeps w in a2 where the original uses a3 (decl order: no
+  change). Not registered (nothing new matched).

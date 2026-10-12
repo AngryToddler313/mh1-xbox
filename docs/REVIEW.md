@@ -12,6 +12,18 @@ obvious workarounds.
 
 ## Open
 
+### f_quest as one file (12 Oct 2026, agent B)
+- **Dropped:** the 22 per-run files of the quest file (src/main/quest/f_quest01..04.c, f_questb..r.c, qstb07.c,
+  strg01.c; f_quest.c itself is now the whole file) and in src/main/quest/f_quest_nm.c the 70 near-match copies
+  of functions that were matched (as runs or now).
+- **Now:** src/main/quest/f_quest.c is the whole quest file (0x226C30-0x22C66C) as one TU, byte-identical, 12
+  functions kept as original bytes (c_rawfuncs), their near-match C in f_quest_nm.c (PC, weak). The PC compiles
+  f_quest.c with the va_list fix and its statics global. quest_em_die passes `(s16)` casts to em_work_serch2 (the
+  original's K&R definition gives no prototype, the call still extends the arguments).
+- **Why:** one file per original source file (MWCC context); stolen_item_stack, Ext_pick_point_init and
+  em_work_serch2 match now. Tests passed: quest_loop, progression, urgent, activities, all_quests, save.
+  Revert: the commit "f_quest: the quest file as one TU".
+
 ### f_pl as one file; em_dur_set's host copy; rodata slots renamed .data (12 Oct 2026, agent B)
 - **Dropped:** the 57 per-run files of the player file f_pl (src/main/pl/pl01..pl48.c, plx03/04/09/12.c,
   pl_wall.c, pldmv.c, plegg.c, plegg2.c, pl_demo.c) and their 57 text / 17 rodata lines in config/c_files.txt;

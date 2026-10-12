@@ -79,12 +79,12 @@ extern char lit_1807_0035B1F0[];
 extern u8 chat_act_tbl_002F1860[0xD];
 void Pl_se_req2(PLW *, int, int, f32 *, int, int);
 typedef struct TUTO_REC {
-    u16 id;     
+    u16 id;     /* 0x00 */
     u16 _02;
-    f32 x;      
-    f32 y;      
-    f32 z;      
-    f32 r;      
+    f32 x;      /* 0x04 */
+    f32 y;      /* 0x08 */
+    f32 z;      /* 0x0C */
+    f32 r;      /* 0x10 */
 } TUTO_REC;
 void adx_se_set(PLW *, int);
 void init_set_work();

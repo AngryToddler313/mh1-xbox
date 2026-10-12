@@ -313,33 +313,12 @@ MATCHED_A="src/main/eft/eft02.c \
     src/main/pl/plx10.c \
     src/main/pl/plx11.c \
     src/main/quest/f_quest.c \
-    src/main/quest/f_quest01.c \
-    src/main/quest/f_quest02.c \
-    src/main/quest/f_quest03.c \
-    src/main/quest/f_quest04.c \
-    src/main/quest/f_questb.c \
-    src/main/quest/f_questc.c \
-    src/main/quest/f_queste.c \
-    src/main/quest/f_questg.c \
-    src/main/quest/f_questh.c \
-    src/main/quest/f_questi.c \
-    src/main/quest/f_questj.c \
-    src/main/quest/f_questk.c \
-    src/main/quest/f_questl.c \
-    src/main/quest/f_questm.c \
-    src/main/quest/f_questn.c \
-    src/main/quest/f_questo.c \
-    src/main/quest/f_questp.c \
-    src/main/quest/f_questq.c \
-    src/main/quest/f_questr.c \
     src/main/quest/qstb01.c \
     src/main/quest/qstb02.c \
     src/main/quest/qstb03.c \
     src/main/quest/qstb04.c \
     src/main/quest/qstb05.c \
     src/main/quest/qstb06.c \
-    src/main/quest/qstb07.c \
-    src/main/quest/strg01.c \
     src/main/reward/rwkey02.c \
     src/main/stage/f_stageb.c \
     src/main/sys/empty_23E4E0.c \
@@ -598,12 +577,18 @@ for f in $GAME; do
     src="$f"
     # f_quest_nm.c declares va_list as char * (the PS2 ABI): use the host's
     case "$f" in
-    src/main/quest/f_quest_nm.c|src/main/quest/strg01.c)
+    src/main/quest/f_quest_nm.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef char \*va_list;/#include <stdarg.h>/; s/^#include "va.h"/#include <stdarg.h>/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # f_quest.c (TU): the same va_list fix; its static functions are global on the PC so that f_quest_nm.c's
+    # near-matches of the raw functions call these
+    src/main/quest/f_quest.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^typedef char \*va_list;/#include <stdarg.h>/; s/^#include "va.h"/#include <stdarg.h>/; s/^static //' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # item_action_set calls Get_Active_itemnum() with a0 = pl left over; the file's static functions are global
-    # on the PC so that pl_nm.c's near-matches of the 13 raw functions call these (pl_nm.c holds no copies of them)
+    # on the PC so that pl_nm.c's near-matches of the raw functions call these (pl_nm.c holds no copies of them)
     src/main/pl/f_pl.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/(s16)Get_Active_itemnum()/(s16)Get_Active_itemnum(pl)/; s/^static //' "$f" > "$src"

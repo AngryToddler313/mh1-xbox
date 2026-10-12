@@ -57,6 +57,25 @@ def items(path):
             out_items.append(('decl', ''.join(buf).strip())); buf = []
         j += 1
     return out_items
+def knr_to_ansi(head, promote=False):
+    """'int f(a, b)\nEMW *a;\nint b;' -> 'int f(EMW *a, int b)' (asm stubs need an ANSI header)"""
+    m = re.match(r'^(.*?\b\w+\s*\()([^)]*)\)\s*(.*)$', head, re.S)
+    if not m or not m.group(3).strip(): return re.sub(r'\s+', ' ', head)
+    names = [x.strip() for x in m.group(2).split(',') if x.strip()]
+    types = {}
+    for d in m.group(3).split(';'):
+        d = d.strip()
+        if not d: continue
+        base = re.match(r'^((?:unsigned |signed |struct )?\w+)\s*(.*)$', d)
+        for part in base.group(2).split(','):
+            part = part.strip(); nm_ = re.search(r'(\w+)\s*(\[.*\])?$', part).group(1)
+            t = base.group(1)
+            if promote and t in ('u8', 's8', 'u16', 's16', 'char', 'short', 'unsigned char', 'signed char', 'unsigned short') \
+                    and not part.startswith('*'):
+                t = 'int'      # K&R arguments arrive promoted; the asm stub's ANSI header must say so
+            types[nm_] = (t + ' ' + part).strip()
+    return m.group(1) + ', '.join(types.get(n, 'int ' + n) for n in names) + ')'
+
 def fname(t):
     t2 = re.sub(r'/\*.*?\*/', '', t, flags=re.S)
     m = re.search(r'(\w+)\s*\([^{]*\{', t2)
@@ -101,9 +120,11 @@ for a, nm, b in funcs:
     if nm in raw:
         t3 = re.sub(r'/\*.*?\*/', '', t, flags=re.S).strip()
         head = re.sub(r'^static\s+', '', t3[:t3.index('{')].strip())
+        knr = bool(re.search(r'\)\s*\S', head))
+        head = knr_to_ansi(head, promote=knr)
         t2 = ('/* %s: original bytes kept (near-match C in %s, linked weak by the PC build): build/raw/%s.inc,\n   config/c_rawfuncs.txt */\n'
               '#ifdef __MWERKS__\nasm %s\n{\n#include "%s.inc"\n}\n#endif' % (nm, p, nm, head, nm))
-        rawhead[nm] = head
+        rawhead[nm] = re.sub(r'\(.*\)$', '()', head, flags=re.S) if knr else head
     if nm in addarg:   # called with one more argument than the definition takes: (void) -> (), else one unused int
         if re.search(r'\b%s\s*\(\s*void\s*\)' % nm, t2):
             t2 = re.sub(r'(\b%s\s*\()\s*void\s*\)' % nm, r'\1)', t2, count=1)

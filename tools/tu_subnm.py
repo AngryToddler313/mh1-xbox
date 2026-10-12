@@ -5,7 +5,7 @@ import re, sys
 tu, nm, out = sys.argv[1:4]; names = set(sys.argv[4:])
 s = open(tu).read(); n = open(nm).read()
 def nmfunc(name):
-    m = re.search(r'^[^\n;]*\b%s\([^;{)]*\)\s*(?:[^{;()]*;\s*)*\{\n' % name, n, re.M)
+    m = re.search(r'^[^\n;]*\b%s\([^;{)]*\)[ \t]*\n?(?:[^{;()\n]+;[ \t]*(?:/\*[^\n]*\*/)?[ \t]*\n)*[ \t]*\{\n' % name, n, re.M)
     if not m: raise SystemExit('no C for ' + name)
     b = n.index('\n}\n', m.start()) + 3
     return n[m.start():b]

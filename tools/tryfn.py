@@ -4,7 +4,7 @@ the number of real differing lines (realdiff) of FUNC."""
 import re, sys, subprocess, os
 base, func = sys.argv[1], sys.argv[2]
 s = open(base).read()
-m = re.search(r'^[^\n;]*\b%s\([^;{)]*\)\s*(?:[^{;()]*;\s*)*\{\n' % func, s, re.M)
+m = re.search(r'^[^\n;]*\b%s\([^;{)]*\)[ \t]*\n?(?:[^{;()\n]+;[ \t]*(?:/\*[^\n]*\*/)?[ \t]*\n)*[ \t]*\{\n' % func, s, re.M)
 a = m.start(); b = s.index('\n}\n', a) + 3
 for v in sys.argv[3:]:
     t = open(v).read().strip('\n') + '\n'
