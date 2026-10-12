@@ -103,65 +103,6 @@ void disp_name(void) {
     }
 }
 
-/* 0x12B900 */
-void Pit_disp_quest(void) {
-    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
-
-    SetTrnslMode(4, 5);
-    if (lpPit->x46 == 0) {
-        *(void **)(pfl_quest + 0xC) = 0;
-        DispFrameList(pfl_quest, lit_2124, -1);
-        flfntLocate(0x167, 0xB6);
-        font_print_uf(lit_2125);
-        return;
-    }
-    if (lpPit->x43 == 0) {
-        sprintf(buf, (char *)lit_2126);
-    } else {
-        sprintf(buf, (char *)lit_2127, lpPit->x43 + 1);
-    }
-    *(void **)(pfl_quest + 0xC) = quest_str[lpPit->x43];
-    DispFrameList(pfl_quest, buf, -1, lpPit->x43);
-    DispFrameListOptionArrow(pfl_quest);
-    font_set_palette(0);
-    flfntLocate(0x167, 0x66);
-    font_print_uf(Quest_str_get(0));
-    switch (lpPit->x43) {
-    case 0:
-        if (game_w.x1DC == 0) {
-            quest_condition_print(lpPit->x43);
-        } else {
-            func_5CB310(lpPit->x43);
-        }
-        return;
-    case 1:
-        flfntLocate(0x1C1, 0xA2);
-        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 8));
-        flfntLocate(0x1C1, 0xB6);
-        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 4));
-        flfntLocate(0x1C1, 0xDE);
-        font_print_quest_time(1);
-        flfntLocate(0x1C1, 0xF2);
-        font_print_uf(map_name[*(s32 *)(*(u8 **)(quest_w + 0x94) + 0x14)]);
-        flfntLocate(0x167, 0x12E);
-        if ((*(u8 **)(quest_w + 0x94))[3] == 0) {
-            font_print_uf(lit_2128);
-        }
-        return;
-    case 2:
-        flfntLocate(0x1E5, 0xA2);
-        font_print_quest_lv((*(u8 **)(quest_w + 0x94))[2]);
-        flfntLocate(0x167, 0xDE);
-        font_print_uf(Quest_str_get(1));
-        flfntLocate(0x167, 0x12E);
-        font_print_uf(Quest_str_get(2));
-        return;
-    case 3:
-        flfntLocate(0x167, 0xB6);
-        font_print_uf(Quest_str_get(3));
-        break;
-    }
-}
 
 /* 0x12BBC0 */
 void font_print_quest_time(int n) {
@@ -2345,46 +2286,6 @@ void Pit_effect_move(void) {
     lpPit->x84 = 0;
 }
 
-/* 0x134360 */
-void Pit_disp_pit_effect(void) {
-    PFLP12 q;
-    f32 s, c;
-    PEF *e;
-    int k;
-
-    if (lpPit->x84 != 0) {
-        SetFilterMode(1);
-        reload_tex(1, 0x118);
-        SetTextureStage(0x118);
-        k = 6;
-        e = pit_efct;
-        do {
-            if (e->on != 0 && e->show != 0) {
-                SetBlendingMode(e->d->blend);
-                q.col = e->d->col | (e->alpha << 24);
-                q.uv[4] = q.uv[0] = e->d->u + 1;
-                q.uv[3] = q.uv[1] = e->d->v + 1;
-                q.uv[2] = e->d->u + e->d->w - 1;
-                q.uv[5] = e->d->v + e->d->h - 1;
-                flSinCos((6.2831855f * (f32)e->d->ang) / 65536.0f, &s, &c);
-                q.p[0] = 0.8f * (e->x + e->l * c - e->t * s);
-                q.p[1] = e->y + (s16)(e->l * s + e->t * c);
-                q.p[2] = 0.8f * (e->x + e->r * c - e->t * s);
-                q.p[3] = e->y + (s16)(e->r * s + e->t * c);
-                q.p[4] = 0.8f * (e->x + e->l * c - e->b * s);
-                q.p[5] = e->y + (s16)(e->l * s + e->b * c);
-                flps000C(&q);
-                q.uv[0] = e->d->u + e->d->w - 1;
-                q.uv[1] = e->d->v + e->d->h - 1;
-                q.p[0] = 0.8f * (e->x + e->r * c - e->b * s);
-                q.p[1] = e->y + (s16)(e->r * s + e->b * c);
-                flps000C(&q);
-            }
-            k--;
-            e++;
-        } while (k != 0);
-    }
-}
 
 /* 0x134710 */
 int pef_get_scale(PEF *e, int *tbl, s16 t) {

@@ -1,4 +1,5 @@
-/* menu34 - f_menu 0x00134280-0x0013435C: pit effect update */
+/* menu34 - f_menu 0x00134280-0x00134710: pit effect update (Pit_effect_move) and drawing (Pit_disp_pit_effect: two
+   triangles per effect sprite; matched by agent B: `q.uv[0] = q.uv[4] = ..` store order, `while (--k != 0)`). */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -334,4 +335,44 @@ void Pit_effect_move(void) {
         return;
     }
     lpPit->x84 = 0;
+}
+
+/* Draws the six pit effects (pit_efct) as two rotated triangles each. */
+void Pit_disp_pit_effect(void) {
+    PFLP12 q;
+    f32 s, c;
+    PEF *e;
+    int k;
+
+    if (*(u8 *)&lpPit->x84 != 0) {   /* read as u8 (lbu); PIT_W declares it s8 */
+        SetFilterMode(1);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        k = 6;
+        e = pit_efct;
+        do {
+            if (e->on != 0 && e->show != 0) {
+                SetBlendingMode(e->d->blend);
+                q.col = e->d->col | (e->alpha << 24);
+                q.uv[0] = q.uv[4] = e->d->u + 1;
+                q.uv[1] = q.uv[3] = e->d->v + 1;
+                q.uv[2] = e->d->u + e->d->w - 1;
+                q.uv[5] = e->d->v + e->d->h - 1;
+                flSinCos((6.2831855f * (f32)e->d->ang) / 65536.0f, &s, &c);
+                q.p[0] = 0.8f * (e->x + e->l * c - e->t * s);
+                q.p[1] = e->y + (s16)(e->l * s + e->t * c);
+                q.p[2] = 0.8f * (e->x + e->r * c - e->t * s);
+                q.p[3] = e->y + (s16)(e->r * s + e->t * c);
+                q.p[4] = 0.8f * (e->x + e->l * c - e->b * s);
+                q.p[5] = e->y + (s16)(e->l * s + e->b * c);
+                flps000C(&q);
+                q.uv[0] = e->d->u + e->d->w - 1;
+                q.uv[1] = e->d->v + e->d->h - 1;
+                q.p[0] = 0.8f * (e->x + e->r * c - e->b * s);
+                q.p[1] = e->y + (s16)(e->r * s + e->b * c);
+                flps000C(&q);
+            }
+            e++;
+        } while (--k != 0);
+    }
 }

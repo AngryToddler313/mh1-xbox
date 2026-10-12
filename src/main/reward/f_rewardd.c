@@ -1,16 +1,14 @@
-/* NEAR-MATCH, not built: reward_itembox is complete but only ~200 of 314
- * instructions differ, all of them register allocation (the original keeps
- * several loop-invariant field addresses of the sprite struct in s1-s6 in
- * another order) and where a movn/branch lands.
- * Quest reward screen, item grid (0x293690-0x293B68): draws the 16-slot
- * reward item list as icons on a background grid, the cursor, and the name /
- * count of the selected item. Meanings are guesses. */
+/* f_rewardd - quest reward screen, item grid (SLPM_654.95 0x00293690-0x00293B68): reward_itembox draws the 16-slot
+ * reward item list as icons on a background grid, the cursor, and the name / count of the selected item.
+ * Byte-matches (agent B, 12 Oct 2026): the background rectangle is an s16 array (the original keeps the
+ * addresses of its elements in registers), the alpha is written out at each use, the selected slot is read
+ * through a pointer, `mode == 0` first. Meanings are guesses. */
 #include "reward.h"
 
-typedef struct RWD_RECT {
-    s16 x0, y0, x1, y1;
-    u32 col;
-} RWD_RECT;
+typedef struct RWD_RECT2 {
+    s16 p[4];           /* 0x0 x0, y0, x1, y1 (an array: the original keeps &p[1..3] in registers) */
+    u32 col;            /* 0x8 */
+} RWD_RECT2;
 
 typedef struct RWD_SPR {
     s16 pos[2];
@@ -39,13 +37,12 @@ s16 cur;
 u8 mode;
 s8 xb;
 {
-    RWD_RECT rect;
+    RWD_RECT2 rect;
     RWD_SPR spr;
     char buf[0x20];
     s16 i;
     u8 col;
     PL_ITEM *ip;
-    u32 alpha;
     int id;
     u8 icon;
 
@@ -53,19 +50,18 @@ s8 xb;
     DispFrameMessageA(reward_item_base, 0, col);
     rect.col = 0xFF200000;
     for (i = 0; i < 16; i++) {
-        rect.x0 = (s16)(0.8f * (313.0f + 36.0f * (i & 7))) + 4;
-        rect.x1 = rect.x0 + 0x19;
-        rect.y0 = (i >> 3) * 32 + 0xD4;
-        rect.y1 = rect.y0 + 0x1C;
+        rect.p[0] = (s16)(0.8f * (313.0f + 36.0f * (i & 7))) + 4;
+        rect.p[2] = rect.p[0] + 0x19;
+        rect.p[1] = (i >> 3) * 32 + 0xD4;
+        rect.p[3] = rect.p[1] + 0x1C;
         flps0004(&rect);
     }
     SetFilterMode(0);
     reload_tex(1, 0x118);
     SetTextureStage(0x118);
-    alpha = (u32)col << 24;
     spr.size[0] = 0x20;
     spr.size[1] = 0x20;
-    for (i = 0, ip = game_w.reward_item; i < 16; i++, ip++) {
+    for (ip = game_w.reward_item, i = 0; i < 16; i++, ip++) {
         spr.pos[0] = (s16)(0.8f * (313.0f + 36.0f * (i & 7)));
         spr.pos[1] = (i >> 3) * 32 + 0xD2;
         id = ip->id;
@@ -77,7 +73,7 @@ s8 xb;
                 spr.uv[2] = ((icon + 1) & 7) * 32 + 0x1F;
                 spr.uv[3] = ((icon + 1) >> 3) * 32 + 0x1F;
                 spr.col = item_col_tbl[Item_data[id][6]];
-                spr.col = (spr.col & 0xFFFFFF) | alpha;
+                spr.col = (spr.col & 0xFFFFFF) | ((u32)col << 24);
                 flps0008(&spr);
             }
         }
@@ -87,15 +83,16 @@ s8 xb;
         spr.pos[1] = (cur >> 3) * 32 + 0xD2;
         *(u32 *)&spr.uv[0] = 0;
         *(u32 *)&spr.uv[2] = 0x200020;
-        spr.col = alpha | 0xFFFFFF;
+        spr.col = ((u32)col << 24) | 0xFFFFFF;
         flps0008(&spr);
         flfntSetSize(0x12, 0x12);
-        if (mode != 0) {
-            font_set_palette(0xA);
-        } else {
+        if (mode == 0) {
             font_set_palette(0);
+        } else {
+            font_set_palette(0xA);
         }
-        id = game_w.reward_item[cur].id;
+        ip = &game_w.reward_item[cur];
+        id = ip->id;
         if (id == 0) {
             sprintf(buf, item_str[0]);
         } else {
@@ -107,7 +104,7 @@ s8 xb;
                 sprintf(buf, lit_1001_00386A58, item_str[id]);
                 break;
             default:
-                sprintf(buf, lit_1002_00386A60, item_str[id], game_w.reward_item[cur].num);
+                sprintf(buf, lit_1002_00386A60, item_str[id], ip->num);
                 break;
             }
         }

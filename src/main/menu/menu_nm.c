@@ -1654,24 +1654,6 @@ void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
     flps0008(&q);
 }
 
-void camp_disp_sub(f32 x, f32 y) {
-    PFLPS q;
-    f32 w, h;
-
-    reload_tex(1, 0x119);
-    SetTextureStage(0x119);
-    SetFilterMode(0);
-    q.b = 0xF00020;
-    q.a = -1;
-    q.c = 0xFF002F;
-    q.s[0] = 0.8f * (x - 8.0f);
-    q.s[1] = y - 8.0f;
-    w = 12.8f;
-    h = 16.0f;
-    q.s[2] = w;
-    q.s[3] = h;
-    flps0008(&q);
-}
 
 void Pit_mv_lb(void) {
     int now;
@@ -2203,77 +2185,3 @@ void disp_map_sign(int x, int y, s16 timer, int color) {
     }
 }
 
-/* Draws one monster icon on the map at (x, y); bosses and small icons are
- * filled circles, the rest a rotated textured quad. */
-void enemy_on_map(EMW *em, f32 x, f32 y, f32 scale) {
-    u8 c;
-    f32 r;
-    u32 col;
-    s16 u;
-    s16 u2;
-    f32 v[3];
-    PFLP12 q;
-    FLMAT m;
-    f32 out[4][3];
-    f32 step;
-    f32 lo;
-    f32 t;
-    s16 i;
-    u32 ang;
-
-    c = enemy_icon_tbl[em->kind];
-    if (c == 0xFF) {
-        return;
-    }
-    if (c & 0x80) {
-        if (c & 0x40) {
-            r = 5.0f * scale;
-            col = boss_icon_color(em);
-        } else {
-            r = 3.0f;
-            col = enemy_icon_color[c & 0xF];
-        }
-        maru_disp_sub(col, x, y, r);
-        return;
-    }
-    x *= 0.8f;
-    SetFilterMode(0);
-    if (FLD8(*em, 0x388) != 2) {
-        c |= 4;
-    }
-    u = enemy_icon_tex_u[c];
-    u2 = u + 0x10;
-    flmatInit(&m);
-    ang = (0x18000 - em->ang[1]) & 0xFFFF;
-    flmatSetZYX33(0.0f, 0.0f, 2.0f * (3.1415927f * (((360.0f * (f32)ang) / 65536.0f) / 360.0f)), &m);
-    v[2] = 0.0f;
-    t = 12.8f * scale;
-    lo = -t;
-    step = 2.0f * t;
-    for (i = 0; i < 4; i++) {
-        v[0] = lo + step * (f32)(i / 2);
-        v[1] = lo + step * (f32)(i & 1);
-        flvecApplyMat33(out[i], v, &m);
-        out[i][0] = x + 0.8f * out[i][0];
-        out[i][1] = out[i][1] + y;
-    }
-    q.p[0] = out[0][0];
-    q.p[1] = out[0][1];
-    q.p[2] = out[1][0];
-    q.p[3] = out[1][1];
-    q.p[4] = out[2][0];
-    q.p[5] = out[2][1];
-    q.uv[0] = u;
-    q.uv[1] = 0xF0;
-    q.uv[3] = 0x100;
-    q.uv[5] = 0xF0;
-    q.uv[2] = u;
-    q.uv[4] = u2;
-    q.col = boss_icon_color(em);
-    flps000C(&q);
-    q.p[0] = out[3][0];
-    q.p[1] = out[3][1];
-    q.uv[0] = u2;
-    q.uv[1] = 0x100;
-    flps000C(&q);
-}

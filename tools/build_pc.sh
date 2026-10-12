@@ -95,7 +95,7 @@ QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutori
        src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c src/main/sprite/spriteput_nm.c \
        src/main/load/mkmap.c \
        src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
-       src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardd_nm.c \
+       src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardd.c \
        src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 EM="$EM src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c"
 # More monster families (round 20): the AI draft (emNN_ai_nm.c or the

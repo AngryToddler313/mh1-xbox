@@ -1,5 +1,7 @@
-/* menu_ftime - f_menu disp (SLPM_654.95 0x0012BBC0-0x0012BC98): font_print_quest_time, the quest timer as zenkaku "mm:ss". The `& 0xFFFFFFFF` and the
- * int temps are what the permuter found. Whole file in menu_disp_nm.c. */
+/* menu_ftime - f_menu disp (SLPM_654.95 0x0012B900-0x0012BC98): Pit_disp_quest (the quest page of the pit menu) and
+ * font_print_quest_time, the quest timer as zenkaku "mm:ss". The `& 0xFFFFFFFF` and the int temps are what the
+ * permuter found. Pit_disp_quest matched by agent B (12 Oct 2026): the page number read once into n, `return` in the
+ * then-block of case 0, `break` after case 1; its buf is 40 bytes on the PS2 (frame size) and 64 on the PC. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -63,6 +65,72 @@ extern u8 quest_str[][0x34];
 extern u8 item_cmd_frame[], item_cmd_str[], item_yn_frame[], item_cmd_present[];
 extern u8 item_cmd_item_num[], D_6EAC80[];
 extern u8 frame_matA[], frame_matB[], frame_mix_cmd[], frame_mixed_item[];
+
+/* The quest page of the pit menu: frame, title and the clear conditions, reward, time and map. */
+void Pit_disp_quest(void) {
+#ifdef __MWERKS__
+    char buf[40];
+#else
+    char buf[64];   /* PC: room for the longest format string the game prints here */
+#endif
+    int n;
+
+    SetTrnslMode(4, 5);
+    if (lpPit->x46 == 0) {
+        *(void **)(pfl_quest + 0xC) = 0;
+        DispFrameList(pfl_quest, lit_2124, -1);
+        flfntLocate(0x167, 0xB6);
+        font_print_uf(lit_2125);
+        return;
+    }
+    if (lpPit->x43 == 0) {
+        sprintf(buf, (char *)lit_2126);
+    } else {
+        sprintf(buf, (char *)lit_2127, lpPit->x43 + 1);
+    }
+    n = lpPit->x43;
+    *(void **)(pfl_quest + 0xC) = quest_str[n];
+    DispFrameList(pfl_quest, buf, -1, n);
+    DispFrameListOptionArrow(pfl_quest);
+    font_set_palette(0);
+    flfntLocate(0x167, 0x66);
+    font_print_uf(Quest_str_get(0));
+    switch (lpPit->x43) {
+    case 0:
+        if (game_w.x1DC == 0) {
+            quest_condition_print(lpPit->x43);
+            return;
+        }
+        func_5CB310(lpPit->x43);
+        return;
+    case 1:
+        flfntLocate(0x1C1, 0xA2);
+        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 8));
+        flfntLocate(0x1C1, 0xB6);
+        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 4));
+        flfntLocate(0x1C1, 0xDE);
+        font_print_quest_time(1);
+        flfntLocate(0x1C1, 0xF2);
+        font_print_uf(map_name[*(s32 *)(*(u8 **)(quest_w + 0x94) + 0x14)]);
+        flfntLocate(0x167, 0x12E);
+        if ((*(u8 **)(quest_w + 0x94))[3] == 0) {
+            font_print_uf(lit_2128);
+        }
+        break;
+    case 2:
+        flfntLocate(0x1E5, 0xA2);
+        font_print_quest_lv((*(u8 **)(quest_w + 0x94))[2]);
+        flfntLocate(0x167, 0xDE);
+        font_print_uf(Quest_str_get(1));
+        flfntLocate(0x167, 0x12E);
+        font_print_uf(Quest_str_get(2));
+        return;
+    case 3:
+        flfntLocate(0x167, 0xB6);
+        font_print_uf(Quest_str_get(3));
+        break;
+    }
+}
 
 void font_print_quest_time(int n) {
     char buf[8];
