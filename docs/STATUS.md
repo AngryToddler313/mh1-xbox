@@ -856,3 +856,13 @@ Done (worktree E, merged): printf with floats on the Xbox (xbox_libc.c). The vio
 is NOT darker in our renderer (xemu = PC); the hardware capture is ~25-30 levels darker on every
 screen: the video chain (NTSC-J black level vs the HDMI adapter, or adapter/capture brightness).
 Owner check when convenient: capture a retail game's dark scene through the same chain.
+
+Later 11-12 Oct (f49c80b4, all 21 PC tests + online, rebuild OK x5, both Xbox builds): worker F
+merged: the first player loop runs in xemu (new game, character, save, village, quest 131, hunt,
+carve, deliver, reward, village, bed save; CONTINUE loads it): tools/xemu_quest_loop.sh (~10 min,
+passes). Scripted input/env on the Xbox (D:\data\input.txt, env.txt), FATX formatter for the
+xemu HDD (tools/xbox_fatx.py), pdclib fixes (fopen w+/r+, sscanf floats), hunter no longer floats
+(nv2a), viewer catches up at most 4 ticks per frame, motion-set GC. Open: memory falls per loop
+(village 10 MB free -> 6 MB after one loop); a helper is on it in worktree F. Audio untestable in
+xemu (AC97 stalls). Next on hardware: run the same loop on the real Xbox (needs input.txt in
+E:\Games\MH1\data, i.e. one FTP copy or a loader that fetches it).
