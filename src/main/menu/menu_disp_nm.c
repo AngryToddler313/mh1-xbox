@@ -975,36 +975,6 @@ void disp_item_sub_select_ex(void) {
     }
 }
 
-/* 0x12F930 */
-int disp_shell_name(u8 slot, int y) {
-    char buf[64];
-    PLW *pl = lpPit->pl;
-    u16 id;
-    u8 *d;
-    u8 num;
-    int w;
-
-    if (slot == 0xFF) return 0;
-    id = pl->item[slot].id;
-    d = Item_data[id];
-    if (d[1] != 2) return 0;
-    num = *((u8 *)&pl->item[slot] + 2);
-    if (num == 0) return 0;
-    if (d[8] != pl->work56D) {
-        font_set_palette(5);
-    } else {
-        font_set_palette(0);
-    }
-    if (d[3] == 0xFF) {
-        sprintf(buf, (char *)lit_3659, item_str[id]);
-    } else {
-        sprintf(buf, (char *)lit_3660, item_str[id], num);
-    }
-    w = strlen(buf) * 10;
-    flfntLocate((int)(419.0f + (186.0f - (f32)w) / 2.0f), y);
-    font_print_uf(buf);
-    return 1;
-}
 
 /* 0x12FAF0 */
 void disp_item_icon(u8 slot, s16 x, int big, s8 side) {
@@ -1454,59 +1424,6 @@ void disp_pl_vital(void) {
     bar_disp(&g, 1);
 }
 
-/* 0x130F50 */
-void gage_disp(GAGE *g, int sel) {
-    PFLPS2 q;
-    f32 x, l, t;
-    u32 w, n, r;
-
-    reload_tex(1, 0x11A);
-    SetTextureStage(0x11A);
-    q.s[1] = g->y;
-    q.s[3] = 0xD;
-    q.col = g->col;
-    if (sel == 0) {
-        q.uv[1] = 0x55;
-        q.uv[3] = 0x62;
-    } else {
-        q.uv[1] = 0x61;
-        q.uv[3] = 0x54;
-    }
-    t = g->len * ((f32)g->cur / (f32)g->max);
-    w = (u32)t;
-    x = g->x;
-    r = w % 48;
-    q.uv[0] = 0x48;
-    n = w / 48;
-    q.uv[2] = 0x78;
-    while (n != 0) {
-        t = 0.8f * x;
-        x += 54.216003f;
-        q.s[0] = t;
-        q.s[2] = (s16)(0.8f * x) - (s16)t;
-        flps0008(&q);
-        n--;
-    }
-    q.s[0] = 0.8f * x;
-    q.s[2] = 0.8f * (1.1295f * (f32)r);
-    q.uv[2] = r + 0x48;
-    flps0008(&q);
-    q.s[0] = (f32)q.s[0] + (-3.2f + (f32)q.s[2]);
-    q.s[2] = 0x19;
-    q.s[3] = 0x12;
-    q.uv[0] = 0x47;
-    q.uv[2] = 0x67;
-    if (sel == 0) {
-        q.s[1] = g->y - 5;
-        q.uv[1] = 0x31;
-        q.uv[3] = 0x43;
-    } else {
-        q.s[1] = g->y - 2;
-        q.uv[1] = 0x42;
-        q.uv[3] = 0x54;
-    }
-    flps0008(&q);
-}
 
 /* 0x131280 */
 void bar_disp(GAGE *g, int sel) {
@@ -1562,46 +1479,6 @@ void lb_disp_chat_cnfg_sendpl(int, PIT_W *);
 void font_print_strings(s16, s16, void *, int);
 void disp_menu(int, PIT_W *);
 
-/* 0x1313A0 */
-void disp_slash_level(void) {
-    PFLPS2 q;
-    PLW *pl = lpPit->pl;
-    u8 c = *((u8 *)pl + 2);
-    u32 lv;
-    int v;
-
-    if (c == 1 || c == 5) return;
-    SetFilterMode(0);
-    reload_tex(1, 0x11A);
-    SetTextureStage(0x11A);
-    lv = (u8)Pl_slash_lv_ck(pl);
-    q.s[0] = 0x53;
-    q.s[1] = 0x2B;
-    q.s[2] = 0x2F;
-    q.s[3] = 0x1A;
-    q.col = -1;
-    q.uv[0] = 0xC5;
-    q.uv[2] = 0xFF;
-    q.uv[1] = slash_lev_tbl[lv];
-    q.uv[3] = q.uv[1] + 0x1A;
-    flps0008(&q);
-    if (lv < 3U) {
-        if (lv == 0) goto lab;
-    } else {
-lab:
-        SetFilterMode(1);
-        SetTrnslMode(4, 1);
-        v = ((System_timer & 0x7F) << 9) & 0xFFFF;
-        q.col = (((s8)(127.0f * flSin(0.0000958738f * (f32)v)) + 0x7F) << 24) | 0xFFFFFF;
-        if (lv == 0) {
-            q.col &= 0xFFFF0000;
-        }
-        q.uv[1] = 0x31;
-        q.uv[3] = 0x4B;
-        flps0008(&q);
-        SetTrnslMode(4, 5);
-    }
-}
 
 /* 0x131580 */
 void disp_pachinger(void) {
