@@ -27,6 +27,7 @@
 #include <windows.h>
 #include <xboxkrnl/xboxkrnl.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -1183,6 +1184,163 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
     use_program(0);
 }
 
+/* ------------------------------------------------------------ skinned clays at the camera
+ * skin.vs.cg divides by w like vs.vs.cg, so a skinned triangle with a corner at or behind the eye comes out
+ * wrapped across the screen, as execute_cpu's near clipping prevents for the CPU clays. NV2A itself does not
+ * clip it (xemu draws it through OpenGL, which does: the frames there looked right). Owner report from the real
+ * Xbox, 12 Oct 2026: "carcasses flicker" - a hunter carving a carcass has the camera right at the body (PC trace:
+ * the Aptonoth's body part has vertices behind w = 1 in most frames of a carve). Such a clay is skinned here on
+ * the CPU, the shader's math (gfx_skin_eval), from its own vertex buffer, cut at w = CLIP_W and drawn through
+ * vs.vs.cg; the others keep the GPU path. */
+
+/* could some vertex of the posed clay be in front of w = CLIP_W? Each vertex is the rigid part plus a weighted sum
+ * of its bind position through palette bones, so it lies in the hull of the bind sphere moved by each bone
+ * (and by the identity for the rigid part) [weights as stored are near 1 in sum, not exactly: a margin of 10%]. */
+static int skinned_in_front(const gfx_clay *c, const float *mvp)
+{
+    float len = sqrtf(mvp[3] * mvp[3] + mvp[7] * mvp[7] + mvp[11] * mvp[11]);
+    int b;
+    if (clip_w_of(mvp, c->center) - 1.1f * c->radius * len < CLIP_W)
+        return 0;
+    for (b = 0; c->pose && b < c->nbone; b++) {
+        const float *M = c->pose + 16 * b;
+        float p[3], sc, s2 = 0;
+        int k;
+        for (k = 0; k < 3; k++)
+            p[k] = c->center[0] * M[k] + c->center[1] * M[4 + k] + c->center[2] * M[8 + k] + M[12 + k];
+        for (k = 0; k < 3; k++) {           /* largest row length: an upper bound of the scale */
+            float r = M[4 * k] * M[4 * k] + M[4 * k + 1] * M[4 * k + 1] + M[4 * k + 2] * M[4 * k + 2];
+            if (r > s2)
+                s2 = r;
+        }
+        sc = sqrtf(s2);
+        if (clip_w_of(mvp, p) - 1.1f * c->radius * sc * len < CLIP_W)
+            return 0;
+    }
+    return 1;
+}
+
+static void draw_skinned_clipped(gfx_clay *c, const float *mvp)
+{
+    static const float id[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+    gfx_skin_mesh *m = c->skin;
+    const gfx_light *L = &c->light;
+    float tm[16];
+    int b, i, k, j, l;
+    wait_idle();                            /* reads the skinned vertex buffer the GPU may still read */
+    for (b = 0; b < m->nbatch; b++) {
+        const gfx_skin_batch *bt = &m->batch[b];
+        gfx_texture *t = G.batch_tex ? G.batch_tex : bt->tex ? bt->tex : G.tex;
+        float *w;
+        vtx *v;
+        int nv = bt->nv, ncross = 0, nidx = 0, nnew;
+        if (bt->src < 32 && (G.batch_hide >> bt->src & 1))
+            continue;
+        if (!c->st)
+            t = NULL;
+        if (!(w = malloc(sizeof(float) * (size_t)(nv + 1))))
+            continue;
+        ncross = bt->count / 3;             /* worst case: every triangle cut (2 new vertices each) */
+        if (nv + 2 * ncross > 65535 || !(v = ring_alloc(nv + 2 * ncross))) {
+            free(w);
+            continue;
+        }
+        for (i = 0; i < nv; i++) {          /* skin.vs.cg on the CPU (gfx_skin_eval) */
+            const uint8_t *s = c->svb + (size_t)(bt->vfirst + i) * SKIN_STRIDE;
+            float f[20], rows[3][4], n[3], lc[3] = { 1, 1, 1 };
+            uint8_t col[4];
+            memcpy(f, s, 24);                       /* pos, normal */
+            memcpy(col, s + 24, 4);
+            memcpy(f + 6, s + 28, 8);               /* st */
+            memcpy(f + 8, s + 36, 32);              /* weights, 3 * slot */
+            memcpy(f + 16, s + 68, 8);              /* rigid, tinted */
+            for (j = 0; j < 3; j++)
+                for (k = 0; k < 4; k++)
+                    rows[j][k] = f[16] * (j == k ? 1.0f : 0.0f);
+            for (k = 0; k < 4; k++) {
+                int slot = (int)(f[12 + k] / 3.0f + 0.5f);
+                const float *M = c->pose && slot < bt->nbone ? c->pose + 16 * bt->bone[slot] : id;
+                for (j = 0; j < 3; j++) {
+                    rows[j][0] += M[j] * f[8 + k];
+                    rows[j][1] += M[4 + j] * f[8 + k];
+                    rows[j][2] += M[8 + j] * f[8 + k];
+                    rows[j][3] += M[12 + j] * f[8 + k];
+                }
+            }
+            for (j = 0; j < 3; j++) {
+                v[i].pos[j] = f[0] * rows[j][0] + f[1] * rows[j][1] + f[2] * rows[j][2] + rows[j][3];
+                n[j] = f[3] * rows[j][0] + f[4] * rows[j][1] + f[5] * rows[j][2];
+            }
+            if (L->lit) {
+                float len2 = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+                if (len2 > 0) {
+                    float r = 1.0f / sqrtf(len2);
+                    n[0] *= r; n[1] *= r; n[2] *= r;
+                }
+                memcpy(lc, L->ambient, sizeof lc);
+                for (l = 0; l < 3; l++) {
+                    float dd = -(n[0] * L->dir[l][0] + n[1] * L->dir[l][1] + n[2] * L->dir[l][2]);
+                    if (dd > 0)
+                        for (j = 0; j < 3; j++)
+                            lc[j] += dd * L->col[l][j];
+                }
+            }
+            for (j = 0; j < 3; j++) {
+                float x;
+                if (lc[j] > 1)
+                    lc[j] = 1;
+                if (L->tint && f[17] > 0.5f)
+                    lc[j] *= L->tint_rgb[j];
+                x = col[j] * lc[j];
+                v[i].col[j] = (uint8_t)(x > 255 ? 255 : x < 0 ? 0 : x);
+            }
+            v[i].col[3] = col[3];
+            v[i].st[0] = f[6];
+            v[i].st[1] = f[7];
+            w[i] = clip_w_of(mvp, v[i].pos);
+        }
+        /* the batch's triangles cut at w = CLIP_W (as execute_cpu) */
+        nidx = 0;
+        nnew = nv;
+        if (bt->count + 3 * ncross > clip_cap) {
+            free(clip_buf);
+            clip_buf = malloc(sizeof *clip_buf * (size_t)(bt->count + 3 * ncross));
+            clip_cap = clip_buf ? bt->count + 3 * ncross : 0;
+        }
+        if (!clip_buf) {
+            free(w);
+            continue;
+        }
+        for (i = 0; i + 2 < bt->count; i += 3) {
+            const uint16_t *tr = m->index + bt->first + i;
+            uint16_t poly[4];
+            float tw[3] = { w[tr[0]], w[tr[1]], w[tr[2]] }, tt[4];
+            int np, e, ea[4], eb[4];
+            np = gfx_clip_tri(tw, CLIP_W, ea, eb, tt);
+            for (e = 0; e < np; e++)
+                if (tt[e] == 0.0f) {
+                    poly[e] = tr[ea[e]];
+                } else {
+                    vtx_lerp(&v[nnew], &v[tr[ea[e]]], &v[tr[eb[e]]], tt[e]);
+                    poly[e] = (uint16_t)nnew++;
+                }
+            for (e = 1; e + 1 < np; e++) {
+                clip_buf[nidx++] = poly[0];
+                clip_buf[nidx++] = poly[e];
+                clip_buf[nidx++] = poly[e + 1];
+            }
+        }
+        free(w);
+        if (!nidx)
+            continue;
+        set_arrays(v);
+        bind_texture(t);
+        tex_matrix(t, tm, c);
+        upload_constants(mvp, tm, 1);
+        draw_indexed(clip_buf, nidx);
+    }
+}
+
 void gfx_execute_clay(gfx_clay *c)
 {
     float mvp[16];
@@ -1195,7 +1353,19 @@ void gfx_execute_clay(gfx_clay *c)
     mat_mul(mvp, G.world, G.view);
     mat_mul(mvp, mvp, G.proj);
     mat_mul(mvp, mvp, G.viewport);
-    draw_skinned(c, mvp);
+    static int noclip = -1;
+    if (noclip < 0)
+        noclip = getenv("RT_SKIN_NOCLIP") != NULL;     /* test aid: the old look (no near clipping of skinned clays) */
+    if (noclip || skinned_in_front(c, mvp))
+        draw_skinned(c, mvp);
+    else {
+        static int traced;
+        if (traced < 20 && getenv("RT_SKIN_CLIP_TRACE")) {     /* test aid: the first CPU-clipped skinned draws */
+            traced++;
+            fprintf(stderr, "gfx: skinned clay %p (%d vertices) at the camera: skinned and clipped on the CPU\n", (void *)c, c->nvert);
+        }
+        draw_skinned_clipped(c, mvp);       /* at the camera: CPU skinning and near clipping */
+    }
 }
 
 /* ------------------------------------------------------------ video */
