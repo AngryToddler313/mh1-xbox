@@ -772,7 +772,8 @@ Server messages (an error result's `str`, the 6706 administrator message, the 61
 game's HTML text (`nwDispStr_Html` -> `Analysis_StringData` / `Analysis_TagCode` / `Display_StringData`): it draws
 nothing unless the text starts with a tag, so servers send `<BODY>text<END>` (tags BODY, SIZE=n, COLOR=n, BR, CENTER,
 LEFT, RIGHT, END, LF=n, C=n). On the PC those three functions were do-nothing stand-ins (every message dialog was an
-empty frame); written from the asm on 11 Oct 2026 (src/lobby/b/nm/html_text.c; not compared with check.py). The test
+empty frame); written from the asm on 11 Oct 2026, matched C since 12 Oct 2026 (src/lobby/f/lb_cli.c, the end of the
+lobby-client TU; check_halfcode is still asm on the PS2, its C for the PC is in src/lobby/f/lb_online_nm.c). The test
 server sends its administrator message at the first lobby entry (at the login the client is still behind the login
 screens' held fade-out and the dialog would sit under it); circle closes it.
 Fixed on the PC on the way: `nwDispStr_Html` (the server message's HTML dialog) had the m2c signature (f32, int):

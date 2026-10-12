@@ -1,4 +1,4 @@
-/* lb_cli - one translation unit 0x005B7020-0x005BF808 (lbtu3). */
+/* lb_cli - one translation unit 0x005B7020-0x005C0678 (lbtu3): the lobby client, then the small HTML text renderer (nwDispStr_Html). */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #include "lobby_b.h"
 #undef Lbs_MatchStart
@@ -4456,3 +4456,367 @@ void CallBack_Logout_ShutDown() {
     }
 }
 
+
+/* 0x005BF810-0x005C0678: the small HTML text renderer behind nwDispStr_Html (server messages, error texts).
+ * nwDispStr_Html repeats Analysis_StringData + Display_StringData once per line. Analysis_StringData cuts the next
+ * line of html_string_ptr into display_buffer (12-byte runs: text pointer, tag bits, colour, size, line feeds, length);
+ * a run starts at every tag (<BODY> <SIZE=n> <COLOR=n> <BR> <CENTER> <LEFT> <RIGHT> <END> <LF=n> <C=n>, bits set by
+ * Analysis_TagCode); a backslash escapes the next byte. Display_StringData applies each run's tags and prints it. */
+typedef struct {
+    char *str;      /* 0x0 first byte of the run's text */
+    u32 flags;      /* 0x4 tag bits: 1 BODY, 2 SIZE, 4 COLOR, 8 BR, 0x10 CENTER, 0x20 LEFT, 0x40 RIGHT, 0x80 END, 0x100 LF */
+    u8 color;       /* 0x8 COLOR / C value (index into color_tbl) */
+    u8 size;        /* 0x9 SIZE value (index into font_size_tbl) */
+    u8 lf;          /* 0xA LF value (lines to feed) */
+    u8 len;         /* 0xB text bytes in the run */
+} HTML_RUN;
+
+/* Shift-JIS lead byte */
+inline static int html_iskanji(u8 c) {
+    return (c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100);
+}
+#define HTML_ISKANJI(c) html_iskanji(c)
+
+extern char lit_3529_0065EB18[];
+extern u32 tag_flag;
+extern u8 html_layout;
+extern u16 html_line_len;
+extern u8 html_tag_flag;
+extern u8 html_end_flag;
+extern u8 html_start_flag;
+extern char *html_string_ptr;
+extern s32 html_size;
+extern s32 html_color;
+extern f32 html_default_y;
+extern f32 html_default_x;
+extern f32 html_z;
+extern f32 html_y;
+extern f32 html_x;
+extern HTML_RUN *dp_before;
+extern HTML_RUN *dp;
+extern char tag_buffer[30];
+extern char disp_buffer[0x300];
+extern HTML_RUN display_buffer[50];
+extern char *check_tag_table_3534[11];
+extern u8 color_tbl_3745[16];
+extern f32 font_size_tbl_3746[16];
+char *strstr();
+void cnWrap_FontDisp(f32, f32, f32, char *);
+void Split_TagCode();
+void Analysis_TagCode();
+void check_halfcode();
+void Analysis_StringData();
+void Display_StringData(f32 size, f32 line_h);
+
+void Split_TagCode() {
+    char *p;
+    u16 n;
+    char c;
+
+    p = tag_buffer;
+    memset(p, 0, 30);
+    n = 0;
+    do {
+        c = *html_string_ptr;
+        *p = c;
+        if (c == '>') {
+            goto found;
+        }
+        html_string_ptr++;
+        n++;
+        p++;
+        if (n >= 25) {
+            break;
+        }
+    } while (HTML_ISKANJI(*(u8 *)html_string_ptr) == 0);
+    memset(tag_buffer, 0, 30);
+    strcpy(tag_buffer, lit_3529_0065EB18);
+    html_end_flag = 2;
+    return;
+found:
+    html_string_ptr++;
+}
+
+void Analysis_TagCode() {
+    char buf[8];
+    int i;
+    char **t;
+
+    i = 0;
+    t = check_tag_table_3534;
+    do {
+        if (strstr(tag_buffer, *t) != 0) {
+            break;
+        }
+        i++;
+        t++;
+    } while (i < 11);
+    switch (i) {
+    case 1:
+        dp->flags |= 1;
+        html_start_flag = 1;
+        break;
+    case 4:
+        dp->flags |= 8;
+        html_start_flag = 2;
+        break;
+    case 5:
+        dp->flags |= 0x10;
+        break;
+    case 6:
+        dp->flags |= 0x20;
+        break;
+    case 7:
+        dp->flags |= 0x40;
+        break;
+    case 8:
+        dp->flags |= 0x80;
+        break;
+    case 2:
+        dp->flags |= 2;
+        if (tag_buffer[5] >= '0' && tag_buffer[5] <= '9') {
+            dp->size = tag_buffer[5] - '0';
+        } else if (tag_buffer[5] >= 'a' && tag_buffer[5] <= 'f') {
+            dp->size = tag_buffer[5] - 'a' + 10;
+        } else {
+            dp->size = tag_buffer[5] - 'A' + 10;
+        }
+        if (dp->size > 15) {
+            dp->size = 5;
+        }
+        break;
+    case 3:
+        memset(buf, 0, 8);
+        dp->flags |= 4;
+        if (tag_buffer[6] >= '0' && tag_buffer[6] <= '9') {
+            dp->color = tag_buffer[6] - '0';
+        } else if (tag_buffer[6] >= 'a' && tag_buffer[6] <= 'f') {
+            dp->color = tag_buffer[6] - 'a' + 10;
+        } else {
+            dp->color = tag_buffer[6] - 'A' + 10;
+        }
+        if (dp->color > 15) {
+            dp->color = 7;
+        }
+        break;
+    case 10:
+        memset(buf, 0, 8);
+        dp->flags |= 4;
+        if (tag_buffer[2] >= '0' && tag_buffer[2] <= '9') {
+            dp->color = tag_buffer[2] - '0';
+        } else if (tag_buffer[2] >= 'a' && tag_buffer[2] <= 'f') {
+            dp->color = tag_buffer[2] - 'a' + 10;
+        } else {
+            dp->color = tag_buffer[2] - 'A' + 10;
+        }
+        if (dp->color > 15) {
+            dp->color = 7;
+        }
+        break;
+    case 9:
+        dp->flags |= 0x100;
+        dp->lf = tag_buffer[3] - '0';
+        if (dp->lf > 9) {
+            dp->lf = 9;
+        }
+        html_start_flag = 2;
+        break;
+    }
+    html_tag_flag = i;
+}
+
+#ifdef __MWERKS__
+asm void check_halfcode()
+{
+#include "check_halfcode.inc"
+}
+#endif
+
+void Analysis_StringData() {
+    char c;
+    u8 n;
+
+    memset(display_buffer, 0, 600);
+    html_line_len = 0;
+    dp_before = dp = display_buffer;
+    n = 0;
+    html_tag_flag = 0;
+    for (;;) {
+        if (n > 30) {
+            html_end_flag = 1;
+            return;
+        }
+        c = *html_string_ptr;
+        if (!HTML_ISKANJI(*html_string_ptr)) {
+            if (c == 0) {
+                html_end_flag = 1;
+                return;
+            }
+            html_tag_flag = 0;
+            check_halfcode();
+            if (html_tag_flag == 0) {
+                html_line_len++;
+                if (*html_string_ptr == '\\') {
+                    html_string_ptr++;
+                    dp->flags = 1;
+                    n++;
+                    dp->str = html_string_ptr;
+                    dp->len = 1;
+                    dp_before = dp;
+                    dp++;
+                } else {
+                    html_string_ptr++;
+                    dp_before->len++;
+                }
+            } else if (html_tag_flag == 8 || html_tag_flag == 4 || html_tag_flag == 9) {
+                if (html_end_flag != 2 && html_tag_flag == 8) {
+                    html_end_flag = 1;
+                }
+                return;
+            } else {
+                if (*html_string_ptr == '\\') {
+                    html_string_ptr++;
+                    dp->len = 1;
+                    html_line_len++;
+                } else {
+                    dp->len = 0;
+                }
+                dp->str = html_string_ptr;
+                n++;
+                dp_before = dp;
+                dp++;
+            }
+        } else {
+            if (html_start_flag == 2) {
+                html_start_flag = 1;
+                dp->flags = 1;
+                dp->str = html_string_ptr;
+                dp->len = 0;
+                dp_before = dp;
+                dp++;
+            }
+            html_string_ptr += 2;
+            dp_before->len += 2;
+            html_line_len += 2;
+        }
+    }
+}
+
+/* the (long long) index in the last line reproduces the original's scheduling (found by the permuter) */
+void Display_StringData(f32 size, f32 line_h) {
+    s32 r;
+    s32 i;
+
+    if (html_end_flag == 2) {
+        return;
+    }
+    dp = display_buffer;
+    for (r = 0; r < 30; r++) {
+        if (dp->len == 0 && dp->flags == 0) {
+            return;
+        }
+        tag_flag = dp->flags;
+        for (i = 0; i < 16; i++) {
+            if (dp->flags & 2) {
+                html_size = dp->size;
+            }
+            if (tag_flag & 1) {
+                tag_flag >>= 1;
+                switch (i + 1) {
+                case 1:
+                    switch (html_layout) {
+                    case 5:
+                        html_x = 320 - (html_line_len / 2) * 10;
+                        break;
+                    case 6:
+                        html_x = html_default_x;
+                        break;
+                    case 7:
+                        html_x = html_default_x + (396.0f - (u32)html_line_len * (20.0f * font_size_tbl_3746[html_size] / 2.0f));
+                        break;
+                    }
+                    break;
+                case 4:
+                    html_x = html_default_x;
+                    if (!line_h) {
+                        html_y += 24.0f * font_size_tbl_3746[html_size];
+                    } else {
+                        html_y += line_h;
+                    }
+                    break;
+                case 5:
+                    html_layout = 5;
+                    html_x = 320 - (html_line_len / 2) * 10;
+                    break;
+                case 6:
+                    html_layout = 6;
+                    html_x = html_default_x;
+                    break;
+                case 7:
+                    html_layout = 7;
+                    html_x = html_default_x + (396.0f - (u32)html_line_len * (22.0f * font_size_tbl_3746[html_size] / 2.0f));
+                    break;
+                case 8:
+                    return;
+                case 2:
+                    html_size = dp->size;
+                    break;
+                case 3:
+                case 10:
+                    cnWrap_SetFontColor(color_tbl_3745[dp->color]);
+                    break;
+                case 9:
+                    html_x = html_default_x;
+                    html_y += (u32)dp->lf * (24.0f * font_size_tbl_3746[html_size]);
+                    break;
+                }
+            } else {
+                tag_flag >>= 1;
+                if (tag_flag == 0) {
+                    break;
+                }
+            }
+        }
+        if (dp->len != 0 && dp->str != 0) {
+            memset(disp_buffer, 0, 0x300);
+            memcpy(disp_buffer, dp->str, dp->len);
+            disp_buffer[dp->len] = 0;
+            if (!size) {
+                flfntSetSize(20, 20);
+                cnWrap_SetFontSize(22.0f * font_size_tbl_3746[html_size]);
+            } else {
+                cnWrap_SetFontSize(size);
+            }
+            cnWrap_FontDisp(html_x, html_y, html_z, disp_buffer);
+            html_x += (u32)dp->len * (22.0f * font_size_tbl_3746[(long long)html_size] / 2.0f);
+        }
+        dp++;
+    }
+}
+
+void nwDispStr_Html(f32 x, f32 y, f32 z, u8 *str) {
+    s32 i;
+
+    if (!HTML_ISKANJI(*str)) {
+        html_string_ptr = (char *)str;
+        html_size = 5;
+        html_z = z;
+        html_layout = 6;
+        html_default_x = html_x = x;
+        html_color = 0;
+        html_default_y = html_y = y;
+        html_start_flag = 0;
+        html_end_flag = 0;
+        cnWrap_SetFontColor(0);
+        flfntSetSize(20, 20);
+        for (i = 0; i < 26; i++) {
+            Analysis_StringData();
+            Display_StringData(0.0f, 0.0f);
+            if (html_end_flag != 0) {
+                break;
+            }
+        }
+        cnWrap_SetFontColor(0);
+        flfntSetSize(20, 20);
+    }
+}

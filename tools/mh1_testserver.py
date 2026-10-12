@@ -70,7 +70,7 @@ def lbs_decode(data, seq, xfee):
 
 def html_msg(text):
     """a server message the client shows (an error result's text, 6706): the game's HTML text (nwDispStr_Html, the
-    PC's src/lobby/b/nm/html_text.c) draws nothing unless the text starts with a tag, so it goes as <BODY>text<END>
+    matched C in src/lobby/f/lb_cli.c) draws nothing unless the text starts with a tag, so it goes as <BODY>text<END>
     (tags: BODY, SIZE=n, COLOR=n, BR, CENTER, LEFT, RIGHT, END, LF=n, C=n)"""
     return str16("<BODY>" + text + "<END>")
 

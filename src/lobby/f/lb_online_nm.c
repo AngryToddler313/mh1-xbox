@@ -1,7 +1,7 @@
 /* lb_online_nm.c - the lobby client functions that src/lobby/f/lb_cli.c (whole-file TU 0x5B7020-0x5BF808) still has
  * as asm, written as C for the PC (ONLINE=1 build only, tools/build_pc.sh). NOT built for the PS2 and not compared
  * with check.py: logic believed to follow the asm (lbc_login_init: agent B's near-match src/lobby/b/nm/lbc_login_init.c,
- * 257/267 instructions only differing by register choice; tk_logout_message_sub: src/lobby/b/nm). */
+ * 257/267 instructions only differing by register choice; tk_logout_message_sub: src/lobby/b/nm; check_halfcode). */
 #include "lobby_a.h"
 #include "lbnet.h"
 char *strncpy();
@@ -225,4 +225,29 @@ s32 Lbc_GetRoomRule(void)
         return 1;
     }
     return 0;
+}
+
+/* check_halfcode (0x5BFC80, asm-only in lb_cli.c, 2 lines off as C: the original has an extra `b end` after the
+ * loop): at a '<' (not after a backslash) read tags with Split_TagCode / Analysis_TagCode until one of them is
+ * <BR> <END> <LF=n> (run flags 0x188) or the text goes on. */
+typedef struct { char *str; u32 flags; u8 color, size, lf, len; } HTML_RUN_NM;
+extern char *html_string_ptr;
+extern HTML_RUN_NM *dp;
+void Split_TagCode();
+void Analysis_TagCode();
+void check_halfcode(void)
+{
+    u8 c;
+
+    if (*html_string_ptr != '\\' && *html_string_ptr == '<') {
+        do {
+            c = *(u8 *)html_string_ptr;
+            if ((c >= 0x80 && c < 0xA0) || c >= 0xE0 || c != '<') {
+                break;
+            }
+            html_string_ptr++;
+            Split_TagCode();
+            Analysis_TagCode();
+        } while ((dp->flags & 0x188) == 0);
+    }
 }

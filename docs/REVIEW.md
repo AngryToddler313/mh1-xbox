@@ -12,6 +12,16 @@ obvious workarounds.
 
 ## Open
 
+### Online HTML text: PC near-match copies replaced by matched C (12 Oct 2026, agent B)
+- **Dropped:** src/lobby/b/nm/html_text.c (Split_TagCode, Analysis_StringData, Display_StringData),
+  src/lobby/b/nm/Analysis_TagCode.c, src/lobby/b/nm/check_halfcode.c and src/lobby/b/nm/nwDispStr_Html.c, which the
+  ONLINE=1 PC build linked (written from the asm on 11 Oct, never compared with check.py).
+- **Now:** the six functions are byte-matched C at the end of the lobby-client TU src/lobby/f/lb_cli.c (now
+  0x5B7020-0x5C0678); check_halfcode is still the original bytes on the PS2 (2 lines off as C) and its C for the
+  PC sits in src/lobby/f/lb_online_nm.c with the other lb_cli holdouts.
+- **Why:** the PC runs the game's own code for server messages / error dialogs instead of a hand-written copy.
+- **To revert:** the commit "lobby: HTML text renderer matched in lb_cli.c".
+
 ### Player near-matches replaced by matched C: `case 0: default:` (12 Oct 2026, agent B)
 - **Dropped:** src/main/pl/pl_normal_nm.c (not built: near-match normal_char_set / to_normal); the near-match
   copies of Pl_slash_calc, Pl_basic_flagset (now pl_slash.c / pl_flagset.c, PC-linked), to_normal, basic_com_ck, pl_mv021, pl_dm003 and pl_dm008 in src/main/pl/pl_nm.c (the PC linked these
