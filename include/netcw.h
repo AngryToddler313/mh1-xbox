@@ -22,11 +22,12 @@ typedef struct NETCW {
     u8 x12;
     u8 x13;
     u8 x14;
-    u8 x15;
+    s8 x15;             /* 0x15 (lb: f_disp) */
     u8 pad16[0x28 - 0x16];
     u8 x28;
     u8 x29;             /* 0x29 yes/no cursor (0 yes) */
-    u8 pad2A[2];
+    u8 x2A;             /* 0x2A blink frame counter (net_connect_draw) */
+    u8 x2B;             /* 0x2B cursor animation frame (0..15) */
     s32 x2C;            /* 0x2C sprite request mask (Ncm_spr_*) */
     u8 x30;
     u8 pad31;
@@ -42,13 +43,15 @@ typedef struct NETCW {
     u8 x3B;
     u8 x3C;
     u8 x3D;
-    u8 x3E;
-    u8 x3F;
+    s8 x3E;             /* 0x3E cursor zoom step (f_disp, lb) */
+    s8 x3F;             /* 0x3F cursor zoom step 2 (lb) */
     u8 qa[8];           /* 0x40 request list a: ids */
     u8 ka[8];           /* 0x48 kinds */
     u8 qb[8];           /* 0x50 request list b: ids */
     u8 kb[8];           /* 0x58 kinds */
-    u8 pad60[0x79 - 0x60];
+    s16 x60;            /* 0x60 cursor y of sprite set A (-0x8000: none, f_disp) */
+    s16 x62;            /* 0x62 cursor y of sprite set B */
+    u8 pad64[0x79 - 0x64];
     s8 x79;
     s16 x7A;            /* 0x7A McActAvailSet result */
     s8 x7C;             /* 0x7C dialog state (0x64 open, 0x6E close) */

@@ -2032,3 +2032,5 @@ main 0x0012B690 0x0012BC98 menu/menu_ftime
 main 0x0023D370 0x0023D870 pad/usbkbdm
 main 0x0018CF00 0x0018D5EC fl/flswap
 main 0x00195000 0x00195510 fl/tarpad02
+main 0x0026CD60 0x002702C8 net/f_disp
+main:rodata 0x00370D30 0x00370E80 net/f_disp
