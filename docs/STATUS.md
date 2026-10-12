@@ -870,3 +870,18 @@ GC, collision areas 1 MB -> 288 KB. Gameplay bugs fixed on the way: village moti
 the hunter's weapon motions (rebuilt per quest now), second delivery quest cleared at once
 (delivery stock reset at quest start). Soak tests: tools/test_soak.sh, tools/xemu_soak.sh.
 Open: ~130 KB/loop still lost in xemu only (allocator?). Recording: run_xemu.sh --record.
+
+12 Oct, later (c1128dc3, rebuild OK x5, all 22 PC tests + online, both Xbox builds): 59.668%
+(main 45.989%, 7204 of 12585 functions). Workers B (gameplay side of main: player, menu, emw,
+`case 0: default:` compiler quirk solved) and C (engine side: flps0, omake whole file, usbkbdm,
+fltex02, flswap, tx03; host pad driver and system_w_set replaced by matched f_ioread) merged.
+Agent E merged: hand items drawn (BBQ spit, pickaxe, net; pl_item_trans was never called),
+village NPCs root_lock (owner: slide-then-snap on PC and Xbox), nv2a near clipping for skinned
+clays (carcass flicker suspect), freed GPU memory kept 3 frames (fade flash suspect).
+Real Xbox: sound works (GPU waits yield; owner confirmed), Back + Start quits cleanly, first
+scripted quest loop ran on hardware at ~30 fps; one loader download stalled mid-transfer (loader
+needs a receive timeout + fallback to the disk copy; next owner install).
+Merge note: the first agent-C merge broke the rebuild (stale omakeb-e and npcb/npcc lines from
+both sides' bases); kept on branch c-merge-attempt-1, C fixed it on its branch. Untracked
+generated stubs (src/main/npc/npcb.c, npcc.c) left by a failed rebuild break the next one:
+after a failed merge check `git status --untracked-files=all src`.
