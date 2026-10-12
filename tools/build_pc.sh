@@ -72,7 +72,7 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/game/eft/eft04_nm.c \
 # Player code: f_pl.c (MATCHED_A, the f_pl file), the other matched plNN.c and pl_nm.c (the
 # near-matches: pl_move_sub, pl_turn_sub, basic_com_ck, ...).
 PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/pl/pl_normal.c \
-    src/main/pl/normal_char_set.c src/main/pl/pl_stg_ck_tw.c \
+    src/main/pl/normal_char_set.c src/main/pl/pl_stg_ck_tw.c src/main/pl/pl_slash.c src/main/pl/pl_flagset.c \
     src/game/pl/pl_damage.c src/game/pl/pl_damageb.c src/game/pl/pl_damage_nm.c \
     src/main/hit/hit_nm.c src/main/hit/hit2_nm.c src/main/stage/f_stage.c \
     src/main/weapon/weapon_nm.c src/main/sound/f_sound_nm.c"

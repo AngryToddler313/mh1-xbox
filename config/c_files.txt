@@ -89,7 +89,7 @@ game:rodata 0x00689F10 0x00689F28 set/set22
 game 0x00558A80 0x0055925C eft/eft24
 game 0x00545E90 0x00545F14 eft/eft11
 game 0x005461C0 0x005468E8 eft/eft11b
-main 0x0014F0D0 0x0014F1DC pl/normal_char_set
+main 0x0014F0D0 0x0014F330 pl/normal_char_set
 game 0x00543FA0 0x00544DCC eft/eft08
 game:rodata 0x00685460 0x0068549C eft/eft08
 game 0x00555A90 0x00556D98 eft/eft22
@@ -333,6 +333,7 @@ main 0x002227A0 0x00222E20 cam/camg
 main 0x00163AB0 0x00163D20 weapon/trans
 main 0x00163E40 0x0016440C weapon/weapon
 main 0x00164D60 0x00164F68 weapon/weapon2
+main 0x00168B10 0x00168EA0 weapon/weapon_em
 main 0x00168EA0 0x00169228 weapon/weapon3
 main 0x00223E90 0x00223F8C cam/camr2
 main 0x00223F90 0x00223FDC cam/camr1
@@ -516,6 +517,8 @@ main:rodata 0x0035A7F0 0x0035A808 pl/f_pl
 main:rodata 0x0035A810 0x0035A828 pl/f_pl
 main:rodata 0x0035A830 0x0035A848 pl/f_pl
 main:rodata 0x0035A850 0x0035A868 pl/f_pl
+main:rodata 0x0035A8A0 0x0035A8B8 pl/f_pl
+main:rodata 0x0035A8C0 0x0035A8D8 pl/f_pl
 main:rodata 0x0035A8E0 0x0035A8F8 pl/f_pl
 main:rodata 0x0035A900 0x0035A924 pl/f_pl
 main:rodata 0x0035A930 0x0035A948 pl/f_pl
@@ -555,6 +558,7 @@ main 0x00152DE0 0x00152FE4 pl/pl66
 main 0x001532A0 0x00153420 pl/pl67
 main 0x00153420 0x001534DC pl/pl68
 main 0x00153560 0x00153604 pl/pl69
+main 0x001536D0 0x001537D0 pl/pl_slash
 main 0x00153A70 0x00153D9C pl/pl70
 main 0x00154410 0x00154BD0 pl/pl71
 main:rodata 0x0035B210 0x0035B2B0 pl/pl71
@@ -575,6 +579,7 @@ main 0x0014D320 0x0014DC8C pl/pl79
 main 0x0014DEA0 0x0014E0B4 pl/pl80
 main 0x0014F850 0x0014F864 pl/pl81
 main 0x0014F9B0 0x0014FB34 pl/pl82
+main 0x0014FB40 0x0014FC14 pl/pl_flagset
 main 0x00150D30 0x00150EB4 pl/pl83
 game 0x0055B060 0x0055C434 em/em_cmd_r01
 game 0x0055C5C0 0x0055C914 em/em_cmd_r02

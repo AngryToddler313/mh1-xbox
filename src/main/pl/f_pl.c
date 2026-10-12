@@ -345,13 +345,13 @@ void pl_move(void);
 static void pl_move_sub_sub(PLW *pl);
 void timer_calc_sub_pl(PLW *pl);
 static void em_ninshiki_ck(PLW *pl);
-void basic_com_ck(PLW *pl);
+static void basic_com_ck(PLW *pl);
 static void gun_adj_sub(PLW *pl);
 static void sougun_adj_sub(PLW *pl, u16 id);
-void pl_mv021(PLW *pl, s32 arg1);
+static void pl_mv021(PLW *pl, s32 arg1);
 static void pl_at008(PLW *pl, s32 arg1);
-void pl_dm003(PLW *pl, s32 arg1);
-void pl_dm008(PLW *pl);
+static void pl_dm003(PLW *pl, s32 arg1);
+static void pl_dm008(PLW *pl);
 static void pl_egg05(PLW *pl, s32 arg1);
 void pl_move_sub(PLW *pl);
 static void pl_turn_sub(PLW *pl);
@@ -2282,14 +2282,238 @@ ret0:
     return 0;
 }
 
-/* basic_com_ck: original bytes kept (near-match C in src/main/pl/pl_nm.c, linked weak by the PC build): build/raw/basic_com_ck.inc,
-   config/c_rawfuncs.txt */
-#ifdef __MWERKS__
-asm void basic_com_ck(PLW *pl)
-{
-#include "basic_com_ck.inc"
+/* basic_com_ck: `case 0: default:` on the kind switch, the game-mode 5/6 and 7/8 tests are ifs (`== 6 || == 5`), the stick switch lists case 0 .. 4 in order, `> 0x4000` gives slti at, and the flag is a u8. */
+static void basic_com_ck(PLW *pl) {
+    EMW *var_s0;
+    s32 temp_s0;
+    u8 var_s1;
+    s16 var_a0;
+    u16 temp_v1_2;
+    u16 var_v0;
+    u32 temp_s0_2;
+    u32 temp_v1_6;
+    u8 temp_v0;
+    u8 temp_v1;
+    u8 temp_v1_3;
+    u8 temp_v1_4;
+    u8 temp_v1_5;
+
+    var_s0 = em_work;
+    if (Online_ck() == 0) {
+        if (Pl_master_ck(pl) == 0) {
+            return;
+        }
+    } else if (Pl_master_ck(pl) == 0) {
+        return;
+    }
+    {
+        var_s1 = 0;
+        if ((game_w.x0D5 == 4) && (pl->work88D == 0)) {
+            Pl_act_set2(pl, 4, 2, 0);
+            return;
+        }
+        pl->work8F0 = 1;
+        if (pl->flag604 != 0) {
+            for (var_a0 = 0; var_a0 < 0x14; var_a0++, var_s0++) {
+                if ((pl->work605 == var_s0->x13) && (var_s0->kind == 7)) {
+                    if (var_s0->x87F != 0) {
+                        Pl_act_set(pl, 2, 7, 0);
+                        return;
+                    }
+                    break;
+                }
+            }
+            {
+                if (((stick_pow_get(pl, 1) & 0xFF) > 0) && (pl->flag15 != 0x12)) {
+                    pl->ang_y = stick_dir_set(pl, 0);
+                    Pl_act_set(pl, 0, 0x12, 0);
+                }
+                pl_ride_ck(pl);
+                if ((Game_clear_ck(1) != 1) && (pl->sw.trg & 0x20) && (trade_get_ck_00139680(pl) == 0)) {
+                    unique_act_set(pl);
+                    search_act_set(pl, 0);
+                }
+            }
+        } else {
+            if (game_w.x0D5 == 6 || game_w.x0D5 == 5) {
+                Pl_act_set2(pl, 4, 3, 0);
+                return;
+            }
+            if (game_w.x0D5 == 7 || game_w.x0D5 == 8) {
+                Pl_act_set2(pl, 4, 5, 0);
+                return;
+            }
+            {
+                if (pl->flag12 != 0) {
+                    temp_s0 = stick_pow_get(pl, 1) & 0xFF;
+                    switch (temp_s0) {
+                    case 0:
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                        temp_v1 = pl->flag15;
+                        if ((temp_v1 != 0x24) && (temp_v1 != 3) && (pl->x714 == 0)) {
+                            Pl_act_set(pl, 0, 3, 0);
+                        }
+                        break;
+                    case 4:
+                        break;
+                    }
+                    if ((temp_s0 != 0) && (pl->x714 != 0) && (pl->flag15 != 0x3B)) {
+                        Pl_act_set(pl, 0, 0x3B, 0);
+                    }
+                    if (Game_clear_ck(1) != 1) {
+                        if (pl->work8C4 != 0) {
+                            Pl_chat_act_set(pl);
+                        }
+                        temp_v1_2 = pl->sw.trg;
+                        if ((temp_v1_2 & 0x220) || ((temp_v1_2 & 0x10) && (pl->sw.pow[0] >= 0x28))) {
+                            if (pl_flag_ck(pl, 0x1200) == 0) {
+                                Pl_act_set(pl, 0, 5, 0);
+                            } else {
+                                Pl_act_set(pl, 0, 0xA, 0);
+                            }
+                        }
+                        job_special_com_ck(pl, 1);
+                        if (!(shell_chg_ck(pl) & 0xFF)) {
+                            basic_atack_ck(pl);
+                        }
+                        if (pl->work908 != 0) {
+                            pl->work90B = 1;
+                            Pl_act_set2(pl, 0, 0x67, 0x10);
+                        }
+                        if (func_639DD0(pl) & 0xFF) {
+                            Pl_act_set2(pl, 2, 0x13, 0);
+                            return;
+                        }
+                    }
+                } else {
+                    temp_s0_2 = stick_pow_get(pl, 0) & 0xFF;
+                    switch (temp_s0_2) {
+                    case 0:
+                    case 4:
+                        break;
+                    case 1:
+                        temp_v1_3 = pl->flag15;
+                        if ((temp_v1_3 != 0x49) && (temp_v1_3 != 0x24) && (pl->x714 == 0)) {
+                            Pl_act_set(pl, 0, 0x49, 0);
+                            pl->ang_y = stick_dir_set(pl, 0);
+                        }
+                        break;
+                    case 2:
+                        temp_v1_4 = pl->flag15;
+                        if ((temp_v1_4 != 2) && (temp_v1_4 != 0x24) && (pl->x714 == 0)) {
+                            pl->ang_y = stick_dir_set(pl, 0);
+                            Pl_act_set(pl, 0, 2, 0);
+                        }
+                        break;
+                    case 3:
+                        temp_v1_5 = pl->flag15;
+                        if ((temp_v1_5 != 1) && (temp_v1_5 != 0x3F) && (temp_v1_5 != 0x13) && (temp_v1_5 != 0x24) && (temp_v1_5 != 0x1F) && (pl->x714 == 0)) {
+                            pl->ang_y = stick_dir_set(pl, 0);
+                            temp_v1_6 = (((*(u16 *)&pl->ang_y) + 0x10000) - pl->ang[1]) & 0xFFFF;
+                            if ((temp_v1_6 >= 0x6000U) && (temp_v1_6 < 0xA001U)) {
+                                Pl_act_set(pl, 0, 0x3F, 0);
+                            } else {
+                                Pl_act_set(pl, 0, 1, 0);
+                            }
+                        }
+                        break;
+                    case 5:
+                        if (pl_flag_ck(pl, 0x200) == 0) {
+                            if ((pl->work81E != 0) && ((((pl->x3A8 - pl->ang[1]) + 0x2000) & 0xFFFF) > 0x4000)) {
+                                Pl_act_set(pl, 0, 0x20, 0);
+                            } else {
+                                Pl_act_set(pl, 0, 0x1F, 0);
+                            }
+                            var_s1 = 1;
+                        }
+                        break;
+                    }
+                    if (pl->work8C4 != 0) {
+                        Pl_chat_act_set(pl);
+                    }
+                    if ((temp_s0_2 != 0) && (pl->x714 != 0) && (pl->flag15 != 0x3B)) {
+                        Pl_act_set(pl, 0, 0x3B, 0);
+                    }
+                    if (Game_clear_ck(1) != 1) {
+                        if (pl->sw.trg & 0x40) {
+                            if (pl->sw.pow[0] >= 0x55) {
+                                if (pl->stamina >= 0x4B) {
+                                    Pl_act_set(pl, 0, 0x1C, 4);
+                                }
+                            } else {
+                                Pl_act_set(pl, 0, 8, 0);
+                            }
+                        }
+                        if ((pl->sw.trg & 0x200) && (pl->work886 == 0)) {
+                            search_act_set(pl, 2);
+                            item_action_set(pl, 0);
+                            pl->work8F2 = (u8) (pl->work8F2 | 1);
+                        }
+                        job_special_com_ck(pl, 0);
+                        if (var_s1 == 0) {
+                            var_v0 = pl->sw.trg;
+                        } else {
+                            var_v0 = pl->sw.now;
+                        }
+                        if (var_v0 & 0xFFFF & 0x20) {
+                            basic_kabe_ck(pl);
+                        }
+                        if (pl->sw.an_trg & 0x3C) {
+                            if (pl_flag_ck(pl, 0x02000600) == 0) {
+                                Pl_act_set(pl, 0, 4, 0);
+                            } else {
+                                temp_v0 = pl->kind;
+                                switch (temp_v0) {
+                                case 0:
+                                default:
+                                    Pl_act_set(pl, 1, 3, 4);
+                                    break;
+                                case 1:
+                                    Pl_act_set(pl, 0, 4, 0);
+                                    break;
+                                case 5:
+                                    Pl_act_set(pl, 0, 0x17, 0);
+                                    break;
+                                case 4:
+                                    Pl_act_set(pl, 1, 0x3E, 4);
+                                    break;
+                                case 3:
+                                    Pl_act_set(pl, 1, 0x2E, 4);
+                                    break;
+                                case 2:
+                                    Pl_act_set(pl, 1, 0x20, 4);
+                                    break;
+                                }
+                            }
+                        }
+                        if (pl->sw.trg & 1) {
+                            Pl_act_set(pl, 1, 0x14, 4);
+                        }
+                        if (pl->sw.trg & 0x20) {
+                            if (trade_get_ck_00139680(pl) == 0) {
+                                unique_act_set(pl);
+                                search_act_set(pl, 0);
+                            }
+                        } else if (pl->work908 != 0) {
+                            pl->work90B = 1;
+                            Pl_act_set2(pl, 0, 0x67, 0x10);
+                        }
+                        if ((em_ninshiki_ck2(pl) & 0xFF) == 1) {
+                            Pl_act_set(pl, 0, 0x3E, 0);
+                            WyvernFindPlayer(pl);
+                        }
+                        if (func_639DD0(pl) & 0xFF) {
+                            Pl_act_set2(pl, 2, 0x13, 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
-#endif
 
 /* gun_adj_sub matches with `#pragma opt_propagation off` (the original negates the constant v at run time instead of
    folding it), blend_calc's s8 parameter, the angle read as u16 (lhu), `v = (s8)v` after the second negation (the original sign-extends v again at the join), an int `pw`. */
@@ -2881,14 +3105,108 @@ static void pl_mv006(PLW *pl, s32 arg1) {
     }
 }
 
-/* pl_mv021: original bytes kept (near-match C in src/main/pl/pl_nm.c, linked weak by the PC build): build/raw/pl_mv021.inc,
-   config/c_rawfuncs.txt */
-#ifdef __MWERKS__
-asm void pl_mv021(PLW *pl, s32 arg1)
-{
-#include "pl_mv021.inc"
+/* pl_mv021: `case 0: default:` on the arg1 switch. */
+static void pl_mv021(PLW *pl, s32 arg1) {
+    int sp4C;
+    f32 sp40[3];
+    f32 sp30[3];
+    f32 f;
+    u8 s;
+
+    pl->work08++;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        switch (arg1) {
+        case 0:
+            default:
+            pl->x05++;
+            pl->x06 = 0;
+            pl_chr_set2(pl, 0xB, 2, 0);
+            Pl_basic_flagset(pl, 0, 0, 0);
+            break;
+        case 2:
+            pl->pos[1] = pl->pos[1] - 195.0f;
+            sp40[2] = -30.0f;
+            sp40[0] = 0.0f;
+            sp40[1] = 0.0f;
+            flvecApplyMat33(sp30, sp40, (f32 *)((u8 *)pl + 0x60));
+            pl->pos[0] = pl->pos[0] + sp30[0];
+            pl->pos[2] = pl->pos[2] + sp30[2];
+        case 1:
+            pl->x05 = 2;
+            pl->x06 = 0;
+            Pl_basic_flagset(pl, 2, 0, 0);
+            rate_clear(pl);
+            pl->vel[1] = -9.0f;
+            pl->acc[1] = -0.72727275f;
+            if (arg1 == 1) {
+                pl_chr_set2(pl, 0xC, 4, 0x16);
+            } else {
+                pl_chr_set2(pl, 0xC, 0, 0x16);
+            }
+            break;
+        }
+        Pl_view_reset(pl);
+        action_timer_calc(pl, 0);
+        pl->work08 = 0;
+        break;
+    case 1:
+        if (pl->work194 == 0 || (pl->x06 < 6 && pl->x06 != 0)) {
+            pl->x05++;
+            rate_clear(pl);
+            if (pl->flag12 != 0) {
+                f = 0.8f;
+            } else {
+                f = 1.0f;
+            }
+            pl->vel[1] = 2.0f * (15.0f * f);
+            if (pl->x06 != 0) {
+                pl->vel[1] = 50.0f;
+            }
+            rate_g_calc(pl, 0x14);
+            pl_chr_set2(pl, 0xC, 2, 0);
+            pl->st = 2;
+            if (pl->flag604 != 0) {
+                pl->flag604 = 2;
+            }
+            action_timer_calc(pl, 0);
+            pl->work08 = 0;
+        }
+        break;
+    case 2:
+        rate_add_g(pl);
+        if (pl->vel[1] < 0.0f) {
+            if ((arg1 != 2) && (front_land_ck(55.0f, 180.0f, 30.0f, pl, &sp4C) != 0) && (pl->vital > 0)) {
+                pl->ang_y = pl->ang[1];
+                Pl_act_set2(pl, 0, 0x1B, 0xC);
+                break;
+            }
+            f = pl->x5AC;
+            if (!(f < pl->pos[1])) {
+                pl->pos[1] = f;
+                pl->st = 0;
+                pl->flag604 = 0;
+                if ((pl->vital <= 0) && (Pl_master_ck(pl) == 1)) {
+                    func_639F20(pl);
+                    break;
+                }
+                if (pl->work08 >= 0x1E) {
+                    Pl_act_set(pl, 0, 0x26, 0);
+                    break;
+                }
+                pl->x05++;
+                pl_chr_set2(pl, 0xD, 0, 0);
+            }
+        }
+        break;
+    case 3:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 3, 0);
+        }
+        break;
+    }
 }
-#endif
 
 /* Player code (SLPM_654.95 0x0013BCB0-0x0013BF20): pl_mv008 (sit down / stand up), pl_mv013. */
 
@@ -8391,14 +8709,75 @@ static void pl_dm002(PLW *pl) {
     }
 }
 
-/* pl_dm003: original bytes kept (near-match C in src/main/pl/pl_nm.c, linked weak by the PC build): build/raw/pl_dm003.inc,
-   config/c_rawfuncs.txt */
-#ifdef __MWERKS__
-asm void pl_dm003(PLW *pl, s32 arg1)
-{
-#include "pl_dm003.inc"
+/* pl_dm003: `case 0: default:` on both kind switches; `work39C > 0x12` gives the original slti at. */
+static void pl_dm003(PLW *pl, s32 arg1) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        if (arg1 == 0) {
+            switch (pl->kind) {
+            case 0:
+            default:
+                pl_chr_set2(pl, 0x584, 3, 0);
+                break;
+            case 4:
+                pl_chr_set2(pl, 0x3ED, 2, 0);
+                break;
+            case 3:
+                pl_chr_set2(pl, 0x3ED, 2, 0);
+                break;
+            }
+        } else {
+            switch (pl->kind) {
+            case 0:
+            default:
+                pl_chr_set2(pl, 0x584, 6, 0x28);
+                break;
+            case 4:
+            case 3:
+                pl_chr_set2(pl, 0x3EE, 2, 0);
+                break;
+            }
+        }
+        Pl_basic_flagset(pl, 0, 0, 0);
+        pl_flag_set(pl, 0x8000);
+        pl->flag12 = 1;
+        break;
+    case 1:
+        if (Pl_master_ck(pl) != 1) {
+            if (Online_ck() == 0) {
+                goto a;
+            }
+            goto b;
+        }
+a:
+        if ((pl->work39C > 0x12) && !(pl->sw.now & 0x80)) {
+            Pl_act_set2(pl, 2, 8, 0);
+            break;
+        }
+b:
+        switch (pl->kind) {
+        case 3:
+        case 4:
+            if ((pl->char0 == 0x3ED) && (pl->work194 == 0)) {
+                pl_chr_set2(pl, 0x3EE, 2, 0);
+            }
+            if (pl->work39C > 0x12) {
+                guard_atk_ck(pl);
+            }
+            break;
+        case 0:
+            if (pl->work39C > 0x12) {
+                guard_atk_ck(pl);
+            }
+            break;
+        }
+        break;
+    }
 }
-#endif
 
 /* Player code (SLPM_654.95 0x00148050-0x00148488): pl_dm005, pl_dm006: damage reaction handlers */
 
@@ -8614,14 +8993,34 @@ go:
     }
 }
 
-/* pl_dm008: original bytes kept (near-match C in src/main/pl/pl_nm.c, linked weak by the PC build): build/raw/pl_dm008.inc,
-   config/c_rawfuncs.txt */
-#ifdef __MWERKS__
-asm void pl_dm008(PLW *pl)
-{
-#include "pl_dm008.inc"
+/* pl_dm008: the kind switch's default needs `case 0: default:` (a lone default reuses a0). */
+static void pl_dm008(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        switch (pl->kind) {
+        case 0:
+        default:
+            pl_chr_set2(pl, 0x586, 2, 0);
+            break;
+        case 4:
+        case 3:
+            pl_chr_set2(pl, 0x3EF, 2, 0);
+            break;
+        }
+        pl_flag_set(pl, 0x8000);
+        Pl_basic_flagset(pl, 0, 0, 0);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 2, 0);
+        }
+        break;
+    }
 }
-#endif
 
 /* Player code (SLPM_654.95 0x00148870-0x00148AE0): pl_dm009, pl_dm011: damage reaction handlers */
 

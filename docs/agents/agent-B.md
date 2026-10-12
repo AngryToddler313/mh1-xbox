@@ -1177,3 +1177,19 @@ pl_mv021 (the default-block a0 reload).
   that pointer to Item_valid_chk; neither the u8 [][16] nor a struct-array declaration of Item_data reproduced it),
   disp_pl_vital (85 with `col` reused for the sine angle, from the permuter; the rest is s-register allocation of the
   GAGE field pointers), load_shadow (2: dsra32 order of the m / i+0x127 arguments; 8 spellings tried), Pit_mv_lb (2).
+- `case 0: default:` (the default label sharing a case 0 label) is what makes MWCC reload a constant in the default
+  block / not reuse a0: matched to_normal, normal_char_set (no pragma any more), pl_dm008, pl_mv021, pl_dm003
+  (plus `case 4: case 3:` label order: the compares come out in reverse label order) and basic_com_ck (plus the
+  game-mode tests as `if (x == 6 || x == 5)` ifs, the stick switch as `case 0: break; case 1: case 2: case 3: ...
+  case 4: break;`, `> 0x4000` for `slti at`, the flag as u8). A scan of every other gameplay near-match with a
+  default label (case 0 / case 1 inserted before each) found nothing more; neither did turning `>= N` into `> N-1`.
+- `x > 0x12` (not `x >= 0x13`) gives the original's `slti at, v1, 19; bne at` (pl_dm003, basic_com_ck).
+- Jump tables of newly matched f_pl functions need their own main:rodata line and yaml .data slot (the link fails
+  with "defined in discarded section .data.N" otherwise); build/bscr/rodmap_d.py = tools/rodmap.py also for .data.
+- Still parked: timer_calc_sub_pl (73: the original leaves the delay slot of `bnez` empty and sets a0 in the jal's
+  slot), pl_move_sub (106), Pl_slash_lv_ck (60, returns shared through one exit), main 43.900%.
+- Matched as new runs: Pl_slash_calc (pl/pl_slash.c: `u8 up` tested as `if (up)` gives the daddiu), Pl_basic_flagset
+  (pl/pl_flagset.c: K&R with u16 a / s16 c, `case 0: default:`, labels 1 then 2), enemy_trans (weapon/weapon_em.c:
+  the vis test as `goto next`, `cb[i]` instead of a walking pointer, the alpha-list skip as `while (v != -1) { if
+  (v >= i) break; ... }`, and `v = *(lp = em_alpha_clay[k = em->kind])`). enemy_trans is NOT linked on the PC: the
+  host draws monsters itself (src/pc/rt/rt_em.c keeps its no-op enemy_trans), so weapon_em.c is PS2-only.

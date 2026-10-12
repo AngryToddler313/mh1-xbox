@@ -12,6 +12,20 @@ obvious workarounds.
 
 ## Open
 
+### Player near-matches replaced by matched C: `case 0: default:` (12 Oct 2026, agent B)
+- **Dropped:** src/main/pl/pl_normal_nm.c (not built: near-match normal_char_set / to_normal); the near-match
+  copies of Pl_slash_calc, Pl_basic_flagset (now pl_slash.c / pl_flagset.c, PC-linked), to_normal, basic_com_ck, pl_mv021, pl_dm003 and pl_dm008 in src/main/pl/pl_nm.c (the PC linked these
+  weak); `#pragma opt_common_subs off` on normal_char_set (a workaround for the same quirk).
+- **Now:** all six are byte-matched C: normal_char_set.c holds normal_char_set and to_normal; f_pl.c holds the
+  other four in place of their original-bytes stubs (two basic_com_ck jump tables now come from the C, two
+  main:rodata lines). The PC runs this C.
+- **Why:** the "reloaded constant in the switch default" open problem in docs/STATUS.md was the source writing
+  `case 0: default:`; matched C replaces near-match copies. basic_com_ck's near-match was the most different
+  (its game-mode 5/6 and 7/8 tests are ifs, the stick switch lists 0..4 in order).
+- **To watch:** player idle stance (to_normal), the hunter's pad handling in town and field (basic_com_ck),
+  flinch / knock-down states (pl_dm003/008), pl_mv021 (cart / carry), sharpness messages (Pl_slash_calc). enemy_trans
+  is matched too (weapon_em.c, PS2 only; its near-match left weapon3_nm.c, which the PC never linked). Revert: the commit "pl: case 0: default:".
+
 ### PC runs more game C: monster neck joints, s16 damage (12 Oct 2026, agent B)
 - **Dropped:** the no-op stand-in for mlCalcTransEM (build/pc/rt_gen.c) that enemy_mk called on the PC; the
   near-match files emmk_nm.c (all of it matched) and the copies of old_pos_save, init_pl_work, eft13_set_pos and

@@ -417,13 +417,10 @@ How it works (each step was checked, not assumed):
   pad reader sw_set_sub). include/pl.h holds PLW (0xA00 bytes, ~55 fields
   placed from matched code, most still named by offset) and PLSW (pad
   state at +0x364). include/game.h holds GAME_W. Progress: 22 functions.
-- **Open problem (compiler):** normal_char_set and to_normal are one
-  instruction from matching (src/main/pl/pl_normal_nm.c, not built). In a
-  switch's default case our builds reuse the constant 1 left by the
-  `case 1` compare; the original reloads it. Same in every 3.0-family
-  build on decomp.me (3.0b22-020926/3.0b38/3.0b50/3.0b52), unaffected by
-  -opt sub-options, statement order or switch/if forms. Suspect a build
-  we do not have. Revisit if more cases turn up.
+- Solved (Oct 2026): normal_char_set and to_normal match with `case 0: default:`
+  on the switch's default case (a lone `default:` reuses the constant 1 of the
+  `case 1` compare; the original reloads it). Both are in
+  src/main/pl/normal_char_set.c; pl_normal_nm.c is gone.
 - That function did narrow the compiler: 3.0.3-020716 and 3.0b22
   011126/020123/020716 are 44 instructions off; -O4,s/-O3/-O4 are 44 off.
   -O4,p confirmed. Remaining candidates: 3.0b22-020926, 3.0b38, 3.0b50,
@@ -491,8 +488,7 @@ How it works (each step was checked, not assumed):
   (descending values only because Capcom usually writes them ascending);
   a vector copied through lw/sw is a word-wise copy macro (VEC3_COPY), not
   a struct assignment; jump tables live in .rodata.
-- Parked near-matches (src/**/*_nm.c, not built): pl_normal_nm.c
-  (normal_char_set, to_normal: constant-reuse quirk), adx_nm.c,
+- Parked near-matches (src/**/*_nm.c, not built): adx_nm.c,
   release_texture_nm.c.
 
 - Later in the session: shell01/02/04/05/11/17 finished by hand on top of

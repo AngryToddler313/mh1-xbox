@@ -38,6 +38,8 @@ build/src/main/pl/f_pl.c.o .rodata .data
 build/src/main/pl/f_pl.c.o .rodata .data
 build/src/main/pl/f_pl.c.o .rodata .data
 build/src/main/pl/f_pl.c.o .rodata .data
+build/src/main/pl/f_pl.c.o .rodata .data
+build/src/main/pl/f_pl.c.o .rodata .data
 build/src/main/pl/pl71.c.o .rodata .data
 build/src/main/stage/stage_set.c.o .rodata .data
 build/src/main/font/dsp01.c.o .rodata .data
