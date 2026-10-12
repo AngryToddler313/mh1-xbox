@@ -38,6 +38,7 @@
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
 void xbox_log_frame(int frame, unsigned ms);
+void xbox_log_quit(void);
 void xbox_env_load(void);
 void xbox_env_note(void);
 #endif
@@ -2579,7 +2580,7 @@ int main(int argc, char **argv)
             held = pad_combo_held() ? held + 1 : 0;
             if (held == 60) {
                 fprintf(stderr, "Back + Start held: exit at frame %d\n", frame_no);
-                running = 0;
+                xbox_log_quit();        /* not the normal shutdown: it hung on hardware (12 Oct) */
             }
             xbox_log_frame(frame_no, SDL_GetTicks());
         }

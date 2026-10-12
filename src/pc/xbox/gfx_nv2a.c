@@ -258,10 +258,14 @@ void gfx_size(int *w, int *h)
     *h = G.h;
 }
 
+/* The waits for the GPU give the CPU away (SwitchToThread): spinning here starved
+ * the SDL audio thread on the real Xbox and in xemu (12 Oct 2026: no sound at all, the
+ * movie fell back to the game tick, and closing the audio device on exit hung). It
+ * played once the game also wrote every log line to the disk, which paused this thread. */
 static void wait_idle(void)
 {
     while (pb_busy())
-        ;
+        SwitchToThread();
 }
 
 void gfx_begin_frame(uint32_t c)
@@ -281,7 +285,7 @@ void gfx_end_frame(void)
 {
     wait_idle();
     while (pb_finished())
-        ;
+        SwitchToThread();               /* see wait_idle */
 }
 
 int gfx_read_pixels(uint8_t *rgb)

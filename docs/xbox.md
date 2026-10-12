@@ -1064,3 +1064,18 @@ After the save the hunter ended up standing at the Forest and Hills camp; the sc
 so probably one of the run's later RT_* warp aids firing (to check on the PC with the same env).
 Not yet measured on hardware: free memory per stage (the KB-free lines go to the serial port,
 which the retail Xbox lacks), movie decode time, audio.
+
+### Sound on the real Xbox (12 Oct 2026)
+
+The game was silent on hardware, like in xemu. Cause on hardware: the waits for the GPU in
+gfx_nv2a.c (`while (pb_busy());`, `while (pb_finished());`) spun without giving the CPU away,
+and the SDL audio thread never ran. A build that also wrote every log line to the disk played
+sound (the disk writes paused the main thread), which pointed at it. Fix: SwitchToThread() in
+those waits (and once per frame in the null backend). Confirmed by the owner on hardware with
+a build without the log-to-disk mirror: music and effects sound right. The same starvation
+made the Back + Start quit hang (closing the audio device waited on the audio thread); the quit
+now also goes straight to the log screen and the dashboard (xbox_log_quit), and works.
+xemu stays silent with the fix (its AC97 still stops after one buffer): that part really is
+xemu's, so the movie's audio_driving fallback stays for xemu.
+The log mirror (rt_log.c: every log line also to stderr = E:\Games\MH1\mh1log.txt, which the
+loader sends) stays: it is how hardware logs reach the laptop.
