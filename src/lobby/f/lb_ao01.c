@@ -1,4 +1,4 @@
-/* lb_ao01 - browser cell allocator 0x005E8330-0x005E8590: BsMemAllocInitialize, _inet_mem_get_free_cell_005E83C0, _inet_mem_get_this_cell, BsMemAlloc, BsMemFree. Whole file in lb_ao.c. */
+/* lb_ao01 - browser cell allocator 0x005E8330-0x005E867C: BsMemAllocInitialize, _inet_mem_get_free_cell_005E83C0, _inet_mem_get_this_cell, BsMemAlloc, BsMemFree, BsMemRealloc. */
 #include "lobby_f.h"
 typedef struct MCELL { s32 size; u8 *ptr; struct MCELL *next; } MCELL;   /* 0xC bytes, 512 cells, last one = end sentinel */
 extern MCELL BsMemCell[0x200];
@@ -91,4 +91,35 @@ lp:
         prev = cur;
         goto lp;
     }
+}
+
+u8 *BsMemRealloc(u8 *p, u32 size) {
+    u8 *q;
+    s32 old;
+    MCELL *c;
+
+    size = size + (0x10 - (size & 0xF));
+    if (p == 0) {
+        return BsMemAlloc(size);
+    }
+    if (size == 0) {
+        BsMemFree(p);
+        return 0;
+    }
+    c = _inet_mem_get_this_cell(p);
+    if (c == 0) {
+        return 0;
+    }
+    old = c->size;
+    q = BsMemAlloc(size);
+    if (q == 0) {
+        return 0;
+    }
+    BsMemFree(p);
+    if (old < size) {
+        memmove(q, p, old);
+    } else {
+        memmove(q, p, size);
+    }
+    return q;
 }

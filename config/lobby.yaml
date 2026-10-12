@@ -1439,7 +1439,7 @@ segments:
       - [0x0B24A0, c, f/lb_gdr06]
       - [0x0B2610, c, f/lb_tu_browser]
       - [0x0B49B0, c, f/lb_ao01]
-      - [0x0B4C10, asm, text/BsMemRealloc]
+      - [0x0B4CFC, asm, text/BsKeySet]
       - [0x0B4F10, c, f/lb_url]
       - [0x0B5FE0, c, f/lb_gav01]
       - [0x0B609C, asm, text/bs_pul_wk]

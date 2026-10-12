@@ -12,6 +12,11 @@ obvious workarounds.
 
 ## Open
 
+### Browser allocator: unbuilt near-match copy lb_ao.c removed (12 Oct 2026, agent B)
+- **Dropped:** src/lobby/f/lb_ao.c (agent F's whole-file near-match of the browser cell allocator, not built).
+- **Now:** all six functions are byte-matched in src/lobby/f/lb_ao01.c (BsMemRealloc added, 0x5E8330-0x5E867C).
+- **Why:** obsolete copy. **To revert:** the commit "lobby: BsMemRealloc matched; lb_ao.c removed".
+
 ### Browser URL helpers: one TU lb_url.c (12 Oct 2026, agent B)
 - **Dropped:** the runs src/lobby/f/lb_{m12,z135,z19,ap01,z106,z20,gdr12,gap01,z21,gap02,ap02}.c and agent F's
   whole-file near-match src/lobby/f/lb_ap.c (not built anywhere).
