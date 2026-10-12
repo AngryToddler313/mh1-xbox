@@ -565,13 +565,7 @@ static int GetWeightNumAMOModelMesh(u8 *mesh, int idx) {
     return *(int *)q;
 }
 
-/* original bytes: build/raw/GetWeightAMOModelMesh.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-static asm u8 * GetWeightAMOModelMesh(u8 *mesh, int idx, int w)
-{
-#include "GetWeightAMOModelMesh.inc"
-}
-#else
+/* GetWeightAMOModelMesh: matches */
 static u8 *GetWeightAMOModelMesh(u8 *mesh, int idx, int w) {
     u8 *d = GetSubDataAMO(mesh, 0xC0000, 0);
     int i;
@@ -586,13 +580,13 @@ static u8 *GetWeightAMOModelMesh(u8 *mesh, int idx, int w) {
         d += 4;
         d += n * 8;
     }
-    if (*(int *)d <= w) {
+    if (!(w < *(int *)d)) {
         return 0;
     }
     d += 4;
-    return d + w * 8;
+    d += w * 8;
+    return d;
 }
-#endif
 
 int plAMOCreateClayFromImage(void *clay, void *f, u32 idx) {
     u8 *m;

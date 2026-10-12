@@ -64,7 +64,6 @@ main 0x190600 0x120 plAMOGetModelMatrixlist
 main 0x191420 0x22c GetPrimVertexNumAMOModelMesh
 main 0x191650 0x234 GetPrimCullTypeAMOModelMesh
 main 0x191890 0x24c GetPrimVertexIndexAMOModelMesh
-main 0x191D20 0x144 GetWeightAMOModelMesh
 main 0x192090 0x618 ConvertModelMeshAMO_NormalModel
 main 0x1926B0 0x718 ConvertModelMeshAMO_WeightModel
 main 0x1903D0 0x228 plCreateInitMotionSetFromAHI
