@@ -12,6 +12,16 @@ obvious workarounds.
 
 ## Open
 
+### Viewer: catching up every lost tick dropped (12 Oct 2026, agent F)
+- **Dropped:** in real-time runs the viewer ran every game tick it was behind
+  the clock before drawing the next frame.
+- **Now:** at most 4 ticks per drawn frame (CATCH_UP in viewer.c); beyond
+  that the clock is moved on and the game slows down, with a "slow:" log line.
+  Fixed-time runs (--shot, the tests) are unchanged.
+- **Why:** with ticks dearer than 33 ms (xemu's opening movie) the old way
+  drew one frame a second and never recovered; after a load pause it also ran
+  a burst of ticks. The PS2 slows down too.
+
 ### Hunter ground height: viewer's min_y_of dropped (12 Oct 2026, commit 22c82ad3)
 - **Dropped:** viewer.c min_y_of read the lowest vertex from each part's CPU
   skinning buffer (skinpos), or the unposed vertices when there was none.

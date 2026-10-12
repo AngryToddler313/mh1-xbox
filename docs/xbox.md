@@ -847,3 +847,114 @@ adapter expecting NTSC-M's setup would crush the darkest ~20 levels), and the
 HDMI adapter / capture card brightness. Dark game screens (this one, night
 areas, caves) will look too dark through this chain; a check with a retail
 game's dark scene through the same chain would settle it.
+
+### Scripted play in xemu: the first quest loop runs (agent F, 12 Oct 2026)
+
+**How far it gets.** In xemu (nv2a build, hidden) the scripted run goes
+power-on -> logos -> opening movie (skipped with start at tick 700) -> GAME
+MENU -> NEW GAME -> character creation (name TEST) -> save to E: -> village
+(first-visit event, Elder's talk, the house) -> quest 131 accepted at the
+Elder -> camp -> area 1 (Aptonoth herd) -> two kills, carves -> delivery at
+the camp box -> CLEAR -> reward screen -> village -> house bed save; a second
+boot with CONTINUE loads that save (money 1550). Times in the serial log of
+one run: village at 53 s (tick 1787), quest start 108 s (t4028), area 1
+110 s, clear 190 s (t7448), reward 197 s, back in the village 209 s (t8301).
+Every screen was compared with the PC build at the same game tick (RT_HOLD
+in xemu, RT_SHOTS on the PC; 12 ticks from character screen to the village
+after the quest): the pictures match apart from the 4:3 frame. xemu draws
+20-25 fps in the field and ~37 in the village on this laptop (Mesa llvmpipe,
+software GL, while other agents load the CPU): not a measure of the Xbox.
+`tools/xemu_quest_loop.sh` runs the whole thing (about 10 minutes) and
+checks the CONTINUE money.
+
+**Scripted input and test aids on the Xbox.** No command line, so:
+- `D:\data\input.txt`: a pad script in the PC's `--input` format, played
+  from power-on instead of the controller when the file exists (viewer.c,
+  the same reader as `--input @file`).
+- `D:\data\env.txt` (or `E:\Games\MH1\data\env.txt`): NAME=VALUE lines read
+  by the Xbox build's getenv (src/pc/xbox/xbox_env.c; pdclib's always
+  returned NULL), loaded first thing in main, so every RT_* test aid and
+  trace of docs/pc.md works on the Xbox.
+- `tools/run_xemu.sh --input FILE|SCRIPT --env FILE` puts both on the data ISO.
+- RT_HOLD=t1,t2,... (RT_HOLD_SECS, default 20): the game clock stops at
+  those ticks while drawing goes on; xemu screenshots then show an exact
+  tick (find the held frames as identical consecutive screenshots: xemu's
+  clock drifts against the host's, so the screenshot time of a tick varies).
+- The PC tests' scripts work unchanged after the movie skip: the movie
+  starts at tick 412 without a save (558 with one) on both builds; replacing
+  the scripts' `idle*600,start*2,idle*60` by `idle*700,start*2,idle*200`
+  shifts everything after it by 240 ticks; village/player-tick test aids
+  (RT_LB_WARP, RT_PL_WARP) count their own ticks and need no shift.
+
+**E: in xemu.** `tools/xbox_fatx.py format xbox_files/hdd.img` writes an
+empty FATX file system on E: (Partition1 at 0xABE80000, 0x1312D6000 bytes;
+the layout of nxdk's nxFormatVolume); the 4627 kernel mounts it.
+`tools/xbox_fatx.py ls|get IMG PATH` read files back: the game's stderr log
+(E:\Games\MH1\mh1log.txt, now with the RT_* traces), saves in
+E:\UDATA\4D480001. xbox_log.c makes E:\Games\MH1 itself. Only with xemu
+stopped (it caches the disk).
+
+**Bugs found and fixed on the way** (all would also have hit the real Xbox):
+- nxdk's pdclib: fopen "w+" fails always (CREATE_ALWAYS|TRUNCATE_EXISTING
+  is an invalid disposition): no new save could be made. mc_xbox.c creates
+  with "wb" and reopens "r+b".
+- pdclib's "r+" stream refuses writes until a seek (C's rule for switching
+  read/write): every save file had 0 bytes. mc_xbox.c seeks before each
+  read/write. The save written in xemu equals the PC's but for 7 bytes
+  (time stamps). (A general fix in xbox_libc.c's fopen wrapper would cover
+  future users; not done here, that file was another agent's.)
+- pdclib's scanf converts no %f/%e/%g: every sscanf with a float failed on
+  the Xbox (the village/player warp aids, --cam, --follow). xbox_scanf.c
+  replaces sscanf (floats here, the rest through pdclib's vsscanf).
+- The hunter floated ~1 m above the ground everywhere on the nv2a build
+  (very visible on the bed): the ground offset read the CPU skinning
+  buffers, which nv2a (GPU skinning) does not have. fl_model_min_y skins on
+  the CPU for that measurement (docs/REVIEW.md).
+- Viewer catch-up: in real-time runs every lost tick was run before the next
+  frame; with ticks dearer than 33 ms (the opening movie decodes a frame per
+  tick, ~25 ms in xemu on a busy host) xemu showed one frame a second and
+  never recovered (also in agent E's log). Now at most 4 ticks per frame, the
+  game slows down instead, with a "slow:" log line (mostly at loads now).
+- Motion sets leaked: create_plcom/pl/em_motion write new handles over the
+  table entries of the last load each quest and village visit, and the PS2's
+  releases (all_reset, stage_free, em_motion_free) are stand-ins here; about
+  0.5-0.7 MB a loop. rt_motion_gc (at each st_model_load) frees every set no
+  table entry and no player/monster motion player refers to; slots are
+  reused. PC soak (RT_MEM, village before / after loop 1 / after loop 2):
+motion sets 1344 / 1231 / 1223 KB (were 1788 / 2311 / 2836), tracked heap
+20.5 / 23.1 / 23.1 MB (were 21.0 / 24.2 / 24.7). (A first try
+  that made flReleaseMotionSetHandle real broke the quest loop's carving:
+  all_motion_free on the character screen then also freed the player's
+  weapon motions, which the host loads once.)
+
+**Memory (the main open problem).** Free physical memory (MmQueryStatistics,
+now in RT_MEM reports and on every "stage a -> b" log line of the Xbox
+build), measured with RT_MEM on (its table costs 768 KB on the Xbox; it was
+12 MB and made the game run out at the village, now 16-bit):
+character screen 14.9 MB free, village 8.7 MB, field 6.0 MB, reward 4.8 MB.
+With RT_MEM on, the game ran out of memory (fatal error 0x1E) on the return
+to the village after the quest; without it the loop and a second quest start
+went through, so the margin is about 1 MB at that point (measured before the
+motion-set fix; it saves ~0.7 MB a loop). Per loop the PC's tracked heap
+still grows (village before vs. after: textures as the Xbox keeps them
++0.8 MB, loaders' kept files +1 MB, host models +0.9 MB, mostly in the first
+loop; in loop 2 only the textures still grow, +0.84 MB, 6.7 -> 7.55 MB
+in the village; the CPU heap stays flat after the motion fix): monster models are cached per kind (em_kind_model) and never freed,
+release_texture / all_model_free / stage_free are stand-ins. Next: free the
+host models and textures of monster kinds and stages no longer in use
+(like the motion GC), then re-measure free memory over several quests in
+xemu.
+
+After the motion fix, without RT_MEM (tools/xemu_quest_loop.sh, free KB on
+each "stage a -> b" line, i.e. what the stage being left still had): village
+9.9 / 10.0 / 9.5 MB, quest start 7.6 MB, area 1 7.4 MB, camp 6.6 MB, back in
+the village 6.1 MB, the next quest start 5.9 MB; CONTINUE boot: 10.6 MB in the
+village. About 4 MB less in the village after one quest than before it:
+that is the cached monster models/textures and kept files above.
+
+**Still open.**
+- Audio: silent in xemu (its AC97 stops after one buffer); not testable there.
+- Memory as above; a soak test over several quests (the second loop needs
+  its own village warps).
+- The slow-motion fallback only hides a CPU problem: on hardware, check the
+  movie decode time (prof lines) and the field frame rate.
