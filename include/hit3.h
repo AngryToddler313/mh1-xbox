@@ -52,7 +52,7 @@ typedef struct HSWEEP {
     f32 p1[3];          /* 0x0C */
     f32 r;              /* 0x18 */
     f32 len;            /* 0x1C distance p0 - p1 */
-    s16 w20;            /* 0x20 */
+    u16 w20;            /* 0x20 1: player sweep (hosei_sub keeps the push horizontal) */
     u16 w22;            /* 0x22 non-zero: skip polygons that are all below pos.y - r */
 } HSWEEP;
 

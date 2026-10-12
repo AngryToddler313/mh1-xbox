@@ -35,6 +35,7 @@ typedef struct STAGE_SZ {
 } STAGE_SZ;
 
 typedef struct HV3 { f32 x, y, z; } HV3;
+typedef struct SV3 { s32 x, y, z; } SV3;
 
 typedef struct GATTR {
     u8 kind;
@@ -115,7 +116,7 @@ extern HKIND *ground_tbl_add[];
 extern u8 *wall_tbl_add[];
 extern WMAT pl_wall_mat[][21];
 extern s8 hited_wall_no[];
-extern f32 slide_tbl;
+extern f32 slide_tbl[];
 extern f32 lit_180_002E85D0[8];
 extern f32 lit_425_002E85F0[8];
 extern f32 lit_638_002E8610[8];
@@ -128,7 +129,7 @@ int WallFieldInCheck(f32 *);
 s32 *GetWallTblAdrs(f32 *);
 s32 *GetGroundTblAdrs(f32 *);
 void GetWallHitBitPl(f32, f32 *, int, void *);
-void GetWallHitBitEm(f32, f32 *, int, void *);
+void GetWallHitBitEm(f32, f32 *, u16, void *);
 static void WallHitInit(u32 *);
 static void GroundHitInit(u32 *);
 static int BlockPlaceCgeck(f32 *);
@@ -339,7 +340,7 @@ void GetWallHitBitPl(f32 r, f32 *seg, int mask, void *pl) {
 
 /* GetWallHitBitEm: monsters; the grid area is sized by the sphere (n x n
  * cells, 2x2 when small). */
-void GetWallHitBitEm(f32 r, f32 *seg, int mask, void *em) {
+void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, void *em) {
     HSWEEP sw;
     f32 q[8];
     f32 pt[3];
@@ -1101,60 +1102,62 @@ static int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
 }
 
 static int hosei_sub(HSWEEP *sw, f32 *out, s8 idx, u8 *flagp) {
-    f32 a[3];
-    f32 b[3];
-    f32 c[3];
-    f32 e[3];
+    f32 e[4];
+    f32 b[4];
+    f32 a[4];
+    f32 c[4];
     f32 len;
-    f32 *np;
-    int h = 0;
-    int i = idx;
+    s8 h;
 
-    if (hit_area_out[i] != 1) {
-        SetVector(e, hit_decision[i].n[0], hit_decision[i].n[1], hit_decision[i].n[2]);
+    switch (hit_area_out[idx]) {
+    default:
+        SetVector(e, hit_decision[idx].n[0], hit_decision[idx].n[1], hit_decision[idx].n[2]);
+        h = 0;
         if (sw->w20 == 1) {
-            if (e[0] == 0.0f && e[1] != 0.0f && e[2] == 0.0f) {
-            } else {
-                e[1] = 0.0f;
+            if (!(e[0] == 0.0f && e[1] != 0.0f && e[2] == 0.0f)) {
                 h = 1;
+                e[1] = 0.0f;
                 flvecNormalize(e);
             }
         }
         ScaleVector(b, e, sw->r);
-        AddVector(a, hit_near_point[i], b);
-        if (h != 0) a[1] = hit_hosei_base[i][1];
-        PointToPoint(b, a, hit_hosei_base[i]);
+        AddVector(a, hit_near_point[idx], b);
+        if (h) a[1] = hit_hosei_base[idx][1];
+        PointToPoint(b, a, hit_hosei_base[idx]);
         len = flvecCalcLength(b);
         flvecNormalize(b);
         ScaleVector(a, b, len);
-    } else {
-        switch (hit_side[i]) {
+        break;
+    case 1:
+        switch (hit_side[idx]) {
         case 0:
-            np = hit_near_point[i];
-            PointToPoint(a, hit_hosei_base[i], np);
+            PointToPoint(a, hit_hosei_base[idx], hit_near_point[idx]);
             break;
-        default:
         case 1:
-            np = hit_near_point[i];
-            PointToPoint(a, hit_kouten[i], np);
+        default:
+            PointToPoint(a, hit_kouten[idx], hit_near_point[idx]);
             break;
         }
-        if (sw->w20 == 1 && (a[0] != 0.0f || a[1] == 0.0f || a[2] != 0.0f)) {
-            a[1] = 0.0f;
-            h = 1;
+        h = 0;
+        if (sw->w20 == 1) {
+            if (!(a[0] == 0.0f && a[1] != 0.0f && a[2] == 0.0f)) {
+                a[1] = 0.0f;
+                h = 1;
+            }
         }
         flvecNormalize(a);
         ScaleVector(b, a, sw->r);
-        AddVector(a, np, b);
-        SetVector(c, hit_hosei_base[i][0], hit_hosei_base[i][1], hit_hosei_base[i][2]);
+        AddVector(a, hit_near_point[idx], b);
+        SetVector(c, hit_hosei_base[idx][0], hit_hosei_base[idx][1], hit_hosei_base[idx][2]);
         if (h == 1) c[1] = a[1];
         PointToPoint(b, a, c);
         len = flvecCalcLength(b);
         if (len == 0.0f) return 0;
         flvecNormalize(b);
         ScaleVector(a, b, len);
+        break;
     }
-    if (hit_side[i] == 1) *flagp = 1;
+    if (hit_side[idx] == 1) *flagp = 1;
     SetVector(out, a[0], a[1], a[2]);
     return 1;
 }
@@ -2208,100 +2211,85 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     return 0;
 }
 
-int GetFloorSlide(void *ent, f32 *out, int flag) {
-    f32 pt[4];
-    f32 h[8];
-    f32 tri[12];
-    f32 hf[8];
+int GetFloorSlide(HENT *ent, f32 *out, int flag) {
     HPOLY *pp[8];
+    f32 h[8];
+    HV3 tri[3];
     HPOLY *pf[8];
-    HPOLY *best;
-    f32 *pos = (f32 *)((u8 *)ent + 0xAC);
-    s32 ang = 0;
-    s32 *cell;
-    HPOLY *pl;
+    f32 hf[8];
+    HV3 pt;
+    s32 ang;
+    HPOLY **cell;
+    int k;
     s8 n = 0;
-    s8 m;
+    f32 *pos;
+    HPOLY *pl;
     s8 any;
-    s8 c;
     s8 i;
+    s8 c;
     int r;
-    f32 *hp = h;
-    HPOLY **pq = pp;
+    HPOLY *best;
     f32 hr;
 
+    pos = ent->pos;
+    ang = 0;
     out[0] = 0.0f;
     out[1] = 0.0f;
     out[2] = 0.0f;
     if (GroundFieldInCheck(pos) == 0) return -1;
-    cell = GetGroundTblAdrs(pos);
-    if (*cell != -1) {
-        do {
-            pl = (HPOLY *)*cell;
-            pt[0] = pos[0];
-            pt[1] = pos[2];
-            tri[0] = pl->v[0][0];
-            tri[1] = pl->v[0][2];
-            tri[3] = pl->v[1][0];
-            tri[4] = pl->v[1][2];
-            tri[6] = pl->v[2][0];
-            tri[7] = pl->v[2][2];
-            if (!(pl->n[1] <= 0.0f) && PointHitCheckF3(tri, pt) == 1 && n < 5) {
-                n++;
-                *hp = -(pl->d + (pl->n[0] * pos[0] + pl->n[2] * pos[2])) / pl->n[1];
-                *pq = pl;
-                hp++;
-                pq++;
-            }
-            cell++;
-        } while (*cell != -1);
+    cell = (HPOLY **)GetGroundTblAdrs(pos);
+    for (k = 0; (s32)cell[k] != -1; k++) {
+        pl = cell[k];
+        pt.x = pos[0];
+        pt.y = pos[2];
+        tri[0].x = pl->v[0][0];
+        tri[0].y = pl->v[0][2];
+        tri[1].x = pl->v[1][0];
+        tri[1].y = pl->v[1][2];
+        tri[2].x = pl->v[2][0];
+        tri[2].y = pl->v[2][2];
+        if (!(pl->n[1] <= 0.0f) && PointHitCheckF3(&tri[0].x, &pt.x) == 1 && n < 5) {
+            h[n] = -(pl->d + (pl->n[0] * pos[0] + pl->n[2] * pos[2])) / pl->n[1];
+            pp[n] = pl;
+            n++;
+        }
     }
-    if (n == 0) return -1;
-    m = n;
-    if (m != 1) {
+    if (n) {
+    if (n != 1) {
         any = 0;
         c = 0;
-        i = 0;
-        if (m > 0) {
-            hp = h;
-            pq = pp;
-            do {
-                if (*hp <= 50.0f + pos[1]) {
-                    hf[c] = *hp;
-                    any = 1;
-                    c++;
-                    pf[c - 1] = *pq;
-                }
-                hp++;
-                i++;
-                pq++;
-            } while (i < m);
+        for (i = 0; i < n; i++) {
+            if (h[i] <= 50.0f + pos[1]) {
+                any = 1;
+                hf[c] = h[i];
+                pf[c++] = pp[i];
+            }
         }
         if (any == 1) {
             if (c == 1) {
-                best = pf[0];
                 hr = hf[0];
+                best = pf[0];
             } else {
-                i = 0;
-                if (c > 0) {
-                    for (; i < c; i++) {
-                        if (i == 0 || h[0] < hf[i]) {
-                            h[0] = hf[i];
-                            pp[0] = pf[i];
-                        }
+                for (i = 0; i < c; i++) {
+                    if (i == 0) {
+                        h[0] = hf[i];
+                        pp[0] = pf[i];
+                    } else if (h[0] < hf[i]) {
+                        h[0] = hf[i];
+                        pp[0] = pf[i];
                     }
                 }
                 hr = h[0];
                 best = pp[0];
             }
         } else {
-            i = 0;
-            if (m > 0) {
-                for (; i < m; i++) {
-                    if (i == 0 || !(hf[0] <= h[i])) {
-                        hf[0] = h[i];
-                        pf[0] = pp[i];
-                    }
+            for (i = 0; i < n; i++) {
+                if (i == 0) {
+                    hf[0] = h[i];
+                    pf[0] = pp[i];
+                } else if (!(hf[0] <= h[i])) {
+                    hf[0] = h[i];
+                    pf[0] = pp[i];
                 }
             }
             hr = hf[0];
@@ -2313,7 +2301,7 @@ int GetFloorSlide(void *ent, f32 *out, int flag) {
     }
     if (!(hr < pos[1])) {
         check_angle(best->n, &ang);
-        r = check_slide(best, (u8 *)ent, &ang, out, slide_tbl) & 0xFF;
+        r = check_slide(best, (u8 *)ent, &ang, out, slide_tbl[0]) & 0xFF;
         if (flag != 0 && r != 0) {
             pos[0] += out[0];
             pos[1] += out[1];
@@ -2322,6 +2310,8 @@ int GetFloorSlide(void *ent, f32 *out, int flag) {
         return 0;
     }
     return 1;
+    }
+    return -1;
 }
 
 /* 0x0011C920: slide vector for a polygon pl under entity e (pos at +0xAC):
@@ -2355,9 +2345,9 @@ static void check_angle(f32 *n, s32 *out) {
 }
 
 void HitWallPlayer(HENT *ent, int keep) {
-    s32 ang[3];
-    f32 o[3];
-    f32 seg[6];
+    SV3 ang;
+    HV3 o;
+    HV3 seg[2];
     f32 m[16];
     f32 *p;
     f32 r;
@@ -2379,34 +2369,34 @@ void HitWallPlayer(HENT *ent, int keep) {
         while (p[3] != -1.0f) {
             r = p[3] * ent->scl[0];
             if (ent->mon != 0 && ent->kind == 7) {
-                ang[0] = 0;
-                ang[1] = ent->ang_y;
-                ang[2] = 0;
-                cpRotMatrixYXZ2(ang, m);
-                flvecApplyMat33(o, p, m);
-                seg[0] = ent->old[0] + o[0] * ent->scl[0];
-                seg[1] = ent->old[1] + o[1] * ent->scl[1];
-                seg[2] = ent->old[2] + o[2] * ent->scl[2];
-                seg[3] = ent->pos[0] + o[0] * ent->scl[0];
-                seg[4] = ent->pos[1] + o[1] * ent->scl[1];
-                seg[5] = ent->pos[2] + o[2] * ent->scl[2];
+                ang.x = 0;
+                ang.y = ent->ang_y;
+                ang.z = 0;
+                cpRotMatrixYXZ2(&ang.x, m);
+                flvecApplyMat33(&o.x, p, m);
+                seg[0].x = ent->old[0] + o.x * ent->scl[0];
+                seg[0].y = ent->old[1] + o.y * ent->scl[1];
+                seg[0].z = ent->old[2] + o.z * ent->scl[2];
+                seg[1].x = ent->pos[0] + o.x * ent->scl[0];
+                seg[1].y = ent->pos[1] + o.y * ent->scl[1];
+                seg[1].z = ent->pos[2] + o.z * ent->scl[2];
             } else {
-                seg[0] = ent->old[0] + p[0] * ent->scl[0];
-                seg[1] = ent->old[1] + p[1] * ent->scl[1];
-                seg[2] = ent->old[2] + p[2] * ent->scl[2];
-                seg[3] = ent->pos[0] + p[0] * ent->scl[0];
-                seg[4] = ent->pos[1] + p[1] * ent->scl[1];
-                seg[5] = ent->pos[2] + p[2] * ent->scl[2];
+                seg[0].x = ent->old[0] + p[0] * ent->scl[0];
+                seg[0].y = ent->old[1] + p[1] * ent->scl[1];
+                seg[0].z = ent->old[2] + p[2] * ent->scl[2];
+                seg[1].x = ent->pos[0] + p[0] * ent->scl[0];
+                seg[1].y = ent->pos[1] + p[1] * ent->scl[1];
+                seg[1].z = ent->pos[2] + p[2] * ent->scl[2];
             }
             if (ent->mon != 0) {
-                mask = ent->wmask;
+                mask = EF(ent, u16, 0x95E);
                 if (ent->st == 2) mask |= 0x200;
                 if (game_w.gate_open != 0) mask |= 0x4000;
-                GetWallHitBitEm(r, seg, mask, ent);
+                GetWallHitBitEm(r, &seg[0].x, mask, ent);
             } else if (game_w.gate_open != 0) {
-                GetWallHitBitPl(r, seg, 0xC004, ent);
+                GetWallHitBitPl(r, &seg[0].x, 0xC004, ent);
             } else {
-                GetWallHitBitPl(r, seg, 0x8004, ent);
+                GetWallHitBitPl(r, &seg[0].x, 0x8004, ent);
             }
             p += 4;
         }
