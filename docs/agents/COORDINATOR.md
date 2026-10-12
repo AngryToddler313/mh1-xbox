@@ -57,6 +57,10 @@ Note: tools/build.py skips src/pc/ (native platform code, built by tools/build_p
     #   (add those by hand). Pick the type a matched load proves (lb vs lbu, lh vs lhu).
     tools/rebuild.sh            # all five modules must print OK
     git push
+    # A failed rebuild can leave generated stubs (src/**/X.c with only INCLUDE_ASM lines) that
+    # git does not track; they break the next rebuild after the merge is undone. Check
+    # `git status --untracked-files=all src` before blaming a branch (12 Oct 2026).
+    # Never `git reset --hard` a merge commit away: keep it on a branch first.
 
 If a module mismatches after a merge: find the object from build/<module>.map at the
 first differing offset (base 0x100000 main, 0x533980 overlays), run

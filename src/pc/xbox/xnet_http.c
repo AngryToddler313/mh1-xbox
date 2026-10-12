@@ -54,8 +54,6 @@ static int dial(void)
         return -1;
     }
     lwip_fcntl(s, F_SETFL, 0);
-    tv.tv_sec = 10;
-    lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
     return s;
 }
 
@@ -91,6 +89,15 @@ char *xh_http(const char *method, const char *path, const void *body, int nbody,
             if (!(p = realloc(buf, cap + 1)))
                 goto fail;
             buf = p;
+        }
+        {   /* at most 10 s without data: nxdk's lwIP has no SO_RCVTIMEO, and a download
+             * stalled half way on 12 Oct 2026 (the loader then hung for good) */
+            struct timeval tv = { 10, 0 };
+            fd_set r;
+            FD_ZERO(&r);
+            FD_SET(s, &r);
+            if (lwip_select(s + 1, &r, NULL, NULL, &tv) <= 0)
+                goto fail;
         }
         if ((k = lwip_recv(s, buf + n, cap - n, 0)) < 0)
             goto fail;
