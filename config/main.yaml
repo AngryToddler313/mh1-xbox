@@ -701,7 +701,6 @@ segments:
       - [0x088800, c, fl/tx02]
       - [0x088B38, asm, text/flLockTexture]
       - [0x088B40, c, fl/tx03]
-      - [0x088C84, asm, text/flPS2LockTexture]
       - [0x089690, c, fl/tx04]
       - [0x089CC0, c, fl/tx05]
       - [0x089CD8, asm, text/flPS2ReloadTexture]

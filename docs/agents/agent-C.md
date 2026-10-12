@@ -1531,3 +1531,8 @@ Start: main 42.150% (639224 bytes).
   sits higher on the stack); prototype `flPS2VIF1MakeLoadImage(.., s16 vram, ..)` fixed the argument load order
   (with `long vram` the lh of t->x14 was scheduled first). `case 0x14: case 0x13:` order gives the 0x13-first ladder.
 - Left: the original copies v0 into buf's saved register inside both branches; ours sinks the copy below the join.
+### fl/tx03.c extended to 0x189690: flPS2LockTexture (2548 bytes) matches, written from the asm
+- Same PLCTX patterns as tx10/tx04. Keys: prototype `flPS2StoreImageB(u8 *, int, s16 vram, s16 bw, s16 fmt, long,
+  long, s16 w, s16 h)` (s16 w: the lh value goes straight to t3; long/int made MWCC re-extend it);
+  `c->base = t->x2C = t->sysmem == 0 ? mflTemporaryUse(..) : flPS2GetSystemBuffAdrs(..);` (chained, no reload);
+  `PLCTX s; u8 *dst; u8 *src;` order. The four lock modes repeat the format switch (written out, generated).
