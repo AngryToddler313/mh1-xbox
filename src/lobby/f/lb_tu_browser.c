@@ -329,7 +329,7 @@ extern BCSRC *BcSource;
 extern BCIMG *BcImage;
 extern BCRT *BcRoute;
 extern BSNODE *BcRequest;
-extern u8 *BcImageBuf;
+extern u8 *BcImageBuf[1];
 extern BCSRC BsCacheSource[3];
 extern BCIMG BsCacheImage[32];
 extern BCRT BsCacheRoute[32];
@@ -345,7 +345,7 @@ void BsCacheInitialize(void) {
     BcImage = BsCacheImage;
     BcRoute = BsCacheRoute;
     BcRequest = BsCacheRequest;
-    BcImageBuf = BsCacheImageBuf;
+    BcImageBuf[0] = BsCacheImageBuf;
     memset(BcSource, 0, sizeof(BsCacheSource));
     BcSource_head.next = (BSNODE *)BcSource;
     BcSource[0].next = &BcSource[1];
@@ -650,12 +650,58 @@ void bs_cache_queue_image_free_all(BSNODE *arg0) {
 }
 
 /* original bytes: build/raw/bs_cache_request_create_texture.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_cache_request_create_texture()
-{
-#include "bs_cache_request_create_texture.inc"
+typedef struct BCIMGN {
+    struct BCIMGN *next;    /* 0x000 */
+    char url[0x100];        /* 0x004 */
+    s32 used;               /* 0x104 */
+    u8 page;                /* 0x108 page counter of the page that loaded it */
+    u8 _pad109[3];
+    u8 *data;               /* 0x10C file data */
+    s32 size;               /* 0x110 */
+    s32 tex;                /* 0x114 texture | palette handle << 16 */
+    s16 w, h;               /* 0x118 */
+} BCIMGN;
+int flCreateTextureFromPNG_mem_err();
+int flCreateTextureFromBMP_mem_err();
+int bs_cache_request_create_texture(BCIMGN *n) {
+    int r;
+    BCIMGN *last;
+
+    for (;;) {
+        r = -3;
+        switch ((u8)BsUrlFileExtensionGet(n->url)) {
+        case 2:
+            r = flCreateTextureFromPNG_mem_err(n->data, n->size, 3, &n->w, &n->h);
+            break;
+        case 3:
+            r = flCreateTextureFromBMP_mem_err(n->data, 3, &n->w, &n->h);
+            break;
+        }
+        switch (r) {
+        case -1:
+            last = (BCIMGN *)bs_cache_queue_get_last(&BcImage_head);
+            if (last == 0) {
+                n->used = 6;
+                n->tex = 0;
+                return 6;
+            }
+            if (last->page == *bs_route_current_page_status()) {
+                n->used = 6;
+                n->tex = 0;
+                return 6;
+            }
+            bs_image_cache_clear((BSNODE *)last);
+            continue;
+        case -2:
+        case -3:
+            n->used = 6;
+            n->tex = 0;
+            return 6;
+        }
+        n->tex = r;
+        return 0;
+    }
 }
-#endif
 
 /* original bytes: build/raw/bs_request_check_task_http.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
@@ -666,28 +712,149 @@ asm int bs_request_check_task_http()
 #endif
 
 /* original bytes: build/raw/bs_request_set_task_core.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_request_set_task_core()
-{
-#include "bs_request_set_task_core.inc"
+typedef struct BSTASK {
+    u8 x00;         /* 0x00 1 = set */
+    u8 x01;
+    u8 x02;
+    u8 _pad03;
+    char *x04;      /* 0x04 url */
+    char *x08;      /* 0x08 proxy */
+    char *x0C;      /* 0x0C proxy (https) */
+    u8 *x10;        /* 0x10 receive buffer */
+    s32 x14;
+    char *url;      /* 0x18 only for http / https urls (scheme 2, 3) */
+    s32 x1C;
+    s32 x20;
+    s32 x24;
+    s32 x28;
+    u8 x2C;         /* 0x2C 2 = post */
+    u8 _pad2D[3];
+    u8 *x30;        /* 0x30 post data */
+    s8 x34;
+    s8 x35;
+    u8 _pad36[0x10];
+    s8 buf;         /* 0x46 image buffer index */
+} BSTASK;
+extern s8 BsProxyUseFlag;
+extern char BsProxyUrlstr[];
+extern char BsProxyUrlstr_S[];
+BSTASK *HttpTaskPull(void);
+void bs_request_set_task_core(BSTASK *t, char *a, s8 b, char *c, char *d, s8 e, u8 *f, s32 g, char *url, s32 h, s32 i,
+                              s32 j, s32 k, s8 post, u8 *l, s8 m) {
+    t->x00 = 1;
+    t->x04 = a;
+    t->x01 = b;
+    t->x08 = c;
+    t->x0C = d;
+    t->x02 = e;
+    t->x10 = f;
+    t->x14 = g;
+    if (url == 0) {
+        t->url = 0;
+    } else {
+        switch ((u8)BsUrlSchemeGet(url)) {
+        case 2:
+        case 3:
+            t->url = url;
+            break;
+        case 1:
+        case 4:
+        case 5:
+        default:
+            t->url = 0;
+            break;
+        }
+    }
+    t->x1C = h;
+    t->x20 = i;
+    t->x24 = j;
+    t->x28 = k;
+    if (post) {
+        t->x2C = 2;
+        t->x30 = l;
+    } else {
+        t->x2C = 1;
+        t->x30 = 0;
+    }
+    t->x34 = m;
+    t->x35 = 0;
 }
-#endif
 
 /* original bytes: build/raw/bs_request_set_task_html.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_request_set_task_html()
-{
-#include "bs_request_set_task_html.inc"
+void bs_request_set_task_html(BSNODE *r) {
+    char url[0x100];
+    BSNODE *c;
+    BSTASK *t;
+
+    BsUrlCopy_SS(url, r->url);
+    if (BsUrlParse(BsRouteCurrent(), url) == 0) {
+        r->used = 6;
+        r->x124 = 2;
+        r->x125 = 0;
+        r->tex = 0;
+        return;
+    }
+    c = bs_cache_request_html_core(url, r->x10C, &r->x108);
+    if (c == 0) {
+        r->used = 6;
+        r->x124 = 8;
+        r->x125 = 0;
+        return;
+    }
+    r->tex = (u32)c;
+    switch (c->used) {
+    case 2:
+        r->used = 5;
+        *(BSTASK **)&r->x118 = 0;
+        break;
+    case 3:
+        r->used = 3;
+        t = HttpTaskPull();
+        *(BSTASK **)&r->x118 = t;
+        bs_request_set_task_core(t, c->url, BsProxyUseFlag, BsProxyUrlstr, BsProxyUrlstr_S,
+                                 r->x10C == 6 || r->x10C == 2, *(u8 **)&c->x10C, 0x8000, r->x110, 0, 0, 0, 0,
+                                 r->x10C == 3, BsCachePost, 1);
+        break;
+    case 6:
+        break;
+    }
 }
-#endif
 
 /* original bytes: build/raw/bs_request_set_task_image.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int bs_request_set_task_image()
-{
-#include "bs_request_set_task_image.inc"
+void bs_request_set_task_image(BSNODE *r) {
+    char url[0x100];
+    BSNODE *c;
+    BSTASK *t;
+
+    BsUrlCopy_SS(url, r->url);
+    if (BsUrlParse(BsRouteCurrent(), url) == 0) {
+        r->used = 6;
+        r->x124 = 2;
+        r->x125 = 0;
+        r->tex = 0;
+        return;
+    }
+    c = bs_cache_request_image_core(url, r->x10C, &r->x108);
+    if (c == 0) {
+        return;
+    }
+    r->tex = (u32)c;
+    switch (c->used) {
+    case 2:
+        r->used = 5;
+        *(BSTASK **)&r->x118 = 0;
+        break;
+    case 3:
+        r->used = 3;
+        t = HttpTaskPull();
+        *(BSTASK **)&r->x118 = t;
+        bs_request_set_task_core(t, c->url, BsProxyUseFlag, BsProxyUrlstr, BsProxyUrlstr_S, BcCurrentPage[0] == 5,
+                                 BcImageBuf[t->buf], 0x4000, r->x110, 0, 0, 0, 0, 0, 0, 0);
+        break;
+    case 6:
+        break;
+    }
 }
-#endif
 
 /* original bytes: build/raw/BsRequestTask.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
