@@ -1564,6 +1564,10 @@ static void npc_model_load(int slot, int amh, int tex)
         fprintf(stderr, "npc model %d (%s): load failed\n", slot, afs.name[amh]);
         return;
     }
+    /* NPCs move by their root motion too (the village's walkers): keep the root bone's X/Z at its bind value as for
+     * the monsters (em_kind_model). Without it they were drawn walking ahead of their position and jumping back at
+     * every walk loop (owner report from the Xbox, 12 Oct 2026; the PC had it too) */
+    e->skel.root_lock = !getenv("RT_EM_ROOT_FREE");
     npc_have[slot] = 1;
     drop(&e->mem[0]);
     drop(&e->mem[1]);
@@ -1651,6 +1655,18 @@ static void npc_draw(const fl_light *L)
             continue;
         m = &npc_mdl[kind];
         rt_monster_pose(i, &m->skel);
+        if (getenv("RT_EM_DRAW_TRACE") && m->skel.skel.nbone > 1) {
+            /* test aid: the NPC's root motion bone in world space next to its game position (as emdraw for monsters) */
+            int b, n = 0;
+            for (b = 0; b < m->skel.skel.nbone; b++)
+                if (m->skel.skel.bone[b].group == 0 && n++ == 1)
+                    break;
+            if (b < m->skel.skel.nbone) {
+                float bp[3] = { m->skel.world[b][12], m->skel.world[b][13], m->skel.world[b][14] };
+                printf("npcdraw t%d slot %d kind %d mot %d pos %.1f %.1f local %.1f %.1f %.1f\n", rt_log_tick(), i, kind,
+                       ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0xAC), *(float *)(em + 0xB4), bp[0], bp[1], bp[2]);
+            }
+        }
         for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
             m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
         fl_model_pose(&m->model, (const flmat *)m->skel.world, light_for(em, 0));

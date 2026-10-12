@@ -9,7 +9,7 @@ Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run re
 
 Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut lao_ride herbivore_pose herbivore_rewind
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
-Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
+Village: npc_walk shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
 """
 import math, re, sys, time
@@ -473,6 +473,26 @@ def price_in_list(t, name, nth=0):
     if len(idx) <= nth: return None
     nxt = f[idx[nth] + 1].strip()
     return int(re.sub(r'\D', '', nxt)) if nxt.endswith('z') else None
+
+@test
+def npc_walk(free=False):
+    """village NPCs (walkers, e.g. slots 8/9) for 30 s: the root motion bone of the drawn body (RT_EM_DRAW_TRACE npcdraw, model
+    space) must stay at the actor's position. Owner report 12 Oct 2026 (Xbox, the PC too): NPCs walked too fast and jumped back,
+    the walk loop's root translation drawn on top of the game's movement (as herbivore_rewind for the monsters).
+    free=True runs it without the fix (RT_EM_ROOT_FREE=1): offsets up to ~300, jumps of ~200 per tick."""
+    env = {'RT_EM_DRAW_TRACE': 1, 'RT_STEP': 1}
+    if free: env['RT_EM_ROOT_FREE'] = 1
+    t = village('npc_walk' + ('_free' if free else ''), 'idle*900', 900, env=env)
+    if crashed(t): return False, 'crash'
+    first, last, off, n = {}, {}, 0.0, 0
+    for m in re.finditer(r'npcdraw t(\d+) slot (\d+) kind \d+ mot \d+ pos (\S+) (\S+) local (\S+) \S+ (\S+)', t):
+        s = int(m.group(2)); px, pz, lx, lz = (float(m.group(i)) for i in (3, 4, 5, 6))
+        first.setdefault(s, (px, pz)); last[s] = (px, pz); n += 1
+        off = max(off, math.hypot(lx, lz))
+    walked = max([math.hypot(last[s][0] - first[s][0], last[s][1] - first[s][1]) for s in first] or [0])
+    if n < 1000: return False, 'only %d NPC draws traced' % n
+    if walked < 100: return False, 'no NPC walked (%.0f units), nothing checked' % walked
+    return off <= 40, 'NPCs drawn %d times, one walked %.0f units; root bone at most %.0f from the actor (limit 40; the bug: ~300)' % (n, walked, off)
 
 @test
 def shop_buy():
