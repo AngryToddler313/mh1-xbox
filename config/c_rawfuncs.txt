@@ -148,3 +148,4 @@ main 0x18B060 0x150 Conv8to32
 main 0x18B2A0 0x104 BlockConv8to32
 main 0x18BAE0 0x2B0 flPS2SearchVramChange
 main 0x189770 0x550 flPS2UnlockTexture
+main 0x195000 0x510 PADRead_for_PS2

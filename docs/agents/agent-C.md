@@ -1543,3 +1543,8 @@ Start: main 42.150% (639224 bytes).
 - intr == 0 means "called from the vsync interrupt": iFlushCache.
 - Run END must be the function's real end when the next file starts after alignment padding (flswap: 0x18D5EC, not 0x18D5F0), or everything after shifts by 4.
 ### fl/pv03.c: plSetupFOVClipPlanes matches first try (float tan through double: `(float)tan(half)`)
+### fl/tarpad02.c: PADRead_for_PS2 written from the asm (raw holdout, ~260 lines: loop strength reduction)
+- The original indexes `tarpad_root[port].field` / `ps2pad_state[port].field` every time (no record pointer):
+  each access is its own lui/addiu of (array + field offset) plus the cached port*0x34. `x / 2` on a u8 gives srl
+  (`>> 1` gave sra). A switch whose labels are written 1, 2, 4, 8, 0x10, 0x20 compares 0x20 first (MWCC emits the
+  ladder in reverse label order).

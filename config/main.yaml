@@ -751,6 +751,7 @@ segments:
       - [0x094B5C, asm, text/tarPADInit]
       - [0x094DF0, c, fl/tarpad01]
       - [0x094FF4, asm, text/PADRead_for_PS2]
+      - [0x095000, c, fl/tarpad02]
       - [0x095510, c, fl/tarpad03]
       - [0x09583C, asm, text/PADReadSub]
       - [0x0961F8, asm, text/g_flPADShockSet]
