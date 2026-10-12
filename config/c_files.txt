@@ -296,8 +296,7 @@ main 0x0023A7F0 0x0023AA60 omake/omakec
 main 0x0023B2E0 0x0023B4F4 omake/omaked
 main 0x0023B790 0x0023BE10 omake/omakee
 main:rodata 0x0036D1E0 0x0036D1F8 omake/omakee
-main 0x0023DAB0 0x0023DEA8 npc/npcb
-main 0x0023E260 0x0023E4E0 npc/npcc
+main 0x0023D870 0x0023E4E0 npc/npc
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2

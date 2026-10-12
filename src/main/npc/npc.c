@@ -1,14 +1,14 @@
-/* NPC (the hunter-guild "jijii" and cat-like helper models in the plaza),
- * SLPM_654.95 main 0x23D870-0x23E500. An NPC is a player-like work block
- * (PLW layout: 0x0 flag, 0x1 active, 0x2 kind (0 = idol, 1 = jijii), 0x4 step,
- * 0xA0 angle, 0xAC position, 0x4E6 per-part visible flags, 0x50C model).
- * npc_mv is the per-frame task function; npc_trans draws the model. Raw byte
- * offsets are used for the fields that PLW does not name yet. Meanings are
- * guesses. */
+/* npc - the NPC file (SLPM_654.95 0x0023D870-0x0023E4E0), one translation unit in the original address order: the
+   hunter-guild "jijii" and the idol NPC models (an NPC is a player-like work block, NPCW below): npc_trans draws
+   the model, npc_init / npc_init_sub set it up, npc_move is the per-frame step (idle timer, turning, the jijii's
+   costume parts cycled with the pad), npc_mv the task function, npc_mk spawns one. Meanings are guesses.
+   Built from the runs npcb / npcc and the near-match file npc_nm.c (all of it matches now: npc_trans and npc_move
+   were rewritten from the asm, agent B 12 Oct 2026). common_local_init / dummy_em_prog (0x23E4E0-0x23E4F8) stay in
+   src/main/sys/empty_23E4E0.c. */
+
 #include "types.h"
 #include "fl.h"
 #include "clay.h"
-
 #define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
 #define BS8(p, o)  (*(s8 *)((u8 *)(p) + (o)))
 #define B16(p, o)  (*(u16 *)((u8 *)(p) + (o)))
@@ -16,7 +16,6 @@
 #define B32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
 #define BF(p, o)   (*(f32 *)((u8 *)(p) + (o)))
 #define BP(p, o)   (*(void **)((u8 *)(p) + (o)))
-
 typedef struct NPCW {
     u8 on0; /* 0x0 */
     u8 on; /* 0x1 */
@@ -103,7 +102,6 @@ typedef struct NPCW {
     f32 f930; /* 0x930 */
     u8 _pad_end[0x940 - 0x934];
 } NPCW;
-
 extern u16 Psw[];
 extern u8 game_w[];
 extern f32 stage_start_pos[][3];
@@ -111,7 +109,6 @@ extern u16 *npc_jijii_tbl[];
 extern s16 npc_disp_parts_003494B0[][2];
 extern u8 dummy_adr_tbl_003494F0[];
 extern u8 ot1[];
-
 void pl_light_change();
 void Pl_light_set();
 void cpAng2Rad_all();
@@ -140,29 +137,35 @@ void HitWallPlayer();
 void GetGroundHitStatusAreaEm();
 int softdip_ck();
 void push_em_work();
-void npc_trans();
-void npc_init_sub();
-void npc_init();
-void npc_move();
-void npc_die();
-void npc_erase();
-void npc_chr_sub();
-void npc_effect_move();
+typedef struct NCLAY { s32 handle; s32 num; s32 mat[32]; s32 attr; } NCLAY;  /* 0x8C: a model part (clay): 0x00 handle, 0x04 material count, 0x08 material numbers, 0x88 attribute */
 
-void npc_trans(arg)
+/* prototypes of this file */
+static void npc_trans();
+static void npc_init_sub();
+static void npc_init();
+static void npc_move();
+static void npc_die();
+static void npc_erase(void);
+int npc_mv();
+static void npc_chr_sub();
+void npc_mk();
+static void npc_effect_move();
+
+static void npc_trans(arg)
 u8 *arg;
 {
-    f32 rad[3];
     FLMAT m3;
     FLMAT m4;
     FLMAT m2;
-    NPCW *pl;
-    u8 *mdl;
-    u8 *tbl;
-    u8 *clay;
-    int cnt;
+    f32 rad[3];
+    u8 *t;
     int i;
+    NPCW *pl;
+    int cnt;
+    u8 *mdl;
     int j;
+    NCLAY *clay;
+    u8 *tbl;
 
     pl = BP(arg, 0x18);
     mdl = pl->mdl;
@@ -171,9 +174,9 @@ u8 *arg;
     }
     pl_light_change(pl, 1);
     Pl_light_set(pl);
-    cpAng2Rad_all((u8 *)pl + 0xA0, rad);
+    cpAng2Rad_all(&pl->ang0, rad);
     flmatMakeScale(&m2, pl->sclx, pl->scly, pl->sclz);
-    cpRotMatrixYXZ2((u8 *)pl + 0xA0, m3);
+    cpRotMatrixYXZ2(&pl->ang0, m3);
     flmatSetTrans(&m3, pl->posx, pl->posy, pl->posz);
     flmatMul33_2(&m3, &m2);
     flmatCopy((u8 *)pl + 0x60, m3);
@@ -189,12 +192,9 @@ u8 *arg;
     for (i = 0; i < cnt; i++) {
         if (pl->kind != 0 || pl->parts[i] != 0) {
             flSetRenderState(0x67, -1);
-            if (B32(clay, 0) != -1) {
-                u8 *e = clay;
-
-                for (j = 0; j < B32(clay, 4); j++) {
-                    u8 *t = tbl + B32(e, 8) * 0x4C;
-
+            if (clay->handle != -1) {
+                for (j = 0; j < clay->num; j++) {
+                    t = tbl + clay->mat[j] * 0x4C;
                     if (pl->kind == 1) {
                         if (pl->parts[j] == 0) {
                             B32(t, 0x10) = 0;
@@ -205,19 +205,18 @@ u8 *arg;
                         BF(t, 0x10) = pl->f798;
                     }
                     flSetRenderState((j + 0x3A) & 0xFF, (u32)t);
-                    e += 4;
                 }
-                clay_attr_set(B32(clay, 0x88));
-                flExecuteClay(B32(clay, 0), 0);
+                clay_attr_set(clay->attr);
+                flExecuteClay(clay->handle, 0);
             }
         }
-        clay += 0x8C;
+        clay++;
     }
     clay_attr_reset();
     flSetRenderState(0x60, 0);
 }
 
-void npc_init_sub(p)
+static void npc_init_sub(p)
 NPCW *p;
 {
     p->prog = dummy_adr_tbl_003494F0;
@@ -232,7 +231,7 @@ NPCW *p;
     }
 }
 
-void npc_init(p)
+static void npc_init(p)
 NPCW *p;
 {
     int i;
@@ -322,64 +321,44 @@ NPCW *p;
     World_calc(p);
 }
 
-void npc_move(p)
+static void npc_move(p)
 NPCW *p;
 {
-    int i;
+    u16 i;
     u16 *q;
-    u16 v;
+    int k;
 
-    p->x40E = 0xA;
-    pl_timer_calc();
+    p->x40E = 10;
+    pl_timer_calc(p);
     hit_stop_calc(p);
     p->ox = p->posx;
     p->oy = p->posy;
     p->oz = p->posz;
-    if (p->x14 != 0) {
-        p->x14 = 0;
-        p->x15 = 0;
-        p->sub = 0;
-    } else {
+    k = p->kind;
+    switch (p->x14) {
+    case 0:
         switch (p->x15) {
         case 0:
-            if (p->kind == 0) {
+            if (k == 0) {
                 if (p->sub == 0) {
                     p->sub++;
-                    p->timer = ((ran_suu(1) & 0xFFFF) + 0x3C) & 0xFF;
-                    if (p->char0 != 1) {
+                    p->timer = (u8)((u16)ran_suu(1) + 60);
+                    if ((u16)p->char0 != 1) {
                         pl_chr_set2(p, 1, 4, 0);
                     }
-                } else {
-                    p->timer = p->timer - 1;
-                    if (p->timer <= 0) {
-                        act_set(p, 0, 1);
-                    }
+                } else if (--p->timer <= 0) {
+                    act_set(p, 0, 1);
                 }
             } else {
-                p->timer = p->timer + 1;
+                p->timer++;
                 if (Psw[2] & 0x200) {
                     p->var++;
                     p->var = p->var % 6;
-                    i = 0;
-                    do {
-                        p->parts[i & 0xFFFF] = 0;
-                        p->parts[(i + 1) & 0xFFFF] = 0;
-                        p->parts[(i + 2) & 0xFFFF] = 0;
-                        p->parts[(i + 3) & 0xFFFF] = 0;
-                        p->parts[(i + 4) & 0xFFFF] = 0;
-                        p->parts[(i + 5) & 0xFFFF] = 0;
-                        p->parts[(i + 6) & 0xFFFF] = 0;
-                        p->parts[(i + 7) & 0xFFFF] = 0;
-                        i = (i + 8) & 0xFFFF;
-                    } while (i < 0x20);
-                    q = npc_jijii_tbl[p->var];
-                    v = *q;
-                    if (v != 0xFFFF) {
-                        do {
-                            q++;
-                            p->parts[v & 0xFFFF] = 1;
-                            v = *q;
-                        } while (v != 0xFFFF);
+                    for (i = 0; i < 32; i++) {
+                        p->parts[i] = 0;
+                    }
+                    for (q = npc_jijii_tbl[p->var]; *q != 0xFFFF; q++) {
+                        p->parts[*q] = 1;
                     }
                 }
             }
@@ -387,43 +366,46 @@ NPCW *p;
         case 1:
             if (p->sub == 0) {
                 p->sub++;
-                p->x06 = ran_suu(1) & 0xFFFF & 1;
-                p->timer = ((ran_suu(1) & 0xFFFF) + 0x3C) & 0xFF;
+                p->x06 = (u16)ran_suu(1) & 1;
+                p->timer = (u8)((u16)ran_suu(1) + 60);
                 pl_chr_set2(p, 3, 4, 0);
+            } else if (--p->timer <= 0) {
+                act_set(p, 0, 0);
+            } else if (p->x06 == 0) {
+                p->ang1 += (u16)ran_suu(1) & 0x1FF;
             } else {
-                p->timer = p->timer - 1;
-                if (p->timer <= 0) {
-                    act_set(p, 0, 0);
-                } else if (p->x06 == 0) {
-                    p->ang1 = p->ang1 + (ran_suu(1) & 0xFFFF & 0x1FF);
-                } else {
-                    p->ang1 = p->ang1 - (ran_suu(1) & 0xFFFF & 0x1FF);
-                }
+                p->ang1 -= (u16)ran_suu(1) & 0x1FF;
             }
             break;
         }
+        break;
+    default:
+        p->x14 = 0;
+        p->x15 = 0;
+        p->sub = 0;
+        break;
     }
-    p->ang0 = p->ang0;
+    p->ang0 = (u16)p->ang0;
     p->ang1 = (u16)p->ang1;
-    p->ang2 = p->ang2;
-    cpRotMatrixYXZ2((u8 *)p + 0xA0, (u8 *)p + 0x20);
+    p->ang2 = (u16)p->ang2;
+    cpRotMatrixYXZ2(&p->ang0, (u8 *)p + 0x20);
     p->f1A0 = 2.0f * p->f930;
     p->f1F0 = 2.0f * p->f930;
     p->f240 = 2.0f * p->f930;
     p->f290 = 2.0f * p->f930;
     npc_chr_sub(p);
     HitWallPlayer(p, 0);
-    GetGroundHitStatusAreaEm(p, (u8 *)p + 0xAC, (u8 *)p + 0x70C, (u8 *)p + 0x5AC);
+    GetGroundHitStatusAreaEm(p, &p->posx, (u8 *)p + 0x70C, &p->gy, (u8 *)p + 0x7E4);
     p->posy = p->gy;
 }
 
-void npc_die(p)
+static void npc_die(p)
 NPCW *p;
 {
     p->step++;
 }
 
-void npc_erase(void)
+static void npc_erase(void)
 {
     push_em_work();
 }
@@ -459,7 +441,7 @@ NPCW *p;
     return 0;
 }
 
-void npc_chr_sub(p)
+static void npc_chr_sub(p)
 NPCW *p;
 {
     if (softdip_ck(0x28) == 0) {
@@ -493,7 +475,7 @@ NPCW *p;
     flCalcTransSI(B32(mdl, 0x24), &b);
 }
 
-void npc_effect_move(p)
+static void npc_effect_move(p)
 NPCW *p;
 {
     (*(void (**)())((u8 *)p->prog + 0xC))(p);
