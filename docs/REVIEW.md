@@ -386,3 +386,9 @@ obvious workarounds.
   stray stream: the title screen starts no stream of its own.
 - **To revert:** revert the commits "Boot: no forest camp stream under the logos" and "Village: no quest-clear
   music after a won quest".
+
+## nxdk's AC97 driver replaced by our own (agent F, 13 Oct 2026)
+- **What:** src/pc/xbox/xbox_ac97.c defines XAudioInit/Play/Pause/ProvideSamples, so nxdk's hal/audio.c
+  is no longer linked. **Why:** its callbacks waited on S/PDIF too and stalled for good (silent after a
+  relaunch, silent in xemu); docs/xbox.md "Audio after a quit and relaunch". **To revert:** revert the commit
+  "Xbox audio: own AC97 driver" (and drop the file from tools/build_xbox.py).

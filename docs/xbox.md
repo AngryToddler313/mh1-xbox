@@ -1355,3 +1355,17 @@ login), start Monster Hunter from Evolution X a few times, and note the last lin
 hangs again (no ping, before or after "Writing it"). If it still hangs before "Got N bytes", the
 NIC-reset idea above is next. Building: never `make clean` in src/pc/xbox/loader (it deletes the
 shared nxdk libraries; happened once on 13 Oct, rebuilt the same day).
+
+### Audio after a quit and relaunch; xemu silence (agent F, 13 Oct 2026)
+Owner: after Back + Start and a relaunch from the loader without a power cycle the game was silent
+("movie 0: the audio device stopped playing it (0 frames played)"), the same as xemu always was.
+nxdk's lib/hal/audio.c only calls SDL back when the PCM-out AND the S/PDIF-out DMA have both finished
+a buffer, and drops completions after a "last valid buffer" interrupt; if S/PDIF does not run (xemu)
+or a channel halted once, the callback never comes and the SDL audio thread waits forever. Our quit
+also left the DMA running into the next program. src/pc/xbox/xbox_ac97.c replaces nxdk's driver
+(same hal/audio.h API, linked before nxdk's library so its audio.obj is not pulled in): PCM-out alone
+drives the callbacks (counted), S/PDIF mirrored but not waited on, halted channels restarted, init
+stops the old DMA/interrupt, cold-resets the AC-link and resets both bus masters; xbox_log_quit
+stops the DMA. Verified: xemu (nv2a build, --after 70) no longer logs "stopped playing" for the
+opening movie (it did before, e.g. logs/20261013-015719). Quit + relaunch: not testable in xemu here;
+owner to test on hardware (Back + Start, relaunch from the loader without a power cycle: sound?).
