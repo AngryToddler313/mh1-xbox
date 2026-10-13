@@ -903,3 +903,5 @@ main 0x00127AE0 0x00127B4C mhg/main/pl/pl78_main
 sub_main 0x004B3700 0x004B3774 main/quest/qstb02
 sub_main 0x004B3660 0x004B36FC main/quest/qstb05
 main 0x00135350 0x00135B98 main/emw/emw02
+sub_main 0x004EA7B0 0x004EA924 main/emw/emt01
+sub_main 0x004B3840 0x004B3A94 main/quest/qstb03
