@@ -98,18 +98,14 @@ always been a struct field type or a lost field.
 As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
 screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
 bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
-PAUSED by the owner (13 Oct, tokens until Wednesday). Nothing running. On resume:
-- B (G on the PC), WIP on agent-B (cf75ef1c), NOT merged: tools/build_pc_mhg.sh builds
-  build/mhg/pc/mhview_g; G data loads, --boot crashes in mc_mes_disp (one converted string pointer
-  in McardMsgTbl; look at map_ptr). Its viewer.c/rt_mem.c edits touch the MH1 path and were not
-  re-tested: run the MH1 PC build + tests before merging. Next: logos and title. docs/mhg.md sec. 5.
-- C (G edited functions), on agent-C (92d89b70), NOT merged: ~34 functions match by check.py but
-  are not registered; a real VERSION=mhg rebuild with them fails (pl67, pl73, qstb01 break sub_main
-  alone; main/game/lobby culprits unknown). Re-add one at a time (tools/mhg_addc.py, then
-  tools/rebuild.sh MODULE). List in docs/agents/agent-C.md "G round 1 status".
-- A, D, E, F: idle and merged. The old coordinator session is archived (13 Oct); its loader
-  server (tools/xbox_serve.py, port 8765) still runs and serves build/xbox/nv2a/default.xbe
-  fresh per request.
+G round 2 (13 Oct evening, owner: "agents cooking on MHG" until the usage reset):
+- B (Opus): G title screen fix -> press start -> new game -> Kokoto village; owns docs/mhg.md sec. 5
+  (shared run-time blocker list); G runs default to hidden.
+- A (Opus): G quest/hunt path: .mib reader, Quest_start, em_cmd_init + monster tables.
+- C (Sonnet): G edited functions in main + sub_main (first re-register last round's ~34).
+- D (Sonnet): G edited functions in game.bin + lobby.
+- E (Sonnet): English for G from the US disc's official script: extract + map tool, coverage report.
+- F: idle; AC97 work unmerged (below).
 Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
 loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame
 during game2 steps 3-6 (fixes the old-area frame after a load) and an own AC97 driver
