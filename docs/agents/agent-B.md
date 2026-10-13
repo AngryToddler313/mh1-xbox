@@ -1250,3 +1250,36 @@ Assignment: the lobby overlay, functions the ONLINE=1 PC build runs as stand-ins
   variable for two roles (rel -> path in BsUrlParse, n -> len in bs_url_to_absolute_url) fixed s-register swaps.
   (7) `switch (x) { case 2: ...; break; default: ...; }` gives `beq x,2 -> case; b default` where if/else gives
   `bne -> else` (BsUrlParse).
+
+## Monster Hunter G: carry-over, Phase 1, shared C (13 Oct 2026)
+
+Assignment: measure how much of MH1 transfers to PS2 G, rebuild G byte-identical, bring
+matched C across, plan the PC port. Results in docs/mhg.md (plan), docs/survey/mhg_vs_mh1.md
+(numbers), docs/DECISIONS.md ("How G lives in the repo: a VERSION switch").
+
+Tools (all standard library):
+- tools/mhg_map.py: MH1 -> G function map (exact shape anchors, LIS per module pair,
+  Needleman-Wunsch over the gaps, call sites of twins, 5-gram search), classes identical /
+  shape / edited / rewritten / missing; data names from relocated operands of twins (each
+  name at the address most votes give it), byte content of data objects (relocated words
+  masked), and layout between mapped neighbours. Writes docs/survey/mhg_map.csv,
+  config/mhg/symbols/*.txt, config/mhg/*_aliases.txt.
+- tools/fmt_check.c + tools/mhg_data_check.py: our src/pc/fmt readers over both discs.
+- tools/setup_split.py / build.py / rebuild.sh / progress.py: `VERSION=mhg`.
+- tools/mhg_cfiles.py: config/mhg/c_files.txt from the clean-twin C files;
+  tools/mhg_cdiff.py: which registered C files differ after linking (--skip -> c_skip.txt).
+
+Lessons:
+- G function boundaries: MWCC aligns functions to 16 with nop padding; a start is a
+  16-aligned address after `jr ra`/`j` + delay slot (+ zero words). Never accept a start
+  right after `jr ra` (that word is the delay slot): that one bug split hundreds of
+  functions and hid them from the exact match. MH1's symbol sizes include one trailing nop.
+- Majority vote per address is wrong for struct bases: a name must go to the address that
+  most of its own votes give (game_w: 348 votes at 0x35ED20, 146 at a shifted one, because
+  G moved fields).
+- splat's undefined_syms_auto holds every known symbol outside the segment, but a name
+  defined inside a C range of the same module is gone once the C replaces the asm; MH1
+  handles that with hand-written *_aliases.txt, G with generated PROVIDE lines.
+- C files that differ after linking in G were all one of: a struct field G moved
+  (game_w.master +0xD1 -> +0x3A), literal MH1 work-area addresses (lui 0x3F vs 0x36),
+  a callee without a G twin (powf), or a wrong data name.

@@ -63,5 +63,35 @@ def main():
     print("%d of %d functions decompiled" % (tot_dn, tot_n))
 
 
+def main_mhg():
+    """VERSION=mhg: G has no symbol table, so count function bytes from config/mhg/symbols
+    (tools/mhg_map.py: twins of MH1 functions and G-only functions found by the boundary
+    scan) against config/mhg/c_files.txt."""
+    import re
+    ranges = []
+    for line in open(os.path.join(ROOT, "config/mhg/c_files.txt")):
+        f = line.split("#", 1)[0].split()
+        if len(f) == 4 and ":" not in f[0]:
+            ranges.append((f[0], int(f[1], 0), int(f[2], 0)))
+    print("%-8s %10s %10s %8s %7s" % ("module", "functions", "bytes", "done", "%"))
+    tot = [0, 0, 0, 0]
+    for mod in ["main", "sub_main", "select", "game", "yn", "lobby", "nethttp"]:
+        funcs = []
+        for l in open(os.path.join(ROOT, "config/mhg/symbols/%s.txt" % mod)):
+            m = re.match(r"^\S+ = 0x([0-9A-F]+);.*type:func size:0x([0-9A-F]+)", l)
+            if m:
+                funcs.append((int(m.group(1), 16), int(m.group(2), 16)))
+        b = sum(s for _, s in funcs)
+        done = [(a, s) for a, s in funcs if any(m == mod and lo <= a < hi for m, lo, hi in ranges)]
+        d = sum(s for _, s in done)
+        print("%-8s %10d %10d %8d %6.3f%%" % (mod, len(funcs), b, d, 100.0 * d / b if b else 0))
+        tot = [tot[0] + len(funcs), tot[1] + b, tot[2] + d, tot[3] + len(done)]
+    print("%-8s %10d %10d %8d %6.3f%%" % ("total", tot[0], tot[1], tot[2], 100.0 * tot[2] / tot[1]))
+    print("%d of %d functions decompiled" % (tot[3], tot[0]))
+
+
 if __name__ == "__main__":
-    main()
+    if os.environ.get("VERSION", "mh1") == "mhg":
+        main_mhg()
+    else:
+        main()
