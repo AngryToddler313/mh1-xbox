@@ -14,6 +14,7 @@
 #
 #   --out DIR   another output folder        --online   also build the online / co-op version (mhview_online)
 #   --setup     download missing build tools (Windows cross-compiler, 32-bit Linux libraries) when that is possible
+#   MH1_JOBS=N  compile N files at a time (default: the number of cores)
 # Player guide: docs/PLAYING.md
 set -e
 cd "$(dirname "$0")"
@@ -37,7 +38,7 @@ while [ $# -gt 0 ]; do
 done
 case "$TARGET" in
     linux|windows|xbox|check) ;;
-    ""|help|-h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    ""|help|-h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown target '$TARGET'. Use: linux, windows, xbox or check (./mh1 --help)" ;;
 esac
 [ -n "$DISC" ] || die "give your disc image: ./mh1 $TARGET /path/to/Monster-Hunter-Japan.iso"
@@ -46,6 +47,10 @@ esac
 case "$DISC" in /*) ;; *) DISC=$PWD/$DISC ;; esac
 [ -n "$OUT" ] || OUT=dist/$TARGET
 case "$OUT" in /*) ;; *) OUT=$PWD/$OUT ;; esac
+
+# compile several files at a time (tools/build_pc.sh reads MH1_JOBS); set MH1_JOBS=1 to compile one at a time
+[ -n "$MH1_JOBS" ] || MH1_JOBS=$(nproc 2>/dev/null || echo 2)
+export MH1_JOBS
 
 # ---------------------------------------------------------------- 1. the disc
 command -v python3 >/dev/null || die "python3 is needed (3.8 or newer): sudo apt install python3"
