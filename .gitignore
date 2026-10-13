@@ -37,3 +37,6 @@ xbox_files*
 
 # translation tables made by tools/text_dump.py (hold the game text)
 text/
+
+# output of ./mh1 (holds the player's copy of the game files)
+dist/
