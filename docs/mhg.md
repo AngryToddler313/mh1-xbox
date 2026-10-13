@@ -175,10 +175,14 @@ Run: `build/mhg/pc/mhview_g disc/mhg --boot ...` (saves/logs go to `mhgpc/`, nev
   build/pc/mhg_*missing.txt).
 - f_sphr.c: G load_stage_hit (lwgNNN.bin link: wall entry 0, ground entry 1) under VERSION_MHG.
 
-How far: imports done, stage files load, the boot runs Init_task into the memory-card autoload
-(CardAtld01 -> mc_mes_disp) and crashes there: McardMsgTbl[1][0] -> string 0x2E9470 becomes a bad
-pointer (main_img is at 0xF6914010, value 0xE1EA2810: look at map_ptr / rt_text_for for that word next).
-No screen reached yet.
+How far (13 Oct 2026, later): the boot passes the memory-card autoload and shows the Sofdec/ADX logos
+(--time 5) and the title screen (--time 20; hidden --shot runs). The title art is drawn too large/offset
+(only the top-left of the MONSTER HUNTER logo fits on screen): G's title layout or 2D scale differs from
+MH1's title code; look at the title task next, then the press-start menu.
+- The mc_mes_disp crash was not a bad string pointer: card_data_init is edited in G (memset 0x130D0, icon
+  file 0x9B0 loaded at data_load_ptr+0x20000, MH1: 0x11450 / 0x6D3 / +0x12000). With MH1's numbers
+  McActAvailSet read a wrong file and wrote past mc_file_tbl's MCFILE over the McardMsgTbl string arrays
+  (found with a gdb watchpoint). Fixed under VERSION_MHG in mccomb.c / mccomb_nm.c.
 
 Stand-ins (G only): the boot's set-up quest 10 is not loaded and no monster is spawned at power-on
 (viewer.c, rt_log_standin "G boot: set-up quest 10").
