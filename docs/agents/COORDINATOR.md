@@ -95,18 +95,30 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-As of 13 Oct 2026 (worktrees ../mh1-wt/A..F, branches agent-A..F). B and C merged into main.
-- A: release audit -> docs/RELEASE.md (MH1 criteria, gap list by player impact) + the US
-  disc's official English script (where it lives, encoding, mapping to JP/G strings).
-- B: Monster Hunter G bring-up: deeper carry-over measurement, G names from MH1, G data through
-  our readers, byte-identical G rebuild, matched C carried over, plan in docs/mhg.md.
-- D: player packaging (build from own disc: Linux, Windows, Xbox) + docs/PLAYING.md. Sonnet.
-- E: invisible "Save?" box at the bed (fix found, uncommitted), boot-logo forest ambience,
-  quest-clear music replayed in the village on save.
-- F: area-change pause / loading screen on Xbox (measure, speed up); loader download freeze.
-- C: idle (decomp paused by the owner).
+As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
+screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
+bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
+G round 2 (13 Oct evening, owner: "agents cooking on MHG" until the usage reset):
+- B (Opus): G title screen fix -> press start -> new game -> Kokoto village; owns docs/mhg.md sec. 5
+  (shared run-time blocker list); G runs default to hidden.
+- A (Opus): G quest/hunt path: .mib reader, Quest_start, em_cmd_init + monster tables.
+- C (Sonnet): G edited functions in main + sub_main (first re-register last round's ~34).
+- D (Sonnet): G edited functions in game.bin + lobby.
+- E (Sonnet): English for G from the US disc's official script: extract + map tool, coverage report.
+- F: idle; AC97 work unmerged (below).
+Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
+loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame
+during game2 steps 3-6 (fixes the old-area frame after a load) and an own AC97 driver
+(src/pc/xbox/xbox_ac97.c: DMA reset, codec cold reset + unmute, ac97 state in the log). OPEN: after
+Back+Start quit and relaunch WITHOUT a power cycle the game is silent (0 frames played); the
+DMA-only fix did not help on hardware; the codec build awaits the owner's test (serve it with
+tools/xbox_serve.py --xbe build/xbox/f_test.xbe; the PC was restarted 13 Oct, so restart the server).
+Merge F after that test (it must not hang at audio open; RT_AC97_NOCODEC=1 disables the codec part). Still pending: new loader install (tools/xbox_upload.sh
+--loader), load: timing lines from the next returned log.
+Known unfixed: "quit game?" yes after the bed save drops to the Forest camp; bed sleep jingle
+has no sample (village sound pack not loaded).
 Full check before a push: `tools/full_check.sh` (rebuild 5 OK, PC build, every tools/test_*.sh,
-both Xbox builds; logs in build/check/).
+both Xbox builds) plus `VERSION=mhg tools/rebuild.sh` (7 OK).
 
 ## Xbox bench (real hardware)
 

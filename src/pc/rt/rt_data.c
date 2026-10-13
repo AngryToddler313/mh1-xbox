@@ -137,7 +137,10 @@ extern const struct rt_table rt_auto_tables[];
  * (build/pc/rt_gen.c from tools/gen_rt_auto.py): main and lobby.bin */
 extern const struct rt_table rt_gen_main_tables[];
 
-#define LB_VRAM 0x533980u       /* game.bin / lobby.bin / select.bin share this vram */
+#define LB_VRAM rt_ovl_vram()   /* game.bin / lobby.bin / select.bin share this vram (MH1 0x533980, G 0x542600) */
+#define NTABLES (sizeof tables / sizeof tables[0])
+/* this version's address of each tables[] entry (they name MH1 addresses; RTVA) */
+static uint32_t tva[NTABLES];
 /* PS2 address -> host pointer (see the header comment) */
 static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
 static void *map_ptr(uint32_t v)
@@ -156,9 +159,9 @@ static void *map_ptr(uint32_t v)
     for (t = rt_gen_main_tables; t->name; t++)
         if (v >= t->va && v < t->va + t->size)
             return (uint8_t *)t->dst + (v - t->va);
-    for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
-        if (v >= tables[i].va && v < tables[i].va + tables[i].size)
-            return (uint8_t *)tables[i].dst + (v - tables[i].va);
+    for (i = 0; i < NTABLES; i++)
+        if (tva[i] && v >= tva[i] && v < tva[i] + tables[i].size)
+            return (uint8_t *)tables[i].dst + (v - tva[i]);
     name = rt_sym_at(v, &off, &func);
     if (name && (h = rt_host_sym(name)) != NULL)
         return (uint8_t *)h + off;
@@ -224,8 +227,10 @@ int rt_import_data(void)
             missing++;
         }
     }
+    for (i = 0; i < NTABLES; i++)
+        tva[i] = RTVA(tables[i].va);
     for (i = 0; i < sizeof ptables / sizeof ptables[0]; i++) {
-        const uint8_t *p = rt_addr(ptables[i].va, 4 * (size_t)ptables[i].n);
+        const uint8_t *p = rt_addr(RTVA(ptables[i].va), 4 * (size_t)ptables[i].n);
         if (!p) {
             fprintf(stderr, "rt: pointer table %s (0x%X) not found\n", ptables[i].name, (unsigned)ptables[i].va);
             missing++;
@@ -237,8 +242,8 @@ int rt_import_data(void)
             ptables[i].dst[k] = va ? (void *)rt_addr(va, 4) : NULL;
         }
     }
-    for (i = 0; i < sizeof tables / sizeof tables[0]; i++) {
-        const uint8_t *p = rt_addr(tables[i].va, tables[i].size);
+    for (i = 0; i < NTABLES; i++) {
+        const uint8_t *p = tva[i] ? rt_addr(tva[i], tables[i].size) : NULL;
         if (p) {
             memcpy(tables[i].dst, p, tables[i].size);
         } else {
@@ -253,8 +258,9 @@ int rt_import_data(void)
             rt_relocate_range(t->va, t->dst, t->size, map_ptr);
         for (t = rt_gen_main_tables; t->name; t++)
             rt_relocate_range(t->va, t->dst, t->size, map_ptr);
-        for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
-            rt_relocate_range(tables[i].va, tables[i].dst, tables[i].size, map_ptr);
+        for (i = 0; i < NTABLES; i++)
+            if (tva[i])
+                rt_relocate_range(tva[i], tables[i].dst, tables[i].size, map_ptr);
         map_tables = 0;
         rt_relocate_images(map_ptr);
     } else {
@@ -272,7 +278,6 @@ int rt_import_data(void)
  * pointers: lobby functions to the host function of that name (rt_host_sym),
  * lobby data into rt_lb_mem, main addresses as for the ELF (map_ptr).
  * Call after rt_import_data. */
-#define LB_VRAM 0x533980u
 #define LB_SPAN 0x220000u       /* lobby.bin 0x134E00 + .bss 0xEA680, rounded up */
 uint8_t rt_lb_mem[LB_SPAN] __attribute__((aligned(16)));
 static uint8_t *lb_image;       /* rt_lb_mem as rt_import_lobby left it */
@@ -370,7 +375,7 @@ void rt_lb_reload(void)
  * aliases into it (tools/gen_rt_auto.py, config/symbols/select.txt).
  * Pointer words (.relselect.bin): select functions to the host function
  * of that name, select data into rt_sel_mem, main as for the ELF. */
-#define SEL_SPAN 0x8000u        /* select.bin is 0x8000 bytes */
+#define SEL_SPAN 0x10000u       /* select.bin is 0x8000 bytes (G: 0xAE00) */
 uint8_t rt_sel_mem[SEL_SPAN] __attribute__((aligned(16)));
 
 static void *map_sel(uint32_t v)
@@ -425,9 +430,9 @@ int rt_data_hosts(int space, uint32_t va, const void **out)
         for (t = rt_gen_main_tables; t->name; t++)
             if (va >= t->va && va < t->va + t->size)
                 out[n++] = (uint8_t *)t->dst + (va - t->va);
-        for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
-            if (va >= tables[i].va && va < tables[i].va + tables[i].size)
-                out[n++] = (uint8_t *)tables[i].dst + (va - tables[i].va);
+        for (i = 0; i < NTABLES; i++)
+            if (tva[i] && va >= tva[i] && va < tva[i] + tables[i].size)
+                out[n++] = (uint8_t *)tables[i].dst + (va - tva[i]);
         if (rt_addr(va, 1))
             out[n++] = rt_addr(va, 1);
     } else if (space == 2 && va - LB_VRAM < LB_SPAN) {

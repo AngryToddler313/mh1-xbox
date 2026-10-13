@@ -10,13 +10,49 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define OVL_GAME_VRAM 0x533980u
-#define OVL_GAME_BSS 0x200u        /* config/game.yaml bss_size */
+/* The overlays' load address and .bss sizes come from their MWo3 headers (MH1:
+ * vram 0x533980, game.bin bss 0x200, lobby.bin 0xEA680; G: vram 0x542600). */
+static uint32_t ovl_vram = 0x533980u, ovl_bss = 0x200u, lb_bss = 0xEA680u;
+#define OVL_GAME_VRAM ovl_vram
+#define OVL_GAME_BSS ovl_bss
 
 static uint8_t *elf, *ovl;
 static size_t elf_n, ovl_n;
 
 static uint32_t rd32(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24; }
+
+uint32_t rt_ovl_vram(void) { return ovl_vram; }
+
+static void ovl_header(const uint8_t *bin, size_t n, uint32_t *bss)
+{
+    if (bin && n >= 0x40 && !memcmp(bin, "MWo3", 4)) {
+        ovl_vram = rd32(bin + 8);
+        if (bss)
+            *bss = rd32(bin + 0x14);
+    }
+}
+
+/* G's sub_main.bin: resident right after main's .bss, read like main */
+static uint8_t *sub_img;
+static size_t sub_n;
+static uint32_t sub_va, sub_bss;
+
+void rt_set_sub_main(uint8_t *bin, size_t n)
+{
+    free(sub_img);
+    sub_img = bin;
+    sub_n = bin ? n : 0;
+    sub_va = bin && n >= 0x40 ? rd32(bin + 8) : 0;
+    sub_bss = bin && n >= 0x40 ? rd32(bin + 0x14) : 0;
+}
+
+/* generated per version (tools/gen_rt_meta.py): G's symbols and pointer words */
+typedef struct { uint32_t va, size; const char *name; int func; } rt_meta_sym;
+extern const uint32_t rt_meta_main_data;
+extern const rt_meta_sym rt_meta_syms_main[], rt_meta_syms_game[], rt_meta_syms_lobby[], rt_meta_syms_select[];
+extern const size_t rt_meta_syms_main_n, rt_meta_syms_game_n, rt_meta_syms_lobby_n, rt_meta_syms_select_n;
+extern const uint32_t rt_meta_ptrs_main[], rt_meta_ptrs_game[], rt_meta_ptrs_lobby[], rt_meta_ptrs_select[];
+extern const size_t rt_meta_ptrs_main_n, rt_meta_ptrs_game_n, rt_meta_ptrs_lobby_n, rt_meta_ptrs_select_n;
 
 /* The program headers, kept after the file copy is freed (rt_mem_trim). */
 #define MAXPH 16
@@ -31,9 +67,9 @@ static uint32_t main_va, main_n;
 
 static void load_main_img(void)
 {
-    uint32_t shoff = rd32(elf + 32), i, k, lo = 0xFFFFFFFFu;
+    uint32_t shoff = rd32(elf + 32), i, k, lo = rt_meta_main_data ? rt_meta_main_data : 0xFFFFFFFFu;
     unsigned shn = elf[48] | elf[49] << 8;
-    for (i = 0; i < shn && shoff + 40 * (i + 1) <= elf_n; i++) {
+    for (i = 0; !rt_meta_main_data && i < shn && shoff + 40 * (i + 1) <= elf_n; i++) {
         const uint8_t *sh = elf + shoff + 40 * i;
         uint32_t off = rd32(sh + 16), size = rd32(sh + 20);
         if (rd32(sh + 4) != 2 || off + size > elf_n)
@@ -101,6 +137,7 @@ int rt_load_elf(const char *path)
 
 void rt_set_overlay(uint8_t *bin, size_t n)
 {
+    ovl_header(bin, n, &ovl_bss);
     free(ovl);
     ovl = bin;
     ovl_n = bin ? n : 0;
@@ -115,6 +152,8 @@ const uint8_t *rt_addr(uint32_t va, size_t n)
         if (ph[i].type == 1 && va >= ph[i].vaddr && va + n <= ph[i].vaddr + ph[i].filesz
             && ph[i].off + (va - ph[i].vaddr) + n <= elf_n)
             return elf + ph[i].off + (va - ph[i].vaddr);
+    if (sub_img && va >= sub_va && va - sub_va + n <= sub_n)
+        return sub_img + (va - sub_va);
     if (ovl && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= ovl_n)
         return ovl + (va - OVL_GAME_VRAM);
     if (!elf && main_img && va < main_va && nph && va >= ph[0].vaddr)
@@ -130,6 +169,8 @@ int rt_in_bss(uint32_t va, size_t n)
     for (i = 0; i < nph; i++)
         if (ph[i].type == 1 && ph[i].filesz && va >= ph[i].vaddr + ph[i].filesz && va + n <= ph[i].vaddr + ph[i].memsz)
             return 1;
+    if (sub_img && va >= sub_va + sub_n && va + n <= sub_va + sub_n + sub_bss)
+        return 1;
     return ovl && va >= OVL_GAME_VRAM + ovl_n && va + n <= OVL_GAME_VRAM + ovl_n + OVL_GAME_BSS;
 }
 
@@ -151,8 +192,8 @@ static int nsshadow;
 
 void *rt_bss_shadow(uint32_t va)
 {
-    static uint8_t *shadow[2];
-    static uint32_t base[2], size[2];
+    static uint8_t *shadow[3];
+    static uint32_t base[3], size[3];
     uint32_t off;
     int k, func = 0;
     if (!rt_in_bss(va, 1))
@@ -184,7 +225,11 @@ void *rt_bss_shadow(uint32_t va)
             }
         }
     }
-    if (ovl && va >= OVL_GAME_VRAM + ovl_n) {
+    if (sub_img && va >= sub_va + sub_n && va < sub_va + sub_n + sub_bss) {
+        k = 2;
+        base[2] = sub_va + (uint32_t)sub_n;
+        size[2] = sub_bss;
+    } else if (ovl && va >= OVL_GAME_VRAM + ovl_n) {
         k = 1;
         base[1] = OVL_GAME_VRAM + (uint32_t)ovl_n;
         size[1] = OVL_GAME_BSS;
@@ -282,8 +327,26 @@ size_t rt_main_lobby_ptrs(const uint32_t **pairs)
     return nmain_to_lb;
 }
 
+static void meta_list(const uint32_t *a, size_t na, const uint32_t *b, size_t nb, uint32_t **out, size_t *nout)
+{
+    *out = malloc((na + nb + 1) * sizeof **out);
+    *nout = 0;
+    if (!*out)
+        return;
+    memcpy(*out, a, na * sizeof *a);
+    memcpy(*out + na, b, nb * sizeof *b);
+    *nout = na + nb;
+    qsort(*out, *nout, sizeof **out, cmp_u32);
+}
+
 int rt_load_relocs(void)
 {
+    if (rt_ver_mhg()) {         /* no relocations in G's ELF: config/mhg/pc_ptrs.txt */
+        meta_list(rt_meta_ptrs_main, rt_meta_ptrs_main_n, rt_meta_ptrs_game, rt_meta_ptrs_game_n, &rel32, &nrel32);
+        meta_list(rt_meta_ptrs_lobby, rt_meta_ptrs_lobby_n, NULL, 0, &rel32_lb, &nrel32_lb);
+        meta_list(rt_meta_ptrs_select, rt_meta_ptrs_select_n, NULL, 0, &rel32_sel, &nrel32_sel);
+        return nrel32 ? 0 : -1;
+    }
     load_main_to_lobby();
     load_rel_sections(".relmain", ".relgame.bin", &rel32, &nrel32);
     load_rel_sections(".rellobby.bin", NULL, &rel32_lb, &nrel32_lb);
@@ -394,7 +457,24 @@ static void load_syms(int set)
 {
     uint32_t shoff, shn, i, k;
     unsigned ovl_sec = set == 2 ? 6 : set ? 12 : 8;    /* section index of the overlay (readelf -S) */
-    if (symset[set] || elf_n < 52)
+    if (symset[set])
+        return;
+    if (rt_ver_mhg()) {         /* G: the generated symbols (main + sub_main and the overlay) */
+        const rt_meta_sym *o = set == 2 ? rt_meta_syms_select : set ? rt_meta_syms_lobby : rt_meta_syms_game;
+        size_t no = set == 2 ? rt_meta_syms_select_n : set ? rt_meta_syms_lobby_n : rt_meta_syms_game_n, j, n = 0;
+        rt_sym *syms = malloc((rt_meta_syms_main_n + no) * sizeof *syms);
+        if (!syms)
+            return;
+        for (j = 0; j < rt_meta_syms_main_n; j++)
+            syms[n++] = (rt_sym){ rt_meta_syms_main[j].va, rt_meta_syms_main[j].size, rt_meta_syms_main[j].name, rt_meta_syms_main[j].func };
+        for (j = 0; j < no; j++)
+            syms[n++] = (rt_sym){ o[j].va, o[j].size, o[j].name, o[j].func };
+        qsort(syms, n, sizeof *syms, cmp_sym);
+        symset[set] = syms;
+        nsymset[set] = n;
+        return;
+    }
+    if (elf_n < 52)
         return;
     shoff = rd32(elf + 32);
     shn = elf[48] | elf[49] << 8;
@@ -463,12 +543,13 @@ const char *rt_sym_at(uint32_t va, uint32_t *off, int *func) { return sym_at(0, 
  * 0xEA680: config/lobby.yaml). It shares its addresses with game.bin, so
  * it is kept apart: its own image, pointer words (.rellobby.bin) and
  * symbols. Used to import the tables the lobby C reads (rt_data.c). */
-#define OVL_LOBBY_BSS 0xEA680u
+#define OVL_LOBBY_BSS lb_bss
 static uint8_t *lb_img;
 static size_t lb_n;
 
 void rt_set_lobby(uint8_t *bin, size_t n)
 {
+    ovl_header(bin, n, &lb_bss);
     free(lb_img);
     lb_img = bin;
     lb_n = bin ? n : 0;
@@ -536,6 +617,7 @@ static size_t sel_n;
 
 void rt_set_select(uint8_t *bin, size_t n)
 {
+    ovl_header(bin, n, NULL);
     free(sel_img);
     sel_img = bin;
     sel_n = bin ? n : 0;
