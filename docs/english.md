@@ -168,6 +168,9 @@ official English text and a Latin font/layout. That text is Capcom's: **we
 cannot ship it or copy it into the repo**, but the installer can read it from
 a player's own US disc, exactly as it reads the Japanese one. I did not have
 a US disc, so everything about its layout below is unverified.
+**Update 13 Oct 2026:** the owner supplied the US disc; docs/mh1_us.md measures where its English lives (ASCII, same
+places as the JP text, quest files by number), its font and how US strings map to ours. It supersedes the
+unverified guesses about the US layout below.
 
 ## 3. Designs
 
