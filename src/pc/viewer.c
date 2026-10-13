@@ -2283,7 +2283,11 @@ int main(int argc, char **argv)
         }
     }
 
-    if (snd == 0) {                     /* packs + stage stream; the Rathian (kind 1) is the stage's monster */
+    /* packs + stage stream; the Rathian (kind 1) is the stage's monster. Not with --boot: the quest set-up above is only
+     * the host's scaffolding there (stage 21, the Forest and Hills camp), and its stream (M2_CAMP1) played under the
+     * boot logos. On the PS2 the logos are silent and the opening movie brings its own sound; the title and name entry
+     * load their packs themselves (Menu_snd_load, edit_se_load) and the village's stage loads bring the rest */
+    if (snd == 0 && !boot) {
         static const int em_kinds[1] = { 1 };
         rt_snd_stage(stage_no, em_kinds, 1);
     }
@@ -2416,8 +2420,8 @@ int main(int argc, char **argv)
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
-        if (shot && shot_next > 2 + (int)fr)
-            shot_next = 0;              /* RT_SHOTS past --time: dropped */
+        if (shot && shot_next > 2 + (int)(fixed_time >= 0 ? fixed_time * 30.0f : fr))
+            shot_next = 0;              /* RT_SHOTS past --time: dropped (with RT_STEP, fr is still behind --time) */
         /* real time: at most CATCH_UP ticks behind the clock. When ticks cost more than their
          * 33 ms (xemu on a busy host: the opening movie's decode), catching up every lost tick
          * means a frame only every few seconds and never recovering; the game slows down

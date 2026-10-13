@@ -766,7 +766,10 @@ sed -n 's/^-Wl,--defsym,\([^=]*\)=.*/\1/p' build/pc/rt_gen.defsym 2>/dev/null | 
 for a in $ALIASES; do t=${a#*=}; echo "${t%%+*}"; done | sort -u | comm -23 - build/pc/defined.txt > build/pc/alias_targets.txt
 sort -u build/pc/undefined.txt build/pc/aliased.txt build/pc/alias_targets.txt -o build/pc/undefined.txt
 comm -23 build/pc/defined.txt build/pc/aliased.txt > build/pc/defined.tmp && mv build/pc/defined.tmp build/pc/defined.txt
-RT_GEN_LB_ALIASES=$ONLINE python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
+# RT_GEN_LB_ALIASES=1 in every build (was ONLINE=1 only): the offline village uses lb_cli.c's prims too, and without
+# the aliases text_lobby_trans_ot3_o (the dialog layer, DispDialogData: the bed's save prompt) was a no-op stand-in
+# and pNet_c7 read a stand-in function's code
+RT_GEN_LB_ALIASES=1 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 cc_obj rt_gen "$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o"
 echo build/pc/rt_gen.o >> build/pc/objs.txt
 # the generated D_xxxx aliases (gen_rt_auto.py writes them as --defsym lines)

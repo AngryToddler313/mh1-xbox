@@ -1100,7 +1100,9 @@ docs/formats/audio.md has the formats and the game's sound calls;
   stage_bgm_etc_tbl entry, first entry into the stage), other stages
   Snd_bgm_tbl[stage] (ambience such as M6_MORI1, M2_KAZE1).
   `RT_SND_AMBIENT=1` skips the first-entry theme; `RT_SND_MAP=n` forces the
-  map pack.
+  map pack. The stream only for quest stages (13 Oct 2026): village stages get
+  their music from lobby.bin (lobby_bgm_set, vs_square_init), and a --boot
+  start-up loads nothing (the logos are silent).
 - stage_se_move (from f_stage_nm.c) runs every tick: river / waterfall
   loops on stages 1, 3, 0x1A, 0x30, 0x34, 0x36, 0x3E.
 - Footsteps: the host player stand-in calls rt_snd_player_motion before

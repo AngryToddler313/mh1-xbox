@@ -985,3 +985,47 @@ List, method and findings: docs/agents/targets.md. Short version of what is wort
   `NextStage_Dir_Set` is 3 instructions off (add.s operand registers) after `to->d / 2 + to->z` with the declaration order
   found by declbf; `eft11_i` is much closer with `w->` and `w++` in the copy loop (120 vs 163) but the eft11_t0 address load
   stays early.
+
+## Owner's Xbox play-test polish (13 Oct 2026)
+
+1. **Invisible "Save?" box at the house bed (PC and Xbox).** The bed (lb_pl_mv052) asks with SetDialogData(0x30, 2);
+   the lobby's dialog layer draws it: Lbc_init_network_work puts `text_lobby_trans_ot3_o` into the 4th lobby prim
+   (pNet+0x20, D_3EBCD0), lbc_text_lobby_trans queues it on ot2, and text_lobby_trans_ot3 calls DispDialogData while
+   `pNet_c7[0xC] == 1`. `text_lobby_trans_ot3_o` and `pNet_c7` are lbtu3 alias names (config/lobby_aliases.txt); only
+   the ONLINE=1 build had gen_rt_auto.py turn them into aliases (RT_GEN_LB_ALIASES). In a plain build both were weak
+   no-op *function* stand-ins: the prim's draw function did nothing (and pNet_c7 would have read code bytes). The
+   prompt waited for yes/no with nothing on screen. Fix: tools/build_pc.sh always passes RT_GEN_LB_ALIASES=1.
+   (docs/xbox.md "Invisible save prompt at the bed" has the full write-up.) Verified independently: two fresh clones of the branch, same scripted CONTINUE -> bed run with the answer delayed
+   (scratch script, shots at ticks 2440-2480): main shows the bedroom only, the fix shows the box with はい/いいえ;
+   `nm`: main has `W pNet_c7` / `W text_lobby_trans_ot3_o` in rt_gen's stand-ins, the fix has `pNet_c7 = pNet` and
+   `text_lobby_trans_ot3_o = text_lobby_trans_ot3`. New test `tools/test_activities.py bed_prompt` (the prompt and
+   its yes/no in the font trace): FAIL on main, PASS with the fix. Caution, found on the way: an incremental build
+   dir that once had the aliases kept them (build/pc/rt_gen.defsym is carried over), so a build dir's history decides
+   whether the box shows; always compare with fresh clones. Also: RT_SHOTS ticks past `fr` were dropped under
+   RT_STEP (viewer.c now compares with --time).
+   The scripted tests all answer the prompt within 2 ticks of it appearing, which is why none noticed.
+   xemu (nv2a build with all three fixes, run 1 of tools/xemu_quest_loop.sh with the bed's answer delayed by 1540
+   ticks, hidden display): the prompt is on screen with はい/いいえ for the whole wait (shots at 420-450 s).
+2. **Forest ambience under the boot logos.** Not the game: with --boot (the Xbox always boots that way) viewer.c
+   still set up quest 10 as host scaffolding and called rt_snd_stage(21), which started stage 21's stream
+   (M2_CAMP1.adx, the Forest and Hills camp) at tick 0 (RT_SND_TRACE: `str 0 plays M2_CAMP1.adx`, before any logo).
+   The select overlay (title, name entry) starts no stream at all; the PS2's first sound is the opening movie.
+   Fix: no rt_snd_stage at start-up with --boot (title and name entry load their own packs, ports 1/6/7; the village's
+   stage loads bring the rest; the boot only ever used ports 1 and 7). Verified with --audio-dump of a boot with the
+   movie: RMS 0 for seconds 0-17 (logos), movie sound from 19 s. tools/test_audio.sh's "title" segment had been
+   passing on exactly that stray stream (RT_NOMOVIE, "title BGM" from 21 s): it now boots with the movie and checks
+   seconds 1-16 are silent and 22-44 have sound.
+3. **Quest-clear music again in the village when saving.** RT_SND_TRACE of the quest-loop script (quest 131 won ->
+   village -> house -> bed): entering the house started `S_CLEAR1.adx`, vs_square_init faded it in at the house
+   volume (55) and the bed's lb_exit_save resumed it after the save. Cause: the host's rt_snd_stage (run on every
+   stage load) called the game's stage_bgm_set for village stages too; after a won quest Quest_clear_ck(1) is still 1,
+   so stage_bgm_set picked the clear jingle (0x49) and set game_w+0x25 to it. On the PS2 only the quest's stage set-up
+   (f_game, evdemo) calls stage_bgm_set; the lobby uses lobby_bgm_set, and offline vs_square_init only resumes
+   stream 0 (checked in the C of lb_af.c / lb_gae02.c / bgm04.c: no lobby caller of stage_bgm_set). Fix:
+   rt_snd_stage skips stage_bgm_set while the village is active. Verified with the same trace: no S_CLEAR1 after the
+   quest's reward; village M0_MURA1 (lobby_bgm_set) runs on through house, bed and save; CONTINUE and new-game
+   village entries still start M0_MURA1 from the lobby code; test_audio's village segment and all PC tests pass.
+   Candidate, not changed (unproven): the bed's sleep jingle `cnWrap_SoundRequest(0xB)` = se_req(6, 0x40) finds no
+   sample (`port 6 code 0x40: no sample`): the PC keeps the quest's em packs on port 6 in the village, while the PS2's
+   village loads its packs with flSndPackLoadBG2 (a no-op on the PC). Which pack the PS2 village has on port 6 was not
+   checked.
