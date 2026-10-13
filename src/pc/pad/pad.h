@@ -27,6 +27,7 @@ enum {
 
 /* Open the first SDL game controller if there is one (hot-plug handled). */
 void pad_init(void);
+void pad_set_headless(int on);   /* scripted/hidden runs: never open or rumble a real controller */
 /* Current state: game controller merged with the keyboard (keyboard: 1 to
  * use it; W/A/S/D left stick, arrows right stick, K cross, L circle,
  * J square, I triangle, Q L1, E R1, Z L2, C R2, Enter start, Backspace

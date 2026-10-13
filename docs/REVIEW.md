@@ -324,3 +324,15 @@ obvious workarounds.
   init, floor slide, hosei_sub ...). Tests: quest_loop, progression, menu,
   name_entry, activities (38), save pass; Xbox build 0 failed.
 - **To revert:** revert the commit that adds src/main/hit/f_sphr.c to config/c_files.txt.
+
+## Release polish round 1 (agent C, 13 Oct 2026)
+- **Dropped:** host stand-ins `STUB_V(vib_set_pl)` (rt_eft.c), `NOP(vib_stop_all)` (rt_flow.c), the generated no-op
+  `flmatInit33`, and the generated no-op aliases `Equip_moji_color_rare_i`, `Put_PageArrow_s`.
+- **Now:** vib_set_pl is the game's matched C (src/main/sys/vib.c, already linked, it was only hidden by the stub);
+  vib_stop_all is a 3-line copy of the original in rt_flow.c; flmatInit33 is a C identity-3x3 in rt_flmat.c (keeps the w
+  of each row like the VU0 vadd.xyz); the two `_i`/`_s` names are linker aliases (tools/build_pc.sh ALIASES) of the real
+  chat_nm.c functions. flPADShockSet now stops the rumble on strength 0.
+- **Also:** scripted/hidden/audio-dump runs never open or rumble a real controller (pad_set_headless); the old code
+  opened any plugged-in pad in tests.
+- **Why:** monster-caused rumble, Kut-Ku/Kirin joint reset, rarity colours and page arrows were missing.
+- **To revert:** revert the commit "release polish: vib_set_pl, flmatInit33 ...".

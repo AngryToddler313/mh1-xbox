@@ -1590,3 +1590,12 @@ Start: main 45.99%.
   `try.py` that applies text replacements to one function and prints the align count, `unraw.py` to put a raw
   function's C back into a copy of the TU for testing. build/asmkeep/main_text/f_sphr.s keeps the original asm of
   the file (for tools/perm.py with PERM_ASM_DIR=build/asmkeep).
+
+## Release polish round 1 (agent C, 13 Oct 2026)
+Replaced: vib_set_pl (the matched src/main/sys/vib.c was linked but a host STUB_V hid it), vib_stop_all, flmatInit33,
+Equip_moji_color_rare_i / Put_PageArrow_s (linker aliases). Verified: rumble log lines in test_urgent (13+17 calls),
+no vib/flmatInit33/alias stand-in in the stand-in file, test_log/urgent/progression/save/menu/name_entry/audio pass,
+all_quests 38/38 (run before the headless change). Not done: apiask_28_OpenDic (the whole kanji IME is unlinked: needs
+dictionary data, big), init_set_work/clr_used_heap (host owns the set pool in rt_game.c; swapping to setwork needs
+move_set/trans_set wiring, little player impact). Lesson: a "stand-in" in rt_*.c can hide a matched function that is
+already linked; grep src/main for the name before porting.
