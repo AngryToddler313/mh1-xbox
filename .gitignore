@@ -27,6 +27,7 @@ asm/
 build/
 assets/
 config/*undefined_*_auto.txt
+config/mhg/*undefined_*_auto.txt
 .splat/
 tools/m2c/
 tools/permuter/

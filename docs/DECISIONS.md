@@ -89,6 +89,25 @@ Kept as a fallback for any file that resists matching.
   the official English script.
 - Rejected: separate repos per game (triple maintenance, drift).
 
+**How G lives in the repo: a VERSION switch** (agent B, 13 Oct 2026; fits the decision above)
+- `VERSION=mhg` selects PS2 Monster Hunter G in the matching build (tools/setup_split.py,
+  tools/build.py, tools/rebuild.sh, tools/progress.py); unset or `mh1` is the MH1 JP build,
+  unchanged (MH1 still rebuilds all five modules OK).
+- Per-version config in `config/mhg/`: splat yamls, `symbols/` (MH1 names at G addresses,
+  made by tools/mhg_map.py), `c_files.txt`, aliases. Split targets in `build/mhg/split/`,
+  asm in `asm/mhg/`, objects in `build/mhg/` (all gitignored, made from the player's disc).
+- Game C is shared: config/mhg/c_files.txt names files relative to `src/`, so a matched MH1
+  file whose functions are unchanged in G (`game/eft/eft15`) is the same file in both builds.
+  A function G changed gets a G copy under `src/mhg/<module>/...` (only G builds it), or an
+  `#ifdef VERSION_MHG` inside the shared file when the change is a line or two (G compiles
+  with -DVERSION_MHG; MH1's flags are untouched). The MH1 build ignores src/mhg and asm/mhg.
+- The PC/Xbox port follows the same rule: src/pc is shared; game-specific data addresses come
+  from the version's symbol files (rt tables, gen_rt_auto, pc_abs), and the build picks the
+  version's C list. A launcher picks the version at start-up when several discs are present.
+- G symbol names keep MH1's spelling, including address suffixes of MH1 statics
+  (`sound_call_005A3D10`), so shared C links unchanged. G-only functions are
+  `func_XXXXXXXX` (main) / `<module>_func_XXXXXXXX` until named.
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)

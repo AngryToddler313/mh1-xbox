@@ -725,6 +725,7 @@ def main():
                 return mm
         return None
 
+    addr_votes = collections.defaultdict(collections.Counter)   # (mh1 mod, mh1 addr) -> (gmod, gaddr)
     for f in f1:
         gf = f.pair
         if not gf or f.cls not in ("identical", "shape"):
@@ -754,6 +755,140 @@ def main():
             gm = g_mod_of(gf.mod, (tg2 - off) & 0xFFFFFFFF)
             if name and gm:
                 data_votes[(gm, (tg2 - off) & 0xFFFFFFFF)][name] += 1
+            gm2 = g_mod_of(gf.mod, tg2 & 0xFFFFFFFF)
+            if gm2:
+                addr_votes[(smod, tg1 & 0xFFFFFFFF)][(gm2, tg2 & 0xFFFFFFFF)] += 1
+
+    if os.environ.get("MHG_DEBUG_NAME"):
+        dn = os.environ["MHG_DEBUG_NAME"]
+        for k, v in data_votes.items():
+            if dn in v:
+                print("VOTE", k[0], hex(k[1]), v[dn], "others", dict(v.most_common(3)), file=sys.stderr)
+    # ---------------------------------------------------------- more data names
+    # (1) MH1 data objects whose bytes (relocated words masked) occur once in G's data,
+    # or once between the neighbouring mapped names; (2) names between two mapped
+    # neighbours whose MH1 and G distance is the same (same layout, also .bss).
+    import bisect
+    name_m1 = {}
+    for mod, lst in slists.items():
+        for a, sz, nm_, isf in lst:
+            if not isf:
+                name_m1.setdefault(nm_, (mod, a, sz))
+    DATA_TO = {"main": ("main", "sub_main", "game"), "game": ("game",), "lobby": ("lobby", "nethttp"),
+               "select": ("select",), "yn": ("yn",)}
+    m1_data = {"main": (0x2E5EA0, 0x38A080)}
+    for o in MH1_OVL:
+        m1_data[o] = (M1[o].text_hi, M1[o].vram + len(M1[o].data))
+    g_data = {"main": (0x253D20, 0x100000 + G_MAIN["size"])}
+    for o in G_OVL:
+        g_data[o] = (G[o].text_hi, G[o].vram + len(G[o].data))
+    taken = {}                       # name -> (gm, ga)
+    best_at = {}                     # name -> (votes, gm, ga): the address most votes give it
+    for (gm, ga), votes in data_votes.items():
+        for nm_, n in votes.items():
+            if n > best_at.get(nm_, (0,))[0]:
+                best_at[nm_] = (n, gm, ga)
+    for nm_, (n, gm, ga) in best_at.items():
+        taken[nm_] = (gm, ga)
+    gaddr_taken = set(taken.values())
+
+    def anchors_for(mm):
+        out = collections.defaultdict(list)
+        for nm_, (gm, ga) in taken.items():
+            x = name_m1.get(nm_)
+            if x and x[0] == mm:
+                out[gm].append((x[1], ga))
+        for gm in out:
+            out[gm].sort()
+        return out
+
+    extra = {}
+    for mm, (lo, hi) in m1_data.items():
+        anc = anchors_for(mm)
+        m = M1[mm]
+        r32 = set(a for a, (t, _i) in rel[mm].items() if t == R32)
+        for a, sz, nm_, isf in slists[mm]:
+            if isf or nm_ in taken or sz < 8 or not (lo <= a and a + sz <= hi):
+                continue
+            b = bytearray(m.data[a - m.vram:a - m.vram + sz])
+            msk = [False] * sz
+            for k in range(a & ~3, a + sz, 4):
+                if k in r32:
+                    for j in range(max(k, a), min(k + 4, a + sz)):
+                        msk[j - a] = True
+            # longest unmasked, not-all-zero run
+            best, i = (0, 0), 0
+            while i < sz:
+                if msk[i]:
+                    i += 1
+                    continue
+                j = i
+                while j < sz and not msk[j]:
+                    j += 1
+                if j - i > best[1] - best[0] and any(b[i:j]):
+                    best = (i, j)
+                i = j
+            if best[1] - best[0] < 8:
+                continue
+            run = bytes(b[best[0]:best[1]])
+            hits = []
+            for gm in DATA_TO[mm]:
+                gmod = G[gm]
+                glo, ghi = g_data[gm]
+                blob = gmod.data
+                start = glo - gmod.vram
+                while len(hits) < 40:
+                    k = blob.find(run, start, ghi - gmod.vram)
+                    if k < 0:
+                        break
+                    ga = gmod.vram + k - best[0]
+                    start = k + 1
+                    if ga & 3 != a & 3:
+                        continue
+                    seg = blob[ga - gmod.vram:ga - gmod.vram + sz]
+                    if len(seg) == sz and all(msk[t] or seg[t] == b[t] for t in range(sz)):
+                        hits.append((gm, ga))
+            hits = [h for h in hits if h not in gaddr_taken]
+            if len(hits) > 1:
+                # keep the ones between the mapped neighbours
+                keep = []
+                for gm, ga in hits:
+                    lst = anc.get(gm, [])
+                    k = bisect.bisect_left(lst, (a, 0))
+                    lo_g = lst[k - 1][1] if k > 0 else None
+                    hi_g = lst[k][1] if k < len(lst) else None
+                    if lo_g is not None and hi_g is not None and lo_g < ga < hi_g:
+                        keep.append((gm, ga))
+                hits = keep
+            if len(hits) == 1:
+                extra[nm_] = hits[0]
+                gaddr_taken.add(hits[0])
+    for nm_, v in extra.items():
+        taken[nm_] = v
+    n_content = len(extra)
+    n_interp = 0
+    for mm in m1_data:
+        anc = anchors_for(mm)
+        for gm, lst in anc.items():
+            ch = lis(lst)
+            for (m1a, g1a), (m2a, g2a) in zip(ch, ch[1:]):
+                if m2a - m1a != g2a - g1a or m2a - m1a > 0x40000:
+                    continue
+                k = bisect.bisect_right(slists[mm], (m1a, 1 << 40))
+                while k < len(slists[mm]) and slists[mm][k][0] < m2a:
+                    a, sz, nm_, isf = slists[mm][k]
+                    k += 1
+                    ga = g1a + a - m1a
+                    if isf or nm_ in taken or (gm, ga) in gaddr_taken:
+                        continue
+                    extra[nm_] = (gm, ga)
+                    taken[nm_] = (gm, ga)
+                    gaddr_taken.add((gm, ga))
+                    n_interp += 1
+    for nm_, (gm, ga) in extra.items():
+        data_votes[(gm, ga)][nm_] += 0
+    print("\nData names: %d from twin operands, %d by content, %d by layout between mapped neighbours"
+          % (len(taken) - len(extra), n_content, n_interp))
 
     # ---------------------------------------------------------- reports
     def table(title, rows_by):
@@ -852,13 +987,15 @@ def main():
         return
     with open(P("docs/survey/mhg_map.csv"), "w", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(["mh1_module", "mh1_addr", "size", "name", "class", "how", "sim", "g_module", "g_addr", "g_size"])
+        w.writerow(["mh1_module", "mh1_addr", "size", "name", "class", "how", "sim", "g_module", "g_addr", "g_size",
+                    "clean"])
         for f in f1:
             gf = f.pair
             w.writerow([f.mod, "0x%08X" % f.addr, f.size, f.name, f.cls, f.how, "%.2f" % f.sim,
-                        gf.mod if gf else "", "0x%08X" % gf.addr if gf else "", gf.size if gf else ""])
+                        gf.mod if gf else "", "0x%08X" % gf.addr if gf else "", gf.size if gf else "",
+                        1 if clean(f) else 0])
         for g in sorted(gonly, key=lambda g: (g.mod, g.addr)):
-            w.writerow(["", "", "", "", "g-only", "", "", g.mod, "0x%08X" % g.addr, g.size])
+            w.writerow(["", "", "", "", "g-only", "", "", g.mod, "0x%08X" % g.addr, g.size, 0])
     # G symbol files
     os.makedirs(P("config/mhg/symbols"), exist_ok=True)
     out = collections.defaultdict(dict)    # gmod -> addr -> (name, size, func)
@@ -869,18 +1006,74 @@ def main():
             out[gf.mod][gf.addr] = (f.name, gf.size, True)
             used.add(f.name)
     nconf = 0
-    for (gm, a), votes in data_votes.items():
-        (name, n), = votes.most_common(1)
+    aliases = collections.defaultdict(dict)    # gmod -> name -> addr (second names at one address)
+    for (gm, a), votes in sorted(data_votes.items()):
         if len(votes) > 1:
             nconf += 1
-        if name in used or a in out[gm]:
-            continue
-        out[gm][a] = (name, 0, False)
-        used.add(name)
+        for name, n in votes.most_common():
+            if name in used or taken.get(name) != (gm, a):
+                continue
+            used.add(name)
+            if a in out[gm]:
+                aliases[gm][name] = a
+            else:
+                out[gm][a] = (name, 0, False)
     for g in gonly:
         if g.addr not in out[g.mod]:
             out[g.mod][g.addr] = ("func_%08X" % g.addr if g.mod == "main" else
                                   "%s_func_%08X" % (g.mod, g.addr), g.size, True)
+    # linker aliases: PROVIDE every known name, so C files that define a function static (or
+    # replace the asm that defined a label) still resolve for the asm around them; plus the
+    # MH1 address names (D_XXXXXX) the shared C uses, moved to G addresses.
+    name_g = {}
+    for gm, d in out.items():
+        for a, (nm_, _sz, _f) in d.items():
+            name_g[nm_] = (gm, a)
+    for gm, d in aliases.items():
+        for nm_, a in d.items():
+            name_g.setdefault(nm_, (gm, a))
+    import bisect as _b
+    def g_of(mm, a):
+        v = addr_votes.get((mm, a))
+        if v:
+            return v.most_common(1)[0][0]
+        lst = slists.get(mm) or []
+        k = _b.bisect_right(lst, (a, 1 << 40)) - 1
+        while k >= 0 and lst[k][0] > a - 0x10000:
+            sa, sz, nm_, isf = lst[k]
+            if sa <= a < sa + max(sz, 1) and nm_ in name_g:
+                gm, ga = name_g[nm_]
+                return gm, ga + a - sa
+            k -= 1
+        return None
+    dnames = {}
+    import glob as _g
+    for path in _g.glob(P("src/*/**/*.c"), recursive=True):
+        rel_ = os.path.relpath(path, P("src"))
+        mod = rel_.split("/")[0]
+        if mod not in M1:
+            continue
+        for nm_ in set(re.findall(r"\bD_([0-9A-F]{6,8})\b", open(path, errors="replace").read())):
+            a = int(nm_, 16)
+            for mm in ([mod, "main", "lobby"] if a >= 0x533980 else ["main"]):
+                if mm == "main" and a >= 0x533980:
+                    continue
+                r = g_of(mm, a)
+                if r:
+                    dnames.setdefault("D_" + nm_, r)
+                    break
+    VIS = {gm: {"main", "sub_main", gm} | ({"nethttp"} if gm == "lobby" else set()) |
+           ({"lobby"} if gm == "nethttp" else set()) for gm in ["main"] + G_OVL}
+    for gm in ["main"] + G_OVL:
+        lines = ["PROVIDE(%s = 0x%08X);\n" % (n, a) for n, (m, a) in sorted(name_g.items(), key=lambda x: x[1][1])
+                 if m in VIS[gm]]
+        lines += ["PROVIDE(%s = 0x%08X);\n" % (n, a) for n, (m, a) in sorted(dnames.items()) if m in VIS[gm]
+                  and n not in name_g]
+        with open(P("config/mhg/%s_aliases.txt" % gm), "w") as fh:
+            fh.write("/* Generated by tools/mhg_map.py: every MH1 name known at a G address, and the MH1\n"
+                     " * address names (D_XXXXXX) the shared C uses, moved to G (linker PROVIDEs). */\n")
+            fh.write("".join(lines))
+    print("aliases: %d names, %d D_ names from the C" % (len(name_g), len(dnames)))
     for gm, d in out.items():
         with open(P("config/mhg/symbols/%s.txt" % gm), "w") as fh:
             fh.write("// Generated by tools/mhg_map.py: MH1 names at PS2 Monster Hunter G addresses.\n"

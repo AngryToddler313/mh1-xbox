@@ -34,8 +34,23 @@ CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-pragma", "divbyzerocheck on"]
 # division by a non-constant); see docs/STATUS.md.
 MODULES = ["main", "select", "game", "yn", "lobby"]
 
+# VERSION=mhg builds PS2 Monster Hunter G from the same tree (docs/mhg.md): its own
+# config (config/mhg), asm (asm/mhg), objects (build/mhg) and target bins
+# (build/mhg/split, made by `VERSION=mhg tools/setup_split.py`). C files are the ones
+# config/mhg/c_files.txt lists (shared src/ files or src/mhg copies), compiled with
+# -DVERSION_MHG. The default (mh1) build is unchanged.
+VERSION = os.environ.get("VERSION", "mh1")
+if VERSION == "mhg":
+    MODULES = ["main", "sub_main", "select", "game", "yn", "lobby", "nethttp"]
+    BDIR, CONF, SPLIT = "build/mhg", "config/mhg", "build/mhg/split"
+    CFLAGS = CFLAGS + ["-DVERSION_MHG"]
+else:
+    BDIR, CONF, SPLIT = "build", "config", "disc/mh1/split"
+
 
 def gen_raw():
+    if VERSION != "mh1":
+        return
     """config/c_rawfuncs.txt: 'MODULE VRAM SIZE NAME'. Writes build/raw/NAME.inc
     (.word lines of the ORIGINAL bytes, taken from disc/) for use as the body of an
     `asm` function inside a C file. This is the INCLUDE_ASM equivalent: it lets a
@@ -146,7 +161,7 @@ def stale(src, obj):
 
 def assemble(src):
     rel = os.path.relpath(src, ROOT)
-    obj = os.path.join(ROOT, "build", rel + ".o")
+    obj = os.path.join(ROOT, BDIR, rel + ".o")
     if not stale(src, obj):
         return None
     os.makedirs(os.path.dirname(obj), exist_ok=True)
@@ -155,7 +170,7 @@ def assemble(src):
 
 def renames():
     out = {}
-    path = os.path.join(ROOT, "config/c_renames.txt")
+    path = os.path.join(ROOT, CONF, "c_renames.txt")
     if os.path.exists(path):
         for line in open(path):
             f = line.split("#", 1)[0].split()
@@ -169,9 +184,9 @@ RENAMES = renames()
 
 def compile_c(src):
     rel = os.path.relpath(src, ROOT)
-    obj = os.path.join("build", rel + ".o")
+    obj = os.path.join(BDIR, rel + ".o")
     if not stale(src, os.path.join(ROOT, obj)) and not stale(
-            os.path.join(ROOT, "config/c_renames.txt"), os.path.join(ROOT, obj)):
+            os.path.join(ROOT, CONF, "c_renames.txt"), os.path.join(ROOT, obj)):
         return None
     os.makedirs(os.path.join(ROOT, os.path.dirname(obj)), exist_ok=True)
     # Relative paths: wibo hands them to a Windows program.
@@ -187,7 +202,7 @@ def compile_c(src):
 
 def binobj(src):
     rel = os.path.relpath(src, ROOT)
-    obj = os.path.join(ROOT, "build", rel + ".o")
+    obj = os.path.join(ROOT, BDIR, rel + ".o")
     if not stale(src, obj):
         return None
     os.makedirs(os.path.dirname(obj), exist_ok=True)
@@ -214,16 +229,27 @@ def main():
     args = ap.parse_args()
     modules = args.modules
     if args.clean:
-        for d in ("build/asm", "build/assets"):
+        for d in (BDIR + "/asm", BDIR + "/assets"):
             shutil.rmtree(os.path.join(ROOT, d), ignore_errors=True)
 
     gen_raw()
-    sources = glob.glob(os.path.join(ROOT, "asm/**/*.s"), recursive=True)
-    sources += glob.glob(os.path.join(ROOT, "src/**/*.s"), recursive=True)
-    bins = glob.glob(os.path.join(ROOT, "assets/**/*.bin"), recursive=True)
-    csrc = glob.glob(os.path.join(ROOT, "src/**/*.c"), recursive=True)
-    # src/pc is the native PC/Xbox platform layer (tools/build_pc.sh), not PS2 code
-    csrc = [c for c in csrc if "/src/pc/" not in c]
+    if VERSION == "mhg":
+        sources = glob.glob(os.path.join(ROOT, "asm/mhg/**/*.s"), recursive=True)
+        bins = glob.glob(os.path.join(ROOT, "assets/mhg/**/*.bin"), recursive=True)
+        csrc = sorted(set(os.path.join(ROOT, "src", l.split("#", 1)[0].split()[3] + ".c")
+                          for l in open(os.path.join(ROOT, CONF, "c_files.txt"))
+                          if len(l.split("#", 1)[0].split()) == 4)) \
+            if os.path.exists(os.path.join(ROOT, CONF, "c_files.txt")) else []
+    else:
+        # asm/mhg, assets/mhg and src/mhg belong to the G build (VERSION=mhg)
+        sources = [f for f in glob.glob(os.path.join(ROOT, "asm/**/*.s"), recursive=True)
+                   if "/asm/mhg/" not in f]
+        sources += glob.glob(os.path.join(ROOT, "src/**/*.s"), recursive=True)
+        bins = [f for f in glob.glob(os.path.join(ROOT, "assets/**/*.bin"), recursive=True)
+                if "/assets/mhg/" not in f]
+        csrc = glob.glob(os.path.join(ROOT, "src/**/*.c"), recursive=True)
+        # src/pc is the native PC/Xbox platform layer (tools/build_pc.sh), not PS2 code
+        csrc = [c for c in csrc if "/src/pc/" not in c and "/src/mhg/" not in c]
     with ThreadPoolExecutor(args.j) as pool:
         errors = [e for e in pool.map(compile_c, csrc) if e]
         errors += [e for e in pool.map(assemble, sources) if e]
@@ -245,7 +271,7 @@ def split_rodata_objects(module):
     The same for an object whose rodata is renamed .data (config/c_renames.txt, a rodata slot in a data region) and
     which has several slot entries: its k-th .data section goes to the k-th entry (such objects have no other .data)."""
     import re, struct
-    ld = os.path.join(ROOT, "build/%s.ld" % module)
+    ld = os.path.join(ROOT, BDIR, "%s.ld" % module)
     lines = open(ld).read().split("\n")
     pat = re.compile(r"^(\s*)(build/\S+\.c\.o)\((\.rodata|\.data)\);\s*$")
     rn_data = set(o for o, ren in RENAMES.items() if (".rodata", ".data") in ren) if isinstance(RENAMES, dict) else set()
@@ -268,7 +294,7 @@ def split_rodata_objects(module):
                 multi.add(o)
             prev[o] = i
     if not multi:
-        return "build/%s.ld" % module
+        return "%s/%s.ld" % (BDIR, module)
     seen = {}
     for i, l in enumerate(lines):
         for o in multi:
@@ -306,22 +332,22 @@ def split_rodata_objects(module):
         for i, h in enumerate(hdr):
             struct.pack_into("<10I", d, shoff + i * shentsize, *h)
         open(dst, "wb").write(d)
-    out = os.path.join(ROOT, "build/%s.rn.ld" % module)
+    out = os.path.join(ROOT, BDIR, "%s.rn.ld" % module)
     open(out, "w").write("\n".join(lines))
-    return "build/%s.rn.ld" % module
+    return "%s/%s.rn.ld" % (BDIR, module)
 
 def link_and_check(module):
-    elf = "build/%s.elf" % module
-    out = os.path.join(ROOT, "build/%s.bin" % module)
+    elf = "%s/%s.elf" % (BDIR, module)
+    out = os.path.join(ROOT, BDIR, "%s.bin" % module)
     err = run([BU + "ld", "-EL", "-nostdlib", "--no-warn-mismatch",
-               "-Map", "build/%s.map" % module,
+               "-Map", "%s/%s.map" % (BDIR, module),
                "-T", split_rodata_objects(module),
-               "-T", "config/%s_undefined_syms_auto.txt" % module,
-               "-T", "config/%s_undefined_funcs_auto.txt" % module]
-              + (["-T", "config/%s_aliases.txt" % module]
-                 if os.path.exists(os.path.join(ROOT, "config/%s_aliases.txt" % module)) else [])
+               "-T", "%s/%s_undefined_syms_auto.txt" % (CONF, module),
+               "-T", "%s/%s_undefined_funcs_auto.txt" % (CONF, module)]
+              + (["-T", "%s/%s_aliases.txt" % (CONF, module)]
+                 if os.path.exists(os.path.join(ROOT, CONF, "%s_aliases.txt" % module)) else [])
               + (["-T", "build/raw/labels_%s.ld" % module]
-                 if os.path.exists(os.path.join(ROOT, "build/raw/labels_%s.ld" % module)) else [])
+                 if VERSION == "mh1" and os.path.exists(os.path.join(ROOT, "build/raw/labels_%s.ld" % module)) else [])
               + ["-o", elf])
     if err:
         print(err[:4000])
@@ -332,7 +358,7 @@ def link_and_check(module):
         print(err)
         return False
     built = open(out, "rb").read()
-    want = open(os.path.join(ROOT, "disc/mh1/split/%s.bin" % module), "rb").read()
+    want = open(os.path.join(ROOT, SPLIT, "%s.bin" % module), "rb").read()
     h1 = hashlib.sha1(built).hexdigest()
     if h1 == hashlib.sha1(want).hexdigest():
         print("%-7s OK  %8d bytes  sha1 %s" % (module, len(built), h1))
