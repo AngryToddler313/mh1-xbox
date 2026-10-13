@@ -114,6 +114,7 @@ need_win_tools() {
     need_cmd python3 "Install python3."
 }
 
+mkdir -p build
 NXDK_ENV=${MH1_XBOX_ENV:-$HOME/xboxdev/env.sh}
 need_xbox_tools() {
     [ -f "$NXDK_ENV" ] && . "$NXDK_ENV"
