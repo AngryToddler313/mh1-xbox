@@ -17,9 +17,11 @@
  *   calls XAudioInit again), cold-resets the AC-link, resets both bus masters and clears
  *   their status; xbox_ac97_stop() stops the DMA before a quit to the dashboard. */
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <hal/audio.h>
 #include <xboxkrnl/xboxkrnl.h>
+#include "../rt/rt_log.h"
 
 #define AUDIO_IRQ 6
 /* nForce ACI bus master registers (byte offsets from 0xFEC00000) */
@@ -40,7 +42,12 @@ AC97_DEVICE ac97Device;
 static KINTERRUPT irq_obj;
 static KDPC dpc_obj;
 static bool irq_connected, playing, dpc_ready;
+/* codec register access: only when GLOB_CNT kept the cold-reset bit we set (real hardware).
+ * xemu reads GLOB_CNT as 0 and hangs on a codec register access (13 Oct 2026), so there
+ * the codec is left alone. RT_AC97_NOCODEC=1 skips it everywhere (test aid). */
+static bool codec_access;
 static volatile LONG done_pending;      /* finished PCM-out buffers not yet called back */
+static volatile unsigned long n_isr, n_bcis, n_cb;      /* for xbox_ac97_dump */
 
 static volatile unsigned char *mmio8(void) { return (volatile unsigned char *)0xFEC00000; }
 static volatile unsigned int *mmio32(int off) { return (volatile unsigned int *)(0xFEC00000 + off); }
@@ -50,6 +57,7 @@ static void __stdcall dpc(PKDPC d, PVOID ctx, PVOID a1, PVOID a2)
     (void)d; (void)ctx; (void)a1; (void)a2;
     while (done_pending > 0) {
         InterlockedDecrement(&done_pending);
+        n_cb++;
         if (ac97Device.callback)
             ac97Device.callback(&ac97Device, ac97Device.callbackData);
     }
@@ -66,11 +74,70 @@ static BOOLEAN __stdcall isr(PKINTERRUPT intr, PVOID ctx)
         pb[PO_SR] = a;                  /* write-1-to-clear */
     if (s)
         pb[SP_SR] = s;
+    n_isr++;
     if (a & 0x08) {                     /* a PCM-out buffer finished */
+        n_bcis++;
         InterlockedIncrement(&done_pending);
         KeInsertQueueDpc(&dpc_obj, NULL, NULL);
     }
     return TRUE;
+}
+
+
+/* the codec's registers (primary codec, mapped at 0x000-0x07F); an access waits for the
+ * codec access semaphore (GLOB 0x134 bit 0: reading it takes the semaphore) */
+static int cas_wait(void)
+{
+    int n = 0;
+    while ((*mmio32(0x134) & 1) && ++n < 2000)
+        ;
+    return n < 2000;
+}
+static unsigned codec_rd(int reg)
+{
+    cas_wait();
+    return *(volatile unsigned short *)(0xFEC00000 + reg);
+}
+static void codec_wr(int reg, unsigned v)
+{
+    cas_wait();
+    *(volatile unsigned short *)(0xFEC00000 + reg) = (unsigned short)v;
+}
+
+/* the controller and codec state, into the game log (on open, and when the movie finds the
+ * device not playing: rt_movie.c) */
+void xbox_ac97_dump(const char *when)
+{
+    volatile unsigned char *pb = mmio8();
+    rt_log("ac97 %s: GLOB_CNT %08X GLOB_STA %08X | PO civ %u lvi %u sr %04X picb %u cr %02X | "
+           "SP civ %u lvi %u sr %04X picb %u cr %02X | isr %lu bcis %lu cb %lu",
+           when, *mmio32(GLOB_CNT), *mmio32(GLOB_STA),
+           pb[0x114], pb[PO_LVI], *(volatile unsigned short *)(pb + PO_SR), *(volatile unsigned short *)(pb + 0x118), pb[PO_CR],
+           pb[0x174], pb[SP_LVI], *(volatile unsigned short *)(pb + SP_SR), *(volatile unsigned short *)(pb + 0x178), pb[SP_CR],
+           n_isr, n_bcis, n_cb);
+    if (!codec_access)
+        rt_log("ac97 %s: codec registers not read (GLOB_CNT without the cold-reset bit: xemu)", when);
+    else
+    rt_log("ac97 %s: codec 00 %04X master 02 %04X pcm 18 %04X pwr 26 %04X ext 2A %04X dac 2C %04X",
+           when, codec_rd(0x00), codec_rd(0x02), codec_rd(0x18), codec_rd(0x26), codec_rd(0x2A), codec_rd(0x2C));
+}
+
+/* after a cold reset: everything powered, master and PCM out unmuted at 0 dB, the DAC at
+ * 48 kHz (variable rate off: the fixed 48 kHz) */
+static void codec_setup(void)
+{
+    int n = 0;
+    codec_wr(0x26, 0x0000);             /* power-down bits PR0-PR6 cleared */
+    while ((codec_rd(0x26) & 0x000F) != 0x000F && ++n < 50) {     /* ADC/DAC/analog/ref ready */
+        LARGE_INTEGER t;
+        t.QuadPart = -10 * 1000;
+        KeDelayExecutionThread(KernelMode, FALSE, &t);
+    }
+    codec_wr(0x2A, codec_rd(0x2A) & ~1u);       /* VRA off */
+    codec_wr(0x02, 0x0000);             /* master */
+    codec_wr(0x04, 0x0000);             /* headphone / aux out */
+    codec_wr(0x06, 0x0000);             /* mono out */
+    codec_wr(0x18, 0x0808);             /* PCM out */
 }
 
 static void bm_reset(int cr, int sr)
@@ -131,6 +198,9 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
         KeDelayExecutionThread(KernelMode, FALSE, &t);
     }
 
+    codec_access = (*mmio32(GLOB_CNT) & 2) && !getenv("RT_AC97_NOCODEC");
+    if (codec_access)
+        codec_setup();
     bm_reset(PO_CR, PO_SR);
     bm_reset(SP_CR, SP_SR);
     *mmio32(0x100) = 0;                 /* no PCM in */

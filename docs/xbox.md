@@ -1369,3 +1369,12 @@ stops the old DMA/interrupt, cold-resets the AC-link and resets both bus masters
 stops the DMA. Verified: xemu (nv2a build, --after 70) no longer logs "stopped playing" for the
 opening movie (it did before, e.g. logs/20261013-015719). Quit + relaunch: not testable in xemu here;
 owner to test on hardware (Back + Start, relaunch from the loader without a power cycle: sound?).
+- Owner's hardware test of that driver (13 Oct, logs/20261013-163416 in the main tree): quit + relaunch still
+  silent, 0 frames. Next build: after the cold reset the codec is set up (power-down bits cleared, waits for
+  the ready bits, VRA off, master / headphone / mono / PCM out unmuted at 0 dB), and the log gets
+  "ac97 open:" (GLOB_CNT/GLOB_STA, both bus masters' CIV/LVI/SR/PICB/CR, interrupt and callback counts, codec
+  regs 00/02/18/26/2A/2C) and the same as "ac97 stalled:" when the movie finds the device not playing.
+  xemu: GLOB_CNT reads 0 and a codec register access hangs, so the codec is only touched when GLOB_CNT kept
+  the cold-reset bit (real hardware). xemu's S/PDIF DMA never moves (PICB stays 2048): the reason nxdk's
+  driver, which waited on it, was silent there. Untested guess for hardware: the dashboard's DirectSound
+  (XLaunchXBE(NULL) on quit) leaves the APU driving the AC-link; a power cycle resets it.
