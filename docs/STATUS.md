@@ -885,3 +885,24 @@ Merge note: the first agent-C merge broke the rebuild (stale omakeb-e and npcb/n
 both sides' bases); kept on branch c-merge-attempt-1, C fixed it on its branch. Untracked
 generated stubs (src/main/npc/npcb.c, npcc.c) left by a failed rebuild break the next one:
 after a failed merge check `git status --untracked-files=all src`.
+
+## 2026-10-13 checkpoint (hand-over to a fresh session)
+
+Start here: CLAUDE.md, then docs/agents/COORDINATOR.md (owner's standing decisions, rules,
+current assignments, Xbox bench), then this section, then docs/xbox.md from "Real Xbox bench
+setup" on, and docs/REVIEW.md (changes waiting for the owner's review).
+
+State: main = origin/main, 59.668% matched (main module 45.989%), rebuild OK x5, 22 PC tests +
+online pass, PC/Windows/Xbox build. PC plays the whole single-player game and the online town
+against our own server. Xbox: full quest loop on the real console at ~30 fps with sound, saves,
+clean quit; builds and logs travel through the network loader; xemu runs hidden for daily tests.
+Owner's Xbox play-test (12-13 Oct): fixed and confirmed — cooking spit, NPC walking, sound, quit,
+frame rate (the CPU near clipping was the slowdown and was removed; candidates noted).
+Open, in the owner's order: invisible "Save?" box at the bed (agent E on it); forest ambience
+during the boot logos; quest-clear music again in the village when saving; long pause on area
+changes, no loading screen (owner idea: option to skip it if loads are fast); loader download
+freezes right after Evolution X launches it (theory: NIC still active; next loader install).
+Paused by the owner: decomp workers B (lobby) and C (main), work on their branches unmerged.
+Waiting on the owner: decisions on online hosting/name/PS2 cross-play, English (US disc,
+translation permission, title art), a remote power button for the Xbox (idea), a DHCP
+reservation for the Xbox and laptop, own BIOS dump (optional; dumper reads the mirror now).

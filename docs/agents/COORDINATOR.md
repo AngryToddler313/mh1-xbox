@@ -6,11 +6,31 @@ the end of docs/STATUS.md first.
 
 ## Goal and priorities (owner)
 
+The owner's standing decisions, newest last. A fresh session reads these first.
 - Player experience first: platform layers (renderer, audio, input, files, saves) are
   written from scratch for PC and Xbox; game logic and look stay faithful to the original.
   Byte-matching is a correctness check, never a blocker (docs/DECISIONS.md, 5 Oct 2026).
-- Token efficiency matters as much as speed (owner, 5 Oct 2026). Plan: Max 20x.
-  Start a sensible number of agents; no hourly pacing checks.
+- Token efficiency matters as much as speed (5 Oct). Pause agents when the owner asks.
+- Order of work (9-12 Oct): single player first (human play-testing with F8 reports on PC, plain
+  chat reports on Xbox; agents fix, prove correct, add features — no robot/soak play-testing
+  agents), then the online town and our own server, then the real Xbox port (now on hardware).
+- Keep the codebase tidy (10 Oct): when a fix makes an older workaround/duplicate obsolete,
+  remove the old one in the same change.
+- Every change that drops old code for a new approach goes into docs/REVIEW.md (11 Oct), even
+  when clearly right; the owner reviews later. Mention new entries in updates.
+- When unsure a fix solves the real problem, keep it out and note it as a candidate (13 Oct: the
+  CPU near clipping cost frame rate on hardware and was removed; docs/xbox.md lists it).
+- Report in plain language; the owner is a hobbyist ("so-so" at RE). Push verified work to the
+  public GitHub repo after each step (full check first, see "Merging").
+Rules that never change:
+- Never commit Capcom or Microsoft files (disc/, build/, xbox_files*, asm/ are git-ignored).
+- Never connect a client to the MH Oldschool public server; use the local test server.
+- Nothing may open a window on the owner's desktop: PC viewer with --shot or scripted --input
+  (hidden), Xbox builds in xemu via tools/run_xemu.sh (own hidden Xvfb display).
+- Never `pkill -f` / `killall` a pattern; kill only PIDs you started.
+- Never type the Xbox FTP login (the owner runs tools/xbox_upload.sh); never dump the EEPROM.
+- On the Xbox's Evolution X menu never select Lock/Unlock Harddisk or Flash BIOS; take a capture
+  after every pad press before pressing A.
 
 ## Token efficiency rules
 
@@ -69,28 +89,30 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-Priority (owner, 6 Oct 2026): offline village and single player before online-only code (docs/DECISIONS.md).
-In-game web browser: paused (owner, 6 Oct 2026) — no new work on Bs*/tagAct_*/HTML code.
+As of 13 Oct 2026 (worktrees ../mh1-wt/A..F, branches agent-A..F):
+- E: invisible "Save?" box at the village bed on the real Xbox (owner report) — running;
+  merge after the full check when it reports.
+- B: lobby overlay decomp (38%) — PAUSED by the owner mid-round, 9 commits on agent-B, not
+  merged (needs the full check, then merge).
+- C: main engine decomp (46%) — PAUSED, 8 commits on agent-C, not merged (same).
+- A, D, F: idle (all merged).
+Open owner reports (Xbox, 12-13 Oct; see docs/STATUS.md 13 Oct): forest ambience during the boot
+logos; quest-clear music replayed in the village when saving; long pause on area changes and
+no loading screen (option: skip it if loads are fast); loader download freezes after Evolution X
+(theory in docs/xbox.md). Fixed and confirmed: cooking spit, NPC walking, sound, Back + Start quit.
 
-- A (Opus): PC: quest -> reward -> village -> save -> continue loop, shops with money, forge, char screen polish, swap in matched village C.
-- B (Sonnet): main 0x24A240-0x2814E0 (from E; ~91 KB Capcom unmatched), single player first.
-- C (Sonnet): lobby 0x5AB000-0x5C4E60, village first (main ranges done apart from near-matches listed in agent-C.md).
-- D (Sonnet): game overlay leftovers (93.2%), file by file with one-TU; select at the end.
-- E (Sonnet): main 0x160000-0x24A240 (Capcom parts, no Sofdec/ADX) and 0x2814E0-end.
-- F (Sonnet): lobby 0x5C4E60-0x5EE618, village first.
-- Parked: near-matches everywhere (register allocation); online code in main.
+## Xbox bench (real hardware)
 
-## Other running threads
-
-- PS2Recomp test (tools/ps2recomp, gitignored): main recompiles with zero errors in real
-  code; the runner build needed `std::isnan` in ps2_runtime_macros.h. Plan: replace disc,
-  pad, memory card and sound at the library-call level (no IOP emulation), then boot.
-  Overlays all load at 0x533980 and need per-overlay function tables.
+docs/xbox.md "Real Xbox bench setup" onwards. Short version: the owner powers the Xbox; builds
+reach it through the network loader (tools/xbox_serve.py on the laptop, port 8765;
+`--input/--env` for scripted test runs); the game's log comes back on the next start
+(build/xbox/logs/). Capture card: find the node with tools' dev.sh logic (MacroSilicon "USB
+Video"), raw yuyv422 1280x720. Pad: RetroKM hub 127.0.0.1:24851 (`goto xbox`, then
+`pad <hex>` taps of ~50 ms; the KVM must have the xbox screen active). The Xbox's DHCP address
+changes (192.168.1.115/116/118 so far); the laptop keeps 192.168.1.166 as a saved second address.
 
 ## Gameplay clips for the owner
 
-Build the PC host in main: `ln -sfn "$(cd ../mh1-wt/A/build/sysroot32 && pwd)" build/sysroot32`
-then `tools/build_pc.sh`. Run `build/pc/mhview disc/mh1 --quest 10 --size 960x720 --input ...`
-windowed (env RT_PL_WARP_EM=160 RT_PL_GOD=1 RT_DMG_MUL=3) and record the window with ffmpeg
-x11grab at its xwininfo position. Clips stay in build/ (Capcom imagery, never committed).
-Stop it with `pkill -x mhview` (not -f: that matches the shell running it).
+Never a window on the desktop. PC: scripted run with --shot series, or xemu with
+`tools/run_xemu.sh ... --record out.mp4` / `RECORD=1 tools/xemu_quest_loop.sh` (hidden display).
+Real Xbox: ffmpeg from the capture card. Clips stay in build/ (Capcom imagery, never committed).
