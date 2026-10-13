@@ -20,6 +20,12 @@ The owner's standing decisions, newest last. A fresh session reads these first.
   when clearly right; the owner reviews later. Mention new entries in updates.
 - When unsure a fix solves the real problem, keep it out and note it as a candidate (13 Oct: the
   CPU near clipping cost frame rate on hardware and was removed; docs/xbox.md lists it).
+- 13 Oct, later: **Monster Hunter G is the main output** (docs/DECISIONS.md): G in English
+  with our modernizations, later a Poogie-style ESP32 minigame. MH1 JP still gets finished;
+  fixes are cross-applied between games (MH1 US maybe).
+- Next phase (13 Oct): polish MH1 into a release-ready, polished playable game (PC + real Xbox);
+  then carry what we learned to MH1 International (US) and to Monster Hunter G (PS2).
+  docs/RELEASE.md holds the release criteria and gap list (agent A writing it, 13 Oct).
 - Report in plain language; the owner is a hobbyist ("so-so" at RE). Push verified work to the
   public GitHub repo after each step (full check first, see "Merging").
 Rules that never change:
@@ -89,17 +95,18 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-As of 13 Oct 2026 (worktrees ../mh1-wt/A..F, branches agent-A..F):
-- E: invisible "Save?" box at the village bed on the real Xbox (owner report) — running;
-  merge after the full check when it reports.
-- B: lobby overlay decomp (38%) — PAUSED by the owner mid-round, 9 commits on agent-B, not
-  merged (needs the full check, then merge).
-- C: main engine decomp (46%) — PAUSED, 8 commits on agent-C, not merged (same).
-- A, D, F: idle (all merged).
-Open owner reports (Xbox, 12-13 Oct; see docs/STATUS.md 13 Oct): forest ambience during the boot
-logos; quest-clear music replayed in the village when saving; long pause on area changes and
-no loading screen (option: skip it if loads are fast); loader download freezes after Evolution X
-(theory in docs/xbox.md). Fixed and confirmed: cooking spit, NPC walking, sound, Back + Start quit.
+As of 13 Oct 2026 (worktrees ../mh1-wt/A..F, branches agent-A..F). B and C merged into main.
+- A: release audit -> docs/RELEASE.md (MH1 criteria, gap list by player impact) + the US
+  disc's official English script (where it lives, encoding, mapping to JP/G strings).
+- B: Monster Hunter G bring-up: deeper carry-over measurement, G names from MH1, G data through
+  our readers, byte-identical G rebuild, matched C carried over, plan in docs/mhg.md.
+- D: player packaging (build from own disc: Linux, Windows, Xbox) + docs/PLAYING.md. Sonnet.
+- E: invisible "Save?" box at the bed (fix found, uncommitted), boot-logo forest ambience,
+  quest-clear music replayed in the village on save.
+- F: area-change pause / loading screen on Xbox (measure, speed up); loader download freeze.
+- C: idle (decomp paused by the owner).
+Full check before a push: `tools/full_check.sh` (rebuild 5 OK, PC build, every tools/test_*.sh,
+both Xbox builds; logs in build/check/).
 
 ## Xbox bench (real hardware)
 
