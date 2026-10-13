@@ -369,7 +369,7 @@ Plan_pow work
 swset_w work
 for_pad_timer_tbl
 em_parts_num
-# stage collision (src/main/hit/shit*.c, rt_hit.c)
+# stage collision (src/main/hit/f_sphr.c, rt_hit.c)
 diorama_w work
 hit_decision work
 hit_hosei_base work

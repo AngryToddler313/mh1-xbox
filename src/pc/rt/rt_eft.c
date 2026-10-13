@@ -677,7 +677,7 @@ int rt_actor_joint_count(const void *chr)
 
 /* ------------------------------------------------------------ ground */
 /* GetGroundHit, GetGroundShellHit, GetWaterHit: the game's own C now
- * (src/main/hit/shit3_nm.c on the stage's HITS files, rt_hit.c). */
+ * (src/main/hit/f_sphr.c on the stage's HITS files, rt_hit.c). */
 
 /* ------------------------------------------------------------ models */
 typedef struct {                     /* MDLW (get_mdlw_ptr) as the eft code sees it */

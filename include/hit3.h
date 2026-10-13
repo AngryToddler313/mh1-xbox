@@ -1,6 +1,6 @@
 #ifndef HIT3_H
 #define HIT3_H
-/* Stage hit data (f_sphr, src/main/hit/shit*.c): diorama_w holds the grid of
+/* Stage hit data (f_sphr, src/main/hit/f_sphr.c): diorama_w holds the grid of
  * the wall ("HITS") and ground collision files of the loaded stage. Each
  * cell is a -1 terminated list of polygon pointers (after WallHitInit /
  * GroundHitInit fix the file offsets). */
@@ -8,14 +8,14 @@
 
 typedef struct DIORAMA {
     u8 _pad00[8];
-    s32 wcsx;           /* 0x08 wall: cell size x */
-    s32 wcsz;           /* 0x0C cell size z */
+    u32 wcsx;           /* 0x08 wall: cell size x */
+    u32 wcsz;           /* 0x0C cell size z */
     s32 wnz;            /* 0x10 cells along z (stride of x) */
     s32 wnx;            /* 0x14 cells along x */
     s32 **wtbl;         /* 0x18 cell table (cell lists of polygon pointers) */
     u8 *warea;          /* 0x1C polygon area */
-    s32 gcsx;           /* 0x20 ground: cell size x */
-    s32 gcsz;           /* 0x24 cell size z */
+    u32 gcsx;           /* 0x20 ground: cell size x */
+    u32 gcsz;           /* 0x24 cell size z */
     s32 gnz;            /* 0x28 */
     s32 gnx;            /* 0x2C */
     s32 **gtbl;         /* 0x30 */
@@ -52,7 +52,7 @@ typedef struct HSWEEP {
     f32 p1[3];          /* 0x0C */
     f32 r;              /* 0x18 */
     f32 len;            /* 0x1C distance p0 - p1 */
-    s16 w20;            /* 0x20 */
+    u16 w20;            /* 0x20 1: player sweep (hosei_sub keeps the push horizontal) */
     u16 w22;            /* 0x22 non-zero: skip polygons that are all below pos.y - r */
 } HSWEEP;
 

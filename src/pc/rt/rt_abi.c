@@ -44,7 +44,7 @@ u8 hit_point_cbd(f32 *p, f32 *a, f32 *b, f32 h, f32 w);
 int rtabi_hit_point_cbd(f32 h, f32 w, f32 *p, f32 *a, f32 *b) { return hit_point_cbd(p, a, b, h, w); }
 
 /* GetGroundHitStatusAreaPl: pl_move_sub (src/main/pl/pl_nm.c) passes four
- * arguments; the definition (src/main/hit/shit8_nm.c) has a fifth, f32
+ * arguments; the definition (src/main/hit/f_sphr.c) has a fifth, f32
  * *flag, which it writes when off the ground (on the PS2 t0 holds
  * whatever the caller left there). The adaptor gives it a dummy. */
 int GetGroundHitStatusAreaPl(void *ent, f32 *pos, void *at, f32 *out, f32 *flag);
