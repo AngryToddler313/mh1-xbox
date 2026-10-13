@@ -12,6 +12,16 @@ obvious workarounds.
 
 ## Open
 
+### Release entry points: ./mh1, tools/disc_files.py, docs/PLAYING.md (13 Oct 2026, agent D)
+- **Added, nothing dropped:** `./mh1 linux|windows|xbox DISC` chains the existing scripts (build_pc.sh, build_win.sh +
+  package_win.sh, build_pc.sh + build_xbox.py --gfx nv2a) after verifying the disc by size and CRC32, and copies the
+  disc files into `dist/<target>/`. `tools/play.sh`, `tools/xbox_upload.sh` (developer loader) and the exe's own
+  ISO installer (src/pc/install.c, same CRC table as tools/disc_files.py) stay as they are; nothing was
+  superseded, so no old script was removed. tools/package_win.sh got two small fixes (works outside a git
+  checkout; finds llvm-strip under WINROOT).
+- **Decision for the owner:** the Xbox release is a plain `default.xbe` with `data/` beside it (the game itself,
+  not the network loader), and Xbox online is not offered.
+
 ### Xbox: CPU near clipping of skinned models removed (13 Oct 2026, owner's decision)
 - **Dropped:** gfx_nv2a.c skinned batches near the camera skinned and clipped on the CPU
   (agent E, b85749b0 and the clipping part of 8ba1612c).
