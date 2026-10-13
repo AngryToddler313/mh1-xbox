@@ -30,11 +30,18 @@ void Quest_failed_set(void)
 int Quest_f_dra_ck(int unused)
 {
     switch (quest_w.no) {
+#ifdef VERSION_MHG
+    case 3004: /* G: quest numbers moved */
+    case 3005:
+    case 3006:
+    case 3007:
+#else
     case 0x66:
     case 0x67:
     case 0x68:
     case 0x69:
     case 0x6A:
+#endif
         return 1;
     }
     return 0;

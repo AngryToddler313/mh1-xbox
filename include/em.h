@@ -411,7 +411,11 @@ typedef struct EMW {
     s8 x9F1;            /* 0x9F1 */
     u8 _pad9F2[0x9F3 - 0x9F2];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
+#ifdef VERSION_MHG
+    u8 _pad9F4[0xA00 - 0x9F4]; /* G: EMW is 0xA00 bytes (Sansai_talk_ck stride) */
+#else
     u8 _pad9F4[0xA10 - 0x9F4];
+#endif
 } EMW;
 
 extern EMW em_work[];
