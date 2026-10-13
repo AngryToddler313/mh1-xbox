@@ -85,14 +85,22 @@ int fmt_afs_find(const fmt_afs *a, const char *name)
     return -1;
 }
 
+void (*fmt_time_hook)(int zone, int begin, long bytes);
+
 uint8_t *fmt_afs_read(const fmt_afs *a, int idx, size_t *len)
 {
     uint8_t *buf;
+    size_t got;
     if (idx < 0 || (uint32_t)idx >= a->count)
         return NULL;
     buf = malloc(a->size[idx] ? a->size[idx] : 1);
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_READ, 1, 0);
     fseek(a->fp, a->off[idx], SEEK_SET);
-    if (fread(buf, 1, a->size[idx], a->fp) != a->size[idx]) {
+    got = fread(buf, 1, a->size[idx], a->fp);
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_READ, 0, (long)got);
+    if (got != a->size[idx]) {
         free(buf);
         return NULL;
     }
@@ -118,6 +126,11 @@ size_t fmt_afs_read_at(const fmt_afs *a, int idx, uint32_t off, void *buf, size_
         return 0;
     if (n > a->size[idx] - off)
         n = a->size[idx] - off;
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_READ, 1, 0);
     fseek(a->fp, (long)a->off[idx] + (long)off, SEEK_SET);
-    return fread(buf, 1, n, a->fp);
+    n = fread(buf, 1, n, a->fp);
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_READ, 0, (long)n);
+    return n;
 }

@@ -749,6 +749,7 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
 
     if (!snd_on)
         return;
+    rt_lt_begin(RTL_SND);
     for (i = 0; i < NPORT; i++)
         port_clear(i);
     se_stop_all();
@@ -779,6 +780,7 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
     stage_bgm_set(stage);
     if (trace)
         printf("snd: stage %d map %d\n", stage, map);
+    rt_lt_end(RTL_SND);
 }
 
 /* Footsteps for the host player stand-in (rt_player.c). On the PS2 the

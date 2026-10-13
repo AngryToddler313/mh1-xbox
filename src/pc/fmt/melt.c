@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
+static uint8_t *melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
 {
     size_t cap = srclen * 4 + 64, n = 0, i = 0;
     uint8_t *out = malloc(cap);
@@ -82,6 +82,17 @@ uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
 bad:
     free(out);
     return NULL;
+}
+
+uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
+{
+    uint8_t *r;
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_MELT, 1, 0);
+    r = melt(src, srclen, outlen, be);
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_MELT, 0, r ? (long)*outlen : 0);
+    return r;
 }
 
 int fmt_link_count(fmt_blob f, int be)

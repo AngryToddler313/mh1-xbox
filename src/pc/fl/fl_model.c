@@ -210,7 +210,7 @@ static void bind_channels(const ahi_skel *s, float (*chan)[9])
     }
 }
 
-int fl_model_create(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int lit, int be)
+static int fl_model_create_lt(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int lit, int be)
 {
     int i;
     memset(m, 0, sizeof *m);
@@ -271,6 +271,15 @@ int fl_model_create(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int l
         build_part(m, i);
     }
     return 0;
+}
+
+int fl_model_create(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int lit, int be)
+{
+    int r;
+    rt_lt_begin(RTL_MODEL);
+    r = fl_model_create_lt(m, amo, ahi, tex, lit, be);
+    rt_lt_end(RTL_MODEL);
+    return r;
 }
 
 void fl_model_release(fl_model *m)

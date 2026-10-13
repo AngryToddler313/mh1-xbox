@@ -29,6 +29,7 @@
 #include "frame.h"
 #include "em.h"
 #include "../fl/fl.h"
+#include "rt_prof.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +62,7 @@ void plCreateMotionSetFromAAN(void *tmp, u8 *base, u8 *aan)
     memcpy(tmp, &aan, sizeof aan);
 }
 
-u32 flCreateMotionSetHandle(void *tmp)
+static u32 flCreateMotionSetHandle_lt(void *tmp)
 {
     u8 *aan;
     fmt_blob b;
@@ -86,6 +87,15 @@ u32 flCreateMotionSetHandle(void *tmp)
     if (h == nmsets)
         nmsets++;
     return (u32)h + 1;
+}
+
+u32 flCreateMotionSetHandle(void *tmp)
+{
+    u32 r;
+    rt_lt_begin(RTL_MOTION);
+    r = flCreateMotionSetHandle_lt(tmp);
+    rt_lt_end(RTL_MOTION);
+    return r;
 }
 
 f32 flGetMotionSetTime(u32 h)

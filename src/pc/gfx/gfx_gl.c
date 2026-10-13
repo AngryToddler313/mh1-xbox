@@ -505,7 +505,7 @@ int gfx_read_depth(float *d)
 }
 
 int gfx_tex_src_hint;
-gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
+static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
 {
     gfx_texture *t = calloc(1, sizeof *t);
     t->w = w;
@@ -539,6 +539,15 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
         G.mips = 0;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     return t;
+}
+
+gfx_texture * gfx_create_texture(int w, int h, const uint8_t *rgba)
+{
+    gfx_texture * r;
+    rt_lt_begin(RTL_TEXUP);
+    r = gfx_create_texture_lt(w, h, rgba);
+    rt_lt_end(RTL_TEXUP);
+    return r;
 }
 
 void gfx_release_texture(gfx_texture *t)

@@ -37,7 +37,7 @@ int fmt_apx_is_bare(fmt_blob f, int be)
     return f.n >= 0x20 && fmt_u32(f.p, be) == f.n;
 }
 
-int fmt_apx_decode(apx_image *img, fmt_blob f, int be)
+static int apx_decode(apx_image *img, fmt_blob f, int be)
 {
     uint32_t pix, i;
     unsigned bpp, pbpp, w, h;
@@ -97,4 +97,15 @@ bad:
     free(img->rgba);
     img->rgba = NULL;
     return -1;
+}
+
+int fmt_apx_decode(apx_image *img, fmt_blob f, int be)
+{
+    int r;
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_TEXDEC, 1, 0);
+    r = apx_decode(img, f, be);
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_TEXDEC, 0, r == 0 ? (long)img->w * img->h * 4 : 0);
+    return r;
 }

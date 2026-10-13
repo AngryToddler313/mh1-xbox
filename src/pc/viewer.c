@@ -1015,7 +1015,9 @@ static int load_stage_models(int st)
 {
     fl_model old_stage = stage, old_set = set;
     int k, reload = stage.npart > 0;
+    rt_lt_begin(RTL_GC);
     host_models_gc();
+    rt_lt_end(RTL_GC);
     for (k = 0; k < 4; k++)
         if (reload) {
             free(keep[k]);
@@ -1719,8 +1721,10 @@ static void quest_from_village(void)
 {
     int st;
     float p[3] = { rx, 0, rz };
+    rt_lt_span_begin("quest start");
     rt_monster_clear_all();
     if (rt_quest_load(quest_no) != 0) {
+        rt_lt_span_end();
         fprintf(stderr, "quest %d: no mission file\n", quest_no);
         rt_warn("quest %d: no mission file", quest_no);
         return;
@@ -1743,6 +1747,7 @@ static void quest_from_village(void)
         void fade_set(int n);
         fade_set(2);
     }
+    rt_lt_span_end();
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "village: quest %d starts on stage %d (player tick %d)\n", quest_no, stage_no, rt_tick_count());
 }
@@ -1793,10 +1798,13 @@ static void village_step(void)
     }
 #endif
     if (!rt_village_active()) {
+        rt_lt_span_begin("village enter");
         rt_village_enter();
         pad_script_event(PAD_EV_VILLAGE);
-    }
-    q = rt_village_tick();
+        q = rt_village_tick();
+        rt_lt_span_end();
+    } else
+        q = rt_village_tick();
     if (q > 0) {
         if (getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "village: quest %d accepted, leaving the village\n", q);
@@ -2287,6 +2295,7 @@ int main(int argc, char **argv)
             shot_list++;
     }
     t0 = SDL_GetTicks();
+    rt_lt_init();
     while (running) {
         SDL_Event ev;
         /* RT_STEP=1 with --time S: one game tick per drawn frame up to S
@@ -2681,6 +2690,7 @@ int main(int argc, char **argv)
 #endif
         rt_prof_end(RTP_DRAW);
         rt_prof_frame();
+        rt_lt_frame(ticks, rt_game_stage());    /* "load:" lines for pauses (rt_prof.c) */
     }
     (void)n;
     if (audio_dump && dump_pcm) {

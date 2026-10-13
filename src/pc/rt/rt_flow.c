@@ -19,6 +19,7 @@ extern u8 game_w[];   /* +0: mode (no game header here: the no-ops below are K&R
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "rt_prof.h"
 void rt_font_tick_begin(void);
 void rt_prims_reset(void);
 
@@ -132,13 +133,19 @@ void rt_village_files_gc(void);
 void rt_set_stage_loader(int (*fn)(int)) { stage_loader = fn; }
 void st_model_load(int stage)
 {
+    char nm[32];
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "rt_flow: st_model_load(%d)\n", stage);
+    snprintf(nm, sizeof nm, "area %d", stage);
+    rt_lt_span_begin(nm);
+    rt_lt_begin(RTL_GC);
     rt_motion_gc();         /* the last stage's motion sets (rt_motion.c) */
     rt_2d_gc();             /* and its 2D textures (rt_2d.c) */
     rt_village_files_gc();  /* motion files no set reads any more (rt_village.c) */
+    rt_lt_end(RTL_GC);
     if (stage_loader)
         stage_loader(stage);
+    rt_lt_span_end();
 }
 int snd_joint_load() { return 1; }
 int snd_joint_load_pl() { return 1; }
