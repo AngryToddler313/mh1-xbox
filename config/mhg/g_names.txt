@@ -16,3 +16,4 @@ PROVIDE(Item_data = 0x004FF1F0);
 PROVIDE(quest_data_tbl = 0x00525D50);
 PROVIDE(Item_get_tbl = 0x006D4350);
 PROVIDE(Em_Senko_Ck = 0x00548090); /* game overlay function, called from main (push_senko) */
+PROVIDE(D_00517720 = 0x00517720);

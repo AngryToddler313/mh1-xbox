@@ -23,7 +23,11 @@ void *memset(void *, int, unsigned int);
 /* 0x226830 */
 void Quest_failed_set(void)
 {
+#ifdef VERSION_MHG
+    *((u8 *)&quest_w + 0x154) = 1;
+#else
     *((u8 *)&quest_w + 0x150) = 1;
+#endif
 }
 
 /* 0x226840: quests 0x66-0x6A (the "f_dra" quests) */
