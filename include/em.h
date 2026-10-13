@@ -385,7 +385,11 @@ typedef struct EMW {
     u8 x95C;            /* 0x95C 2 while dying (em19) */
     s8 x95D;            /* 0x95D (em14_sasari_ck) */
     u16 x95E;           /* 0x95E */
+#ifdef VERSION_MHG
+    u8 _pad960[0x9C8 - 0x960 - 8]; /* G: every field from here on sits 8 bytes lower (offset comments below are MH1's) */
+#else
     u8 _pad960[0x9C8 - 0x960];
+#endif
     f32 x9C8[3];        /* 0x9C8 */
     struct EMW * boss;  /* 0x9D4 */
     u8 _pad9D8[0x9D9 - 0x9D8];
@@ -412,7 +416,7 @@ typedef struct EMW {
     u8 _pad9F2[0x9F3 - 0x9F2];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
 #ifdef VERSION_MHG
-    u8 _pad9F4[0xA00 - 0x9F4]; /* G: EMW is 0xA00 bytes (Sansai_talk_ck stride) */
+    u8 _pad9F4[0xA00 - 0x9EC]; /* G: EMW is 0xA00 bytes (Sansai_talk_ck stride) */
 #else
     u8 _pad9F4[0xA10 - 0x9F4];
 #endif

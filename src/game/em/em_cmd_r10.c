@@ -1,5 +1,10 @@
 /* em_cmd_r10 - monster command interpreter 0x0055F120-0x0055F45C: em_cmd_smell_set, em_cmd_search_data_set, em_cmd_egg_ck, em_cmd_egg_cancel_ck, em_cmd_yobi_pos_set, em_cmd_body_status_ck. Whole file in em_cmd_nm.c. */
 #include "em_cmd.h"
+#ifdef VERSION_MHG
+#define PL_NUM_LIT (*(u8 *)0x35ED5C) /* game_w.pl_num: G's game_w is laid out differently (master is at +0x3A) */
+#else
+#define PL_NUM_LIT (*(u8 *)0x3F34C3)
+#endif
 
 
 
@@ -160,7 +165,7 @@ u8 *em_cmd_egg_ck(EMW *em, u8 *p) {
     q = p;
     switch (*q++) {
     case 0:
-        n = *(u8 *)0x3F34C3;
+        n = PL_NUM_LIT;
         found = 0;
         for (i = 0; i < n; i++) {
             if (player_work[i].work56B & 0xF) {
@@ -187,7 +192,7 @@ u8 *em_cmd_egg_cancel_ck(EMW *em, u8 *p) {
     u8 n;
 
     found = 0;
-    n = *(u8 *)0x3F34C3;
+    n = PL_NUM_LIT;
     for (i = 0; i < n; i++) {
         if (player_work[i].work56B & 0xF) {
             found = 1;
