@@ -1156,3 +1156,27 @@ test_quest_loop and test_activities (bbq, carve_small, potion, whetstone, gather
 fishing, herbivore_rewind, npc_walk) pass; tools/xemu_quest_loop.sh passes with all
 of it (CONTINUE 1550z). One earlier run failed only because run 2 ran out of its 90 s
 under host load average 12 before CONTINUE; run 2 now gets 120 s.
+
+### Near clipping of skinned models: removed for now, kept as a candidate fix (13 Oct 2026)
+
+Owner's decision: undo agent E's CPU near clipping (b85749b0 + the clipping half of 8ba1612c)
+until it is clear it fixes a real problem. The carcass flicker was never seen in xemu, and the
+owner did not see it again either, while the frame rate felt worse. Removed from gfx_nv2a.c:
+per-batch bounding spheres (c->bsph), batch_in_front, draw_batch_cpu, RT_SKIN_NOCLIP,
+RT_SKIN_CLIP_TRACE. The deferred GPU free from 8ba1612c stays.
+
+The problem it addressed (by reasoning, not seen on hardware): skin.vs.cg divides by w, so a
+GPU-skinned triangle with a corner behind the eye can be drawn smeared across the screen;
+the CPU clays have near clipping (execute_cpu), the skinned ones not. It would show when the
+camera is inside or at a monster's body (carving, a hunter against a big monster).
+Candidate fixes if it shows up:
+1. CPU (the removed code; restore from b85749b0/8ba1612c): batches whose bounds reach the near
+   plane are skinned on the CPU with the shader's math and cut at w = 1. Cost estimated 1-3 ms a
+   frame on the real CPU in the worst case (17% of batches while carving), not measured.
+2. GPU, no CPU cost: in skin.vs.cg, a vertex with w below the near limit is moved off-screen
+   (or its triangle collapsed), so a triangle reaching behind the camera is not drawn at all
+   instead of smeared. Loses those triangles (a hole very close to the camera), keeps 100% GPU.
+3. GPU, exact: have the vertex program output clip-space positions and let the NV2A's own
+   clipper cut at the near plane, if the hardware clips in programmable mode (not checked;
+   xemu cannot tell, it clips through OpenGL). Needs a hardware test.
+Check first on hardware: carve and stand inside big monsters, look for triangles across the screen.

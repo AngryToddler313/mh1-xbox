@@ -12,6 +12,13 @@ obvious workarounds.
 
 ## Open
 
+### Xbox: CPU near clipping of skinned models removed (13 Oct 2026, owner's decision)
+- **Dropped:** gfx_nv2a.c skinned batches near the camera skinned and clipped on the CPU
+  (agent E, b85749b0 and the clipping part of 8ba1612c).
+- **Why:** the owner didn't see the carcass flicker again and the frame rate felt worse; unclear
+  it fixed a real problem. Kept as candidate fix 1 of 3 in docs/xbox.md "Near clipping of
+  skinned models" (the other two are GPU-only).
+
 ### Player near-matches replaced by matched C: `case 0: default:` (12 Oct 2026, agent B)
 - **Dropped:** src/main/pl/pl_normal_nm.c (not built: near-match normal_char_set / to_normal); the near-match
   copies of Pl_slash_calc, Pl_basic_flagset (now pl_slash.c / pl_flagset.c, PC-linked), to_normal, basic_com_ck, pl_mv021, pl_dm003 and pl_dm008 in src/main/pl/pl_nm.c (the PC linked these
