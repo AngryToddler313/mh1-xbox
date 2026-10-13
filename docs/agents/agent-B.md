@@ -1207,3 +1207,46 @@ pl_mv021 (the default-block a0 reload).
   return 0, `(u16)(sw & 0xC00)`; left: the x54 load goes to v1 instead of a0).
 - Parked: ZoomRateCalc (8: z[2] in f0 instead of f1), WallHitInit (6), cam_rail_move (41: the original keeps `sec`
   in a stack slot), HitWallPlayer (27).
+
+## Lobby round (agent B, 12 Oct 2026): online town code, lb_cli.c whole unit
+Assignment: the lobby overlay, functions the ONLINE=1 PC build runs as stand-ins / near-match copies first.
+- lb_cli.c now covers its whole original compilation unit 0x5B7020-0x5C1B5C (the literal numbers @NNNN keep rising
+  through it; the next unit starts at net_time_str's @273 / @291, 0x5C1B60). Added: the HTML text renderer
+  (Split_TagCode, Analysis_TagCode, Analysis_StringData, Display_StringData, nwDispStr_Html: all byte-matched,
+  check_halfcode raw) and the 29 b/ runs 0x5C0680-0x5C1B5C (merged unchanged; per-run typedef / macro names got a
+  `_<run>` suffix, objects a run declared with its own type are aliases in config/lobby_aliases.txt).
+  CallBack_Event_MatchEntryUser (6 lines) and CallBack_Event_RoomLeaver (15: s0/s2 swap) stay raw: the TU context
+  did not change them (checked).
+- Rodata: the two new jump tables (Analysis_TagCode @3631 0x65EB70, Display_StringData @3836 0x65EBA0) each need a
+  `lobby:rodata` line for f/lb_cli; the "END" literal (@3529) is used through its extern symbol (a literal in C gets
+  inlined by MWCC's strcpy: lwc1/swc1 of 4 bytes).
+- Lessons (function that shows it):
+  - The Shift-JIS lead-byte test `(c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100)` appears as two temporaries
+    (a2/a3, `daddu a2,a3`) and `slti c,0x100` that is not folded: it is an `inline static int` function, not a macro
+    (nwDispStr_Html, Split_TagCode, Analysis_StringData). The loop test on it wants `while (f(..) == 0)`; `!f(..)`
+    gives sltu/xori (Split_TagCode).
+  - `if (!line_h)` (not `line_h == 0.0f`) gives the original's `c.eq.s f20, f0` operand order (Display_StringData).
+  - A late load scheduled after a float table expression: the permuter's `tbl[(long long)html_size]` index reproduced
+    it (Display_StringData's last line); nothing cleaner found.
+  - `char c = *p;` loaded once but `if (!f(*p))` with the inline helper re-reading *p, then `if (c == 0)` gave the
+    original register pair (Analysis_StringData, from the permuter); n++ placed after the first store in each block.
+  - check.py ignores gp-relative addends: nwDispStr_Html matched in check.py but rebuild failed until
+    `html_default_x = html_x = x` (store order html_x first).
+  - equip_ok_chk (lb_tu_ib.c) was matched C but still listed in config/c_rawfuncs.txt (not counted): line dropped.
+    `grep '#include "NAME.inc"'` for every c_rawfuncs entry finds such leftovers.
+- Parked: check_halfcode (2 lines: the original has an extra `b end; nop` after the do-while; 12 loop spellings and a
+  permuter run did not get it), disp_string_handle (7: `v = 4; if (a != b) v = 0;` in an int temp, then (s8) into s1;
+  every spelling folds the constant straight into s1), itembox_sellout (34 instructions, register choice; perm.py
+  cannot run on it: raw functions have no asm/lobby/*.s).
+- lb_url.c (0x5E8890-0x5E9960, browser URL helpers + kanji conversion): whole TU matched, 12 files replaced.
+  Lessons: (1) KanjiSjis2EucEx / bs_url_to_absolute_url / BsUrlParse keep i/j/len/end in a2/a3/t0 across calls to
+  the file-static callees: only matches with the static callee in the same TU AND the callee itself matched (a
+  near-match bs_url_extension that used a3 moved the caller's len out of a3). (2) `while (*--p != '/')` (pre-decrement
+  in the condition) is what makes MWCC reload *p in the body (bs_url_extension); `p--; while (*p != '/')` caches it.
+  (3) `p <= base` gives the original's `sltu; xori; xori` (bs_url_last_slash); `!(p > base)` does not. (4) A u8
+  function result kept unmasked in a register and masked at each test = an `int` local compared as `(u8)sch`
+  (bs_url_to_absolute_url); BsUrlSchemeGet returns int with a (u8) cast inside. (5) `i = 0; j = 0; for (; i < len;
+  i++)` sets the registers in the original order; `j = 0; for (i = 0; ...)` swaps them (Kanji*). (6) Reusing one
+  variable for two roles (rel -> path in BsUrlParse, n -> len in bs_url_to_absolute_url) fixed s-register swaps.
+  (7) `switch (x) { case 2: ...; break; default: ...; }` gives `beq x,2 -> case; b default` where if/else gives
+  `bne -> else` (BsUrlParse).

@@ -688,9 +688,6 @@ lobby 0x005DB980 0x005DB9BC f/lb_z09
 lobby 0x005DBA60 0x005DBA7C f/lb_z10
 lobby 0x005E0ED0 0x005E0FE8 f/lb_z11
 lobby 0x005E5D30 0x005E5D38 f/lb_z12
-lobby 0x005E88D0 0x005E8914 f/lb_z19
-lobby 0x005E91C0 0x005E9208 f/lb_z20
-lobby 0x005E9350 0x005E937C f/lb_z21
 lobby 0x005ED6E0 0x005ED6F8 f/lb_z22
 lobby 0x005ED940 0x005ED948 f/lb_z23
 lobby 0x005ED9E0 0x005EDA38 f/lb_z24
@@ -746,7 +743,6 @@ lobby 0x005E4420 0x005E4428 f/lb_m08
 lobby 0x005E4C80 0x005E4C88 f/lb_m09
 lobby 0x005E54A0 0x005E54A8 f/lb_m10
 lobby 0x005E5D40 0x005E5D48 f/lb_m11
-lobby 0x005E8890 0x005E8898 f/lb_m12
 lobby 0x005F2AC0 0x005F2AC8 f/lb_m13
 lobby 0x005FDC70 0x005FDDC0 f/lb_z67
 lobby 0x005FDF20 0x005FDFD8 f/lb_z68
@@ -783,7 +779,6 @@ lobby 0x00605A40 0x00605A7C f/lb_z98
 lobby 0x00608C10 0x00608CD4 f/lb_z99
 lobby 0x005D8410 0x005D845C f/lb_z103
 lobby 0x005E10B0 0x005E1100 f/lb_z104
-lobby 0x005E8BA0 0x005E8CE8 f/lb_z106
 lobby 0x005F3DE0 0x005F3FCC f/lb_z107
 lobby 0x005FDA50 0x005FDA94 f/lb_z108
 lobby 0x005FE480 0x005FE504 f/lb_z109
@@ -1103,7 +1098,6 @@ lobby 0x00604520 0x006045AC f/lb_z131
 lobby 0x00609300 0x0060938C f/lb_z132
 lobby 0x005D78C0 0x005D7950 f/lb_z133
 lobby 0x005D5750 0x005D58B4 f/lb_z134
-lobby 0x005E88A0 0x005E88CC f/lb_z135
 lobby:rodata 0x00664E50 0x00664E94 f/lb_z134
 lobby 0x005FD9D0 0x005FDA4C f/lb_z136
 lobby 0x005C9F80 0x005CA078 f/lb_n08
@@ -1144,17 +1138,6 @@ lobby 0x005B65C0 0x005B65F4 b/lb_bz24
 lobby 0x005B6710 0x005B6730 b/lb_bz25
 lobby 0x005B6EC0 0x005B6ED0 b/lb_bz26
 lobby 0x005B6F00 0x005B6F18 b/lb_bz27
-lobby 0x005C0930 0x005C0938 b/lb_bz49
-lobby 0x005C09A0 0x005C09A8 b/lb_bz50
-lobby 0x005C0A90 0x005C0AC0 b/lb_bz51
-lobby 0x005C1180 0x005C11C0 b/lb_bz52
-lobby 0x005C11C0 0x005C1204 b/lb_bz53
-lobby 0x005C1210 0x005C1254 b/lb_bz54
-lobby 0x005C14F0 0x005C1530 b/lb_bz55
-lobby 0x005C1530 0x005C1570 b/lb_bz56
-lobby 0x005C1570 0x005C15B0 b/lb_bz57
-lobby 0x005C15B0 0x005C15F4 b/lb_bz58
-lobby 0x005C1650 0x005C1690 b/lb_bz59
 lobby 0x005C26E0 0x005C2754 b/lb_bz60
 lobby 0x005C3150 0x005C3194 b/lb_bz61
 lobby 0x005C4480 0x005C4498 b/lb_bz62
@@ -1183,7 +1166,6 @@ lobby 0x005B3800 0x005B383C b/lb_bz101
 lobby 0x005B38A0 0x005B39AC b/lb_bz102
 lobby 0x005B6C70 0x005B6CB8 b/lb_bz103
 lobby:rodata 0x0065EA40 0x0065EA60 f/lb_cli
-lobby 0x005C0870 0x005C08EC b/lb_bz127
 lobby 0x005C1F20 0x005C1F70 b/lb_bz131
 lobby 0x005C2690 0x005C26DC b/lb_bz132
 lobby 0x005C4D40 0x005C4D8C b/lb_bz133
@@ -1198,8 +1180,6 @@ lobby 0x005B5C50 0x005B5C6C b/lb_bz147
 lobby 0x005B5D10 0x005B5D30 b/lb_bz148
 lobby 0x005B2920 0x005B2968 b/lb_bz155
 lobby 0x005B2B30 0x005B2C20 b/lb_bz156
-lobby 0x005C08F0 0x005C092C b/lb_bz160
-lobby 0x005C0940 0x005C09A0 b/lb_bz161
 lobby 0x005C3A40 0x005C3AD8 b/lb_bz162
 lobby 0x005D6740 0x005D704C f/lb_q01
 lobby:rodata 0x00665C70 0x00665D38 f/lb_q01
@@ -1306,9 +1286,7 @@ yn 0x00535A50 0x00535DB8 ui28
 yn:rodata 0x00540B50 0x00540B68 ui28
 yn 0x00535340 0x005359DC ui29
 yn:rodata 0x00540B00 0x00540B4C ui29
-lobby 0x005E8330 0x005E8590 f/lb_ao01
-lobby 0x005E8920 0x005E8934 f/lb_ap01
-lobby 0x005E96D0 0x005E9754 f/lb_ap02
+lobby 0x005E8330 0x005E867C f/lb_ao01
 lobby 0x005FEF00 0x005FEF70 f/lb_aq01
 lobby 0x005FF9C0 0x005FFA20 f/lb_aq02
 lobby 0x005FFD90 0x005FFFC0 f/lb_aq03
@@ -1343,8 +1321,6 @@ lobby 0x005F2C90 0x005F2DD4 f/lb_au03
 lobby 0x005F7260 0x005F72C8 f/lb_au04
 lobby 0x005F87D0 0x005F8844 f/lb_au05
 lobby 0x005FD2C0 0x005FD3A4 f/lb_au06
-lobby 0x005E9A20 0x005E9D44 f/lb_av01
-lobby 0x005E9DF0 0x005E9EC8 f/lb_av02
 lobby 0x00602E40 0x00602E70 f/lb_aw01
 lobby 0x00604790 0x00604990 f/lb_aw02
 lobby 0x00609460 0x00609748 f/lb_aw03
@@ -1368,12 +1344,6 @@ main 0x0022C760 0x0022C7CC net/cngmsgx01
 main 0x002636E0 0x00263908 sk/cmdy01
 main 0x0014E2D0 0x0014E4EC plsel/plsel01
 main 0x0014E680 0x0014E8D8 plsel/plsel02
-lobby 0x005C0A10 0x005C0A8C b/lb_by01
-lobby 0x005C0C90 0x005C0DAC b/lb_by02
-lobby 0x005C0AC0 0x005C0B04 b/lb_by03
-lobby 0x005C1130 0x005C1178 b/lb_by04
-lobby 0x005C1600 0x005C1650 b/lb_by05
-lobby 0x005C1B00 0x005C1B5C b/lb_by06
 lobby 0x005B3C70 0x005B3D14 b/lb_by07
 lobby 0x005B52A0 0x005B537C b/lb_by08
 lobby 0x005B5C90 0x005B5D0C b/lb_by09
@@ -1383,11 +1353,9 @@ lobby 0x005C2990 0x005C2B08 b/lb_by13
 lobby 0x005C30C0 0x005C314C b/lb_by22
 lobby 0x005C4CF0 0x005C4D3C b/lb_by23
 lobby 0x005C4DD0 0x005C4E14 b/lb_by24
-lobby 0x005C07A0 0x005C086C b/lb_by34
 lobby 0x005B2A10 0x005B2A50 b/lb_by35
 lobby 0x005B6F20 0x005B701C b/lb_by36
 lobby:rodata 0x0065E990 0x0065E9A8 f/lb_cli
-lobby 0x005C09B0 0x005C0A08 b/lb_by39
 lobby 0x005C1F70 0x005C2030 b/lb_by40
 lobby 0x005931B0 0x00594260 f/lb_uif
 lobby 0x00537BA0 0x00537C0C b/lb_by43
@@ -1482,9 +1450,7 @@ lobby 0x005D1000 0x005D14C8 f/lb_gae02
 lobby:rodata 0x00664D80 0x00664D98 f/lb_gae02
 lobby 0x005E1630 0x005E1888 f/lb_gak02
 lobby 0x005E1A50 0x005E1BEC f/lb_gak03
-lobby 0x005E92C0 0x005E934C f/lb_gap01
 lobby 0x005F2DE0 0x005F2E78 f/lb_gau02
-lobby 0x005E9960 0x005E9A1C f/lb_gav01
 lobby 0x005D4960 0x005D4A94 f/lb_gl02
 lobby 0x005D62F0 0x005D639C f/lb_gn01
 lobby 0x005C7350 0x005C74A4 f/lb_gv02
@@ -1506,7 +1472,6 @@ yn:rodata 0x00540B70 0x00540B88 ui31
 yn 0x0053A670 0x0053A8C0 ui32
 yn 0x005395E0 0x00539654 ui33
 yn 0x0053AD70 0x0053AEF8 misc02
-lobby 0x005E9660 0x005E96C8 f/lb_gap02
 lobby 0x005FDFE0 0x005FE140 f/lb_gaq01
 lobby 0x005CA8C0 0x005CA9C0 f/lb_gy01
 lobby:rodata 0x00664AA0 0x00664AB8 f/lb_gy01
@@ -1529,7 +1494,6 @@ lobby 0x0060D810 0x0060D918 f/lb_gpc02
 lobby 0x0060DFA0 0x0060E180 f/lb_gpc03
 lobby 0x0060D750 0x0060D80C f/lb_gpc04
 lobby 0x0060E180 0x0060E2A4 f/lb_gpc05
-lobby 0x005E9DA0 0x005E9DE8 f/lb_gz01
 lobby 0x005F3840 0x005F391C f/lb_gz02
 lobby 0x005F6B30 0x005F6C50 f/lb_gz03
 lobby 0x005FFFC0 0x00600018 f/lb_gz04
@@ -1544,14 +1508,18 @@ lobby 0x005DCAB0 0x005DCB38 f/lb_gdr03
 lobby 0x005DCE80 0x005DCF60 f/lb_gdr04
 lobby 0x005DD3E0 0x005DD4C8 f/lb_gdr05
 lobby 0x005E5F90 0x005E8330 f/lb_tu_browser
-lobby:rodata 0x006661B0 0x006661F4 f/lb_tu_browser
+lobby:rodata 0x006660D0 0x006660EC f/lb_tu_browser
+lobby:rodata 0x006660F0 0x00666144 f/lb_tu_browser
+lobby:rodata 0x00666150 0x00666174 f/lb_tu_browser
+lobby:rodata 0x00666180 0x006661B0 f/lb_tu_browser
+lobby:rodata 0x006661B0 0x006661C8 f/lb_tu_browser
+lobby:rodata 0x006661D0 0x006661F4 f/lb_tu_browser
 lobby 0x005E5E20 0x005E5F90 f/lb_gdr06
 lobby 0x005E5D50 0x005E5E18 f/lb_gdr07
 lobby 0x005D9560 0x005D961C f/lb_gdr08
 lobby 0x005D9650 0x005D96CC f/lb_gdr09
 lobby 0x005D9740 0x005D9760 f/lb_gdr10
 lobby 0x005D9780 0x005D97E8 f/lb_gdr11
-lobby 0x005E9210 0x005E92B8 f/lb_gdr12
 lobby 0x005F24D0 0x005F2584 f/lb_gdr13
 lobby 0x005F3FE0 0x005F407C f/lb_gdr14
 lobby 0x005FD060 0x005FD114 f/lb_gdr15
@@ -1618,7 +1586,6 @@ lobby 0x005C4980 0x005C49E4 b/lbsnd03
 lobby 0x005AEEC0 0x005AEF6C b/lb_by91
 lobby 0x005AFE60 0x005AFEDC b/lb_by92
 lobby 0x005B2980 0x005B2A08 b/lb_by93
-lobby 0x005C0680 0x005C079C b/lb_by95
 lobby 0x005D9B20 0x005D9C68 f/lb_gdr24
 lobby 0x005DA880 0x005DA99C f/lb_gdr25
 lobby 0x005B6160 0x005B626C b/lb_by96
@@ -1846,10 +1813,6 @@ lobby 0x005C31A0 0x005C34F8 b/lb_vs02
 lobby 0x005B6270 0x005B6418 b/lb_ss01
 lobby 0x005B6420 0x005B65B8 b/lb_ss02
 lobby 0x005C2030 0x005C2178 b/lb_id01
-lobby 0x005C13C0 0x005C14E4 b/lb_cb01
-lobby 0x005C1260 0x005C13BC b/lb_cb02
-lobby 0x005C17A0 0x005C18A0 b/lb_cb03
-lobby 0x005C0DB0 0x005C0EAC b/lb_cb04
 lobby 0x005C1BC0 0x005C1D48 b/lb_nt01
 lobby 0x005C1D50 0x005C1F18 b/lb_nt02
 lobby 0x005C3020 0x005C30B4 b/lb_gs01
@@ -1860,7 +1823,6 @@ lobby 0x005B08F0 0x005B0A7C b/lb_jip01
 lobby 0x005B2CD0 0x005B2E3C b/lb_lmp01
 lobby 0x005C2620 0x005C268C b/lb_tos01
 lobby 0x005C2490 0x005C261C b/lb_tsh01
-lobby 0x005C0EB0 0x005C112C b/lb_rm01
 lobby 0x005D7C30 0x005D7D60 f/lb_v09
 lobby 0x005C5980 0x005C5AB4 f/lb_v10
 lobby 0x005CA080 0x005CA228 f/lb_v12
@@ -1910,7 +1872,6 @@ lobby:rodata 0x0065DC70 0x0065DCB0 f/lb_plz2
 lobby 0x005B2AA0 0x005B2B2C b/lb_ncf01
 lobby 0x005AFEE0 0x005AFFA0 b/lb_cip01
 lobby 0x005B6B80 0x005B6C64 b/lb_cmcs02
-lobby 0x005C0B10 0x005C0C8C b/lb_cb05
 lobby:rodata 0x0065E000 0x0065E008 cnet/cnlbse
 lobby:rodata 0x0065E008 0x0065E010 cnet/cnlbsg
 lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbs
@@ -1974,7 +1935,9 @@ lobby 0x005B1930 0x005B1A44 b/lb_c513
 lobby:rodata 0x0065E8E0 0x0065E904 f/lb_cli
 lobby:rodata 0x0065E9E0 0x0065E9F8 f/lb_cli
 lobby 0x005B1A50 0x005B1CD8 b/lb_c516
-lobby 0x005B7020 0x005BF808 f/lb_cli
+lobby 0x005B7020 0x005C1B5C f/lb_cli
+lobby:rodata 0x0065EB70 0x0065EB9C f/lb_cli
+lobby:rodata 0x0065EBA0 0x0065EBCC f/lb_cli
 main 0x001793E0 0x00179570 fl/flrs01
 main 0x00178820 0x001789A8 fl/flrs02
 main 0x00178530 0x0017881C fl/flrs03
@@ -2038,3 +2001,5 @@ main 0x0012B690 0x0012BC98 menu/menu_ftime
 main 0x0023D370 0x0023D870 pad/usbkbdm
 main 0x0018CF00 0x0018D5EC fl/flswap
 main 0x00195000 0x00195510 fl/tarpad02
+lobby 0x005E8890 0x005E9960 f/lb_url
+lobby 0x005E9960 0x005E9EC8 f/lb_bswork

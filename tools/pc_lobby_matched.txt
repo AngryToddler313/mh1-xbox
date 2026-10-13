@@ -85,3 +85,6 @@ src/lobby/f/lb_ge2502.c
 src/lobby/f/lb_ge2503.c
 src/lobby/f/lb_ge2504.c
 src/lobby/f/lb_ge2505.c
+src/lobby/f/lb_url.c
+src/lobby/f/lb_bswork.c
+src/lobby/f/lb_ao01.c

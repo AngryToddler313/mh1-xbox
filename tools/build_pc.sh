@@ -203,21 +203,19 @@ if [ -n "$ONLINE" ]; then
     # matching) and the plaza screens; their functions win over the near-match / stand-in copies
     BMATCH="$BMATCH src/lobby/f/lb_cli.c src/lobby/f/lb_online_nm.c"
     LOBBY="$LOBBY src/lobby/f/lb_plz2.c src/lobby/f/lb_plz3.c"     # (the matched lbui* runs they contain win)
-    # the lobby client's helpers and the server-notice callbacks (b/ runs), the town's receive dispatcher (lb_ae.c),
+    # the lobby client's helpers (b/ runs; the server-notice callbacks are in lb_cli.c), the town's receive dispatcher (lb_ae.c),
     # the plaza chat (lb_pc.c)
-    for b in by95 by04 cb05 by06 cb02 by01 bz54 cb01 by02 by03 cb04 bz53 bz52 rm01 by05 cb03 bz58 bz55 bz59 bz57 bz56 bz51 \
-             by39 bz03 bz22 bz09 bz23 bz06 bz73 bz72 bz07 bz08 gs01 bz160 by117 bz131 bz66 c507 c504 lmp01 bz99 bz100 \
-             bz101 bz102 bz13 bz18 bz10 bz11 bz12 bz14 bz76 bz77 bz78 bz79 by40 id01 bz143 tsh01 bz49 crr01 bz155 by22 \
-             by34 bz161 bz64 by35 bz156 nt02 c506 jip01 by132 c512 c516 bz134 bz04 bz74 bz75 ncf01 bz127 bz50 \
-             by12 nt01 dsi01 tos01; do
+    for b in bz03 bz22 bz09 bz23 bz06 bz73 bz72 bz07 bz08 gs01 by117 bz131 bz66 c507 c504 lmp01 bz99 bz100 bz101 \
+            bz102 bz13 bz18 bz10 bz11 bz12 bz14 bz76 bz77 bz78 bz79 by40 id01 bz143 tsh01 crr01 bz155 by22 bz64 \
+            by35 bz156 nt02 c506 jip01 by132 c512 c516 bz134 bz04 bz74 bz75 ncf01 by12 nt01 dsi01 tos01; do
         LOBBY="$LOBBY src/lobby/b/lb_$b.c"
     done
     LOBBY="$LOBBY src/lobby/b/nm/CallBack_Event_MatchEntryUser.c src/lobby/b/nm/CallBack_Event_RoomLeaver.c \
            src/lobby/b/nm/lm_member_list_mv.c src/lobby/b/nm/lm_room_member_mv.c src/lobby/b/nm/Lb_join.c \
-           src/lobby/b/nm/nwDispStr_Html.c src/lobby/b/nm/html_text.c src/lobby/b/nm/Analysis_TagCode.c src/lobby/b/nm/plaza_capcomPage.c \
+           src/lobby/b/nm/plaza_capcomPage.c \
            src/lobby/b/nm/plaza_checkFriendTrans.c src/lobby/b/nm/plaza_mailBoxTrans.c src/lobby/b/nm/plaza_setMyCommentTrans.c \
            src/lobby/f/lb_e10.c src/lobby/b/nm/lb_select_set_data.c src/lobby/b/nm/lb_select_tag.c src/lobby/b/nm/disp_string_handle.c \
-           src/lobby/b/nm/check_halfcode.c src/lobby/b/nm/plaza_searchMemberTrans.c \
+           src/lobby/b/nm/plaza_searchMemberTrans.c \
            src/lobby/b/nm/plaza_setChatModeTrans.c src/lobby/f/lb_pz12_nm.c"   # (lb_pz12_nm: Plaza_add_friend, raw on the PS2)
     PICK="$PICK src/lobby/f/lb_ab.c:lb_member_changeCheck,lb_member_inCheck,lb_member_outCheck src/lobby/f/lb_w.c:lb_rule_seet_set \
           src/lobby/f/lb_v.c:lb_rule_seet_trans,lb_guild_make_room"

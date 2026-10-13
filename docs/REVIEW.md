@@ -19,6 +19,51 @@ obvious workarounds.
   it fixed a real problem. Kept as candidate fix 1 of 3 in docs/xbox.md "Near clipping of
   skinned models" (the other two are GPU-only).
 
+### Browser draw-work pool: one TU lb_bswork.c (12 Oct 2026, agent B)
+- **Dropped:** runs src/lobby/f/lb_{gav01,av01,gz01,av02}.c and agent F's unbuilt whole-file copy lb_av.c.
+- **Now:** src/lobby/f/lb_bswork.c (0x5E9960-0x5E9EC8), all 11 functions byte-matched (BsTextureAdd new). It and
+  lb_ao01.c (the browser allocator) are linked on the PC (tools/pc_lobby_matched.txt): seven functions there were
+  stand-ins (BsWorkInitAll, BsWorkMove, BsWorkTrans, BsTextureFreeAll, BsMemAlloc / Free / Realloc ...).
+- **To revert:** the commit "lobby: browser draw-work pool as one TU (lb_bswork.c)".
+
+### Browser allocator: unbuilt near-match copy lb_ao.c removed (12 Oct 2026, agent B)
+- **Dropped:** src/lobby/f/lb_ao.c (agent F's whole-file near-match of the browser cell allocator, not built).
+- **Now:** all six functions are byte-matched in src/lobby/f/lb_ao01.c (BsMemRealloc added, 0x5E8330-0x5E867C).
+- **Why:** obsolete copy. **To revert:** the commit "lobby: BsMemRealloc matched; lb_ao.c removed".
+
+### Browser URL helpers: one TU lb_url.c (12 Oct 2026, agent B)
+- **Dropped:** the runs src/lobby/f/lb_{m12,z135,z19,ap01,z106,z20,gdr12,gap01,z21,gap02,ap02}.c and agent F's
+  whole-file near-match src/lobby/f/lb_ap.c (not built anywhere).
+- **Now:** src/lobby/f/lb_url.c, 0x5E8890-0x5E9960, all 25 functions byte-matched (BsUrl*, bs_url_*, the
+  Shift-JIS/EUC kanji conversion). The draft-style run C (F(s8, ...) offsets, int pointers) was rewritten as plain C;
+  it still matches. Linked on the PC too (tools/pc_lobby_matched.txt): KanjiEuc2SjisEx and bs_url_cmp_list were
+  stand-ins there.
+- **Why:** the static helpers must share the TU with their callers (MWCC keeps caller values in a3/t0 across calls
+  to a static whose register use it knows); one TU replaces 12 files.
+- **To revert:** the commit "lobby: browser URL helpers matched as one TU (lb_url.c)".
+
+### Lobby client: 29 b/ run files merged into lb_cli.c (12 Oct 2026, agent B)
+- **Dropped:** src/lobby/b/lb_{by95,by34,bz127,bz160,bz49,bz161,bz50,by39,by01,bz51,by03,cb05,by02,cb04,rm01,by04,bz52,
+  bz53,bz54,cb02,cb01,bz55,bz56,bz57,bz58,by05,bz59,cb03,by06}.c (one or a few matched functions each, 0x5C0680-0x5C1B5C:
+  mail / net comment requests and the server notice callbacks) and their entries in the ONLINE=1 list of
+  tools/build_pc.sh.
+- **Now:** the same C (unchanged apart from per-run type names, `BrPersonalData_c24`, and aliases for objects a run
+  declared with its own type: config/lobby_aliases.txt) is the tail of src/lobby/f/lb_cli.c, which now covers the
+  original compilation unit 0x5B7020-0x5C1B5C. CallBack_Event_MatchEntryUser / CallBack_Event_RoomLeaver (not matched)
+  are original-bytes stubs there; the PC keeps their C in src/lobby/b/nm/.
+- **Why:** one original source file = one TU (BRIEF); fewer files. Bytes and the PC behaviour are unchanged.
+- **To revert:** the commit "lobby: lb_cli.c covers its whole compilation unit".
+
+### Online HTML text: PC near-match copies replaced by matched C (12 Oct 2026, agent B)
+- **Dropped:** src/lobby/b/nm/html_text.c (Split_TagCode, Analysis_StringData, Display_StringData),
+  src/lobby/b/nm/Analysis_TagCode.c, src/lobby/b/nm/check_halfcode.c and src/lobby/b/nm/nwDispStr_Html.c, which the
+  ONLINE=1 PC build linked (written from the asm on 11 Oct, never compared with check.py).
+- **Now:** the six functions are byte-matched C at the end of the lobby-client TU src/lobby/f/lb_cli.c (now
+  0x5B7020-0x5C0678); check_halfcode is still the original bytes on the PS2 (2 lines off as C) and its C for the
+  PC sits in src/lobby/f/lb_online_nm.c with the other lb_cli holdouts.
+- **Why:** the PC runs the game's own code for server messages / error dialogs instead of a hand-written copy.
+- **To revert:** the commit "lobby: HTML text renderer matched in lb_cli.c".
+
 ### Player near-matches replaced by matched C: `case 0: default:` (12 Oct 2026, agent B)
 - **Dropped:** src/main/pl/pl_normal_nm.c (not built: near-match normal_char_set / to_normal); the near-match
   copies of Pl_slash_calc, Pl_basic_flagset (now pl_slash.c / pl_flagset.c, PC-linked), to_normal, basic_com_ck, pl_mv021, pl_dm003 and pl_dm008 in src/main/pl/pl_nm.c (the PC linked these

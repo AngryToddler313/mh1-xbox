@@ -1,4 +1,4 @@
-/* CallBack_Event_RoomLeaver (0x5C18A0): 15/152 differ: only j/off register naming (j = found++ was the fix). Not built. */
+/* CallBack_Event_RoomLeaver (0x5C18A0): the PC copy of an original-bytes stub in src/lobby/f/lb_cli.c (ONLINE=1). 15/152 differ: only j/off register naming (s0/s2 swapped in the second loop). */
 #include "lobby_b.h"
 extern char lit_4622[];
 typedef struct { u8 pad[0x1C]; char msg[0x100]; u8 a, b, c, d; } CHATM;

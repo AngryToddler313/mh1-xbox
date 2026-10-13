@@ -184,3 +184,8 @@ Lb_put_icon_k = 0x005CCA40;
 disp_status_k = 0x0059AE60;
 put_main_cursor_p12 = 0x0059D890;
 put_main_cursor2_p12 = 0x0059D950;
+/* lb_cli.c tail (merged b/ runs, agent B 12 Oct 2026): objects the runs declared with their own types */
+BsLbsErrNum_by95 = 0x0038A890;
+ClassInfo_by39 = 0x006DD7D0;
+RecvMailInfo_by95 = 0x0039F250;
+LobbyInfo_bz54 = 0x003A1620;

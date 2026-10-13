@@ -1,5 +1,10 @@
-/* lb_av01 - browser work pool (IPA static pull/push) 0x005E9A20-0x005E9D44: bs_pul_wk, bs_psh_wk, BsWorkPull, BsWorkPush, BsWorkMove, BsWorkTrans, BsTextureFreeAll. Whole file in lb_av.c. */
+/* lb_bswork - one translation unit 0x005E9960-0x005E9EC8: the browser's draw-work pool (BsWorkInitAll, the static
+ * pull / push helpers, BsWorkPull / Push / Move / Trans) and its texture handle list (BsTextureFreeAll / Add / Get /
+ * Load). Assembled from agent F's runs lb_gav01, lb_av01, lb_gz01, lb_av02 plus BsTextureAdd (agent B, 12 Oct 2026). */
 #include "lobby_f.h"
+
+
+
 extern BSWK *Bs_work_line_last[9];
 extern BSWK *Bs_work_line_head[9];
 extern BSWK Bs_work[0x200];
@@ -14,7 +19,55 @@ void flReleaseTextureHandle();
 void flCompact();
 void load_file_mdl();
 int flCreateTextureFromTim2_mem();
-int BsTextureAdd();
+
+/* prototypes of this file */
+void BsWorkInitAll(void);
+static BSWK *bs_pul_wk(void);
+static void bs_psh_wk(BSWK *w);
+BSWK *BsWorkPull(int line, int tail);
+void BsWorkPush(BSWK *w);
+void BsWorkMove(int line);
+void BsWorkTrans(int line);
+void BsTextureFreeAll(void);
+int BsTextureAdd(u32 h);
+s32 BsTextureGet(int arg0);
+void BsTextureLoad(int a, u8 *p);
+
+void BsWorkInitAll(void) {
+    int i;
+    BSWK **h;
+    BSWK **l;
+    BSWK *w;
+    int n;
+    i = 0;
+    h = Bs_work_line_head;
+    l = Bs_work_line_last;
+    do {
+        h[0] = 0;
+        l[0] = 0;
+        i += 3;
+        h[1] = 0;
+        l[1] = 0;
+        h[2] = 0;
+        l[2] = 0;
+        h += 3;
+        l += 3;
+    } while (i < 9);
+    w = Bs_work;
+    Bs_work_hit_head = 0;
+    n = 0x200;
+    Bs_work_hit_last = 0;
+    Bs_work_free_head = Bs_work;
+    if (n-- != 0) {
+        do {
+            memset(w, 0, 0x70);
+            if (n != 0) {
+                w->next = w + 1;
+            }
+            w += 1;
+        } while (n-- != 0);
+    }
+}
 
 static BSWK *bs_pul_wk(void) {
     BSWK *n;
@@ -147,4 +200,49 @@ void BsTextureFreeAll(void) {
     }
     Bs_tex_handle_ptr = 0;
     flCompact();
+}
+
+int BsTextureAdd(u32 h) {
+    if (Bs_tex_handle_ptr == 24) {
+        return -1;
+    }
+    Bs_tex_handle[Bs_tex_handle_ptr] = h;
+    Bs_tex_handle_ptr++;
+    return 0;
+}
+
+s32 BsTextureGet(int arg0) {
+    int i;
+
+    i = (s8)arg0;
+    if (i < 0 || Bs_tex_handle_ptr <= i) {
+        return -1;
+    }
+    return Bs_tex_handle[i];
+}
+
+void BsTextureLoad(int a, u8 *p) {
+    u8 st;
+    switch (a) {
+    case 3:
+        st = *p;
+        switch (st) {
+        case 0:
+            load_file_mdl(data_load_ptr, 0x885);
+            *p = *p + 1;
+            break;
+        case 1:
+            BsTextureAdd(flCreateTextureFromTim2_mem(data_load_ptr, 0));
+            *p = *p + 1;
+            break;
+        case 2:
+            *p = st + 1;
+            break;
+        case 3:
+            *p = st + 1;
+            break;
+        case 4:
+            break;
+        }
+    }
 }

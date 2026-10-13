@@ -1,4 +1,4 @@
-/* CallBack_Event_MatchEntryUser (0x5C1690): logic complete, 39/66 differ (flag=0 init lands in the bne delay slot in ours; original keeps it before the cw load). Not built. */
+/* CallBack_Event_MatchEntryUser (0x5C1690): the PC copy of an original-bytes stub in src/lobby/f/lb_cli.c (ONLINE=1). Logic complete, 6 lines off: the original sets flag = 0 before the cw load, ours in the bne delay slot. */
 #include "lobby_b.h"
 typedef struct { u8 pad[8]; u8 x8; } CI8;
 extern CI8 ClassInfo;
@@ -20,7 +20,7 @@ void CallBack_Event_MatchEntryUser(CNET_RES res) {
     cnLBS_Get_MatchEntryJoinUser(cls, &c->x32C6, (u8 *)c + 0x32C8);
     if (lb_sys.x68 != 7 && lb_sys.x68 != 8) {
         r = mhRule.x00;
-        if (r + 1 >= 2) {
+        if (r + 1 > 1) {
             if (CWX->x32C6 == r) {
                 if (CWX->x32C5 != 0) {
                     Lb_put_chat(0x10);
@@ -31,7 +31,7 @@ void CallBack_Event_MatchEntryUser(CNET_RES res) {
     }
     if (flag == 1) {
         t = mhRule.x00 + 1;
-        if (t >= 2) {
+        if (t > 1) {
             if (CWX->x32C6 + 1 < t) {
                 if (CWX->x32C5 != 0) {
                     Lb_put_chat(0x11);
