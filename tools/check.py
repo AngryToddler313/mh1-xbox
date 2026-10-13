@@ -273,7 +273,7 @@ def main():
             "OK" if ok else "--", name, mod, addr, size,
             "" if ok else "  (%d/%d instructions differ)" % (
                 sum(1 for l in lines if l.startswith(">>")), len(lines))))
-        if not ok and args.v:
+        if args.v and (not ok or os.environ.get("CHK_ALL")):
             print("\n".join("      " + l for l in lines))
 
     if args.add and all_ok and results:

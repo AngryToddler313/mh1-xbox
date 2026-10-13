@@ -1632,3 +1632,81 @@ Near-match: Pl_slash_calc (pl_slash.c): logic done, 60/97 insns differ only in s
 pl s2, (s16)dv s3; mine: temp s0, up s1, dv s2, pl s3); declaration order and a temp variable did not change it.
 Next candidates (small diffs, see `VERSION=mhg tools/check.py -v`): Quest_init (quest_w layout differs), em_trans_sub (switch),
 UseItemChk (menu-local Item_data extern with [16]), Pl_act_set/Pl_act_set2, CameraInit (camera work 0x5F8 not 0x600).
+
+### G round 1 status (stopped for the owner's pause, 13 Oct 2026)
+- config/mhg/c_files.txt hand section is EMPTY on purpose: the baseline (793 files) is the last state verified 7 OK. The
+  `build.py`-only runs I did after adding files were not trustworthy (they did not relink); a real `VERSION=mhg tools/rebuild.sh`
+  with all my files fails. Found by bisecting sub_main (12 s per step with `tools/rebuild.sh sub_main`): pl67 (-64 bytes of
+  data), pl73 (D_00517720 addend), qstb01 each break the link/bytes alone; main, game (shell01..23 etc., missing data names
+  now in config/mhg/g_names.txt, linked via build.py) and lobby (192 bytes short) also failed, culprits not found yet.
+- The C changes (#ifdef VERSION_MHG, src/mhg/*, headers) are all in the tree and byte-match per check.py. Candidate files to
+  re-register one by one (python3 tools/mhg_addc.py FILE, then rebuild that module with tools/rebuild.sh MODULE):
+    game/em/em08_demo
+    game/em/em15_r07
+    game/em/em15_r08
+    game/em/em15_r09
+    game/em/em15_r19
+    game/em/em15_r23
+    game/em/em15_r24
+    game/em/em15_r25
+    game/em/em17_r32
+    game/em/em20_r33
+    game/em/em_cmd_r06
+    game/em/em_cmd_r10
+    game/em/em_cmd_r11
+    game/em/em_cmd_r15
+    game/em/em_cmd_r22
+    game/em/em_cmd_r92
+    game/em/em_cmd_r94
+    game/shell/shell01
+    game/shell/shell02
+    game/shell/shell05
+    game/shell/shell12
+    game/shell/shell13
+    game/shell/shell15
+    game/shell/shell18
+    game/shell/shell19
+    game/shell/shell20
+    game/shell/shell21
+    game/shell/shell23
+    lobby/b/lb_bz17
+    lobby/f/lb_ge2501
+    main/cam/camg
+    main/cp/cp01
+    main/emw/emt01
+    main/emw/emw01
+    main/emw/emw02
+    main/fl/flpad02
+    main/fl/flvu05
+    main/fl/fm02
+    main/fl/fms
+    main/fl/plfcv01
+    main/hit/hitid01
+    main/pl/pl63
+    main/pl/pl66
+    main/pl/pl67
+    main/pl/pl70
+    main/pl/pl72
+    main/pl/pl73
+    main/pl/pl74
+    main/pl/pl75
+    main/pl/pl77
+    main/pl/pl_itemck
+    main/pl/plx01
+    main/pl/plx02
+    main/pl/plx06
+    main/pl/plx07
+    main/pl/plx11
+    main/pl/shell_work
+    main/quest/qstb01
+    main/quest/qstb02
+    main/quest/qstb03
+    main/quest/qstb05
+    main/quest/qstb06
+    main/sk/cmd04
+    main/sprite/putspr
+    main/weapon/weapon3
+    mhg/main/pl/pl78_main
+    mhg/main/pl/pl78_sub
+- Next: bisect the failing files above (script idea: keep k hand entries, rebuild one module), fix link-level causes
+  (data slots, addends, missing names), re-register; then Pl_slash_calc near-match, Pl_act_set, CameraInit, FishWyvernCameraRequest.
