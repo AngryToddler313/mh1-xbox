@@ -62,14 +62,31 @@ it copies the files out of the image itself.
 
 ### Xbox
 
-1. Copy the folder `dist/xbox/MH1` to the Xbox hard disk as `E:\Games\MH1` (so that `E:\Games\MH1\default.xbe` and
-   `E:\Games\MH1\data\AFS_DATA.AFS` exist). Use an FTP client; the data is 925 MB and a home Wi-Fi link can take
-   most of an hour. With `curl` (active mode; some dashboards' FTP servers do not support passive mode):
-   `curl --ftp-port - --ftp-create-dirs -T FILE ftp://XBOX_IP/E/Games/MH1/data/FILE -u USER:PASSWORD`
-   for each file, and the same for `default.xbe`.
-2. On the Xbox dashboard open the games list ("Play Games from Hard Drive" or similar) and start **Monster
+1. **Where the files go.** On the Xbox hard disk, in `E:\Games\MH1`, exactly this:
+
+       E:\Games\MH1\default.xbe
+       E:\Games\MH1\data\AFS_DATA.AFS   (116 MB)
+       E:\Games\MH1\data\AFS00.AFS      (740 MB)
+       E:\Games\MH1\data\AFS01.AFS      (20 MB)
+       E:\Games\MH1\data\SLPM_654.95    (5.4 MB)
+
+   That is the content of `dist/xbox/MH1` (the game also finds the data folder next to the XBE, however it was
+   started). Your Xbox needs an FTP server running (Evolution X and most softmod dashboards have one: look for
+   its address on the dashboard's network or system page, and its login in its settings; you type that login, the
+   scripts never know it).
+2. **Copy them.** Either use any FTP program (FileZilla etc.: connect, open `E:`, make `Games\MH1`, drop the
+   folder's contents in), or run `tools/xbox_install.sh XBOX_IP dist/xbox/MH1` on the Linux machine: it asks for
+   the login, copies each file with curl, skips files that are already complete and can simply be run again if it
+   is interrupted. Some dashboards' FTP servers need active mode (the script's default; `XBOX_PASSIVE=1` switches).
+   The data is 925 MB: a home Wi-Fi link can take most of an hour. Copy `default.xbe` last or first, it does not
+   matter.
+   Check afterwards that the sizes match the list above. The game itself checks at start-up: if a file is missing
+   or has the wrong size (a cut-short copy) it shows which one, says where the files belong and returns to the
+   dashboard after ten seconds; fix the copy and start again. (Only the sizes are checked there; the checksum check of
+   the disc was done by `./mh1` on the Linux machine.)
+3. On the Xbox dashboard open the games list ("Play Games from Hard Drive" or similar) and start **Monster
    Hunter**.
-3. Hold **Back + Start** for 2 seconds to leave the game (a log is shown for a few seconds first).
+4. Hold **Back + Start** for 2 seconds to leave the game (a log is shown for a few seconds first).
 
 The Xbox build has no settings menu or window options. It has been tested on one console and in the xemu emulator,
 not on every model.

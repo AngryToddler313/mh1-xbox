@@ -197,7 +197,9 @@ xbox)
     cp build/xbox/nv2a/default.xbe "$OUT/MH1/default.xbe"
     [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
     copy_data "$OUT/MH1/data" "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_654.95"
-    say "done. Copy the folder $OUT/MH1 to your Xbox's hard disk as E:\\Games\\MH1 (FTP, see PLAYING.md), then start"
-    say "'Monster Hunter' from your dashboard's games list (default.xbe)."
+    say "done. Copy the folder $OUT/MH1 to your Xbox's hard disk as E:\\Games\\MH1 (so that"
+    say "E:\\Games\\MH1\\default.xbe and E:\\Games\\MH1\\data\\AFS_DATA.AFS exist). With curl:"
+    say "  tools/xbox_install.sh XBOX_IP \"$OUT/MH1\"     (asks for your Xbox's FTP login; or use any FTP program)"
+    say "then start 'Monster Hunter' from your dashboard's games list."
     ;;
 esac
