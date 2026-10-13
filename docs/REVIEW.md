@@ -314,3 +314,21 @@ obvious workarounds.
   init, floor slide, hosei_sub ...). Tests: quest_loop, progression, menu,
   name_entry, activities (38), save pass; Xbox build 0 failed.
 - **To revert:** revert the commit that adds src/main/hit/f_sphr.c to config/c_files.txt.
+
+### Lobby alias names resolved in every build, not only ONLINE=1 (13 Oct 2026, agent E)
+- **Dropped:** `RT_GEN_LB_ALIASES=$ONLINE` in tools/build_pc.sh: the offline PC
+  build (and the Xbox build, which reuses build/pc/rt_gen.c) left the lbtu3
+  alias names of the lobby-client TU src/lobby/f/lb_cli.c (config/lobby_aliases.txt:
+  `text_lobby_trans_ot3_o`, `pNet_c7`, `CallBack_X_o`, `ClassInfo_c43`, ...) as
+  generated no-op stand-ins.
+- **Now:** `RT_GEN_LB_ALIASES=1` always: each alias names the function or data at
+  its address (gen_rt_auto.py), as the ONLINE=1 build already did.
+- **Why:** the offline village draws its dialog layer through lb_cli.c too:
+  Lbc_init_network_work puts `text_lobby_trans_ot3_o` into the ot2 prim, and that
+  stand-in drew nothing, so DispDialogData (the bed's save prompt "これまでの
+  ゲームデータを…保存しますか？", "ゲームを終了しますか？") was never shown. Owner's
+  report from the real Xbox; the PC had it too. `pNet_c7` (read by
+  text_lobby_trans_ot3) was a stand-in function whose code bytes were read as a
+  pointer. Test: test_activities.py bed_prompt.
+- **To revert:** set the line back to `RT_GEN_LB_ALIASES=$ONLINE` (the prompt
+  disappears again).

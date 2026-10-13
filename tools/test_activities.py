@@ -9,7 +9,7 @@ Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run re
 
 Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut lao_ride herbivore_pose herbivore_rewind
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
-Village: npc_walk shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
+Village: npc_walk shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip bed_prompt
 HUD / demo: demo_input map_item
 """
 import math, re, sys, time
@@ -644,6 +644,18 @@ def box_equip():
     w = re.findall(r'wear: w(\d+)/(\d+)/', t)
     if crashed(t) or not w: return False, 'no data'
     return w[0] == ('6', '1') and w[-1] == ('6', '2'), 'wielded weapon (kind/id) %s -> %s' % ('/'.join(w[0]), '/'.join(w[-1]))
+
+@test
+def bed_prompt():
+    """house bed (square): the hunter lies down and the save prompt (lobby dialog layer: lb_pl_mv052 -> SetDialogData 0x30,
+    drawn by text_lobby_trans_ot3 -> DispDialogData) must be on screen with its yes / no. Owner report 13 Oct 2026 (Xbox,
+    the PC too): the prompt waited for yes but was invisible; the dialog prim's draw function was a no-op stand-in"""
+    t = village('bed_prompt', {45: 'square*2', 200: 'square*2'}, 460, env={'RT_QUEST_TRACE': 1, 'RT_FONT_TRACE': 1, 'RT_STEP': 1,
+                'RT_LB_WARP': '30,11225,14400,0;150,2259,745,4001'})      # house door, then the bed (spot kind 14)
+    f = [x for _, x in fonts(t)]
+    q = [x for x in f if '保存しますか' in x]
+    if crashed(t): return False, 'crash'
+    return bool(q) and 'はい' in f and 'いいえ' in f, 'save prompt drawn %d times ("%s"), yes/no %s' % (len(q), q[0] if q else '', 'はい' in f and 'いいえ' in f)
 
 @test
 def demo_input():

@@ -985,3 +985,24 @@ List, method and findings: docs/agents/targets.md. Short version of what is wort
   `NextStage_Dir_Set` is 3 instructions off (add.s operand registers) after `to->d / 2 + to->z` with the declaration order
   found by declbf; `eft11_i` is much closer with `w->` and `w++` in the copy loop (120 vs 163) but the eft11_t0 address load
   stays early.
+
+## Owner's Xbox play-test polish (13 Oct 2026)
+
+1. **Invisible "Save?" box at the house bed (PC and Xbox).** The bed (lb_pl_mv052) asks with SetDialogData(0x30, 2);
+   the lobby's dialog layer draws it: Lbc_init_network_work puts `text_lobby_trans_ot3_o` into the 4th lobby prim
+   (pNet+0x20, D_3EBCD0), lbc_text_lobby_trans queues it on ot2, and text_lobby_trans_ot3 calls DispDialogData while
+   `pNet_c7[0xC] == 1`. `text_lobby_trans_ot3_o` and `pNet_c7` are lbtu3 alias names (config/lobby_aliases.txt); only
+   the ONLINE=1 build had gen_rt_auto.py turn them into aliases (RT_GEN_LB_ALIASES). In a plain build both were weak
+   no-op *function* stand-ins: the prim's draw function did nothing (and pNet_c7 would have read code bytes). The
+   prompt waited for yes/no with nothing on screen. Fix: tools/build_pc.sh always passes RT_GEN_LB_ALIASES=1.
+   (docs/xbox.md "Invisible save prompt at the bed" has the full write-up.) Verified independently: two fresh clones of the branch, same scripted CONTINUE -> bed run with the answer delayed
+   (scratch script, shots at ticks 2440-2480): main shows the bedroom only, the fix shows the box with はい/いいえ;
+   `nm`: main has `W pNet_c7` / `W text_lobby_trans_ot3_o` in rt_gen's stand-ins, the fix has `pNet_c7 = pNet` and
+   `text_lobby_trans_ot3_o = text_lobby_trans_ot3`. New test `tools/test_activities.py bed_prompt` (the prompt and
+   its yes/no in the font trace): FAIL on main, PASS with the fix. Caution, found on the way: an incremental build
+   dir that once had the aliases kept them (build/pc/rt_gen.defsym is carried over), so a build dir's history decides
+   whether the box shows; always compare with fresh clones. Also: RT_SHOTS ticks past `fr` were dropped under
+   RT_STEP (viewer.c now compares with --time).
+   The scripted tests all answer the prompt within 2 ticks of it appearing, which is why none noticed.
+   xemu (nv2a build with all three fixes, run 1 of tools/xemu_quest_loop.sh with the bed's answer delayed by 1540
+   ticks, hidden display): the prompt is on screen with はい/いいえ for the whole wait (shots at 420-450 s).

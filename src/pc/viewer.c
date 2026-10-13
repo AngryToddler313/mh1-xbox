@@ -2386,8 +2386,8 @@ int main(int argc, char **argv)
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
-        if (shot && shot_next > 2 + (int)fr)
-            shot_next = 0;              /* RT_SHOTS past --time: dropped */
+        if (shot && shot_next > 2 + (int)(fixed_time >= 0 ? fixed_time * 30.0f : fr))
+            shot_next = 0;              /* RT_SHOTS past --time: dropped (with RT_STEP, fr is still behind --time) */
         /* real time: at most CATCH_UP ticks behind the clock. When ticks cost more than their
          * 33 ms (xemu on a busy host: the opening movie's decode), catching up every lost tick
          * means a frame only every few seconds and never recovering; the game slows down

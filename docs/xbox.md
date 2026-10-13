@@ -1193,3 +1193,49 @@ own network stack and FTP server) launched the loader. Theory, untested: the NIC
 from the dashboard when nxNetInit starts it again (like the dumper's hang after the loader before
 nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
 before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).
+
+### Invisible save prompt at the bed (agent E, 13 Oct 2026, fixed)
+
+Owner's report (real Xbox): going to bed in the village, the game waited for "yes" on the
+save prompt but no box was on screen; pressing the button blind saved. **Not a hardware
+problem: the PC and xemu missed the box too.** PC (tools/test_quest_loop.sh run 1 with
+`RT_STEP=1` and `RT_SHOTS` every tick around the bed) showed the hunter lying down, then
+the memory-card "checking" / "saved" boxes, but never the prompt in between.
+
+Cause: the bed (lb_pl_mv052, src/lobby/f/lb_village_nm.c) asks with SetDialogData(0x30) +
+SetDialogYesNo and sets pNet+0xC each tick; the box is drawn by DispDialogData, called
+only from text_lobby_trans_ot3, the function of the lobby's fourth prim (lb_cli.c:
+Lbc_init_network_work stores `text_lobby_trans_ot3_o` in it; Local_main queues it on ot2).
+`text_lobby_trans_ot3_o` is an lbtu3 alias name (config/lobby_aliases.txt) that
+gen_rt_auto.py resolved only for ONLINE=1 builds; offline it was a generated no-op
+stand-in (`nm`: `W text_lobby_trans_ot3_o` at its own address), so the prim drew nothing.
+`pNet_c7`, which text_lobby_trans_ot3 reads, was likewise a stand-in function. Fix:
+tools/build_pc.sh runs gen_rt_auto.py with RT_GEN_LB_ALIASES=1 in every build (the Xbox
+build takes build/pc/rt_gen.c), docs/REVIEW.md has the entry.
+
+Before / after: new test `tools/test_activities.py bed_prompt` (village start, warp to the
+bed, square; font trace) FAILS on the old build ("save prompt drawn 0 times") and PASSES
+with the fix (107 frames of "これまでのゲームデータを / メモリーカード(PS2)に保存しますか？"
+with はい / いいえ). xemu nv2a build, same scenario via RT_ARGS=--quest 131 +
+RT_VILLAGE_START/RT_LB_WARP and RT_HOLD=440: the prompt is on screen and matches the PC frame
+(position, frame border, cursor). The same layer also draws the bed's later dialogs
+("ゲームを終了しますか？", 0x37/0x39), now visible too.
+
+Other windows checked on the PC (item box menu and lists, item shop list and its
+"よろしいですか？ はい / いいえ", the Elder's quest list, quest card and "やってみるかの？
+【はい】 いいえ"): all drawn before and after; they use other prims (Lb_shop_trans,
+the talk window), not the dialog layer. Earlier xemu comparisons (12 Oct) matched those.
+
+Also: RT_SHOTS was dropped at once when RT_STEP=1 was set (the past---time check used the
+stepped clock); viewer.c now compares with --time.
+
+Found on the way, **not fixed** (host flow, viewer.c): tools/pc_scripts/bed_save.txt ends
+with dleft + circle on "ゲームを終了しますか？" (quit the game: yes). Local_main then returns
+-1 and the host's quest_back() restarts the last quest, so the hunter appears at the Forest
+and Hills camp. That is the "after the save the hunter ended up at the camp" seen on
+hardware on 12 Oct. The PS2 goes back to the title there (to check); the host should do
+the same.
+
+**Owner to check on hardware:** bed in the house -> the save prompt box with はい/いいえ shows;
+after saving, the "quit game?" box shows; answer いいえ to keep playing (はい currently drops
+you at the quest camp, see above).

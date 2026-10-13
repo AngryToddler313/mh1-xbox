@@ -77,7 +77,7 @@ def main():
             if a <= va < a + size and k != n and (img == "main") == (va < OVL):
                 alias[n] = (k, va - a)
                 break
-    # RT_GEN_LB_ALIASES=1 (the ONLINE=1 build): the lbtu3 alias names of the lobby-client TUs
+    # RT_GEN_LB_ALIASES=1 (every build since 13 Oct 2026; was ONLINE=1 only): the lbtu3 alias names of the lobby-client TUs
     # (config/lobby_aliases.txt: CallBack_X_o, Lbc_set_prim_k, ClassInfo_c43, pNet_c7, ... = an address) name the
     # same object as the symbol at that address: a function alias when that function is linked, the data itself
     # otherwise (a stand-in would make a callback or a table a no-op function)
