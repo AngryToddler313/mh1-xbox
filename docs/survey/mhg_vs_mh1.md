@@ -1,3 +1,59 @@
+# PS2 Monster Hunter G vs MH1: per-function map (13 Oct 2026, agent B)
+
+`tools/mhg_map.py` maps every MH1 function to its G counterpart (G is stripped; MH1 has
+symbols and link relocations). Output: `docs/survey/mhg_map.csv` (one row per MH1 function
+and per G-only function) and `config/mhg/symbols/*.txt` (MH1 names at G addresses).
+Classes:
+
+- identical: same instructions; only MH1's relocated fields (call targets, addresses of
+  globals, gp offsets) differ. The MH1 C compiles to G's bytes once the names point at G.
+- shape: same instruction shape, some non-relocated 16-bit immediates differ (struct
+  offsets, constants).
+- edited: a counterpart found by similarity (between matched neighbours in address order,
+  at the call sites of a twin, or by a global 5-gram search), at least 50% similar
+  (difflib ratio over opcode sequences).
+- rewritten: the callee at a twin's call site, less than 50% similar.
+- missing: no counterpart found.
+
+How: exact-shape hits (unique, then by address order) give anchors; gaps between anchors are
+aligned with Needleman-Wunsch on similarity; call sites of twins pair callees; leftovers go
+through a 5-gram search (mutual best, >= 0.6). G function boundaries come from jal targets,
+`jr ra`/`j` + delay slot + nop padding at 16-byte boundaries, and the twins themselves (a
+twin may split or merge a guessed G boundary). Only exact twins may cross the expected
+module mapping (main -> main/sub_main/game, lobby -> lobby/nethttp).
+
+| MH1 module | funcs | identical | shape | edited | rewritten | missing | identical+shape (bytes) | any counterpart (bytes) |
+|---|---|---|---|---|---|---|---|---|
+| main | 6978 | 5374 | 223 | 855 | 25 | 501 | 63.1% | 92.7% |
+| select | 44 | 22 | 0 | 18 | 2 | 2 | 31.8% | 94.2% |
+| game | 2640 | 1916 | 230 | 445 | 13 | 36 | 60.0% | 99.1% |
+| yn | 141 | 91 | 27 | 12 | 0 | 11 | 63.3% | 96.0% |
+| lobby | 3486 | 2299 | 246 | 647 | 15 | 279 | 62.3% | 94.4% |
+| **all** | 13289 | 9702 | 726 | 1977 | 55 | 829 | **61.8%** | **95.0%** |
+
+By bytes of MH1 code: identical 56.2%, shape 5.7%, edited 32.5% (of that, 62% is >= 90%
+similar, 28% 70-90%, 10% 50-70%), rewritten 0.7%, missing 5.0%.
+
+- The old exact-shape count (52%, mhg_match.py) missed lobby's OpenSSL/HTTP code: G moved it
+  into the new overlay nethttp.bin (1425 MH1 lobby functions are there). It also missed
+  functions whose G boundaries differ by a trailing nop.
+- Where MH1 code went: main -> main 5676, -> sub_main 577, -> game 218; lobby -> lobby 1781,
+  -> nethttp 1425; game -> game 2603.
+- G-only code (no MH1 counterpart): main 80 KB (6% of its text), sub_main 102 KB (27%),
+  game 39 KB (3%), lobby 128 KB (19%), select 10 KB (33%), nethttp 3 KB, yn 0.5 KB. About
+  0.36 MB of new code in all, against 3.9 MB of G text.
+- Code the PC port runs as game C (functions defined in build/pc/*.o of src/game, src/main,
+  src/lobby; 2589 MH1 functions): identical+shape 46.9% of bytes, edited 47.1% (player,
+  monsters and quest code changed most), missing 5.1%. Counterparts exist for 95%.
+- Matched C (config/c_files.txt minus c_rawfuncs, 7374 functions): 4768 are clean identical
+  twins (also every call goes to the callee's twin), 0.95 MB of 2.13 MB. 858 of 1719 C files
+  consist only of clean twins laid out the same way in G (0.40 MB): those files should build
+  byte-identical at G addresses unchanged.
+- Guesses: "edited" pairs at 50-70% similarity in the per-monster files (em_*) can be the
+  wrong copy among near-identical siblings; counts are right in size, single names less so.
+  Data names in config/mhg/symbols come only from relocated operands of identical/shape
+  twins (2465 names; 22 addresses had conflicting votes, majority kept).
+
 # PS2 Monster Hunter G vs MH1: how much carries over (10 Oct 2026)
 
 Measured with tools/mhg_match.py. It counts MH1 functions whose instructions show up
