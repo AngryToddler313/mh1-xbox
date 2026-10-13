@@ -1015,3 +1015,17 @@ List, method and findings: docs/agents/targets.md. Short version of what is wort
    movie: RMS 0 for seconds 0-17 (logos), movie sound from 19 s. tools/test_audio.sh's "title" segment had been
    passing on exactly that stray stream (RT_NOMOVIE, "title BGM" from 21 s): it now boots with the movie and checks
    seconds 1-16 are silent and 22-44 have sound.
+3. **Quest-clear music again in the village when saving.** RT_SND_TRACE of the quest-loop script (quest 131 won ->
+   village -> house -> bed): entering the house started `S_CLEAR1.adx`, vs_square_init faded it in at the house
+   volume (55) and the bed's lb_exit_save resumed it after the save. Cause: the host's rt_snd_stage (run on every
+   stage load) called the game's stage_bgm_set for village stages too; after a won quest Quest_clear_ck(1) is still 1,
+   so stage_bgm_set picked the clear jingle (0x49) and set game_w+0x25 to it. On the PS2 only the quest's stage set-up
+   (f_game, evdemo) calls stage_bgm_set; the lobby uses lobby_bgm_set, and offline vs_square_init only resumes
+   stream 0 (checked in the C of lb_af.c / lb_gae02.c / bgm04.c: no lobby caller of stage_bgm_set). Fix:
+   rt_snd_stage skips stage_bgm_set while the village is active. Verified with the same trace: no S_CLEAR1 after the
+   quest's reward; village M0_MURA1 (lobby_bgm_set) runs on through house, bed and save; CONTINUE and new-game
+   village entries still start M0_MURA1 from the lobby code; test_audio's village segment and all PC tests pass.
+   Candidate, not changed (unproven): the bed's sleep jingle `cnWrap_SoundRequest(0xB)` = se_req(6, 0x40) finds no
+   sample (`port 6 code 0x40: no sample`): the PC keeps the quest's em packs on port 6 in the village, while the PS2's
+   village loads its packs with flSndPackLoadBG2 (a no-op on the PC). Which pack the PS2 village has on port 6 was not
+   checked.

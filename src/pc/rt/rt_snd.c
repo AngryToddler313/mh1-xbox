@@ -776,7 +776,12 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
      * music), else Snd_bgm_tbl[stage] = (AFS00 entry, volume) */
     if (getenv("RT_SND_AMBIENT"))
         game_w.x10 |= 1;
-    stage_bgm_set(stage);
+    /* only for quest stages: on the PS2 only the quest's stage set-up (f_game, evdemo) calls stage_bgm_set. The
+     * village's music is lobby.bin's (lobby_bgm_set; vs_square_init resumes stream 0 when a house is entered).
+     * After a won quest Quest_clear_ck(1) is still 1 in the village, so stage_bgm_set started the quest-clear
+     * jingle (S_CLEAR1) on every village stage load and vs_square_init / the bed save (lb_exit_save) faded it in */
+    if (!rt_village_active())
+        stage_bgm_set(stage);
     if (trace)
         printf("snd: stage %d map %d\n", stage, map);
 }

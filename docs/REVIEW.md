@@ -332,3 +332,14 @@ obvious workarounds.
   pointer. Test: test_activities.py bed_prompt.
 - **To revert:** set the line back to `RT_GEN_LB_ALIASES=$ONLINE` (the prompt
   disappears again).
+
+### Village stage loads no longer start a stream from stage_bgm_set (13 Oct 2026, agent E)
+- **Dropped:** rt_snd_stage (src/pc/rt/rt_snd.c) calling the game's stage_bgm_set on village stages; the start-up
+  rt_snd_stage of a --boot run (src/pc/viewer.c); tools/test_audio.sh's "title" check (RT_NOMOVIE, sound from 21 s).
+- **Now:** stage_bgm_set only for quest stages (the village's music is lobby.bin's own, as on the PS2); a --boot
+  start-up loads no packs and plays nothing; test_audio boots with the opening movie and checks the logos are silent.
+- **Why:** the owner heard the quest-clear music again in the village (stage_bgm_set picks S_CLEAR1 while
+  Quest_clear_ck is 1) and the forest camp stream under the boot logos. The old title check only passed on that
+  stray stream: the title screen starts no stream of its own.
+- **To revert:** revert the commits "Boot: no forest camp stream under the logos" and "Village: no quest-clear
+  music after a won quest".
