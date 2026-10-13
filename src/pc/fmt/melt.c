@@ -55,11 +55,15 @@ static uint8_t *melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
             if (off) {
                 if (off * 2 > n)
                     goto bad;
-                for (k = 0; k < cnt; k++) {   /* may overlap */
-                    out[n] = out[n - off * 2];
-                    out[n + 1] = out[n + 1 - off * 2];
-                    n += 2;
-                }
+                if (off >= cnt) {           /* source and destination apart: one copy */
+                    memcpy(out + n, out + n - off * 2, cnt * 2);
+                    n += cnt * 2;
+                } else
+                    for (k = 0; k < cnt; k++) {   /* overlapping: word by word, as the PS2 */
+                        out[n] = out[n - off * 2];
+                        out[n + 1] = out[n + 1 - off * 2];
+                        n += 2;
+                    }
             } else {
                 memset(out + n, 0, cnt * 2);
                 n += cnt * 2;
