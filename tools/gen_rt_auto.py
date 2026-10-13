@@ -29,11 +29,63 @@ here too when nothing else defines it.
 Only names, addresses and sizes are involved; the output holds no game
 data. Standard library only.
 """
+import os
 import re
 import sys
 
 LINE = re.compile(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?\s*(?:size:0x([0-9A-Fa-f]+))?)?")
 OVL = 0x533980
+# VERSION=mhg (Monster Hunter G, docs/mhg.md): symbols from G's view (build/mhg/pc/symbols,
+# tools/mhg_pcmeta.py), overlays at 0x542600, and the MH1 addresses in D_XXXXXX / lit_N_XXXXXX
+# names (and config/lobby_aliases.txt) moved to G: through config/mhg/*_aliases.txt
+# (tools/mhg_map.py placed the D_ names the C uses), else through the MH1 symbol that holds
+# the address and the same name in G. Names G's map lacks become zeroed data that is not
+# imported (listed in build/pc/mhg_auto_missing.txt).
+G = os.environ.get("VERSION") == "mhg"
+SYMDIR = "build/mhg/pc/symbols" if G else "config/symbols"
+if G:
+    OVL = 0x542600
+
+
+class MH1toG:
+    def __init__(self):
+        import bisect
+        self.bisect = bisect
+        self.g = {}
+        for m in ("main", "game", "lobby", "select"):
+            for k, v in load("%s/%s.txt" % (SYMDIR, m)).items():
+                self.g.setdefault(k, v[0])
+        self.prov = {}
+        for m in ("main", "sub_main", "game", "lobby", "select"):
+            try:
+                for line in open("config/mhg/%s_aliases.txt" % m):
+                    mm = re.match(r"^PROVIDE\((\w+) = 0x([0-9A-Fa-f]+)\);", line)
+                    if mm:
+                        self.prov.setdefault(mm.group(1), int(mm.group(2), 16))
+            except OSError:
+                pass
+        self.m1 = {}
+        for m in ("main", "game", "lobby", "select"):
+            lst = sorted((v[0], v[2], k) for k, v in load("config/symbols/%s.txt" % m).items())
+            self.m1[m] = (lst, [x[0] for x in lst])
+
+    def tr(self, va, name=None):
+        """G address of what MH1 has at va (name: a D_/lit_ name the aliases may place), or None"""
+        if name and name in self.prov:
+            return self.prov[name]
+        if va == 0:
+            return None
+        for m in (["main", "game"] if va < 0x533980 else ["game", "lobby", "select"]):
+            lst, keys = self.m1[m]
+            k = self.bisect.bisect_right(keys, va) - 1
+            while k >= 0 and keys[k] > va - 0x10000:
+                a, sz, n = lst[k]
+                if (a == va or va < a + sz) and n in self.g:
+                    return self.g[n] + (va - a)
+                if a == va or va < a + sz:
+                    break
+                k -= 1
+        return None
 
 
 def load(path):
@@ -56,9 +108,16 @@ def main():
     if len(sys.argv) != 5:
         sys.exit("usage: gen_rt_auto.py undefined.txt defined.txt out.c out.defsym")
     defined = set(l.strip() for l in open(sys.argv[2]))
-    main_s = load("config/symbols/main.txt")
-    lb_s = load("config/symbols/lobby.txt")
-    sel_s = load("config/symbols/select.txt")
+    main_s = load(SYMDIR + "/main.txt")
+    lb_s = load(SYMDIR + "/lobby.txt")
+    sel_s = load(SYMDIR + "/select.txt")
+    tr = MH1toG() if G else None
+    gmiss = []
+
+    def hexva(n, h):
+        """the address a D_/lit_ name's hex part stands for in this version (None: unknown in G)"""
+        va = int(h, 16)
+        return tr.tr(va, n) if G else va
     main_addrs = sorted(v[0] for v in main_s.values())
     lb_addrs = sorted(v[0] for v in lb_s.values() if v[0] >= OVL)
     names = set(l.strip() for l in open(sys.argv[1]) if l.strip())
@@ -70,8 +129,8 @@ def main():
         m = re.match(r"^D_([0-9A-Fa-f]{6,8})$", n)
         if not m:
             continue
-        va = int(m.group(1), 16)
-        if va >= OVL:
+        va = hexva(n, m.group(1))
+        if va is None or va >= OVL:
             continue        # lobby.bin: an alias into rt_lb_mem below
         for a, size, k, img in sized:
             if a <= va < a + size and k != n and (img == "main") == (va < OVL):
@@ -97,6 +156,10 @@ def main():
             if not m or m.group(1) not in names:
                 continue
             n, va = m.group(1), int(m.group(2), 16)
+            if G:
+                va = tr.tr(va, n)
+                if va is None:
+                    continue
             k, kind = at.get(va, (None, None))
             if kind == "func":
                 if k in defined:
@@ -127,7 +190,11 @@ def main():
         else:
             m = re.match(r"^(?:D|lit_\d+)_([0-9A-Fa-f]{6,8})$", n)
             if m:
-                va = int(m.group(1), 16)
+                va = hexva(n, m.group(1))
+                if va is None:          # G: not placed yet: zeroed, not imported
+                    gmiss.append(n)
+                    data.append(("zero", n, 0, 0x100))
+                    continue
                 ent = ("main" if va < OVL else "lb", va, "data", 0)
         if ent is None or ent[2] == "func":
             funcs.append(n)
@@ -156,6 +223,8 @@ def main():
     for n in funcs:
         out.append("__attribute__((weak)) int %s() { static int o; if (!o++) note(\"%s\"); return 0; }" % (n, n))
     open(sys.argv[3], "w").write("\n".join(out) + "\n")
+    if G:
+        open(os.path.join(os.path.dirname(sys.argv[3]), "mhg_auto_missing.txt"), "w").write("".join(n + "\n" for n in gmiss))
     open(sys.argv[4], "w").write("".join("-Wl,--defsym,%s=%s+0x%X\n" % (n, k, off) for n, (k, off) in sorted(alias.items())) +
                                  "".join("-Wl,--defsym,%s=rt_lb_mem+0x%X\n" % (n, off) for n, off in sorted(lbalias.items())) +
                                  "".join("-Wl,--defsym,%s=rt_sel_mem+0x%X\n" % (n, off) for n, off in sorted(selalias.items())))

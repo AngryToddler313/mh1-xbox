@@ -80,6 +80,8 @@ class SymIndex:
             return False
         if LOOSE and self.dlo <= v and (v & 3 == 0 or self.mod_.data[v - self.mod_.vram - 1] == 0):
             return True
+        if self.dlo <= v and self.str_start(v) and self.mod_.data[v - self.mod_.vram + 2] != 0:
+            return True         # an unnamed string (3+ characters)
         if v & 3 and not self.str_start(v):
             return False
         k = bisect.bisect_right(self.addrs, v) - 1
@@ -207,6 +209,7 @@ def main():
             if not isf:
                 gpos[n] = (m, a, sz)
     carried = collections.defaultdict(set)
+    fvotes_src = []
     covered = collections.defaultdict(list)      # G objects whose pointer words come from MH1
     n_obj = n_bad = 0
     for mm, lst in lists.items():
@@ -228,6 +231,7 @@ def main():
                     ok = False      # G's layout differs here: leave the object to the scan
                     break
                 pos.append(ga + off)
+                fvotes_src.append((mm, r32[k - 1], gm, ga + off))
             if not ok:
                 n_bad += 1
                 continue
@@ -259,6 +263,54 @@ def main():
                 fh.write("%X\n" % a)
     print("pointer words: scan %d, carried from MH1 %d (both %d), total %d" % (
         tot["scan"], tot["carried"], tot["both"], tot["scan"] + tot["carried"] - tot["both"]))
+    # unnamed G functions (G-only by tools/mhg_map.py, e.g. one-instruction dummies it could not
+    # pair) that a carried pointer word names: the MH1 function at the same table position
+    m1 = M.load_mh1()
+    m1func = {}
+    for mm, lst in lists.items():
+        for a, sz, n, isf in lst:
+            if isf:
+                m1func.setdefault(a, n)
+    gidx = {}
+    for m in G_MODS:
+        for k, (a, sz, n, isf) in enumerate(sized[m]):
+            if isf:
+                gidx[a] = (m, k)
+    used = set(n for m in G_MODS for _a, _s, n, _f in sized[m])
+    votes = collections.defaultdict(collections.Counter)
+    for mm, a1, gm, g in fvotes_src:
+        v1, v2 = m1[mm].word(a1), G[gm].word(g)
+        n1 = m1func.get(v1)
+        if n1 and v2 in gidx:
+            m, k = gidx[v2]
+            if re.match(r"^(\w+_)?func_[0-9A-F]{8}$", sized[m][k][2]):
+                votes[v2][n1] += 1
+    import csv
+    weak = set(r["name"] for r in csv.DictReader(open(P("docs/survey/mhg_map.csv")))
+               if r["class"] in ("edited", "rewritten") and r["name"])
+    where = {}
+    for m in G_MODS:
+        for k, (a, sz, n, isf) in enumerate(sized[m]):
+            where[n] = (m, k)
+    nren = 0
+    for v2, c in votes.items():
+        (n1, cnt), *rest = c.most_common()
+        if rest:
+            continue
+        if n1 in used:
+            # a pointer table outvotes an edited pairing by similarity (pl01_effect_move:
+            # mhg_map paired it with 0x4A9150 at 0.56, pl01_adr_tbl points at 0x4E2EB0)
+            if n1 not in weak or n1 not in where:
+                continue
+            om, ok_ = where[n1]
+            oa, osz, _on, oisf = sized[om][ok_]
+            sized[om][ok_] = (oa, osz, ("func_%08X" if om == "main" else om + "_func_%08X") % oa, oisf)
+        m, k = gidx[v2]
+        a, sz, _n, isf = sized[m][k]
+        sized[m][k] = (a, sz, n1, isf)
+        used.add(n1)
+        nren += 1
+    print("G functions named from pointer tables: %d" % nren)
     # symbol view for the PC build
     os.makedirs(P("build/mhg/pc/symbols"), exist_ok=True)
     view = {"main": sized["main"] + sized["sub_main"], "game": sized["game"], "lobby": sized["lobby"] + sized["nethttp"],

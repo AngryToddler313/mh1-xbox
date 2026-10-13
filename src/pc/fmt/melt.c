@@ -118,3 +118,66 @@ fmt_blob fmt_link_entry(fmt_blob f, int i, int be)
     r.n = size;
     return r;
 }
+
+/* ------------------------------------------------------------ MWo3 overlays
+ * Monster Hunter G stores its code overlays packed (tools/mwo_unpack.py has the
+ * format): little-endian 16-bit words; a flag word (MSB first) for up to 16
+ * tokens; bit 0 = one literal word, bit 1 = back-reference, length = tok >> 11
+ * words (0: the next word is the length), distance = tok & 0x7FF words;
+ * distance 0 ends the stream. MH1 stores the module raw ("MWo3" at +0). */
+uint8_t *fmt_mwo_unpack(uint8_t *src, size_t srclen, size_t *outlen)
+{
+    size_t i = 0, n = srclen / 2, o = 0, cap;
+    uint16_t *out;
+    if (!src)
+        return NULL;
+    if (srclen >= 4 && !memcmp(src, "MWo3", 4)) {
+        *outlen = srclen;
+        return src;
+    }
+    cap = srclen * 4 + 0x10000;
+    out = malloc(cap * 2);
+    if (!out)
+        return NULL;
+#define W(k) ((uint16_t)(src[2 * (k)] | src[2 * (k) + 1] << 8))
+    while (i < n) {
+        uint16_t flags = W(i);
+        int bit;
+        i++;
+        for (bit = 15; bit >= 0; bit--) {
+            uint16_t tok;
+            size_t len, dist, k;
+            if (i >= n)
+                break;
+            tok = W(i);
+            i++;
+            if (!(flags >> bit & 1)) {
+                if (o >= cap)
+                    goto bad;
+                out[o++] = tok;
+                continue;
+            }
+            len = tok >> 11;
+            dist = tok & 0x7FF;
+            if (len == 0) {
+                if (i >= n)
+                    goto bad;
+                len = W(i);
+                i++;
+            }
+            if (dist == 0) {
+                free(src);
+                *outlen = o * 2;
+                return (uint8_t *)out;
+            }
+            if (dist > o || o + len > cap)
+                goto bad;
+            for (k = 0; k < len; k++, o++)
+                out[o] = out[o - dist];
+        }
+    }
+#undef W
+bad:
+    free(out);
+    return NULL;
+}
