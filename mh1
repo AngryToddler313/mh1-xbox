@@ -1,0 +1,200 @@
+#!/bin/sh
+# mh1 - from "I have this repository and my disc image" to a game you can play.
+#
+#   ./mh1 linux   DISC [--out DIR] [--online] [--setup]     PC build for this Linux machine  -> dist/linux/
+#   ./mh1 windows DISC [--out DIR] [--online] [--setup]     PC build for Windows (cross-built here) -> dist/windows/
+#   ./mh1 xbox    DISC [--out DIR] [--setup]                original Xbox: XBE + data folder  -> dist/xbox/MH1/
+#   ./mh1 check   DISC                                      only check the disc
+#
+# DISC is your own disc image of the JAPANESE Monster Hunter for the PlayStation 2 (SLPM-65495): the .iso file,
+# or a folder with the files already copied off it. The disc is checked first (size and checksum of every file
+# the port reads), then the build tools are checked, then the game is built and the disc's files are copied next
+# to it. Nothing of the game's data is in this repository or in any build; the output folders hold your copy
+# (dist/ is not tracked by git: do not share it).
+#
+#   --out DIR   another output folder        --online   also build the online / co-op version (mhview_online)
+#   --setup     download missing build tools (Windows cross-compiler, 32-bit Linux libraries) when that is possible
+#   MH1_JOBS=N  compile jobs (default: all cores)
+# Player guide: docs/PLAYING.md
+set -e
+cd "$(dirname "$0")"
+TOP=$PWD
+
+die() { echo "mh1: $*" >&2; exit 1; }
+say() { echo "== $*"; }
+
+TARGET=$1; [ $# -gt 0 ] && shift
+DISC=""; OUT=""; ONLINE_BUILD=""; SETUP=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --out) [ $# -ge 2 ] || die "--out needs a folder"; OUT=$2; shift ;;
+        --online) ONLINE_BUILD=1 ;;
+        --setup) SETUP=1 ;;
+        -h|--help) TARGET=help ;;
+        -*) die "unknown option $1 (./mh1 --help)" ;;
+        *) [ -z "$DISC" ] || die "only one disc image, got two: '$DISC' and '$1'"; DISC=$1 ;;
+    esac
+    shift
+done
+case "$TARGET" in
+    linux|windows|xbox|check) ;;
+    ""|help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) die "unknown target '$TARGET'. Use: linux, windows, xbox or check (./mh1 --help)" ;;
+esac
+[ -n "$DISC" ] || die "give your disc image: ./mh1 $TARGET /path/to/Monster-Hunter-Japan.iso"
+[ -e "$DISC" ] || die "'$DISC' does not exist"
+# an absolute path, because the builds change directory
+case "$DISC" in /*) ;; *) DISC=$PWD/$DISC ;; esac
+[ -n "$OUT" ] || OUT=dist/$TARGET
+case "$OUT" in /*) ;; *) OUT=$PWD/$OUT ;; esac
+[ -n "$MH1_JOBS" ] || MH1_JOBS=$(nproc 2>/dev/null || echo 4)
+export MH1_JOBS
+
+# ---------------------------------------------------------------- 1. the disc
+command -v python3 >/dev/null || die "python3 is needed (3.8 or newer): sudo apt install python3"
+python3 -c 'import sys; sys.exit(sys.version_info < (3, 8))' || die "python3 is too old (3.8 or newer is needed)"
+say "checking the disc (the checksum pass reads about 1 GB, 5 to 60 seconds)"
+python3 tools/disc_files.py check "$DISC" || die "stopping: the disc is not usable (see above). Nothing was built."
+[ "$TARGET" = check ] && exit 0
+
+# ---------------------------------------------------------------- 2. tools
+command -v git >/dev/null || echo "note: git not found; the build will be labelled 'unknown'"
+
+need_cmd() {   # need_cmd NAME "how to get it"
+    command -v "$1" >/dev/null 2>&1 || die "'$1' is missing. $2"
+}
+
+need_linux_tools() {
+    need_cmd gcc "Install the compiler: sudo apt install build-essential"
+    need_cmd make "Install: sudo apt install build-essential"
+    need_cmd objcopy "Install: sudo apt install binutils"
+    [ -f /usr/include/SDL2/SDL.h ] || die "The SDL2 headers are missing: sudo apt install libsdl2-dev"
+    # a 32-bit program must compile and link: needs gcc-multilib (or the no-root sysroot) and the 32-bit libs
+    T=$(mktemp -d)
+    printf '#include <SDL.h>\n#include <math.h>\nint main(void){return SDL_Init(0)+(int)sqrt(2.0);}\n' > "$T/t.c"
+    ok32() { gcc -m32 -I/usr/include/SDL2 "$@" -x c "$T/t.c" -o "$T/t" -lSDL2 -lGL -lm >/dev/null 2>&1; }
+    SR="$TOP/build/sysroot32"
+    if ok32; then SYS32=ok
+    elif [ -d "$SR/usr/lib32" ] && ok32 -idirafter /usr/include/x86_64-linux-gnu -idirafter "$SR/usr/include/x86_64-linux-gnu" \
+              -B"$SR/usr/lib32" -L"$SR/usr/lib32" -L"$SR/lib"; then SYS32=sysroot
+    else SYS32=""; fi
+    if [ -z "$SYS32" ] && [ -n "$SETUP" ] && ! [ -d "$SR/usr/lib32" ]; then
+        say "setting up the 32-bit libraries without root (tools/setup_pc32.sh: apt-get download of two packages)"
+        sh tools/setup_pc32.sh || die "tools/setup_pc32.sh failed (see above)."
+        ok32 -idirafter /usr/include/x86_64-linux-gnu -idirafter "$SR/usr/include/x86_64-linux-gnu" \
+             -B"$SR/usr/lib32" -L"$SR/usr/lib32" -L"$SR/lib" && SYS32=sysroot
+    fi
+    if [ -z "$SYS32" ]; then
+        rm -rf "$T"
+        die "A 32-bit program cannot be built here (the game code needs 32-bit x86). Install, with root:
+    sudo apt install gcc-multilib libc6:i386 libsdl2-2.0-0:i386 libgl1:i386
+(you may need 'sudo dpkg --add-architecture i386 && sudo apt update' first). Without root, install the three
+':i386' runtime libraries some other way and run again with --setup, which fetches the compiler-side files."
+    fi
+    rm -rf "$T"
+}
+
+need_win_tools() {
+    W=${WINROOT:-$HOME/mh1win}
+    have_win() {
+        ls -d "$W"/llvm-mingw-*msvcrt* 2>/dev/null | grep -qv '\.tar' && \
+        ls "$W"/llvm-mingw-*msvcrt*/bin/i686-w64-mingw32-clang >/dev/null 2>&1 && \
+        [ -f "$(ls -d "$W"/SDL2-[0-9]* 2>/dev/null | grep -v '\.tar' | tail -1)/i686-w64-mingw32/lib/libSDL2.dll.a" ]
+    }
+    if ! have_win; then
+        if [ -n "$SETUP" ]; then
+            say "downloading the Windows cross-compiler and SDL2 into $W (about 100 MB)"
+            sh tools/setup_win_toolchain.sh || die "the download failed (see above)."
+            have_win || die "the Windows tools are still not complete in $W"
+        else
+            die "The Windows cross-compiler is not installed. Run again with --setup to download it
+(llvm-mingw + SDL2 for MinGW, about 100 MB, into $W; no root), or see tools/setup_win_toolchain.sh."
+        fi
+    fi
+    need_cmd python3 "Install python3."
+}
+
+NXDK_ENV=${MH1_XBOX_ENV:-$HOME/xboxdev/env.sh}
+need_xbox_tools() {
+    [ -f "$NXDK_ENV" ] && . "$NXDK_ENV"
+    [ -n "$NXDK_DIR" ] || NXDK_DIR=$HOME/xboxdev/nxdk
+    export NXDK_DIR
+    [ -d "$NXDK_DIR" ] || die "The Xbox SDK (nxdk) was not found. Install it (github.com/XboxDev/nxdk, README: clone with
+--recursive, then 'make' once in it; it needs clang, lld, llvm, bison, flex, cmake), then either put the line
+'export NXDK_DIR=...; export PATH=\$NXDK_DIR/bin:\$PATH' in a file and give it as MH1_XBOX_ENV=FILE, or install it to
+~/xboxdev/nxdk. docs/xbox.md, 'Toolchain', has a no-root recipe. (--setup cannot fetch nxdk: it is large and
+needs system packages.)"
+    case ":$PATH:" in *":$NXDK_DIR/bin:"*) ;; *) PATH=$NXDK_DIR/bin:$PATH; export PATH ;; esac
+    for c in nxdk-cc nxdk-link clang llvm-nm; do
+        command -v $c >/dev/null 2>&1 || die "nxdk is incomplete: '$c' is not found (is nxdk built and is clang / llvm installed? docs/xbox.md, 'Toolchain')."
+    done
+    for f in tools/cxbe/cxbe tools/extract-xiso/build/extract-xiso tools/vp20compiler/vp20compiler tools/fp20compiler/fp20compiler tools/cg/linux/cgc lib/libnxdk.lib lib/libSDL2.lib lib/libpbkit.lib; do
+        [ -f "$NXDK_DIR/$f" ] || die "nxdk is not fully built: $NXDK_DIR/$f is missing. Run 'make' in nxdk (and 'make -C tools/extract-xiso' etc.); see docs/xbox.md, 'Toolchain'."
+    done
+}
+
+# ---------------------------------------------------------------- 3. build and assemble
+copy_data() {   # copy_data DEST [files]
+    say "copying the game files from your disc to $1 (about 925 MB)"
+    mkdir -p "$1"
+    python3 tools/disc_files.py extract "$DISC" "$1" ${2:+--files "$2"} || die "copying the disc files failed"
+}
+
+case "$TARGET" in
+linux)
+    need_linux_tools
+    say "building the game for Linux (first build: 10 to 30 minutes)"
+    sh tools/build_pc.sh > build/mh1_linux_build.log 2>&1 || { tail -20 build/mh1_linux_build.log; die "the build failed; full log: build/mh1_linux_build.log"; }
+    if [ -n "$ONLINE_BUILD" ]; then
+        say "building the online version"
+        ONLINE=1 sh tools/build_pc.sh > build/mh1_linux_online.log 2>&1 || { tail -20 build/mh1_linux_online.log; die "the online build failed; log: build/mh1_linux_online.log"; }
+    fi
+    mkdir -p "$OUT"
+    cp build/pc/mhview "$OUT/mhview"
+    [ -z "$ONLINE_BUILD" ] || cp build/pc/mhview_online "$OUT/mhview_online"
+    [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
+    cat > "$OUT/play.sh" <<'EOS'
+#!/bin/sh
+# Start the game (see PLAYING.md). Extra options go to the game, e.g. ./play.sh --fullscreen
+cd "$(dirname "$0")"
+exec ./mhview --play --boot "$@"
+EOS
+    chmod +x "$OUT/play.sh"
+    copy_data "$OUT/data" ""
+    say "done. Play with:  $OUT/play.sh"
+    ;;
+windows)
+    need_win_tools
+    say "building the game for Windows (first build: 15 to 40 minutes)"
+    sh tools/build_win.sh > build/mh1_win_build.log 2>&1 || { tail -20 build/mh1_win_build.log; die "the build failed; full log: build/mh1_win_build.log"; }
+    if [ -n "$ONLINE_BUILD" ]; then
+        say "building the online version"
+        ONLINE=1 sh tools/build_win.sh > build/mh1_win_online.log 2>&1 || { tail -20 build/mh1_win_online.log; die "the online build failed; log: build/mh1_win_online.log"; }
+    fi
+    say "packaging"
+    sh tools/package_win.sh > build/mh1_win_package.log 2>&1 || { tail -20 build/mh1_win_package.log; die "packaging failed; log: build/mh1_win_package.log"; }
+    PKG=$(ls -dt build/release/mh1pc-win32-*/ | head -1)
+    PKG=${PKG%/}
+    rm -rf "$OUT"; mkdir -p "$OUT"
+    cp -r "$PKG"/. "$OUT"/
+    [ -z "$ONLINE_BUILD" ] || cp build/win/mhview_online.exe "$OUT/mhview_online.exe"
+    [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
+    copy_data "$OUT/data" ""
+    say "done. Copy the folder $OUT to the Windows PC (any place you can write to) and run play.bat in it."
+    ;;
+xbox)
+    need_xbox_tools
+    need_linux_tools     # the Xbox build reuses the objects of the PC build
+    say "building the PC objects the Xbox build reuses (first build: 10 to 30 minutes)"
+    sh tools/build_pc.sh > build/mh1_linux_build.log 2>&1 || { tail -20 build/mh1_linux_build.log; die "the PC build failed; full log: build/mh1_linux_build.log"; }
+    say "building the Xbox game (nxdk; 5 to 10 minutes)"
+    python3 tools/build_xbox.py --gfx nv2a > build/mh1_xbox_build.log 2>&1 || { tail -20 build/mh1_xbox_build.log; die "the Xbox build failed; full log: build/mh1_xbox_build.log"; }
+    [ -f build/xbox/nv2a/default.xbe ] || die "build_xbox.py did not produce build/xbox/nv2a/default.xbe (log: build/mh1_xbox_build.log)"
+    rm -rf "$OUT"; mkdir -p "$OUT/MH1"
+    cp build/xbox/nv2a/default.xbe "$OUT/MH1/default.xbe"
+    [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
+    copy_data "$OUT/MH1/data" "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_654.95"
+    say "done. Copy the folder $OUT/MH1 to your Xbox's hard disk as E:\\Games\\MH1 (FTP, see PLAYING.md), then start"
+    say "'Monster Hunter' from your dashboard's games list (default.xbe)."
+    ;;
+esac
