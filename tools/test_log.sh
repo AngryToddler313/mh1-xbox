@@ -18,6 +18,7 @@ grep -q "platform: " $L || fail "no platform line"
 grep -q "GPU: " $L || fail "no GPU line"
 grep -q "session end: clean exit" $L || fail "no clean session end"
 grep -q "stand-in called" $L || fail "no stand-in line"
+grep -q "controller: " $L && fail "a scripted/hidden run looked at real controllers (pad_set_headless)"
 n=$(ls $OUT/logs/mh1_*.log | wc -l)
 [ "$n" -le 20 ] || fail "rotation: $n logs kept"
 RT_CRASH_TEST=1 $RUN $BIN disc/mh1 --boot --frames 200 --time 20 --shot $OUT/b.png > $OUT/b.out 2>&1

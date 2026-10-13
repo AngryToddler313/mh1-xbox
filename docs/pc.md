@@ -2345,3 +2345,10 @@ dated sections above.
 - **Flags that no longer exist**: RT_LIGHT_FIXED (the fixed light is the default again since round 25;
   RT_LIGHT_GAME=1 opts in to the game's lights), RT_HOST_MOTION, RT_EM_STANDIN, RT_EM_FIXED,
   RT_PL_STANDIN, RT_NOREVERB, RT_MIXTEST, CPFILES, CP01_OFF.
+
+## Rumble and real controllers (agent C, 13 Oct 2026)
+Monster-side rumble (`vib_set_pl`) now runs the game's own vib.c; both it and `vib_set` end in `flPADShockSet`
+(pad_sdl.c), which logs `rumble: port N strength S frames F` and calls SDL_GameControllerRumble. Scripted, hidden,
+screenshot and --audio-dump runs call `pad_set_headless(1)` (viewer.c): they never open a real controller and the log
+line says "(headless: not sent)". test_log.sh checks that no "controller:" line appears in such a run. Verify rumble
+with that log line, never with a physical pad. (A test run once rumbled the owner's pad.)

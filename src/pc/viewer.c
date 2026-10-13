@@ -2093,6 +2093,7 @@ int main(int argc, char **argv)
         rt_warn("bad --input script");
         return 1;
     }
+    pad_set_headless(hide || script != NULL || audio_dump != NULL);
     if (play)
         pad_init();
 

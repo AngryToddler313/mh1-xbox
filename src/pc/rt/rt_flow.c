@@ -150,7 +150,7 @@ NOP(view_reset)
 /* init_light_work (flow02.c): light_init (src/main/model/light_init_nm.c) clears and fills light_work from the stage light rows */
 void light_init(void);
 void init_light_work(void) { light_init(); }
-NOP(round_init) NOP(flCompact) NOP(vib_stop_all)
+NOP(round_init) NOP(flCompact)
 NOP(stage_load) NOP(stage_init)
 NOP(stage_free)
 NOP(Plsel_task) NOP(ot_init) NOP(Load_overlay)
@@ -160,5 +160,9 @@ NOP0(net_start_ck) NOP(net_receive_pl_pos_set)
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
 NOP(em_effect_pull) NOP(Disp_load_start)
 NOP(Disp_NowLoading2)
+
+/* vib_stop_all (0x1699A0, view201.c): stop the rumble of both pads, as the original. */
+int flPADShockSet(int port, int strength, int frames);
+void vib_stop_all(void) { int i; for (i = 0; i < 2; i++) flPADShockSet(i, 0, 0); }
 
 /* trans: rt_boot.c (draws only while the boot screens run) */

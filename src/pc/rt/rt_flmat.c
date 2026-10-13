@@ -30,6 +30,16 @@ void flmatInit(FLMAT *m)
     (*m)[0][0] = (*m)[1][1] = (*m)[2][2] = (*m)[3][3] = 1.0f;
 }
 
+/* flmatInit33 (0x171D20, VU0 asm in src/main/fl/flvu02.c): identity in the xyz of rows 0-2, the w of each row and
+ * row 3 (translation) stay as they were. */
+void flmatInit33(FLMAT *m)
+{
+    int r, c;
+    for (r = 0; r < 3; r++)
+        for (c = 0; c < 3; c++)
+            (*m)[r][c] = (r == c) ? 1.0f : 0.0f;
+}
+
 void flmatCopy(FLMAT *dst, FLMAT *src)
 {
     memmove(dst, src, sizeof *dst);

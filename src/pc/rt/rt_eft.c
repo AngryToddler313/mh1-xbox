@@ -906,7 +906,6 @@ static void once(const char *name)
 
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
-STUB_V(vib_set_pl, (void *pl, int a))
 /* skinned-model drawing (fl hierarchy), used by eft01/eft05/eft09 */
 STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))
