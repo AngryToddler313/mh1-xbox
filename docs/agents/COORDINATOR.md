@@ -110,8 +110,10 @@ PAUSED by the owner (13 Oct, tokens until Wednesday). Nothing running. On resume
 - A, D, E, F: idle and merged. The old coordinator session is archived (13 Oct); its loader
   server (tools/xbox_serve.py, port 8765) still runs and serves build/xbox/nv2a/default.xbe
   fresh per request.
-Owner Xbox tests pending: bed Save? box, silent boot logos, village music after save, loading
-screens / area-change speed (load: lines in the log), new loader (tools/xbox_upload.sh --loader).
+Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
+loading map on area changes (faster), rumble. New report: one frame of the previous area shows
+after the load ends (agent F on it). Still pending: new loader install (tools/xbox_upload.sh
+--loader), load: timing lines from the next returned log.
 Known unfixed: "quit game?" yes after the bed save drops to the Forest camp; bed sleep jingle
 has no sample (village sound pack not loaded).
 Full check before a push: `tools/full_check.sh` (rebuild 5 OK, PC build, every tools/test_*.sh,
