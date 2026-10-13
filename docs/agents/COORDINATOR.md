@@ -111,8 +111,13 @@ PAUSED by the owner (13 Oct, tokens until Wednesday). Nothing running. On resume
   server (tools/xbox_serve.py, port 8765) still runs and serves build/xbox/nv2a/default.xbe
   fresh per request.
 Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
-loading map on area changes (faster), rumble. New report: one frame of the previous area shows
-after the load ends (agent F on it). Still pending: new loader install (tools/xbox_upload.sh
+loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame
+during game2 steps 3-6 (fixes the old-area frame after a load) and an own AC97 driver
+(src/pc/xbox/xbox_ac97.c: DMA reset, codec cold reset + unmute, ac97 state in the log). OPEN: after
+Back+Start quit and relaunch WITHOUT a power cycle the game is silent (0 frames played); the
+DMA-only fix did not help on hardware; the codec build awaits the owner's test (serve it with
+tools/xbox_serve.py --xbe build/xbox/f_test.xbe; the PC was restarted 13 Oct, so restart the server).
+Merge F after that test (it must not hang at audio open; RT_AC97_NOCODEC=1 disables the codec part). Still pending: new loader install (tools/xbox_upload.sh
 --loader), load: timing lines from the next returned log.
 Known unfixed: "quit game?" yes after the bed save drops to the Forest camp; bed sleep jingle
 has no sample (village sound pack not loaded).
