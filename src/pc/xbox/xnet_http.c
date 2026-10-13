@@ -5,8 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-char xh_host[64] = "192.168.1.166";
-int xh_port = 8765;
+#ifndef XH_HOST                /* make -C src/pc/xbox/loader XH_HOST='"10.0.2.2"' XH_PORT=8799: a test loader for xemu */
+#define XH_HOST "192.168.1.166"
+#endif
+#ifndef XH_PORT
+#define XH_PORT 8765
+#endif
+char xh_host[64] = XH_HOST;
+int xh_port = XH_PORT;
 
 void xh_read_host(const char *file)
 {

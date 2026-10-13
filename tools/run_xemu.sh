@@ -29,6 +29,10 @@
 #   --after   one time, or a list ("36 40 45 60"): one screenshot at each time since start,
 #             named out_36s.png ... when more than one is given; quits after the last.
 #   --show    run on the desktop instead of hidden (debugging by hand only)
+#   --xbe     FILE: boot this XBE instead of the game build (e.g. the network loader,
+#             build/xbox/loader/default.xbe); --gfx is then ignored
+#   --net     give the Xbox xemu's NAT network (the laptop is reachable at its own address,
+#             or 10.0.2.2; for the loader with tools/xbox_serve.py)
 # The game's log (rt_log lines, notes, a liveness line every 5 s) comes out of the emulated
 # serial port into xbox_files/xemu_debug.txt (src/pc/xbox/xbox_log.c).
 # xemu always opens a window, so by default it runs on its own hidden X display: Xvfb unpacked
@@ -39,7 +43,7 @@ set -e
 cd "$(dirname "$0")/.."
 XF=$(realpath -m "${XBOX_FILES:-xbox_files}")
 XEMU=${XEMU:-$HOME/xboxdev/xemu/xemu-0.8.136-x86_64.AppImage}
-GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""
+GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=
 while [ $# -gt 0 ]; do
     case "$1" in
     --gfx) GFX=$2; shift 2 ;;
@@ -51,6 +55,8 @@ while [ $# -gt 0 ]; do
     --record) REC=$2; shift 2 ;;
     --xemu) XEMU=$2; shift 2 ;;
     --show) SHOW=1; shift ;;
+    --xbe) XBE=$2; shift 2 ;;
+    --net) NET=1; shift ;;
     *) echo "unknown option $1"; exit 2 ;;
     esac
 done
@@ -67,7 +73,13 @@ case "$GFX" in null) B=build/xbox ;; nv2a) B=build/xbox/nv2a ;; *) echo "--gfx n
 [ -f $B/default.xbe ] || { echo "no $B/default.xbe: run  . ~/xboxdev/env.sh; python3 tools/build_xbox.py $( [ $GFX = nv2a ] && echo --gfx nv2a )"; exit 1; }
 
 ISO=$B/mh1.iso
-if [ -n "$DATA" ]; then
+if [ -n "$XBE" ]; then          # another program: an ISO holding only it
+    [ -f "$XBE" ] || { echo "no $XBE"; exit 1; }
+    D=build/xbox/iso_other; rm -rf $D; mkdir -p $D
+    cp "$XBE" $D/default.xbe
+    ISO=build/xbox/other.iso; rm -f $ISO
+    ~/xboxdev/nxdk/tools/extract-xiso/build/extract-xiso -c $D $ISO >/dev/null
+elif [ -n "$DATA" ]; then
     for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95; do [ -f "$DATA/$f" ] || { echo "$DATA/$f missing"; exit 1; }; done
     D=$B/iso_data; rm -rf $D; mkdir -p $D/data
     cp $B/default.xbe $D/default.xbe
@@ -93,6 +105,7 @@ eeprom_path = '$EEPROM'
 hdd_path = '$HDD'
 dvd_path = '$PWD/$ISO'
 TOML
+[ -z "$NET" ] || printf '[net]\nenable = true\nbackend = '"'"'nat'"'"'\n' >> "$CONF"
 
 export XDG_DATA_HOME="$HOME_X"
 # the game's log lines go out of the emulated serial port (COM1, src/pc/xbox/xbox_log.c): xemu's

@@ -54,14 +54,18 @@ static char *read_file(const char *path, int *n)
     return b;
 }
 
+/* one WriteFile for the whole file: pdclib's fwrite hands the kernel 1 KB at a time, which
+ * took ~10 s for the 3.5 MB game in xemu (and the screen sat at "Downloading" all along;
+ * on 12/13 Oct the owner saw the box "hang" right there, docs/xbox.md "Loader download froze") */
 static int write_file(const char *path, const void *p, int n)
 {
-    FILE *f = fopen(path, "wb");
-    int ok;
-    if (!f)
+    HANDLE h = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    DWORD done = 0;
+    BOOL ok;
+    if (h == INVALID_HANDLE_VALUE)
         return -1;
-    ok = fwrite(p, 1, n, f) == (size_t)n;
-    return fclose(f) == 0 && ok ? 0 : -1;
+    ok = WriteFile(h, p, (DWORD)n, &done, NULL);
+    return CloseHandle(h) && ok && done == (DWORD)n ? 0 : -1;
 }
 
 /* the NIC must be stopped before XLaunchXBE: a program started right after
@@ -154,11 +158,17 @@ int main(void)
     }
     have = read_file(GAME_VER, &n);
     if (!have || strcmp(have, ver)) {
+        DWORD t0 = GetTickCount(), t1;
         debugPrint("Downloading build %s ...\n", ver);
-        if ((xbe = xh_http("GET", "/mh1.xbe", NULL, 0, &n)) != NULL &&
-            write_file(GAME, xbe, n) == 0 && write_file(GAME_VER, ver, strlen(ver)) == 0)
-            debugPrint("Got %d bytes.\n", n);
-        else
+        if ((xbe = xh_http("GET", "/mh1.xbe", NULL, 0, &n)) != NULL) {
+            t1 = GetTickCount();
+            debugPrint("Got %d bytes in %lu ms. Writing it ...\n", n, (unsigned long)(t1 - t0));
+            if (write_file(GAME, xbe, n) == 0 && write_file(GAME_VER, ver, strlen(ver)) == 0)
+                debugPrint("Written in %lu ms.\n", (unsigned long)(GetTickCount() - t1));
+            else
+                debugPrint("Could not write %s; starting the copy on the disk.\n", GAME);
+            free(xbe);
+        } else
             debugPrint("Download failed; starting the copy on the disk.\n");
     }
     fetch_test();
