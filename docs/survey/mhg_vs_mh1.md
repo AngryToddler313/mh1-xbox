@@ -54,6 +54,34 @@ similar, 28% 70-90%, 10% 50-70%), rewritten 0.7%, missing 5.0%.
   Data names in config/mhg/symbols come only from relocated operands of identical/shape
   twins (2465 names; 22 addresses had conflicting votes, majority kept).
 
+## G's data through our readers (13 Oct 2026, agent B)
+
+`tools/mhg_data_check.py` builds `tools/fmt_check.c` (the PC port's own readers in
+src/pc/fmt: AFS, Meltw, AMO, AHI, APX, AAN/tbl, HITS, SND, ADX) and runs it over every file
+of AFS_DATA, AFS00 and AFS01 of both discs, then compares by file name.
+
+- **Every G file the readers know loads**: 0 rejects in 3347 + 124 + 205 files (MH1 has two
+  rejects, kari_amh.bin and test00_amh.bin, test leftovers). Models (1377 *_amh.bin incl.
+  skeletons), textures (957 bare APX, 462 *_tex.bin), motion tables (38 *_tbl.bin), sound
+  banks (205 .snd/.snp, every VAG scans), ADX streams and Sofdec movies.
+- Files in both games: AFS_DATA 2002 (1828 byte-identical, 73 different bytes but identical
+  reader statistics, 101 different content such as reworked armour, 7 monster motion tables,
+  10 stage models); AFS00 108 (106 identical); AFS01 160 (123 identical, 13 same stats).
+- New in G: 1345 AFS_DATA files (101 weapons, ~40 per armour slot, 15 monsters, 7 stages,
+  245 quest files), 16 streams/movies (MHG_OP.sfd, ROLL*.sfd credits, ...), 45 sound banks.
+  All load.
+- **Format differences found:**
+  1. Collision: MH1's separate `lgNNN.bin` (ground) and `lwNNN.bin` (wall) HITS files are
+     one `lwgNNN.bin` in G: a link file of two HITS blobs, wall first then ground. For 39 of
+     the 78 MH1 stages they are exactly MH1's two files; the other 39 have edited collision.
+     The HITS format itself is unchanged.
+  2. Quest files: MH1 `m001..m178.mib` became `mNNNNN.mib` (groups 00xxx, 01xxx, 02xxx,
+     03xxx, 10xxx, 20xxx, 60xxx: 245 files). The header grew from 0x40 to 0x48 bytes (one
+     more pointer, then extra fields); text still at the end. Not decoded further.
+  3. Movies: G's new movies are Sofdec too (pack header checked only).
+- The game finds files by AFS index from tables in the executables (stage_hit_data_f etc.),
+  so a G build reads those tables from G's ELF/overlays, at G addresses (symbol map above).
+
 # PS2 Monster Hunter G vs MH1: how much carries over (10 Oct 2026)
 
 Measured with tools/mhg_match.py. It counts MH1 functions whose instructions show up
