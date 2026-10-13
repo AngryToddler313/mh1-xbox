@@ -1207,6 +1207,11 @@ before nxNetInit), and keep the 10 s receive timeout (it cannot help when the wh
 - Reference: Wii Monster Hunter G mixes for Dolby Pro Logic II (the Wii has only analog stereo
   out, so matrix surround), so its code places sounds front/back: Capcom's own surround design.
   Read it for the placement rules, write the same in our C.
+- Second reference (owner, 13 Oct): Monster Hunter Portable / Freedom (PSP, the owner's disc in
+  disc/mhp) also has Dolby Pro Logic II output (owner's memory; not yet checked in the files). Its
+  code is MIPS (Allegrex), the same instruction family as the PS2 (easier for us to read than the Wii's
+  PowerPC), but nothing matches byte for byte (docs/survey/mhg_vs_mh1.md). Compare both: if Wii G and
+  MHP place sounds the same way, that is Capcom's design rather than one port's.
 - Belongs to the G modernization timeline; PC and Xbox; owner tests on a receiver.
 
 ### Invisible save prompt at the bed (agent E, 13 Oct 2026, fixed)

@@ -95,18 +95,27 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-As of 13 Oct 2026 (worktrees ../mh1-wt/A..F, branches agent-A..F). B and C merged into main.
-- A: release audit -> docs/RELEASE.md (MH1 criteria, gap list by player impact) + the US
-  disc's official English script (where it lives, encoding, mapping to JP/G strings).
-- B: Monster Hunter G bring-up: deeper carry-over measurement, G names from MH1, G data through
-  our readers, byte-identical G rebuild, matched C carried over, plan in docs/mhg.md.
-- D: player packaging (build from own disc: Linux, Windows, Xbox) + docs/PLAYING.md. Sonnet.
-- E: invisible "Save?" box at the bed (fix found, uncommitted), boot-logo forest ambience,
-  quest-clear music replayed in the village on save.
-- F: area-change pause / loading screen on Xbox (measure, speed up); loader download freeze.
-- C: idle (decomp paused by the owner).
+As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
+screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
+bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
+PAUSED by the owner (13 Oct, tokens until Wednesday). Nothing running. On resume:
+- B (G on the PC), WIP on agent-B (cf75ef1c), NOT merged: tools/build_pc_mhg.sh builds
+  build/mhg/pc/mhview_g; G data loads, --boot crashes in mc_mes_disp (one converted string pointer
+  in McardMsgTbl; look at map_ptr). Its viewer.c/rt_mem.c edits touch the MH1 path and were not
+  re-tested: run the MH1 PC build + tests before merging. Next: logos and title. docs/mhg.md sec. 5.
+- C (G edited functions), on agent-C (92d89b70), NOT merged: ~34 functions match by check.py but
+  are not registered; a real VERSION=mhg rebuild with them fails (pl67, pl73, qstb01 break sub_main
+  alone; main/game/lobby culprits unknown). Re-add one at a time (tools/mhg_addc.py, then
+  tools/rebuild.sh MODULE). List in docs/agents/agent-C.md "G round 1 status".
+- A, D, E, F: idle and merged. The old coordinator session is archived (13 Oct); its loader
+  server (tools/xbox_serve.py, port 8765) still runs and serves build/xbox/nv2a/default.xbe
+  fresh per request.
+Owner Xbox tests pending: bed Save? box, silent boot logos, village music after save, loading
+screens / area-change speed (load: lines in the log), new loader (tools/xbox_upload.sh --loader).
+Known unfixed: "quit game?" yes after the bed save drops to the Forest camp; bed sleep jingle
+has no sample (village sound pack not loaded).
 Full check before a push: `tools/full_check.sh` (rebuild 5 OK, PC build, every tools/test_*.sh,
-both Xbox builds; logs in build/check/).
+both Xbox builds) plus `VERSION=mhg tools/rebuild.sh` (7 OK).
 
 ## Xbox bench (real hardware)
 

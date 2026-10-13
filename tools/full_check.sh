@@ -12,6 +12,7 @@ tools/rebuild.sh > build/check/rebuild.log 2>&1
 n=$(grep -cE '^[a-z]+ +OK ' build/check/rebuild.log)
 if [ "$n" = 5 ]; then echo "ok   rebuild (5 OK)"; else echo "FAIL rebuild ($n OK, build/check/rebuild.log)"; fail=1; fi
 step build_pc tools/build_pc.sh
+step build_pc_online env ONLINE=1 tools/build_pc.sh
 for t in tools/test_*.sh; do step "$(basename "$t" .sh)" "$t"; done
 step xbox_null bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py"
 step xbox_nv2a bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --gfx nv2a"

@@ -906,3 +906,22 @@ Paused by the owner: decomp workers B (lobby) and C (main), work on their branch
 Waiting on the owner: decisions on online hosting/name/PS2 cross-play, English (US disc,
 translation permission, title art), a remote power button for the Xbox (idea), a DHCP
 reservation for the Xbox and laptop, own BIOS dump (optional; dumper reads the mirror now).
+
+## 2026-10-13 evening: MH1 polish round merged, G is the main target, then paused
+
+Owner decisions (docs/DECISIONS.md): Monster Hunter G is the main release; one codebase for MH1
+JP / MH1 US / G with a version switch and a start-up launcher; priorities G > MH1 JP > MH1 US.
+US disc added (disc/mh1_us; docs/mh1_us.md). Later idea: 5.1 surround (docs/xbox.md).
+Merged and checked (tools/full_check.sh all ok incl. online; VERSION=mhg rebuild 7 OK):
+- E: bed "Save?" box visible (lobby dialog prim was a stand-in), silent boot logos, no
+  quest-clear music in the village after saving.
+- F: Xbox loads ~8-10x faster in xemu (fread in big blocks, sound packs, swizzle/APX, Meltw);
+  the game's own loading screens back (area map, NOW LOADING); loader write fix.
+- C: monster rumble (vib_set_pl), flmatInit33, two menu aliases; headless runs never open real
+  controllers (an earlier test rumbled the owner's pad).
+- D: ./mh1 linux|windows|xbox DISC (disc check, build, data copy), Xbox install script and
+  start-up data check, docs/PLAYING.md.
+- A: docs/RELEASE.md (MH1 release criteria and gap list), US script survey.
+- B: G bring-up: carry-over 95% of MH1 code has a G counterpart (56% identical), G rebuild
+  byte-identical (VERSION=mhg), 7.5% matched, all G data loads in our readers; docs/mhg.md.
+Owner Xbox tests pending: see COORDINATOR.md "Current assignments". Paused after this push.
