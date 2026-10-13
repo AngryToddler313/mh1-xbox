@@ -76,13 +76,13 @@ need_linux_tools() {
     SR="$TOP/build/sysroot32"
     if ok32; then SYS32=ok
     elif [ -d "$SR/usr/lib32" ] && ok32 -idirafter /usr/include/x86_64-linux-gnu -idirafter "$SR/usr/include/x86_64-linux-gnu" \
-              -B"$SR/usr/lib32" -L"$SR/usr/lib32" -L"$SR/lib"; then SYS32=sysroot
+              -B"$SR/usr/lib32" -B"$SR/usr/lib/gcc/x86_64-linux-gnu/13/32" -L"$SR/usr/lib32" -L"$SR/usr/lib/gcc/x86_64-linux-gnu/13/32" -L"$SR/lib"; then SYS32=sysroot
     else SYS32=""; fi
     if [ -z "$SYS32" ] && [ -n "$SETUP" ] && ! [ -d "$SR/usr/lib32" ]; then
         say "setting up the 32-bit libraries without root (tools/setup_pc32.sh: apt-get download of two packages)"
         sh tools/setup_pc32.sh || die "tools/setup_pc32.sh failed (see above)."
         ok32 -idirafter /usr/include/x86_64-linux-gnu -idirafter "$SR/usr/include/x86_64-linux-gnu" \
-             -B"$SR/usr/lib32" -L"$SR/usr/lib32" -L"$SR/lib" && SYS32=sysroot
+             -B"$SR/usr/lib32" -B"$SR/usr/lib/gcc/x86_64-linux-gnu/13/32" -L"$SR/usr/lib32" -L"$SR/usr/lib/gcc/x86_64-linux-gnu/13/32" -L"$SR/lib" && SYS32=sysroot
     fi
     if [ -z "$SYS32" ]; then
         rm -rf "$T"
