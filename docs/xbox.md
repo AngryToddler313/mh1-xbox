@@ -1193,3 +1193,99 @@ own network stack and FTP server) launched the loader. Theory, untested: the NIC
 from the dashboard when nxNetInit starts it again (like the dumper's hang after the loader before
 nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
 before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).
+
+### Area change loads: timed, made faster, loading screens back (agent F, 13 Oct 2026)
+
+**Problem (owner, hardware):** walking between areas, village <-> quest: a long pause with a
+frozen or black picture, no loading screen.
+
+**Timing in the log.** Every Xbox (and PC) log now has `load:` lines (rt_prof.c, wall clock):
+- `load: area 39 448 ms: read 31/7/891K melt 161/6/1386K texdec 25/17 texup 89/17 model 72/2 ...`
+  for named loads: `area N` (st_model_load), `quest start` (quest_from_village), `village enter`.
+  Each zone is `ms/calls[/KB]`: read = disc/HDD reads, melt = Meltw, texdec = APX -> RGBA,
+  texup = gfx_create_texture (Xbox: palette, swizzle, GPU memory), model = AMO/AHI set-up,
+  motion, hit = collision, gc = the stage-change clean-ups, snd = sound packs, flip = loading
+  screen frames; other = the rest.
+- `load: pause 1544 ms, 1 frames, t210-214, st 21>21: ...` for any gap between two drawn frames
+  of RT_LOAD_MS (default 150) or more, summed over consecutive slow frames. In xemu the field
+  draws at 5-8 fps on this laptop, so use RT_LOAD_MS=1000 there.
+The log comes back from the real Xbox through the loader as before (mh1log.txt).
+
+**Where the time went (xemu, nv2a build, camp <-> area 1 of quest 131 four times:**
+`RT_ARGS=--quest 131 --play`, `RT_PL_WARP=10,12250,10000;200,6750,11900;400,12250,10000;600,6750,11900`):
+
+| | before | after |
+|---|---|---|
+| st_model_load (area span) | 3.0-4.7 s | 0.36-0.45 s (one 1.1 s while the host was busy) |
+| of which reads | 2.2-3.7 s (14 files, 2.5-2.8 MB) | 0.01-0.06 s (7-8 files, 0.9-1.2 MB) |
+| texture decode | 0.34-0.45 s | 0.014-0.075 s |
+| texture upload | 0.16-0.29 s | 0.06-0.24 s |
+| Meltw | 0.13-0.35 s | 0.12-0.18 s (quest loop, after the memcpy change) |
+| whole frame gap at an area change | 3.7-7.5 s | ~1.1-1.5 s |
+| boot: SLPM_654.95 load | 2.3 s | 0.1-0.2 s |
+| first quest set-up pause (boot) | 2.8 s | 0.4 s |
+
+Full xemu quest loop afterwards (tools/xemu_quest_loop.sh, passes; under the same host load the
+run before the changes did not even reach the quest clear in its 480 s): village enter 28 ms +
+area 87 349 ms, village stage changes 140-335 ms, quest start 1.6 s (melt 0.4, texup 0.24,
+model 0.16, flip 0.17), area changes 0.33-0.46 s. PC (same scenario): area changes 18-35 ms.
+xemu is not the Xbox: its CPU speed and IDE timing differ, so the owner's hardware log is the real
+measure.
+
+**What was slow and what changed:**
+1. pdclib's fread copies byte by byte through a 1 KB buffer, one kernel read per KB. xbox_fread
+   (xbox_libc.c, via xbox_compat.h) does reads of 8 KB+ on read-only streams with one ReadFile
+   straight into the caller's buffer. The biggest part by far.
+2. Sound packs: every area change re-read common00/01, the weapon, voice, map and monster packs
+   (rt_snd_stage). Cleared packs are now kept aside and taken back when the same file is loaded
+   again (2.5 MB -> 0.9 MB read per area change).
+3. Textures (gfx_nv2a.c): the swizzle used a bit-deposit loop per texel and wrote scattered
+   texels into write-combined GPU memory; now an incremental mask step into cached memory and
+   one memcpy. APX 4/8-bit decode: one 32-bit store per texel.
+4. Meltw: back-references that do not overlap are one memcpy (identical output on all 2312
+   AFS_DATA entries).
+Not done (ideas if hardware still shows long loads): decode APX straight to P8 + palette for the
+Xbox (skips RGBA and the re-palettising hash), keep the previous area's stage models and textures
+when memory allows (camp <-> area 1 back and forth), read the stage files in the background.
+
+**Loading screens (what the PS2 showed).** The game draws them itself and calls flFlip, which was
+a no-op on the port (as were Disp_load_start, Disp_NowLoading2, Disp_NowLoading):
+- area change (f_game.c game2 step 2): flFlip x7, then DispWholeMap + flFlip twice, then
+  st_model_load: the whole hunting-ground map (texture 0x156 frame, hunter marker) stays on
+  screen while the area loads;
+- quest start (game11): Disp_load_start: "NOW LOADING" on the parchment with the quest title;
+- village stage changes (lb_village_nm.c): Disp_NowLoading before Lb_stage_load;
+- Disp_NowLoading2 modes (game0/10/12/13, the online lobby): the same screen with load_msg /
+  connect_msg text.
+flFlip now shows what the tick drew since the previous flip as a frame at once (viewer.c
+game_flip; the draws are recorded with gfx_rec as the boot screens are), empty segments skipped;
+the game's own drawing code runs (disp1_nm.c, dsp02.c now built). Seen on the PC (RT_FLIP_SHOT
+frames) and in xemu (screenshot during an area change shows the map, same brightness as the PC:
+mean RGB 55,49,28 vs 55,48,25). Headless --shot runs draw no extra frames unless
+RT_FLIP_SHOT=prefix is set (then each flip frame is written to prefix_<tick>_<n>.png).
+The picture is held while the tick blocks; after the tick the game fades the new area in as before.
+
+**For the owner to check on the real Xbox:**
+- Walk camp <-> area 1 and village <-> quest: the map / NOW LOADING screen should show for the
+  whole load, never a frozen game picture. Send the log (start Monster Hunter once more): the
+  `load: area`, `load: quest start`, `load: pause` lines give the hardware times.
+- If an area change still takes more than ~1 s on hardware, the zones in those lines say which
+  idea above to do next.
+
+### Loader download "freeze" (agent F, 13 Oct 2026)
+
+Tested in xemu with a test copy of the loader (make ... XH_HOST='\"10.0.2.2\"' XH_PORT=8799,
+`tools/xbox_serve.py --port 8799`, `tools/run_xemu.sh --xbe build/xbox/loader_test/default.xbe
+--net`): DHCP, log POST, /version, download, /test and the game launch all work in xemu
+(NIC shut down before XLaunchXBE; the game then starts). One real problem found: after the server
+had sent the XBE, the loader wrote it with pdclib's fwrite (1 KB per kernel call) and the screen
+said "Downloading build ..." for ~10 s in xemu, longer on a real disk possibly. That matches what
+the owner saw ("the server sent the whole XBE, then the Xbox hung"). Now one WriteFile (2 s for
+the whole loader start in xemu), and the screen says "Got N bytes in X ms. Writing it ..." and
+"Written in Y ms".
+Not testable in xemu (no Evolution X there): the theory that the dashboard leaves the NIC running.
+Needs the owner: install the new loader (tools/xbox_upload.sh --loader, the owner types the FTP
+login), start Monster Hunter from Evolution X a few times, and note the last line on screen if it
+hangs again (no ping, before or after "Writing it"). If it still hangs before "Got N bytes", the
+NIC-reset idea above is next. Building: never `make clean` in src/pc/xbox/loader (it deletes the
+shared nxdk libraries; happened once on 13 Oct, rebuilt the same day).
