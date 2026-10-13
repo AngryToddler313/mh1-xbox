@@ -1,0 +1,28 @@
+module  kind       funcs     bytes  found    fbytes  %bytes  exact
+main    matched     2907    726156   1925    456124   62.8%    175
+main    unmatched   3618    790388   2717    626636   79.3%    317
+game    matched     2600   1017312   2170    821656   80.8%    126
+game    unmatched     40     48184     30     24324   50.5%      1
+lobby   matched     1612    336576    652    111888   33.2%     49
+lobby   unmatched   1660    513304   1352    427872   83.4%    177
+select  matched       42     17616     15      4400   25.0%      1
+select  unmatched      2      1788      2      1788  100.0%      0
+yn      matched       94     20916     56     11740   56.1%      2
+yn      unmatched     10      9456      6      2584   27.3%      2
+total   matched     7255   2118576   4818   1405808   66.4%    353
+total   unmatched   5330   1363120   4107   1083204   79.5%    497
+matched MH1 functions found in the target, by (MH1 module, target module):
+  ('game', 'game.bin') 2155
+  ('game', 'main') 2
+  ('game', 'sub_main.bin') 13
+  ('lobby', 'game.bin') 1
+  ('lobby', 'lobby.bin') 638
+  ('lobby', 'main') 13
+  ('main', 'game.bin') 179
+  ('main', 'lobby.bin') 12
+  ('main', 'main') 1473
+  ('main', 'sub_main.bin') 261
+  ('select', 'select.bin') 15
+  ('yn', 'main') 2
+  ('yn', 'yn.bin') 54
+found at exactly one place (name recoverable directly): {'main': 3676, 'game': 1705, 'yn': 61, 'lobby': 1793, 'select': 15} 7250

@@ -1,5 +1,9 @@
 # Monster Hunter (PS2, 2004) to original Xbox: phase 0 kit
 
+**Just want to play?** With your own disc image of the Japanese PS2 game: `./mh1 linux DISC.iso` (or `windows`,
+`xbox`) builds the game and sets it up. Requirements, controls, saves and co-op: [docs/PLAYING.md](docs/PLAYING.md).
+(The rest of this file is the project's plan and the developer tools.)
+
 This is the starting point for the port, not the port. It holds the two tools
 needed to measure the job, and the plan they feed into. Nothing here contains
 Capcom code or data: you supply files from your own disc. The repo does carry

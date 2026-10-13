@@ -9,7 +9,7 @@ W=${WINROOT:-$HOME/mh1win}
 SDLLIC=$(ls -d "$W"/SDL2-[0-9]* 2>/dev/null | grep -v '\.tar' | tail -1)/LICENSE.txt
 [ -f build/win/mhview.exe ] && [ -f build/win/SDL2.dll ] || { echo "run tools/build_win.sh first"; exit 1; }
 [ -f "$SDLLIC" ] || { echo "SDL2 license not found ($SDLLIC)"; exit 1; }
-HASH=$(git rev-parse --short=8 HEAD)
+HASH=$(git rev-parse --short=8 HEAD 2>/dev/null || echo nogit)
 git diff --quiet HEAD 2>/dev/null || { echo "note: the working tree has uncommitted changes (the build says so with a + in its log)"; }
 NAME=mh1pc-win32-$(date +%Y%m%d)-$HASH
 S=build/release/$NAME
@@ -20,8 +20,8 @@ LLVM=$(ls -d "$W"/llvm-mingw-*msvcrt* 2>/dev/null | grep -v '\.tar' | head -1)
 cp build/win/SDL2.dll build/win/play.bat build/win/bug_report.bat build/win/bug_report.ps1 "$S/"
 # no debug info in a release: it holds the build machine's paths (crash backtraces use the
 # program's own symbol table, rt_host_symname, which stripping keeps)
-STRIP=$(ls "$HOME"/mh1win/llvm-mingw-*/bin/llvm-strip 2>/dev/null | head -1)
-[ -n "$STRIP" ] || { echo "llvm-strip not found in ~/mh1win"; exit 1; }
+STRIP=$(ls "$W"/llvm-mingw-*/bin/llvm-strip 2>/dev/null | head -1)
+[ -n "$STRIP" ] || { echo "llvm-strip not found in $W"; exit 1; }
 "$STRIP" --strip-debug "$S/mhview.exe"
 if strings "$S/mhview.exe" "$S/SDL2.dll" | grep -q "$HOME"; then echo "REFUSED: build paths in the binaries"; exit 1; fi
 cp third_party/libmpeg2/COPYING "$S/licenses/libmpeg2-COPYING.txt"

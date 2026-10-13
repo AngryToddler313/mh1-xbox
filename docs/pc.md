@@ -176,6 +176,9 @@ Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, ques
 
 ## Build
 
+Players: `./mh1 linux|windows|xbox DISC` does everything below (disc check, tool check, build, data copy); see
+docs/PLAYING.md. `MH1_JOBS=N tools/build_pc.sh` compiles N game files at a time (default 1).
+
 The build is 32-bit (`gcc -m32`, see "Port runtime" below and
 docs/DECISIONS.md). Needs gcc, the 32-bit runtime libraries (libc6:i386,
 libsdl2-2.0-0:i386, libgl1:i386) and either gcc-multilib or the no-root
