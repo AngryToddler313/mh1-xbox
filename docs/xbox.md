@@ -1193,3 +1193,18 @@ own network stack and FTP server) launched the loader. Theory, untested: the NIC
 from the dashboard when nxNetInit starts it again (like the dumper's hang after the loader before
 nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
 before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).
+
+## Later idea: 5.1 surround (owner, 13 Oct 2026; not started)
+
+- PC: SDL can open a 5.1 device directly. Xbox: the console's own Dolby Digital path is the APU's
+  DSP running Microsoft/Dolby's encoder program (not shippable, and nxdk doesn't drive the APU);
+  instead encode AC-3 on the CPU (an open encoder; the AC-3 patents have expired, the Dolby name
+  and logo are trademarks) and send IEC 61937 frames on the AC97 S/PDIF DMA channel, which
+  nxdk's hal/audio.c already feeds (it mirrors the stereo PCM there today). CPU cost unmeasured.
+- Source of the positions: our mixer takes vol + stereo pan (audio_voice_play); the game's sound C
+  (snd_nm.c) folds each 3D sound's position into the pan. 5.1 needs the direction passed through
+  there and a direction-aware mixer. Shared code: every game version gets it.
+- Reference: Wii Monster Hunter G mixes for Dolby Pro Logic II (the Wii has only analog stereo
+  out, so matrix surround), so its code places sounds front/back: Capcom's own surround design.
+  Read it for the placement rules, write the same in our C.
+- Belongs to the G modernization timeline; PC and Xbox; owner tests on a receiver.
