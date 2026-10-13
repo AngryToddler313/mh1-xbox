@@ -75,7 +75,18 @@ differ from G after linking (tools/mhg_cdiff.py finds them): they read a struct 
 (game_w.master), use literal MH1 addresses, or call a function with no G twin (powf).
 Those need G copies (src/mhg/...) or `#ifdef VERSION_MHG`.
 
-Result: see the end of this section (filled in after the build).
+Result (13 Oct 2026): **793 MH1 C files build G's bytes unchanged**; all seven G modules OK
+with them. `VERSION=mhg tools/progress.py`: 7.5% of G's function bytes matched (main 8.8%,
+game 8.8%, lobby 8.2%, yn 20%, sub_main 2.8%; nethttp 0.4%). 56 files are in c_skip.txt.
+
+Why not more: most MH1 C files contain at least one function G edited. Of the 1719 matched
+MH1 files, 870 are all clean twins (0.41 MB); 675 have one or two functions that are not
+(0.62 MB, 0.44 MB of it in those functions: mostly one- or two-function files); 174 files
+have three or more (1.24 MB, 0.83 MB not clean). The clean twins inside mixed files add up
+to about 0.59 MB: a G copy of such a file with its few edited functions redone would bring
+them in. Next step for G matching: per-file G copies (src/mhg/...) for files with one or two
+edited functions, smallest diff first; and the struct-offset tool (section 4) for the
+shape twins, which mostly differ only in field offsets.
 
 ## 4. Plan: G on the PC with our platform layer (fastest route)
 
