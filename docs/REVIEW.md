@@ -32,6 +32,7 @@ obvious workarounds.
   swizzle steps x/y with (v - mask) & mask into cached memory, then one memcpy.
 - **Why:** reads were 2.2-3.7 s of a 3-4.7 s area change in xemu (1 KB kernel reads, a byte loop).
 - **To revert:** commit c9911d68.
+
 ### Release entry points: ./mh1, tools/disc_files.py, docs/PLAYING.md (13 Oct 2026, agent D)
 - **Added, nothing dropped:** `./mh1 linux|windows|xbox DISC` chains the existing scripts (build_pc.sh, build_win.sh +
   package_win.sh, build_pc.sh + build_xbox.py --gfx nv2a) after verifying the disc by size and CRC32, and copies the
