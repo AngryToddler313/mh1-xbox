@@ -2253,7 +2253,11 @@ int main(int argc, char **argv)
         }
     }
 
-    if (snd == 0) {                     /* packs + stage stream; the Rathian (kind 1) is the stage's monster */
+    /* packs + stage stream; the Rathian (kind 1) is the stage's monster. Not with --boot: the quest set-up above is only
+     * the host's scaffolding there (stage 21, the Forest and Hills camp), and its stream (M2_CAMP1) played under the
+     * boot logos. On the PS2 the logos are silent and the opening movie brings its own sound; the title and name entry
+     * load their packs themselves (Menu_snd_load, edit_se_load) and the village's stage loads bring the rest */
+    if (snd == 0 && !boot) {
         static const int em_kinds[1] = { 1 };
         rt_snd_stage(stage_no, em_kinds, 1);
     }

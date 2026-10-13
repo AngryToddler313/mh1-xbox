@@ -1006,3 +1006,12 @@ List, method and findings: docs/agents/targets.md. Short version of what is wort
    The scripted tests all answer the prompt within 2 ticks of it appearing, which is why none noticed.
    xemu (nv2a build with all three fixes, run 1 of tools/xemu_quest_loop.sh with the bed's answer delayed by 1540
    ticks, hidden display): the prompt is on screen with はい/いいえ for the whole wait (shots at 420-450 s).
+2. **Forest ambience under the boot logos.** Not the game: with --boot (the Xbox always boots that way) viewer.c
+   still set up quest 10 as host scaffolding and called rt_snd_stage(21), which started stage 21's stream
+   (M2_CAMP1.adx, the Forest and Hills camp) at tick 0 (RT_SND_TRACE: `str 0 plays M2_CAMP1.adx`, before any logo).
+   The select overlay (title, name entry) starts no stream at all; the PS2's first sound is the opening movie.
+   Fix: no rt_snd_stage at start-up with --boot (title and name entry load their own packs, ports 1/6/7; the village's
+   stage loads bring the rest; the boot only ever used ports 1 and 7). Verified with --audio-dump of a boot with the
+   movie: RMS 0 for seconds 0-17 (logos), movie sound from 19 s. tools/test_audio.sh's "title" segment had been
+   passing on exactly that stray stream (RT_NOMOVIE, "title BGM" from 21 s): it now boots with the movie and checks
+   seconds 1-16 are silent and 22-44 have sound.
