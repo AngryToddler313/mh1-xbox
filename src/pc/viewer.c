@@ -1015,7 +1015,9 @@ static int load_stage_models(int st)
 {
     fl_model old_stage = stage, old_set = set;
     int k, reload = stage.npart > 0;
+    rt_lt_begin(RTL_GC);
     host_models_gc();
+    rt_lt_end(RTL_GC);
     for (k = 0; k < 4; k++)
         if (reload) {
             free(keep[k]);
@@ -1710,6 +1712,66 @@ static void npc_draw(const fl_light *L)
     }
 }
 
+/* ------------------------------------------------------------ flFlip inside a tick
+ * The PS2 game draws a loading screen and swaps buffers itself (flFlip) before a load
+ * that blocks the rest of the tick: game2 step 2 (an area change) the whole-area map
+ * (DispWholeMap), game11 (a quest start) Disp_load_start with the quest title, the
+ * village Disp_NowLoading before Lb_stage_load. Here the draws since the previous flip
+ * of the tick are recorded (gfx_rec.c) and each flip shows them as a frame at once, so
+ * the screen holds that picture while the load runs. Empty segments are not shown (the
+ * PS2 showed a cleared buffer: after the fade-out the same black). Boot ticks record
+ * their draws already (rt_boot.c); a flip there shows the part drawn so far.
+ * Headless --shot runs draw no extra frames, unless RT_FLIP_SHOT=prefix is set: then
+ * each flip frame is also written to prefix_<tick>_<n>.png (test aid). */
+static int in_tick, flip_rec, flip_ticks;
+extern int gfx_rec_on;           /* gfx_rec.c */
+static void game_flip(void)
+{
+    static int n, last_tick = -1;
+    const char *fs = getenv("RT_FLIP_SHOT");
+    int boot_rec = gfx_rec_on && !flip_rec;
+    if (!in_tick || (shot && !fs))
+        return;
+    if (gfx_rec_on) {
+        gfx_rec_end();
+        if (gfx_rec_draws() > 0) {
+            rt_lt_begin(RTL_FLIP);
+            gfx_begin_frame(0);
+            gfx_rec_replay();
+            if (fs) {
+                char name[512];
+                uint8_t *rgb = malloc((size_t)W * H * 3);
+                if (flip_ticks != last_tick)
+                    n = 0;
+                last_tick = flip_ticks;
+                gfx_read_pixels(rgb);
+                snprintf(name, sizeof name, "%s_%d_%d.png", fs, flip_ticks, n++);
+                write_png(name, W, H, rgb);
+                free(rgb);
+            }
+            gfx_end_frame();
+            rt_lt_end(RTL_FLIP);
+        }
+    } else
+        rt_font_set_draw(1);
+    gfx_rec_begin();
+    if (!boot_rec)
+        flip_rec = 1;
+}
+
+/* the end of a tick: what was drawn after the last flip is not shown (the frame
+ * the viewer draws next replaces it) */
+static void flip_tick_end(void)
+{
+    in_tick = 0;
+    if (flip_rec) {
+        gfx_rec_end();
+        gfx_rec_clear();
+        rt_font_set_draw(0);
+        flip_rec = 0;
+    }
+}
+
 /* The quest accepted in the village (game mode 0 -> game1/10/11/12/13 on
  * the PS2): Quest_init + Quest_start (rt_quest_load), the hunt starts on
  * the quest's own start stage (the base camp, game_w.stage), the hunter at
@@ -1719,11 +1781,19 @@ static void quest_from_village(void)
 {
     int st;
     float p[3] = { rx, 0, rz };
+    rt_lt_span_begin("quest start");
     rt_monster_clear_all();
     if (rt_quest_load(quest_no) != 0) {
+        rt_lt_span_end();
         fprintf(stderr, "quest %d: no mission file\n", quest_no);
         rt_warn("quest %d: no mission file", quest_no);
         return;
+    }
+    {   /* game11: the loading screen with the quest's title (quest_title, set by Quest_start
+         * in rt_quest_load) while the stage loads */
+        extern uint8_t game_w[];
+        void Disp_load_start(int arg);
+        Disp_load_start(*(uint16_t *)(game_w + 0x2C));
     }
     st = rt_game_stage();
     if (st != stage_no)
@@ -1743,6 +1813,7 @@ static void quest_from_village(void)
         void fade_set(int n);
         fade_set(2);
     }
+    rt_lt_span_end();
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "village: quest %d starts on stage %d (player tick %d)\n", quest_no, stage_no, rt_tick_count());
 }
@@ -1793,10 +1864,13 @@ static void village_step(void)
     }
 #endif
     if (!rt_village_active()) {
+        rt_lt_span_begin("village enter");
         rt_village_enter();
         pad_script_event(PAD_EV_VILLAGE);
-    }
-    q = rt_village_tick();
+        q = rt_village_tick();
+        rt_lt_span_end();
+    } else
+        q = rt_village_tick();
     if (q > 0) {
         if (getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "village: quest %d accepted, leaving the village\n", q);
@@ -2299,6 +2373,10 @@ int main(int argc, char **argv)
     rt_set_stage_loader(load_stage_models);
     rt_flow_set_back(quest_back);
     rt_flow_set_village(village_step);
+    {
+        void rt_set_flip(void (*fn)(void));
+        rt_set_flip(game_flip);
+    }
     rt_set_npc_model_loader(npc_model_load);
     {
         void rt_set_text_input(void (*begin)(int), int (*take)(char *, int));
@@ -2321,6 +2399,7 @@ int main(int argc, char **argv)
             shot_list++;
     }
     t0 = SDL_GetTicks();
+    rt_lt_init();
     while (running) {
         SDL_Event ev;
         /* RT_STEP=1 with --time S: one game tick per drawn frame up to S
@@ -2444,6 +2523,8 @@ int main(int argc, char **argv)
          * per drawn frame, every 300 ticks */
         while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !test_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
+            in_tick = 1;                /* flFlip shows frames from here (game_flip) */
+            flip_ticks = ticks;
             rt_actor_nodes_fill();      /* every actor's node array as the last tick left it (boot screens, village, quests) */
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
@@ -2464,6 +2545,7 @@ int main(int argc, char **argv)
                 }
                 ticks++;
                 mem_tick(ticks);
+                flip_tick_end();
                 rt_prof_end(RTP_LOGIC);
                 rt_prof_tick();
                 continue;
@@ -2519,6 +2601,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
+            flip_tick_end();
             rt_prof_end(RTP_LOGIC);
             rt_prof_tick();
         }
@@ -2715,6 +2798,7 @@ int main(int argc, char **argv)
 #endif
         rt_prof_end(RTP_DRAW);
         rt_prof_frame();
+        rt_lt_frame(ticks, rt_game_stage());    /* "load:" lines for pauses (rt_prof.c) */
     }
     (void)n;
     if (audio_dump && dump_pcm) {

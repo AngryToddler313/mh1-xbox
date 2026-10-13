@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
+static uint8_t *melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
 {
     size_t cap = srclen * 4 + 64, n = 0, i = 0;
     uint8_t *out = malloc(cap);
@@ -55,11 +55,15 @@ uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
             if (off) {
                 if (off * 2 > n)
                     goto bad;
-                for (k = 0; k < cnt; k++) {   /* may overlap */
-                    out[n] = out[n - off * 2];
-                    out[n + 1] = out[n + 1 - off * 2];
-                    n += 2;
-                }
+                if (off >= cnt) {           /* source and destination apart: one copy */
+                    memcpy(out + n, out + n - off * 2, cnt * 2);
+                    n += cnt * 2;
+                } else
+                    for (k = 0; k < cnt; k++) {   /* overlapping: word by word, as the PS2 */
+                        out[n] = out[n - off * 2];
+                        out[n + 1] = out[n + 1 - off * 2];
+                        n += 2;
+                    }
             } else {
                 memset(out + n, 0, cnt * 2);
                 n += cnt * 2;
@@ -82,6 +86,17 @@ uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
 bad:
     free(out);
     return NULL;
+}
+
+uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
+{
+    uint8_t *r;
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_MELT, 1, 0);
+    r = melt(src, srclen, outlen, be);
+    if (fmt_time_hook)
+        fmt_time_hook(FMT_T_MELT, 0, r ? (long)*outlen : 0);
+    return r;
 }
 
 int fmt_link_count(fmt_blob f, int be)

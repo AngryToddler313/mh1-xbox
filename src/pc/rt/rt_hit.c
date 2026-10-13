@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "rt_prof.h"
 
 extern uint8_t St_data[];           /* 0x2FAAF0, 98 x 32 bytes (tables.txt) */
 
@@ -118,7 +119,7 @@ void load_stage_hit(int stg);       /* src/main/hit/f_sphr.c */
 
 /* Load the stage's wall and ground collision with the game's own
  * load_stage_hit (WallHitInit / GroundHitInit fix the cell pointers). */
-int rt_load_stage_hit(int stage)
+static int rt_load_stage_hit_lt(int stage)
 {
     int k;
     for (k = 0; k < 2; k++)
@@ -148,6 +149,15 @@ int rt_load_stage_hit(int stage)
                     k ? "ground" : "wall", top, hit_area_size[k]);
         }
     return diorama_w.gtbl ? 0 : -1;
+}
+
+int rt_load_stage_hit(int stage)
+{
+    int r;
+    rt_lt_begin(RTL_HIT);
+    r = rt_load_stage_hit_lt(stage);
+    rt_lt_end(RTL_HIT);
+    return r;
 }
 
 /* ------------------------------------------------------------ helpers */

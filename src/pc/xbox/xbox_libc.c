@@ -49,6 +49,45 @@ FILE *xbox_fopen(const char *name, const char *mode)
     return fopen(p, mode);
 }
 
+/* fread: pdclib copies byte by byte through a 1 KB buffer, one kernel read per KB
+ * (_PDCLIB_fillbuffer), with a lock and checks for every byte. A 1.3 MB area load took
+ * 1.6 s of reads in xemu (docs/xbox.md "Area change loads"). Reads of 8 KB and more on a
+ * plain read-only stream take what the buffer still holds, then ReadFile the rest
+ * straight into the caller's memory; the stream's bookkeeping (pos.offset = the OS
+ * position, an empty buffer) stays as pdclib keeps it, so ftell/fseek/fread go on. */
+#include <windows.h>
+#include <pdclib/_PDCLIB_int.h>
+
+size_t xbox_fread(void *ptr, size_t size, size_t n, FILE *f)
+{
+    size_t total = size * n, have, done;
+    DWORD rd = 0;
+    unsigned bad = _PDCLIB_FWRITE | _PDCLIB_FAPPEND | _PDCLIB_FRW | _PDCLIB_ERRORFLAG | _PDCLIB_EOFFLAG | _PDCLIB_WIDESTREAM;
+    if (size == 0 || total < 8192 || !(f->status & _PDCLIB_FREAD) || (f->status & bad)
+        || f->ungetidx || f->bufidx > f->bufend)
+        return fread(ptr, size, n, f);
+    _PDCLIB_LOCK(f->mtx);
+    have = f->bufend - f->bufidx;
+    if (have > total)
+        have = total;
+    memcpy(ptr, f->buffer + f->bufidx, have);
+    f->bufidx += have;
+    done = have;
+    if (done < total) {
+        if (ReadFile(f->handle, (char *)ptr + done, (DWORD)(total - done), &rd, NULL)) {
+            f->pos.offset += rd;
+            done += rd;
+            if (done < total)
+                f->status |= _PDCLIB_EOFFLAG;
+        } else
+            f->status |= _PDCLIB_ERRORFLAG;
+        f->bufidx = f->bufend = 0;      /* the buffer is used up: the next read fills it from pos.offset */
+    }
+    f->status |= _PDCLIB_FREAD | _PDCLIB_BYTESTREAM;
+    _PDCLIB_UNLOCK(f->mtx);
+    return done / size;
+}
+
 /* ------------------------------------------------------------ printf
  * pdclib's printf skips %f/%e/%g/%a without taking the argument. These
  * versions do the floating-point conversions themselves and hand every other

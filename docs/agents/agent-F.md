@@ -654,3 +654,26 @@ How to find dead PC code without guessing (used for the 10 Oct clean-up, see doc
   hunter, not the nearest; a point with no picks left that is still set returns 0xFFFE (the carve motion, no item), so a
   carved-out corpse lying over a fresh one would hide it until it is erased. Not seen in the tests.
 
+
+## Release polish: area-change loads on the Xbox (13 Oct 2026)
+
+Task: the real Xbox froze (picture held / black) for a long time on area changes and village <-> quest.
+Details and numbers: docs/xbox.md "Area change loads: timed, made faster, loading screens back" and
+"Loader download freeze". Commits on agent-F: c9911d68 (load timing, xbox_fread, swizzle), d7ff7df1
+(sound packs kept), 7000a95a (loading screens via flFlip, APX decode), Meltw memcpy, 4065d22e (loader).
+- Measure first: `load:` lines in every log (rt_prof.c). A scenario that changes area 4 times in a minute
+  without the long boot: env `RT_ARGS=--quest 131 --play`, `RT_PL_WARP=10,12250,10000;200,6750,11900;
+  400,12250,10000;600,6750,11900` (also on the PC with --quest 131 --play).
+- The big one was pdclib: fread is a byte loop over a 1 KB buffer (2.2-3.7 s of a 3-4.7 s area change in
+  xemu); fwrite likewise (the loader's 10 s "Downloading" hang). Any bulk file I/O on the Xbox must avoid
+  pdclib's buffered path (xbox_fread for reads; WriteFile for writes).
+- Loading screens are the game's own: flFlip was a no-op, so DispWholeMap / Disp_load_start /
+  Disp_NowLoading drew into nothing. viewer.c game_flip records the tick's 2D since the last flip and
+  shows it at once. Disp_NowLoading2 (dsp02.c) is now built on the PC/Xbox. docs/REVIEW.md has the entry.
+- Audio dumps (--audio-dump) are not bit-reproducible between runs (threads), and RT_SHOTS pictures of
+  moving objects differ run to run too: compare RMS per second / static ticks instead.
+- Accident: `make clean` in src/pc/xbox/loader deleted the shared nxdk libraries (~/xboxdev/nxdk/lib/*.lib,
+  nxdk's clean removes its own OBJS). Rebuilt at once with a throw-away nxdk program (NXDK_NET/SDL/CXX = y);
+  the Xbox game build was checked afterwards (810 objects, links). The loader Makefile now warns.
+- Left for later (if hardware still shows long loads): APX straight to P8 on the Xbox, caching the previous
+  area's stage, background reads.

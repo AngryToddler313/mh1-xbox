@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include "../rt/rt_prof.h"
 
 #define MASK(mask, val) (((val) << (ffs(mask) - 1)) & (mask))
 #define GPU_MAXRAM 0x03FFAFFF
@@ -385,19 +386,37 @@ static void swizzle_masks(int w, int h, uint32_t *mx, uint32_t *my)
     } while (more);
 }
 
-static uint32_t deposit(uint32_t v, uint32_t mask)
+/* src (w x h texels of bpp bytes, rows packed) in NV2A swizzled order into dst (w * h * bpp
+ * bytes). The swizzled x/y offsets step with (v - mask) & mask (the next value inside the
+ * mask's bits). Callers write into cached memory and copy the result to the GPU's
+ * write-combined memory in order: scattered single-texel writes to it were slow. */
+static void swizzle(void *dst, const void *src, int w, int h, int bpp)
 {
-    uint32_t r = 0, b;
-    for (b = 1; mask; b <<= 1) {
-        uint32_t low = mask & -mask;
-        if (v & b)
-            r |= low;
-        mask &= mask - 1;
+    uint32_t mx, my, sx, sy = 0;
+    int x, y;
+    swizzle_masks(w, h, &mx, &my);
+    for (y = 0; y < h; y++) {
+        sx = 0;
+        if (bpp == 1) {
+            const uint8_t *s = (const uint8_t *)src + (size_t)y * w;
+            uint8_t *d = (uint8_t *)dst + sy;
+            for (x = 0; x < w; x++) {
+                d[sx] = s[x];
+                sx = (sx - mx) & mx;
+            }
+        } else {
+            const uint32_t *s = (const uint32_t *)src + (size_t)y * w;
+            uint32_t *d = (uint32_t *)dst + sy;
+            for (x = 0; x < w; x++) {
+                d[sx] = s[x];
+                sx = (sx - mx) & mx;
+            }
+        }
+        sy = (sy - my) & my;
     }
-    return r;
 }
 
-gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
+static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
 {
     gfx_texture *t = calloc(1, sizeof *t);
     size_t size;
@@ -418,19 +437,18 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
             t->pal = gpu_alloc(1024);
             t->mem = t->pal ? gpu_alloc((size_t)w * h) : NULL;
         }
-        if (np >= 0 && t->mem) {
-            uint32_t mx, my;
-            int x, y, i;
+        uint8_t *sw = np >= 0 ? malloc((size_t)w * h) : NULL;
+        if (np >= 0 && t->mem && sw) {
+            uint32_t p[256];
+            int i;
             for (i = 0; i < 256; i++) {          /* RGBA bytes -> A8R8G8B8 word */
                 uint32_t c = i < np ? pal[i] : 0;
-                t->pal[i] = (c & 0xFF00FF00u) | (c & 0xFF) << 16 | (c >> 16 & 0xFF);
+                p[i] = (c & 0xFF00FF00u) | (c & 0xFF) << 16 | (c >> 16 & 0xFF);
             }
-            swizzle_masks(w, h, &mx, &my);
-            for (y = 0; y < h; y++) {
-                uint32_t oy = deposit((uint32_t)y, my);
-                for (x = 0; x < w; x++)
-                    t->mem[oy | deposit((uint32_t)x, mx)] = idx[y * w + x];
-            }
+            memcpy(t->pal, p, sizeof p);
+            swizzle(sw, idx, w, h, 1);
+            memcpy(t->mem, sw, (size_t)w * h);
+            free(sw);
             free(idx);
             t->pitch = PITCH64((uint32_t)w);   /* unused when swizzled, but checked */
             t->bytes = (size_t)w * h + 1024;
@@ -438,7 +456,11 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
             rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
             return t;
         }
+        free(sw);
         free(idx);
+        if (t->mem)
+            MmFreeContiguousMemory(t->mem);
+        t->mem = NULL;
         if (t->pal)
             MmFreeContiguousMemory(t->pal);
         t->pal = NULL;
@@ -461,17 +483,24 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
         for (y = 0; y < h; y++)
             memcpy(t->mem + (size_t)y * t->pitch, rgba + (size_t)y * w * 4, (size_t)w * 4);
     } else {
-        uint32_t mx, my, *dst = (uint32_t *)t->mem;
-        const uint32_t *src = (const uint32_t *)rgba;
-        int x, y;
-        swizzle_masks(w, h, &mx, &my);
-        for (y = 0; y < h; y++) {
-            uint32_t oy = deposit((uint32_t)y, my);
-            for (x = 0; x < w; x++)
-                dst[oy | deposit((uint32_t)x, mx)] = src[y * w + x];
-        }
+        uint32_t *sw = malloc(size);
+        if (sw) {
+            swizzle(sw, rgba, w, h, 4);
+            memcpy(t->mem, sw, size);
+            free(sw);
+        } else
+            memset(t->mem, 0, size);
     }
     return t;
+}
+
+gfx_texture * gfx_create_texture(int w, int h, const uint8_t *rgba)
+{
+    gfx_texture * r;
+    rt_lt_begin(RTL_TEXUP);
+    r = gfx_create_texture_lt(w, h, rgba);
+    rt_lt_end(RTL_TEXUP);
+    return r;
 }
 
 void gfx_release_texture(gfx_texture *t)

@@ -92,14 +92,51 @@ static void port_clear(int n)
     ports[n].n = 0;
 }
 
+/* A stage change (rt_snd_stage) clears every port and loads the stage's packs again; most
+ * of them are the same files as before (common00/01, the weapon and voice packs, the
+ * map's and monsters' packs within one hunting ground). The cleared packs wait here and
+ * port_add takes a matching one back instead of reading the file again; what is left
+ * is freed at the end of the stage change. */
+static pack spare[NPORT * NPACK];
+static int nspare;
+
+static void port_clear_keep(int n)
+{
+    int i;
+    for (i = 0; i < ports[n].n; i++) {
+        if (nspare < NPORT * NPACK && ports[n].p[i].data)
+            spare[nspare++] = ports[n].p[i];
+        else
+            pack_free(&ports[n].p[i]);
+        memset(&ports[n].p[i], 0, sizeof ports[n].p[i]);
+    }
+    ports[n].n = 0;
+}
+
+static void spare_free(void)
+{
+    while (nspare > 0)
+        pack_free(&spare[--nspare]);
+}
+
 static int port_add(int n, int afs_idx)
 {
     port *pt = &ports[n];
     pack *p;
     size_t len;
+    int k;
     if (pt->n >= NPACK)
         return -1;
     p = &pt->p[pt->n];
+    for (k = 0; k < nspare; k++)
+        if (spare[k].afs_idx == afs_idx) {
+            *p = spare[k];
+            spare[k] = spare[--nspare];
+            pt->n++;
+            if (trace)
+                printf("snd: port %d + %s (kept)\n", n, afs01.name[afs_idx]);
+            return 0;
+        }
     {
         const char *o = rt_ms_push("audio packs as on disc (PS2 ADPCM)");
         p->data = fmt_afs_read(&afs01, afs_idx, &len);
@@ -749,9 +786,10 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
 
     if (!snd_on)
         return;
-    for (i = 0; i < NPORT; i++)
-        port_clear(i);
+    rt_lt_begin(RTL_SND);
     se_stop_all();
+    for (i = 0; i < NPORT; i++)
+        port_clear_keep(i);
     port_add(0, 0);                             /* snd_common00 */
     port_add(1, 1);                             /* snd_common01 */
     map = env ? atoi(env) : stage_map(stage);
@@ -776,6 +814,7 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
      * music), else Snd_bgm_tbl[stage] = (AFS00 entry, volume) */
     if (getenv("RT_SND_AMBIENT"))
         game_w.x10 |= 1;
+    spare_free();               /* the packs this stage does not use */
     /* only for quest stages: on the PS2 only the quest's stage set-up (f_game, evdemo) calls stage_bgm_set. The
      * village's music is lobby.bin's (lobby_bgm_set; vs_square_init resumes stream 0 when a house is entered).
      * After a won quest Quest_clear_ck(1) is still 1 in the village, so stage_bgm_set started the quest-clear
@@ -784,6 +823,7 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
         stage_bgm_set(stage);
     if (trace)
         printf("snd: stage %d map %d\n", stage, map);
+    rt_lt_end(RTL_SND);
 }
 
 /* Footsteps for the host player stand-in (rt_player.c). On the PS2 the

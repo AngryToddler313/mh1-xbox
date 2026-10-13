@@ -286,10 +286,6 @@ int rt_village_tick(void)
     return 0;
 }
 
-/* Disp_NowLoading (disp1_nm.c, weak there): the "now loading" screen the
- * PS2 draws while it streams files; the PC loads at once, nothing to show */
-void Disp_NowLoading(void) {}
-
 /* com_motion_load (main 0x111A80): the common motion set n
  * (common_motion_data, 0x2EBC70: 0 plcom_tbl, 1 lbcom_tbl the village's,
  * 2 selcom_tbl) through load_plcom_motion + create_plcom_motion. The files

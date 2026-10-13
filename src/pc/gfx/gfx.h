@@ -161,6 +161,7 @@ void gfx_rec_begin(void);
 void gfx_rec_end(void);
 void gfx_rec_clear(void);
 int  gfx_rec_have(void);
+int  gfx_rec_draws(void);       /* draws (not render states) in the list gfx_rec_replay would draw */
 void gfx_rec_replay(void);
 void gfx_rec_call(void (*fn)(void *), void *arg);
 /* backend hooks: 1 = recorded, the backend returns at once */

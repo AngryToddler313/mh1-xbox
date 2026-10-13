@@ -33,4 +33,28 @@ void rt_prof_count(int counter, long n);
 void rt_prof_tick(void);        /* one game tick done */
 void rt_prof_frame(void);       /* one frame drawn; prints every 300 ticks */
 int  rt_prof_on(void);
+
+/* Load timing (always on, wall clock): the time between two drawn frames
+ * split by what ran (exclusive, nested). A pause of RT_LOAD_MS (default 150)
+ * or more is logged as one "load:" line when the next quick frame comes, with
+ * the share of each zone (rt_prof.c). */
+enum {
+    RTL_READ,           /* disc reads (AFS entries, sound streams) */
+    RTL_MELT,           /* Meltw decompression */
+    RTL_TEXDEC,         /* APX -> RGBA */
+    RTL_TEXUP,          /* gfx_create_texture (Xbox: palette, swizzle, GPU memory) */
+    RTL_MODEL,          /* model set-up (AMO/AHI parse, parts, GPU vertex buffers) */
+    RTL_MOTION,         /* motion sets */
+    RTL_HIT,            /* collision files */
+    RTL_GC,             /* the stage-change clean-ups (motion, 2D, files, host models) */
+    RTL_SND,            /* sound packs */
+    RTL_FLIP,           /* frames the game shows itself during a load (flFlip: loading screens) */
+    RTL_N
+};
+void rt_lt_begin(int zone);
+void rt_lt_end(int zone);
+void rt_lt_frame(int tick, int stage);   /* after each drawn frame */
+void rt_lt_init(void);                   /* hooks the fmt readers */
+void rt_lt_span_begin(const char *name); /* a named load (one tick): its own "load: NAME" line */
+void rt_lt_span_end(void);
 #endif

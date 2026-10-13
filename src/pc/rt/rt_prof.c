@@ -5,6 +5,8 @@
  */
 #include "rt_prof.h"
 #include "rt_plat.h"
+#include "rt_log.h"
+#include "../fmt/fmt.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,4 +162,185 @@ void rt_prof_frame(void)
         cnt[z] = cnt_max[z] = 0;
     }
     nticks = nframes = 0;
+}
+
+/* ------------------------------------------------------------ load timing */
+static double wall_ms(void)
+{
+#if defined(MH1_WINDOWS) || defined(MH1_XBOX)
+    LARGE_INTEGER c, f;
+    QueryPerformanceCounter(&c);
+    QueryPerformanceFrequency(&f);
+    return (double)c.QuadPart * 1000.0 / (double)f.QuadPart;
+#else
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return t.tv_sec * 1000.0 + t.tv_nsec / 1e6;
+#endif
+}
+
+static const char *const lname[RTL_N] = {
+    "read", "melt", "texdec", "texup", "model", "motion", "hit", "gc", "snd", "flip"
+};
+static int lstack[16], ldepth, lt_thr = -1;
+static double lt_last, lt_frame0, lcur[RTL_N], lsum[RTL_N], lev_ms;
+static long lbytes[RTL_N], lev_bytes[RTL_N], lcount[RTL_N], lev_count[RTL_N];
+static int lev_frames, lev_tick0, lev_stage0;
+
+/* " name ms/calls[/KB]" for each zone with time or calls, then " other ms" (total minus the zones) */
+static void zones_text(char *buf, int n, int cap, double total, const double *ms, const long *cnt, const long *bytes)
+{
+    int z;
+    double rest = total;
+    for (z = 0; z < RTL_N; z++) {
+        if (ms[z] < 0.5 && !cnt[z])
+            continue;
+        rest -= ms[z];
+        if (n < cap - 40) {
+            if (bytes[z] >= 1024 && (z == RTL_READ || z == RTL_MELT))
+                n += snprintf(buf + n, (size_t)(cap - n), " %s %.0f/%ld/%ldK", lname[z], ms[z], cnt[z], bytes[z] >> 10);
+            else
+                n += snprintf(buf + n, (size_t)(cap - n), " %s %.0f/%ld", lname[z], ms[z], cnt[z]);
+        }
+    }
+    if (n < cap - 24)
+        snprintf(buf + n, (size_t)(cap - n), " other %.0f", rest);
+}
+
+static void flush_open(double t)
+{
+    if (ldepth) {
+        if (ldepth <= 16)
+            lcur[lstack[ldepth - 1]] += t - lt_last;
+        lt_last = t;
+    }
+}
+
+/* A named load (an area change, the village, a quest start; spans nest): one "load: NAME" line
+ * with its own time and zones, whatever the frame time around it. */
+#define SPANS 4
+static struct { double t0, ms[RTL_N]; long cnt[RTL_N], bytes[RTL_N]; char name[40]; } sp[SPANS];
+static int nsp;
+void rt_lt_span_begin(const char *name)
+{
+    int z;
+    double t = wall_ms();
+    flush_open(t);
+    if (nsp >= SPANS) {
+        nsp++;
+        return;
+    }
+    snprintf(sp[nsp].name, sizeof sp[nsp].name, "%s", name);
+    sp[nsp].t0 = t;
+    for (z = 0; z < RTL_N; z++) {
+        sp[nsp].ms[z] = lcur[z];
+        sp[nsp].cnt[z] = lcount[z];
+        sp[nsp].bytes[z] = lbytes[z];
+    }
+    nsp++;
+}
+
+void rt_lt_span_end(void)
+{
+    char buf[256];
+    double ms[RTL_N];
+    long cnt[RTL_N], bytes[RTL_N];
+    int z, n;
+    double t = wall_ms();
+    if (!nsp || --nsp >= SPANS)
+        return;
+    flush_open(t);
+    for (z = 0; z < RTL_N; z++) {      /* (a frame end inside a span would reset the counters: spans stay in one tick) */
+        ms[z] = lcur[z] - sp[nsp].ms[z];
+        cnt[z] = lcount[z] - sp[nsp].cnt[z];
+        bytes[z] = lbytes[z] - sp[nsp].bytes[z];
+    }
+    n = snprintf(buf, sizeof buf, "load: %s %.0f ms:", sp[nsp].name, t - sp[nsp].t0);
+    zones_text(buf, n, (int)sizeof buf, t - sp[nsp].t0, ms, cnt, bytes);
+    rt_log("%s", buf);
+}
+
+void rt_lt_begin(int z)
+{
+    double t = wall_ms();
+    if (ldepth && ldepth <= 16)
+        lcur[lstack[ldepth - 1]] += t - lt_last;
+    if (ldepth < 16)
+        lstack[ldepth] = z;
+    ldepth++;
+    lt_last = t;
+}
+
+void rt_lt_end(int z)
+{
+    double t = wall_ms();
+    if (!ldepth)
+        return;
+    if (ldepth <= 16)
+        lcur[lstack[ldepth - 1]] += t - lt_last;
+    ldepth--;
+    lt_last = t;
+    lcount[z]++;
+}
+
+static void fmt_hook(int zone, int begin, long bytes)
+{
+    static const int map[3] = { RTL_READ, RTL_MELT, RTL_TEXDEC };
+    if (begin)
+        rt_lt_begin(map[zone]);
+    else {
+        lbytes[map[zone]] += bytes;
+        rt_lt_end(map[zone]);
+    }
+}
+
+void rt_lt_init(void)
+{
+    int z;
+    fmt_time_hook = fmt_hook;
+    lt_frame0 = wall_ms();
+    for (z = 0; z < RTL_N; z++) {   /* the start-up's loads are not a pause */
+        lcur[z] = 0;
+        lbytes[z] = lcount[z] = 0;
+    }
+}
+
+void rt_lt_frame(int tick, int stage)
+{
+    double t = wall_ms(), dt = t - lt_frame0;
+    int z;
+    if (lt_thr < 0) {
+        const char *e = getenv("RT_LOAD_MS");
+        lt_thr = e ? atoi(e) : 150;
+    }
+    lt_frame0 = t;
+    flush_open(t);                  /* a zone still open (should not happen at a frame's end) */
+    if (dt >= lt_thr) {
+        if (!lev_frames) {
+            lev_tick0 = tick;
+            lev_stage0 = stage;
+        }
+        lev_frames++;
+        lev_ms += dt;
+        for (z = 0; z < RTL_N; z++) {
+            lsum[z] += lcur[z];
+            lev_bytes[z] += lbytes[z];
+            lev_count[z] += lcount[z];
+        }
+    } else if (lev_frames) {        /* the pause is over: one line for it */
+        char buf[256];
+        int n = snprintf(buf, sizeof buf, "load: pause %.0f ms, %d frames, t%d-%d, st %d>%d:", lev_ms, lev_frames, lev_tick0, tick, lev_stage0, stage);
+        zones_text(buf, n, (int)sizeof buf, lev_ms, lsum, lev_count, lev_bytes);
+        rt_log("%s", buf);
+        lev_frames = 0;
+        lev_ms = 0;
+        for (z = 0; z < RTL_N; z++) {
+            lsum[z] = 0;
+            lev_bytes[z] = lev_count[z] = 0;
+        }
+    }
+    for (z = 0; z < RTL_N; z++) {
+        lcur[z] = 0;
+        lbytes[z] = lcount[z] = 0;
+    }
 }

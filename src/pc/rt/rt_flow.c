@@ -19,6 +19,7 @@ extern u8 game_w[];   /* +0: mode (no game header here: the no-ops below are K&R
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "rt_prof.h"
 void rt_font_tick_begin(void);
 void rt_prims_reset(void);
 
@@ -132,19 +133,39 @@ void rt_village_files_gc(void);
 void rt_set_stage_loader(int (*fn)(int)) { stage_loader = fn; }
 void st_model_load(int stage)
 {
+    char nm[32];
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "rt_flow: st_model_load(%d)\n", stage);
+    snprintf(nm, sizeof nm, "area %d", stage);
+    rt_lt_span_begin(nm);
+    rt_lt_begin(RTL_GC);
     rt_motion_gc();         /* the last stage's motion sets (rt_motion.c) */
     rt_2d_gc();             /* and its 2D textures (rt_2d.c) */
     rt_village_files_gc();  /* motion files no set reads any more (rt_village.c) */
+    rt_lt_end(RTL_GC);
     if (stage_loader)
         stage_loader(stage);
+    rt_lt_span_end();
 }
+/* flFlip (0x16E7F0 on the PS2: swap the frame buffers): the game calls it inside a tick
+ * where it draws a screen and then blocks on a load (game2 step 2: the whole-area map
+ * before st_model_load; game11's Disp_load_start: the quest title; the village's
+ * Disp_NowLoading before Lb_stage_load). The viewer shows what was drawn since the
+ * last flip (viewer.c game_flip); without a viewer it does nothing. */
+static void (*flip_fn)(void);
+void rt_set_flip(void (*fn)(void)) { flip_fn = fn; }
+void flFlip(int n)
+{
+    (void)n;
+    if (flip_fn)
+        flip_fn();
+}
+
 int snd_joint_load() { return 1; }
 int snd_joint_load_pl() { return 1; }
 
 /* ------------------------------------------------ loading / system (no-ops) */
-NOP(flFlip) NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
+NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
 NOP(snd_joint_load_init) NOP(load_bin_req) NOP(flSndPackLoadBG2) NOP(flSndPackLoadBG)
 NOP(view_reset) 
 /* init_light_work (flow02.c): light_init (src/main/model/light_init_nm.c) clears and fills light_work from the stage light rows */
@@ -158,8 +179,7 @@ NOP(Plsel_task) NOP(ot_init) NOP(Load_overlay)
 NOP0(net_start_ck) NOP(net_receive_pl_pos_set)
 #endif
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
-NOP(em_effect_pull) NOP(Disp_load_start)
-NOP(Disp_NowLoading2)
+NOP(em_effect_pull)
 
 /* vib_stop_all (0x1699A0, view201.c): stop the rumble of both pads, as the original. */
 int flPADShockSet(int port, int strength, int frames);

@@ -44,6 +44,11 @@ static inline float fmt_f32(const uint8_t *p, int be)
 /* A byte range owned by someone else (no free). */
 typedef struct { const uint8_t *p; size_t n; } fmt_blob;
 
+/* Load timing hook (rt_prof.c sets it; NULL in programs without it): zone FMT_T_*,
+ * begin 1 / end 0, bytes handled (counted at the end). */
+enum { FMT_T_READ, FMT_T_MELT, FMT_T_TEXDEC };
+extern void (*fmt_time_hook)(int zone, int begin, long bytes);
+
 /* ------------------------------------------------------------ afs */
 typedef struct {
     void *fp;

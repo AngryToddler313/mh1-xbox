@@ -4,12 +4,14 @@
  * name is renamed before <stdio.h> declares it, so the declarations and calls
  * go to the replacements in xbox_libc.c:
  * - fopen: the PC code joins paths with '/', the Xbox kernel wants '\'.
+ * - fread: large reads straight from the file (pdclib reads 1 KB at a time).
  * - the printf family: nxdk's pdclib has no floating point (%f/%e/%g are
  *   skipped without taking their argument, so the rest of the line is garbage).
  */
 #ifndef XBOX_COMPAT_H
 #define XBOX_COMPAT_H
 #define fopen xbox_fopen
+#define fread xbox_fread
 #define printf xbox_printf
 #define fprintf xbox_fprintf
 #define sprintf xbox_sprintf

@@ -12,6 +12,27 @@ obvious workarounds.
 
 ## Open
 
+### Loading screens: the game's own instead of stand-ins (13 Oct 2026, agent F)
+- **Dropped:** the empty stand-ins flFlip, Disp_load_start, Disp_NowLoading2 (rt_flow.c) and
+  Disp_NowLoading (rt_village.c, "the PC loads at once, nothing to show").
+- **Now:** the game's own code draws them (disp1_nm.c, src/main/font/dsp02.c added to the PC/Xbox
+  build) and flFlip shows what the tick drew since the last flip as a frame at once (viewer.c
+  game_flip, gfx_rec.c recording). So an area change shows the whole-area map with "NOW LOADING"
+  (game2 step 2: DispWholeMap + flFlip before st_model_load), a quest start the quest title
+  (Disp_load_start, called in quest_from_village where game11 calls it), the village's stage
+  changes Disp_NowLoading. As on the PS2.
+- **Why:** on the Xbox an area change took seconds with a frozen picture (docs/xbox.md "Area
+  change loads"). Headless --shot runs draw no extra frames (RT_FLIP_SHOT=prefix writes them).
+- **To revert:** the commit "Loading screens: the game's own (flFlip shows a frame)".
+
+### Xbox: big freads and texture swizzle (13 Oct 2026, agent F)
+- **Dropped:** pdclib's fread for reads of 8 KB and more on read-only streams; the per-texel
+  bit-deposit swizzle writing straight into write-combined GPU memory (gfx_nv2a.c).
+- **Now:** xbox_fread (xbox_libc.c) copies what pdclib's buffer holds and ReadFiles the rest; the
+  swizzle steps x/y with (v - mask) & mask into cached memory, then one memcpy.
+- **Why:** reads were 2.2-3.7 s of a 3-4.7 s area change in xemu (1 KB kernel reads, a byte loop).
+- **To revert:** commit c9911d68.
+
 ### Release entry points: ./mh1, tools/disc_files.py, docs/PLAYING.md (13 Oct 2026, agent D)
 - **Added, nothing dropped:** `./mh1 linux|windows|xbox DISC` chains the existing scripts (build_pc.sh, build_win.sh +
   package_win.sh, build_pc.sh + build_xbox.py --gfx nv2a) after verifying the disc by size and CRC32, and copies the
