@@ -1599,3 +1599,36 @@ all_quests 38/38 (run before the headless change). Not done: apiask_28_OpenDic (
 dictionary data, big), init_set_work/clr_used_heap (host owns the set pool in rt_game.c; swapping to setwork needs
 move_set/trans_set wiring, little player impact). Lesson: a "stand-in" in rt_*.c can hide a matched function that is
 already linked; grep src/main for the name before porting.
+
+## G (VERSION=mhg) round 1: per-version code (13 Oct 2026, agent C, Sonnet)
+
+Tools: `VERSION=mhg python3 tools/check.py FILE.c [-v] [--add MODULE NAME]` now checks against G (names/addresses from
+docs/survey/mhg_map.csv incl. G-only functions as `<module>_func_XXXXXXXX`, images from build/mhg/split, -DVERSION_MHG).
+`python3 tools/mhg_addc.py FILE.c...` registers files whose functions all match (moves MH1 jump-table slots through the
+symbol); new lines go under the HAND marker in config/mhg/c_files.txt, which `tools/mhg_cfiles.py` now keeps when it
+reruns. `tools/mhg_offsets.py game_w` shows how MH1 field offsets of a global moved (votes from same-named twins; few).
+check.py cannot see relocation addends or jump-table slots: always finish with `VERSION=mhg python3 tools/build.py`
+(after header edits: `rm -rf build/mhg/src` first, the build only tracks .c mtimes).
+
+Convention used: small differences are `#ifdef VERSION_MHG` inside the shared file (MH1 text unchanged); a file whose
+functions land in two G modules gets copies under src/mhg/ (pl78_main.c, pl78_sub.c). include/version.h holds shared
+constants (ITEM_ROW).
+
+G facts found (all verified by byte match):
+- Item_data rows are 20 bytes (MH1 16); item ids moved (hold items 0x201..0x207; Nikuyaki item 0x25); quest_w.no is u16.
+- EMW is 0xA00 bytes in G (0xA10); every field from 0x9C8 on sits 8 lower (em.h; EM_FIELD in em_cmd.h applies the shift).
+- game_w: master/x0D2/pl_num/hit_id/x0D5 moved from 0xD1..0xD5 to 0x3A..0x3E; model templates (MH1 0x88) are at 0x90.
+  Other game_w fields not mapped. GAME_W in game.h only has the G block; literal `*(u8 *)0x3F34C3` -> 0x35ED5C etc.
+- G-only `sub_main_func_004A1970(x2E, stage)` remaps a stage number when a quest is loaded (Stage_data_get/Stage_mv_data_get).
+- init_move_work/clr_move_work no longer touch item work; weapon3 player_mk loops over 10 slots.
+- Quest_f_dra_ck: quests 3004..3007. Get_string_pow, Pl_stamina_reduce, Pl_vital_calc_item have extra skills (ids in code).
+
+Matched (G): Nikuyaki_ck, Pl_item_idx_calc, Get_Use_itemnum, Pl_item_erase (+pl66), Pl_item_get_se, Stage_item/unique_data_get,
+Quest_f_dra_ck, Check_hold_item, Pl_hold_item_ck, Pl_vital_calc_item, Shell_type_set, Pl_stamina_reduce, Get_string_pow,
+Sansai_talk_ck, pl_light_ck, em_cmd_mind_move_end, em_cmd_egg_ck/cancel_ck, Get_hit_id, clr_em_work, push_em_work_all, player_mk,
+init_move_work, clr_move_work, Stage_data_get, Stage_mv_data_get, em_work_set, pull_enemy_work, push_senko; plus 40+ whole
+shared files that only needed the header fixes.
+Near-match: Pl_slash_calc (pl_slash.c): logic done, 60/97 insns differ only in saved-register choice (original: up s0, dv s1,
+pl s2, (s16)dv s3; mine: temp s0, up s1, dv s2, pl s3); declaration order and a temp variable did not change it.
+Next candidates (small diffs, see `VERSION=mhg tools/check.py -v`): Quest_init (quest_w layout differs), em_trans_sub (switch),
+UseItemChk (menu-local Item_data extern with [16]), Pl_act_set/Pl_act_set2, CameraInit (camera work 0x5F8 not 0x600).
