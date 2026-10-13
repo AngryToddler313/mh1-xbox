@@ -78,7 +78,7 @@ static void drop(uint8_t **keep)
 static fmt_blob load_stage_file(uint32_t table, int stage, uint8_t **keep)
 {
     fmt_blob none = { NULL, 0 };
-    const uint8_t *p = rt_addr(table + 4 * (uint32_t)stage, 4);
+    const uint8_t *p = RTVA(table) ? rt_addr(RTVA(table) + 4 * (uint32_t)stage, 4) : NULL;    /* MH1 address; G: by name */
     int32_t idx;
     *keep = NULL;
     if (!p || stage < 0 || stage >= 88)
@@ -92,7 +92,7 @@ static fmt_blob load_stage_file(uint32_t table, int stage, uint8_t **keep)
 /* PS2 addresses (ELF / overlay) are looked up through the runtime. */
 static const uint8_t *elf_addr(uint32_t va)
 {
-    return rt_addr(va, 4);
+    return RTVA(va) ? rt_addr(RTVA(va), 4) : NULL;     /* MH1 addresses; G: through names */
 }
 
 /* CLAY+0x88 word of part k (Attribute_from_amo), 0 if it has no 0xF0000 chunk */
@@ -663,7 +663,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
         drop(&h->mem[k - 2]);
         drop(&h->mem[k - 1]);
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
-        h->ptmat[s] = tbl ? rt_ptr_at(0x3018F0 + 4 * (uint32_t)s) : NULL;   /* relocated by rt_import_data */
+        h->ptmat[s] = tbl ? rt_ptr_at(RTVA(0x3018F0) + 4 * (uint32_t)s) : NULL;   /* relocated by rt_import_data */
     }
     if (!tbl)
         fprintf(stderr, "warning: no SLPM_654.95, armour parts will not follow the skeleton\n");
@@ -1438,7 +1438,7 @@ static monster *em_kind_model(int kind)
         snprintf(t, sizeof t, "em%02d_tex.bin", kind);
         snprintf(b, sizeof b, "em%02d_tbl.bin", kind);
         for (k = 0; k < 3; k++) {
-            const uint8_t *q = elf_addr(tbl_va[k] + 4 * (uint32_t)kind);
+            const uint8_t *q = RTVA(tbl_va[k]) ? rt_addr(RTVA(tbl_va[k]) + 4 * (uint32_t)kind, 4) : NULL;
             uint32_t idx = q ? fmt_u32(q, FMT_LE) : 0;
             if (idx > 0 && idx < afs.count)
                 snprintf(nm[k], 32, "%s", afs.name[idx]);
@@ -2130,20 +2130,29 @@ int main(int argc, char **argv)
         return 1;
     }
     rt_log("boot: AFS_DATA.AFS opened (%u entries)", (unsigned)afs.count);
-    snprintf(path, sizeof path, "%s/SLPM_654.95", disc);
+    snprintf(path, sizeof path, "%s/%s", disc, rt_ver_elf());     /* SLPM_654.95 (G: SLPM_658.69) */
     if (rt_load_elf(path) != 0) {
         fprintf(stderr, "cannot read %s: no game data tables\n", path);
         rt_warn("cannot read %s: no game data tables", rt_log_path(path));
     } else
-        rt_log("boot: SLPM_654.95 loaded");
+        rt_log("boot: %s loaded", rt_ver_elf());
     {
         const char *mso = rt_ms_push("overlay binaries (game/lobby/select.bin)");
-        uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);   /* stored raw */
+        /* stored raw in MH1, packed in G (fmt_mwo_unpack) */
+        uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);
+        ovl = fmt_mwo_unpack(ovl, ovl ? n : 0, &n);
         rt_set_overlay(ovl, ovl ? n : 0);
         ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "lobby.bin"), &n);           /* the village overlay */
+        ovl = fmt_mwo_unpack(ovl, ovl ? n : 0, &n);
         rt_set_lobby(ovl, ovl ? n : 0);
         ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "select.bin"), &n);          /* the boot overlay (title, new hunter, load) */
+        ovl = fmt_mwo_unpack(ovl, ovl ? n : 0, &n);
         rt_set_select(ovl, ovl ? n : 0);
+        if (rt_ver_mhg()) {     /* G: sub_main.bin, resident after main's .bss */
+            ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "sub_main.bin"), &n);
+            ovl = fmt_mwo_unpack(ovl, ovl ? n : 0, &n);
+            rt_set_sub_main(ovl, ovl ? n : 0);
+        }
         rt_ms_pop(mso);
     }
     if (rt_import_data() != 0) {
@@ -2211,7 +2220,12 @@ int main(int argc, char **argv)
          * the quest's own monster instead (the old scripted-test set-up);
          * --stage N overrides both. */
         int k = -1, st;
-        if (rt_quest_load(quest_no) != 0)
+        if (rt_ver_mhg() && boot) {
+            /* G stand-in (docs/mhg.md): the boot's set-up quest is not loaded; G's Quest_start
+             * (sub_main 0x4B3AA0, edited, twice MH1's size) has no G C yet */
+            rt_log_standin("G boot: set-up quest 10 (Quest_start)");
+            rt_quest_free_hunt();
+        } else if (rt_quest_load(quest_no) != 0)
             fprintf(stderr, "quest %d: no mission file\n", quest_no);
         else {
             st = rt_quest_monster_stage(&k);
@@ -2315,7 +2329,8 @@ int main(int argc, char **argv)
         float p[3] = { rx, gy, rz };
         if (getenv("RT_EM_KIND"))       /* test aid: another kind, with its own model */
             em_model_load(0, atoi(getenv("RT_EM_KIND")));
-        rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        if (!(rt_ver_mhg() && boot))    /* G: no set-up quest at power-on (see above) */
+            rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
     }
     /* the hunter on the ground: posed at frame 0, the lowest vertex on the collision floor */
     hunter_pose(&pl, 0, light_cur());

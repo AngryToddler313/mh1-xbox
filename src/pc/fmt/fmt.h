@@ -68,6 +68,11 @@ uint8_t *fmt_afs_load(const fmt_afs *a, const char *name, size_t *len);
 /* ------------------------------------------------------------ melt */
 /* Decompress Meltw; returns malloc'd buffer, *outlen set. NULL on error. */
 uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be);
+/* A code overlay as stored in AFS_DATA.AFS: MH1 keeps the MWo3 module raw,
+ * Monster Hunter G packs it with a 16-bit word LZSS (tools/mwo_unpack.py).
+ * Returns the raw module (header at +0, load address at +8): src itself
+ * when it is raw, else a malloc'd copy (src is freed). NULL on error. */
+uint8_t *fmt_mwo_unpack(uint8_t *src, size_t srclen, size_t *outlen);
 
 /* ------------------------------------------------------------ link */
 int fmt_link_count(fmt_blob f, int be);

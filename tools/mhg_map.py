@@ -759,6 +759,63 @@ def main():
             if gm2:
                 addr_votes[(smod, tg1 & 0xFFFFFFFF)][(gm2, tg2 & 0xFFFFFFFF)] += 1
 
+    # Edited counterparts: align the two instruction streams (opcode tokens, difflib) and
+    # read the global a matching lui/lo pair or gp access refers to on each side. Only for
+    # names no identical/shape twin voted for (agent B, 13 Oct 2026: stage_model_data,
+    # stage_start_pos ... are only used by edited functions).
+    edit_votes = collections.defaultdict(collections.Counter)
+    edit_addr = collections.defaultdict(collections.Counter)
+    for f in f1:
+        gf = f.pair
+        if not gf or f.cls not in ("edited", "rewritten") or f.size > 0x4000 or gf.size > 0x4000:
+            continue
+        rl = rel[f.mod]
+        a1 = M1[f.mod].words(f.addr, f.size // 4)
+        a2 = G[gf.mod].words(gf.addr, gf.size // 4)
+        sm = difflib.SequenceMatcher(None, [token(x) for x in a1], [token(x) for x in a2], autojunk=False)
+        jmap = {}
+        for i0, j0, n in sm.get_matching_blocks():
+            for k in range(n):
+                jmap[i0 + k] = j0 + k
+        his = {}
+        for i in range(len(a1)):
+            r = rl.get(f.addr + 4 * i)
+            if not r or i not in jmap:
+                continue
+            t, idx = r
+            j = jmap[i]
+            if t == HI16:
+                if (a2[j] >> 26) == 0xF:
+                    his[idx] = (i, j)
+                continue
+            if t == LO16 and idx in his:
+                h, hj = his[idx]
+                # same opcode, and the lo uses the register its lui set (on both sides)
+                if (a2[j] >> 26) != (a1[i] >> 26) or ((a2[j] >> 21) & 0x1F) != ((a2[hj] >> 16) & 0x1F) \
+                        or ((a1[i] >> 21) & 0x1F) != ((a1[h] >> 16) & 0x1F):
+                    continue
+                tg1 = ((a1[h] & 0xFFFF) << 16) + (((a1[i] & 0xFFFF) ^ 0x8000) - 0x8000)
+                tg2 = ((a2[hj] & 0xFFFF) << 16) + (((a2[j] & 0xFFFF) ^ 0x8000) - 0x8000)
+            elif t == GPREL:
+                if (a2[j] >> 26) != (a1[i] >> 26) or ((a2[j] >> 21) & 0x1F) != 28:
+                    continue
+                tg1 = MH1_GP + (((a1[i] & 0xFFFF) ^ 0x8000) - 0x8000)
+                tg2 = G_GP + (((a2[j] & 0xFFFF) ^ 0x8000) - 0x8000)
+            else:
+                continue
+            if (tg1 ^ tg2) & 3:
+                continue
+            smod, name, off = sym_name(f.mod, idx, tg1 & 0xFFFFFFFF)
+            gm = g_mod_of(gf.mod, (tg2 - off) & 0xFFFFFFFF)
+            if name and gm:
+                edit_votes[(gm, (tg2 - off) & 0xFFFFFFFF)][name] += 1
+            gm2 = g_mod_of(gf.mod, tg2 & 0xFFFFFFFF)
+            if gm2:
+                edit_addr[(smod, tg1 & 0xFFFFFFFF)][(gm2, tg2 & 0xFFFFFFFF)] += 1
+    for k, v in edit_addr.items():
+        if k not in addr_votes:
+            addr_votes[k] = v
+
     if os.environ.get("MHG_DEBUG_NAME"):
         dn = os.environ["MHG_DEBUG_NAME"]
         for k, v in data_votes.items():
@@ -866,6 +923,26 @@ def main():
     for nm_, v in extra.items():
         taken[nm_] = v
     n_content = len(extra)
+    # names still unplaced: the edited functions' votes, when they agree (all votes on one
+    # address, or that address has at least 3 times the votes of any other)
+    by_name = collections.defaultdict(collections.Counter)
+    for k, v in edit_votes.items():
+        for n, c in v.items():
+            by_name[n][k] += c
+    n_edit = 0
+    for nm_, cnt in by_name.items():
+        if nm_ in taken:
+            continue
+        (best, c1), *rest = cnt.most_common()
+        if rest and rest[0][1] * 3 > c1:
+            continue
+        if best in gaddr_taken:
+            continue
+        extra[nm_] = best
+        taken[nm_] = best
+        gaddr_taken.add(best)
+        n_edit += 1
+    print("data names from edited functions' references: %d" % n_edit, file=sys.stderr)
     n_interp = 0
     for mm in m1_data:
         anc = anchors_for(mm)

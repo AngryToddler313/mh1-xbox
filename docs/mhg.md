@@ -158,3 +158,36 @@ for undecompiled main functions) + about 800 game C files (tools/build_pc.sh lis
 With four agents working in parallel, a first playable G hunt on the PC is an estimate of
 3-5 weeks; the village/menus of G-only features come after. These are guesses based on
 MH1's pace, not measurements.
+
+## 5. G on the PC: first runtime (agent B, 13 Oct 2026; paused here)
+
+Build: `tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g (own tree build/mhg/pctree, so build/pc stays MH1's).
+Run: `build/mhg/pc/mhview_g disc/mhg --boot ...` (saves/logs go to `mhgpc/`, never MH1's `mh1pc/`).
+- tools/mhg_map.py: +974 data names from edited functions (aligned lui/lo and gp references); G rebuild 7 OK.
+- tools/mhg_pcmeta.py: config/mhg/pc_ptrs.txt (G pointer words, addresses only: MH1 relocations carried
+  through same-name objects + a scan; scan checked on MH1, precision 96.6-99.6%, misses are jump tables)
+  and build/mhg/pc/symbols (sized view; 38 unnamed G functions named from pointer tables, e.g.
+  pl01_effect_move = 0x4E2EB0, which mhg_map had paired with 0x4A9150 at 0.56: feed back into mhg_map).
+- tools/gen_rt_meta.py -> rt_meta.c (G symbols, pointers, MH1->G address map); src/pc/rt/rt_ver.c
+  (rt_ver_mhg, RTVA/RTVA_LB/RTVA_SEL); rt_mem.c reads overlay vram/bss from MWo3 headers, sub_main image,
+  G symbols/pointers from meta; fmt_mwo_unpack (melt.c) unpacks G's overlays; gen_rt_tables.py /
+  gen_rt_auto.py have a VERSION=mhg mode (150 tables + 16 D_ names not in G's map: zeros, listed in
+  build/pc/mhg_*missing.txt).
+- f_sphr.c: G load_stage_hit (lwgNNN.bin link: wall entry 0, ground entry 1) under VERSION_MHG.
+
+How far (13 Oct 2026, later): the boot passes the memory-card autoload and shows the Sofdec/ADX logos
+(--time 5) and the title screen (--time 20; hidden --shot runs). The title art is drawn too large/offset
+(only the top-left of the MONSTER HUNTER logo fits on screen): G's title layout or 2D scale differs from
+MH1's title code; look at the title task next, then the press-start menu.
+- The mc_mes_disp crash was not a bad string pointer: card_data_init is edited in G (memset 0x130D0, icon
+  file 0x9B0 loaded at data_load_ptr+0x20000, MH1: 0x11450 / 0x6D3 / +0x12000). With MH1's numbers
+  McActAvailSet read a wrong file and wrote past mc_file_tbl's MCFILE over the McardMsgTbl string arrays
+  (found with a gdb watchpoint). Fixed under VERSION_MHG in mccomb.c / mccomb_nm.c.
+
+Stand-ins (G only): the boot's set-up quest 10 is not loaded and no monster is spawned at power-on
+(viewer.c, rt_log_standin "G boot: set-up quest 10").
+
+Edited/missing functions hit at run time, in blocking order (for agent C):
+1. Quest_start (sub_main 0x4B3AA0, edited, 2052 bytes vs 1136): the boot's set-up quest and every quest.
+2. em_cmd_init / em data tables (crash in em_cmd_init on a spawned Rathian: G's em tables differ).
+3. sun_pos_tbl (MH1 0x2F7160) has no G name yet (data map).

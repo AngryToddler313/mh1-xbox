@@ -1283,3 +1283,8 @@ Lessons:
 - C files that differ after linking in G were all one of: a struct field G moved
   (game_w.master +0xD1 -> +0x3A), literal MH1 work-area addresses (lui 0x3F vs 0x36),
   a callee without a G twin (powf), or a wrong data name.
+
+# G on the PC (13 Oct 2026, paused by the owner)
+See docs/mhg.md section 5: where it stands (boot reaches the memory-card autoload, crash in mc_mes_disp on a
+string pointer of McardMsgTbl), what was built, stand-ins, and the blocking list for agent C. Next: debug that
+pointer (map_ptr), then the logos/title.

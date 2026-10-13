@@ -47,7 +47,11 @@ uint8_t *rt_file_load(int idx, size_t *n)
  * AFS_DATA (12 Oct 2026), so 96 KB and 192 KB (were 512 KB each, 4 MB
  * before that; docs/xbox.md memory). load_file_mdl refuses a file that
  * does not fit; RT_MEM reports how much the game used. */
+#ifndef VERSION_MHG
 static const unsigned hit_area_size[2] = { 96u << 10, 192u << 10 };     /* wall, ground */
+#else
+static const unsigned hit_area_size[2] = { 256u << 10, 512u << 10 };    /* G: not measured yet */
+#endif
 s32 stage_hit_area_w;
 s32 stage_hit_area_f;
 static uint8_t *hit_area[2];
@@ -117,6 +121,13 @@ int load_file_mdl(s32 dst, s32 idx)
 
 void load_stage_hit(int stg);       /* src/main/hit/f_sphr.c */
 
+/* GetLinkFileAddress / GetLinkFileSize (main 0x11F320.., src/main/load/loadf_nm.c, not
+ * linked on the PC): entry n of a link file. G's load_stage_hit splits lwgNNN.bin with
+ * them. Weak: a linked game copy wins. */
+__attribute__((weak)) void *GetLinkFileAddress(u8 *p, int n) { return p + *(int *)(p + n * 8 + 4); }
+__attribute__((weak)) long GetLinkFileSize(u8 *p, int n) { return *(int *)(p + n * 8 + 8); }
+void rt_2d_init(void);
+
 /* Load the stage's wall and ground collision with the game's own
  * load_stage_hit (WallHitInit / GroundHitInit fix the cell pointers). */
 static int rt_load_stage_hit_lt(int stage)
@@ -136,6 +147,7 @@ static int rt_load_stage_hit_lt(int stage)
     memset(hit_area[1], 0xFF, 64);
     stage_hit_area_w = (s32)hit_area[0];
     stage_hit_area_f = (s32)hit_area[1];
+    rt_2d_init();               /* data_load_ptr (G's load_stage_hit loads lwgNNN.bin there) */
     if (!quest_w.x80)           /* the quest's stage table; St_data as quest init (0x226BD0) sets it */
         quest_w.x80 = (s32 *)St_data;
     memset(&diorama_w, 0, sizeof diorama_w);

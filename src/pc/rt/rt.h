@@ -15,6 +15,23 @@
 #include <stdint.h>
 #include "../gfx/gfx.h"
 
+/* ------------------------------------------------------------ game version
+ * (rt_ver.c, docs/mhg.md): MH1 JP or Monster Hunter G (VERSION=mhg build). */
+int rt_ver_mhg(void);
+const char *rt_ver_elf(void);           /* "SLPM_654.95" / "SLPM_658.69" */
+/* This version's address of what MH1 has at `mh1` (set 0: main + game.bin,
+ * 1: lobby.bin, 2: select.bin), through a name both versions have; MH1: mh1
+ * itself; 0 (and a warning) when G's map lacks it. */
+uint32_t rt_va_mh1(int set, uint32_t mh1);
+#define RTVA(a) rt_va_mh1(0, (a))
+#define RTVA_LB(a) rt_va_mh1(1, (a))
+#define RTVA_SEL(a) rt_va_mh1(2, (a))
+/* the overlays' load address (game.bin, lobby.bin, select.bin share it; from the
+ * MWo3 header: 0x533980 in MH1, 0x542600 in G), 0 before one is loaded */
+uint32_t rt_ovl_vram(void);
+/* G's resident sub_main.bin (0x4A0C80, after main's .bss): part of main's space */
+void rt_set_sub_main(uint8_t *bin, size_t n);   /* takes ownership */
+
 /* ------------------------------------------------------------ PS2 memory */
 /* Main ELF (SLPM_654.95) and the game.bin overlay (vram 0x533980), kept in
  * memory so game data tables can be read from the user's own disc files. */

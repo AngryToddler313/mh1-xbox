@@ -338,10 +338,17 @@ u8 *w;
 {
     u8 *d = data_load_ptr;
 
+#ifdef VERSION_MHG     /* G: bigger save image, the icon file is 0x9B0 at +0x20000 */
+    memset(d, 0, 0x130D0);
+    McActInit(0);
+    load_file_mdl(d + 0x20000, 0x9B0);
+    *(s32 *)(w + 0x48) = McActAvailSet(d + 0x20000);
+#else
     memset(d, 0, 0x11450);
     McActInit(0);
     load_file_mdl(d + 0x12000, 0x6D3);
     *(s32 *)(w + 0x48) = McActAvailSet(d + 0x12000);
+#endif
 }
 
 void Mem_mes_disp(s16 y, int idx)

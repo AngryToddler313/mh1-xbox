@@ -153,6 +153,7 @@ static void add_vec_sub2(f32 *, f32 *, f32);
 static int check_slide(HPOLY *, u8 *, s32 *, f32 *, f32);
 static void check_angle(f32 *, s32 *);
 
+#ifndef VERSION_MHG
 void load_stage_hit(int stg) {
     int off = stg * 4;
     s32 a;
@@ -164,6 +165,28 @@ void load_stage_hit(int stg) {
     load_file_mdl(a, *(s32 *)((u8 *)stage_hit_data_f + off));
     GroundHitInit((u32 *)a);
 }
+#else
+/* Monster Hunter G (main 0x1046E0, from the asm; not matched yet): one file per stage,
+ * lwgNNN.bin, a link of the wall HITS (entry 0) and the ground HITS (entry 1), loaded
+ * to data_load_ptr and copied to the two areas. stage_hit_data_w is G's per-stage
+ * table of lwg file numbers. */
+extern void *data_load_ptr;
+void *GetLinkFileAddress(u8 *, int);
+long GetLinkFileSize(u8 *, int);
+void *memcpy(void *, const void *, unsigned int);
+void load_stage_hit(int stg) {
+    u8 *buf = data_load_ptr;
+    s32 a;
+
+    load_file_mdl((s32)buf, *(s32 *)((u8 *)stage_hit_data_w + stg * 4));
+    a = stage_hit_area_w;
+    memcpy((void *)a, GetLinkFileAddress(buf, 0), GetLinkFileSize(buf, 0));
+    WallHitInit((u32 *)a);
+    a = stage_hit_area_f;
+    memcpy((void *)a, GetLinkFileAddress(buf, 1), GetLinkFileSize(buf, 1));
+    GroundHitInit((u32 *)a);
+}
+#endif
 
 static void WallHitInit(u32 *h) {
     u8 *base = (u8 *)h + 8;

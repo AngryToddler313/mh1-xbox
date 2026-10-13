@@ -97,6 +97,12 @@ static void done(int cmd, int res)
 }
 
 
+/* G keeps its own saves, settings and logs (they never mix with MH1's) */
+#ifdef VERSION_MHG
+#define APPDIR "mhgpc"
+#else
+#define APPDIR "mh1pc"
+#endif
 /* The host directory that stands for the card in port 0. */
 const char *rt_mc_root(void)
 {
@@ -107,15 +113,15 @@ const char *rt_mc_root(void)
         if (e && *e)
             snprintf(root, sizeof root, "%s", e);
         else
-            snprintf(root, sizeof root, "%s/mh1pc/memcard0", ad && *ad ? ad : ".");
+            snprintf(root, sizeof root, "%s/" APPDIR "/memcard0", ad && *ad ? ad : ".");
         (void)x; (void)h;
 #else
         if (e && *e)
             snprintf(root, sizeof root, "%s", e);
         else if (x && *x)
-            snprintf(root, sizeof root, "%s/mh1pc/memcard0", x);
+            snprintf(root, sizeof root, "%s/" APPDIR "/memcard0", x);
         else
-            snprintf(root, sizeof root, "%s/.local/share/mh1pc/memcard0", h ? h : ".");
+            snprintf(root, sizeof root, "%s/.local/share/" APPDIR "/memcard0", h ? h : ".");
 #endif
         rt_mkdirs(root);
     }
