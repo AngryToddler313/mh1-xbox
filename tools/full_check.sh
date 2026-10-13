@@ -14,6 +14,7 @@ if [ "$n" = 5 ]; then echo "ok   rebuild (5 OK)"; else echo "FAIL rebuild ($n OK
 step build_pc tools/build_pc.sh
 step build_pc_online env ONLINE=1 tools/build_pc.sh
 for t in tools/test_*.sh; do step "$(basename "$t" .sh)" "$t"; done
+step build_pc_plain tools/build_pc.sh   # the ONLINE=1 build rewrote objs.txt; the Xbox build reads the plain one
 step xbox_null bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py"
 step xbox_nv2a bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --gfx nv2a"
 exit $fail
