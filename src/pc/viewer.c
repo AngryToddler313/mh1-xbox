@@ -2616,6 +2616,18 @@ int main(int argc, char **argv)
             rt_boot_draw();
             goto frame_done;
         }
+        if (quest_no && rt_flow_mode() == 2) {
+            /* game2 steps 3-6 (an area change, after the map and st_model_load): the PS2 game
+             * returns before game_core, so nothing is drawn and flFlip shows a cleared (black)
+             * buffer until step 6 (pl_init, fade_set(2)) fades the new area in. Drawing the
+             * scene here showed the new stage from the old position, without fade, for a frame
+             * (a long one on the Xbox, whose sound loads span ticks). */
+            extern uint8_t game_w[];
+            if (game_w[1] >= 3 && game_w[1] <= 6) {
+                gfx_begin_frame(0);
+                goto frame_done;
+            }
+        }
         if (game_cam) {
             rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
             have_view = 1;
