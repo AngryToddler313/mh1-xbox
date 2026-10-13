@@ -74,7 +74,11 @@ void player_modify(PLW *pl) {
 void player_mk(void) {
     PLW *p = player_work;
     int i;
+#ifdef VERSION_MHG
+    for (i = 0; i < 10; i++) { /* G: 10 weapon slots */
+#else
     for (i = 0; i < 8; i++) {
+#endif
         if (p->be_flag != 0) player_modify(p);
         p++;
     }

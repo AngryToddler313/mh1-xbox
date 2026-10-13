@@ -895,3 +895,11 @@ sub_main 0x004CC6B0 0x004CC870 main/pl/pl67
 main 0x00128110 0x00128560 main/pl/shell_work
 main 0x0020D820 0x0020DBB8 main/sk/cmd04
 main 0x0012A6D0 0x0012AA20 main/sprite/putspr
+main 0x001350E0 0x00135344 main/emw/emw01
+main 0x001341D0 0x00134558 main/weapon/weapon3
+sub_main 0x004E1190 0x004E11D8 main/hit/hitid01
+sub_main 0x004CEA20 0x004CEA30 mhg/main/pl/pl78_sub
+main 0x00127AE0 0x00127B4C mhg/main/pl/pl78_main
+sub_main 0x004B3700 0x004B3774 main/quest/qstb02
+sub_main 0x004B3660 0x004B36FC main/quest/qstb05
+main 0x00135350 0x00135B98 main/emw/emw02

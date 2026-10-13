@@ -5,7 +5,11 @@
 #define S16(p, o)  (*(s16 *)((u8 *)(p) + (o)))
 #define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
 #define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
+#ifdef VERSION_MHG
+#define EMW_SIZE   0xA00
+#else
 #define EMW_SIZE   0xA10
+#endif
 
 typedef struct LPV {            /* camera view (lpView): eye and target, field of view, roll */
     f32 eye[3];                 /* 0x00 */

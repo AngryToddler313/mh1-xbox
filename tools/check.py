@@ -48,8 +48,9 @@ def mhg_rows():
     """(module, addr, size, name) of every G function that has an MH1 name (mhg_map.csv + symbol files)"""
     rows = []
     for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mhg_map.csv"), encoding="utf-8")):
-        if r["g_addr"] and r["name"] and r["class"] != "missing":
-            rows.append((r["g_module"], int(r["g_addr"], 16), int(r["g_size"]), r["name"]))
+        if r["g_addr"] and r["class"] != "missing":
+            name = r["name"] or ("func_%s" if r["g_module"] == "main" else r["g_module"] + "_func_%s") % r["g_addr"][2:].upper().zfill(8)
+            rows.append((r["g_module"], int(r["g_addr"], 16), int(r["g_size"]), name))
     return rows
 
 R_MIPS_32, R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16, R_MIPS_GPREL16 = 2, 4, 5, 6, 7
