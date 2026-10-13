@@ -84,7 +84,7 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
 # accessors and Quest_init, is matched: qstb01-07.c), the tutorial checks it
 # calls (game.bin tutorial.c)
 QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
-       src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
+       src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c src/main/font/dsp02.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \

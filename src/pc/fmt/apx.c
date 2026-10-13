@@ -74,9 +74,22 @@ static int apx_decode(apx_image *img, fmt_blob f, int be)
             } else
                 col16(clut[i], fmt_u16(pal + 2 * i, be));
         }
-        for (i = 0; i < w * h; i++) {
-            unsigned v = bpp == 8 ? px[i] : (px[i >> 1] >> (4 * (i & 1))) & 15;
-            memcpy(img->rgba + 4 * i, clut[v], 4);
+        {   /* one 32-bit store per texel (memcpy of 4 bytes and a bpp test per texel were slow on the Xbox) */
+            uint32_t c32[256], *o = (uint32_t *)img->rgba;
+            uint32_t npx = w * h;
+            memcpy(c32, clut, n * 4);
+            if (bpp == 8)
+                for (i = 0; i < npx; i++)
+                    o[i] = c32[px[i]];
+            else {
+                for (i = 0; i + 1 < npx; i += 2) {
+                    unsigned b = px[i >> 1];
+                    o[i] = c32[b & 15];
+                    o[i + 1] = c32[b >> 4];
+                }
+                if (i < npx)
+                    o[i] = c32[px[i >> 1] & 15];
+            }
         }
     } else if (bpp == 32) {
         for (i = 0; i < w * h; i++)

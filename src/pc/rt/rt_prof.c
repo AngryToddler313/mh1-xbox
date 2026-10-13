@@ -180,7 +180,7 @@ static double wall_ms(void)
 }
 
 static const char *const lname[RTL_N] = {
-    "read", "melt", "texdec", "texup", "model", "motion", "hit", "gc", "snd", "ovl"
+    "read", "melt", "texdec", "texup", "model", "motion", "hit", "gc", "snd", "flip"
 };
 static int lstack[16], ldepth, lt_thr = -1;
 static double lt_last, lt_frame0, lcur[RTL_N], lsum[RTL_N], lev_ms;

@@ -95,6 +95,17 @@ void gfx_rec_clear(void)
 
 int gfx_rec_have(void) { return shown >= 0; }
 
+int gfx_rec_draws(void)
+{
+    size_t i;
+    int n = 0;
+    if (shown < 0)
+        return 0;
+    for (i = 0; i < list[shown].n; i++)
+        n += list[shown].cmd[i].kind != REC_STATE;
+    return n;
+}
+
 int gfx_rec_state(int state, uintptr_t v)
 {
     rec_cmd *c;

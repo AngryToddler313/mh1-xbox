@@ -48,7 +48,7 @@ enum {
     RTL_HIT,            /* collision files */
     RTL_GC,             /* the stage-change clean-ups (motion, 2D, files, host models) */
     RTL_SND,            /* sound packs */
-    RTL_OVL,            /* overlay / village set-up */
+    RTL_FLIP,           /* frames the game shows itself during a load (flFlip: loading screens) */
     RTL_N
 };
 void rt_lt_begin(int zone);

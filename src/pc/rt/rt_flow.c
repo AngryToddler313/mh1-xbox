@@ -147,11 +147,25 @@ void st_model_load(int stage)
         stage_loader(stage);
     rt_lt_span_end();
 }
+/* flFlip (0x16E7F0 on the PS2: swap the frame buffers): the game calls it inside a tick
+ * where it draws a screen and then blocks on a load (game2 step 2: the whole-area map
+ * before st_model_load; game11's Disp_load_start: the quest title; the village's
+ * Disp_NowLoading before Lb_stage_load). The viewer shows what was drawn since the
+ * last flip (viewer.c game_flip); without a viewer it does nothing. */
+static void (*flip_fn)(void);
+void rt_set_flip(void (*fn)(void)) { flip_fn = fn; }
+void flFlip(int n)
+{
+    (void)n;
+    if (flip_fn)
+        flip_fn();
+}
+
 int snd_joint_load() { return 1; }
 int snd_joint_load_pl() { return 1; }
 
 /* ------------------------------------------------ loading / system (no-ops) */
-NOP(flFlip) NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
+NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
 NOP(snd_joint_load_init) NOP(load_bin_req) NOP(flSndPackLoadBG2) NOP(flSndPackLoadBG)
 NOP(view_reset) 
 /* init_light_work (flow02.c): light_init (src/main/model/light_init_nm.c) clears and fills light_work from the stage light rows */
@@ -165,7 +179,6 @@ NOP(Plsel_task) NOP(ot_init) NOP(Load_overlay)
 NOP0(net_start_ck) NOP(net_receive_pl_pos_set)
 #endif
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
-NOP(em_effect_pull) NOP(Disp_load_start)
-NOP(Disp_NowLoading2)
+NOP(em_effect_pull)
 
 /* trans: rt_boot.c (draws only while the boot screens run) */
