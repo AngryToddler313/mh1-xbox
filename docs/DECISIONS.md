@@ -67,6 +67,28 @@ Kept as a fallback for any file that resists matching.
   original data, gameplay-accurate). PS2Recomp, if used, is scaffolding to run
   not-yet-decompiled logic, never the shipped product.
 
+**Monster Hunter G (PS2) is the main release; MH1 was the stepping stone.** (owner, 13 Oct 2026)
+- Japanese MH1 was the starting point only because it kept its debug symbols. G is the
+  definitive game and what the project will release: G with an English script, our
+  modernizations (widescreen and the rest of the PC/Xbox platform layer), and later a
+  Poogie-quest-style minigame (as in Wii G) on an ESP32 gadget.
+- MH1 JP is still finished to a releasable state; fixes found in one game are applied to the
+  others. MH1 US maybe too.
+- MH1 US (disc/mh1_us) matters for its official English script (which covers most text G shares
+  with MH1) and one weapon type new over MH1 JP, which G also has.
+
+**One codebase, several games; priorities G > MH1 JP > MH1 US.** (owner, 13 Oct 2026)
+- One repo and one engine (platform layer, tools, server) for every version. Game C that is the
+  same in two versions is written once; where a version changed a function, that version gets its
+  own copy. Each game is built from the player's own disc; a player with several discs picks the
+  version in a launcher at start-up (precedent: the SM64 decomp builds JP/US/EU from one tree).
+- No hybrid that mixes content between versions (keeps game logic faithful and online
+  compatibility with real PS2 players).
+- Priorities: G is the main effort. MH1 JP is finished to release-ready, then maintenance (it
+  stays the test bench: it has symbols). MH1 US is a cheap later build; now its job is supplying
+  the official English script.
+- Rejected: separate repos per game (triple maintenance, drift).
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)

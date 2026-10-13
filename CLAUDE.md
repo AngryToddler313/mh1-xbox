@@ -33,7 +33,7 @@ decompiled (docs/STATUS.md).
   branches agent-A..F) and a coordinating session that merges into main.
   Agents follow docs/agents/BRIEF.md and keep notes in docs/agents/; the
   coordinating session follows docs/agents/COORDINATOR.md.
-- The owner's discs live in disc/ (gitignored): mh1 (base), mhg (PS2 G),
+- The owner's discs live in disc/ (gitignored): mh1 (base), mh1_us (US release, SLUS_208.96, stripped), mhg (PS2 G),
   mhg_wii (Wii MH G), mhp (PSP Portable), mhf (Frontier 1.0 installer).
 - The owner describes their reverse-engineering experience as "so-so" and
   will rely on Claude for most of the technical work. Keep them in the loop:

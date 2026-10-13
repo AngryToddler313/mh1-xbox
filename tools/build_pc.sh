@@ -418,6 +418,15 @@ cc_obj() {
     echo "$2" > "build/pc/cmd/$1.sh"
     if [ -f "build/pc/adapt/$1.h" ]; then sh -c "$2 -include build/pc/adapt/$1.h"; else sh -c "$2"; fi || exit 1
 }
+# MH1_JOBS=N compiles up to N game files at a time (default 1: one after the other, as before; ./mh1 sets it)
+JOBS=${MH1_JOBS:-1}; NJ=0
+rm -f build/pc/.cc_failed
+cc_obj_p() {
+    if [ "$JOBS" -le 1 ]; then cc_obj "$@"; return; fi
+    { ( cc_obj "$@" ) || touch build/pc/.cc_failed; } &
+    NJ=$((NJ + 1))
+    if [ "$NJ" -ge "$JOBS" ]; then wait; NJ=0; [ ! -f build/pc/.cc_failed ] || exit 1; fi
+}
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables; main's mode menu starts select.bin
 # tasks by address (Demo_task, Edit_task, Cont_task)
@@ -632,9 +641,11 @@ for f in $GAME; do
     # stage code (f_stage_nm.c, f_stageb.c) calls game.bin's Set09_set_ex and the lobby overlay's Eft25_set_pos by address
     case "$f" in src/main/stage/f_stage_nm.c|src/main/stage/f_stageb.c) ABI="$ABI -Dfunc_618F00=Set09_set_ex -Dfunc_60E330=Eft25_set_pos" ;; esac
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
-    cc_obj "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
+    cc_obj_p "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
     OBJS="$OBJS $o"
 done
+wait
+[ ! -f build/pc/.cc_failed ] || { echo "build_pc: a compile failed (see above)"; exit 1; }
 # Which definitions are weak (the copy elsewhere wins): requests for
 # tools/pc_link_adapt.py, which compiles those objects again with a header of
 # "#pragma weak" lines (objcopy --weaken-symbol is ELF-only).

@@ -2004,6 +2004,35 @@ int main(int argc, char **argv)
         }
         xbox_log_start();
         xbox_log_note(disc ? disc : "no AFS_DATA.AFS in D:\\data or E:\\Games\\MH1\\data");
+        {   /* the player's disc files must be complete: a missing or cut-short copy (FTP stopped early) gets a
+             * plain message instead of a crash later (sizes of the Japanese disc's files, docs/PLAYING.md) */
+            static const struct { const char *n; long sz; } need[] = {
+                { "AFS_DATA.AFS", 121866240L }, { "AFS00.AFS", 775729152L },
+                { "AFS01.AFS", 20463616L }, { "SLPM_654.95", 5648908L } };
+            int k, bad = 0;
+            for (k = 0; k < 4 && disc; k++) {
+                long sz = -1;
+                FILE *q;
+                snprintf(path, sizeof path, "%s\\%s", disc, need[k].n);
+                if ((q = fopen(path, "rb")) != NULL) {
+                    if (fseek(q, 0, SEEK_END) == 0)
+                        sz = ftell(q);
+                    fclose(q);
+                }
+                if (sz != need[k].sz) {
+                    char m[160];
+                    snprintf(m, sizeof m, "DATA PROBLEM: %s is %s", need[k].n, sz < 0 ? "missing" : "the wrong size (copy not finished?)");
+                    xbox_log_note(m);
+                    bad = 1;
+                }
+            }
+            if (!disc || bad) {
+                xbox_log_note("The game needs the files of YOUR Japanese Monster Hunter PS2 disc in");
+                xbox_log_note("E:\\Games\\MH1\\data : AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95");
+                xbox_log_note("(about 925 MB, see docs/PLAYING.md). Copy them with FTP, then start again.");
+                exit(1);
+            }
+        }
         if (!getenv("RT_ARGS"))
             boot = 1;       /* RT_ARGS: as on the PC, --boot only when given */
         play = 1;
