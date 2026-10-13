@@ -1180,6 +1180,9 @@ Candidate fixes if it shows up:
    clipper cut at the near plane, if the hardware clips in programmable mode (not checked;
    xemu cannot tell, it clips through OpenGL). Needs a hardware test.
 Check first on hardware: carve and stand inside big monsters, look for triangles across the screen.
+Result (owner, 13 Oct 2026): with the CPU clipping removed the frame rate is "back to where it was",
+so the CPU path was what slowed the game down on hardware. If the smear ever shows, prefer the
+GPU-only candidates 2 or 3.
 
 ### Loader download froze again (13 Oct 2026)
 
