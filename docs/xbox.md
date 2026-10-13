@@ -482,7 +482,7 @@ game logic (8–9 ms).
 
 **RT_PROF on the Xbox** is always on (the Xbox has no environment
 variables). Its report goes to the kernel debug output (DbgPrint) and is
-appended to `E:\mh1_prof.txt` every 300 ticks (10 s). The first xemu or
+written to the game log (stderr = E:\Games\MH1\mh1log.txt, sent by the network loader; until 13 Oct 2026 to E:\mh1_prof.txt) every 300 ticks (10 s). The first xemu or
 console run therefore gives real numbers for every table above.
 
 Next for the frame rate:
@@ -1180,3 +1180,13 @@ Candidate fixes if it shows up:
    clipper cut at the near plane, if the hardware clips in programmable mode (not checked;
    xemu cannot tell, it clips through OpenGL). Needs a hardware test.
 Check first on hardware: carve and stand inside big monsters, look for triangles across the screen.
+
+### Loader download froze again (13 Oct 2026)
+
+Second time: after a long play session, Back + Start, then Monster Hunter from Evolution X: the
+loader posted the log and the server sent the whole XBE, then the Xbox dropped off the network
+(no ping) and hung until a power cycle. Both freezes came right after Evolution X (which runs its
+own network stack and FTP server) launched the loader. Theory, untested: the NIC is still active
+from the dashboard when nxNetInit starts it again (like the dumper's hang after the loader before
+nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
+before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).

@@ -66,10 +66,10 @@ int rt_prof_on(void)
     return on;
 }
 
-/* one report line: stderr on the PC; on the Xbox the kernel debug output
- * (DbgPrint: xemu's / a debug BIOS's log) and E:\mh1_prof.txt (appended,
- * closed after every report so a crash keeps what was written) */
-static FILE *logf;
+/* one report line: stderr (on the Xbox that is E:\\Games\\MH1\\mh1log.txt, which the
+ * network loader sends to the laptop; it used to go to E:\\mh1_prof.txt, which never
+ * left the box and grew by a report every 10 s, forever) and, on the Xbox, the
+ * kernel debug output (DbgPrint: xemu's / a debug BIOS's log) */
 static void out(const char *fmt, ...)
 {
     char buf[256];
@@ -79,14 +79,8 @@ static void out(const char *fmt, ...)
     va_end(ap);
 #ifdef MH1_XBOX
     DbgPrint("%s", buf);
-    if (!logf)
-        logf = fopen("E:\\mh1_prof.txt", "a");
-    if (logf)
-        fputs(buf, logf);
-#else
-    fputs(buf, stderr);
-    (void)logf;
 #endif
+    fputs(buf, stderr);
 }
 
 void rt_prof_begin(int z)
@@ -166,10 +160,4 @@ void rt_prof_frame(void)
         cnt[z] = cnt_max[z] = 0;
     }
     nticks = nframes = 0;
-#ifdef MH1_XBOX
-    if (logf) {
-        fclose(logf);
-        logf = NULL;
-    }
-#endif
 }
