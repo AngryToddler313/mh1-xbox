@@ -599,7 +599,7 @@ void rt_player_tick(int no)
     }
     if (getenv("RT_PL_GOD") || rt_dbg.god) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA);
                                                     * the debug menu's "can't faint" */
-        PF(&player_work[no], s16, 0x302) = rt_ver_mhg() ? 30000 : 100;  /* G: a high-rank hit takes more than 100 in one
+        PF(&player_work[no], s16, 0x302) = getenv("RT_PL_GOD") && rt_ver_mhg() ? 30000 : 100;  /* test aid on G: a high-rank hit takes more than 100 in one
                                                                             * tick (quest 9's Rathian carted a GOD hunter); Pl_vital_calc
                                                                             * clamps it to the maximum after the hit */
         PF(&player_work[no], s16, 0x7AA) = 0;

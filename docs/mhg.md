@@ -311,7 +311,7 @@ G offline quests (14 Oct 2026, agent A; docs/agents/agent-A.md "G round 5"): too
 96/98 load, spawn, clear with the aids, fail on time-out; carts (3 faints) fail quest 9. Found for other lanes:
 - player (pl): G's item_action_set (game 0x54D8C0) uses G item ids; the PC runs MH1's (only the tool ids are
   G now, f_pl.c). Using potions, whetstones etc. on G is wrong until it is ported.
-- hit: quest 25 / 10046 (kind 15, stage 70) crash now and then in hit_calc_shl -> hit_data_expand ->
+- hit: quests 25 / 41 / 10046 crash now and then (about 1 run in 4) in hit_calc_shl -> hit_data_expand ->
   flmatGetTrans (a shell's owner joint, fault in host memory; about 1 run in 4).
 - stage (B/D): the per-stage tables G grew to 92 (stage_fog_tbl, ground_tbl_add, st_sun_rgba_tbl,
   pl_light_tbl2) stay at MH1 size: at G size the village crashed in GetGroundHitStatusAreaPl.
