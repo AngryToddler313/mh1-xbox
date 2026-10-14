@@ -174,6 +174,48 @@ that the game does not tick while the menu is open and runs on after Esc, and th
 Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, quest 131 and the pause menu at
 960x720 4:3 and 1280x720 widescreen, plus --msaa 4 --aniso 8 --filter2d nearest; the PC test set at the defaults.
 
+### Debug menu (agent E, 14 Oct 2026)
+
+For testers, on every build (PC, Windows, ARM, Xbox; MH1 and G): **Back + R3** on a controller, **F9** on the PC
+keyboard. Players' description and the row list: docs/PLAYING.md "Debug menu for testers". Code:
+- src/pc/dbgmenu.c (platform side): pages (main, quests, areas, pouch / box, item picker, equipment, equipment list),
+  controller / keyboard / mouse input, drawing. It draws with the game's own font (rt_font.c `rt_font_dbg_text`, its own
+  white palette and glyph textures) and untextured quads, in the 640 x 448 text frame through gfx_draw_2d, so the GL and
+  nv2a backends show the same picture and Japanese names need nothing extra. The hit volumes are projected with
+  gfx_project and drawn as thin quads in the 512 x 448 frame.
+- src/pc/rt/rt_dbg.c (game side): quests (MH1 `questName` + the Elder's `quest_local_tbl` for the star level; G
+  `quest_file_tbl` groups, checked against the AFS file names mNNNNN.mib; title / goal from the mission file's own text
+  offsets: MH1 header +0x60 / +0x64, G the string table at the offset in +0x60), areas (the quest file's exit lists, the
+  table Stage_mv_data_get reads, checked against the mission buffer; the warp sets PLW+0x738 / +0x73A / +0x73C.. and
+  Pl_ofs_set as stage_mv_ck does, game2 steps 2-6 do the load), items (`item_str`, `Item_data` +3 stack limit; G's
+  item_str is 523 entries: config/mhg/pc_data.txt), pouch (PLW+0x828 in a quest, User_data+0x37C otherwise), item box
+  (User_data+0x1C4; G through UDO, lbsys_g.h), money (+0x20), MH1 hunter rank (+0x37B) and Quest_clear_bit_set,
+  equipment (Ken_data / Gun_data / Armor_*_Data names; MH1 Warehouse_equip_stack + Warehouse_equip + Set_equip_idx, the
+  game's own equipment-box functions; G writes its equipped set at User_data+0xC74.. as G's Get_equip_value reads it).
+- Toggles reuse the test-aid code: rt_dbg.god = the RT_PL_GOD block, rt_dbg.warp_em_slot = the RT_PL_WARP_EM block (target:
+  the living monster of the hunter's area with the most hp), rt_dbg_hits (after hit_check, rt_hit_check) does the damage
+  multiplier and one-hit kills for every monster hit that tick, the "kill" request (as RT_PL_SLAY) and the stopped timer.
+- viewer.c: `read_pad` (each tick's pad, also takes the open combo out), dbgmenu_hold_ticks in the three tick-hold tests
+  (as menu_hold_ticks), the per-frame pad for the menu (the --input script feeds it while it is open, one step per drawn
+  frame), dbgmenu_draw after menu_draw, the actions dbg_start_quest (rt_village_leave, rt_world_reset, all_reset,
+  quest_from_village: the village counter's path), dbg_village (game mode 6; Event_flag 2 for the intro), dbg_title
+  (rt_boot_init: the power-on sequence; select.bin's data re-imported), and the free camera (cam[] from the game eye,
+  WASD / mouse as the old free-fly viewer; the keyboard stops driving the hunter while it is on).
+- Buttons held when the menu closes are kept from the game until released (circle / cross / Enter would act at once).
+- On / off: on unless built with `MH1_RELEASE=1` (tools/build_pc.sh, tools/build_xbox.py add -DMH1_RELEASE); mh1pc.ini
+  `debug_menu = 1/0`, `--debug-menu` / `--no-debug-menu` (Xbox: RT_ARGS), RT_DEBUG_MENU=1/0 decide over the default.
+  Only with --play / --boot / --input (the viewer's free-play mode has no game to edit).
+- Test: `tools/test_dbgmenu.sh` (after test_quest_loop.sh): village edits with the game paused, quest 131 from the list,
+  quest 10 killed from the menu, frame step, and G (quest list 244 entries, quest 4, pouch). `tools/dbg_keys.py` turns
+  "open d5 x x r1 o" into an --input script; RT_DBG_SHOTS=prefix writes prefix_NN.png of each new menu page.
+- Checked in xemu (MH1 nv2a build, hidden, scripted pad from D:\data\input.txt with RT_ARGS=--quest 10 --play): the
+  menu, the quest list and the pouch page look as on the PC; quest 134 started from it. Not checked: a real controller
+  or keyboard (all runs scripted), the real Xbox, G on the Xbox, the free camera (needs a window and a mouse), MH1's
+  "with intro" village path from the title screen, and how many draw calls the real NV2A takes for the menu (one per
+  glyph; xemu drew 15-25 fps with it open).
+- Limits: area names are numbers (no name table found yet); "Title screen" re-runs the boot without reloading main's
+  data tables (a fresh power-on is safer before a long session); equipment changes show from the next area / quest.
+
 ## Build
 
 Players: `./mh1 linux|windows|xbox DISC` does everything below (disc check, tool check, build, data copy); see
