@@ -40,8 +40,13 @@ Agents: when you trip over something curious, add a short entry here in the same
   and the table entry is a leftover [checked for the main module's mkTexture callers; a load by
   a computed slot number elsewhere is not ruled out]. The Xbox `xb` files, by contrast, are not
   even in the table.
-  Next look (owner's idea): point slot 2 or 5 at entry 10 in the PC build for a quick look at it
-  on screen, and compare with G and the US disc (G still ships the file).
+  **Seen in game (14 Oct):** the PC build has a debug switch `RT_FILEDEF=SLOT:ENTRY`
+  (src/pc/rt/rt_2d.c). With `RT_FILEDEF=2:10` cockpit2 replaces the HUD atlas cpit1ps: the HUD
+  cuts its sprites out of the wrong picture, so the mock-up's baked-in item name box and its red
+  "12" counter appear top left where the clock / compass belongs [checked: hidden quest-10 shot].
+  The HUD's sprite rectangles were made for cpit1ps, so this only shows pieces, not the design as
+  it was meant to look; the mock-up's own layout code no longer exists [guess].
+  Try it: `RT_FILEDEF=2:10 tools/play.sh quest 10` (or 5:10 for the other atlas slot).
 
 ## Leftover developer features
 

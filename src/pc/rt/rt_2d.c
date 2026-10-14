@@ -156,9 +156,26 @@ int load_texlist(int id, int base, int type)
     return n;
 }
 
+/* RT_FILEDEF=SLOT:ENTRY[,SLOT:ENTRY...]: load AFS_DATA entry ENTRY where the game asks for
+ * filedef_sys[SLOT] (a debug look at unused files, e.g. RT_FILEDEF=2:10 shows cockpit2.apx,
+ * docs/FINDS.md, in place of the HUD atlas cpit1ps) */
+static int filedef_entry(int file)
+{
+    const char *e = getenv("RT_FILEDEF");
+    int slot, entry, n;
+    while (e && sscanf(e, "%d:%d%n", &slot, &entry, &n) == 2) {
+        if (slot == file)
+            return entry;
+        e = strchr(e, ',');
+        if (e)
+            e++;
+    }
+    return filedef_sys[file];
+}
+
 void mkTexture(int file, int idx, int type)
 {
-    load_file_mdl(data_load_ptr, filedef_sys[file]);
+    load_file_mdl(data_load_ptr, filedef_entry(file));
     mem_tex[idx] = (u32)(uintptr_t)flCreateTextureFromApx_mem(data_load_ptr, f_type[type]);
 }
 /* load_pit (0x274E10): the cockpit (HUD) textures: PIT_TEX[1] list at
