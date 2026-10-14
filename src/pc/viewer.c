@@ -399,6 +399,15 @@ static uint8_t *afs_entry(int idx, size_t *n)
             rt_warn("file %s (AFS_DATA entry %d) could not be read / decompressed", afs.name[idx], idx);
         else if (getenv("RT_MEM_FILES"))
             fprintf(stderr, "memstat: loader file %s %zu\n", afs.name[idx], *n);
+        if (p && rt_ver_mhg() && rt_text_active() && strlen(afs.name[idx]) == 9 && afs.name[idx][0] == 'm' &&
+            !strcmp(afs.name[idx] + 6, ".mib")) {   /* G mission file mNNNNN.mib: English quest text */
+            size_t cap = *n + 0x4000;
+            uint8_t *q = realloc(p, cap);
+            if (q) {
+                p = q;
+                *n = rt_text_quest_g(atoi(afs.name[idx] + 1), p, *n, cap);
+            }
+        }
         return p;
     }
 }
