@@ -158,6 +158,7 @@ void sfd_audio_fill(sfd *s, int bytes)
 int sfd_audio_rate(const sfd *s) { return s->ah_ok ? s->ah.rate : 0; }
 int sfd_audio_channels(const sfd *s) { return s->ah_ok ? s->ah.ch : 0; }
 int sfd_audio_done(const sfd *s) { return s->a_done; }
+size_t sfd_video_backlog(const sfd *s) { return s->vq.wr - s->vq.rd; }
 
 int sfd_audio_pull(sfd *s, int16_t *out, int frames)
 {
