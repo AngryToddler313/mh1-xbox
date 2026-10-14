@@ -145,6 +145,16 @@ void hit_calc_shl(HSHL *sh, HCHR *pl, HCHR *c) {
                         k2 = hit_data_expand(c, eb, &cap2, &sph2);
                         break;
                     }
+#ifdef VERSION_MHG
+                    if (eb->flag & 4) {
+                        if (c->x8C3 != 0) {
+                            goto next_eb;
+                        }
+                        if (sh->atk_type != 6 && sh->atk_type != 9) {
+                            goto next_eb;
+                        }
+                    }
+#endif
                     if (sh->atk_type == 6 || sh->atk_type == 9) {
                         if (!(eb->flag & 1) || c->x8C3 != 0) {
                             goto next_eb;

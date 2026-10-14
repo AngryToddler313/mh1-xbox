@@ -193,6 +193,7 @@ segments:
       - [0x03EB60, asm, text/hit_hit_sub_em]
       - [0x03FCE0, c, main/hit/hitb]
       - [0x03FD78, asm, text/hit_calc_shl]
+      - [0x03FD80, c, main/hit/hitd]
       - [0x040300, c, main/hit/hitc]
       - [0x040508, asm, text/Hit_id_init]
       - [0x040510, c, main/hit/hitid01]

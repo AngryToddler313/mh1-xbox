@@ -29,3 +29,4 @@ PROVIDE(fight_bgm_tbl = 0x002895D8);
 PROVIDE(yn_tbl = 0x002EC178);
 PROVIDE(pl_move = 0x00562B80);
 PROVIDE(NPCZoomInCameraRequest = 0x001DC0D0); /* G-only address of MH1 NPCZoomInCameraRequest (src/mhg/main/cam/camd_g.c) */
+PROVIDE(D_63FA10 = 0x00672ED0); /* monster hit-body tables by kind (read in sub_main hit_calc_shl: lui 0x67, +11984) */
