@@ -2,6 +2,7 @@
  * from the asm, near-match C not built; matching runs are built as menuNN.c.
  * Field meanings and struct names are guesses. */
 #include "menu.h"
+#include "gwx.h"
 #include "em.h"
 #include "pl.h"
 #include "fl.h"
@@ -1988,9 +1989,10 @@ void DispFrameMessageA(void *, int, int);
 void flps0004(void *);
 int Pl_item_num_ck3(PLW *, u16);
 f32 flSqrt(f32);
-#define BOX_ID(i)   (*(u16 *)((u8 *)&game_w + 0x128 + (i) * 4))
-#define BOX_NUM(i)  (*(s16 *)((u8 *)&game_w + 0x12A + (i) * 4))
-#define BOX_FLAG(i) ((*(s32 *)((u8 *)&game_w + 0x1A8 + ((i) >> 5) * 4)) & (1 << ((i) & 0x1F)))
+/* the reward list and its taken-flags (game_w reward_item / x1A8; GWX: G moved both) */
+#define BOX_ID(i)   (*(u16 *)((u8 *)&game_w + GWX(0x128) + (i) * 4))
+#define BOX_NUM(i)  (*(s16 *)((u8 *)&game_w + GWX(0x128) + 2 + (i) * 4))
+#define BOX_FLAG(i) ((*(s32 *)((u8 *)&game_w + GWX(0x1A8) + ((i) >> 5) * 4)) & (1 << ((i) & 0x1F)))
 
 /* 0x1327D0 */
 void trans_box(void) {

@@ -635,9 +635,8 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
 
     sh->xCB = 0;
 #ifdef VERSION_MHG
-    /* G (sub_main 0x4DF7E0): one hit-zone table per monster state, picked by EMW byte G 0x9FB
-     * (MH1 layout 0xA03; nothing on the PC sets it yet, so state 0) */
-    meat = &((EM_MEAT **)em_meat_tbl[c->kind])[*(s8 *)((u8 *)c + 0xA03)][eb->num];
+    /* G (sub_main 0x4DF7E0): one hit-zone table per monster state, picked by EMW meat_no (G 0x9FB) */
+    meat = &((EM_MEAT **)em_meat_tbl[c->kind])[((EMW *)c)->meat_no][eb->num];
 #else
     meat = &em_meat_tbl[c->kind][eb->num];
 #endif

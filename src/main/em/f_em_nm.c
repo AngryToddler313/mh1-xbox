@@ -42,6 +42,8 @@ extern u8 player_work[];
 typedef struct QUEST_W_EM {
     u8 _pad00[8];
     s16 no;             /* 0x08 quest number (0: free hunt) */
+    u8 _pad0A[0x14E - 0xA];
+    s8 x14E;            /* 0x14E G: the quest's monster level (Quest_start) */
 } QUEST_W_EM;
 extern QUEST_W_EM quest_w;
 
@@ -175,6 +177,17 @@ void em_init_sub(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G (sub_main 0x4E92D0): the monster's scale from its base scale and its size in percent. */
+void em_size_scale_set(EMW *em) {
+    f32 s = (f32)em->size / 100.0f;
+
+    em->scale[0] = em->base_scale * s;
+    em->scale[1] = em->base_scale * s;
+    em->scale[2] = em->base_scale * s;
+}
+#endif
+
 /* 0x10BAD0: clears the status/hate/anger work and loads the per-kind
  * values (size, scale, hunger/thirst/sleep limits, area data). */
 void em_status_init(EMW *em) {
@@ -212,6 +225,12 @@ void em_status_init(EMW *em) {
     em->scale[0] = enemy_scale[em->kind];
     em->scale[1] = enemy_scale[em->kind];
     em->scale[2] = enemy_scale[em->kind];
+#ifdef VERSION_MHG
+    em->base_scale = enemy_scale[em->kind];     /* G 0x4E9400: the size applies to every kind but 0x12, 0xA */
+    if (em->kind != 0x12 && em->kind != 0xA) {
+        em_size_scale_set(em);
+    }
+#endif
     if (quest_w.no == 0) {
         em->ang[0] = 0;
         em->ang[1] = 0;
@@ -317,6 +336,9 @@ void em_status_init(EMW *em) {
     EW(0x9D4) = 0;
     EB(0x8BA) = 0;
     EB(0x877) = 0;
+#ifdef VERSION_MHG
+    em->meat_no = 0;    /* G 0x4E96D0: hit zones of the normal state */
+#endif
 }
 
 /* 0x10BE30: step 0 of enemy_mv. */
@@ -325,6 +347,9 @@ void em_init(EMW *em) {
 
     em_work_set(em);
     em->x04++;
+#ifdef VERSION_MHG
+    em->lv = quest_w.x14E;  /* G 0x4E9720: the quest's monster level (Quest_start) */
+#endif
     em->x10 = 1;
     EB(0x1E) = 0;
     EB(0x88E) = *((u8 *)&game_w + 0xD1);

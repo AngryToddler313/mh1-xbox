@@ -116,11 +116,16 @@ void weapon_create_model(int a, int b, int c) { (void)a; (void)b; (void)c; }
  * otherwise the bare part (0) is used. Face = PLW+0x353 - 1, its skin
  * colour PLW+0x607 = skin_col_tbl_m/_f[face]; no helmet = the hair style
  * PLW+0x34E. */
-extern u8 Armor_Head_Data[][0x14], Armor_Body_Data[][0x14], Armor_Arm_Data[][0x14],
-    Armor_Waist_Data[][0x14], Armor_Leg_Data[][0x14];
+#ifdef VERSION_MHG
+#define ARMOR_SZ 0x20       /* G's armour records (include/plequip.h) */
+#else
+#define ARMOR_SZ 0x14
+#endif
+extern u8 Armor_Head_Data[][ARMOR_SZ], Armor_Body_Data[][ARMOR_SZ], Armor_Arm_Data[][ARMOR_SZ],
+    Armor_Waist_Data[][ARMOR_SZ], Armor_Leg_Data[][ARMOR_SZ];
 extern u8 skin_col_tbl_m[], skin_col_tbl_f[];
 extern s16 reg_nude_model[], body_nude_model[], arm_nude_model[];   /* [sex * 4 + skin] each */
-static u8 armor_model(const u8 (*tbl)[0x14], int piece, int sex, u8 none)
+static u8 armor_model(const u8 (*tbl)[ARMOR_SZ], int piece, int sex, u8 none)
 {
     const u8 *e = tbl[piece];
     if (sex == 0)

@@ -158,7 +158,9 @@ typedef struct EMW {
     f32 uv[4][3];       /* 0x5C0 texture scroll per slot (x, y, unused) */
     u16 uvtm[4];        /* 0x5F0 slot timer, 0xFFFF idle */
     u8 uvty[4];         /* 0x5F8 slot type, 0xFF none */
-    u8 _pad5FC[0x60C - 0x5FC];
+    u8 _pad5FC[0x600 - 0x5FC];
+    f32 base_scale;     /* 0x600 G: enemy_scale[kind] before the size (em_status_init, em_size_scale_set) */
+    u8 _pad604[0x60C - 0x604];
     u16 neck_tgt;       /* 0x60C neck target angle, relative (em_neck_move_sub) */
     u16 neck_ang;       /* 0x60E current neck angle */
     u8 _pad610[0x616 - 0x610];
@@ -385,8 +387,9 @@ typedef struct EMW {
     u8 x95C;            /* 0x95C 2 while dying (em19) */
     s8 x95D;            /* 0x95D (em14_sasari_ck) */
     u16 x95E;           /* 0x95E */
-#ifdef VERSION_MHG
-    u8 _pad960[0x9C8 - 0x960 - 8]; /* G: every field from here on sits 8 bytes lower (offset comments below are MH1's) */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    u8 _pad960[0x9C8 - 0x960 - 8]; /* G: every field from here on sits 8 bytes lower (offset comments below are MH1's);
+                                    * the PC keeps MH1's offsets (its C mixes fields and raw MH1 offsets) */
 #else
     u8 _pad960[0x9C8 - 0x960];
 #endif
@@ -416,10 +419,21 @@ typedef struct EMW {
     u8 _pad9F2[0x9F3 - 0x9F2];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
-    u8 _pad9F4[0xA00 - 0x9EC]; /* G: EMW is 0xA00 bytes (Sansai_talk_ck stride) */
+    u8 _pad9F4[0x9F8 - 0x9EC]; /* G: EMW is 0xA00 bytes (Sansai_talk_ck stride) */
+    u16 size;           /* G 0x9F8 size in percent (QEM+0x30; scale = base * size / 100, sub_main 0x4E92D0) */
+    u8 _pad9FA[0x9FB - 0x9FA]; /* G 0x9FA: MH1's 0xA00 byte (set by em01/08/15/20 AI) */
+    s8 meat_no;         /* G 0x9FB hit-zone table of the monster's state (em_meat_tbl[kind][meat_no]) */
+    s8 lv;              /* G 0x9FC level 0-14 (quest_w.x14E at em_init, +1 per revival); part durability */
+    u8 _pad9FD[0xA00 - 0x9FD];
 #elif defined(VERSION_MHG)
-    u8 _pad9F4[0xA10 - 0x9EC]; /* G on the PC: keep MH1's 0xA10 stride, which the local EMX/EWK copies in
-                                * src/main/emw (EMW_SIZE) and em_work's host array use (agent A) */
+    /* G on the PC: MH1's layout and 0xA10 stride, which the local EMX/EWK copies in src/main/emw
+     * (EMW_SIZE) and em_work's host array use, and all MH1 C on the PC reads (raw offsets are MH1's).
+     * G's new fields (G 0x9F8 / 0x9FB / 0x9FC) sit in MH1's spare tail (agent A) */
+    u8 _pad9F4[0xA02 - 0x9F4];
+    u16 size;           /* 0xA02 (G 0x9F8) size in percent */
+    s8 meat_no;         /* 0xA04 (G 0x9FB) hit-zone table of the monster's state */
+    s8 lv;              /* 0xA05 (G 0x9FC) level 0-14 */
+    u8 _padA06[0xA10 - 0xA06];
 #else
     u8 _pad9F4[0xA10 - 0x9F4];
 #endif

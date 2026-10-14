@@ -85,11 +85,7 @@ em_hit_push_tbl = 0x00673150; // size:0xD0
 em_pos_tbl = 0x00673D70; // size:0xD0           # (em_status_init)
 em_hagi_type_tbl = 0x006D5D50; // size:0x10     # G: 4 pointers (quest rank, mission header 0x42) to per-kind carve tables (Em_hagi_point_set 0x4B7250)
 Item_get_tbl = 0x006D4350; // size:0x3A0        # (Stage_item_probability_get; agent C found it too)
-em01_runaway_timer_tbl = 0x00694660; // size:0xA0
 em12_scale_tbl = 0x0069D540; // size:0x2C
-em14_stay_timer_tbl = 0x006A03D0; // size:0xA0
-em15_runaway_timer_tbl = 0x006A4970; // size:0xA0
-em21_runaway_timer_tbl = 0x006B6010; // size:0xA0
 em29_type_tbl = 0x006BAFC0; // size:0x54
 st45_pos_tbl = 0x0069D570; // size:0x78
 st56_pos_tbl = 0x0069D710; // size:0x78
@@ -105,3 +101,49 @@ em_species_tbl = 0x004FEE90; // size:0xD0           # per monster kind: pointer 
 shell00_body_tbl = 0x006C7CD0; // size:0x30     # 12 entries (MH1 9): G shell00_i (0x669260) reads it
 [sub_main]
 em_meat_tbl = 0x00509410; // size:0xD0          # G: per kind a list of hit-zone tables by monster state (G hit_hit_sub_em)
+# Monster state (agent A, G hunts without test aids)
+[sub_main]
+em_size_max_tbl = 0x004FD8E0; // size:0x68         # per species (em_species_tbl byte): u16 largest size a returning monster grows to (Quest_enemy_revival_set)
+quest_kill_msg = 0x0052633C; // size:0x4           # pointer to the message shown when the mission's kill count is reached (sub_main 0x4B55F0)
+[game]
+hagitori_eft_tbl = 0x00678160; // size:0x118       # G: 14 entries of 0x14 {kind, part, lv, state, s32 joint, f32 ofs[3]} (em_hagitori_lv_up; state 1 -> EMW meat_no 1)
+# Armour (G records are 0x20 bytes: MH1's 0x14 + 12; include/plequip.h EQ_ARMOR). Ends from the record walk (a name
+# pointer at +0x10 in every record); Body/Arm are the data_map candidates the G code at main 0x114B9C confirms (D_519E20, D_51B9A0)
+[sub_main]
+Armor_Head_Data = 0x005180A0; // size:0x1D80       # 236 pieces
+Armor_Body_Data = 0x00519E20; // size:0x1B80       # 220
+Armor_Arm_Data = 0x0051B9A0; // size:0x1B20        # 217
+Armor_Waist_Data = 0x0051D4C0; // size:0x19A0      # 205
+Armor_Leg_Data = 0x0051EE60; // size:0x1960        # 203
+# Monster stay / run-away timers per stage: G keeps {stage, value} lists ending in {-1, default} (game 0x54A1D0/0x54A230,
+# addresses from each emNN_init's calls); rt_data.c g_stage_lists expands each into MH1's per-stage array (128 stages)
+[main]
+em01_stay_timer_tbl = 0x002ECD1C; // size:0x100
+[game]
+em01_runaway_timer_tbl = 0x00694660; // size:0x100
+[main]
+em02_stay_timer_tbl = 0x002ED0DC; // size:0x100
+em02_runaway_timer_tbl = 0x002ED0E0; // size:0x100
+em08_stay_timer_tbl = 0x002ED2E0; // size:0x100
+em08_runaway_timer_tbl = 0x002ED2E4; // size:0x100
+[game]
+em14_stay_timer_tbl = 0x006A03D0; // size:0x100
+[main]
+em14_runaway_timer_tbl = 0x002ED5A8; // size:0x100
+em15_stay_timer_tbl = 0x002ED6D4; // size:0x100
+[game]
+em15_runaway_timer_tbl = 0x006A4970; // size:0x100
+[main]
+em17_stay_timer_tbl = 0x002ED960; // size:0x100
+em17_runaway_timer_tbl = 0x002ED964; // size:0x100
+em20_stay_timer_tbl = 0x002EE060; // size:0x100
+em06_runaway_timer_tbl = 0x002EE068; // size:0x100
+em20_runaway_timer_tbl = 0x002EE070; // size:0x100
+em21_stay_timer_tbl = 0x002EE258; // size:0x100
+[game]
+em21_runaway_timer_tbl = 0x006B6010; // size:0x100
+[main]
+em27_stay_timer_tbl = 0x002EE2F0; // size:0x100
+em27_runaway_timer_tbl = 0x002EE2F4; // size:0x100
+em33_stay_timer_tbl = 0x002EE550; // size:0x100
+em33_runaway_timer_tbl = 0x002EE554; // size:0x100

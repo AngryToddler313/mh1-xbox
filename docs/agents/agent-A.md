@@ -727,3 +727,29 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
   unknown em command.
 - Tool kept in scratch (not committed): an aligned lui/lo resolver for MH1 table names over edited G
   twins (votes in the commit message of pc_data entries "by vote").
+
+## G round 3: monster state, reward list, armour, stage timers (14 Oct 2026)
+
+- EMW (include/em.h): the PC G build now keeps MH1's EMW layout everywhere (the G -8 shift of the tail and
+  EM_FIELD's shift are MWCC-only): the PC's C mixes named fields and raw MH1 offsets, so the shift had split
+  them. G's new fields: size (G 0x9F8, %), meat_no (G 0x9FB, hit-zone table), lv (G 0x9FC, level); on the PC
+  at 0xA02/0xA04/0xA05; base_scale at 0x600.
+- Writers ported (G asm, under VERSION_MHG): em_init lv = quest_w.x14E; em_status_init meat_no = 0, base
+  scale + em_size_scale_set (sub_main 0x4E92D0); Em_direct_set size from QEM+0x30; Quest_enemy_revival_set
+  (+5% size up to em_size_max_tbl[species], level +1 to 14); Quest_enemy_die (kill-count message 0x4B55F0,
+  "N of kind" counter, per-kind kill counts and biggest size); em_hagitori_lv_up (G table 14 x 0x14, species
+  compare, state byte -> meat_no 1: Gravios belly); em02_main kind 0x24 meat_no 1 between 20-50% hp.
+  rt_pull_enemy_work sets size 100 (G's spawners all set it).
+- Subspecies: em_cmd_flag_set/clear/ck kind 7|0x32, 0xF|0x2D; Em_Dmg_Sys kind 2|0x24, 7|0x32.
+- Reward: remuneration_item_set cleared MH1's game_w+0x128 (G list is at 0x100): supply-box items stayed in
+  the reward list; now cleared through GWX. trans_box (menu_disp_nm.c) read the list at MH1 offsets: GWX.
+- Armour: G records are 0x20 (pc_data: all five tables at G sizes); ud_nm.c / rt_pl.c strides (ARMOR_SZ,
+  GUN_SZ). Stay/run-away timers: G keeps {stage, value} lists ending {-1, default} (game 0x54A1D0/0x54A230);
+  rt_data.c g_stage_lists expands them (21 lists, pc_data). gen_rt_tables.py: pc_data now wins over a
+  tables.txt MH1-address line (em12_scale_tbl, st45/st56_pos_tbl were silently zero).
+- Checked: G quest 10 without RT_EM_HP/RT_DMG_MUL (GOD + warp/follow aids): Rathian flies between areas,
+  takes 1-5 per hit (MH1 same script: 1-6), 900 s not won. With the aids: kill -> reward list without supply
+  items (205, 205, 212; a "1:0" first entry left to look at) -> money -> mode 6.
+- Open: G em_dur_init/em_dur_set level bonus (needs G em*_init part flags EMW+0x7D4); reward screen not
+  looked at in a picture; Shell_data, St_data, Equip_Bonus, em_hp_vital_tbl, monster_data still zero
+  (G changed them; need G code copies); no quest failure run; no G-only monster quest tried.

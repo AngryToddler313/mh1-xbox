@@ -714,12 +714,20 @@ u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
                 em->x302 = 1;
             }
             Em_Mode_Chg(em, 1, em_atk_mode_timer_tbl[em->kind]);
+#ifdef VERSION_MHG    /* G (game 0x583EE0): with the subspecies 0x24 / 0x32 */
+            if ((em->kind == 2 || em->kind == 0x24) && (em->x3F0 == 9 || em->x3F0 == 6)) {
+#else
             if (em->kind == 2 && (em->x3F0 == 9 || em->x3F0 == 6)) {
+#endif
                 goto hagi;
             }
             return 0;
         }
+#ifdef VERSION_MHG
+        if ((em->kind == 7 || em->kind == 0x32) && em->stg != 0xC && em->x302 < 0x3E8) {
+#else
         if (em->kind == 7 && em->stg != 0xC && em->x302 < 0x3E8) {
+#endif
             em->x302 = 0x3E8;
         }
         if (em->x302 <= 0) {

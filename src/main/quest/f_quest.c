@@ -650,6 +650,41 @@ int arg;
     return 0;
 }
 
+#ifdef VERSION_MHG
+extern u16 em_size_max_tbl[];   /* G 0x4FD8E0: per species, the largest size a returning monster grows to */
+extern char *quest_kill_msg;    /* G 0x52633C: message when the mission's kill count is reached */
+extern u8 *em_species_tbl[];
+static int sub_main_func_004B7920(s16 kind);
+void em_size_scale_set(EMW *em);
+void em_dur_init(EMW *em);
+void se_req(int, int, int);
+
+/* G (sub_main 0x4B7A60): kinds that grow 5% each time they come back (sub_main_func_004B7920's
+ * list without kind 0x21) */
+static int em_revival_grow_ck(s16 kind)
+{
+    return kind != 0x21 && sub_main_func_004B7920(kind) == 1;
+}
+
+/* G (sub_main 0x4B55F0): mission header 0x45 == 2: count kills of kind header 0x46; at the
+ * count in header 0x47 show the message and play SE 0x77 once */
+static void quest_kill_count_ck(EMW *e)
+{
+    if (quest_w.x165[0] == 0 || quest_w.x165[0] != 2) {
+        return;
+    }
+    if (quest_w.x165[1] != e->kind) {
+        return;
+    }
+    if (--quest_w.x165[2] > 0) {
+        return;
+    }
+    quest_w.x165[0] = 0;
+    set01_set2(quest_kill_msg);
+    se_req(1, 0x77, 0);
+}
+#endif
+
 int Quest_enemy_revival_set(e)
 EMW *e;
 {
@@ -660,6 +695,44 @@ EMW *e;
             return 0;
         }
         q->x2E = 2;
+#ifdef VERSION_MHG
+        /* G (sub_main 0x4B47B0): a big monster comes back 5% bigger (up to its species' limit),
+         * and stronger: the quest's level and its own go up by one (up to 14; not for
+         * missions with flag 0x8000) */
+        if (em_revival_grow_ck(e->kind) == 1) {
+            u16 max = em_size_max_tbl[*em_species_tbl[e->kind]];
+
+            e->size += 5;
+            if (max < e->size) {
+                e->size = max;
+            }
+            if (quest_w.x14E < 14) {
+                if (!(quest_w.x40 & 0x8000)) {
+                    quest_w.x14E++;
+                }
+                if (quest_w.x14E >= 15) {
+                    quest_w.x14E = 14;
+                }
+            }
+            if (e->lv < 14) {
+                if (!(quest_w.x40 & 0x8000)) {
+                    e->lv++;
+                }
+                if (e->lv >= 15) {
+                    e->lv = 14;
+                }
+            }
+        }
+        q->x08 = e->x302;
+        e->pos[0] = q->pos[0];
+        e->pos[1] = q->pos[1];
+        e->pos[2] = q->pos[2];
+        e->ang[1] = q->x1C;
+        e->stg = q->x07;
+        em_dur_init(e);
+        em_size_scale_set(e);
+        return q->x04;
+#else
         q->x08 = e->x302;
         e->pos[0] = q->pos[0];
         e->pos[1] = q->pos[1];
@@ -667,6 +740,7 @@ EMW *e;
         e->ang[1] = q->x1C;
         e->stg = q->x07;
         return q->x04;
+#endif
     }
     return 0;
 }
@@ -682,6 +756,21 @@ EMW *e;
                 quest_w.x34--;
             }
             q->x04--;
+#ifdef VERSION_MHG
+            /* G (sub_main 0x4B4940): the kill-count message, the "N of kind" target count, the
+             * per-kind kill counts (capped 9999) and the biggest size killed per kind */
+            quest_kill_count_ck(e);
+            if (quest_w.x240 != 0 && quest_w.x23C == e->kind && quest_w.x23E > 0) {
+                quest_w.x23E--;
+            }
+            quest_w.x1D4[e->kind]++;
+            if ((u16)quest_w.x1D4[e->kind] >= 10000) {
+                quest_w.x1D4[e->kind] = 9999;
+            }
+            if (sub_main_func_004B7920(e->kind) == 1 && (u16)quest_w.x16C[e->kind] < e->size) {
+                quest_w.x16C[e->kind] = e->size;
+            }
+#endif
             if (q->x04 > 0) {
                 q->x2E = 4;
             } else {
