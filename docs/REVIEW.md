@@ -426,3 +426,20 @@ obvious workarounds.
   is no longer linked. **Why:** its callbacks waited on S/PDIF too and stalled for good (silent after a
   relaunch, silent in xemu); docs/xbox.md "Audio after a quit and relaunch". **To revert:** revert the commit
   "Xbox audio: own AC97 driver" (and drop the file from tools/build_xbox.py).
+
+## G in English on the PC: quest hook, memory-card messages (agent E, 14 Oct 2026)
+- **What:** (1) src/pc/viewer.c afs_entry: a G mission file (mNNNNN.mib) read through the AFS loader goes through
+  rt_text_quest_g when a text table is active (the number is the file name's; the buffer gets 16 KB of room). (2)
+  tools/text_map.py `linesplit_pairs`: the memory-card messages (mc_msg_NN) are paired per message and written as
+  per-slot lines (`0xADDR[0] = text`, the pointer word of that slot, rt_text.c SP_SLOT), not per string, because the
+  Japanese build shares one string between several messages. The US text is re-flowed over the JP lines of each paragraph
+  (blank lines stay where the game puts them; 42 characters per line, then 46, 50; leftover slots get one space);
+  a message is paired to the US group at the table's located address or, for an unlocated table, to the next US group
+  with the same ~A00 / %s tokens. (3) rt_text.c: RT_TEXT_STAT=1 prints how many pointer words were re-pointed.
+- **Why:** G's quest title/goal/failure/client text and the save / card dialogs (the first thing a player sees) stayed
+  Japanese with the table. The US cuts these messages at other places and uses other line counts.
+- **Left as it was:** line widths of the original layout code (the US lines fit the G boxes in the shots: 3-line card
+  box, pause help box, quest pages); no wrapping was added in the PC layer. Tables with no US twin stay Japanese.
+- **Not changed, seen on the way (not caused by the table, same without one):** the item window's title shows
+  "(null)" (G title pointer not set), and the character-creation help box shows junk bytes.
+- **To revert:** the hook is the `rt_text_quest_g` block in afs_entry; the tool changes are in tools/text_map.py only.

@@ -1315,6 +1315,8 @@ def propagate_same_text(jp, S, owner, en_jp, minlen=4):
 
 
 def key_id(k):
+    if k[0] == "slot":                 # the pointer word at that address (rt_text.c "0xADDR[0]")
+        return "0x%X[0]" % k[1]
     if k[0] == "quest":
         return "quest:%d:0x%X" % (k[1], k[2])
     return "%s:0x%X" % k
@@ -1324,10 +1326,17 @@ def esc(b):
     return b.replace(b"\\", b"\\\\").replace(b"\n", b"\\n")
 
 
+def merged(entries, skip, extra):
+    """entries without the keys in skip, plus extra (all keys are tuples)"""
+    d = {k: v for k, v in entries.items() if k not in skip}
+    d.update(extra)
+    return d
+
+
 def write_table(path, entries, header):
     """entries {key: bytes}; bytes are written as they are (ASCII, a few single high bytes)"""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    order = {"main": 0, "sub_main": 1, "game": 2, "lobby": 3, "select": 4, "yn": 5, "quest": 6}
+    order = {"main": 0, "sub_main": 1, "game": 2, "lobby": 3, "select": 4, "yn": 5, "quest": 6, "slot": 7}
     with open(path, "wb") as f:
         for h in header:
             f.write(("# %s\n" % h).encode())
@@ -1407,6 +1416,188 @@ def run_us(jp, us, funcs, objs, S, cells, cache):
 
 def owner_of(cells, key, jk):
     return any(k == jk for _o, k in cells[key][1])
+
+
+# ---------------------------------------------------------------- memory-card dialogs: per-message alignment
+MC_TOKEN = re.compile(rb"~[A-Z]\d\d|%[-0-9.]*[a-z]")
+MC_WIDTH = (42, 46, 50)         # characters per line tried in turn when a message has to be re-wrapped
+
+
+def mc_groups(img, space, start, limit_words=400):
+    """The message groups of one string pool of `img` read from `start`: a message is a run of line pointers
+    (an empty string is a blank line) ended by a zero word. -> [(address, [line bytes])]"""
+    base, b = img.mod[space]
+    out, cur, first = [], [], None
+    for i in range(limit_words):
+        o = start - base + 4 * i
+        if o + 4 > len(b):
+            break
+        v, = struct.unpack_from("<I", b, o)
+        if v == 0:
+            if cur:
+                out.append((first, cur))
+            cur, first = [], None
+            continue
+        sp = img.resolve(v, space) if v >= 0x100000 else None
+        t = img.cstr(sp, v, 300) if sp else None
+        if t is None:
+            if cur:
+                out.append((first, cur))
+            cur, first = [], None
+            continue
+        if first is None:
+            first = start + 4 * i
+        cur.append(t)
+    if cur:
+        out.append((first, cur))
+    return out
+
+
+def mc_wrap(words, width):
+    lines, cur = [], b""
+    for w in words:
+        if cur and len(cur) + 1 + len(w) > width:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = cur + b" " + w if cur else w
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def mc_paragraphs(lines):
+    paras, cur = [], []
+    for ln in lines:
+        if ln.strip():
+            cur.append(ln.strip())
+        elif cur:
+            paras.append(cur)
+            cur = []
+    if cur:
+        paras.append(cur)
+    return paras
+
+
+def linesplit_pairs(jp, us, om, cells, funcs_unused=None):
+    """The memory-card messages (mc_msg_NN): the JP and the US build both keep one message as a group of line
+    pointers, but cut the lines at other places and use another number of lines and blank lines. The US group of
+    each JP group is the one at the table's located address (or, for an unlocated table, the next group in the
+    pool whose ~A00 / %s tokens agree); the English is re-flowed over the JP lines of each paragraph so that the
+    game's own line layout (positions of the blank lines) stays. The JP build shares identical lines between
+    messages (one string, several slots), so the result is per slot, not per string.
+    -> [(table key, slot index, JP string key, English bytes)]"""
+    jgroups = []        # (name, address, [(offset, jp key or None for a blank line)])
+    for key, (oa, lst) in cells.items():
+        if key[0] != "main" or not key[1].startswith("mc_msg_"):
+            continue
+        a, sz = om.info[key]
+        base, b = jp.mod["main"]
+        slots = []
+        for i in range(sz // 4):
+            v, = struct.unpack_from("<I", b, a - base + 4 * i)
+            if v == 0:
+                break
+            slots.append(v)
+        keymap = {off // 4: jk for off, jk in lst}
+        jgroups.append((key, a, [(keymap.get(i)) for i in range(len(slots))],
+                        [jp.cstr("main", v) or b"" for v in slots]))
+    jgroups.sort(key=lambda g: g[1])
+    # the US groups of each pool, read from the first located table of the pool
+    xpool = {}          # pool start -> {group address: (index, lines)}
+    anchors = []
+    for key, a, _slots, _t in jgroups:
+        if key in om.found:
+            xs, d, _how = om.found[key]
+            anchors.append((a, xs, a + d))
+    pools = []
+    for a, xs, xa in anchors:
+        for pl in pools:
+            if pl["xs"] == xs and pl["lo"] - 0x400 <= xa < pl["hi"] + 0x400:
+                pl["lo"], pl["hi"] = min(pl["lo"], xa), max(pl["hi"], xa)
+                break
+        else:
+            pools.append({"xs": xs, "lo": xa, "hi": xa})
+    for pl in pools:
+        lo = pl["lo"]
+        pl["groups"] = mc_groups(us, pl["xs"], lo, (pl["hi"] - lo) // 4 + 120)
+        pl["by_addr"] = {g[0]: i for i, g in enumerate(pl["groups"])}
+    sig = lambda lines: tuple(sorted(MC_TOKEN.findall(b"\n".join(lines))))
+    out = []
+    pairs = []          # (jgroup, pool, index) in JP order
+    last = {}           # pool id -> last index used
+    for gi, (key, a, slots, texts) in enumerate(jgroups):
+        pick = None
+        if key in om.found:
+            xs, d, _how = om.found[key]
+            for pi, pl in enumerate(pools):
+                if pl["xs"] == xs and (a + d) in pl["by_addr"]:
+                    pick = (pi, pl["by_addr"][a + d])
+        pairs.append([gi, pick])
+    # unlocated tables: the next unclaimed group after the previous picked one with identical tokens
+    for n, (gi, pick) in enumerate(pairs):
+        if pick is not None:
+            continue
+        key, a, slots, texts = jgroups[gi]
+        prev = next((pairs[m][1] for m in range(n - 1, -1, -1) if pairs[m][1]), None)
+        if not prev:
+            continue
+        pl = pools[prev[0]]
+        for j in range(prev[1] + 1, min(prev[1] + 4, len(pl["groups"]))):
+            if sig(texts) and sig(pl["groups"][j][1]) == sig(texts) and (prev[0], j) not in [p[1] for p in pairs if p[1]]:
+                pairs[n][1] = (prev[0], j)
+                break
+    for gi, pick in pairs:
+        if pick is None:
+            continue
+        key, a, slots, texts = jgroups[gi]
+        ulines = pools[pick[0]]["groups"][pick[1]][1]
+        if any(c < 0x20 or c > 0x7E for ln in ulines for c in ln):
+            continue                # not text (a data table that looks like one)
+        if sig(ulines) != sig(texts) and sig(texts) and sig(ulines):
+            continue
+        # JP paragraphs: runs of text slots between blank lines
+        jparas, cur = [], []
+        for idx, (jk, t) in enumerate(zip(slots, texts)):
+            if t.strip() and jk is not None:
+                cur.append(idx)
+            elif cur:
+                jparas.append(cur)
+                cur = []
+        if cur:
+            jparas.append(cur)
+        uparas = mc_paragraphs(ulines)
+        if not jparas or not uparas:
+            continue
+        assign = {}
+
+        def fit(para_lines, idxs):
+            words = b" ".join(para_lines).split()
+            if len(para_lines) == len(idxs) and all(len(x) <= MC_WIDTH[1] for x in para_lines):
+                return para_lines
+            for w in MC_WIDTH:
+                ls = mc_wrap(words, w)
+                if len(ls) <= len(idxs):
+                    return ls
+            return None
+        if len(jparas) == len(uparas):
+            res = [fit(u, j) for u, j in zip(uparas, jparas)]
+            if all(r is not None for r in res):
+                for r, j in zip(res, jparas):
+                    for k, idx in enumerate(j):
+                        assign[idx] = r[k] if k < len(r) else b" "
+        if not assign:
+            allidx = [i for j in jparas for i in j]
+            r = fit([l for u in uparas for l in u], allidx)
+            if r is None:
+                continue
+            for k, idx in enumerate(allidx):
+                assign[idx] = r[k] if k < len(r) else b" "
+        for idx, txt in assign.items():
+            if slots[idx] is not None:
+                out.append((key, idx, slots[idx], txt))
+    return out
+
 
 
 def run_g(jp, g, funcs, objs, S, cells, GS, cache):
@@ -1489,12 +1680,21 @@ def main():
             nq += 1
         else:
             drop["quest " + why] += 1
+    lsp = linesplit_pairs(jp, us, omu, cells)
+    slot_jp, slot_cov = {}, set()
+    for key, idx, jk, xb in lsp:
+        slot_jp[("slot", omu.info[key][0] + 4 * idx)] = xb
+        if jk not in en_jp:
+            en_jp[jk] = xb
+            slot_cov.add(jk)
+    log("memory-card messages: %d slots re-flowed from the US groups" % len(lsp))
     nprop = propagate_same_text(jp, S, owner, en_jp)
     log("same Japanese text elsewhere: %d more JP strings" % nprop)
     log("US: %d JP strings with English (%d quest fields); dropped %s; %.0fs" % (len(en_jp), nq, dict(drop), time.time() - t0))
     hdr = ["English text table for MH1 JP, made by tools/text_map.py from your own discs. Do not share.",
            "ids are the Japanese build's (rt_text.c); source: the US disc"]
-    write_table(os.path.join(args.out, "en_mh1.txt"), en_jp, hdr)
+    write_table(os.path.join(args.out, "en_mh1.txt"),
+                merged(en_jp, slot_cov, slot_jp), hdr)
 
     # ---- G
     omg, outg, rowsg = run_g(jp, g, funcs, objs, S, cells, GS, cache)
@@ -1524,13 +1724,30 @@ def main():
                     gstat["near text (edited a little)"] += 1
                 else:
                     gstat["text edited in G (left out)"] += 1
+    gk_slot, slot_g = set(), {}
+    for key, idx, jk, xb in lsp:
+        if key not in omg.found:
+            continue
+        xs, d, _how = omg.found[key]
+        addr = omg.info[key][0] + d + 4 * idx
+        base, bb = g.mod[xs]
+        o = addr - base
+        if not 0 <= o < len(bb) - 3:
+            continue
+        v, = struct.unpack_from("<I", bb, o)
+        sp = g.resolve(v, xs) if v >= 0x100000 else None
+        if sp and g.cstr(sp, v) == jt(jk):
+            slot_g[("slot", addr)] = xb
+            if (sp, v) not in en_g:
+                en_g[(sp, v)] = xb
+                gk_slot.add((sp, v))
     log("G: %d G strings with English; %s; %.0fs" % (len(en_g), dict(gstat), time.time() - t0))
     hdr = ["English text table for Monster Hunter G, made by tools/text_map.py from your own discs. Do not share.",
            "ids are G's (main incl. sub_main, game, lobby, select, yn addresses; quest:N:offset of mNNNNN.mib); source: the US disc via MH1 JP"]
     # G's resident sub_main (0x4A0C80..) lies below the overlay load address and above main: the PC text layer
     # (rt_data.c: v < LB_VRAM -> main space) already treats it as part of main, so its ids are written as main:
     write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k: v
-                                                      for k, v in en_g.items()}, hdr)
+                                                      for k, v in merged(en_g, gk_slot, slot_g).items()}, hdr)
 
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), gstat=gstat, drop=drop)
     if args.report or args.ids:

@@ -74,6 +74,7 @@ static ovr *find(uint64_t key)
     return NULL;
 }
 
+static int stat_repoint[8];     /* pointer words re-pointed while relocating, per space (RT_TEXT_STAT) */
 int rt_text_active(void) { return novr > 0; }
 
 const char *rt_text_for(int space, uint32_t va)
@@ -82,6 +83,8 @@ const char *rt_text_for(int space, uint32_t va)
     if (!novr)
         return NULL;
     o = find((uint64_t)space << 32 | va);
+    if (o)
+        stat_repoint[space & 7]++;
     return o ? o->text : NULL;
 }
 
@@ -226,6 +229,9 @@ void rt_text_finish(void)
     if (!novr)
         return;
     regs = malloc((size_t)novr * 4 * sizeof *regs + sizeof *regs);
+    if (getenv("RT_TEXT_STAT"))
+        fprintf(stderr, "rt_text: re-pointed words: main/game %d, lobby %d, select %d\n", stat_repoint[0] + stat_repoint[1],
+                stat_repoint[2], stat_repoint[3]);
     for (i = 0; i < novr; i++) {
         int space = (int)(ovrs[i].key >> 32);
         uint32_t va = (uint32_t)ovrs[i].key;
@@ -241,6 +247,8 @@ void rt_text_finish(void)
             continue;
         }
         n = rt_data_hosts(space, va, h);
+        if (!n && getenv("RT_TEXT_STAT"))
+            fprintf(stderr, "rt_text: no host for space %d 0x%X\n", space, (unsigned)va);
         for (k = 0; k < n; k++) {
             regs[nreg].host = h[k];
             regs[nreg].text = ovrs[i].text;
