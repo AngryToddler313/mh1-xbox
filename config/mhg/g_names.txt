@@ -42,3 +42,4 @@ PROVIDE(hit_se7 = 0x0050830C);
 PROVIDE(rem_kill_calc_tbl = 0x004FD960);
 PROVIDE(NPCZoomInCameraRequest = 0x001DC0D0); /* G-only address of MH1 NPCZoomInCameraRequest (src/mhg/main/cam/camd_g.c) */
 PROVIDE(D_63FA10 = 0x00672ED0); /* monster hit-body tables by kind (read in sub_main hit_calc_shl: lui 0x67, +11984) */
+PROVIDE(func_533A00 = 0x00542680); /* softreset's Tsk_Execute target (MH1 0x533A00): lui 0x54 / addiu 0x2680 in G's softreset */
