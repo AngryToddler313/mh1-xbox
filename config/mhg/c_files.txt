@@ -863,14 +863,6 @@ game 0x0066AA60 0x0066AE48 game/shell/shell21
 game:rodata 0x006DB1B0 0x006DB1D0 game/shell/shell21
 game 0x0066C8D0 0x0066CCB8 game/shell/shell23
 game:rodata 0x006DB230 0x006DB250 game/shell/shell23
-main 0x001350E0 0x00135344 main/emw/emw01
-main 0x00135350 0x00135B98 main/emw/emw02
-main 0x00135EF0 0x00136008 main/fl/fms
-main 0x00155A50 0x00155D18 main/fl/plfcv01
-main 0x00128110 0x00128560 main/pl/shell_work
-main 0x0020D820 0x0020DBB8 main/sk/cmd04
-main 0x001341D0 0x00134558 main/weapon/weapon3
-main 0x00127AE0 0x00127B4C mhg/main/pl/pl78_main
 sub_main 0x004EA7B0 0x004EA924 main/emw/emt01
 sub_main 0x004E1190 0x004E11D8 main/hit/hitid01
 sub_main 0x004CB710 0x004CBA98 main/pl/pl63
@@ -895,3 +887,11 @@ sub_main 0x004CE650 0x004CE6C0 main/pl/pl72
 sub_main 0x004CE5D0 0x004CE648 main/pl/plx06
 sub_main 0x004CCF50 0x004CD030 main/pl/pl73
 sub_main 0x004B3600 0x004B3660 main/quest/qstb01
+main 0x001350E0 0x00135344 main/emw/emw01
+main 0x00135350 0x00135B98 main/emw/emw02
+main 0x00135EF0 0x00136008 main/fl/fms
+main 0x00155A50 0x00155D18 main/fl/plfcv01
+main 0x001341D0 0x00134558 main/weapon/weapon3
+main 0x00127AE0 0x00127B4C mhg/main/pl/pl78_main
+main 0x00128110 0x00128560 main/pl/shell_work
+main 0x0020D820 0x0020DBB8 main/sk/cmd04

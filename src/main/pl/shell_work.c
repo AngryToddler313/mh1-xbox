@@ -32,8 +32,13 @@ void init_shell_work(void) {
         p--;
     }
     shell_ctr = 0x40;
+#ifdef VERSION_MHG
+    *((u8 *)&game_w + 0xFC) = 0; /* G: shl10_num / trap_num live 0x114 earlier */
+    *((u8 *)&game_w + 0xFE) = 0;
+#else
     game_w.shl10_num = 0;
     game_w.trap_num = 0;
+#endif
 }
 
 void push_shell_work(SHLW *sh);
