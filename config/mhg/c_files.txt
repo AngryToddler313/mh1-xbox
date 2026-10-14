@@ -917,3 +917,12 @@ sub_main 0x004FBA40 0x004FBD10 main/net/netsyn05
 main 0x001EE740 0x001EEC4C mhg/main/omake/omake_a
 main 0x001EF060 0x001EF420 mhg/main/omake/omake_b
 main 0x001EF7C0 0x001EFD6C mhg/main/omake/omake_c
+game 0x00548AE0 0x00549C40 game/em/em_master_b
+game 0x006516B0 0x00651F50 game/set/set08
+game 0x00655100 0x006561DC game/set/set15
+game:rodata 0x006DAB60 0x006DAB78 game/set/set15
+game 0x006561E0 0x0065670C game/set/set16
+game 0x00656710 0x00656928 game/set/set17
+game 0x00656CA0 0x006574B0 game/set/set18
+game 0x00658C60 0x0065955C game/set/set22
+game:rodata 0x006DAB80 0x006DAB98 game/set/set22

@@ -215,7 +215,7 @@ def compile_c(src):
         return None
     os.makedirs(os.path.join(ROOT, os.path.dirname(obj)), exist_ok=True)
     # Relative paths: wibo hands them to a Windows program.
-    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude"] + (["-Ibuild/mhg/raw"] if VERSION == "mhg" else ["-Ibuild/raw"]) + [rel, "-o", obj])
+    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude"] + (["-Ibuild/mhg/raw", "-Ibuild/raw"] if VERSION == "mhg" else ["-Ibuild/raw"]) + [rel, "-o", obj])
     if err:
         return err
     for old, new in RENAMES.get(obj, []):
