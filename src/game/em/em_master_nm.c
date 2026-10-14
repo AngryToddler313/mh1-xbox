@@ -533,13 +533,22 @@ s32 st_mv_ptr_ck(EMW *em) {
     EM_MVOK2 *q;
     s16 i;
 
+#ifdef VERSION_MHG
+    /* G game 0x549360: longer lists (245 quests, 92 stages) */
+    for (i = 0; i < 245; i++, p++) {
+#else
     for (i = 0; i < 178; i++, p++) {
+#endif
         if (p->quest == -1 || p->quest == quest_w.no) {
             q = p->rows;
             break;
         }
     }
+#ifdef VERSION_MHG
+    for (i = 0; i < 92; i++, q++) {
+#else
     for (i = 0; i < 88; i++, q++) {
+#endif
         if (q->stg == 0xFF || q->stg == em->stg) {
             return q->ok;
         }
@@ -716,6 +725,67 @@ int em_target_pl_samestage_ck(EMW *em) {
     return 1;
 }
 
+#ifdef VERSION_MHG
+/* G replaced MH1's hit points and attack/defence multipliers (fixed numbers in each em*_init
+ * scaled by quest level and online mode; em_hp_vital_tbl) with two tables per monster kind:
+ * em_vital_tbl[kind][no] (hit points per variant, s16) and em_lv_rate_tbl[kind][lv] (per
+ * level 0-15: hit points, attack and defence rates). sub_main 0x5098B0 / 0x5097E0. */
+extern s16 *em_vital_tbl[];
+extern f32 *em_lv_rate_tbl[];           /* [kind]: per level 0-15 {hit points, attack, defence} */
+
+/* G game 0x5499A0 (em_hp_vital_set/set2's successor; unnamed in G): the hit points of
+ * variant no (em*_init: 0, or the type/subspecies row) at the monster's level.
+ * Near-match (18/29 instructions: the two tables' address order); MWCC keeps G's bytes (em_master_b.c). */
+int game_func_005499A0(EMW *em, s16 no) {
+    f32 *p = em_lv_rate_tbl[em->kind];
+
+    p += em->lv * 3;
+    return em_vital_tbl[em->kind][no] * p[0];
+}
+
+/* PC only: the monsters' init code is MH1's C (em*_init), which calls em_hp_vital_set(2) with
+ * MH1's fixed numbers. G's edited em*_init call game_func_005499A0 at the same places with a
+ * variant number instead; this picks the variant the G init passes (game 0x590330 .. 0x647060,
+ * per init: em03 0x5B3AE4, em04 0x5B80F0, em12 0x5DB03C, em19 0x614268; all others pass 0). */
+static s16 em_hp_vital_no_g(EMW *em) {
+    switch (em->kind) {
+    case 3:                     /* em03_init: the second call, for a small one */
+        return em->x11 != 0;
+    case 5:                     /* em04_init: kinds other than 4 take their type row (0-3) */
+    case 32:
+        return em->type < 4 ? em->type : 0;
+    case 12:                    /* em12_init */
+        return em->type == 0 || em->type == 5;
+    case 19:                    /* em19_init */
+    case 24:
+        return em->type & 1;
+    }
+    return 0;
+}
+
+s16 em_hp_vital_set(EMW *em, s16 v) {
+    return game_func_005499A0(em, em_hp_vital_no_g(em));
+}
+
+s16 em_hp_vital_set2(EMW *em, s16 a, s16 b) {
+    return game_func_005499A0(em, em_hp_vital_no_g(em));
+}
+
+/* G game 0x549A20 / 0x549A60: the attack / defence rate of the monster's level */
+f32 em_def_attack_set(EMW *em) {
+    f32 *p = em_lv_rate_tbl[em->kind];
+
+    p += em->lv * 3;
+    return p[1];
+}
+
+f32 em_def_defence_set(EMW *em) {
+    f32 *p = em_lv_rate_tbl[em->kind];
+
+    p += em->lv * 3;
+    return p[2];
+}
+#else
 s16 em_hp_vital_set(EMW *em, s16 v) {
     s16 hp = v;
 
@@ -943,6 +1013,7 @@ f32 em_def_defence_set(EMW *em) {
     }
     return f;
 }
+#endif
 
 void em_ana_loop_cnt_set(EMW *em) {
     if (em->x8C3 == 0) {

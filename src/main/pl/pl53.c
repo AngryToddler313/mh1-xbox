@@ -212,20 +212,20 @@ void Pl_def_adj_calc(PLW *pl) {
 
 #ifdef VERSION_MHG
 /* G skill points (replaces MH1's Equip_Bonus set table): every armor row (0x20 bytes, kind table
- * D_005207A0[kind][idx]) holds five (skill id, points) pairs at +0x14. */
+ * armor_kind_tbl[kind][idx]) holds five (skill id, points) pairs at +0x14. */
 typedef struct SkRow {
     u8 x00[0x14];
     struct { u8 id; s8 pt; } sk[5]; /* 0x14 */
     u8 x1E[2];
 } SkRow;
-extern SkRow *D_005207A0[];
+extern SkRow *armor_kind_tbl[];
 typedef struct SkTbl { /* 0x10 bytes */
     u16 id;
     struct { s8 lim; u8 sk; } lo[3]; /* 2: points <= lim */
     struct { s8 lim; u8 sk; } hi[3]; /* 8: points >= lim */
     u8 x0E[2];
 } SkTbl;
-extern u8 D_0050A380[];
+extern u8 Skill_data[];
 s8 sub_main_func_004EF7A0(u16 kind, u8 idx);
 s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id);
 s8 sub_main_func_004EF8E0(PLW *pl, u8 id);
@@ -233,7 +233,7 @@ void sub_main_func_004EFB20(PLW *pl, u8 skill, u8 *cnt, u16 id, s8 pts);
 
 #if !defined(G_PART)
 s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id) {
-    SkRow *row = D_005207A0[kind] + idx;
+    SkRow *row = armor_kind_tbl[kind] + idx;
     s8 r;
     r = 0;
     if (row->sk[0].id == id) {
@@ -257,7 +257,7 @@ s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id) {
 
 #if !defined(G_PART)
 s8 sub_main_func_004EF540(PLW *pl, u8 id) {
-    SkRow *row = &D_005207A0[3][pl->work352[3]];
+    SkRow *row = &armor_kind_tbl[3][pl->work352[3]];
     s8 acc = 0;
     s8 n;
     if (row->sk[0].id == id) {
@@ -305,7 +305,7 @@ s8 sub_main_func_004EF540(PLW *pl, u8 id) {
 
 #if !defined(G_PART)
 s8 sub_main_func_004EF7A0(u16 kind, u8 idx) {
-    SkRow *row = D_005207A0[kind] + idx;
+    SkRow *row = armor_kind_tbl[kind] + idx;
     s8 r;
     r = 0;
     if (row->sk[0].id == 0x29) {
@@ -408,7 +408,7 @@ void Skill_set_PL(PLW *pl) {
         pl->skill_src[i] = 0;
         pl->skill_pts[i] = 0;
     }
-    e = (SkTbl *)D_0050A380;
+    e = (SkTbl *)Skill_data;
     if (e->id != 0xFFFF) do {
         s8 pt = sub_main_func_004EF8E0(pl, (u8)e->id);
         if (pt <= e->lo[0].lim) {

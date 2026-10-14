@@ -23,6 +23,9 @@
 #include "f_game.h"
 #include "flow.h"
 #include "hit.h"
+#ifdef VERSION_MHG
+s32 sub_main_func_004CE8E0(PLW *pl, u8 ammo);   /* pl77.c */
+#endif
 #undef pl_work_clr
 #undef stick_pow_get
 
@@ -1912,7 +1915,11 @@ block_57:
             } else {
                 pl->work8ED = 1;
                 if (pl->sw.trg & 1) {
+#ifdef VERSION_MHG
+                    switch (sub_main_func_004CE8E0(pl, pl->ammo_type)) {   /* G game 0x54D25C */
+#else
                     switch (Shell_data[pl->ammo_type].se_kind) {
+#endif
                     case 0:
                         Pl_act_set(pl, 1, 2, 5);
                         return;

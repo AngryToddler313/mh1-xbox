@@ -112,7 +112,11 @@ int stick_dir_set(PLW *, int);
 s32 stick_pow_get(PLW *, int);
 s32 trade_get_ck_00139680(PLW *);
 void unique_act_set(PLW *);
+#ifdef VERSION_MHG
+typedef struct { u8 recoil; u8 pow; } PL_SHELL_DATA; /* G: 2 bytes per shot type (include/plitem.h) */
+#else
 typedef struct { u8 _00; u8 se_kind; u8 _02[2]; } PL_SHELL_DATA; /* see SHELL_DATA in shell06.h */
+#endif
 extern PL_SHELL_DATA Shell_data[];
 s32 front_land_ck(f32, f32, f32, PLW *, int *);
 s32 Pl_stg_ck(PLW *);

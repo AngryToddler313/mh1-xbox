@@ -593,13 +593,21 @@ int em_target_pl_samestage_ck(EMW *em) {
     return 1;
 }
 
-#if defined(VERSION_MHG) && defined(__MWERKS__)
-/* G rewrote the HP/vital scaling: em_hp_vital_set/set2 are one 0x74-byte function (kept as original bytes) */
-asm void game_func_005499A0()
+#ifdef VERSION_MHG
+/* G replaced MH1's hit points and attack/defence multipliers (fixed numbers in each em*_init
+ * scaled by quest level and online mode; em_hp_vital_tbl) with two tables per monster kind:
+ * em_vital_tbl[kind][no] (hit points per variant, s16) and em_lv_rate_tbl[kind][lv] (per
+ * level 0-15: hit points, attack and defence rates). sub_main 0x5098B0 / 0x5097E0.
+ * The C of game 0x5499A0 (18/29 instructions off) and the PC's use of it: em_master_nm.c. */
+extern f32 *em_lv_rate_tbl[];           /* [kind]: per level {hit points, attack, defence} */
+
+#ifdef __MWERKS__
+asm int game_func_005499A0(EMW *em, s16 no)
 {
 #include "game_func_005499A0.inc"
 }
-#elif !defined(VERSION_MHG)
+#endif
+#else
 s16 em_hp_vital_set(EMW *em, s16 v) {
     s16 hp = v;
 
@@ -705,11 +713,13 @@ s16 em_hp_vital_set2(EMW *em, s16 a, s16 b) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/em_def_attack_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
-#if defined(VERSION_MHG) && defined(__MWERKS__)
-asm f32 em_def_attack_set(EMW *em)
-{
-#include "em_def_attack_set.inc"
+#ifdef VERSION_MHG
+/* G game 0x549A20: the attack rate of the monster's level */
+f32 em_def_attack_set(EMW *em) {
+    f32 *p = em_lv_rate_tbl[em->kind];
+
+    p += em->lv * 3;
+    return p[1];
 }
 #else
 f32 em_def_attack_set(EMW *em) {
@@ -780,11 +790,13 @@ f32 em_def_attack_set(EMW *em) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/em_def_defence_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
-#if defined(VERSION_MHG) && defined(__MWERKS__)
-asm f32 em_def_defence_set(EMW *em)
-{
-#include "em_def_defence_set.inc"
+#ifdef VERSION_MHG
+/* G game 0x549A60: the defence rate of the monster's level */
+f32 em_def_defence_set(EMW *em) {
+    f32 *p = em_lv_rate_tbl[em->kind];
+
+    p += em->lv * 3;
+    return p[2];
 }
 #else
 f32 em_def_defence_set(EMW *em) {

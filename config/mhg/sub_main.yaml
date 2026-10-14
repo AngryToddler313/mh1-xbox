@@ -142,7 +142,7 @@ segments:
       - [0x02D9D0, c, main/pl/pl72]
       - [0x02DA40, c, main/pl/pl_ammo]
       - [0x02DAD0, c, main/pl/pl77]
-      - [0x02DC5C, asm, text/sub_main_func_004CE8E0]
+      - [0x02DD9C, asm, text/Pl_view_reset]
       - [0x02DDA0, c, mhg/main/pl/pl78_sub]
       - [0x02DDB0, c, mhg/main/eft/eft06_p1]
       - [0x02DE34, asm, text/eft06_i]

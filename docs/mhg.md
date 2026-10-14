@@ -300,3 +300,9 @@ After merging main (13 Oct 2026, evening) the G new game had regressed on the PC
 - mccomb.c G McCardOperation op 0xB: func_002306C0 (carry-over check) is a PC stand-in that never finishes, so
   Edit_task waited forever at step 0; the PC answers "no MH1 hunter" (2) and logs a stand-in.
 With both: title -> NEW GAME -> character creation -> save -> Game_task -> stop in Local_main (village), as before.
+G tables for fair hunts (14 Oct 2026, agent A; docs/agents/agent-A.md "G round 4"): monster hp from G's
+em_vital_tbl x em_lv_rate_tbl (em_hp_vital_tbl is MH1-only), attack/defence rates per level, G ammo (Shell_data
+2-byte rows, Shell_max_tbl), skills (Skill_data, armor_kind_tbl), Get_equip_value(pl, kind) on G's User_data
+(0xE00 bytes), G blade-hit sharpness, G reward list. tools/pc_g_exclude.txt keeps matched MH1 files whose functions
+G edited (emu01/emu02/ems01, f_ud) out of the G PC build. pc_data `list:N`: a G {stage, value} list's own length.
+Quest 10 fails by time-out (quest-failed screen); quests on map 6 (89, 129) hang in an em program (open).

@@ -5,7 +5,7 @@
 #include "game.h"
 #include "plst.h"
 f32 flSqrt(f32);
-extern u8 Gun_data[26][0x14];
+extern u8 Gun_data[][GUN_ROW];
 
 
 
@@ -794,10 +794,60 @@ u8 Pl_slash_lv_ck(PLW *pl) {
 }
 
 
+#ifdef VERSION_MHG
+/* G sub_main 0x4CD030 (unnamed in G): the shot types a gunner can load: the gun's mask (Gun_data
+ * +0x14) plus the ones skills 0x8B-0x98 add (three levels for each of four groups). */
+u32 sub_main_func_004CD030(PLW *pl) {
+    u32 m;
+
+    if (pl->kind != 1 && pl->kind != 5) {
+        return 0;
+    }
+    m = *(u32 *)&Gun_data[pl->wpn_kind][0x14];
+    if (Pl_Skill_ck(pl, 0x8B) == 1) {
+        m |= 0x1;
+    } else if (Pl_Skill_ck(pl, 0x8C) == 1) {
+        m |= 0x7;
+    }
+    if (Pl_Skill_ck(pl, 0x8D) == 1) {
+        m |= 0x8;
+    } else if (Pl_Skill_ck(pl, 0x8E) == 1) {
+        m |= 0x18;
+    } else if (Pl_Skill_ck(pl, 0x8F) == 1) {
+        m |= 0x38;
+    }
+    if (Pl_Skill_ck(pl, 0x90) == 1) {
+        m |= 0x40;
+    } else if (Pl_Skill_ck(pl, 0x91) == 1) {
+        m |= 0xC0;
+    } else if (Pl_Skill_ck(pl, 0x92) == 1) {
+        m |= 0x1C0;
+    }
+    if (Pl_Skill_ck(pl, 0x93) == 1) {
+        m |= 0x200;
+    } else if (Pl_Skill_ck(pl, 0x94) == 1) {
+        m |= 0x600;
+    } else if (Pl_Skill_ck(pl, 0x95) == 1) {
+        m |= 0xE00;
+    }
+    if (Pl_Skill_ck(pl, 0x96) == 1) {
+        m |= 0x1000;
+    } else if (Pl_Skill_ck(pl, 0x97) == 1) {
+        m |= 0x3000;
+    } else if (Pl_Skill_ck(pl, 0x98) == 1) {
+        m |= 0x7000;
+    }
+    return m;
+}
+#endif
+
 u16 Pl_shell_set(PLW *pl, int slot, int dir) {
     s16 n;
     u16 s;
     u8 d;
+#ifdef VERSION_MHG
+    u32 mask;
+#endif
     if (pl->kind != 1 && pl->kind != 5) {
         return 0xFF;
     }
@@ -824,9 +874,16 @@ u16 Pl_shell_set(PLW *pl, int slot, int dir) {
     case 2:
         break;
     }
+#ifdef VERSION_MHG
+    mask = sub_main_func_004CD030(pl);      /* G sub_main 0x4CCD30 */
+#endif
     for (n = 0; n < 20; n++) {
         if (pl->item[s].id != 0 && pl->item[s].num > 0 && Item_data[pl->item[s].id][1] == 2
+#ifdef VERSION_MHG
+            && (mask & (1 << *(s16 *)&Item_data[pl->item[s].id][8]))) {
+#else
             && (*(s32 *)&Gun_data[pl->wpn_kind][0x10] & (1 << *(s16 *)&Item_data[pl->item[s].id][8]))) {
+#endif
             return s;
         }
         switch (d) {

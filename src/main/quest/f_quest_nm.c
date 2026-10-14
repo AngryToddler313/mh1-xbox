@@ -976,6 +976,134 @@ again:
     }
 }
 
+#ifdef VERSION_MHG
+/* G sub_main 0x4B90A0: the reward list at game_w+0x100 (MH1 +0x128). Conditions by entry id: 241-261
+ * kills of the target (20 - left >= id-241), 41-140 kills (99 - left >= id-41), 141-240 delivered
+ * items (count >= id-141): only the first of these three kinds that passes counts; 1-20 quest flags
+ * (quest_w.x13C bits; 11-15 the time used, game_w+0xFA), 21-25 delivered-item ranges
+ * (rem_item_calc_tbl), 26-35 kill ranges (rem_kill_calc_tbl), 36-40 more flag bits, 0x8000 the
+ * base reward, other ids always. A drawn item id 0 adds nothing (MH1 wrote an empty entry, which
+ * left id 1 / count 0 in G's list after the sort). Item chances: rem_item_exit_sel_tbl, 7 lists in G
+ * (base reward: skills 0x32 / 0x33 / 0x36 / 0x69; the G-only main 0x12D170 case is not ported). */
+extern u16 rem_kill_calc_tbl[];
+void remuneration_item_set(void)
+{
+    u8 *gw = (u8 *)&game_w;
+    PLW *pl = &player_work[game_w.master];
+    QREM *e;
+    REMI *tbl;
+    REMI *q;
+    u16 *q16;
+    s8 *sel;
+    u16 *tb;
+    int n = 0;
+    int got = 0;
+    int i, j, th, r, acc, ok;
+    u16 cnt;
+
+    *(s32 *)(gw + 0x180) = 0;
+    *(s32 *)(gw + 0x184) = 0;
+    for (i = 0; i < 0x20; i++) {
+        *(u16 *)(gw + 0x100 + 4 * i) = 0;
+        *(s16 *)(gw + 0x102 + 4 * i) = 0;
+    }
+    for (e = (QREM *)quest_w.x88; e->id != 0xFFFF && n < 0x20; e++) {
+        u16 id = e->id;
+
+        ok = 1;
+        if (id >= 241 && id < 262) {
+            ok = !got && (u16)(20 - quest_enemy_ck2(&quest_w, (u8)quest_w.x2C[0])) >= id - 241;
+            got |= ok;
+        } else if (id >= 41 && id < 141) {
+            ok = !got && (u16)(99 - quest_enemy_ck2(&quest_w, (u8)quest_w.x2C[0])) >= id - 41;
+            got |= ok;
+        } else if (id >= 141 && id < 241) {
+            ok = !got && (u16)Share_item_num_ck((u16)quest_w.x1C[0], share_item_ck_ck()) >= id - 141;
+            got |= ok;
+        } else if (id >= 1 && id <= 10) {
+            ok = id == 1 ? quest_w.x13C != 0 : (quest_w.x13C & (1 << (id - 2))) != 0;
+        } else if (id >= 16 && id <= 20) {
+            ok = (quest_w.x13C & (0x4000 << (id - 16))) != 0;
+        } else if (id >= 36 && id <= 40) {
+            ok = (quest_w.x13C & (0x200 << (id - 36))) != 0;
+        } else if (id >= 11 && id <= 15) {
+            static const s16 lim[5] = { 0x6400, 0x4B00, 0x3200, 0x1900, 0x1900 };
+            ok = *(s16 *)(gw + 0xFA) > lim[id - 11] && quest_w.x14C <= lim[id - 11];
+        } else if (id >= 21 && id <= 25) {
+            tb = &rem_item_calc_tbl[id - 21];
+            cnt = Share_item_num_ck((u16)quest_w.x1C[0], share_item_ck_ck());
+            ok = cnt >= tb[0] && cnt < tb[1];
+        } else if (id >= 26 && id <= 35) {
+            tb = &rem_kill_calc_tbl[id - 26];
+            cnt = (u16)(20 - quest_enemy_ck2(&quest_w, (u8)quest_w.x2C[0]));
+            ok = cnt >= tb[0] && cnt < tb[1];
+        }
+        if (!ok) {
+            continue;
+        }
+        tbl = (REMI *)(e->tbl + (u32)mission_area);
+        for (i = 0; n < 0x20; i++) {
+            if (id == 0x8000) {
+                if (Pl_Skill_ck(pl, 0x32) == 1) {
+                    sel = rem_item_exit_sel_tbl[2];
+                } else if (Pl_Skill_ck(pl, 0x33) == 1) {
+                    sel = rem_item_exit_sel_tbl[3];
+                } else if (Pl_Skill_ck(pl, 0x36) == 1) {
+                    sel = rem_item_exit_sel_tbl[4];
+                } else if (Pl_Skill_ck(pl, 0x69) == 1) {
+                    sel = rem_item_exit_sel_tbl[6];
+                } else {
+                    sel = rem_item_exit_sel_tbl[0];
+                }
+            } else {
+                sel = rem_item_exit_sel_tbl[1];
+            }
+            if (!(((u16)ran_suu(0) & 0x1F) < sel[i])) {
+                break;
+            }
+            th = 0;
+            for (q = tbl; q->w != 0xFFFF; q = (REMI *)((u8 *)q + 6)) {
+                th = (th + q->w) & 0xFFFF;
+            }
+            if (th == 0) {      /* (an empty table: G divides by zero here) */
+                break;
+            }
+            r = (u16)((u16)ran_suu(0) % (u16)th);
+            if (id == 0x8000 && i == 0) {
+                r = 0;
+            }
+            acc = 0;
+            q16 = (u16 *)tbl;
+            while (*q16 != 0xFFFF) {
+                acc = (acc + *q16) & 0xFFFF;
+                q16 += 1;
+                if (r < acc) {
+                    break;
+                }
+                q16 += 2;
+            }
+            if (q16[0] != 0) {
+                *(u16 *)(gw + 0x100 + 4 * n) = q16[0];
+                *(u16 *)(gw + 0x102 + 4 * n) = q16[1];
+                n++;
+            }
+        }
+    }
+    for (i = 0; i < 0x20; i++) {
+        for (j = i + 1; j < 0x20; j++) {
+            u16 bi = *(u16 *)(gw + 0x100 + 4 * j);
+            u16 ai = *(u16 *)(gw + 0x100 + 4 * i);
+            if (bi < ai && bi != 0) {
+                s16 an = *(s16 *)(gw + 0x102 + 4 * i);
+                *(u16 *)(gw + 0x100 + 4 * i) = bi;
+                *(s16 *)(gw + 0x102 + 4 * i) = *(s16 *)(gw + 0x102 + 4 * j);
+                *(u16 *)(gw + 0x100 + 4 * j) = ai;
+                *(s16 *)(gw + 0x102 + 4 * j) = an;
+            }
+        }
+    }
+}
+#else
 void remuneration_item_set(void)
 {
     PLW *pl;
@@ -1230,6 +1358,7 @@ void remuneration_item_set(void)
         a += 4;
     }
 }
+#endif
 
 
 

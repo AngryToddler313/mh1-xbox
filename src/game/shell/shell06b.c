@@ -466,9 +466,21 @@ void shell06_se_req(SHLW *sh, s16 kind) {
         }
         break;
     case 1:
+#ifdef VERSION_MHG
+        /* G game 0x65F0E0: shot type 31 is silent; the silencer sound depends on the gun kind
+         * (1: 5, else 6); the sound class is the recoil class */
+        if (sh->arg != 31) {
+            if (Pl_silencer_ck(sh->owner)) {
+                v = ((PLW *)sh->owner)->kind == 1 ? 5 : 6;
+            } else {
+                v = 0;
+            }
+            switch (sub_main_func_004CE8E0((PLW *)sh->owner, sh->arg)) {
+#else
         if (sh->arg != 15) {
             v = Pl_silencer_ck(sh->owner) ? 5 : 0;
             switch (Shell_data[sh->arg].se_kind) {
+#endif
             case 0:
                 Pl_se_req2(sh->owner, v + 10, 0, &sh->pos2, 1, 0);
                 break;

@@ -4,6 +4,7 @@
  * Only values that change C code live here; docs/DECISIONS.md "How G lives in the repo". */
 #ifdef VERSION_MHG
 #define ITEM_ROW 20 /* sizeof one Item_data row: G added a member */
+#define GUN_ROW 0x18 /* sizeof one Gun_data row (G 0x517720: 78 guns; the name moved to +0x10, the ammo mask to +0x14) */
 #ifdef __MWERKS__
 #define EMW_STRIDE 0xA00
 #else
@@ -13,6 +14,7 @@
 #define IPREP_NUM 108 /* recipe pairs in Item_preparation_tbl2 */ /* sizeof EMW (monster work): G is 8 + 8 bytes smaller */
 #else
 #define ITEM_ROW 16
+#define GUN_ROW 0x14
 #define EMW_STRIDE 0xA10
 #define IPREP_LIST 0x3D8
 #define IPREP_NUM 66

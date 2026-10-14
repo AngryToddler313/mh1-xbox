@@ -14,6 +14,7 @@
 #include "pl.h"
 #include "em.h"
 #include "game.h"
+char *getenv(const char *);
 
 typedef struct EM_MEAT {
     u8 v[8];            /* 1/2 cut/blunt %, 3 shot %, 4-7 ailment % */
@@ -24,6 +25,13 @@ extern f32 s_gauge_tbl[];
 extern f32 slash_adj_tbl[];
 extern s16 slash_minus_tbl[4];
 extern s16 hit_se_tbl[];
+#ifdef VERSION_MHG
+/* G (sub_main 0x4DF7E0): six sharpness levels (MH1 four); the ailment build-up of a blade hit is
+ * scaled by the sharpness level (hit_ailment_rate_tbl, G 0x5083A8); hit sound of shell se 7 (G 0x50830C) */
+extern f32 hit_ailment_rate_tbl[];
+extern s16 hit_se7;
+s32 Pl_Skill_ck(void *, int);
+#endif
 extern HBODY *D_63FA10[];     /* game.bin: monster body tables by kind */
 extern HSHL *shell_w_top;
 extern char lit_951_00358250[];
@@ -632,6 +640,9 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
     f32 b;
     f32 pw;
     s16 dmg;
+#ifdef VERSION_MHG
+    f32 st_rate = 1.0f;
+#endif
 
     sh->xCB = 0;
 #ifdef VERSION_MHG
@@ -686,6 +697,12 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
                 } else {
                     v = 0;
                 }
+#ifdef VERSION_MHG
+                if (pl->x887 == 5 && Pl_Skill_ck(pl, 0x43) == 1 && v != 3) {
+                    v = 2;
+                }
+                st_rate = hit_ailment_rate_tbl[pl->x887];
+#endif
                 rate = pl->atk_rate;
                 sharp = s_gauge_tbl[pl->x887 * 4 + v];
                 sharp *= slash_adj_tbl[pl->x887];
@@ -748,8 +765,15 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
                 case 3:
                     Pl_se_req2_com(c, 0x5D, 0, pos, 1, 0);
                     break;
+#ifdef VERSION_MHG
+                case 7:         /* G: new; and no sound for unlisted kinds */
+                    Pl_se_req2_com(c, hit_se7, 0, pos, 1, 0);
+                    break;
+                case 4:
+#else
                 case 4:
                 default:
+#endif
                     Pl_se_req2_com(c, 0x5C, 0, pos, 1, 0);
                     break;
                 case 5:
@@ -767,7 +791,11 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
             para *= meat->v[5] / 100.0f;
             sleep *= meat->v[6] / 100.0f;
             stun *= meat->v[7] / 100.0f;
+#ifdef VERSION_MHG
+            poison = st_rate * (stun + (sleep + (poison + para)));
+#else
             poison = poison + para + sleep + stun;
+#endif
             vib_set_pl(pl, 0);
         }
     }
@@ -809,6 +837,10 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
     c->dm_kind[eb->part & 7] |= sh->x69;
     dmg += (s32)poison;
     c->dm_val[eb->part & 7] += dmg;
+    if (getenv("RT_HIT_TRACE")) {   /* PC test log: one line per blade/shot hit on a monster */
+        printf("hit: em kind %d part %d zone %d meat %d/%d/%d pow %d pw %.1f rate %.3f sharp %.3f dmg %d ailment %.1f\n",
+               c->kind, eb->part, eb->num, meat->v[1], meat->v[2], meat->v[3], sh->pow, pw, rate, sharp, dmg, poison);
+    }
     dm_value_add(c, sh);
     c->x7AE += sh->x74;
     if (sh->x08 != 0xFF && pl->x10 == 0) {
@@ -825,6 +857,9 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
     c->dm_shl = sh;
     c->dm_type = sh->atk_type;
     c->dm_pow = sh->x68;
+#ifdef VERSION_MHG
+    c->x3EB |= sh->x65;
+#endif
 }
 
 static void hit_hit_sub_pl(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {

@@ -74,7 +74,7 @@ void func_629C20(EFTW *, int);  /* game.bin shell04_set2 */
 extern s16 *eft20_lag[30];
 extern f32 eft20_type20_scale[4];
 void eft20_se_req(EFTW *ew);
-extern void *eft20_data[170];
+extern void *eft20_data[];
 extern s16 eft20_all_time[30];
 extern s16 *eft20_time[30];
 extern s16 eft20_index[30];

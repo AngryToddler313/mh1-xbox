@@ -753,3 +753,44 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
 - Open: G em_dur_init/em_dur_set level bonus (needs G em*_init part flags EMW+0x7D4); reward screen not
   looked at in a picture; Shell_data, St_data, Equip_Bonus, em_hp_vital_tbl, monster_data still zero
   (G changed them; need G code copies); no quest failure run; no G-only monster quest tried.
+
+## G round 4: G's own tables for fair hunts (14 Oct 2026)
+
+Goal: G hunts without test aids. All G-only code is under VERSION_MHG; the PS2 G rebuild stays 7 OK (clean), MH1 5 OK.
+- Monster hit points (em_hp_vital_tbl is not used by G): hp = em_vital_tbl[kind][variant] (s16, sub_main 0x5098B0)
+  x em_lv_rate_tbl[kind][lv].hp (16 levels of {hp, attack, defence}, 0x5097E0); game 0x5499A0 (C near-match 18/29,
+  raw on the PS2), em_def_attack_set / em_def_defence_set (G versions match, em_master_b.c; raw .inc dropped).
+  The PC's MH1 em*_init call em_hp_vital_set(2): em_master_nm.c maps them to G's variant per kind (em03 x11,
+  em04 kinds 5/32 type, em12 type 0/5, em19/24 type&1, else 0; from the G inits' calls).
+- Logged (RT_EM_TRACE / RT_HIT_TRACE=1: one `hit:` line per hit on a monster): quest 10 Rathian lv 7: 5000 x 1.1 =
+  5500 hp; quest 77 kind 49 lv 10: 4500 x 1.6 = 7200; quest 98 kind 38: 6300; quest 119 kind 45: 8100 (all = G's
+  tables). Blade damage = atk_rate x motion x sharpness/hit zone: the sword (Ken 156, attack 60) does 1-6 per hit.
+- Found and fixed on the way (they made G hunts unfair on the PC):
+  - the matched MH1 emu01/emu02/ems01.c (em_init_sub, em_init, em_status_init) and f_ud.c were linked into the G PC
+    build and hid the G code of the near-match copies: no level, size or base scale (scale 0: an invisible Rathian
+    hit only by accident), Get_equip_value(pl, kind) called with MH1's signature (atk_rate 0 -> every hit 1).
+    tools/pc_g_exclude.txt now keeps them out of the G PC build.
+  - Get_equip_value: G takes the hunter and reads User_data+0xC74 (G User_data is 0xE00 bytes; the PC host array
+    was MH1's 0x480: G code wrote past it). rt_player writes G's offsets.
+  - D_ names with G addresses (pl53 skills, pl73/pl77 ammo, pl_slash messages) read MH1 addresses on the PC: named
+    (Skill_data, armor_kind_tbl, Shell_data, Shell_max_tbl, slash_msg_*; config/mhg/g_names.txt + pc_data.txt).
+  - Ammo: G Shell_data is 2 bytes {recoil, pow}; ammo per load from Shell_max_tbl[Gun_data+0xD][type]; firing
+    sound/motion class from sub_main 0x4CE8E0 (pl77.c, matches); Pl_shell_set's mask from 0x4CD030 (skills add
+    shot types); Gun_data rows 0x18 (GUN_ROW), Ken/Gun/Item_data at G sizes.
+  - Blade hits (G hit_hit_sub_em): six sharpness levels (s_gauge_tbl/slash_adj_tbl at G sizes), ailment rate per
+    sharpness (hit_ailment_rate_tbl), skill 0x43, se kind 7, x3EB flag.
+  - Crashes once the hunter is hit / the Rathian moves: eft20_data has 176 lists in G; st_mv_ptr_ck's longer lists
+    (245/92); the stay/run-away timer lists' 0x100 host size covered G's neighbours (pointers into em01's stage-move
+    lists read the expanded timers): pc_data `list:N` = the G list's length; pointer words of em command / route
+    lists that point at label-less main data (mhg_pcmeta neighbour rule, 34 words).
+  - G kinds 35-50 now get their init/main (f_em_nm.c, G's jump tables); kind 40's own code is not ported.
+  - Reward list: G's remuneration_item_set (f_quest_nm.c): list at +0x100, G's condition ids, 7 chance lists; an
+    item id 0 adds nothing (that was the "1:0").
+- Checked (hidden): quest 10 with GOD/warp/aim aids only: 50 hits 1-5, no crash 200 s; time-out: idle in camp to
+  the end: time -1 -> x06 6 -> クエスト失敗 screen (build/A/g/t6/to.png); quest 10 slayed: rewards 197:1 205:1 ...
+  (no 1:0); G-only kinds 49/38/45 (quests 77/98/119) 200 s each.
+- Open: quests on map 6 (game_w.x2E 6, stage 19: quests 89, 129) hang in kind 30's em program (cmd 0x2C species
+  block, cmd_end_search loops on a misaligned byte; likely a G opcode length in next_cmd_search for 0x80-0x83).
+  monster_data (G 0x5278D0, 12-byte rows; G rewrote disp_monster_list) still zero. func_0012D170 (G-only main) not
+  ported (Get_equip_value / remuneration / Pl_item_charge take its 0 branch). Carts not tried naturally (the
+  warp aid keeps the hunter inside the monster).

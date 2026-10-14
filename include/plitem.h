@@ -16,6 +16,12 @@ typedef struct ITEM_DATA {
     u8 _0C[ITEM_ROW - 12];
 } ITEM_DATA;
 extern ITEM_DATA Item_data[];
+#ifdef VERSION_MHG
+/* G: 2 bytes per shot type (0x514E60); the ammo per load moved to Shell_max_tbl[gun class][type] */
+typedef struct SHELL_ROW { u8 recoil; u8 pow; } SHELL_ROW;
+extern u8 Shell_max_tbl[][32];
+#else
 typedef struct SHELL_ROW { u8 ammo_max; u8 se_kind; u8 pow; u8 _03; } SHELL_ROW;
+#endif
 extern SHELL_ROW Shell_data[];
 #endif

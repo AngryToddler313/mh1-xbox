@@ -227,9 +227,9 @@ static void g_stage_lists(void)
     for (t = rt_auto_tables; t->name; t++) {
         int16_t *l = (int16_t *)t->dst, out[128];
         int k, n = 0, dflt;
-        if (t->size != sizeof out || (!strstr(t->name, "_stay_timer_tbl") && !strstr(t->name, "_runaway_timer_tbl")))
-            continue;
-        while (n < 63 && l[2 * n] != -1)
+        if (!strstr(t->name, "_stay_timer_tbl") && !strstr(t->name, "_runaway_timer_tbl"))
+            continue;       /* t->size: the G list's own length (pc_data list:); the host array is 0x100 */
+        while (n < (int)t->size / 4 - 1 && l[2 * n] != -1)
             n++;
         dflt = l[2 * n + 1];
         for (k = 0; k < 128; k++)

@@ -53,7 +53,8 @@ def load_pc_data():
         line = raw.split("#", 1)[0].strip()
         m = LINE.match(line)
         if m and "noimport" not in line:   # noimport: a name for the symbol view only (rt_data.c reads it)
-            out[m.group(1)] = (int(m.group(2), 16), int(m.group(3), 16))
+            lst = re.search(r"\blist:0x([0-9A-Fa-f]+)", line)    # list:N: import (and map pointers into) N bytes only
+            out[m.group(1)] = (int(m.group(2), 16), int(m.group(3), 16), int(lst.group(1), 16) if lst else int(m.group(3), 16))
     return out
 
 
@@ -82,7 +83,7 @@ def main():
             continue
         name, work = line[0], len(line) > 1 and line[1] == "work"
         if G and name in gdata:     # G's own address and size (host array at G's size); config/mhg/pc_data.txt
-            entries.append((name, gdata[name][0], gdata[name][1], work, gdata[name][1]))     # wins over an MH1 address too
+            entries.append((name, gdata[name][0], gdata[name][1], work, gdata[name][2]))     # wins over an MH1 address too
             continue
         if len(line) == 3 and line[1].startswith("0x"):     # NAME 0xADDR 0xSIZE: not in the symbol files
             if G:       # an MH1 address: a zeroed array in G (not mapped)

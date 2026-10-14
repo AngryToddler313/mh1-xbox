@@ -62,8 +62,13 @@ void rt_player_game_init(int no)
     pl->wpn_kind = (u16)wid;
     pl->work34C = Ken_data[wid][0];
     pl->kind = Battle_type[pl->work34C];
-    PF(User_data, u8, 0x3CD) = (u8)type;
-    PF(User_data, u16, 0x3CE) = (u16)wid;
+    if (rt_ver_mhg()) {     /* G keeps the equipment at User_data+0xC74 (G Get_equip_value 0x4C6BF0) */
+        PF(User_data, u8, 0xC75) = (u8)type;
+        PF(User_data, u16, 0xC76) = (u16)wid;
+    } else {
+        PF(User_data, u8, 0x3CD) = (u8)type;
+        PF(User_data, u16, 0x3CE) = (u16)wid;
+    }
     game_w.pl_state[no] = 1;
     if (getenv("RT_AID_PER_QUEST"))
         quest_base = pl_ticks;

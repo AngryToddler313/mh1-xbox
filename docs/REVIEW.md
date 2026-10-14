@@ -404,3 +404,19 @@ obvious workarounds.
   does not find client_work / filedef_sys, and has no address for mc_sel_tbl).
 - **Why:** one generated source of G data names instead of a hand list that grows per crash.
 - **To revert:** put the line back into config/mhg/pc_names.txt (the hand list wins over data_map.txt).
+
+### G hunts with G's own tables (14 Oct 2026, agent A)
+- **Dropped:** the G raw `.inc` blocks of em_def_attack_set / em_def_defence_set (config/mhg/c_rawfuncs.txt);
+  the PC's MH1 hit points for G (em_hp_vital_set/set2 with MH1's numbers, em_hp_vital_tbl); the D_ names with G
+  addresses in pl53.c / pl73.c / pl77.c / pl_slash.c; MH1's remuneration_item_set on G; the matched MH1
+  emu01.c / emu02.c / ems01.c / f_ud.c in the G PC build (tools/pc_g_exclude.txt); the 0x100-byte symbol size of
+  G's stay/run-away timer lists.
+- **Now:** matched G C for the two rate functions; game 0x5499A0 as C (near-match, PS2 keeps the bytes) and, on the
+  PC, em_hp_vital_set(2) pick G's variant per kind (a design choice: the PC still runs MH1's em*_init, G's edited
+  inits pass a variant number at the same places); named G tables (g_names.txt / pc_data.txt); G's reward list
+  code (f_quest_nm.c); the near-match copies' G code (f_em_nm.c, ud_nm.c) runs; pc_data `list:N`.
+  tools/mhg_pcmeta.py takes overlay words next to pointer words when they point near the neighbour's target or
+  into main's gp area (34 words: em command and route lists).
+- **Why:** the hunt was unfair or crashed: hp/attack/defence by MH1's rules, an invisible scale-0 Rathian, attack
+  rate 0 (every hit 1), zero ammo tables, crashes when the hunter was hit or the Rathian changed area.
+- **To revert:** revert the commit "G hunts: G's own tables ...".

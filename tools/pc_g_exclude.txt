@@ -1,0 +1,8 @@
+# Matched MH1 files the G PC build must not link (G edited their functions; the G versions are the
+# #ifdef VERSION_MHG code in the near-match copy that is linked weak). tools/build_pc.sh, VERSION=mhg.
+# em_init_sub / em_init / em_status_init: G's level, size, base scale, hit-zone state, new kinds (f_em_nm.c)
+src/main/emw/emu01.c
+src/main/emw/emu02.c
+src/main/emw/ems01.c
+# the ud file: G's armour (0x20) and gun (0x18) rows (ud_nm.c ARMOR_SZ / GUN_SZ)
+src/main/ud/f_ud.c

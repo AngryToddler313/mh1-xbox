@@ -384,6 +384,10 @@ MATCHED_B="src/main/cam/cam.c \
     src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/menu/menu_gage.c src/main/menu/menu_slash.c src/main/menu/menu_gunmes.c src/main/cam/camarea_gnps.c src/main/menu/menu_ftime.c"
 MATCHED_A="$MATCHED_A $MATCHED_B"
 WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm ud_nm udmisc_nm"
+# VERSION=mhg: matched MH1 copies of functions G edited (tools/pc_g_exclude.txt); their near-match copies, linked weak, hold the G code
+if [ "$VERSION" = mhg ] && [ -f tools/pc_g_exclude.txt ]; then
+    for x in $(grep -v '^#' tools/pc_g_exclude.txt); do MATCHED_A=$(echo " $MATCHED_A " | sed "s# $x # #"); done
+fi
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
 GAME="$GAME $MATCHED_A src/main/em/emride_nm.c"   # em_ride_sub (agent B): written from the asm, near-match
 WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm tri_nm f_quest_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_sound_nm eft20_nm"

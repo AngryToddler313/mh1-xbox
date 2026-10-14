@@ -5,10 +5,10 @@
 #include "plf.h"
 #ifdef VERSION_MHG
 /* G: the three messages are pointer variables (set at run time), not literals */
-extern char *D_00528428, *D_0052842C, *D_00528430;
-#define SLASH_MSG_DOWN D_00528428
-#define SLASH_MSG_UP D_0052842C
-#define SLASH_MSG_MAX D_00528430
+extern char *slash_msg_down, *slash_msg_up, *slash_msg_max;
+#define SLASH_MSG_DOWN slash_msg_down
+#define SLASH_MSG_UP slash_msg_up
+#define SLASH_MSG_MAX slash_msg_max
 #else
 #define SLASH_MSG_DOWN lit_1805_0035B1B0
 #define SLASH_MSG_UP lit_1806_0035B1D0

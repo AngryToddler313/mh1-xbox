@@ -116,34 +116,77 @@ Armor_Arm_Data = 0x0051B9A0; // size:0x1B20        # 217
 Armor_Waist_Data = 0x0051D4C0; // size:0x19A0      # 205
 Armor_Leg_Data = 0x0051EE60; // size:0x1960        # 203
 # Monster stay / run-away timers per stage: G keeps {stage, value} lists ending in {-1, default} (game 0x54A1D0/0x54A230,
-# addresses from each emNN_init's calls); rt_data.c g_stage_lists expands each into MH1's per-stage array (128 stages)
+# addresses from each emNN_init's calls); rt_data.c g_stage_lists expands each into MH1's per-stage array (128 stages).
+# list: the G list's own length: only that much is imported and maps G pointers (the 0x100 host array overlapped
+# G's neighbours, e.g. the em01 stage-move lists, and pointers into them read the expanded array)
 [main]
-em01_stay_timer_tbl = 0x002ECD1C; // size:0x100
+em01_stay_timer_tbl = 0x002ECD1C; // size:0x100 list:0x4
 [game]
-em01_runaway_timer_tbl = 0x00694660; // size:0x100
+em01_runaway_timer_tbl = 0x00694660; // size:0x100 list:0x20
 [main]
-em02_stay_timer_tbl = 0x002ED0DC; // size:0x100
-em02_runaway_timer_tbl = 0x002ED0E0; // size:0x100
-em08_stay_timer_tbl = 0x002ED2E0; // size:0x100
-em08_runaway_timer_tbl = 0x002ED2E4; // size:0x100
+em02_stay_timer_tbl = 0x002ED0DC; // size:0x100 list:0x4
+em02_runaway_timer_tbl = 0x002ED0E0; // size:0x100 list:0x4
+em08_stay_timer_tbl = 0x002ED2E0; // size:0x100 list:0x4
+em08_runaway_timer_tbl = 0x002ED2E4; // size:0x100 list:0x4
 [game]
-em14_stay_timer_tbl = 0x006A03D0; // size:0x100
+em14_stay_timer_tbl = 0x006A03D0; // size:0x100 list:0x1C
 [main]
-em14_runaway_timer_tbl = 0x002ED5A8; // size:0x100
-em15_stay_timer_tbl = 0x002ED6D4; // size:0x100
+em14_runaway_timer_tbl = 0x002ED5A8; // size:0x100 list:0x4
+em15_stay_timer_tbl = 0x002ED6D4; // size:0x100 list:0x4
 [game]
-em15_runaway_timer_tbl = 0x006A4970; // size:0x100
+em15_runaway_timer_tbl = 0x006A4970; // size:0x100 list:0x28
 [main]
-em17_stay_timer_tbl = 0x002ED960; // size:0x100
-em17_runaway_timer_tbl = 0x002ED964; // size:0x100
-em20_stay_timer_tbl = 0x002EE060; // size:0x100
-em06_runaway_timer_tbl = 0x002EE068; // size:0x100
-em20_runaway_timer_tbl = 0x002EE070; // size:0x100
-em21_stay_timer_tbl = 0x002EE258; // size:0x100
+em17_stay_timer_tbl = 0x002ED960; // size:0x100 list:0x4
+em17_runaway_timer_tbl = 0x002ED964; // size:0x100 list:0x4
+em20_stay_timer_tbl = 0x002EE060; // size:0x100 list:0x4
+em06_runaway_timer_tbl = 0x002EE068; // size:0x100 list:0x8
+em20_runaway_timer_tbl = 0x002EE070; // size:0x100 list:0x4
+em21_stay_timer_tbl = 0x002EE258; // size:0x100 list:0x4
 [game]
-em21_runaway_timer_tbl = 0x006B6010; // size:0x100
+em21_runaway_timer_tbl = 0x006B6010; // size:0x100 list:0x14
 [main]
-em27_stay_timer_tbl = 0x002EE2F0; // size:0x100
-em27_runaway_timer_tbl = 0x002EE2F4; // size:0x100
-em33_stay_timer_tbl = 0x002EE550; // size:0x100
-em33_runaway_timer_tbl = 0x002EE554; // size:0x100
+em27_stay_timer_tbl = 0x002EE2F0; // size:0x100 list:0x4
+em27_runaway_timer_tbl = 0x002EE2F4; // size:0x100 list:0x4
+em33_stay_timer_tbl = 0x002EE550; // size:0x100 list:0x4
+em33_runaway_timer_tbl = 0x002EE554; // size:0x100 list:0x4
+# Monster hit points and level rates (agent A, G hunts without test aids). G dropped MH1's em_hp_vital_tbl and the fixed
+# numbers in each em*_init: hp = em_vital_tbl[kind][variant] * em_lv_rate_tbl[kind][lv].hp (game 0x5499A0), attack and
+# defence rates from the same row (em_def_attack_set 0x549A20, em_def_defence_set 0x549A60). Also in config/mhg/g_names.txt.
+[sub_main]
+em_lv_rate_tbl = 0x005097E0; // size:0xD0          # per kind: pointer to 15 levels of {f32 hp, attack, defence}
+em_vital_tbl = 0x005098B0; // size:0xD0            # per kind: pointer to s16 hit points per variant
+# Ammo, guns, items, skills (agent A): G layouts, read by the G code in pl53.c / pl73.c / pl77.c / shell06b.c / f_pl.c
+# (those used D_ names with G addresses, which the PC read as MH1 addresses: zeros). Also in config/mhg/g_names.txt.
+[sub_main]
+Shell_data = 0x00514E60; // size:0x40              # 32 shot types x {recoil, pow} (MH1: 4 bytes {ammo per load, sound, pow, -})
+Shell_max_tbl = 0x00514EA0; // size:0x2C0          # [22 gun classes (Gun_data +0xD)][32 shot types]: ammo per load (Shell_type_set)
+Ken_data = 0x00515360; // size:0x23C0              # 381 swords (MH1 234)
+Gun_data = 0x00517720; // size:0x750               # 78 guns of 0x18 bytes (MH1 26 of 0x14)
+Item_data = 0x004FF1F0; // size:0x28E0             # 523 items of 0x14 bytes (MH1 327 of 0x10)
+Skill_data = 0x0050A380; // size:0x3C0             # 60 skills of 0x10 {id, 3 x (points <= lim: skill), 3 x (points >= lim: skill)} (G replaced MH1's Equip_Bonus)
+armor_kind_tbl = 0x005207A0; // size:0x20          # per equipment kind: pointer to its armour table (skill points at +0x14 of each row)
+slash_msg_down = 0x00528428; // size:0x4           # sharpness messages (pointers to main strings; Pl_slash_calc)
+slash_msg_up = 0x0052842C; // size:0x4
+slash_msg_max = 0x00528430; // size:0x4
+St_data = 0x00524830; // size:0xB80                # 92 stages x 32 (quest_data_tbl[8]: G Quest_init 0x4B39A0 sets quest_w.x80 to it)
+pl_supp_tbl = 0x0050A2F0; // size:0x90             # supply-box item lists [battle type][6] (G Pl_item_charge 0x4F0B60; its other branch,
+                                                   # 0x4FE6D0 when G-only main 0x12D170 says so, is not ported)
+# Blade hits (G hit_hit_sub_em, sub_main 0x4DF7E0): six sharpness levels (MH1 four)
+s_gauge_tbl = 0x00508330; // size:0x60             # [6 sharpness levels][4] hit-quality rates
+slash_adj_tbl = 0x00508390; // size:0x18           # per sharpness level
+hit_ailment_rate_tbl = 0x005083A8; // size:0x18    # G-only: ailment build-up rate per sharpness level
+hit_se7 = 0x0050830C; // size:0x2                  # G-only: hit sound of shell se kind 7
+# Work areas G grew (host array at G's size; not imported)
+[main]
+User_data = 0x0032C210; // size:0xE00              # G 0xE00 (MH1 0x480): equipment at +0xC74 (Get_equip_value), recipes at +0xC80 (IPREP_LIST)
+# Effects
+[sub_main]
+eft20_data = 0x00507BE0; // size:0x2C0             # G 176 key lists (MH1 170): the hit effect read entries past MH1's end (crash when the hunter is hit)
+# More tables indexed by monster kind (52 in G)
+[game]
+em_stage_move_ok_data = 0x006768D0; // size:0xD0   # per kind: per map the {quest, stage list} lists (st_mv_ptr_ck; G lists are longer: 245/92)
+em_cmd_pos_tbl = 0x00673E40; // size:0xD0
+# Quest reward (G remuneration_item_set, sub_main 0x4B90A0; f_quest_nm.c)
+[sub_main]
+rem_item_exit_sel_tbl = 0x004FD9E0; // size:0x1C   # 7 lists of draw chances (MH1 4): base, other, skills 0x32/0x33/0x36, G-only mode, skill 0x69
+rem_kill_calc_tbl = 0x004FD960; // size:0x18       # G-only: kill-count ranges of reward ids 26-35

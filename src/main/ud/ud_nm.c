@@ -414,6 +414,84 @@ s16 Get_atk_value(u8 *p, u8 kind) {
     return r;
 }
 
+#ifdef VERSION_MHG
+int Pl_master_ck(PLW *);
+/* G sub_main 0x4C6BF0: takes the hunter. Its equipment comes from User_data (+0xC74: s16 x, the weapon
+ * kind at +0xC75, id +0xC76, options +0xC78; armour ids leg +0xC7A, head +0xC7B, body, arm, waist +0xC7E)
+ * for the master hunter, else from the player work (+0x35E..; leg +0x352, head +0x354 .. waist +0x357).
+ * Kinds: 0 attack, 1 defence, 2-5 the four resistances (armour s8 +9..+0xC), 6-12 the sword's bytes
+ * +0xB..+0x11. G also takes the player work when the G-only main 0x12D170 says so (not ported: 0). */
+s16 Get_equip_value(PLW *pl, u8 kind) {
+    u8 *e;
+    u8 type, head, body, arm, waist, leg;
+    u16 wid, opt;
+    s16 r = 0;
+    int i;
+    u8 *a[5];
+
+    if (Pl_master_ck(pl) == 0) {
+        e = (u8 *)pl + 0x35E;
+        leg = ((u8 *)pl)[0x352];
+        head = ((u8 *)pl)[0x354];
+        body = ((u8 *)pl)[0x355];
+        arm = ((u8 *)pl)[0x356];
+        waist = ((u8 *)pl)[0x357];
+    } else {
+        u8 *u = (u8 *)User_data;
+
+        e = u + 0xC74;
+        leg = u[0xC7A];
+        head = u[0xC7B];
+        body = u[0xC7C];
+        arm = u[0xC7D];
+        waist = u[0xC7E];
+    }
+    type = e[1];
+    wid = *(u16 *)(e + 2);
+    opt = *(u16 *)(e + 4);
+    a[0] = Armor_Head_Data[head];
+    a[1] = Armor_Body_Data[body];
+    a[2] = Armor_Arm_Data[arm];
+    a[3] = Armor_Waist_Data[waist];
+    a[4] = Armor_Leg_Data[leg];
+    switch (kind) {
+    case 0:
+        if (type == 7) {
+            r = (s16)(r + *(s16 *)&Gun_data[wid][8]);
+            r = (s16)(r + *(s16 *)(Gun_Grow_Up_DATA[Gun_data[wid][2]] + (opt & 0xF) * 0x18));
+            if (opt & 0x10) {
+                r = (s16)(r + Silencer_Grow_Up_Tbl[0]);
+            }
+            if (opt & 0x20) {
+                r = (s16)(r + LBarrel_Grow_Up_Tbl[0]);
+            }
+        } else {
+            r = *(s16 *)&Ken_data[wid][8];
+        }
+        break;
+    case 1:
+        for (i = 0; i < 5; i++) {
+            r = (s16)(r + a[i][8]);
+        }
+        r = (s16)(r + (type == 7 ? Gun_data[wid][0xA] : Ken_data[wid][0xA]));
+        break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        for (i = 0; i < 5; i++) {
+            r = (s16)(r + (s8)a[i][kind + 7]);
+        }
+        break;
+    default:
+        if (kind <= 12 && type == 6) {
+            r = Ken_data[wid][kind + 5];
+        }
+        break;
+    }
+    return r;
+}
+#else
 s16 Get_equip_value(u8 kind) {
     UDW *u = User_data;
     s16 r = 0;
@@ -479,6 +557,7 @@ s16 Get_equip_value(u8 kind) {
     }
     return r;
 }
+#endif
 
 s16 Get_bowgun_atk(u8 *w) {
     u16 id;

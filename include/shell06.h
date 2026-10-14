@@ -2,6 +2,7 @@
 #define SHELL06_H
 /* shell06: bowgun shots. Types shared by the shell06 split files.
  * Offsets from matched code (shell06*.c). */
+#include "version.h"
 #include "shell.h"
 #include "pl.h"
 #include "prim.h"
@@ -18,19 +19,28 @@ typedef struct GROW_UP {
     f32 range;          /* 0x14 scales shell06_change_time (the fall-off steps) */
 } GROW_UP;
 
-/* Gun_data: 20 bytes per gun. */
+/* Gun_data: 20 bytes per gun (G 0x18, version.h GUN_ROW). */
 typedef struct GUN_DATA {
     u8 _pad00[2];
     u8 grow_no;         /* 0x02 row of Gun_Grow_Up_DATA */
-    u8 _pad03[0x14 - 3];
+    u8 _pad03[GUN_ROW - 3];
 } GUN_DATA;
 
+#ifdef VERSION_MHG
+/* G Shell_data: 2 bytes per shot type; the firing sound comes from the recoil class (pl77.c) */
+typedef struct SHELL_DATA {
+    u8 recoil;          /* 0x00 */
+    u8 pow;             /* 0x01 */
+} SHELL_DATA;
+s32 sub_main_func_004CE8E0(PLW *pl, u8 ammo);
+#else
 /* Shell_data: 4 bytes per shot type. */
 typedef struct SHELL_DATA {
     u8 _pad00;
     u8 se_kind;         /* 0x01 firing sound: 0, 1 or 2 (shell06_se_req) */
     u8 _pad02[2];
 } SHELL_DATA;
+#endif
 
 /* shell06_param_tbl: 36 bytes per shot type (sh->arg). */
 typedef struct SH06P {
