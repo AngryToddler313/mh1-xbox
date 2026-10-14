@@ -45,6 +45,12 @@ int audio_open(void)
     }
     rt_log("audio: driver %s, device \"%s\", %d Hz %d ch, buffer %d samples", SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver() : "?",
            SDL_GetNumAudioDevices(0) > 0 ? SDL_GetAudioDeviceName(0, 0) : "default", have.freq, have.channels, have.samples);
+#ifdef XBOX
+    {   /* the AC97 controller and codec as opened (src/pc/xbox/xbox_ac97.c) */
+        void xbox_ac97_dump(const char *when);
+        xbox_ac97_dump("open");
+    }
+#endif
     SDL_PauseAudioDevice(dev, 0);
     return 0;
 }

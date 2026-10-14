@@ -420,3 +420,9 @@ obvious workarounds.
 - **Why:** the hunt was unfair or crashed: hp/attack/defence by MH1's rules, an invisible scale-0 Rathian, attack
   rate 0 (every hit 1), zero ammo tables, crashes when the hunter was hit or the Rathian changed area.
 - **To revert:** revert the commit "G hunts: G's own tables ...".
+
+## nxdk's AC97 driver replaced by our own (agent F, 13 Oct 2026)
+- **What:** src/pc/xbox/xbox_ac97.c defines XAudioInit/Play/Pause/ProvideSamples, so nxdk's hal/audio.c
+  is no longer linked. **Why:** its callbacks waited on S/PDIF too and stalled for good (silent after a
+  relaunch, silent in xemu); docs/xbox.md "Audio after a quit and relaunch". **To revert:** revert the commit
+  "Xbox audio: own AC97 driver" (and drop the file from tools/build_xbox.py).

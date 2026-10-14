@@ -195,6 +195,12 @@ static int audio_driving(void)
         return 1;
     mv.audio_stalled = 1;
     audio_stream_clear(AUDIO_STREAM_MOVIE);
+#ifdef XBOX
+    {
+        void xbox_ac97_dump(const char *when);
+        xbox_ac97_dump("stalled");
+    }
+#endif
     rt_warn("movie %d: the audio device stopped playing it (%lu frames played); timing the movie by the game tick, silent",
             mv.no, (unsigned long)c);
     return 0;
