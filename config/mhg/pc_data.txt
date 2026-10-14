@@ -94,3 +94,7 @@ st45_pos_tbl = 0x0069D570; // size:0x78
 st56_pos_tbl = 0x0069D710; // size:0x78
 [sub_main]
 enemy_name = 0x00527A40; // size:0xD0           # (quest_condition_print, disp_monster_list)
+[sub_main]
+D_00520930 = 0x00520930; // size:0x18           # stages per map (game_w.x2E), u16 (sub_main_func_004A1970)
+D_00520948 = 0x00520948; // size:0xB8           # the maps' stage lists (u16)
+D_00520A00 = 0x00520A00; // size:0x30           # pointers to them

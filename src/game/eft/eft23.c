@@ -58,8 +58,10 @@ typedef struct FISH_CHANCE {
 } FISH_CHANCE;
 
 typedef struct QUEST_W {
-    u8 _pad00[0x14E];
-    s8 x14E;            /* 0x14E selects the alternate fish tables */
+    u8 _pad00[0x64];
+    s8 *x64;            /* 0x64 mission data (G: header byte 0x42 selects the alternate fish tables) */
+    u8 _pad68[0x14E - 0x68];
+    s8 x14E;            /* 0x14E selects the alternate fish tables (MH1) */
 } QUEST_W;
 
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
@@ -491,7 +493,7 @@ static s8 fish_type_set(EFTW *ew) {
     u16 r;
 
 #ifdef VERSION_MHG    /* G (game.bin 0x581C90): 14 lists per set; the second set when mission header byte 0x42 is 1 or 2 */
-    if (((s8 *)quest_w.x64)[0x42] == 2 || ((s8 *)quest_w.x64)[0x42] == 1) {
+    if (quest_w.x64[0x42] == 2 || quest_w.x64[0x42] == 1) {
         p = fish_type_tbl[14 + ew->arg];
     } else {
         p = fish_type_tbl[ew->arg];
@@ -510,7 +512,7 @@ static s8 fish_type_set(EFTW *ew) {
     r = (u16)ran_suu(0) % total;
     total = 0;
 #ifdef VERSION_MHG    /* G (game.bin 0x581C90): 14 lists per set; the second set when mission header byte 0x42 is 1 or 2 */
-    if (((s8 *)quest_w.x64)[0x42] == 2 || ((s8 *)quest_w.x64)[0x42] == 1) {
+    if (quest_w.x64[0x42] == 2 || quest_w.x64[0x42] == 1) {
         p = fish_type_tbl[14 + ew->arg];
     } else {
         p = fish_type_tbl[ew->arg];
