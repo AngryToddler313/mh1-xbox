@@ -925,3 +925,19 @@ Merged and checked (tools/full_check.sh all ok incl. online; VERSION=mhg rebuild
 - B: G bring-up: carry-over 95% of MH1 code has a G counterpart (56% identical), G rebuild
   byte-identical (VERSION=mhg), 7.5% matched, all G data loads in our readers; docs/mhg.md.
 Owner Xbox tests pending: see COORDINATOR.md "Current assignments". Paused after this push.
+
+## 2026-10-13/14: Monster Hunter G comes up on the PC (owner asleep from 14 Oct ~2 am)
+
+G on the PC engine (tools/build_pc_mhg.sh, hidden by default): title -> menu -> NEW GAME ->
+character creation -> save -> CONTINUE -> Kokoto village (walk the village, item box); G quest 10
+(Rathian) hunt runs to the reward screen with test aids; quest 1 base camp loads; village NPCs run.
+G matched 7.5% -> 14.3% (VERSION=mhg tools/progress.py). English: tools/text_map.py builds
+English text tables locally from the owner's US disc: MH1 JP 75%, G 37% official English
+(docs/text_coverage.md). MH1 Xbox (owner-confirmed): Save? box, silent logos, loading map, rumble;
+area loads ~0.25-0.5 s on hardware.
+Crashes: the coordinator's session was OOM-killed twice (a 5.6 GB python during a G rebuild;
+not reproduced by agent D). Rule since then: builds under `ulimit -v 3000000`, one at a time,
+G registrations proven from a clean build (docs/agents/BRIEF.md).
+Open for the owner: agent F's Xbox audio fix (silent after a warm relaunch) is unmerged on
+agent-F and needs a hardware test (docs/agents/COORDINATOR.md); bed "quit game? yes" drops to
+the Forest camp.

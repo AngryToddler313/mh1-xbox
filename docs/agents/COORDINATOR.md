@@ -98,14 +98,9 @@ always been a struct field type or a lost field.
 As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
 screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
 bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
-G round 2 (13 Oct evening, owner: "agents cooking on MHG" until the usage reset):
-- B (Opus): G title screen fix -> press start -> new game -> Kokoto village; owns docs/mhg.md sec. 5
-  (shared run-time blocker list); G runs default to hidden.
-- A (Opus): G quest/hunt path: .mib reader, Quest_start, em_cmd_init + monster tables.
-- C (Sonnet): G edited functions in main + sub_main (first re-register last round's ~34).
-- D (Sonnet): G edited functions in game.bin + lobby.
-- E (Sonnet): English for G from the US disc's official script: extract + map tool, coverage report.
-- F: idle; AC97 work unmerged (below).
+G round 3 (14 Oct, owner asleep, ~6% usage left): A = G hunt polish (monster state bytes,
+subspecies, reward screen, armour tables); C = register f_pl, G camera layout. B, D, E idle.
+Main: G 14.3%, village walkable, quest 10 hunt to reward (test aids). Builds under ulimit -v 3000000.
 Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
 loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame
 during game2 steps 3-6 (fixes the old-area frame after a load) and an own AC97 driver
