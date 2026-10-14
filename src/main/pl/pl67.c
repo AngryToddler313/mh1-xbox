@@ -9,6 +9,7 @@ void flmatRotZ33(void *, f32);
 int Ana_ok_ck();
 extern s16 *stg_eft_mdl_no[0x58];
 
+#if !defined(G_PART) || G_PART == 1
 void Pl_adj_calc(PLW *pl, int n) {
     if (!(flvecCalcDistance(pl->pos, &pl->work800) < 800.0f)) {
         pl->work818 = 0;
@@ -42,6 +43,9 @@ s16 Pl_trap_use_ck(PLW *pl) {
     return *stg_eft_mdl_no[pl->stg];
 }
 
+#endif
+#if !defined(G_PART)  /* G: game_w.x80 is at +0xD0 there (layout not mapped) */
 void Pl_item_cnt_up(PLW *pl) {
     game_w.x80[pl->id]++;
 }
+#endif

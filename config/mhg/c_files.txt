@@ -917,3 +917,17 @@ sub_main 0x004FBA40 0x004FBD10 main/net/netsyn05
 main 0x001EE740 0x001EEC4C mhg/main/omake/omake_a
 main 0x001EF060 0x001EF420 mhg/main/omake/omake_b
 main 0x001EF7C0 0x001EFD6C mhg/main/omake/omake_c
+main 0x001DD3C0 0x001DD598 mhg/main/cam/camg_a
+main 0x00110D10 0x00111040 mhg/main/cp/cp01_a
+main 0x001110A0 0x001117AC mhg/main/cp/cp01_b
+main 0x00151AE0 0x00151CA4 mhg/main/fl/flpad02_a
+main 0x00151CC0 0x00151CC8 mhg/main/fl/flpad02_b
+main 0x0013E520 0x0013E74C mhg/main/fl/flvu05_a
+main 0x0013E7D0 0x0013E858 mhg/main/fl/flvu05_b
+main 0x001501C0 0x001501EC mhg/main/fl/fm02_a
+main 0x00150620 0x00150708 mhg/main/fl/fm02_b
+sub_main 0x004CC6B0 0x004CC810 mhg/main/pl/pl67_a
+main 0x0012A6D0 0x0012A7FC mhg/main/sprite/putspr_a
+main 0x0012A990 0x0012AA20 mhg/main/sprite/putspr_b
+main 0x001DDA10 0x001DDC48 mhg/main/cam/camg_b
+main 0x001DDE10 0x001DDEB0 mhg/main/cam/camg_c

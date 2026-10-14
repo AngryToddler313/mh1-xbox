@@ -87,6 +87,8 @@ segments:
       - [0x02B568, asm, text/Pl_item_search_space]
       - [0x02B570, c, main/pl/pl66]
       - [0x02B774, asm, text/Pl_horm_adj]
+      - [0x02BA30, c, mhg/main/pl/pl67_a]
+      - [0x02BB90, asm, text/sub_main_func_004CC810]
       - [0x02BBF0, c, main/pl/pl68]
       - [0x02BCAC, asm, text/Pl_vital_calc_item]
       - [0x02BCB0, c, main/pl/plx07]

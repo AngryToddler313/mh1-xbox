@@ -2,6 +2,7 @@
  * Written as MWCC inline assembly (the original is VU0 inline asm), one routine per function. */
 #ifdef __MWERKS__
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatBlend(void)
 {
     vmr32.xyzw vf6, vf0
@@ -148,6 +149,8 @@ asm void flvecApplyMat(void)
     addiu sp, sp, 0x10
 }
 
+#endif
+#if !defined(G_PART) || G_PART == 2
 asm void flvecApplyMatTrans(void)
 {
     lwc1 f0, 0x0(a1)
@@ -186,4 +189,5 @@ asm void flvecApplyMatTrans(void)
     addiu sp, sp, 0x10
 }
 
+#endif
 #endif

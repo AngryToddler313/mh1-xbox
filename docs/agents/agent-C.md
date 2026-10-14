@@ -1730,3 +1730,12 @@ UseItemChk (menu-local Item_data extern with [16]), Pl_act_set/Pl_act_set2, Came
 - McCardOperation (mccomb.c, G): ops 0xB-0xD = func_002306C0 / func_00230390 / func_00231440, op 0xE = op 1; matches.
 - DispSoftkeyboard: sk_nm.c (the C the PC uses) now has G's field offsets (-1 on the key-entry counts) and the 12-key
   glyph table loop (D_002A5FE0, D_002BE8B0 added to config/mhg/pc_names.txt); not byte-exact.
+
+### G round 3 (main/sub_main lane)
+- CONTINUE on the PC (hidden G run, new game + save, then tools/pc_scripts/continue.txt): Select_task now reaches Cont_task and the
+  village entry (stops in Local_main, agent D's lane, same as NEW GAME). Fixes: Select_task passed D_546E80 / D_548AC0 (G addresses
+  in D_ names, resolved to data on the PC) to Tsk_Execute: now the real names Edit_task / Cont_task / Demo_task / sub_main_func_004A9960
+  (Demo_task added to config/mhg/g_names.txt); `Tsk_Sleep()` in the CONTINUE arm is `Tsk_Sleep(1)` (the original's a0 is 1; still matches).
+- Seven files with G-only gaps registered as parts (G_PART guards inside the shared source, wrappers in src/mhg/main/*_a/_b/_c.c):
+  camg (a, b, c; quake_sub differs in G: flSin call, left asm), cp01, flpad02, flvu05, fm02 (mflInit left asm: sysmemblock is a different
+  object in G, mhg_map says 0x39FAA0, G uses 0x38FE10), pl67 (Pl_item_cnt_up left asm: G's game_w field is at +0xD0, not +0x80), putspr.

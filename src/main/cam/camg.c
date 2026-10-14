@@ -57,6 +57,7 @@ void cam_sw_set_sub(CAMW *);
 s8 Get_cam_grid_XZ(s16 *, s16 *, f32 *, u8 *);
 s32 SetAreaData(CAMW *);
 s32 CameraAreaCheck(CAMAREA *, PLW *, s32);
+#if !defined(G_PART) || G_PART == 1
 void cam2view(CAMW *);
 void View_move(void);
 s32 Cockpit_menu_chk(void);
@@ -144,6 +145,8 @@ s32 PachingerCamChk(PLW *pl) {
     return r;
 }
 
+#endif
+#if !defined(G_PART) || G_PART == 2
 void set_quake_sub(s32 type, f32 *pos) {
     CAMQUAKE *q = &CameraWork.qk[0];
 
@@ -202,6 +205,8 @@ void Pachinger_set_quake_sub(PLW *pl, s32 type) {
     }
 }
 
+#endif
+#if !defined(G_PART)  /* G differs here (not matched yet) */
 void quake_sub(CAMQUAKE *q) {
     s32 t;
     f32 a;
@@ -235,6 +240,8 @@ void quake_sub(CAMQUAKE *q) {
     }
 }
 
+#endif
+#if !defined(G_PART) || G_PART == 3
 void cam_sw_set_sub(CAMW *cw) {
     if (Game_clear_ck(1) == 1 || cw->pl->x8C6 != 0) {
         cw->sw_x5E6 = 0;
@@ -250,3 +257,4 @@ void cam_sw_set_sub(CAMW *cw) {
         cw->an_pow = Psw[11];
     }
 }
+#endif
