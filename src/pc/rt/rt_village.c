@@ -68,7 +68,11 @@ void rt_village_enter(void)
         if (visits++)                   /* Load_overlay(3): lobby.bin data and .bss as loaded */
             rt_lb_reload();
     }
-    Clear_lobby_ram();
+    if (!rt_ver_mhg())
+        Clear_lobby_ram();              /* G has no Clear_lobby_ram; its nearest is lobby 0x59A270 (lb_sys, lb_player,
+                                         * cw, pNet set-up), which G's Game_task (main 0x239750) calls when Online_ck().
+                                         * MH1's on G's memory writes MH1 offsets (and lbSendInterval has no G address):
+                                         * skipped until the village code has G copies (docs/mhg.md section 5) */
     game_w[0x1DC] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
     if (getenv("RT_VILLAGE_SKIP_INTRO")) {  /* test aid (no save data): the first-visit event seen */
         void Event_flag_set(int);

@@ -1288,3 +1288,24 @@ Lessons:
 See docs/mhg.md section 5: where it stands (boot reaches the memory-card autoload, crash in mc_mes_disp on a
 string pointer of McardMsgTbl), what was built, stand-ins, and the blocking list for agent C. Next: debug that
 pointer (map_ptr), then the logos/title.
+
+# G on the PC, round 2: title -> new game -> character creation (13 Oct 2026)
+Assignment: G screen by screen on the PC engine. Furthest: the save after character creation, then
+Game_task; the village is blocked on lobby G copies (agent D). Details and the shared blocking list:
+docs/mhg.md section 5.
+- G runs are always hidden now (viewer.c, VERSION_MHG: no window/controller unless MH1_SHOW=1, no run
+  without --shot). Never `rm -rf` a build dir from a script: the harness blocks it; use a new dir per run.
+- Lessons:
+  - "Drawn too big" on a G screen: compare the sprite's UVs with G's code first. G's title page is
+    512x512 (u2/v2 0x1FF) where MH1's was 256x256 (0xFE): MH1's UVs showed only the top-left quarter.
+  - G's font engine kept MH1's glyph file format (AFS 0x9AE, 20x20, 2 bits) but palettes are one
+    colour modulating four CLUTs (table 0x288D20); text colour tables are read from G's ELF at run time
+    (rt_addr), nothing copied into the repo.
+  - A data object with no G name becomes a *function* stand-in in the G PC build (rt_gen.c weak
+    `int name()`), so the C reads code bytes: crashes far from the cause (yn_tbl in mc_yn_ck). The G twin
+    of a function that reads the object gives its address; config/mhg/pc_names.txt records it.
+  - G often reaches MH1's small message tables through a list of table pointers (0x2B0B40) instead of
+    the table's own name (mc_sel_ck): name the table the pointer points at.
+  - G's Edit_task is MH1's with a step 0 in front (card check for an MH1 hunter to carry over), so
+    every MH1 step number is +1; the jump tables in asm/mhg/select/data give the step layout quickly.
+  - G's offline Game_task is rewritten (main 0x239490): the PC's rt_flow/rt_village stand for it.
