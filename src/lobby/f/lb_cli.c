@@ -569,16 +569,16 @@ s32 internet_lobby_act() {
         }
     }
     if (lobby_client_admin_message() != 0) {
-        if (F(u8, pNet, 0x11) == 0) {
+        if (F(u8, pNet, PNET_OFS(0x11)) == 0) {
             lbc_text_lobby_trans_k(&network_work);
         }
         return netr_ret;
     }
-    F(s8, pNet, 0xC) = 0;
-    F(u8, pNet, 0x11) = 0;
+    F(s8, pNet, PNET_OFS(0xC)) = 0;
+    F(u8, pNet, PNET_OFS(0x11)) = 0;
     font_set_stack_no(0);
     ((int (**)())network_lobby_client_main_jmp_207)[CWX->x2C31]();
-    if (F(u8, pNet, 0x11) == 0) {
+    if (F(u8, pNet, PNET_OFS(0x11)) == 0) {
         lbc_text_lobby_trans_k(&network_work);
     }
     return netr_ret;
@@ -604,14 +604,29 @@ void lobby_client_login() {
     ((int (**)())lobby_client_login_jmp_324)[F(u8, (u8 *)cw, 0x2C33)]();
 }
 
+#ifdef VERSION_MHG
+/* G (lobby 0x57A0A0): four prims, pNet+0/4/8/0xC point at lb_prim[0..3] (0x20 bytes apart); the fourth callback is not
+ * used by the village (the MH1-style callers pass three) */
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
-    F(int, pNet, 0x14) = (int)&lb_prim;
-    F(s32, F(int, pNet, 0x14), 0x14) = arg0;
-    F(int, pNet, 0x18) = (int)&D_3EBC90;
-    F(s32, F(int, pNet, 0x18), 0x14) = arg1;
-    F(int, pNet, 0x1C) = (int)&D_3EBCB0;
-    F(s32, F(int, pNet, 0x1C), 0x14) = arg2;
+    F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
+    F(s32, F(int, pNet, PNET_OFS(0x14)), 0x14) = arg0;
+    F(int, pNet, PNET_OFS(0x18)) = (int)&lb_prim + 0x20;
+    F(s32, F(int, pNet, PNET_OFS(0x18)), 0x14) = arg1;
+    F(int, pNet, PNET_OFS(0x1C)) = (int)&lb_prim + 0x40;
+    F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x14) = arg2;
+    F(int, pNet, PNET_OFS(0x20)) = (int)&lb_prim + 0x60;
+    F(s32, F(int, pNet, PNET_OFS(0x20)), 0x14) = 0;
 }
+#else
+void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
+    F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
+    F(s32, F(int, pNet, PNET_OFS(0x14)), 0x14) = arg0;
+    F(int, pNet, PNET_OFS(0x18)) = (int)&D_3EBC90;
+    F(s32, F(int, pNet, PNET_OFS(0x18)), 0x14) = arg1;
+    F(int, pNet, PNET_OFS(0x1C)) = (int)&D_3EBCB0;
+    F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x14) = arg2;
+}
+#endif
 
 #ifdef __MWERKS__
 asm int lbc_login_init()
@@ -688,7 +703,7 @@ void text_lobby_trans_ot3(u8 *arg0) {
     u8 temp_a0;
 
     font_set_stack_no(F(s32, arg0, 0x18));
-    temp_a0 = F(u8, pNet_c7, 0xC);
+    temp_a0 = F(u8, pNet_c7, PNET_OFS(0xC));
     if (temp_a0 == 1) {
         DispDialogData(temp_a0);
         Lb_on_dialog();
@@ -808,7 +823,7 @@ void lbc_login_warning_message() {
         To_LogOut(1);
         return;
     case 4:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         c = CWX_c10;
         if (c->x3600 != 0) {
             c->x2C4C--;
@@ -957,8 +972,8 @@ void lbc_login_id_select() {
     case 1:
         *stp = st + 1;
         Lbc_init_network_work();
-        F(u8, pNet, 6) = cw[2];
-        F(u8, pNet, 8) = cw[1];
+        F(u8, pNet, PNET_OFS(6)) = cw[2];
+        F(u8, pNet, PNET_OFS(8)) = cw[1];
         return;
     case 2:
         if ((Fade_busy_ck() & 0xFF) != 1) {
@@ -987,7 +1002,7 @@ void lbc_login_id_select() {
         }
     case 5:
         cw[0x2C34]++;
-        ix = F(u8, pNet, 8);
+        ix = F(u8, pNet, PNET_OFS(8));
         cw[1] = ix;
         CallBackWaitInit();
         Set_userdata((int)&player_work + (game_w.master * 0xA00));
@@ -1073,7 +1088,7 @@ void lbc_login_users_personal_data() {
         SetDialogData_HTML(CWX_c14->x32D1);
         return;
     case 6:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         if (CWX_c14->x2C4C++ >= 0x258 || (CWX_c14->x2C4C >= 0x3C && (sw & 0x60))) {
             CWX_c14->step++;
         }
@@ -1119,7 +1134,7 @@ void lbc_login_error() {
         SetDialogData_HTML((u8 *)cw + 0x32D1);
         break;
     case 1:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         CWX_c16->x2C4C--;
         if (CWX_c16->x2C4C > 0) {
             if (CWX_c16->x2C4C < 0x1E0 && (sw & 0x20)) {
@@ -1134,7 +1149,7 @@ void lbc_login_error() {
         break;
     case 2:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            F(s8, pNet, 0x11) = 1;
+            F(s8, pNet, PNET_OFS(0x11)) = 1;
             CWX_c16->x2C33 = 4;
             CWX_c16->x2C34 = 1;
         }
@@ -1265,7 +1280,7 @@ void lbc_login_top_information() {
         CWX_c19->x2C50 = 0x708;
         return;
     case 5:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         c = CWX_c19;
         p = &c->x2C4C;
         v = *p;
@@ -1283,7 +1298,7 @@ void lbc_login_top_information() {
         }
         break;
     case 6:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         if ((u8)Fade_busy_ck() == 1) {
             break;
         }
@@ -1479,7 +1494,7 @@ void lbc_browser_03() {
 void lbc_browser_04() {
     s32 temp_v0;
 
-    F(s8, pNet_c25, 0x11) = 1;
+    F(s8, pNet_c25, PNET_OFS(0x11)) = 1;
     temp_v0 = MainBrowser();
     switch (temp_v0) {
     case 0:
@@ -1720,7 +1735,7 @@ void lbc_top_menu_00() {
         var_v1 += 0x6CC;
     } while (var_a0 < 0xA);
     Lbc_init_network_work(var_a0);
-    F(s8, pNet, 6) = 0;
+    F(s8, pNet, PNET_OFS(6)) = 0;
 }
 
 void lbc_top_menu_01() {
@@ -1905,7 +1920,7 @@ void lbc_top_menu_06() {
     F(s8, &ClassInfo_c44, 4) = 0;
     F(s8, &ClassInfo_c44, 8) = 0;
     Lbc_init_network_work();
-    F(s8, pNet_c44, 6) = 0;
+    F(s8, pNet_c44, PNET_OFS(6)) = 0;
 }
 
 void lobby_client_game_in_plaza() {
@@ -1982,7 +1997,7 @@ void lbc_in_plaza_00() {
     u8 temp_a0_2;
     int temp_a0;
 
-    F(s8, pNet, 0xC) = 1;
+    F(s8, pNet, PNET_OFS(0xC)) = 1;
     temp_a0 = (int)cw;
     temp_a2 = temp_a0 + 0x2C34;
     temp_a0_2 = F(u8, temp_a0, 0x2C34);
@@ -2004,18 +2019,38 @@ void lbc_in_plaza_00() {
     }
 }
 
+#ifdef VERSION_MHG
+/* G (lobby 0x57EE00): pNet is 0x38 bytes with five prim pointers at +0..+0x10 (lb_prim, 0x20 apart) */
+void Lbc_init_network_work() {
+    static const s32 ids[5] = { 0, 1, 2, 3, 5 };
+    int k;
+
+    memset(pNet, 0, 0x38);
+    for (k = 0; k < 5; k++) {
+        F(int, pNet, 4 * k) = (int)&lb_prim + 0x20 * k;
+    }
+    F(int, F(int, pNet, 0x10), 0x14) = (int)&text_lobby_trans_ot3_o;
+    for (k = 0; k < 5; k++) {
+        F(s32, F(int, pNet, 4 * k), 0x18) = ids[k];
+    }
+    if (F(u8, (u8 *)cw, CW_OFS(0x35D5)) == 0 && Online_ck() == 1) {
+        F(u8, pNet, 0x28) = 0x10;
+    }
+}
+#else
 void Lbc_init_network_work() {
     memset(pNet, 0, 0x2C);
-    F(int, pNet, 0x14) = (int)&lb_prim;
-    F(int, pNet, 0x18) = (int)&D_3EBC90;
-    F(int, pNet, 0x1C) = (int)&D_3EBCB0;
-    F(int, pNet, 0x20) = (int)&D_3EBCD0;
-    F(int, F(int, pNet, 0x20), 0x14) = (int)&text_lobby_trans_ot3_o;
-    F(s32, F(int, pNet, 0x14), 0x18) = 0;
-    F(s32, F(int, pNet, 0x18), 0x18) = 1;
-    F(s32, F(int, pNet, 0x1C), 0x18) = 2;
-    F(s32, F(int, pNet, 0x20), 0x18) = 3;
+    F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
+    F(int, pNet, PNET_OFS(0x18)) = (int)&D_3EBC90;
+    F(int, pNet, PNET_OFS(0x1C)) = (int)&D_3EBCB0;
+    F(int, pNet, PNET_OFS(0x20)) = (int)&D_3EBCD0;
+    F(int, F(int, pNet, PNET_OFS(0x20)), 0x14) = (int)&text_lobby_trans_ot3_o;
+    F(s32, F(int, pNet, PNET_OFS(0x14)), 0x18) = 0;
+    F(s32, F(int, pNet, PNET_OFS(0x18)), 0x18) = 1;
+    F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x18) = 2;
+    F(s32, F(int, pNet, PNET_OFS(0x20)), 0x18) = 3;
 }
+#endif
 
 void lbc_in_plaza_01() {
     switch (((CWS_ip1 *)cw)->x2C34) {
@@ -2193,17 +2228,17 @@ void CallBack_Result_Plaza_LobbyMember(CNET_RES res) {
 s32 Lbs_GetLobbyMemberList(arg0)
 s16 arg0;
 {
-    switch (((u8 *)pNet)[0x12]) {
+    switch (((u8 *)pNet)[PNET_OFS(0x12)]) {
     case 0:
         CWX_c56->x2C45 = 0xA;
-        ((u8 *)pNet)[0x12]++;
+        ((u8 *)pNet)[PNET_OFS(0x12)]++;
         cnLBS_Read_LobbyMemberList(arg0 + 1, &CallBack_Result_Plaza_LobbyMember2_o);
         break;
     case 1:
         Check_CallBackWait();
         break;
     case 2:
-        ((u8 *)pNet)[0x12] = 0;
+        ((u8 *)pNet)[PNET_OFS(0x12)] = 0;
         return 1;
     }
     return 0;
@@ -2246,7 +2281,7 @@ void lbc_in_plaza_03() {
         SetDialogData_HTML((u8 *)cw + 0x32D1);
         /* fallthrough */
     case 1:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         F(s32, (u8 *)cw, 0x2C4C) = (F(s32, (u8 *)cw, 0x2C4C) - 1);
         if (F(s32, (u8 *)cw, 0x2C4C) <= 0) {
         case 2:
@@ -2444,7 +2479,7 @@ void lobby_client_game_in_lobby() {
         temp_a0 = (int)cw;
         if ((F(u8, temp_a0, 0x2C33) == 0) && (F(u8, temp_a0, 0x2C34) == 1)) {
             Lbc_set_prim_k(0, 0, &put_back);
-            F(s8, pNet, 0x11) = 0;
+            F(s8, pNet, PNET_OFS(0x11)) = 0;
         }
         return;
     }
@@ -2935,7 +2970,7 @@ s32 Lbc_GuestReadRoom(s32 arg0) {
         } while (i < 4);
         cw[0x2C3A] = 1;
         cw[0x32BF] = 3;
-        F(s8, pNet, 6) = 2;
+        F(s8, pNet, PNET_OFS(6)) = 2;
         return 0;
     }
     return 2;
@@ -3129,7 +3164,7 @@ void lbc_in_lobby_03_01() {
         SetDialogData_HTML((u8 *)cw + 0x32D1);
         /* fallthrough */
     case 1:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         CWX_c93->x2C4C--;
         if (CWX_c93->x2C4C <= 0) {
             CWX_c93->x2C35++;
@@ -3767,7 +3802,7 @@ void lbc_matching_failed_01() {
     temp_a0 = (int)cw;
     F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
     F(s32, (u8 *)cw, 0x2C4C) = 0;
-    F(s8, pNet, 0xC) = 1;
+    F(s8, pNet, PNET_OFS(0xC)) = 1;
     temp_v1 = (int)cw;
     if (F(u8, temp_v1, 0x2C32) == 0) {
         SetDialogData(0x33, 3);
@@ -3785,7 +3820,7 @@ void lbc_matching_failed_02() {
     void *temp_v1;
 
     temp_a2 = Get_sw2(0) & 0xFFFF;
-    F(s8, pNet_c126, 0xC) = 1;
+    F(s8, pNet_c126, PNET_OFS(0xC)) = 1;
     temp_a1 = (u8 *)cw;
     temp_a0 = F(s32, temp_a1, 0x2C4C);
     F(s32, temp_a1, 0x2C4C) = (temp_a0 + 1);
@@ -3799,7 +3834,7 @@ void lbc_matching_failed_02() {
 void lbc_matching_failed_03() {
     void *temp_a0;
 
-    F(s8, pNet_c127, 0xC) = 1;
+    F(s8, pNet_c127, PNET_OFS(0xC)) = 1;
     if ((Fade_busy_ck() & 0xFF) != 1) {
         temp_a0 = (u8 *)cw;
         F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
@@ -3817,7 +3852,7 @@ void lbc_matching_failed_04() {
     }
     all_reset();
     Lbs_load();
-    F(s8, pNet_c127, 0x11) = 1;
+    F(s8, pNet_c127, PNET_OFS(0x11)) = 1;
     To_GoToTop();
     cnWrap_BgmRequest(0);
 }
@@ -3829,7 +3864,7 @@ void lbc_matching_failed_05() {
         all_reset();
         Lbs_load();
         To_GoToTop();
-        F(s8, pNet_c127, 0x11) = 1;
+        F(s8, pNet_c127, PNET_OFS(0x11)) = 1;
         cnWrap_BgmRequest(0);
     }
 }
@@ -3942,7 +3977,7 @@ void lbc_logout_00() {
     case 4:
         CWX_c132->x2C34++;
     case 5:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         if (tk_logout(CWX_c132->x2C46) != 0) {
             CWX_c132->x2C34++;
             CpInetTcpAbort(*(s32 *)0x4E36F4);
@@ -3953,7 +3988,7 @@ void lbc_logout_00() {
         if ((Fade_busy_ck() & 0xFF) != 1) {
             CWX_c132->x2C34++;
             if (CWX_c132->x2C46 != 0) {
-                F(s8, pNet, 0xC) = 1;
+                F(s8, pNet, PNET_OFS(0xC)) = 1;
                 fade_set(1);
             }
         }
@@ -3961,7 +3996,7 @@ void lbc_logout_00() {
     case 7:
         if ((Fade_busy_ck() & 0xFF) == 1) {
             if (CWX_c132->x2C46 != 0) {
-                F(s8, pNet, 0xC) = 1;
+                F(s8, pNet, PNET_OFS(0xC)) = 1;
             }
             return;
         }
@@ -4000,7 +4035,7 @@ void lbc_logout_01() {
     switch (CWX_c133->x2C34) {
     case 0:
         Lbc_init_network_work();
-        F(s8, pNet, 0x11) = 1;
+        F(s8, pNet, PNET_OFS(0x11)) = 1;
         CWX_c133->x2C34++;
         Lbc_set_prim_k(&text_lobby_trans_ot0_o, 0, 0);
         if (CWX_c133->x2C46 != 0) {
@@ -4014,7 +4049,7 @@ void lbc_logout_01() {
         fade_set(0xA);
         break;
     case 1:
-        F(s8, pNet, 0x11) = 1;
+        F(s8, pNet, PNET_OFS(0x11)) = 1;
         if ((Fade_busy_ck() & 0xFF) != 1) {
             CWX_c133->x2C34++;
             if (CWX_c133->x2C46 != 0) {
@@ -4025,17 +4060,17 @@ void lbc_logout_01() {
         }
         break;
     case 2:
-        F(s8, pNet, 0x11) = 1;
+        F(s8, pNet, PNET_OFS(0x11)) = 1;
         CWX_c133->x2C34++;
         CWX_c133->x2C08 = 0;
         break;
     case 3:
-        F(s8, pNet, 0x11) = 1;
+        F(s8, pNet, PNET_OFS(0x11)) = 1;
         CWX_c133->x2C08 = 1;
         CWX_c133->x2C34++;
         break;
     case 4:
-        F(s8, pNet, 0x11) = 1;
+        F(s8, pNet, PNET_OFS(0x11)) = 1;
         if ((Fade_busy_ck() & 0xFF) != 1) {
             CWX_c133->x2C34++;
             tk_logout_init();
@@ -4045,14 +4080,14 @@ void lbc_logout_01() {
         }
         break;
     case 5:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         CWX_c133->x2C34++;
         break;
     case 6:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         CWX_c133->x2C34 = 7;
     case 7:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         if (tk_logout(CWX_c133->x2C46, sw) != 0) {
             Set_ErrorDialog_k((s8)CWX_c133->x2C46);
             if (CWX_c133->x2C46 == 7) {
@@ -4066,7 +4101,7 @@ void lbc_logout_01() {
         }
         break;
     case 8:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         if ((u16)sw & 0x20) {
             CWX_c133->x2C34 = 0xA;
             cnWrap_SoundRequest(0);
@@ -4074,7 +4109,7 @@ void lbc_logout_01() {
         }
         break;
     case 9:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         if (--CWX_c133->x2C4C <= 0) {
             CWX_c133->x2C34++;
             fade_set(1);
@@ -4083,7 +4118,7 @@ void lbc_logout_01() {
     case 10:
         if ((Fade_busy_ck() & 0xFF) != 1) {
             all_reset();
-            F(s8, pNet, 0x11) = 1;
+            F(s8, pNet, PNET_OFS(0x11)) = 1;
             *(s8 *)0x3F33F1 = 4;
             COM_R_No_0 = 1;
             COM_R_No_1_c133 = 0;
@@ -4215,7 +4250,7 @@ void lbc_admin_message_00() {
         F(s16, (u8 *)cw, 0x2F74) = 0x258;
         return;
     case 3:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         temp_v1 = (int)cw;
         F(s16, temp_v1, 0x2F74) = (s16) (F(s16, temp_v1, 0x2F74) - 1);
         temp_v1_2 = (int)cw;

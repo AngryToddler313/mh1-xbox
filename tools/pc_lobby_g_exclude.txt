@@ -1,0 +1,8 @@
+# lobby files whose MH1 copies must not be linked in the G PC build (see tools/build_pc.sh)
+src/lobby/f/lb_gaf01.c
+src/lobby/f/lb_gaf02.c
+src/lobby/f/lb_gaf03.c
+src/lobby/f/lb_gaf04.c
+src/lobby/f/lb_gaf05.c
+src/lobby/f/lb_gaf06.c
+src/lobby/f/lb_gaf07.c

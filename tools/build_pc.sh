@@ -182,6 +182,11 @@ BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/l
 # every other matched lobby file whose functions the PC took from a near-match
 # copy or a stand-in (list: tools/pc_lobby_matched.txt)
 BMATCH="$BMATCH $(grep -v '^#' tools/pc_lobby_matched.txt | tr '\n' ' ')"
+# VERSION=mhg: the MH1-matched copies listed in tools/pc_lobby_g_exclude.txt do not run on G (its functions are edited);
+# the G versions live in lb_village_nm.c / #ifdef VERSION_MHG in the shared file
+if [ "$VERSION" = mhg ] && [ -f tools/pc_lobby_g_exclude.txt ]; then
+    for x in $(grep -v '^#' tools/pc_lobby_g_exclude.txt); do BMATCH=$(echo " $BMATCH " | sed "s# $x # #"); done
+fi
 # matched lobby functions that were stand-ins (gen_rt_auto) until now:
 # NPC sound types, the guild-hall board / status init, the village menu
 # sounds (cnWrap_SoundRequest), the forge's value_result, lobby client

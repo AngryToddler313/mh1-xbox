@@ -14,6 +14,9 @@
  * Struct fields are raw offsets (M2C_FIELD) as in the drafts. */
 #include "lbsys_g.h"
 #include "types.h"
+#ifdef VERSION_MHG
+char *getenv(const char *);
+#endif
 #define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
 typedef double f64;
 #define NULL ((void *)0)
@@ -428,6 +431,14 @@ void Lb_put_2TF();
  * Lb_move_common (the walking loop), exit, event. lb_sys+LBSYS_OFS(0x68) = 32: a quest
  * was accepted (return 1), 37: leave (return -1). */
 #ifdef VERSION_MHG
+void rt_log_standin(const char *name);
+#define G_STANDIN(n) do { static int o_; if (!o_++) rt_log_standin(n); } while (0)
+extern void (*vs_square_func_227[])();
+void vs_square(void) {
+    vs_square_func_227[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();    /* G's own copy; lb_gaf01.c (MH1 layout) is not linked */
+}
+#endif
+#ifdef VERSION_MHG
 /* G (lobby 0x59E480): pNet fields moved (+0xC -> +0x2D, +0x11 -> +0x31), the exit codes are 0x22 (quest) and 0x27 (title) */
 s32 Local_main(void) {
     M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 0;
@@ -540,7 +551,7 @@ void vs_square_init_init(void) {
     switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
         if (Online_ck() == 0) {
-            Lb_make_quest_tbl_local();
+            G_STANDIN("G village: Lb_make_quest_tbl_local (G rebuilt the quest tables; MH1's crashes on them)");
             Q_camera_init();
         }
         M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
@@ -1280,6 +1291,10 @@ void Lb_npc_set(s32 st) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    if (getenv("RT_NO_NPC"))     /* test aid: no village NPCs (their em command tables are still G-incomplete) */
+        n = 0;
+#endif
     for (i = 0; i < n; i++) {
         em = (u8 *)pull_enemy_work();
         if (em != NULL) {
