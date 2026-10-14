@@ -24,6 +24,7 @@
 #include "pl.h"
 #include "fl.h"
 #include "frame.h"
+#include "version.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -37,7 +38,7 @@ void pl_init(int mode);
 void rt_pad_tick(void);
 void hit_chk_init(void);
 extern u8 Ken_data[][0x18];
-extern u8 Gun_data[][0x14];
+extern u8 Gun_data[][GUN_ROW];
 extern u8 Battle_type[];
 extern u8 User_data[];
 
@@ -46,13 +47,17 @@ static int pl_ticks, quest_base;    /* player ticks of the run; at the current q
 
 /* Weapon: Ken_data id (sword type 6) or Gun_data id (type 7). Default:
  * Ken 156, the first sword-and-shield (job 4) in the table. RT_WEAPON=id
- * picks another sword (e.g. 1 = the first great sword, job 0). */
+ * picks another sword (e.g. 1 = the first great sword, job 0), RT_WEAPON=gN
+ * the Gun_data row N (a bowgun, e.g. g2; MH1 has 26 rows, G 78). */
 void rt_player_game_init(int no)
 {
     PLW *pl = &player_work[no];
-    int wid = getenv("RT_WEAPON") ? atoi(getenv("RT_WEAPON")) : 156;
-    int type = 6;
-    if (wid < 0 || wid >= 234) wid = 156;
+    const char *we = getenv("RT_WEAPON");
+    int gun = we && (we[0] == 'g' || we[0] == 'G');
+    int wid = we ? atoi(we + gun) : 156;
+    int type = gun ? 7 : 6;
+    if (gun && (wid < 0 || wid >= (rt_ver_mhg() ? 78 : 26))) gun = 0, type = 6, wid = 156;
+    if (!gun && (wid < 0 || wid >= 234)) wid = 156;
     /* init_pl_work's offline master path (Set_userdata) [read from the asm] */
     pl->be_flag = 1;
     pl->id = (u16)no;
@@ -60,7 +65,7 @@ void rt_player_game_init(int no)
     PF(pl, u8, 0x35E) = 0;
     PF(pl, u8, 0x35F) = (u8)type;
     pl->wpn_kind = (u16)wid;
-    pl->work34C = Ken_data[wid][0];
+    pl->work34C = gun ? Gun_data[wid][0] : Ken_data[wid][0];
     pl->kind = Battle_type[pl->work34C];
     if (rt_ver_mhg()) {     /* G keeps the equipment at User_data+0xC74 (G Get_equip_value 0x4C6BF0) */
         PF(User_data, u8, 0xC75) = (u8)type;
@@ -101,6 +106,13 @@ void rt_player_game_init(int no)
             if (*q != ',')
                 break;
             q++;
+        }
+        if (pl->kind == 1 || pl->kind == 5) {   /* a gunner: load from the new pouch as pl_init does (f_pl.c) */
+            u16 Pl_shell_set(PLW *, int, int);
+            void Shell_type_set(PLW *, int);
+            pl->work88E = Pl_shell_set(pl, 0, 2);
+            pl->work8BC = pl->work88E < 20 ? pl->item[pl->work88E].num : 0;
+            Shell_type_set(pl, 0);
         }
     }
     {   /* Set_userdata copies the user's pouch (User_data+0x37C) to the

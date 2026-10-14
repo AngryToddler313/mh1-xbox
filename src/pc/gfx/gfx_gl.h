@@ -29,6 +29,7 @@ typedef struct {
     char online_password[24]; /* its password (16 characters) */
 } pc_options;
 extern pc_options pc_opt;
+extern int rt_hud_style;    /* hud: 0 original, 1 prototype gunner (src/pc/rt/rt_hud_gun.c; on the Xbox it stays 0) */
 const char *gfx_text_table_find(void);                /* the translation table file that exists, or NULL */
 
 float gfx_scene_aspect(void);         /* width / height of the 3D scene rectangle (4/3 unless widescreen) */

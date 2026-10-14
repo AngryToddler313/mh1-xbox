@@ -91,6 +91,7 @@ Precedence: built-in defaults < file < command-line flags.
 | `--filter2d nearest\|linear\|sharp` | `filter2d` | HUD / menu / text art: nearest keeps the original pixels hard at any scale; sharp is nearest at the whole-number part of the scale and bilinear for the rest (below) |
 | `--english`, `--japanese`, `--text-table FILE` | `language` (`ja`/`en`), `text_table` | text language, see "Settings menu" |
 | `--confirm circle\|cross` | `confirm` | button layout, see "Settings menu" |
+| `--hud original\|gunner` | `hud` (`original` / `prototype gunner`) | the prototype gunner HUD, see "Prototype gunner HUD" |
 | `--ini FILE`, `--no-ini` | | use another settings file / ignore it |
 
 Layout (gfx_gl.c `layout()`): `rc` is the largest 4:3 rectangle in the window, `sc` the 3D scene rectangle.
@@ -155,6 +156,7 @@ menu.h (stubs on the Xbox), hooks in viewer.c.
 | 2D art filter | smooth / sharp (integer) / nearest | yes |
 | Text language | Japanese / English (English only when a table file exists) | at the next start |
 | Button layout | circle confirms (Japan) / cross confirms (West) | yes |
+| HUD | original / prototype gunner (bowgun users only, see "Prototype gunner HUD") | yes |
 | Music / Effects volume | the game's own options: option_w[1] / option_w[2], 0..7 | yes |
 | Restore display defaults / Close | | |
 
@@ -173,6 +175,37 @@ that the game does not tick while the menu is open and runs on after Esc, and th
 
 Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, quest 131 and the pause menu at
 960x720 4:3 and 1280x720 widescreen, plus --msaa 4 --aniso 8 --filter2d nearest; the PC test set at the defaults.
+
+### Prototype gunner HUD (agent F, 14 Oct 2026)
+
+An optional HUD for bowgun users built from cockpit2.apx, an early HUD mock-up on the disc that the game never loads
+(docs/FINDS.md). Off by default. Turn it on with the HUD row of the F10 settings menu, `hud = prototype gunner` in
+mh1pc.ini, or `--hud gunner` (`--hud original` turns it off). It shows only while the hunter carries a gun (job 1 or 5,
+the test disp_cannon uses); blade users always get the original HUD. The game logic is not touched: src/pc/rt/rt_hud_gun.c
+draws it from the game's own state, called from the HUD wrappers in rt_2d.c (rt_hud_disp_pl_vital, rt_hud_disp_item).
+
+- Top: the sword. Health fills the blade's slot (150 health = the whole slot; dark grey up to the hunter's maximum,
+  red = health that comes back, green = health now: the same three values disp_pl_vital draws), stamina the gold
+  hilt's slot (150 = full) in the original's colours (red flash when tired).
+- Bottom right: the ammo wheel. The slot by the name box holds the loaded ammo, the other four the next two and the
+  previous two ammo types the gun can take (the order Pl_shell_set cycles through); the box shows its name (yellow
+  while a new type is picked but not yet loaded), the pod the rounds in the gun over the rounds left (red, "--" for
+  unlimited normal shot LV1). Crag shot keeps the mock-up's own yellow pouch icon; the rest use the game's item icons.
+- Bottom left: the item wheel, the same wheel mirrored: the selected pouch item, its neighbours in the order the item
+  select cycles, its name, the count over the stack limit.
+- The original's bullet row and "loading" messages (disp_cannon) and the map stay as they are.
+- Liberties: baked text, icons and digits are covered with black (the boxes' and slots' insides are black in the
+  texture), names and numbers are drawn with the game's font, the boxes get a rounded end mirrored from the top box,
+  the tabs and the long bottom gauge of the texture are not used. Widescreen: the item wheel and the sword keep to the
+  left edge, the ammo wheel to the right.
+- The texture is loaded on first use into mem_tex 0x158 (a slot nothing uses), from filedef_sys[3] (AFS_DATA 10 in
+  MH1 JP), with a host buffer.
+- The Xbox build has the code but no settings file yet: there rt_hud_style stays 0 (original HUD).
+
+Test aid: `RT_WEAPON=gN` starts with Gun_data row N (a bowgun; e.g. g2) instead of a sword; with `RT_PL_ITEMS` the
+gun loads from the new pouch as pl_init does. Shot used (hidden):
+`RT_WEAPON=g2 RT_PL_ITEMS="1:5,20:3,31:2,60:1,61:30,44:5,47:20" build/pc/mhview disc/mh1 --quest 10 --play --hud gunner
+--no-ini --size 960x720 --shot build/show/gunhud/q10.png --time 25`.
 
 ## Build
 
@@ -239,7 +272,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
 
 Environment variables for the player: `RT_WEAPON=id` (Ken_data id, default
-156, the first sword and shield; 1 = the first great sword), `RT_PL_TRACE=1`
+156, the first sword and shield; 1 = the first great sword; `gN` = Gun_data row N, a bowgun), `RT_PL_TRACE=1`
 (action, step, motions, frame, position per tick), `RT_EM_POS=x,z` (put the Rathian there, for hit tests),
 `RT_HIT_DM=1` (print damage the Rathian takes; `2` also lists live attack
 shells and their hit volumes), `RT_SKIP_TYPE=n` (do not draw prims of
