@@ -47,11 +47,9 @@ uint8_t *rt_file_load(int idx, size_t *n)
  * AFS_DATA (12 Oct 2026), so 96 KB and 192 KB (were 512 KB each, 4 MB
  * before that; docs/xbox.md memory). load_file_mdl refuses a file that
  * does not fit; RT_MEM reports how much the game used. */
-#ifndef VERSION_MHG
+/* G (lwgNNN.bin, entry 0 wall / entry 1 ground) has the same largest parts: 81204 (lwg032) and
+ * 164352 (lwg045), checked over every lwg file of G's AFS_DATA (14 Oct 2026). */
 static const unsigned hit_area_size[2] = { 96u << 10, 192u << 10 };     /* wall, ground */
-#else
-static const unsigned hit_area_size[2] = { 256u << 10, 512u << 10 };    /* G: not measured yet */
-#endif
 s32 stage_hit_area_w;
 s32 stage_hit_area_f;
 static uint8_t *hit_area[2];

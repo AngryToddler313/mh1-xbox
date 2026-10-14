@@ -318,3 +318,14 @@ G offline quests (14 Oct 2026, agent A; docs/agents/agent-A.md "G round 5"): too
 - G jungle stage 74 has exits out but none in (73/75 do not list it): real data or a G exit-list detail.
 - monster (A, open): em01/em15/em17/em27 G revival; 10030 last revival; 10048 Lao-Shan floor; kind 40 (unused);
   monster_data / G disp_monster_list (G hunting log, needs G User_data record writers).
+
+Quest 10 fails by time-out (quest-failed screen); quests on map 6 (89, 129) hang in an em program (open).
+Loading screens and transitions (14 Oct 2026, agent F; docs/agents/agent-F.md "G: loading screens"): G's loading screen
+is a request drawn on each vsync of a load (main 0x12DA20 from load_bin's wait); the PC draws it after disc reads
+(disp1_nm.c VERSION_MHG, viewer.c load_wait). Area-change map drawn white as G does; the quest start shows black until
+the fade-in (MH1 too). rt_village.c reads the accepted quest at select_w+0xD0 in G.
+
+G on the Xbox (14 Oct 2026, agent B): `python3 tools/build_xbox.py --version mhg --gfx nv2a` after
+tools/build_pc_mhg.sh; own title id / save / folder (E:\Games\MHG); in xemu new game -> save -> village and
+`RT_ARGS=--quest 10` -> reward -> village. Memory and what to test on hardware: docs/xbox.md "Monster Hunter G
+on the Xbox".

@@ -13,7 +13,33 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define XBOX_LOG "E:\\Games\\MH1\\mh1log.txt"
+#include "xbox_title.h"
+
+/* The log file: mh1log.txt in the folder of the running XBE when that is on E: (the network loader starts
+ * E:\Games\MH1\mh1.xbe, also for a G build, and sends E:\Games\MH1\mh1log.txt), else (xemu's DVD, a
+ * folder elsewhere) in the version's game folder (xbox_title.h: E:\Games\MH1 or E:\Games\MHG). */
+static char xbox_log_path[300] = XBOX_GAME_DIR "\\mh1log.txt";
+#define XBOX_LOG xbox_log_path
+
+static void log_path_from_xbe(void)
+{
+    static const char pre[] = "\\Device\\Harddisk0\\Partition1\\";
+    size_t n = XeImageFileName->Length, k = sizeof pre - 1;
+    char p[260];
+    char *slash;
+    size_t i;
+    if (n <= k || n >= sizeof p)
+        return;
+    memcpy(p, XeImageFileName->Buffer, n);
+    p[n] = 0;
+    for (i = 0; i < k; i++)
+        if ((p[i] | 0x20) != (pre[i] | 0x20))
+            return;
+    if ((slash = strrchr(p, '\\')) == NULL || slash < p + k)
+        return;
+    *slash = 0;
+    snprintf(xbox_log_path, sizeof xbox_log_path, "E:\\%s\\mh1log.txt", p + k);
+}
 #define TAIL 24
 
 /* xemu: the game's log lines also go out of the first serial port (COM1,
@@ -70,7 +96,7 @@ static void xbox_log_show(void)
     }
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     debugClearScreen();
-    debugPrint("MH1 stopped. Last lines of %s:\n\n", XBOX_LOG);
+    debugPrint(XBOX_GAME_SHORT " stopped. Last lines of %s:\n\n", XBOX_LOG);
     for (i = n > TAIL ? n - TAIL : 0; i < n; i++)
         debugPrint("%s", lines[i % TAIL]);
     debugPrint("\nBack to the dashboard in 10 s.\n");
@@ -92,8 +118,10 @@ static SDL_AssertState xbox_sdl_assert(const SDL_AssertData *d, void *u)
  * "Back + Start held" in the log; most likely closing the audio device, whose callback
  * thread waits on an AC97 interrupt that no longer comes), and nothing there matters
  * when the console reboots anyway. Does not return. */
+void xbox_ac97_stop(void);
 void xbox_log_quit(void)
 {
+    xbox_ac97_stop();           /* no audio DMA left running into the next program (xbox_ac97.c) */
     xbox_log_show();
 }
 
@@ -101,9 +129,10 @@ void xbox_log_quit(void)
 void xbox_log_start(void)
 {
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
-    debugPrint("MH1 starting\n");
+    debugPrint(XBOX_GAME_SHORT " starting\n");
     CreateDirectoryA("E:\\Games", NULL);          /* the network loader's folder; a freshly formatted */
-    CreateDirectoryA("E:\\Games\\MH1", NULL);     /* disk (xemu, tools/xbox_fatx.py) has none */
+    CreateDirectoryA(XBOX_GAME_DIR, NULL);        /* disk (xemu, tools/xbox_fatx.py) has none */
+    log_path_from_xbe();
     if (freopen(XBOX_LOG, "w", stderr))
         setvbuf(stderr, NULL, _IONBF, 0);
     else

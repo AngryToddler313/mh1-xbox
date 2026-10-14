@@ -487,3 +487,14 @@ Open for later: group-wise pairing of multi-line messages (mc_msg, yn_dialog, we
 an explicit US <-> G alignment of Item_data and the quest headers (G is closer to the US build than MH1 JP in item ids?
 not checked: the G item table location came from layout names and its record layout did not match); a sub_main space in
 rt_text.c if the main:/sub_main distinction is ever needed.
+
+### G on the PC with the table (agent E, 14 Oct 2026)
+
+`RT_TEXT_TABLE=build/text/en_mhg.txt build/mhg/pc/mhview_g disc/mhg ...` (hidden, `--shot`): the table loads (5151 lines,
+0 bad), 5100+ pointer words re-pointed (RT_TEXT_STAT=1). Seen in English in unmodified G code: pause menu labels and the
+help box (quest 1), quest-info pages (title, goal, failure text: the AFS loader hook for mNNNNN.mib), the memory-card
+dialogs of new game / continue (slot labels, "Please select a save location.", the 3-line "Using memory card ..." box,
+"Character confirmed ..."). Still Japanese: window titles (menu, quest info, request), options page, the village's house
+hint, item window title shows "(null)", HUD hints. Lines fit their boxes (US breaks kept or re-flowed at 42 characters).
+The village HUD, item box and an NPC talk could not be reached by script (the first-visit event runs a camera tour and
+RT_VILLAGE_START frames do not take input). Memory-card messages are written as per-slot lines (see docs/REVIEW.md).

@@ -1042,3 +1042,27 @@ tools/text_map.py: items 19% -> 99%, weapons 72% -> 99%, armour 67% -> 100%, MH1
   every MH1 overlay function was read 16 words off. Fixed (the matched-function percentages for overlays need a re-run).
 - rt_text_quest_g added (G quest header table at the offset in word 0x60), not hooked up, not run.
 - Not done: the US memory-card / yes-no dialogs (line-split, needs group alignment), online text (no US twin), G-only text.
+
+## G in English on the PC (14 Oct 2026)
+G PC build needs `asm/mhg` in the worktree (tools/mhg_pcmeta.py reads it; without it pc_ptrs.txt loses 3000 words and
+em_cmd_init crashes): copy it from the main checkout, then `git checkout config/mhg/pc_ptrs.txt` after the build.
+Quest hook in viewer.c afs_entry; memory-card messages via tools/text_map.py `linesplit_pairs` (per-slot `0xADDR[0]` lines).
+Tried and dropped: a "between two neighbours with different shifts" placement for unlocated tables (lb_menu_msg,
+option_list_str, mc_msg_30/32/34/35/45): the profile check accepted wrong shifts, wrong English is worse than none.
+Open: lb_menu_msg & co (lobby), option_list_str / option_val_str, window titles, monsters (61%), the 100 rebalanced quests.
+
+## Debug menu for testers (14 Oct 2026)
+Built: src/pc/dbgmenu.c (UI, all platforms), src/pc/rt/rt_dbg.c (game data), hooks in viewer.c / rt_player.c /
+rt_village.c / rt_boot.c / rt_font.c. Docs: pc.md "Debug menu", PLAYING.md, REVIEW.md; keyboard / mouse research in
+xbox.md "Keyboard and mouse on the Xbox".
+Verified: MH1 PC (tools/test_dbgmenu.sh: village edits paused, quest from the list, kill, frame step), G PC (quest list
+244, quest 4, pouch with G's 523 item names), MH1 nv2a in xemu (scripted: menu, quest list, quest 134, pouch).
+Lessons:
+- A pad script drives a menu that holds the game ticks only if the viewer reads the script once per drawn frame while it
+  is open (otherwise the script stalls with the ticks); a --shot run must then wait (dbgmenu_busy) only while the script
+  still has steps, or a script that ends with the menu open never writes its picture.
+- MH1's Stage_mv_data_get(n) has no bounds check: the per-stage word table is read past its real stages for numbers the
+  quest file lacks (crash in the area list). Read the table yourself and check each offset against the mission buffer.
+- The game font has every glyph we need for an English overlay too (half-width ASCII), so a debug UI can use it on every
+  backend; one draw per glyph is fine on the PC, unmeasured on the real NV2A.
+- `ulimit -v 3000000` is for builds: xemu needs more address space ("cannot set up guest memory 'pc.ram'").

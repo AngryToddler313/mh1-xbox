@@ -5,7 +5,7 @@
 #include "game.h"
 
 void flvecCopy(f32 *, f32 *);
-void cpInterVector(f32, f32 *, f32 *, f32 *);
+void cpInterVector(f32 *, f32 *, f32 *, f32);
 void AddVector(f32 *, f32 *, f32 *);
 void SubVector(f32 *, f32 *, f32 *);
 void func_00111040(f32 *, f32 *, f32);
@@ -67,7 +67,7 @@ s32 func_001DC1F0(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
     PLW *pl;
     PLW *npc;
@@ -110,35 +110,35 @@ void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
     case 0:
         npc = z->npc;
         if (npc->kind == 3) {
-            cpInterVector(0.5f, z->tar, pl->pos, npc->pos);
+            cpInterVector(z->tar, pl->pos, npc->pos, 0.5f);
             z->tar[1] += 64.0f;
         } else {
-            cpInterVector(0.2f, z->tar, pl->pos, z->pos);
+            cpInterVector(z->tar, pl->pos, z->pos, 0.2f);
             z->tar[1] += 150.0f;
         }
         flvecCopy(cs->eye, src->eye);
         break;
     case 1:
         if (Cockpit_chat_chk() != 1) {
-            if (Psw[0] & 0x20) {
+            if (Psw[4] & 0x20) {
                 z->x24 += 2.0f;
                 if (z->x24 > 160.0f) {
                     z->x24 = 160.0f;
                 }
             }
-            if (Psw[0] & 0x10) {
+            if (Psw[4] & 0x10) {
                 z->x24 -= 2.0f;
                 if (z->x24 < 40.0f) {
                     z->x24 = 40.0f;
                 }
             }
-            if (Psw[0] & 0x8) {
+            if (Psw[4] & 0x8) {
                 z->x28 -= 8.0f;
                 if (z->x28 < 120.0f) {
                     z->x28 = 120.0f;
                 }
             }
-            if (Psw[0] & 0x4) {
+            if (Psw[4] & 0x4) {
                 z->x28 += 8.0f;
                 if (z->x28 > 375.0f) {
                     z->x28 = 375.0f;
@@ -150,13 +150,13 @@ void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
         SubVector(v, src->eye, z->tar);
         func_00111040(v, v, z->x28);
         AddVector(v, z->tar, v);
-        cpInterVector(t, cs->eye, v, src->eye);
+        cpInterVector(cs->eye, v, src->eye, t);
         break;
     case 2:
-        cpInterVector(t, cs->eye, z->pos, src->eye);
+        cpInterVector(cs->eye, z->pos, src->eye, t);
         break;
     }
-    cpInterVector(t, cs->tar, z->tar, src->tar);
+    cpInterVector(cs->tar, z->tar, src->tar, t);
     cs->fov = z->x2C * t + src->fov * (1.0f - t);
     cs->roll = src->roll;
     cs->act = 1;

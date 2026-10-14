@@ -94,21 +94,32 @@ void func_533A00(void);
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void font_set_stack_no(int n) {
     if (n < 0) {
         n = 0;
     }
+#ifdef VERSION_MHG
+    if (n >= 6) {
+        n = 5;
+    }
+    flfntSetZ(1.0f + (1000.0f * (f32)n) / 6.0f); /* G: six font stacks */
+#else
     if (n >= 5) {
         n = 4;
     }
     flfntSetZ(1.0f + (1000.0f * (f32)n) / 5.0f);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void font_set_palette(int n) {
+#ifdef VERSION_MHG
+    if ((s16)n >= 0x14) { /* G: 20 font palettes */
+#else
     if ((s16)n >= 0x10) {
+#endif
         n = 0;
     }
     flfntSetPalette(n);
@@ -129,10 +140,15 @@ void font_draw_end(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void LoadAskData(void) {
+#ifdef VERSION_MHG
+    ask_load_adrs = (int)flAllocMemory(0x99000);
+    load_file_mdl((void *)ask_load_adrs, 0xC87);
+#else
     ask_load_adrs = (int)flAllocMemory(0x97C00);
     load_file_mdl((void *)ask_load_adrs, 0x883);
+#endif
 }
 #endif
 
@@ -229,32 +245,44 @@ void stage_free(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void init_game_work(void) {
+#ifdef VERSION_MHG
+    memset(game_w, 0, 0x240);
+#else
     memset(game_w, 0, 0x224);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void init_select_work(void) {
     u16 a;
     u8 b;
 
+#ifdef VERSION_MHG
+    a = *(u16 *)(select_w + 0xD0); /* G: the two fields that survive the clear moved (MH1 0xAC / 0xB6) */
+    b = select_w[0xDC];
+    memset(select_w, 0, 0xF0);
+    *(u16 *)(select_w + 0xD0) = a;
+    select_w[0xDC] = b;
+#else
     a = *(u16 *)(select_w + 0xAC);
     b = select_w[0xB6];
     memset(select_w, 0, 0xC0);
     *(u16 *)(select_w + 0xAC) = a;
     select_w[0xB6] = b;
+#endif
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void init_demo_work(void) {
     memset(demo_w, 0, 0x44);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void softreset(void) {
     vib_stop_all();
     all_reset();
@@ -267,19 +295,23 @@ void softreset(void) {
     ot_init();
     prim_init();
     prim_init2();
+#ifdef VERSION_MHG
+    Load_overlay(1, 2);
+#else
     Load_overlay(1, 1);
+#endif
     SchedulerInit();
     Tsk_Execute(func_533A00, 0);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 2
 int softreset_ck(void) {
     return 0;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 2
 int softkey_ck(void) {
     if (system_w.softkey == 0 || (s8)SoftKeyboard_alive_check() != 0) {
         return 0;
@@ -288,13 +320,13 @@ int softkey_ck(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 2
 int Get_sw(int n) {
     return (Psw[n].w[12] | Psw[n].w[2]) & 0xFFFF;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 2
 u16 Get_sw2(int n) {
     u16 r = 0;
 
@@ -305,7 +337,7 @@ u16 Get_sw2(int n) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 5
+#if !defined(G_PART) || G_PART == 3
 u16 Get_sw_on2(int n) {
     if (SoftKeyboard_alive_check() != 0) {
         return 0;
@@ -325,9 +357,13 @@ int kb_input_ck_enter(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 u8 Get_kb_input(void) {
+#ifdef VERSION_MHG
+    return lpSKey[0x666];
+#else
     return lpSKey[0x65A];
+#endif
 }
 #endif
 
@@ -342,37 +378,37 @@ int kb_chat_in_chk(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 4
 void decide_se(void) {
     se_req(1, 0x73, 0);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 4
 void cursor_se(void) {
     se_req(1, 0x72, 0);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 4
 void cancel_se(void) {
     se_req(7, 0x14, 0);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 4
 void unmei_se(int a) {
     adx_se_set(a, 9);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 4
 int Online_ck(void) {
     return system_w.online != 0;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 5
 int Now_Game_ck(void) {
     if (game_w[0] == 2 || game_w[0] == 3) {
         return 1;

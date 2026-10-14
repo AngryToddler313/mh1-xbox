@@ -36,7 +36,7 @@ void rt_2d_restore_texture(void);
 void audio_pause(int on);
 const unsigned char *pick_font_rows(int c);
 
-enum { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_MUSIC, R_EFFECTS, R_DEFAULTS, R_CLOSE, R_N };
+enum { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_HUD, R_MUSIC, R_EFFECTS, R_DEFAULTS, R_CLOSE, R_N };
 
 static struct {
     int inited, open, sel, shot;
@@ -55,7 +55,7 @@ static struct {
 
 static const char *label[R_N] = {
     "Display", "Aspect ratio", "VSync", "Frame rate cap", "Anti-aliasing (MSAA)", "Anisotropic filter", "2D art filter",
-    "Text language", "Button layout", "Music volume", "Effects volume", "Restore display defaults", "Close"
+    "Text language", "Button layout", "HUD", "Music volume", "Effects volume", "Restore display defaults", "Close"
 };
 static const int fps_list[] = { 0, 30, 60, 72, 90, 120, 144, 165, 240 };
 #define NFPS ((int)(sizeof fps_list / sizeof fps_list[0]))
@@ -129,6 +129,7 @@ static void defaults(void)
     gfx_opt.filter2d = F2D_LINEAR;
     pc_opt.western_pad = 0;
     rt_pad_swap_confirm = 0;
+    rt_hud_style = 0;
 }
 
 static void change(int row, int d)
@@ -182,6 +183,9 @@ static void change(int row, int d)
     case R_PAD:
         pc_opt.western_pad = !pc_opt.western_pad;
         rt_pad_swap_confirm = pc_opt.western_pad;
+        break;
+    case R_HUD:
+        rt_hud_style = !rt_hud_style;
         break;
     case R_MUSIC:
         vol_change(1, d);
@@ -237,6 +241,9 @@ static const char *value(int row, char *buf, size_t n, const char **note)
     case R_PAD:
         *note = "swaps circle and cross everywhere; icons stay as is";
         return pc_opt.western_pad ? "Cross confirms (West)" : "Circle confirms (Japan)";
+    case R_HUD:
+        *note = rt_hud_style ? "bowgun users: the unused early HUD mock-up, rebuilt" : "";
+        return rt_hud_style ? "Prototype gunner" : "Original";
     case R_MUSIC:
     case R_EFFECTS: {
         int v = clampi(option_w[row == R_MUSIC ? 1 : 2], 0, 7), i;
@@ -283,9 +290,9 @@ static void do_close(void)
     SDL_ShowCursor(M.rel_mouse ? SDL_DISABLE : SDL_ENABLE);
     if (!M.shot || getenv("RT_MENU_SAVE"))
         gfx_opts_save();
-    rt_log("settings menu: closed (aspect %s, vsync %d, fps cap %d, msaa %d, aniso %d, 2D filter %d, language %s, confirm %s)",
+    rt_log("settings menu: closed (aspect %s, vsync %d, fps cap %d, msaa %d, aniso %d, 2D filter %d, language %s, confirm %s, hud %d)",
            gfx_opt.widescreen ? "16:9" : "4:3", gfx_opt.vsync, gfx_opt.fps_cap, gfx_opt.msaa, gfx_opt.aniso, gfx_opt.filter2d,
-           pc_opt.lang_en ? "en" : "ja", pc_opt.western_pad ? "cross" : "circle");
+           pc_opt.lang_en ? "en" : "ja", pc_opt.western_pad ? "cross" : "circle", rt_hud_style);
 }
 
 /* a key, from the keyboard, the controller or the test script */

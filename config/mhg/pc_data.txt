@@ -163,6 +163,7 @@ Shell_max_tbl = 0x00514EA0; // size:0x2C0          # [22 gun classes (Gun_data +
 Ken_data = 0x00515360; // size:0x23C0              # 381 swords (MH1 234)
 Gun_data = 0x00517720; // size:0x750               # 78 guns of 0x18 bytes (MH1 26 of 0x14)
 Item_data = 0x004FF1F0; // size:0x28E0             # 523 items of 0x14 bytes (MH1 327 of 0x10)
+item_str = 0x00501AD0; // size:0x82C               # 523 item name pointers (MH1 327; the debug menu lists them); next object em_cmdg0_tbl 0x502300
 Skill_data = 0x0050A380; // size:0x3C0             # 60 skills of 0x10 {id, 3 x (points <= lim: skill), 3 x (points >= lim: skill)} (G replaced MH1's Equip_Bonus)
 armor_kind_tbl = 0x005207A0; // size:0x20          # per equipment kind: pointer to its armour table (skill points at +0x14 of each row)
 slash_msg_down = 0x00528428; // size:0x4           # sharpness messages (pointers to main strings; Pl_slash_calc)

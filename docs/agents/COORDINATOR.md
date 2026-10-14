@@ -98,9 +98,18 @@ always been a struct field type or a lost field.
 As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
 screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
 bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
-G round 3 (14 Oct, owner asleep, ~6% usage left): A = G hunt polish (monster state bytes,
-subspecies, reward screen, armour tables); C = register f_pl, G camera layout. B, D, E idle.
-Main: G 14.3%, village walkable, quest 10 hunt to reward (test aids). Builds under ulimit -v 3000000.
+G round 4 (14 Oct afternoon, weekly usage reset; owner: keep going). Main: G 16.1%, hunts use
+G's own tables (HP, ammo, skills, sharpness, rewards), G camera layout.
+- A (Opus): every G offline quest loads/plays (map-6 freeze in kind 30 cmd 0x2C, kind 40, a G
+  all-quests test, carts, pause-menu monster list).
+- B (Opus): Monster Hunter G on the Xbox (VERSION=mhg Xbox build, xemu hidden, memory budget).
+- C (Sonnet): more G functions (main/sub_main; Skill_set_PL, camera wall/hide, pl_snd01).
+- D (Sonnet): G village usable (NPC talk, quest counter, shops, forge, item box).
+- E (Sonnet): G in English on the PC (load the table, quest text, box layout, coverage).
+- F: AC97 codec fix unmerged; loader server serves build/xbox/f_test.xbe for the owner's test.
+Asked the owner (14 Oct): Xbox warm-relaunch sound test; play G on PC; OK to download the MHG
+English Remix and check its terms; online for G (own server only, or PS2 servers with permission);
+a DHCP reservation for the Xbox.
 Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
 loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame
 during game2 steps 3-6 (fixes the old-area frame after a load) and an own AC97 driver
@@ -123,7 +132,7 @@ reach it through the network loader (tools/xbox_serve.py on the laptop, port 876
 (build/xbox/logs/). Capture card: find the node with tools' dev.sh logic (MacroSilicon "USB
 Video"), raw yuyv422 1280x720. Pad: RetroKM hub 127.0.0.1:24851 (`goto xbox`, then
 `pad <hex>` taps of ~50 ms; the KVM must have the xbox screen active). The Xbox's DHCP address
-changes (192.168.1.115/116/118 so far); the laptop keeps 192.168.1.166 as a saved second address.
+changes (192.168.1.115/116/118/165 so far; MAC 00:0D:3A:31:08:AB); the laptop keeps 192.168.1.166 as a saved second address.
 
 ## Gameplay clips for the owner
 

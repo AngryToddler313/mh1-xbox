@@ -164,6 +164,19 @@ void rt_boot_init(void)
     boot_ticks = 0;
 }
 
+/* The debug menu (src/pc/dbgmenu.c) leaves the boot screens for a quest or the village: the boot's tasks end, the
+ * scheduler keeps only the system tasks (as rt_sys_init sets them up for a run without a boot) */
+void rt_boot_abort(void)
+{
+    if (!boot_active)
+        return;
+    boot_active = 0;
+    boot_done = 1;
+    all_reset();
+    rt_sys_init();
+    rt_log("boot: left by the debug menu after %d ticks", boot_ticks);
+}
+
 /* test aid RT_FADE_TRACE: the fade as it is drawn (fade_w: req, alpha 0..256, state) */
 static void fade_trace(const char *where)
 {

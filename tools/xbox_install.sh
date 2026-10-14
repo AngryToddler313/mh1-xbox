@@ -12,9 +12,9 @@ XBOX=$1
 [ -n "$XBOX" ] || { echo "usage: $0 XBOX_IP [FOLDER]   (FOLDER defaults to dist/xbox/MH1)"; exit 2; }
 SRC=${2:-dist/xbox/MH1}
 command -v curl >/dev/null || { echo "curl is needed (sudo apt install curl), or use an FTP program"; exit 1; }
-for f in default.xbe data/AFS_DATA.AFS data/AFS00.AFS data/AFS01.AFS data/SLPM_654.95; do
-	[ -f "$SRC/$f" ] || { echo "$SRC/$f is missing: run ./mh1 xbox DISC first"; exit 1; }
-done
+# a Monster Hunter G folder (./mh1 xbox with the G disc: dist/xbox/MHG) goes to E:\Games\MHG
+ELF=SLPM_654.95; DIR=MH1; NAME="Monster Hunter"
+[ -f "$SRC/data/SLPM_658.69" ] && { ELF=SLPM_658.69; DIR=MHG; NAME="Monster Hunter G"; }
 if grep -q "machine $XBOX" ~/.netrc 2>/dev/null; then
 	AUTH=(--netrc)
 else
@@ -25,13 +25,41 @@ else
 	AUTH=(--netrc-file "$NETRC")
 fi
 [ -n "$XBOX_PASSIVE" ] || AUTH+=(--ftp-port -)
-URL=ftp://$XBOX/${XBOX_DIR:-E/Games/MH1}
+# XBOX_RATE=2M (or 500K ...): cap the copy speed; some Xbox FTP servers stall when fed at full speed
+[ -n "$XBOX_RATE" ] && AUTH+=(--limit-rate "$XBOX_RATE")
+URL=ftp://$XBOX/${XBOX_DIR:-E/Games/$DIR}
 echo "copying to $URL"
-for f in default.xbe data/SLPM_654.95 data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
+# Evolution X's FTP server drops long transfers at random points. Each file is tried up to
+# XBOX_TRIES times (default 5); a retry resumes from what arrived (curl -C -, the server's SIZE /
+# APPE) and falls back to a fresh copy if the server can't resume. If a file keeps failing at once
+# (426 on start), the Xbox's FTP server is still holding the broken file: restart the Xbox, rerun.
+remote_size() {   # bytes on the Xbox, empty if unknown. Evolution X does not answer SIZE, so this
+	# reads the directory listing (LIST) and takes the size column of the file's line
+	local dir=${1%/*} name=${1##*/}
+	[ "$dir" = "$1" ] && dir=
+	curl -sS "${AUTH[@]}" "$URL/${dir:+$dir/}" 2>/dev/null | tr -d '\r' |
+		awk -v n="$name" '$NF == n && NF >= 9 && $1 ~ /^-/ { s = $5 }        # unix style: -rw-r--r-- 1 u g SIZE Mon D T name
+		$NF == n && NF == 4 && $3 ~ /^[0-9]+$/ { s = $3 }                  # DOS style: date time SIZE name
+		END { if (s != "") print s }'
+}
+for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
 	want=$(stat -c %s "$SRC/$f")
-	have=$(curl -sSI "${AUTH[@]}" "$URL/$f" 2>/dev/null | tr -d '\r' | awk '/Content-Length/{print $2}')
+	have=$(remote_size "$f")
 	if [ "$have" = "$want" ]; then echo "== $f already there"; continue; fi
 	echo "-> $f ($((want >> 20)) MB)"
-	curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f"
+	ok=
+	for try in $(seq "${XBOX_TRIES:-5}"); do
+		have=$(remote_size "$f")
+		if [ -n "$have" ] && [ "$have" -gt 0 ] && [ "$have" -lt "$want" ]; then
+			echo "   resuming at $((have >> 20)) MB (try $try)"
+			curl -# "${AUTH[@]}" --ftp-create-dirs -C "$have" -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
+		else
+			[ "$try" -gt 1 ] && echo "   starting again (try $try)"
+			curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
+		fi
+		sleep 5
+	done
+	[ -n "$ok" ] || { echo "copy of $f failed ${XBOX_TRIES:-5} times: restart the Xbox and rerun (finished files are skipped)"; exit 1; }
+	have=$(remote_size "$f"); [ -z "$have" ] || [ "$have" = "$want" ] || echo "   warning: $f is $have bytes on the Xbox, expected $want"
 done
-echo "done. On the Xbox start 'Monster Hunter' from the games list (E:\\Games\\MH1\\default.xbe)."
+echo "done. On the Xbox start '$NAME' from the games list (E:\\Games\\$DIR\\default.xbe)."

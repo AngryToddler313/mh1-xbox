@@ -1328,3 +1328,31 @@ Lessons:
 - The PC build carries the previous build's generated aliases (rt_gen.defsym) into the next one: when a
   name moves between "table" and "alias", the first build can fail with a duplicate definition; the second
   build is fine (seen switching data_map.txt off and on).
+
+# Monster Hunter G on the Xbox (14 Oct 2026)
+Assignment: a VERSION=mhg Xbox build, run in xemu, memory budget. Details and numbers: docs/xbox.md "Monster Hunter G
+on the Xbox". build_xbox.py --version mhg chdirs into build/mhg/pctree (the G PC build's tree of symlinks) and runs
+the MH1 steps there; xbox_title.h has a VERSION_MHG block (title 4D480002, BISLPM-65869MHG, E:\Games\MHG);
+run_xemu.sh --version mhg; disc_files.py / ./mh1 xbox / xbox_install.sh know the G disc.
+Reached in xemu: new game -> save -> village (walk); RT_ARGS=--quest 10 -> clear -> reward -> village.
+Lessons:
+- xemu does not start under `ulimit -v 3000000` ("cannot set up guest memory 'pc.ram'"); it runs under 6000000.
+  Use an own XBOX_FILES copy (bios/mcpx copied, own hdd.img formatted with tools/xbox_fatx.py) so runs do not
+  share the serial log or disk with other agents.
+- RT_MEM on the PC build, compared category by category with MH1 at the same point, found both G-only costs in
+  minutes (overlay binaries 8.2 MB vs 1.4 MB; rt_mem shadows 2.2 MB vs 0.5 MB); RT_TRACE=1 names the .bss shadows.
+- G's overlays are packed (MWo3 inside a melt stream); anything sized "for the worst case" around them is paid
+  for the whole session because game.bin / sub_main stay loaded.
+- tools/xemu_quest_loop.sh (MH1) on 14 Oct under load average 17-21: run 1 plays new game -> quest 131 -> clear ->
+  village (t8301) -> house (t8399), then the bed-save input starts quest 131 again (t8960) instead of saving, so
+  CONTINUE has 0z. Not from this change: an RT_TRACE run of MH1 makes no gap/whole .bss shadows, MH1's overlays are
+  not packed (melt path unused) and the rest is G-only or paths. The PC test_quest_loop (same input) passes. Worth
+  a run of the xemu loop on main (bed Save? box / "quit game" path changed since 12 Oct).
+
+### MH1 xemu quest loop "no bed save" (14 Oct 2026, resolved)
+Not a game regression. (1) The loop's last screenshot time (480 s) ended the run before the bed save when xemu is
+slow (load 10-17: village at 238 s, bed ~455 s); the quest 131 START seen at t8960 is the script's trailing presses
+AFTER the save (the PC log does the same). tools/xemu_quest_loop.sh now runs to 780 s. (2) With the new AC97 driver
+the movie is audio-clocked in xemu; at <1 frame/s the audio read-ahead piled up the video stream (17 -> 5 MB free
+in 20 s, fatal 0x1E in memcpy at the opening movie). rt_movie.c audio_feed stops reading when sfd_video_backlog()
+> 1 MB. Verified: xemu loop OK (CONTINUE 1550z), PC test_quest_loop OK, both MH1 Xbox builds link.

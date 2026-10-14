@@ -52,6 +52,7 @@ enum {
     RTL_N
 };
 void rt_lt_begin(int zone);
+void rt_set_load_wait(void (*fn)(void));    /* called after each disc read (G loading screen) */
 void rt_lt_end(int zone);
 void rt_lt_frame(int tick, int stage);   /* after each drawn frame */
 void rt_lt_init(void);                   /* hooks the fmt readers */

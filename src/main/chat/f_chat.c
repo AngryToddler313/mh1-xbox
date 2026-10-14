@@ -52,6 +52,7 @@ typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
 
 /* the highlight bar of row n of a list at y with rows h high, from x0 to
  * x1 (rect {x0, y0, x1, y1}; asm 0x2755D0) */
+#if !defined(G_PART) || G_PART == 1
 static void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, int n, int col) {
     PFLP4 q;
     u16 t;
@@ -64,25 +65,31 @@ static void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, int n, int col) {
     q.col = (col & 0xFFFFFF) | (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xBF) << 24);
     flps0004(&q);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Name_ID_change(void) {
     PitMenu.x14 ^= 1;
     se_req(7, 0x11, 0);
 }
+#endif
 
 extern u8 pf_menu_sub[];
 extern u8 btn_menu_sub[8];
 extern u8 lit_2047[];
 
+#if !defined(G_PART)
 void Disp_name_or_id(s16 v) {
     FS16(pf_menu_sub, 2) = v;
     DispFrameMessage(pf_menu_sub, lit_2047);
     FS16(btn_menu_sub, 2) = v;
     PutButtonICON(btn_menu_sub, 1);
 }
+#endif
 
 extern u8 button_icon_uv[][8];
 
+#if !defined(G_PART)
 void PutButtonICON(u8 *p, u8 n) {
     PFLP8 q;
 
@@ -101,25 +108,32 @@ void PutButtonICON(u8 *p, u8 n) {
         p += 8;
     }
 }
+#endif
 
 extern u8 equip_color_rare_idx[];
 extern u32 equip_color_rare_tbl[];
 extern u8 moji_color_rare_2099[5];
 
+#if !defined(G_PART)
 int Equip_icon_color_rare(int a, int alpha, int sub) {
     if (sub & 0xFF) {
         a = (a + 5) & 0xFF;
     }
     return ((alpha & 0xFF) << 24) | equip_color_rare_tbl[equip_color_rare_idx[a & 0xFF]];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 u8 Equip_moji_color_rare(u8 a) {
     return moji_color_rare_2099[a];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void DispFrameList(void *a, char *b, int c) {
     DispFrameListA(a, b, c, 0xB2);
 }
+#endif
 
 extern u8 lit_2244[];
 
@@ -136,6 +150,7 @@ typedef struct FRL {
     int col;        /* 0x10 cursor colour */
 } FRL;
 
+#if !defined(G_PART)
 void DispFrameListA(FRL *fr, char *title, int cur, int alpha) {
     PFLP8 r;
     PFLP4 ln;
@@ -264,12 +279,16 @@ void DispFrameListA(FRL *fr, char *title, int cur, int alpha) {
         font_print_sp(lit_2244, title);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void DispFrameListOptionArrow(void *fr) {
     u16 t = (System_timer & 0x3F) << 10;
     DispFrameListOptionArrowC(fr, (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xAF) << 8) | 0xF0200020);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void DispFrameListOptionArrowC(void *fr, int col) {
     PFLP8 q;
 
@@ -286,10 +305,13 @@ void DispFrameListOptionArrowC(void *fr, int col) {
     q.uv[2] = 0xA6;
     flps0008(&q);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void DispFrameMessage(void *a, void *b) {
     DispFrameMessageA(a, b, 0xB2);
 }
+#endif
 
 typedef struct FRM {
     s16 x;          /* 0x00 left */
@@ -307,13 +329,16 @@ typedef struct FRM {
 
 /* original bytes: build/raw/DispFrameMessageA.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void DispFrameMessageA(FRM *fr, char *text, int alpha)
 {
 #include "DispFrameMessageA.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 6
 void PutSpriteDiv3(PFLP8 *q, s16 w, s16 d) {
     s16 ow = q->p[2];
     s16 u0 = q->uv[0];
@@ -335,7 +360,9 @@ void PutSpriteDiv3(PFLP8 *q, s16 w, s16 d) {
     q->uv[2] = u1;
     flps0008(q);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
     PFLP8 q;
     int f = flag & 0xFF;
@@ -362,9 +389,11 @@ void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
     q.p[2] = 0.8f * (f32)x1;
     flps0008(&q);
 }
+#endif
 
 extern u8 minisight_tbl[4][10];
 
+#if !defined(G_PART)
 void Put_mini_sight(f32 scale, s16 ofs, int col) {
     PFLP8 q;
     u8 (*e)[10];
@@ -389,15 +418,21 @@ void Put_mini_sight(f32 scale, s16 ofs, int col) {
         Put_sprite_rotate(&q, FS8(e, 8));
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 void Add_to_Monster_list(int n) {
     F32(&User_data, 0x3F0) |= 1 << (n & 0xFF);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int Monster_list_chk(int n) {
     return (F32(&User_data, 0x3F0) & (1 << (n & 0xFF))) != 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int Monster_list_num(void) {
     u32 v = F32(&User_data, 0x3F0);
     v = (v & 0x15555555) + ((v & 0x2AAAAAAA) >> 1);
@@ -406,7 +441,9 @@ int Monster_list_num(void) {
     v = (v & 0x00FF00FF) + ((v & 0xFF00FF00) >> 8);
     return (v & 0xFFFF) + ((v & 0xFFFF0000) >> 16);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 s8 Monster_list_search(s8 cur, char dir)
 {
   int n;
@@ -458,10 +495,13 @@ s8 Monster_list_search(s8 cur, char dir)
   }
   return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 void Disp_menu_help(void) {
     Disp_help_mess(PitMenu.x11, PitMenu.x12);
 }
+#endif
 
 extern u8 Item_data[][16];
 extern u8 help_mess_00354680[];
@@ -469,6 +509,7 @@ extern u32 item_col_tbl[];
 extern char lit_2796[];
 extern s32 *pit_help_str_tbl[];
 
+#if !defined(G_PART)
 void Disp_help_mess(int kind, int id) {
     PFLP8 q;
     u8 *it;
@@ -508,14 +549,18 @@ void Disp_help_mess(int kind, int id) {
         DispFrameMessage(help_mess_00354680, (void *)pit_help_str_tbl[(u8)kind][(u16)id]);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 void Chat_log_clear(void) {
     PitMenu.logtop = 0;
     PitMenu.lognum = 0;
     PitMenu.x21 = 1;
     PitMenu.logscr = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Get_chat_line_num(void) {
     int n = 0;
     int i = PitMenu.logtop - 1;
@@ -530,7 +575,9 @@ int Get_chat_line_num(void) {
     }
     return n;
 }
+#endif
 
+#if !defined(G_PART)
 int Plaza_get_chat_line_num(void) {
     int n = 0;
     int i = PitMenu.logtop - 1;
@@ -541,12 +588,14 @@ int Plaza_get_chat_line_num(void) {
     }
     return n;
 }
+#endif
 
 extern u8 Snd_em_id_conv_tbl[];
 typedef struct PSWC { u16 x0; u8 _p2[2]; u16 x4; u8 _p6[2]; u16 x8; u8 _pA[2]; u16 xC; } PSWC;
 extern PSWC Psw;
 #define GW(o) (*(u8 *)((u8 *)&game_w + (o)))
 
+#if !defined(G_PART)
 int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     s16 cnt;
     u32 w;
@@ -628,7 +677,9 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 9
 static void chat_sw_set(u16 *a, u16 *b) {
     *a = Psw.x0;
     *b = Psw.x4;
@@ -641,12 +692,14 @@ static void chat_sw_set(u16 *a, u16 *b) {
     if (Psw.xC & 8) { *b |= 0x800; }
     if (Psw.xC & 4) { *b |= 0x400; }
 }
+#endif
 
 int NPCZoomInCameraCheck();
 void SoftKeyboard_pos_set(f32, int);
 void SoftKeyboard_set(int, int, int, int);
 void Chat_move(int);
 
+#if !defined(G_PART)
 void Chat_init(void) {
     int k = 0;
 
@@ -660,6 +713,7 @@ void Chat_init(void) {
     se_req(7, 0x11, 0);
     Chat_move(0);
 }
+#endif
 
 int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
@@ -671,6 +725,7 @@ void net_send_chat(u8, int, s8 *, u8);
 void set01_set(int, int, int);
 
 
+#if !defined(G_PART)
 void Chat_move(int a)
 {
   u16 sw0;
@@ -728,12 +783,14 @@ void Chat_move(int a)
   }
   PitMenu.x0F = (PitMenu.x0C = 0);
 }
+#endif
 
 char *strcpy(char *, const char *);
 extern u8 chat_font_color[8];
 extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
+#if !defined(G_PART)
 static void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     PIT_CHAT *l;
     s8 c;
@@ -816,8 +873,10 @@ static void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
         l->nline++;
     }
 }
+#endif
 
 
+#if !defined(G_PART)
 void Chat_log_add(int who, u8 *msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(who, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
@@ -834,7 +893,9 @@ void Chat_log_add(int who, u8 *msg) {
         se_req(7, 0x18, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Plaza_chat_log_add(u8 *msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(255, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
@@ -845,6 +906,7 @@ void Plaza_chat_log_add(u8 *msg) {
         }
     }
 }
+#endif
 
 extern u8 chat_font_color[];
 int sprintf(char *, const char *, ...);
@@ -859,6 +921,7 @@ void PutArrow(s16, s16, s16, s16, int, int);
 int Online_ck();
 extern char room_member_id[][8];
 
+#if !defined(G_PART)
 void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     struct { char name[8]; char uid[0x114]; u8 col[4]; } e;
     u8 k;
@@ -893,7 +956,9 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     PitMenu.x0C = 0x12C;
     se_req(7, 0x18, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 int Menu_chatlog_i(void) {
     if (Online_ck() == 0) {
         return -1;
@@ -906,9 +971,11 @@ int Menu_chatlog_i(void) {
     }
     return 0;
 }
+#endif
 
 static u32 chat_log_disp_line(u8 top);
 
+#if !defined(G_PART)
 int Menu_chatlog_mv(int sw) {
     PitMenu.x10 = 0;
     PitMenu.x22 = 0x80;
@@ -942,7 +1009,9 @@ int Menu_chatlog_mv(int sw) {
     }
     return sw;
 }
+#endif
 
+#if !defined(G_PART)
 static u32 chat_log_disp_line(u8 top) {
     int n = 0;
     int i = (PitMenu.logtop - 1) - top;
@@ -957,11 +1026,13 @@ static u32 chat_log_disp_line(u8 top) {
     }
     return n;
 }
+#endif
 
 extern u8 pf_chat_log_base[];
 extern u8 lit_3171[];
 extern char *str_3166[];
 
+#if !defined(G_PART)
 void Pit_disp_chat(void) {
     DispFrameMessage(pf_chat_log_base, lit_3171);
     Put_megaphone(0x97, 0xBB, PitMenu.x17);
@@ -971,9 +1042,11 @@ void Pit_disp_chat(void) {
     font_print_uf(str_3166[(u8)PitMenu.x17]);
     disp_chat_log_sub(0, 0, 0);
 }
+#endif
 
 extern char lit_3181_00383570[];
 
+#if !defined(G_PART)
 static void chat_log_name(char *buf, PIT_CHAT *l) {
     if (PitMenu.x14 == 0) {
         sprintf(buf, lit_3181_00383570, l->name);
@@ -981,16 +1054,20 @@ static void chat_log_name(char *buf, PIT_CHAT *l) {
     }
     sprintf(buf, lit_3181_00383570, l->uid);
 }
+#endif
 
 /* original bytes: build/raw/disp_chat_log_sub.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void disp_chat_log_sub(int top, s16 yofs, int a)
 {
 #include "disp_chat_log_sub.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 void Pit_disp_chat_log(void) {
     u32 t;
     int col;
@@ -1024,7 +1101,9 @@ void Pit_disp_chat_log(void) {
     disp_chat_log_sub(PitMenu.logscr, -0xA, PitMenu.x21);
     Put_receive_mark(0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Receive_mess_move(void) {
     if (FS8(&PitMenu, 6) != 0) {
         if (F8(&PitMenu, 0xF) == 0) {
@@ -1039,9 +1118,11 @@ void Receive_mess_move(void) {
         }
     }
 }
+#endif
 
 extern void *receive_mes_str[2];
 
+#if !defined(G_PART)
 void Pit_disp_receive_mes(void) {
     if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && F16(&PitMenu, 0xC) != 0) {
         SetFilterMode(0);
@@ -1049,11 +1130,13 @@ void Pit_disp_receive_mes(void) {
         disp_chat_log_sub(0, 0, 0);
     }
 }
+#endif
 
 extern s16 receive_mark_pos[2][2];
 extern u8 pf_receive_mark[];
 extern char lit_3351[];
 
+#if !defined(G_PART)
 void Put_receive_mark(int n) {
     if ((u8)PitMenu.x0F != 0) {
         if ((u8)n == 1) {
@@ -1068,18 +1151,24 @@ void Put_receive_mark(int n) {
         font_print_uf(lit_3351);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 void SetMessageHaltFlag(void) {
     PitMenu.x0C = 0;
     FS8(&PitMenu, 0x1C) = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 void ClearMessageHaltFlag(void) {
     FS8(&PitMenu, 0x1C) = 0;
 }
+#endif
 
 int func_5D8370(s8);
 
+#if !defined(G_PART)
 void Join_pl_chk(void) {
     u32 i;
     u8 *g;
@@ -1111,12 +1200,14 @@ void Join_pl_chk(void) {
         }
     }
 }
+#endif
 
 extern u8 lit_3439[];
 extern char lit_3440[];
 extern char lit_3441[];
 extern char lit_3442[];
 
+#if !defined(G_PART)
 void Disp_NPC_message(void) {
     char buf[0x40];
     int left;
@@ -1169,6 +1260,7 @@ void Disp_NPC_message(void) {
         Put_receive_mark(0);
     }
 }
+#endif
 
 extern u8 item_list_frame[];
 extern char *item_list_title[];
@@ -1182,10 +1274,12 @@ int Item_preparation_one_ck(s16);
 
 /* original bytes: build/raw/ItemListWindow.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void ItemListWindow(int page, int cursel, int mode)
 {
 #include "ItemListWindow.inc"
 }
+#endif
 #endif
 
 
@@ -1214,10 +1308,12 @@ void Put_comment(int, int, int, void *);
 
 /* original bytes: build/raw/PlayerStatusWindow.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void PlayerStatusWindow(u8 *pl, int tab)
 {
 #include "PlayerStatusWindow.inc"
 }
+#endif
 #endif
 
 
@@ -1232,6 +1328,7 @@ extern char lit_3652[];
 int Get_equip_name(u8, u16);
 int Get_equip_rare(u8, u16);
 
+#if !defined(G_PART)
 void PlayerEquipmentWindow(PLW *pl) {
     PFLP8 q;
     u8 *eq[5];
@@ -1277,20 +1374,25 @@ void PlayerEquipmentWindow(PLW *pl) {
         ty += 0x20;
     }
 }
+#endif
 
 extern char *menu_stat_job_str[];
 
+#if !defined(G_PART) || G_PART == 13
 void PrintPlayerJob(void *pl) {
     font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
 }
+#endif
 
 typedef struct EQD { u8 be; u8 kind; u16 id; } EQD;
 u8 EquipmentDescriptionWindowA_s(EQD *, s16, s16, int, u8 *, int);
 u8 EquipmentDescriptionWindowA(EQD *, int, int, int, u8 *, int);
 
+#if !defined(G_PART)
 void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
     EquipmentDescriptionWindowA_s((EQD *)a, b, c, d, e, 0xB2);
 }
+#endif
 
 extern char lit_3701[];
 extern char lit_3702[];
@@ -1301,6 +1403,7 @@ void flfntLocate_s(int, s16);
 static void equip_exp_core(u8 *, int, int, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 
+#if !defined(G_PART)
 u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alpha) {
     struct { s16 x; s16 y; u8 w; u8 h; u8 a; u8 b; s16 sp0; s16 sp1; } fr;
     PFLP8 q;
@@ -1359,6 +1462,7 @@ u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alp
     font_print_uf(lit_3702);
     return 0;
 }
+#endif
 
 
 extern char *equip_exp_str_sword[];
@@ -1408,10 +1512,12 @@ static void slash_level_bar(u8 *, s16);
 
 /* original bytes: build/raw/equip_exp_core.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void equip_exp_core(u8 *eq, int x, int y, int page, u8 *cmp)
 {
 #include "equip_exp_core.inc"
 }
+#endif
 #endif
 
 
@@ -1419,6 +1525,7 @@ extern char *equip_exp_str_sw_attr[];
 extern char lit_4221[];
 extern char lit_4222[];
 
+#if !defined(G_PART)
 static void sword_zokusei(u8 *w, int x, s16 y) {
     int k;
 
@@ -1450,13 +1557,17 @@ static void sword_zokusei(u8 *w, int x, s16 y) {
         font_print(lit_4222, (int)w[0xA]);
     }
 }
+#endif
 
 void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha);
 
+#if !defined(G_PART)
 void EquipmentCompareWindow(u8 *cur, u8 *other, s16 x, s16 y, int page) {
     EquipmentCompareWindowA(cur, other, x, y, page, 0xB2);
 }
+#endif
 
+#if !defined(G_PART)
 void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha) {
     u32 t;
     f32 s;
@@ -1471,6 +1582,7 @@ void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alp
     PutArrow(x + 0x89, y + 0x7A, 0x20, 0x10,
              (((((s8)(96.0f * s) + 0x90) & 0xFF) << 16) | 0xFF000000 | ((((s8)(20.0f * s) + 0xE4) & 0xFF) << 8)) | (((s8)(7.0f * s) + 0xF7) & 0xFF), 3);
 }
+#endif
 
 extern u8 Battle_type[];
 extern s16 *Pl_slash_tbl[];
@@ -1479,15 +1591,18 @@ f32 flps0009(void *);
 
 /* original bytes: build/raw/slash_level_bar.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void slash_level_bar(u8 *pl, s16 y)
 {
 #include "slash_level_bar.inc"
 }
 #endif
+#endif
 
 
 extern char lit_4368[];
 
+#if !defined(G_PART)
 void Put_PageArrow(int x, int y, int a, int b) {
     PFLP8 q;
 
@@ -1508,20 +1623,24 @@ void Put_PageArrow(int x, int y, int a, int b) {
     flfntLocate_i(x, y);
     font_print(lit_4368, a & 0xFF, b & 0xFF);
 }
+#endif
 
 extern u8 lit_4374[];
 extern u8 setumei_shousai_4372[8];
 void font_print_ex(int, int, int, void *);
 
+#if !defined(G_PART)
 void Put_shousai(void) {
     flfntSetSize(0x12, 0x12);
     font_print_ex(0x22E, 0x18A, 0, lit_4374);
     PutButtonICON(setumei_shousai_4372, 1);
 }
+#endif
 
 extern u8 equip_icon_u_tbl[8];
 extern u8 weapon_icon_u_tbl[8];
 
+#if !defined(G_PART) || G_PART == 14
 void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
     u8 k = eq[1];
 
@@ -1537,11 +1656,13 @@ void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
         b[1] = 0xDF;
     }
 }
+#endif
 
 extern char *ng_word_tbl_0[];
 extern char *ng_word_tbl_2[];
 static int ng_word_sub(char *, char *, s8);
 
+#if !defined(G_PART) || G_PART == 14
 void KinshiYogo_chk(char *s) {
     char **p;
 
@@ -1556,6 +1677,7 @@ void KinshiYogo_chk(char *s) {
         p++;
     } while (*p != 0);
 }
+#endif
 
 u32 strlen(const char *);
 char *strstr(const char *, const char *);
@@ -1563,13 +1685,16 @@ static int zen_kigou_suuji_chk(u8 *);
 
 /* original bytes: build/raw/ng_word_sub.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static int ng_word_sub(char *text, char *ng, s8 mode)
 {
 #include "ng_word_sub.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 15
 static int zen_kigou_suuji_chk(u8 *p) {
     u8 c = p[0];
 
@@ -1581,7 +1706,9 @@ static int zen_kigou_suuji_chk(u8 *p) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 15
 int ChatKinsoku_chk(u8 *s) {
     u8 *p = s;
     u8 c = *p;
@@ -1596,16 +1723,20 @@ int ChatKinsoku_chk(u8 *s) {
     }
     return 0;
 }
+#endif
 
 extern u8 default_reibun[];
 void *memcpy(void *, const void *, int);
 void Init_reibun(void);
 
+#if !defined(G_PART) || G_PART == 15
 void Default_reibun_set(void) {
     memcpy((u8 *)&option_w + 0xDB0, default_reibun, 0x21C);
     Init_reibun();
 }
+#endif
 
+#if !defined(G_PART)
 static void init_reibun_sub(s8 *d, s8 *s) {
     u32 n;
     s8 *top = d;
@@ -1628,10 +1759,12 @@ static void init_reibun_sub(s8 *d, s8 *s) {
         }
     }
 }
+#endif
 
 typedef struct REIBUN { s8 *s[3]; s8 *edit; } REIBUN;
 extern REIBUN str_tbl_reibun0[];
 
+#if !defined(G_PART)
 void Init_reibun(void) {
     REIBUN *r = str_tbl_reibun0;
     int n = 12;
@@ -1641,7 +1774,9 @@ void Init_reibun(void) {
         r++;
     } while (--n != 0);
 }
+#endif
 
+#if !defined(G_PART)
 static void chcnfg_reibun_set(s8 *src, int no) {
     REIBUN *r = &str_tbl_reibun0[no & 0xFF];
     u32 n = 0x16;
@@ -1683,9 +1818,11 @@ static void chcnfg_reibun_set(s8 *src, int no) {
         }
     } while (1);
 }
+#endif
 
 int softkey_ck();
 
+#if !defined(G_PART)
 int Reibun_Edit_Start(int no) {
     if (softkey_ck() == 0) {
         return 0;
@@ -1695,7 +1832,9 @@ int Reibun_Edit_Start(int no) {
     se_req(7, 0x11, 0);
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
@@ -1711,3 +1850,4 @@ int Reibun_Edit_Core(int no) {
     }
     return 0;
 }
+#endif

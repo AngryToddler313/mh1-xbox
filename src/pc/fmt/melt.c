@@ -166,9 +166,13 @@ uint8_t *fmt_mwo_unpack(uint8_t *src, size_t srclen, size_t *outlen)
                 i++;
             }
             if (dist == 0) {
+                uint16_t *fit;
                 free(src);
                 *outlen = o * 2;
-                return (uint8_t *)out;
+                /* the buffer was sized for the worst case (8x the packed size); G's game.bin / lobby.bin
+                 * stay loaded, and on the Xbox the unused tail cost ~6.5 MB (docs/xbox.md) */
+                fit = realloc(out, o * 2 ? o * 2 : 2);
+                return (uint8_t *)(fit ? fit : out);
             }
             if (dist > o || o + len > cap)
                 goto bad;

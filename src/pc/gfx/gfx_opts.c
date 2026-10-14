@@ -59,10 +59,12 @@ static void set_key(const char *k, const char *v)
         gfx_opt.filter2d = !strcasecmp(v, "nearest") ? F2D_NEAREST : !strcasecmp(v, "sharp") ? F2D_SHARP : F2D_LINEAR;
     else if (!strcmp(k, "language")) pc_opt.lang_en = !strcasecmp(v, "en") || !strcasecmp(v, "english");
     else if (!strcmp(k, "confirm")) pc_opt.western_pad = !strcasecmp(v, "cross");
+    else if (!strcmp(k, "hud")) rt_hud_style = strstr(v, "proto") || strstr(v, "gunner");
     else if (!strcmp(k, "text_table")) snprintf(pc_opt.text_table, sizeof pc_opt.text_table, "%s", v);
     else if (!strcmp(k, "online_server")) snprintf(pc_opt.online_server, sizeof pc_opt.online_server, "%s", v);
     else if (!strcmp(k, "online_login")) snprintf(pc_opt.online_login, sizeof pc_opt.online_login, "%s", v);
     else if (!strcmp(k, "online_password")) snprintf(pc_opt.online_password, sizeof pc_opt.online_password, "%s", v);
+    else if (!strcmp(k, "debug_menu")) pc_opt.debug_menu = truth(v) ? 1 : 2;
     else if (!strcmp(k, "window_x")) gfx_opt.win_x = atoi(v);
     else if (!strcmp(k, "window_y")) gfx_opt.win_y = atoi(v);
     else if (!strcmp(k, "window_w")) gfx_opt.win_w = clampi(atoi(v), 0, 16384);
@@ -125,6 +127,7 @@ int gfx_opts_arg(int argc, char **argv, int *i)
     else if (!strcmp(a, "--english")) pc_opt.lang_en = 1;
     else if (!strcmp(a, "--japanese")) pc_opt.lang_en = 0;
     else if (!strcmp(a, "--confirm") && *i + 1 < argc) set_key("confirm", argv[++*i]);
+    else if (!strcmp(a, "--hud") && *i + 1 < argc) set_key("hud", argv[++*i]);
     else if (!strcmp(a, "--text-table") && *i + 1 < argc) set_key("text_table", argv[++*i]);
     else if (!strcmp(a, "--ini") && *i + 1 < argc) { snprintf(ini_path, sizeof ini_path, "%s", argv[++*i]); }
     else if (!strcmp(a, "--no-ini")) ini_off = 1;
@@ -173,6 +176,11 @@ void gfx_opts_save(void)
         fprintf(f, "text_table = %s\n", pc_opt.text_table);
     fprintf(f, "# confirm: circle (Japanese layout) or cross (Western: circle and cross swapped, menus and play alike)\n");
     fprintf(f, "confirm = %s\n", pc_opt.western_pad ? "cross" : "circle");
+    if (pc_opt.debug_menu)
+        fprintf(f, "# debug_menu: 1 = the testers' debug menu (F9, Back + R3 on a controller; docs/PLAYING.md), 0 = off\ndebug_menu = %d\n",
+                pc_opt.debug_menu == 1);
+    fprintf(f, "# hud: original, or prototype gunner (the unused early HUD mock-up cockpit2, for bowgun users; docs/pc.md)\n");
+    fprintf(f, "hud = %s\n", rt_hud_style ? "prototype gunner" : "original");
     if (pc_opt.online_server[0] || pc_opt.online_login[0] || pc_opt.online_password[0]) {
         fprintf(f, "# online (the ONLINE=1 build): lobby server host:port (a public address set here is allowed; MH Oldschool\n"
                    "# is always refused), the 8-digit login and its password\n");

@@ -231,10 +231,12 @@ s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id);
 s8 sub_main_func_004EF8E0(PLW *pl, u8 id);
 void sub_main_func_004EFB20(PLW *pl, u8 skill, u8 *cnt, u16 id, s8 pts);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id) {
-    SkRow *row = armor_kind_tbl[kind] + idx;
+    SkRow *row;
     s8 r;
+    row = armor_kind_tbl[kind];
+    row += idx;
     r = 0;
     if (row->sk[0].id == id) {
         r += row->sk[0].pt;
@@ -277,19 +279,19 @@ s8 sub_main_func_004EF540(PLW *pl, u8 id) {
     }
     if (acc != 0) {
         n = 1;
-        if (sub_main_func_004EF470(2, pl->work352[2], 0x2B) != 0) {
+        if (sub_main_func_004EF470(2, pl->work352[2], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(3, pl->work352[3], 0x2B) != 0) {
+        if (sub_main_func_004EF470(3, pl->work352[3], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(4, pl->work352[4], 0x2B) != 0) {
+        if (sub_main_func_004EF470(4, pl->work352[4], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(5, pl->work352[5], 0x2B) != 0) {
+        if (sub_main_func_004EF470(5, pl->work352[5], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(0, pl->work352[0], 0x2B) != 0) {
+        if (sub_main_func_004EF470(0, pl->work352[0], 0x2B)) {
             n += 1;
         }
         acc = n * acc;
@@ -303,11 +305,13 @@ s8 sub_main_func_004EF540(PLW *pl, u8 id) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 s8 sub_main_func_004EF7A0(u16 kind, u8 idx) {
-    SkRow *row = armor_kind_tbl[kind] + idx;
+    SkRow *row;
     s8 r;
     r = 0;
+    row = armor_kind_tbl[kind];
+    row += idx;
     if (row->sk[0].id == 0x29) {
         r += 1;
     }
@@ -353,19 +357,19 @@ s8 sub_main_func_004EF8E0(PLW *pl, u8 id) {
     acc += sub_main_func_004EF470(0, pl->work352[0], id);
     p = sub_main_func_004EF470(3, pl->work352[3], id);
     if (p != 0) {
-        if (sub_main_func_004EF470(2, pl->work352[2], 0x2B) != 0) {
+        if (sub_main_func_004EF470(2, pl->work352[2], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(3, pl->work352[3], 0x2B) != 0) {
+        if (sub_main_func_004EF470(3, pl->work352[3], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(4, pl->work352[4], 0x2B) != 0) {
+        if (sub_main_func_004EF470(4, pl->work352[4], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(5, pl->work352[5], 0x2B) != 0) {
+        if (sub_main_func_004EF470(5, pl->work352[5], 0x2B)) {
             n += 1;
         }
-        if (sub_main_func_004EF470(0, pl->work352[0], 0x2B) != 0) {
+        if (sub_main_func_004EF470(0, pl->work352[0], 0x2B)) {
             n += 1;
         }
         p = n * p;
@@ -380,7 +384,7 @@ s8 sub_main_func_004EF8E0(PLW *pl, u8 id) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 3
 void sub_main_func_004EFB20(PLW *pl, u8 skill, u8 *cnt, u16 id, s8 pts) {
     if (*cnt < 5) {
         pl->skill[*cnt] = skill;
@@ -493,7 +497,7 @@ void Skill_set_PL(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 4
 s32 Pl_Skill_ck(PLW *pl, int id) {
     s16 i;
     for (i = 0; i < 5; i++) {
@@ -503,6 +507,21 @@ s32 Pl_Skill_ck(PLW *pl, int id) {
     }
     return 0;
 }
+#endif
+
+#ifdef VERSION_MHG
+/* G 0x4F0020: the skill value of the active skill whose source id is 'id' (skill_src/skill, 5 slots) */
+#if !defined(G_PART) || G_PART == 4
+u8 sub_main_func_004F0020(PLW *pl, int id) {
+    s16 i;
+    for (i = 0; i < 5; i++) {
+        if (pl->skill_src[i] == (u8)id) {
+            return pl->skill[i];
+        }
+    }
+    return 0;
+}
+#endif
 #endif
 
 #ifdef VERSION_MHG

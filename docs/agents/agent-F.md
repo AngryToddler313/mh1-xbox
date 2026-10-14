@@ -677,3 +677,36 @@ Details and numbers: docs/xbox.md "Area change loads: timed, made faster, loadin
   the Xbox game build was checked afterwards (810 objects, links). The loader Makefile now warns.
 - Left for later (if hardware still shows long loads): APX straight to P8 on the Xbox, caching the previous
   area's stage, background reads.
+
+## Stale frame after an area change (13 Oct 2026)
+- Owner (real Xbox): one frame of the old area after the map loading screen. Cause: game2 steps 3-5 (sound
+  pack loads after st_model_load, before pl_init / fade_set(2) in step 6) return before game_core, but the
+  viewer still drew its scene: the new stage from the hunter's old position, no fade (no fade request then).
+  PC RT_SHOTS ticks 14-17 of `--quest 131 --play RT_PL_WARP=10,12250,10000` showed it (bright frame between
+  the dark fade and the black start of the fade-in). The PS2 draws nothing then (flFlip of an empty, cleared
+  buffer): viewer.c now draws a black frame while game2's step is 3..6. Shots 14-17 are black now.
+
+## G: loading screens and transitions (14 Oct 2026)
+- Owner (G on the PC): the same buggy transitions and no loading screen as the Xbox had. G's PC build already ran my
+  MH1 fixes for area changes (game2 is MH1's C on the PC; G's steps are the same: 2 map + st_model_load, 3-6 sound
+  loads, 6 pl_init + fade_set(2); checked with tools/mhg_fdiff.py main game2), so the black window keyed to steps 3-6 holds.
+- What differed in G (from G's asm, main 0x12D360-0x12DB70, 0x1003B0, 0x120870):
+  - DispWholeMap draws white (MH1 0x60 grey) over G's darker map art: menu15.c `#ifdef VERSION_MHG`.
+  - The loading screen is a request: Disp_load_start(title, 0) (game11) / main 0x12D6F0 (village before Lb_stage_load,
+    game0, boot) set a gp word; load_bin's wait loop (0x1003B0) calls 0x12DA20 on each vsync, which draws the
+    background, "NOW LOADING" on a sine wave and the title (request 1/2), then flips; ACRMain clears the request after
+    each frame. MH1's Disp_NowLoading does not exist in G.
+  - PC: disp1_nm.c `#ifdef VERSION_MHG` (G copies, slot numbers kept MH1's), rt_prof.c rt_set_load_wait (called after
+    every disc read / decompression / texture decode), viewer.c load_wait (at most 60 a second, first one at once) and
+    Disp_load_req_end at the tick end. lb_village_nm.c (agent D's file): the G vs_square_init_init / vs_square_init
+    call Disp_NowLoading where G calls 0x12D6F0 (G's event stage changes have no loading screen, as in G's asm).
+- Quest start (MH1 and G): the frame after quest_from_village drew the new stage from a camera not set yet (and in G
+  the leftover title text); viewer.c now draws black for that tick (quest_dark_tick), as the PS2 shows nothing until
+  game13's fade_set(2).
+- rt_village.c: the accepted quest number is read at select_w+0xD0 in G (was MH1's +0xAC); test aid RT_VILLAGE_LEAVE.
+- Checked hidden (RT_FLIP_SHOT + RT_SHOTS): G `--quest 10 --play RT_VILLAGE_START=1 RT_VILLAGE_LEAVE="300,10,QUEST TEN"
+  RT_PL_WARP=10,12250,10000`: village enter = NOW LOADING (wave, ~60 frames over the load), quest start = title + NOW
+  LOADING, then black, fade-in; area change = map (now as bright as MH1's), black for steps 3-6, fade-in. G new game ->
+  village: NOW LOADING. MH1 same run (quest 131): unchanged pictures plus the black quest-start frame.
+- Not exercised by a run: G vs_square_init (a walk-through village exit; the same request + load path as init_init).
+  Not done: G's boot-time request (main 0x110CB0) and G's Disp_NowLoading2 (edit screens: MH1's still runs).

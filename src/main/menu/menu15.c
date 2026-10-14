@@ -158,7 +158,11 @@ void DispWholeMap(void) {
     q.s[1] = 0;
     q.b = 0;
     q.c = 0xE000FF;
+#ifdef VERSION_MHG
+    q.a = 0xFFFFFFFF;           /* G (main 0x120870): white, its map art is darker; G's slot is 0x17F (the PC keeps 0x156) */
+#else
     q.a = 0xFF606060;
+#endif
     flps0008(&q);
     disp_whole_map(0x40, 160.0f, 1.0f);
 }

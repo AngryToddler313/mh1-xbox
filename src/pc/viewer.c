@@ -19,6 +19,7 @@
 #include <SDL.h>
 #include "pick.h"
 #include "menu.h"
+#include "dbgmenu.h"
 #ifdef MH1_WIN
 #include <fcntl.h>
 #include <io.h>
@@ -37,6 +38,7 @@
 #define EM_KINDS 64     /* monster kinds the host model cache holds (MH1 35, G 52) */
 #ifdef XBOX
 #include <nxdk/mount.h>
+#include "xbox/xbox_title.h"
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
 void xbox_log_frame(int frame, unsigned ms);
@@ -47,6 +49,12 @@ void xbox_env_note(void);
 
 /* ------------------------------------------------------------ data */
 static fmt_afs afs;
+
+/* the AFS_DATA entry's file name, NULL past the end (the debug menu's quest list, rt_dbg.c) */
+const char *rt_afs_name(int idx)
+{
+    return idx >= 0 && (uint32_t)idx < afs.count ? afs.name[idx] : NULL;
+}
 
 static fmt_blob load(const char *name, uint8_t **keep)
 {
@@ -400,6 +408,15 @@ static uint8_t *afs_entry(int idx, size_t *n)
             rt_warn("file %s (AFS_DATA entry %d) could not be read / decompressed", afs.name[idx], idx);
         else if (getenv("RT_MEM_FILES"))
             fprintf(stderr, "memstat: loader file %s %zu\n", afs.name[idx], *n);
+        if (p && rt_ver_mhg() && rt_text_active() && strlen(afs.name[idx]) == 10 && afs.name[idx][0] == 'm' &&
+            !strcmp(afs.name[idx] + 6, ".mib")) {   /* G mission file mNNNNN.mib: English quest text */
+            size_t cap = *n + 0x4000;
+            uint8_t *q = realloc(p, cap);
+            if (q) {
+                p = q;
+                *n = rt_text_quest_g(atoi(afs.name[idx] + 1), p, *n, cap);
+            }
+        }
         return p;
     }
 }
@@ -892,7 +909,20 @@ int rt_net_test(const char *scenario);
 static const char *nettest;               /* --nettest SCENARIO: headless online test, no window */
 #endif
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
+static int dbg_arg = 0;                     /* --debug-menu 1 / --no-debug-menu 2 */
 static const char *script = NULL;
+static int script_live = 1;                 /* the --input script still has steps */
+
+/* each game tick's pad: the script or the controller (+ keyboard, unless the debug menu's free camera has it); the
+ * debug menu takes its open combo out (dbgmenu_tick_pad) */
+static void read_pad(pad_state *ps)
+{
+    if (script)
+        script_live = pad_script_next(ps);
+    else
+        pad_read(ps, !dbgmenu_freecam());
+    dbgmenu_tick_pad(ps);
+}
 
 /* a --input script kept in a file (--input @file; on the Xbox D:\data\input.txt):
  * the whole file, trailing blanks and line ends cut. NULL when it cannot be read. */
@@ -1296,10 +1326,7 @@ static void sim_tick(void)
 {
     if (pl.game && play && ticks >= 2) {
         pad_state ps;
-        if (script)
-            pad_script_next(&ps);
-        else
-            pad_read(&ps, 1);
+        read_pad(&ps);
         rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
 #ifdef MH1_ONLINE
         rt_np_tick();           /* co-op: the other players' packets (net_receive_pl) */
@@ -1726,6 +1753,7 @@ static void npc_draw(const fl_light *L)
  * Headless --shot runs draw no extra frames, unless RT_FLIP_SHOT=prefix is set: then
  * each flip frame is also written to prefix_<tick>_<n>.png (test aid). */
 static int in_tick, flip_rec, flip_ticks;
+static int quest_dark_tick = -1;    /* the tick a quest started from the village (quest_from_village) */
 extern int gfx_rec_on;           /* gfx_rec.c */
 static void game_flip(void)
 {
@@ -1761,11 +1789,36 @@ static void game_flip(void)
         flip_rec = 1;
 }
 
+#ifdef VERSION_MHG
+/* G's loading screen (disp1_nm.c): a request the game sets before a load; the PS2 draws it on each vsync
+ * the load waits for (load_bin). Here after each disc read, at most 60 times a second; the first read
+ * after the request draws at once. Headless runs show nothing extra (game_flip). */
+int Disp_load_req(void);
+void Disp_load_req_end(void), Disp_load_screen(void);
+static void load_wait(void)
+{
+    static Uint32 last;
+    Uint32 now;
+    if (!in_tick || !Disp_load_req()) {
+        last = 0;
+        return;
+    }
+    now = SDL_GetTicks();
+    if (last && now - last < 17)
+        return;
+    last = now ? now : 1;
+    Disp_load_screen();
+}
+#endif
+
 /* the end of a tick: what was drawn after the last flip is not shown (the frame
  * the viewer draws next replaces it) */
 static void flip_tick_end(void)
 {
     in_tick = 0;
+#ifdef VERSION_MHG
+    Disp_load_req_end();        /* G clears the request after each frame (main 0x12DB20) */
+#endif
     if (flip_rec) {
         gfx_rec_end();
         gfx_rec_clear();
@@ -1794,9 +1847,15 @@ static void quest_from_village(void)
     {   /* game11: the loading screen with the quest's title (quest_title, set by Quest_start
          * in rt_quest_load) while the stage loads */
         extern uint8_t game_w[];
+#ifdef VERSION_MHG
+        void Disp_load_start(int arg, int mode);
+        Disp_load_start(*(uint16_t *)(game_w + 0x2C), 0);     /* G: the request (drawn by the loads, load_wait) */
+#else
         void Disp_load_start(int arg);
         Disp_load_start(*(uint16_t *)(game_w + 0x2C));
+#endif
     }
+    quest_dark_tick = flip_ticks;
     st = rt_game_stage();
     if (st != stage_no)
         load_stage_models(st);
@@ -1883,6 +1942,63 @@ static void village_step(void)
     }
 }
 
+/* ------------------------------------------------------------ the debug menu's actions (dbgmenu.c), between ticks */
+void rt_village_leave(void);
+void rt_world_reset(void);
+void rt_boot_abort(void);
+void all_reset(void);
+int rt_import_select(void);
+void Event_flag_set(int);
+void Event_flag_clear(int);
+static void dbg_leave_boot(void)    /* from the title / boot screens: the boot's tasks end as when Game_task starts */
+{
+    if (!booting)
+        return;
+    rt_boot_abort();
+    booting = 0;
+}
+static void dbg_start_quest(int no)     /* as from the village counter: Quest_init / Quest_start, the start area */
+{
+    dbg_leave_boot();
+    rt_village_leave();
+    rt_world_reset();
+    all_reset();
+    rt_log("debug menu: start quest %d", no);
+    quest_no = no;
+    quest_from_village();
+}
+static void dbg_village(int intro)      /* game mode 6: the village is entered on the next tick (rt_village_enter) */
+{
+    dbg_leave_boot();
+    rt_village_leave();
+    all_reset();
+    if (intro)
+        Event_flag_clear(2);            /* the first-visit event not seen yet (RT_VILLAGE_SKIP_INTRO sets it) */
+    else
+        Event_flag_set(2);
+    rt_log("debug menu: to the village (%s the intro)", intro ? "with" : "without");
+    rt_flow_set_mode(6);
+}
+static void dbg_title(void)             /* the power-on sequence again (logos, title), as a reset does */
+{
+    rt_village_leave();
+    rt_world_reset();
+    rt_monster_clear_all();
+    all_reset();
+    rt_import_select();                 /* select.bin's data as on the disc */
+    rt_log("debug menu: back to the title (power-on sequence)");
+    rt_boot_init();
+    booting = 1;
+    rt_hunter_draw_hook = ed_hunter_hook;
+}
+static void dbg_shot(const char *png)
+{
+    uint8_t *rgb = malloc((size_t)W * H * 3);
+    gfx_read_pixels(rgb);
+    write_png(png, W, H, rgb);
+    free(rgb);
+}
+
 /* RT_MEM="t1,t2,...": the memory report (rt_memstat.c) at those host ticks */
 void rt_motion_report(void);
 static void mem_tick(int t)
@@ -1959,6 +2075,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
         else if (!strcmp(argv[i], "--quest") && i + 1 < argc) quest_no = (int)strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--play")) play = 1;
+        else if (!strcmp(argv[i], "--debug-menu")) dbg_arg = 1;          /* the testers' debug menu on / off (dbgmenu.c) */
+        else if (!strcmp(argv[i], "--no-debug-menu")) dbg_arg = 2;
         else if (!strcmp(argv[i], "--boot")) { boot = 1; play = 1; }
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) {
             script = argv[++i];
@@ -1989,7 +2107,7 @@ int main(int argc, char **argv)
 #endif
         else if (argv[i][0] != '-') disc = argv[i];
     }
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && !defined(XBOX)
     /* G (docs/mhg.md section 5) is a work in progress run by agents: every run is hidden (no window, no real
      * controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run */
     if (!getenv("MH1_SHOW") && !shot) {
@@ -2002,23 +2120,40 @@ int main(int argc, char **argv)
      * power-on with the player's own disc files next to the XBE (D:\data)
      * or on the hard disk (E:\Games\MH1\data, docs/xbox.md). */
     if (!disc) {
-        static const char *dirs[] = { "D:\\data", "E:\\Games\\MH1\\data" };
+        /* the version's disc files (xbox_title.h): MH1 in E:\Games\MH1\data, G in E:\Games\MHG\data. D:\data
+         * (next to the XBE: xemu's data ISO, or the network loader's E:\Games\MH1) only when it holds this
+         * version's program file, so a G build started by the MH1 loader does not take MH1's files. */
+        static const char *dirs[] = { "D:\\data", XBOX_GAME_DIR "\\data" };
+#ifdef VERSION_MHG
+        static const struct { const char *n; long sz; } need[] = {      /* SLPM-65869 */
+            { "AFS_DATA.AFS", 150759424L }, { "AFS00.AFS", 926939136L },
+            { "AFS01.AFS", 25186304L }, { "SLPM_658.69", 2029336L } };
+        static const char disc_name[] = "Monster Hunter G";
+#else
+        static const struct { const char *n; long sz; } need[] = {
+            { "AFS_DATA.AFS", 121866240L }, { "AFS00.AFS", 775729152L },
+            { "AFS01.AFS", 20463616L }, { "SLPM_654.95", 5648908L } };
+        static const char disc_name[] = "Monster Hunter";
+#endif
         FILE *t;
         int d;
         for (d = 0; d < 2 && !disc; d++) {
-            snprintf(path, sizeof path, "%s\\AFS_DATA.AFS", dirs[d]);
+            snprintf(path, sizeof path, "%s\\%s", dirs[d], need[3].n);
             if ((t = fopen(path, "rb")) != NULL) {
                 fclose(t);
                 disc = dirs[d];
             }
         }
         xbox_log_start();
-        xbox_log_note(disc ? disc : "no AFS_DATA.AFS in D:\\data or E:\\Games\\MH1\\data");
+        {
+            char m[160];
+            snprintf(m, sizeof m, "%s", disc ? disc : "");
+            if (!disc)
+                snprintf(m, sizeof m, "no %s in D:\\data or %s\\data", need[3].n, XBOX_GAME_DIR);
+            xbox_log_note(m);
+        }
         {   /* the player's disc files must be complete: a missing or cut-short copy (FTP stopped early) gets a
              * plain message instead of a crash later (sizes of the Japanese disc's files, docs/PLAYING.md) */
-            static const struct { const char *n; long sz; } need[] = {
-                { "AFS_DATA.AFS", 121866240L }, { "AFS00.AFS", 775729152L },
-                { "AFS01.AFS", 20463616L }, { "SLPM_654.95", 5648908L } };
             int k, bad = 0;
             for (k = 0; k < 4 && disc; k++) {
                 long sz = -1;
@@ -2037,9 +2172,12 @@ int main(int argc, char **argv)
                 }
             }
             if (!disc || bad) {
-                xbox_log_note("The game needs the files of YOUR Japanese Monster Hunter PS2 disc in");
-                xbox_log_note("E:\\Games\\MH1\\data : AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95");
-                xbox_log_note("(about 925 MB, see docs/PLAYING.md). Copy them with FTP, then start again.");
+                char m[160];
+                snprintf(m, sizeof m, "The game needs the files of YOUR Japanese %s PS2 disc in", disc_name);
+                xbox_log_note(m);
+                snprintf(m, sizeof m, "%s\\data : %s %s %s %s", XBOX_GAME_DIR, need[0].n, need[1].n, need[2].n, need[3].n);
+                xbox_log_note(m);
+                xbox_log_note("(see docs/PLAYING.md). Copy them with FTP, then start again.");
                 exit(1);
             }
         }
@@ -2051,7 +2189,10 @@ int main(int argc, char **argv)
         if (disc) {
             xbox_env_note();
             snprintf(path, sizeof path, "%s\\input.txt", disc);
-            if ((script = script_file_read(path)) != NULL)
+            script = script_file_read(path);
+            if (!script && strcmp(disc, "D:\\data"))      /* the loader's test script (E:\Games\MH1\data) */
+                script = script_file_read("D:\\data\\input.txt");
+            if (script)
                 xbox_log_note("input.txt: scripted pad input");
         }
     }
@@ -2405,11 +2546,32 @@ int main(int argc, char **argv)
     {
         void rt_set_flip(void (*fn)(void));
         rt_set_flip(game_flip);
+#ifdef VERSION_MHG
+        rt_set_load_wait(load_wait);
+#endif
     }
     rt_set_npc_model_loader(npc_model_load);
     {
         void rt_set_text_input(void (*begin)(int), int (*take)(char *, int));
         rt_set_text_input(pad_text_mode, pad_text_take);
+    }
+    {   /* the testers' debug menu (dbgmenu.c): on in development builds, off in a release build (MH1_RELEASE); the ini key
+         * debug_menu, --debug-menu / --no-debug-menu or RT_DEBUG_MENU=1/0 decide over that */
+        static const dbgmenu_actions acts = { dbg_start_quest, dbg_village, dbg_title, dbg_shot };
+#ifdef MH1_RELEASE
+        int on = 0;
+#else
+        int on = 1;
+#endif
+#ifndef XBOX
+        if (pc_opt.debug_menu)
+            on = pc_opt.debug_menu == 1;
+#endif
+        if (dbg_arg)
+            on = dbg_arg == 1;
+        if (getenv("RT_DEBUG_MENU"))
+            on = atoi(getenv("RT_DEBUG_MENU")) != 0;
+        dbgmenu_init(on && play, &acts);
     }
     if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
         rt_flow_set_mode(6);
@@ -2457,6 +2619,8 @@ int main(int argc, char **argv)
 #endif
             if (menu_event(&ev))        /* F10: the settings menu (open: it takes the keys and the mouse) */
                 continue;
+            if (dbgmenu_event(&ev))     /* F9: the debug menu (open: it takes the keys and the mouse) */
+                continue;
             if (pick_event(&ev))        /* F8: the bug reporter (frozen: it takes all input) */
                 continue;
             pad_event(&ev);     /* typed text (the name entry) */
@@ -2487,10 +2651,18 @@ int main(int argc, char **argv)
             pick_poll_pad();            /* Back/View + Start on the controller */
         if (!shot)
             menu_poll_pad();            /* Back + L3 opens the settings menu; its controller navigation */
+        if (play && dbgmenu_wants_pad()) {      /* the debug menu open (or frame step): it reads the pad once a frame, the script too */
+            pad_state dp;
+            if (script)
+                script_live = pad_script_next(&dp);
+            else
+                pad_read(&dp, 0);
+            dbgmenu_pad(&dp);
+        }
         {   /* the bug reporter stops the game clock while it is frozen */
             static int holding;
             static Uint32 hold_t0;
-            int hnow = pick_hold_ticks(ticks) | menu_hold_ticks(ticks) | test_hold_ticks(ticks);
+            int hnow = pick_hold_ticks(ticks) | menu_hold_ticks(ticks) | dbgmenu_hold_ticks() | test_hold_ticks(ticks);
             if (hnow && !holding)
                 hold_t0 = SDL_GetTicks();
             if (!hnow && holding && fixed_time < 0) {
@@ -2500,7 +2672,19 @@ int main(int argc, char **argv)
             }
             holding = hnow;
         }
-        if (game_cam && have_view) {    /* look-at from the game camera's eye/target (roll ignored) */
+        {   /* the debug menu's free camera (PC): starts at the game camera's eye, looking where it looked */
+            static int fc_prev;
+            if (dbgmenu_freecam() && !fc_prev && have_view) {
+                float d[3] = { gc_tar[0] - gc_eye[0], gc_tar[1] - gc_eye[1], gc_tar[2] - gc_eye[2] };
+                cam[0] = gc_eye[0];
+                cam[1] = gc_eye[1];
+                cam[2] = gc_eye[2];
+                cam[3] = atan2f(-d[0], -d[2]);
+                cam[4] = atan2f(d[1], sqrtf(d[0] * d[0] + d[2] * d[2]));
+            }
+            fc_prev = dbgmenu_freecam();
+        }
+        if (game_cam && have_view && !dbgmenu_freecam()) {    /* look-at from the game camera's eye/target (roll ignored) */
             lookat_world(camw, gc_eye, gc_tar);
         } else {   /* camera: rotate pitch then yaw, looking down -Z like GL */
             float s[3] = { 1, 1, 1 }, r[3], tr[3];
@@ -2509,7 +2693,7 @@ int main(int argc, char **argv)
             flmat_srt(camw, s, r, tr);
         }
         keys = SDL_GetKeyboardState(NULL);
-        if (!shot && !play) {
+        if (!shot && (!play || dbgmenu_freecam())) {
             if (keys[SDL_SCANCODE_LSHIFT]) spd *= 6;
             if (keys[SDL_SCANCODE_W]) { cam[0] -= camw[8] * spd; cam[1] -= camw[9] * spd; cam[2] -= camw[10] * spd; }
             if (keys[SDL_SCANCODE_S]) { cam[0] += camw[8] * spd; cam[1] += camw[9] * spd; cam[2] += camw[10] * spd; }
@@ -2535,7 +2719,7 @@ int main(int argc, char **argv)
          * means a frame only every few seconds and never recovering; the game slows down
          * instead, as on the PS2. Load pauses no longer come back as a burst of ticks either. */
         if (fixed_time < 0 && 2 + (int)fr - ticks > CATCH_UP
-            && !pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !test_hold_ticks(ticks)) {     /* (a hold stops the clock itself) */
+            && !pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !dbgmenu_hold_ticks() && !test_hold_ticks(ticks)) {     /* (a hold stops the clock itself) */
             static Uint32 told, lost_sum;
             Uint32 lost = (Uint32)((2 + (int)fr - ticks - CATCH_UP) * 1000 / 30);
             t0 += lost;
@@ -2550,17 +2734,14 @@ int main(int argc, char **argv)
         }
         /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
          * per drawn frame, every 300 ticks */
-        while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !test_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+        while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && !dbgmenu_hold_ticks() && !test_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
             in_tick = 1;                /* flFlip shows frames from here (game_flip) */
             flip_ticks = ticks;
             rt_actor_nodes_fill();      /* every actor's node array as the last tick left it (boot screens, village, quests) */
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
-                if (script)
-                    pad_script_next(&ps);
-                else
-                    pad_read(&ps, 1);
+                read_pad(&ps);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_pad_tick();
                 if (rt_boot_tick()) {
@@ -2584,10 +2765,7 @@ int main(int argc, char **argv)
                  * pad is still read every tick (result / reward screens) */
                 if (rt_flow_mode() != 2 && play) {
                     pad_state ps;
-                    if (script)
-                        pad_script_next(&ps);
-                    else
-                        pad_read(&ps, 1);
+                    read_pad(&ps);
                     rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                     if (rt_flow_mode() == 6)
                         rt_pad_read();      /* the village's Lb_pl_move runs swset */
@@ -2643,6 +2821,25 @@ int main(int argc, char **argv)
         if (booting) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
             rt_boot_draw();
+            goto frame_done;
+        }
+        if (quest_no && rt_flow_mode() == 2) {
+            /* game2 steps 3-6 (an area change, after the map and st_model_load): the PS2 game
+             * returns before game_core, so nothing is drawn and flFlip shows a cleared (black)
+             * buffer until step 6 (pl_init, fade_set(2)) fades the new area in. Drawing the
+             * scene here showed the new stage from the old position, without fade, for a frame
+             * (a long one on the Xbox, whose sound loads span ticks). */
+            extern uint8_t game_w[];
+            if (game_w[1] >= 3 && game_w[1] <= 6) {
+                gfx_begin_frame(0);
+                goto frame_done;
+            }
+        }
+        if (quest_dark_tick >= 0 && quest_dark_tick == flip_ticks) {
+            /* the quest start (game11-13 on the PS2, one tick here): the screen stays dark (MH1) or on the
+             * loading screen (G) until game13's fade_set(2) fades the base camp in on the next tick. Drawing
+             * the scene here showed the new stage from a camera not set yet (and in G the title text) */
+            gfx_begin_frame(0);
             goto frame_done;
         }
         if (game_cam) {
@@ -2772,6 +2969,17 @@ int main(int argc, char **argv)
         if (pick_frame_hook())
             goto redraw;
         menu_draw();                    /* the settings menu over the last picture (and the title screen's hint) */
+        dbgmenu_draw();                 /* the debug menu, hit volumes, frame-step line */
+        {
+            const char *ds = dbgmenu_take_shot();       /* RT_DBG_SHOTS: the menu as it is now */
+            if (ds) {
+                uint8_t *rgb = malloc((size_t)W * H * 3);
+                gfx_read_pixels(rgb);
+                write_png(ds, W, H, rgb);
+                printf("wrote %s\n", ds);
+                free(rgb);
+            }
+        }
 
         frame_no++;
         rt_log_frame();
@@ -2808,7 +3016,7 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && !menu_busy() && (!shot_list || ticks >= 2 + (int)fr)
+        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && !menu_busy() && !(dbgmenu_busy() && script_live) && (!shot_list || ticks >= 2 + (int)fr)
             && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
