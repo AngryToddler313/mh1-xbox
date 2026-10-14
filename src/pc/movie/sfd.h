@@ -8,6 +8,7 @@
 #ifndef MH_SFD_H
 #define MH_SFD_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include "../fmt/fmt.h"
 
@@ -36,6 +37,8 @@ int  sfd_audio_channels(const sfd *s);
  * returns the number produced (0 = nothing queued / audio over). */
 int  sfd_audio_pull(sfd *s, int16_t *out, int frames);
 int  sfd_audio_done(const sfd *s);
+/* Bytes of video stream demuxed but not decoded yet (the audio side reads the file ahead). */
+size_t sfd_video_backlog(const sfd *s);
 
 /* Decode time statistics of sfd_next_frame (milliseconds, CPU time). */
 void sfd_stats(const sfd *s, int *frames, double *total_ms, double *max_ms);
