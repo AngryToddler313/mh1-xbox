@@ -1,6 +1,7 @@
 /* lb_by130 - agent B 0x0053A9B0-0x0053AB4C: item_to_stack (shop: put the bought item / gun part into the box). The list/cur loads
  * through a u16 pointer local give the original operand order of the entry address. */
 #include "lobby_s.h"
+#include "lbsys_g.h"
 extern s16 armorIndex;
 extern char User_data[];
 s32 item_to_stack(s32 arg0, s32 arg1) {
@@ -40,7 +41,7 @@ s32 item_to_stack(s32 arg0, s32 arg1) {
             var_s0 = Warehouse_equip_stack(&User_data, arg0 & 0xFF, arg1 & 0xFFFF, 0) & 0xFF;
         }
     } else {
-        var_s0 = Warehouse_equip_stack(&User_data, F(u8, &lbShop, 0x5B), F(u16, &lbShop, 0x5C), 0) & 0xFF;
+        var_s0 = Warehouse_equip_stack(&User_data, F(u8, &lbShop, LBSHOP_OFS(0x5B)), F(u16, &lbShop, LBSHOP_OFS(0x5C)), 0) & 0xFF;
     }
     return var_s0;
 }

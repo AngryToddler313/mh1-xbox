@@ -1,5 +1,6 @@
 /* lb_arm - one translation unit 0x0053C520-0x0053D7CC (lbtu3). */
 #include "lobby_s.h"
+#include "lbsys_g.h"
 extern char User_data[];
 extern char my_user_id[];
 typedef struct { u8 x0; u8 kind; u16 id; u16 x4; } EQREC;
@@ -160,12 +161,12 @@ void lb_armor_tag_decide01() {
 }
 
 s32 lb_armor_select() {
-    switch (F(s8, &lbShop, 0x19)) {       /* irregular */
+    switch (F(s8, &lbShop, LBSHOP_OFS(0x19))) {       /* irregular */
     case 0:
-        F(s32, &lbShop, 0x4C) = F(s32, &shop_default_help, 8);
+        F(s32, &lbShop, LBSHOP_OFS(0x4C)) = F(s32, &shop_default_help, 8);
         return lb_armor_itemBuy();
     case 1:
-        F(s32, &lbShop, 0x4C) = F(s32, &shop_default_help, 0xC);
+        F(s32, &lbShop, LBSHOP_OFS(0x4C)) = F(s32, &shop_default_help, 0xC);
         return lb_armor_itemSell();
     default:
         return 0;

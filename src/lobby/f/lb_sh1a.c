@@ -1,5 +1,6 @@
 /* lb_sh1a - one translation unit 0x00537C10-0x00539A90 (lbtu3). */
 #include "lobby_s.h"
+#include "lbsys_g.h"
 extern f32 tagMoveY[];
 #define flfntLocate_a2 flfntLocate_hdr   /* lobby_a.h declares it K&R; the original caller sign-extends y */
 #undef flfntLocate_a2
@@ -225,7 +226,7 @@ void lb_put_shopHelp() {
 }
 
 void Lb_put_shopYesNo() {
-    if (F(s8, &lbShop, 0x78) == 0) {
+    if (F(s8, &lbShop, LBSHOP_OFS(0x78)) == 0) {
         flfntSetSize(0x12, 0x12);
         flfntLocate(0x1B0, 0x194);
         font_set_palette(2);
@@ -645,29 +646,29 @@ void lb_process_tag_decide01() {
 }
 
 void Lb_make_mySrcEquip(int arg0) {
-    F(s8, &lbShop, 0x55) = (s8) arg0;
+    F(s8, &lbShop, LBSHOP_OFS(0x55)) = (s8) arg0;
     switch ((s16)arg0) {
     case 6:
     case 7:
-        *(S3 *)((u8 *)&lbShop + 0x54) = *(S3 *)&D_3C738C;
+        *(S3 *)((u8 *)&lbShop + LBSHOP_OFS(0x54)) = *(S3 *)&D_3C738C;
         break;
     case 2:
-        F(s16, &lbShop, 0x56) = *(u8 *)0x3C7393;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7393;
         break;
     case 3:
-        F(s16, &lbShop, 0x56) = *(u8 *)0x3C7394;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7394;
         break;
     case 4:
-        F(s16, &lbShop, 0x56) = *(u8 *)0x3C7395;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7395;
         break;
     case 5:
-        F(s16, &lbShop, 0x56) = *(u8 *)0x3C7396;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7396;
         break;
     case 0:
-        F(s16, &lbShop, 0x56) = *(u8 *)0x3C7392;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7392;
         break;
     }
-    F(s8, &lbShop, 0x54) = 1;
+    F(s8, &lbShop, LBSHOP_OFS(0x54)) = 1;
 }
 
 s32 check_items(u8 *p, s8 stocked) {

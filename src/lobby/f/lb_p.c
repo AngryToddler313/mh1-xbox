@@ -1,5 +1,6 @@
 /* Lobby: per-frame common move (SLPM_654.95 lobby overlay 0x5D6420-). Whole file; runs split into lb_pNN.c */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 #ifdef VERSION_MHG
 #define PL_MAX 10
 #else
@@ -37,7 +38,7 @@ int Lb_move_common(void) {
         lb_sys.x8D = lb_sys.x8D - 1;
     }
     lb_sys.x8E = lb_sys.x8E + 1;
-    F(s16, lbShop, 0x8C) = Lb_shop_sw(0);
+    F(s16, lbShop, LBSHOP_OFS(0x8C)) = Lb_shop_sw(0);
     Lb_check_newCommer();
     i = 0;
     c = (u8 *)lbCommer;

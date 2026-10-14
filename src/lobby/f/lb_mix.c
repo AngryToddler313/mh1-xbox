@@ -3,6 +3,7 @@
 #include "pl.h"
 #include "em.h"
 #include "ud.h"
+#include "lbsys_g.h"
 void Lb_shop_tag_init();
 void Lb_shop_talk();
 s8 Lb_talk_check_default();
@@ -485,6 +486,6 @@ s16 qty;
 }
 
 void Lb_shop_init() {
-    memset(&lbShop, 0, 0x90);
+    memset(&lbShop, 0, LBSHOP_SIZE);
 }
 

@@ -81,4 +81,19 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
 #define UDEQO(i) (0x456 + (i))
 #define UDEQ(u, i) (((u8 *)(u))[UDEQO(i)])
 #endif
+
+/* LBSHOP_OFS(MH1 offset) = the offset from the symbol lbShop in the running build, for code that reaches the shop state by a
+ * raw byte offset (files written against `u8 lbShop[0x90]`). In G the fields moved (include/lbshop_g.h; the MH1 s8 page / count at
+ * 0x6C / 0x6D are s16 there and are reached at their low byte). Identity in an MH1 build. */
+#ifdef VERSION_MHG
+#define LBSHOP_G_OFS(o) ( (o) < 0x14 ? (o) : (o) == 0x14 ? 0x82 : (o) == 0x15 ? 0x83 : (o) == 0x16 ? 0x84 : (o) == 0x17 ? 0x85 : \
+    (o) == 0x18 ? 0x86 : (o) == 0x19 ? 0x87 : (o) == 0x1A ? 0x88 : (o) == 0x1B ? 0x8B : (o) == 0x1C ? 0x8C : (o) < 0x6C ? (o) - 0xC : \
+    (o) == 0x6C ? 0x78 : (o) == 0x6D ? 0x7A : (o) == 0x6E ? 0x89 : (o) == 0x70 ? 0x60 : (o) == 0x74 ? 0x64 : (o) == 0x78 ? 0x8A : \
+    (o) == 0x7C ? 0x68 : (o) == 0x80 ? 0x6C : (o) == 0x84 ? 0x70 : (o) == 0x8C ? 0x80 : (o) == 0x8E ? 0x8D : (o) == 0x8F ? 0x8E : (o) )
+#define LBSHOP_OFS(o) (0xC + LBSHOP_G_OFS(o))
+#define LBSHOP_SIZE 0xA0      /* G: the fields end at 0x9B (lbshop_g.h) */
+#else
+#define LBSHOP_OFS(o) (o)
+#define LBSHOP_SIZE 0x90
+#endif
 #endif

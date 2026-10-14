@@ -1,5 +1,6 @@
 /* PC note: the shop-list fields at +0x24 (lh) and +0x26 (lhu) are 16-bit in the asm (0x53B764, 0x53B7B4); reading them as s32 crashed the PC forge screen. */
 #include "lobby_s.h"
+#include "lbsys_g.h"
 extern char kakou_tbl[];
 extern char shopList2[];
 extern char buki_sei_tbl[];
@@ -44,8 +45,8 @@ void lb_process_drawHelp(void) {
             temp_a3 = var_s1 * 0x18;
             var_s5 = (int)&kakou_tbl + temp_a3;
             if (var_s2 == 7) {
-                var_s1 = F(u16, &lbShop, 0x56);
-                var_a1 = value_result(F(u16, &lbShop, 0x58), F(u16, (temp_v1 + (int)lbShop.list), 0x26), 7, temp_a3) & 0xFFFF;
+                var_s1 = F(u16, &lbShop, LBSHOP_OFS(0x56));
+                var_a1 = value_result(F(u16, &lbShop, LBSHOP_OFS(0x58)), F(u16, (temp_v1 + (int)lbShop.list), 0x26), 7, temp_a3) & 0xFFFF;
                 var_s0 = 1;
             }
             if (*(s16 *)(&shopList2[0x24] + (lbShop.x70 * 0x28)) == 2) {
@@ -74,10 +75,10 @@ void lb_process_drawHelp(void) {
         return;
     }
 block_12:
-    F(s16, &lbShop, 0x5E) = var_a1;
-    F(s8, &lbShop, 0x5B) = (s8) var_s2;
-    F(s8, &lbShop, 0x5A) = 1;
-    F(u16, &lbShop, 0x5C) = var_s1;
+    F(s16, &lbShop, LBSHOP_OFS(0x5E)) = var_a1;
+    F(s8, &lbShop, LBSHOP_OFS(0x5B)) = (s8) var_s2;
+    F(s8, &lbShop, LBSHOP_OFS(0x5A)) = 1;
+    F(u16, &lbShop, LBSHOP_OFS(0x5C)) = var_s1;
     switch (lbShop.x1C) {       /* irregular */
     case 1:
         if ((var_s1 & 0xFFFF) != 0x3E7) {

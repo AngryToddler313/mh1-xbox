@@ -1,5 +1,6 @@
 /* lb_by79 - agent B promoted near-match 0x005AFB00-0x005AFC8C: Lb_shop_item_checkMax (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char User_data[];
 int CheckItemPrice_005AFEE0(int id, int qty);
 
@@ -12,7 +13,7 @@ int cnt;
     u8 *p;
 
     n = (s16)Ud_item_num_ck3();
-    switch (F(s8, &lbShop, 0x19)) {
+    switch (F(s8, &lbShop, LBSHOP_OFS(0x19))) {
     case 0:
         n = (s16)n;
         if (n == -1) {

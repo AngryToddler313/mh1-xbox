@@ -1,5 +1,6 @@
 /* lb_sh1b - one translation unit 0x00539E40-0x0053AB50 (lbtu3). */
 #include "lobby_s.h"
+#include "lbsys_g.h"
 extern char shop_process2_help[];
 extern s32 armorIndex;
 extern LB_SHOPITEM shopList2[];
@@ -195,7 +196,7 @@ s32 item_to_stack(s32 arg0, s32 arg1) {
             var_s0 = Warehouse_equip_stack(&User_data, arg0 & 0xFF, arg1 & 0xFFFF, 0) & 0xFF;
         }
     } else {
-        var_s0 = Warehouse_equip_stack(&User_data, F(u8, &lbShop, 0x5B), F(u16, &lbShop, 0x5C), 0) & 0xFF;
+        var_s0 = Warehouse_equip_stack(&User_data, F(u8, &lbShop, LBSHOP_OFS(0x5B)), F(u16, &lbShop, LBSHOP_OFS(0x5C)), 0) & 0xFF;
     }
     return var_s0;
 }

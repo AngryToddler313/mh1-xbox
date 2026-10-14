@@ -1,6 +1,7 @@
 /* lb_p01 - lobby per-frame common move 0x005D6420-0x005D6734: Lb_move_common. It returns nothing (the last call result stays in v0, no variable holds it);
    the memcmp test is written `0 > memcmp()` (slt, not bgez) and the cw+3 pointer is a local p3 (addiu hoisted before the lb). Whole file in lb_p.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 
 void Lb_move_common(void) {
     PLW *pl2;
@@ -25,7 +26,7 @@ void Lb_move_common(void) {
         lb_sys.x8D = lb_sys.x8D - 1;
     }
     lb_sys.x8E = lb_sys.x8E + 1;
-    F(s16, lbShop, 0x8C) = Lb_shop_sw(0);
+    F(s16, lbShop, LBSHOP_OFS(0x8C)) = Lb_shop_sw(0);
     Lb_check_newCommer();
     i = 0;
     c = (u8 *)lbCommer;
