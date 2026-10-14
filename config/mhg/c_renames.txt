@@ -18,6 +18,7 @@ build/mhg/src/main/pl/plx06.c.o .rodata .data
 build/mhg/src/main/pl/pl72.c.o .rodata .data
 build/mhg/src/main/eft/eft13e.c.o .rodata .data
 build/mhg/src/main/net/netsyn01.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p7.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p19.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p21.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p30.c.o .rodata .data
