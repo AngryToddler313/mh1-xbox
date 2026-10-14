@@ -794,3 +794,44 @@ Goal: G hunts without test aids. All G-only code is under VERSION_MHG; the PS2 G
   monster_data (G 0x5278D0, 12-byte rows; G rewrote disp_monster_list) still zero. func_0012D170 (G-only main) not
   ported (Get_equip_value / remuneration / Pl_item_charge take its 0 branch). Carts not tried naturally (the
   warp aid keeps the hunter inside the monster).
+
+## G round 5: every G offline quest (14 Oct 2026)
+
+`tools/test_all_quests_g.sh` (G=1 mode of tools/test_all_quests.py; hidden, test aids): G's offline quests are
+the village group 00xxx (`--quest 1`..`50`) and training 10xxx (`10001`..`10048`) (quest_file_tbl groups 0 and 4;
+01xxx-03xxx are the town, 20xxx the 50 event files). Per quest: the monsters spawn, clear with the aids, reward
+list; a second run with RT_QUEST_TIME=600 must fail by time-out (x06 6); without arguments also a carts check
+(quest 9, no GOD/warp, RT_PL_HP 5: the Rathian's hits faint the hunter, two camp returns, failed on the third
+with time left). Result: **96/98 pass + carts** (KNOWN: 10030, 10048). MH1 test_all_quests 38/38, quest loop OK.
+- Note: "quests 89 / 129" of round 4 were not offline quests: G's group-0 list has 56 entries, so `--quest 89`
+  read group 1 (m01033). Their hang was real all the same (below).
+- em commands: G's 0x80 random select takes entries 11-13 (next_cmd_search 0x58EFA8, em_cmd_rnd32 0x58CD90).
+  next_cmd_search checked against an emulation of G's asm for every (op, sub, fill) - only this differed.
+- PC tables at G sizes (config/mhg/pc_data.txt): item_str 524, Item_get_tbl 376 pick ids, em_alpha_clay /
+  em_ride_data (52 kinds), eft06/eft13, em01/09/11/15/16/17/20/21 contents/stage-move/route tables; the 17
+  one-item pick rows G keeps in main .data (item_get_rows_main, `noptr`: the scan had "converted" their
+  {chance, item} words). The 92-stage tables (stage_fog_tbl, ground_tbl_add, st_sun_rgba_tbl, pl_light_tbl2) are
+  left at MH1 size: grown, the village crashed in GetGroundHitStatusAreaPl (agent B/D to look at).
+- mhg_pcmeta: pointer runs a pointer word points at (em29 command list 0x6BE4F0: kind 22 crashed); no scan
+  words inside em byte-code objects (em01_main_cmd09 0x68996C: a quest number + 0x2C read as 0x2C0008).
+- Monster kinds 3/4/5/32 never spawned on G (em_create_model refuses a kind whose program entries 0/3 are NULL):
+  game 0x5B7010 (= eft01_set(em, 0)) and sub_main 0x4EDCD0 (em04 effect move) are host functions now
+  (rt_quest.c); G's em04 sound script 0x4ECD00 stands in as MH1's ef_move_sub (stand-in logged), 0x4EDAA0
+  (Eft13 dust) left out. Only kinds 40 and 51 still have NULL entries.
+- em20 (Kut-Ku kinds 6/20...): G revival (act 5 no 3, die00-02 timers, die act 3 = game 0x622FE0, start points
+  game 0x618A20) written from the asm. G added the same revival to em01/em15/em17/em27 act_set and die
+  functions (callers of Quest_enemy_revival_ck in game.bin): not ported yet.
+- G tools: pickaxes 112-114, bug nets 115-117 (f_pl.c). G's item_action_set (game 0x54D8C0, 640 lines) uses
+  G's item ids throughout; the PC runs MH1's, so most item uses on G are wrong (player lane, listed in mhg.md).
+- func_0012D170 = game_w 0x2F3 && 0x2C0, func_0012D1B0 = game_w 0x2F4 (main). Only mode_sel_end writes them and
+  never both of 0x2F3/0x2C0: 0 in every shipped path; the G Get_equip_value / reward list call it now.
+- Test aids: RT_QUEST_TIME offline, RT_PICK_ALL (nests: 100% points and carried items 512..), RT_PL_TARGET
+  `kA,B` (first living kind: bosses in turn), RT_PL_GOTO lists skip a goal with no path, RT_PL_GOD 30000 on G,
+  host model cache 64 kinds (G kinds 40-51 had none).
+- Open (mine): 10030's 20th Kut-Ku does not return (19/20; ops 36/47 at 18 kills); 10048 Ashen Lao-Shan floors
+  at hp 1000 on stage 14; kind 40's own code (game 0x647060-0x648610, ~30 functions) not ported: no quest on the
+  disc uses kind 40 (dry runs of all 245 mission files; em40 has only a tbl file); monster_data / G
+  disp_monster_list (main 0x125CE0) not ported: G rewrote it into a hunting log (a second page of 6 per page with
+  kill counts and crown sizes: main 0x126100/0x126160/0x126340, sub_main 0x4C8580/0x4C85A0/0x4C8750/0x4C87C0/
+  0x4C8870 over User_data records and the per-species lists at 0x4FEE90, crown sizes 0x4FEF60; names 0x527A40,
+  frame lists 0x25E860..), it needs the G User_data record writers too.

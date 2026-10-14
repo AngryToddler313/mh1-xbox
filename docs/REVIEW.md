@@ -420,3 +420,18 @@ obvious workarounds.
 - **Why:** the hunt was unfair or crashed: hp/attack/defence by MH1's rules, an invisible scale-0 Rathian, attack
   rate 0 (every hit 1), zero ammo tables, crashes when the hunter was hit or the Rathian changed area.
 - **To revert:** revert the commit "G hunts: G's own tables ...".
+
+### G quest sweep: G-only code paths replacing MH1 ones on the PC (14 Oct 2026, agent A)
+- **Dropped / replaced (all under VERSION_MHG or G-only test aids; MH1 behaviour unchanged):**
+  - f_pl.c search_act_set / item_action_set / tool wear: MH1's pickaxe and bug net ids 0x83-0x88 -> G's 112-117
+    (PICKAXE0 / BUGNET0 macros; MH1 values unchanged).
+  - em20_act_set (em20_nm.c) and em20 die00-02 (em20_ai_nm.c): MH1's code -> G's revival version (carcass
+    1800 ticks, revival countdown, die act 3).
+  - RT_PL_GOD on G keeps vital at 30000 (MH1 still 100): a G-rank hit took more than 100 in one tick.
+  - func_0012D1B0 stand-in (always 0) -> reads game_w 0x2F4; func_0012D170 written (game_w 0x2F3 && 0x2C0).
+  - mhg_pcmeta: scan pointer words inside em command programs (names em*_main_cmdNN / content_x / sub_contents_x)
+    are dropped (one false word made kind 37's program loop); `noptr` pc_data objects; a pointer run that a
+    pointer word points at is kept (em29's command list).
+- **Why:** each was a G quest that hung, crashed or could not be cleared on the PC (tools/test_all_quests_g.sh).
+- **To revert:** revert the agent-A commits "G sweep: ...", "G: em03/em04 program entries ...",
+  "G em20 ...", "mhg_pcmeta: ..." on branch agent-A.
