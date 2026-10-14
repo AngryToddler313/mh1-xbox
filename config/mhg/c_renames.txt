@@ -13,6 +13,7 @@ build/mhg/src/game/em/em04_act.c.o .rodata .data
 build/mhg/src/game/em/em07_aib.c.o .rodata .data
 build/mhg/src/game/em/em07_aid.c.o .rodata .data
 build/mhg/src/game/em/em07.c.o .rodata .data
+build/mhg/src/game/em/em08_demo.c.o .rodata .data
 build/mhg/src/game/em/em12_d.c.o .rodata .data
 build/mhg/src/game/em/em14_r11.c.o .rodata .data
 build/mhg/src/game/em/em15_r11.c.o .rodata .data
@@ -23,8 +24,18 @@ build/mhg/src/game/em/em19_flyinit.c.o .rodata .data
 build/mhg/src/game/em/em20_atk08.c.o .rodata .data
 build/mhg/src/game/em/em20_atk21.c.o .rodata .data
 build/mhg/src/game/em/em27b.c.o .rodata .data
+build/mhg/src/game/shell/shell01.c.o .rodata .data
+build/mhg/src/game/shell/shell02.c.o .rodata .data
+build/mhg/src/game/shell/shell05.c.o .rodata .data
+build/mhg/src/game/shell/shell13.c.o .rodata .data
+build/mhg/src/game/shell/shell15.c.o .rodata .data
+build/mhg/src/game/shell/shell18.c.o .rodata .data
+build/mhg/src/game/shell/shell19.c.o .rodata .data
+build/mhg/src/game/shell/shell20.c.o .rodata .data
+build/mhg/src/game/shell/shell21.c.o .rodata .data
 build/mhg/src/game/shell/shell22.c.o .rodata .data
 build/mhg/src/game/shell/shell22b.c.o .rodata .data
+build/mhg/src/game/shell/shell23.c.o .rodata .data
 build/mhg/src/lobby/f/lb_al09.c.o .rodata .data
 build/mhg/src/lobby/f/lb_gdr16.c.o .rodata .data
 build/mhg/src/lobby/f/lb_ge2503.c.o .rodata .data

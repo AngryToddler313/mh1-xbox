@@ -37,8 +37,6 @@ segments:
       - [0x000040, asm, text/sub_main_func_004A0CC0]
       - [0x012940, c, main/quest/qstb04]
       - [0x012980, asm, text/Quest_failed_set]
-      - [0x0129E0, c, main/quest/qstb05]
-      - [0x012A7C, asm, text/Stage_data_get]
       - [0x019CB0, c, main/hit/hitpk01]
       - [0x019E70, asm, text/f_hit]
       - [0x01D5D0, c, main/hit/hit3]
