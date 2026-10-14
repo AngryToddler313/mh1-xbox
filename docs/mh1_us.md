@@ -123,3 +123,15 @@ tools/carry_match.py us (same instruction shape, addresses and 16-bit immediates
    second splat config, our C where the shape matches, the rest matched again; only (b) gives the Dual Swords and the
    US-only quests.
 4. Online: the US client's server protocol is unknown; mh1-server speaks the JP one.
+
+## 6. Update 13 Oct 2026 (agent E): the mapping tool exists
+
+tools/text_map.py (docs/english.md section 7) does what section 3 sketched: code references, table index through the JP
+symbols, quest header match. Corrections to what is written above: the US item table is not "336 = 327 + 9 appended": the
+US inserted items near the start and in the middle (five combo books at ids 1-5, a block of 50+ materials), so ids from about
+index 6 on are shifted and the name table cannot be paired by index (it follows the Item_data record alignment instead);
+the weapon table (Ken_data) is index-aligned for rows 0-232 and continues with 27 more. The US font file is byte-identical
+to G's (all 7808 glyphs). tools/carry_match.py reads overlays as `file[0x40:]` with the load address as base: overlay
+words are at load + file offset (the header is part of the load, text_dump.py does it that way), so its overlay windows
+are shifted by 16 words; the module percentages in section 4 are therefore slightly low for game / lobby / select / yn
+[inferred from em_eye_search_set at file offset 0x80; not re-run].

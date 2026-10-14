@@ -1987,6 +1987,14 @@ int main(int argc, char **argv)
 #endif
         else if (argv[i][0] != '-') disc = argv[i];
     }
+#ifdef VERSION_MHG
+    /* G (docs/mhg.md section 5) is a work in progress run by agents: every run is hidden (no window, no real
+     * controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run */
+    if (!getenv("MH1_SHOW") && !shot) {
+        fprintf(stderr, "G runs are hidden: give --shot FILE --time S (with --input SCRIPT for pad input); MH1_SHOW=1 shows a window\n");
+        return 1;
+    }
+#endif
 #ifdef XBOX
     /* Xbox (tools/build_xbox.py): no command line. Boot the game from
      * power-on with the player's own disc files next to the XBE (D:\data)
@@ -2193,6 +2201,10 @@ int main(int argc, char **argv)
     /* scripted runs (--input: tests, bug-report replays) never show a window on the desktop;
      * MH1_SHOW=1 shows one anyway for debugging by hand */
     int hide = shot != NULL || ((script != NULL || getenv("MH1_HIDDEN")) && !getenv("MH1_SHOW"));
+#ifdef VERSION_MHG
+    if (!getenv("MH1_SHOW"))
+        hide = 1;       /* G: always hidden (above) */
+#endif
     if (gfx_init(W, H, "MH1 PC viewer", hide) != 0) {
         rt_warn("graphics start-up failed (no window / OpenGL context)");
         return 1;

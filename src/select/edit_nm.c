@@ -585,6 +585,7 @@ void disp_color(u8 *w);
 void cont_trans(TSKH *tk);
 
 
+#ifndef VERSION_MHG     /* G: edit_trans with Edit_task below */
 void edit_trans(TSKH *t) {
     STASK *s = t->work;
     u8 *e = (u8 *)&edit_w;
@@ -627,6 +628,7 @@ void edit_trans(TSKH *t) {
         break;
     }
 }
+#endif
 
 void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
     u8 c[3];
@@ -887,6 +889,7 @@ int cmn_mongon_check_sub(s8 *str) {
     return 1;
 }
 
+#ifndef VERSION_MHG
 /* Near-match: edit screen task (steps: 0 init, 1 load, 2 menu, 3 name/colour edit, 4 confirm,
    5 save, 6-8 fade out and start the game, 9 cancel confirm, 10 back to the select task). */
 
@@ -1194,6 +1197,433 @@ void Edit_task(STASK *t) {
         return;
     }
 }
+#else /* VERSION_MHG */
+/* G's character creation (select 0x546670-0x548408, written from G's code; not a match, PC only).
+ * G put a step in front of MH1's: step 0 loads, checks the card for an MH1 hunter to carry over
+ * (McOperationSet 0xB) and offers it; steps 1-11 are MH1's steps 0-10 (G step = MH1 step + 1)
+ * with G's changes: roll_move turns all hunters together, the help line comes from a sub_main
+ * table, and the exit to Game_task also clears system_w 0x43-0x45. */
+const u8 *rt_addr(u32 va, unsigned int n);
+void rt_log_standin(const char *name);
+void em_create_model();
+void yure_move();
+int strlen_sp();
+void font_print_sp();
+void flfntLocate();
+void font_set_palette();
+
+/* roll_move (G 0x5466A0): L1/R1 turn the preview; all three hunters share hunter 0's angle */
+static void roll_move_g(void) {
+    if (*(volatile u16 *)&Psw[4] & 8) {
+        player_work[0].ang[1] -= 0x400;
+    }
+    if (*(volatile u16 *)&Psw[4] & 4) {
+        player_work[0].ang[1] += 0x400;
+    }
+    player_work[1].ang[1] = player_work[0].ang[1];
+    player_work[2].ang[1] = player_work[0].ang[1];
+}
+
+/* G 0x545520 (MH1 disp_edinfo): the two help lines of the edit menu item, from G's table at sub_main
+ * 0x528440 (8 bytes per item: two string pointers), centred, printed with ~ codes (no button icons) */
+static const char *g_edit_msg(int item, int line) {
+    const u8 *p = rt_addr(0x528440u + 8u * (u32)item + 4u * (u32)line, 4);
+    u32 va;
+    if (!p)
+        return "";
+    va = p[0] | p[1] << 8 | p[2] << 16 | (u32)p[3] << 24;
+    p = va ? rt_addr(va, 1) : 0;
+    return p ? (const char *)p : "";
+}
+
+static void disp_edinfo_g(u8 *w) {
+    int k;
+    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
+    flfntSetSize(0x14, 0x14);
+    font_set_palette(0);
+    for (k = 0; k < 2; k++) {
+        const char *s = g_edit_msg(w[2], k);
+        flfntLocate((s16)((0x280 - strlen_sp(s) * 10) / 2), k ? 0x180 : 0x168);
+        font_print_sp(lit_319_0053B628, s);
+    }
+}
+
+void edit_trans(TSKH *t) {
+    STASK *s = t->work;
+    u8 *e = (u8 *)&edit_w;
+    flSetRenderState(0x60, 0);
+    if (s->step >= 3) {
+        if (s->step < 6) {
+            disp_edit_spr(s, e);
+        } else if (s->step == 6 || s->step >= 10) {
+            Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
+            flfntSetSize(0x14, 0x14);
+            font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+        }
+    }
+    switch (s->step) {
+    case 0:
+        if (B8(s, 9) >= 4) {
+            rt_log_standin("G Edit_task: MH1 hunter carry-over screen (select 0x546A40)");
+        }
+        break;
+    case 3:
+        disp_edinfo_g(e);
+        break;
+    case 4:
+        if (e[2] == 4) {
+            disp_color(e);
+        }
+        if (e[2] == 0) {
+            SoftKeyboard_pos_set(0x150, 22.0f);
+            DispSoftkeyboard(system_w.x31);
+        }
+        break;
+    case 5:
+        disp_check(e, 0);
+        break;
+    case 7:
+    case 8:
+    case 9:
+        disp_mc(e, 1);
+        break;
+    case 10:
+    case 11:
+        Sel_menu_disp(e[0x46] ? 8 : 4);
+        disp_check(e, 3);
+        break;
+    }
+}
+
+void Edit_task(STASK *t) {
+    EDIT_W *e = &edit_w;
+    u8 *eb = (u8 *)&edit_w;
+    u8 *sw = (u8 *)&system_w;
+    u16 btn;
+    s16 i, n;
+    PLW *pl;
+    u8 prev;
+    u8 r;
+
+    e->x3E = 0;
+    btn = PSWV(2) | PSWV(12);
+    if (PSWV(1) == PSWV(0)) {
+        e->x40++;
+        if (e->x40 > 0xA) {
+            e->x40 = 0xA;
+            e->x3E = PSWV(0);
+        }
+    } else {
+        e->x40 = 0;
+    }
+    e->x3E = e->x3E | PSWV(2);
+    if (e->x3D != 0) {
+        e->x3D--;
+    }
+    if ((s8)eb[0x43] != 0) {
+        eb[0x43]--;
+    }
+    SetTrnslMode(4, 5);
+    switch (t->step) {
+    case 0:     /* load, then the card check for an MH1 hunter to carry over */
+        switch (B8(t, 9)) {
+        case 0:
+            B8(t, 9)++;
+            all_reset();
+            load_texlist(PIT_TEX[0], 2, 0);
+            fade_reset();
+            char_make_init();
+            View_init();
+            CameraInit();
+            CameraWorkInit();
+            *(void **)(demo_prim + 0x18) = t;
+            *(void **)(demo_prim + 0x14) = (void *)edit_trans;
+            Disp_NowLoading2(0);
+            return;
+        case 1:
+            if (edit_se_load(t) != 0) {
+                B8(t, 9)++;
+                fade_set(2);
+                goto common;
+            }
+            Disp_NowLoading2(0);
+            return;
+        case 2:
+            if (Fade_busy_ck() != 1) {
+                B8(t, 9)++;
+                McOperationSet(0xB);
+            }
+            goto common;
+        case 3:
+            r = McCardOperation();
+            if (r == 0) {
+                goto common;
+            }
+            /* r == 2: no MH1 hunter on the card, straight to the new hunter. Otherwise G offers to carry
+             * one over (substeps 4-14: messages, pick, confirm, McOperationSet 0xC / 0xD); not ported:
+             * the PC's McCardOperation has no G ops 0xB-0xD yet, so it always takes the new-hunter path. */
+            if (r != 2) {
+                rt_log_standin("G Edit_task: MH1 hunter carry-over (McOperationSet 0xB-0xD) skipped");
+            }
+            t->step++;
+            goto common;
+        default:
+            t->step++;
+            goto common;
+        }
+    case 1:     /* the new hunter's preview (MH1 step 0) */
+        game_w.stage = 0x11;
+        light_init(game_w.stage);
+        stage_w_init();
+        sw[0x35] = 1;
+        load_pit();
+        com_motion_load(2);
+        edit_create_model();
+        sw[0x35] = 0;
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            edit_pl_init_new(pl, 0, i);
+            pl->x01 = 1;
+            if (i == 1) {
+                pl->work011 = 1;
+                pl_chr_set2(pl, 0x32B, 0, 0);
+            } else {
+                pl->work011 = 0;
+                pl_chr_set2(pl, 1, 0, 0);
+            }
+        }
+        sw[0x35] = 0;
+        ed_view_set(player_work, 0, 0);
+        B32(lpView, 0x2C) = 0x3F5F66F4;
+        B32(lpView, 0x34) = 0;
+        se_req_bgm_vol(1, 0, 0);
+        se_req_bgm_vol(1, 1, 0);
+        t->step++;
+        goto common;
+    case 2:
+        t->step++;
+        goto common;
+    case 3:     /* the menu (MH1 step 2) */
+        roll_move_g();
+        prev = e->x0[2];
+        if (Psw[2] & 0x20) {
+            switch (prev) {
+            case 0:
+                SoftKeyboard_set(3, 0xF, 8, e->name);   /* G: func_00220F40 (also a keyboard mode call) */
+                /* fall through */
+            case 4:
+                t->step++;
+                ed_decide_se();
+                break;
+            case 5:
+                if (e->x3D == 0) {
+                    e->x3D = 0xF;
+                    se_req(6, e->x3C + 1 + e->x0[4] * 6, e->x0[6]);
+                    e->x3C++;
+                    if (e->x3C >= 5) {
+                        e->x3C = 0;
+                    }
+                }
+                break;
+            case 6:
+                ed_decide_se();
+                t->step = 5;
+                e->x0[3] = 1;
+                break;
+            }
+        } else if (Psw[2] & 0x40) {
+            cancel_se();
+            t->step = 0xA;
+            e->x0[3] = 1;
+            goto common;
+        } else {
+            if (Psw[2] & 0x2000) {
+                e->x0[2] = prev == 0 ? 6 : prev - 1;
+                cursor_se();
+            }
+            if (Psw[2] & 0x1000) {
+                e->x0[2] = e->x0[2] >= 6 ? 0 : e->x0[2] + 1;
+                cursor_se();
+            }
+            param_change_00536280((u8 *)e);
+        }
+        if (e->x0[2] != prev) {
+            ed_view_set(player_work, view_type[e->x0[2]], 1);
+        }
+        goto common;
+    case 4:     /* name / colour (MH1 step 3) */
+        roll_move_g();
+        switch (e->x0[2]) {
+        case 0:
+            if (SoftKeyboard_move(e->name, Psw[0], Psw[2]) != 0) {
+                t->step = 3;
+                SoftKeyboard_exit();
+            }
+            break;
+        case 4:
+            if (Psw[2] & 0x40) {
+                ed_cancel_se();
+                t->step = 3;
+            } else {
+                ed_color_sel(e, player_work, btn);
+                B32(&player_work[1], 0x5FC) = e->col;
+            }
+            break;
+        }
+        goto common;
+    case 5:     /* confirm (MH1 step 4) */
+        roll_move_g();
+        if (name_str_check((u8 *)e) == 0 || NG_name_chk((u8 *)e->name) == 0) {
+            if (Psw[2] & 0x60) {
+                t->step = 3;
+                ed_cancel_se();
+            }
+        } else if ((Psw[2] & 0x20) && e->x0[3] == 0) {
+            ed_decide_se2();
+            e->x0[1] = 0;
+            t->step++;
+            McOperationSet(3);
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
+            t->step = 3;
+            ed_cancel_se();
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
+        }
+        goto common;
+    case 6:     /* save (MH1 step 5) */
+        roll_move_g();
+        r = McCardOperation();
+        if (r != 0) {
+            if (r == 2) {
+                e->x3B = 0;
+                se_req(7, 0x2E, 0);
+            } else {
+                e->x3B = 1;
+            }
+            user_data_copy((void *)e, 0xFF);
+            t->step++;
+            select_w.xB6 = e->x0[1];
+            e->x38 = 0;
+            ed_view_set(player_work, 2, 1);
+            for (i = 0; i < 2; i++) {
+                player_work[i].ang[1] = 0;
+                decide_chr_set(&player_work[i], e->x0[4], e->x0[6]);
+            }
+            se_req_bgm_vol(1, 2, 0);
+            se_req_bgm_vol(1, 3, 0);
+        }
+        goto common;
+    case 7:
+        if (++e->x38 >= 0x3C) {
+            t->step++;
+            fade_set(5);
+        }
+        goto common;
+    case 8:
+        if (Fade_busy_ck() != 1) {
+            t->step++;
+            e->x38 = 4;
+        }
+        goto common;
+    case 9:
+        if (--e->x38 == 0) {
+            Tsk_Exit(t);
+            sw[0x10] = 0;
+            sw[0x03] = 1;
+            sw[0x02] = 0;
+            sw[0x05] = 0;
+            sw[0x43] = 0;
+            sw[0x44] = 0;
+            sw[0x45] = 0;
+            Tsk_Execute(Game_task, 5);
+            fade_set(2);
+            return;
+        }
+        goto common;
+    case 0xA:   /* quit? (MH1 step 9) */
+        roll_move_g();
+        if ((Psw[2] & 0x20) && e->x0[3] == 0) {
+            t->step++;
+            ed_cancel_se();
+            se_req_bgm_vol(1, 2, 0);
+            se_req_bgm_vol(1, 3, 0);
+            fade_set(1);
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
+            t->step = 3;
+            ed_cancel_se();
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
+        }
+        goto common;
+    case 0xB:
+        if (Fade_busy_ck() != 1) {
+            Tsk_Exit(t);
+            Select_Tsk_Execute();
+            fade_set(2);
+            return;
+        }
+        goto common;
+    default:
+    common:
+        if (t->step >= 3 || (t->step == 0 && B8(t, 9) >= 7)) {
+            n = (t->step >= 3 && eb[0x46] == 0) ? 2 : 3;
+            for (i = 0, pl = player_work; i < n; i++, pl++) {
+                if (pl->be_flag) {
+                    pl_timer_calc(pl);
+                    hit_stop_calc(pl);
+                    pl_chr_sub(pl);
+                }
+            }
+        }
+        if (eb[0x46] == 1) {
+            yure_move();
+        }
+        player_mk();
+        light_move();
+        e->x36++;
+        BF(lpView, 0xC) = BF(lpView, 0xC) + (e->eye[0] - BF(lpView, 0xC)) / 10.0f;
+        BF(lpView, 0x10) = BF(lpView, 0x10) + (e->eye[1] - BF(lpView, 0x10)) / 10.0f;
+        BF(lpView, 0x14) = BF(lpView, 0x14) + (e->eye[2] - BF(lpView, 0x14)) / 10.0f;
+        BF(lpView, 0) = BF(lpView, 0) + (e->at[0] - BF(lpView, 0)) / 10.0f;
+        BF(lpView, 4) = BF(lpView, 4) + (e->at[1] - BF(lpView, 4)) / 10.0f;
+        BF(lpView, 8) = BF(lpView, 8) + (e->at[2] - BF(lpView, 8)) / 10.0f;
+        View_move();
+        if (t->step == 9) {
+            return;
+        }
+        if (B8(t, 9) != 0xE) {
+            if (t->step >= 3 || (t->step == 0 && B8(t, 9) >= 7)) {
+                pl = &player_work[(t->step >= 3 && eb[0x46] == 0) ? e->x0[4] : e->x0[1]];
+                if (pl->be_flag) {
+                    BF(BP(pl, 0x564), 8) = pl->pos[0];
+                    BF(BP(pl, 0x564), 0xC) = pl->pos[1];
+                    BF(BP(pl, 0x564), 0x10) = pl->pos[2];
+                    add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+                }
+            }
+            add_prim2(ot0, demo_prim, 0, 0x40);
+        }
+        flSetRenderState(0x6C, 0);
+        Sel_back_disp(0xFF);
+        flSetRenderState(0x6C, 1);
+        trans();
+        return;
+    }
+}
+#endif /* VERSION_MHG */
 
 /* Near-match: controller/continue screen task (steps: 0 init, 1 load, 2 se load, 3 choose
    hunter, 4 confirm, 5-8 fade out). */

@@ -244,13 +244,40 @@ def eval_mh1():
         print("   missed %s" % " ".join("%X=%X" % (a, m1[m].word(a)) for a in fn))
 
 
+def add_hand_names(gsyms):
+    """config/mhg/pc_names.txt: G addresses of MH1 data names that tools/mhg_map.py did not find,
+    found by hand (`module name 0xADDR  # how`): the PC build would otherwise make the name a
+    function stand-in and the game C would read code bytes as data."""
+    path = P("config/mhg/pc_names.txt")
+    if not os.path.exists(path):
+        return
+    n = 0
+    for l in open(path):
+        l = l.split("#", 1)[0].split()
+        if len(l) != 3:
+            continue
+        m, name, a = l[0], l[1], int(l[2], 16)
+        lst = [e for e in gsyms[m] if e[2] != name]
+        k = [i for i, e in enumerate(lst) if e[0] == a]
+        if k:
+            a0, sz, _old, isf = lst[k[0]]
+            lst[k[0]] = (a0, sz, name, isf)
+        else:
+            lst.append((a, 0, name, False))
+        lst.sort()
+        gsyms[m] = lst
+        n += 1
+    print("hand-found G data names: %d (config/mhg/pc_names.txt)" % n)
+
+
 def main():
     if "--eval" in sys.argv:
         eval_mh1()
         return
     G = M.load_g()
     gsyms = {m: read_syms(P("config/mhg/symbols/%s.txt" % m)) for m in G_MODS}
-    add_pc_data(gsyms)
+    add_hand_names(gsyms)       # names only (agent B)
+    add_pc_data(gsyms)          # names with sizes, imported by gen_rt_tables (agent A)
     _names, lists = M.read_split_names()
     m1size = {}
     for m, lst in lists.items():
