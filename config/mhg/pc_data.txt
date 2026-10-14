@@ -1,22 +1,23 @@
 # G data the PC build imports that config/mhg/symbols lacks or sizes wrongly (tools/mhg_pcmeta.py
 # adds these to build/mhg/pc/symbols; tools/gen_rt_tables.py imports every name here, at the size
-# given). Names are the G split's labels (D_XXXXXXXX) until the tables are understood.
+# given). G-only tables get descriptive names, never D_XXXXXXXX: the PC reads the hex in a D_ name as an
+# MH1 address. (A G MWCC build of the same C would need these names placed at G addresses.)
 # Addresses and sizes only (from asm/mhg data labels and the code that reads them); agent A.
 [main]
 quest_w = 0x0032D010; // size:0x290            # G grew it (Quest_init memsets 0x290)
 select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xAC)
-D_002EECF0 = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
+start_area_lists = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
 [sub_main]
-D_004FD8D0 = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to D_00541E40 (Quest_start)
-D_004FDB40 = 0x004FDB40; // size:0x20           # reward-level bonus by random number (Quest_start, quest_w.x14E)
-D_004FDB60 = 0x004FDB60; // size:0xE0           # size distributions (7 x 32 bytes, through D_004FDC40)
-D_004FDC40 = 0x004FDC40; // size:0x20           # pointers to the size distributions
-D_004FDC60 = 0x004FDC60; // size:0x20           # random number -> size distribution
-D_004FDCF0 = 0x004FDCF0; // size:0x220          # quest file (AFS index) lists per quest group 00xxx..20xxx
-D_004FDF10 = 0x004FDF10; // size:0x20           # pointers to the six lists (Quest_start)
-D_00502300 = 0x00502300; // size:0xD0           # em_cmd_init's tables for game_w.x2E 0, 1 (G-only)
-D_005023D0 = 0x005023D0; // size:0xD0           # x2E 2
-D_005024A0 = 0x005024A0; // size:0xD0           # x2E 3
+quest_size_lim_def = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to quest_size_lim (Quest_start)
+quest_bonus_tbl = 0x004FDB40; // size:0x20           # reward-level bonus by random number (Quest_start, quest_w.x14E)
+quest_size_dist_data = 0x004FDB60; // size:0xE0           # size distributions (7 x 32 bytes, through quest_size_dist_tbl)
+quest_size_dist_tbl = 0x004FDC40; // size:0x20           # pointers to the size distributions
+quest_size_dist_sel = 0x004FDC60; // size:0x20           # random number -> size distribution
+quest_file_lists = 0x004FDCF0; // size:0x220          # quest file (AFS index) lists per quest group 00xxx..20xxx
+quest_file_tbl = 0x004FDF10; // size:0x20           # pointers to the six lists (Quest_start)
+em_cmdg0_tbl = 0x00502300; // size:0xD0           # em_cmd_init's tables for game_w.x2E 0, 1 (G-only)
+em_cmdg1_tbl = 0x005023D0; // size:0xD0           # x2E 2
+em_cmdg2_tbl = 0x005024A0; // size:0xD0           # x2E 3
 em_cmd0_tbl = 0x00502570; // size:0xD0          # x2E 4 (G has 52 monster kinds: 0xD0 per table)
 em_cmd1_tbl = 0x00502640; // size:0xD0
 em_cmd2_tbl = 0x00502710; // size:0xD0
@@ -25,12 +26,12 @@ em_cmd4_tbl = 0x005028B0; // size:0xD0
 em_cmd5_tbl = 0x00502980; // size:0xD0
 em_cmd6_tbl = 0x00502A50; // size:0xD0          # x2E 10
 sun_pos_tbl = 0x005243E0; // size:0x170 noimport # per stage (G 92 stages): G's stage_set_set copies it into stage_work+0xC8 (sub_main 0x4A0E50)
-D_00526000 = 0x00526000; // size:0x70           # {event flag, ?, quest} training quests whose sizes need the flag (sub_main_func_004F3B00)
-D_00541E30 = 0x00541E30; // size:0x10           # the host's 15 random bytes (online)
-D_00541E40 = 0x00541E40; // size:0xA            # size limits in use (Quest_start copies D_004FD8D0)
+quest_size_flag_tbl = 0x00526000; // size:0x70           # {event flag, ?, quest} training quests whose sizes need the flag (sub_main_func_004F3B00)
+quest_rnd_host = 0x00541E30; // size:0x10           # the host's 15 random bytes (online)
+quest_size_lim = 0x00541E40; // size:0xA            # size limits in use (Quest_start copies quest_size_lim_def)
 [game]
-D_006D5C80 = 0x006D5C80; // size:0x180          # start-area weight lists (D_002EECF0 points here)
-D_6D5E00 = 0x006D5E00; // size:0x30             # per mission map (MISSION2+0x14): pointer lists into D_002EECF0
+start_area_weights = 0x006D5D60; // size:0xA0           # start-area weight lists (start_area_lists points here)
+start_area_tbl = 0x006D5E00; // size:0x30             # per mission map (MISSION2+0x14): pointer lists into start_area_lists
 
 # Tables indexed by monster kind: MH1 has 35 kinds, G 52 (sizes from MH1's x 52/35, where G's next
 # label leaves room; tools/mhg_pcmeta.py otherwise keeps MH1's size)
@@ -82,7 +83,7 @@ fish_type_tbl = 0x0067E510; // size:0x70        # 2 x 14 lists (G fish_type_set:
 em_body_tbl = 0x00672ED0; // size:0xD0          # (hit_calc_shl, body_hit_sub_new: aligned lui/lo in the edited twins)
 em_hit_push_tbl = 0x00673150; // size:0xD0
 em_pos_tbl = 0x00673D70; // size:0xD0           # (em_status_init)
-em_hagi_type_tbl = 0x006D5D50; // size:0xD0     # (Em_hagi_point_set; MH1 kept it in main)
+em_hagi_type_tbl = 0x006D5D50; // size:0x10     # G: 4 pointers (quest rank, mission header 0x42) to per-kind carve tables (Em_hagi_point_set 0x4B7250)
 Item_get_tbl = 0x006D4350; // size:0x3A0        # (Stage_item_probability_get; agent C found it too)
 em01_runaway_timer_tbl = 0x00694660; // size:0xA0
 em12_scale_tbl = 0x0069D540; // size:0x2C
@@ -95,8 +96,12 @@ st56_pos_tbl = 0x0069D710; // size:0x78
 [sub_main]
 enemy_name = 0x00527A40; // size:0xD0           # (quest_condition_print, disp_monster_list)
 [sub_main]
-D_00520930 = 0x00520930; // size:0x18           # stages per map (game_w.x2E), u16 (sub_main_func_004A1970)
-D_00520948 = 0x00520948; // size:0xB8           # the maps' stage lists (u16)
-D_00520A00 = 0x00520A00; // size:0x30           # pointers to them
+map_stage_num = 0x00520930; // size:0x18           # stages per map (game_w.x2E), u16 (sub_main_func_004A1970)
+map_stage_lists = 0x00520948; // size:0xB8           # the maps' stage lists (u16)
+map_stage_tbl = 0x00520A00; // size:0x30           # pointers to them
 [sub_main]
-D_004FEE90 = 0x004FEE90; // size:0xD0           # per monster kind: pointer to its data, byte 0 = species (em command 0x2C)
+em_species_tbl = 0x004FEE90; // size:0xD0           # per monster kind: pointer to its data, byte 0 = species (em command 0x2C)
+[game]
+shell00_body_tbl = 0x006C7CD0; // size:0x30     # 12 entries (MH1 9): G shell00_i (0x669260) reads it
+[sub_main]
+em_meat_tbl = 0x00509410; // size:0xD0          # G: per kind a list of hit-zone tables by monster state (G hit_hit_sub_em)

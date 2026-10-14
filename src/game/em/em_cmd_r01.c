@@ -149,8 +149,8 @@ void em_cmd_init(EMW *em) {
 #ifdef VERSION_MHG
     {   /* G (game.bin 0x584580): ten difficulty levels (game_w.x2E 0-10; 0 and 1 share), three below
          * MH1's; tables of 52 kinds. Written for the PC (agent A), not byte-checked. */
-        extern u8 ***D_00502300[], ***D_005023D0[], ***D_005024A0[];
-        static u8 ****const tbl[11] = { D_00502300, D_00502300, D_005023D0, D_005024A0, em_cmd0_tbl,
+        extern u8 ***em_cmdg0_tbl[], ***em_cmdg1_tbl[], ***em_cmdg2_tbl[];
+        static u8 ****const tbl[11] = { em_cmdg0_tbl, em_cmdg0_tbl, em_cmdg1_tbl, em_cmdg2_tbl, em_cmd0_tbl,
                                       em_cmd1_tbl, em_cmd2_tbl, em_cmd3_tbl, em_cmd4_tbl, em_cmd5_tbl, em_cmd6_tbl };
         if (game_w.x2E < 11)
             em->cmd_tbl = tbl[game_w.x2E][em->kind];

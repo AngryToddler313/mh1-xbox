@@ -173,16 +173,16 @@ void Quest_net_sub(void);
 #ifdef VERSION_MHG
 /* G (sub_main 0x4B3AA0): quest numbers are u16 in groups (00xxx village, 01xxx-03xxx, 10xxx
  * training, 20xxx; 50000 and up are not on the disc); mission files mNNNNN.mib through the
- * per-group AFS index lists D_004FDF10; a 0x48-byte mission header (bytes 0x40-0x47 new: base
+ * per-group AFS index lists quest_file_tbl; a 0x48-byte mission header (bytes 0x40-0x47 new: base
  * size 0x40, start-area set 0x43, size class 0x44, 0x45-0x47); the quest's own random numbers
  * (quest_w.rnd, sub_main_func_004B5480) for the start area, the reward level bonus and the
  * monsters' sizes. Written from the asm for the PC (agent A, 14 Oct 2026); not byte-checked. */
 typedef struct QSIZE_LIM { u8 b[10]; } QSIZE_LIM;
-extern QSIZE_LIM D_004FD8D0;    /* {min, max} percent per size class (5) */
-extern QSIZE_LIM D_00541E40;    /* the limits in use (the host's online) */
-extern u8 D_00541E30[15];       /* the host's random bytes (online) */
-extern s8 D_004FDB40[32];       /* reward-level bonus by random number */
-extern s16 *D_004FDF10[];       /* AFS index of each quest file, per group */
+extern QSIZE_LIM quest_size_lim_def;    /* {min, max} percent per size class (5) */
+extern QSIZE_LIM quest_size_lim;    /* the limits in use (the host's online) */
+extern u8 quest_rnd_host[15];       /* the host's random bytes (online) */
+extern s8 quest_bonus_tbl[32];       /* reward-level bonus by random number */
+extern s16 *quest_file_tbl[];       /* AFS index of each quest file, per group */
 extern s32 quest_data_tbl[];
 int func_66E180();              /* Tutorial_quest_ck (game.bin 0x66E180) */
 int ran_suu();
@@ -206,10 +206,10 @@ void Quest_start(void)
         for (i = 0; i < 15; i++) {
             quest_w.rnd[i] = ran_suu(0);
         }
-        D_00541E40 = D_004FD8D0;
+        quest_size_lim = quest_size_lim_def;
     } else {
         for (i = 0; i < 15; i++) {
-            quest_w.rnd[i] = D_00541E30[i];
+            quest_w.rnd[i] = quest_rnd_host[i];
         }
     }
     sub_main_func_004B52E0();
@@ -288,7 +288,7 @@ void Quest_start(void)
             } else {
                 i = 5;
             }
-            load_file_mdl(mission_area, D_004FDF10[i][no % 1000]);
+            load_file_mdl(mission_area, quest_file_tbl[i][no % 1000]);
         }
         m = (MISSION *)mission_area;
         quest_w.x64 = m;
@@ -316,7 +316,7 @@ void Quest_start(void)
         quest_w.x40 = quest_w.x94->x00;
         quest_w.x14E = m->o[13];
         if (!(quest_w.x40 & 0x4000)) {
-            quest_w.x14E += D_004FDB40[sub_main_func_004B5480() & 0x1F];
+            quest_w.x14E += quest_bonus_tbl[sub_main_func_004B5480() & 0x1F];
         }
         if (quest_w.x14E >= 16) {
             quest_w.x14E = 15;
@@ -480,14 +480,14 @@ void Quest_error_set(void)
 
 #ifdef VERSION_MHG
 /* G (sub_main 0x4B4370): a mission whose header byte 0x43 is set starts each hunter in an
- * area drawn from a weighted list ({weight, stage} pairs, 0xFF ends): D_6D5E00 per mission map
+ * area drawn from a weighted list ({weight, stage} pairs, 0xFF ends): start_area_tbl per mission map
  * (MISSION2+0x14), list number byte 0x43 - 1, drawn with that player's quest random byte. */
-extern u8 **D_6D5E00[];
+extern u8 **start_area_tbl[];
 
 void Quest_pl_stage_init(arg)
 int arg;
 {
-    u8 **lists = D_6D5E00[quest_w.x94->x14];
+    u8 **lists = start_area_tbl[quest_w.x94->x14];
     u8 *tbl;
     u8 *t;
     int sel;
@@ -1473,6 +1473,15 @@ int n;
     u8 kind;
 
     kind = em->kind;
+#ifdef VERSION_MHG      /* G (sub_main 0x4B7250): carve tables per quest rank (mission header 0x42) */
+    h = (u8 *)((HAGI **)em_hagi_type_tbl[MIB8(quest_w.x64, 0x42)])[kind];
+    if (h == 0) {
+        em->x88D = -1;
+    } else {
+    if (kind == 3 && em->type == 1) {
+        h += 0xC;
+    }
+#else
     h = (u8 *)em_hagi_type_tbl[kind];
     if (h == 0) {
         em->x88D = -1;
@@ -1483,6 +1492,7 @@ int n;
     if (kind == 3 && em->type == 1) {
         h += 0x18;
     }
+#endif
     h += n * 0xC;
     sp.rad = *(f32 *)(h + 4);
     sp.id = *(u16 *)h;
@@ -1508,6 +1518,13 @@ u8 *tail;
     STIEM sp;
     u8 *h;
 
+#ifdef VERSION_MHG      /* G (sub_main 0x4B7360): per rank, the tail is record 1 */
+    h = (u8 *)((HAGI **)em_hagi_type_tbl[MIB8(quest_w.x64, 0x42)])[(*(EMW **)(tail + 0x34))->kind];
+    if (h == 0) {
+        return -1;
+    }
+    h += 0xC;
+#else
     h = (u8 *)em_hagi_type_tbl[(*(EMW **)(tail + 0x34))->kind];
     if (h == 0) {
         return -1;
@@ -1516,6 +1533,7 @@ u8 *tail;
     if (quest_w.x14E > 0) {
         h += 0xC;
     }
+#endif
     sp.rad = *(f32 *)(h + 4);
     sp.id = *(u16 *)h;
     sp.cnt = *(u16 *)(h + 2);
@@ -1653,24 +1671,24 @@ static void quest_em_init()
 }
 
 #ifdef VERSION_MHG
-extern u8 *D_004FDC40[];        /* size distributions (32 random slots each) */
-extern u8 D_004FDC60[32];       /* random number -> distribution */
+extern u8 *quest_size_dist_tbl[];        /* size distributions (32 random slots each) */
+extern u8 quest_size_dist_sel[32];       /* random number -> distribution */
 int func_0012D1B0(void);        /* main: a G work byte (0x35F014) != 0 */
 int sub_main_func_004F3B00();   /* 1: the quest's event flag allows random sizes */
 
-/* G (sub_main 0x4B7810): a random size in percent, clamped to the class limits D_00541E40
+/* G (sub_main 0x4B7810): a random size in percent, clamped to the class limits quest_size_lim
  * (mission header byte 0x44) */
 static u16 sub_main_func_004B7810(void)
 {
-    u8 *d = D_004FDC40[D_004FDC60[sub_main_func_004B5480() & 0x1F]];
+    u8 *d = quest_size_dist_tbl[quest_size_dist_sel[sub_main_func_004B5480() & 0x1F]];
     u16 v = d[sub_main_func_004B5480() & 0x1F];
     int c = MIB8(quest_w.x64, 0x44);
 
-    if (v < D_00541E40.b[c * 2]) {
-        v = D_00541E40.b[c * 2];
+    if (v < quest_size_lim.b[c * 2]) {
+        v = quest_size_lim.b[c * 2];
     }
-    if (D_00541E40.b[c * 2 + 1] < v) {
-        v = D_00541E40.b[c * 2 + 1];
+    if (quest_size_lim.b[c * 2 + 1] < v) {
+        v = quest_size_lim.b[c * 2 + 1];
     }
     return v;
 }

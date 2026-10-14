@@ -22,8 +22,8 @@ void em_cmd_init(EMW *em) {
 #ifdef VERSION_MHG
     {   /* G (game.bin 0x584580): ten difficulty levels (game_w.x2E 0-10; 0 and 1 share), three below
          * MH1's; tables of 52 kinds. Written for the PC (agent A), not byte-checked. */
-        extern u8 ***D_00502300[], ***D_005023D0[], ***D_005024A0[];
-        static u8 ****const tbl[11] = { D_00502300, D_00502300, D_005023D0, D_005024A0, em_cmd0_tbl,
+        extern u8 ***em_cmdg0_tbl[], ***em_cmdg1_tbl[], ***em_cmdg2_tbl[];
+        static u8 ****const tbl[11] = { em_cmdg0_tbl, em_cmdg0_tbl, em_cmdg1_tbl, em_cmdg2_tbl, em_cmd0_tbl,
                                       em_cmd1_tbl, em_cmd2_tbl, em_cmd3_tbl, em_cmd4_tbl, em_cmd5_tbl, em_cmd6_tbl };
         if (game_w.x2E < 11)
             em->cmd_tbl = tbl[game_w.x2E][em->kind];
@@ -1534,11 +1534,11 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
 CMD_SEL_FUNC(em_cmd_myemtype_sel, 0x70, u8, u8, em->kind)
 
 /* G-only command handlers, written from game.bin for the PC (agent A, 14 Oct 2026; not byte-checked) */
-extern u8 *D_004FEE90[];        /* per monster kind: its data; byte 0 = species */
+extern u8 *em_species_tbl[];        /* per monster kind: its data; byte 0 = species */
 /* sub_main 0x4C8910 / game 0x54A190: two kinds are the same species */
 static int game_func_0054A190(int a, int b)
 {
-    return *D_004FEE90[(u8)a] == *D_004FEE90[(u8)b];
+    return *em_species_tbl[(u8)a] == *em_species_tbl[(u8)b];
 }
 
 /* 0x2C (game 0x5885E0): select command like em_cmd_myemtype_sel, but an entry matches a monster

@@ -217,7 +217,22 @@ Lb_make_quest_tbl_local, Lb_check_newCommer, lb_basic_master, Lb_npc_mv, lbc_tex
 Lbc_init_network_work, Lbc_set_prim; main: Pit_reset (agent C). lb_set_key_quest_local is missing in G.
 G's Game_task (main 0x239490) is rewritten (offline step 2 = 0x239F60: Local_main every tick, 1 ->
 quest, -1 -> back to the title); the PC's rt_flow/rt_village stand for it.
-Quest path (agent A): Quest_start (sub_main 0x4B3AA0), em_cmd_init / em tables (A has WIP on agent-A).
+Quest path (agent A, 14 Oct 2026): `--quest N` (G numbers: 1 = m00001.mib, 10001 = training ...) loads
+G's mission file and starts the hunt: build/A/g/q1.png (quest 1, forest base camp, hunter, HUD). Done, all
+under VERSION_MHG, written from G's asm for the PC, not byte-checked (they need G's GAME_W layout):
+Quest_start, Quest_pl_stage_init (random start areas), quest_em_init_sub/_sub2 (+ G's quest random
+generator 0x4B52E0/0x4B5480, random monster sizes 0x4B7810/0x4B7920), f_quest.c; Stage_data_get /
+Stage_mv_data_get per map (agent C's hunks + 0x4A1970, qstb02/05.c); Tutorial_quest_ck; em_cmd_init
+(11 levels, 52 kinds); em command interpreter: G's new commands 0x2C (species select), 0x69, 0x70 (the
+old 0x2C), 0x71, 0x99 and their lengths (em_cmd_nm.c); fish_type_set (eft23.c). include/quest.h: G's
+QUEST_W tail (0x290) and QEM+0x30; include/flow.h: select_w quest number at +0xD0.
+G tables for the PC: config/mhg/pc_data.txt (names, G addresses and sizes; G-only D_ tables; kind tables
+grown from 35 to 52 kinds; sun_pos_tbl = 0x5243E0, G's stage_set_set copies it into stage_work+0xC8).
+tools/mhg_pcmeta.py also takes pointer words from the G split (`.word SYMBOL`) and its labels as targets;
+a word pointing into another module must hit a label start (em20's byte code had been rewritten).
+Still open on the quest path: G's EMW field 0x9FC (em command 0x71) has no writer on the PC; the HUD
+draws white boxes (G's HUD textures/slots, see the mem_tex note below); armour tables (Armor_*_Data:
+G 0x519E20 / 0x51B9A0 by vote, row size not checked) and the other missing tables are not imported.
 Main (agent C), blocking CONTINUE: Select_task's menu family is edited in G (csub00 0x1EE8B0, init_mode_sel
 0x1EEAD0, mode_sel 0x1EEC50, mode_sel_end 0x1EF060, mode_sel_exit 0x1EF270, disp_mode_menu 0x1EF420; G's menu
 is NEW GAME / CONTINUE / GALLERY / OPTIONS). NEW GAME happens to work with MH1's C; CONTINUE (with a save on
