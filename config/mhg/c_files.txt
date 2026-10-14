@@ -882,11 +882,13 @@ sub_main 0x004B3660 0x004B36FC main/quest/qstb05
 sub_main 0x004B3780 0x004B3840 main/quest/qstb06
 sub_main 0x004CEA20 0x004CEA30 mhg/main/pl/pl78_sub
 sub_main:rodata 0x00529A50 0x00529A6C main/pl/pl72
-sub_main:rodata 0x00529A30 0x00529A4C main/pl/plx06
 sub_main 0x004CE650 0x004CE6C0 main/pl/pl72
+sub_main:rodata 0x00529A30 0x00529A4C main/pl/plx06
 sub_main 0x004CE5D0 0x004CE648 main/pl/plx06
 sub_main 0x004CCF50 0x004CD030 main/pl/pl73
 sub_main 0x004B3600 0x004B3660 main/quest/qstb01
+sub_main 0x004CDE10 0x004CDEEC main/pl/pl76
+sub_main 0x004EEF40 0x004EEF58 main/pl/pl_master_ck
 main 0x001350E0 0x00135344 main/emw/emw01
 main 0x00135350 0x00135B98 main/emw/emw02
 main 0x00135EF0 0x00136008 main/fl/fms
@@ -895,3 +897,10 @@ main 0x001341D0 0x00134558 main/weapon/weapon3
 main 0x00127AE0 0x00127B4C mhg/main/pl/pl78_main
 main 0x00128110 0x00128560 main/pl/shell_work
 main 0x0020D820 0x0020DBB8 main/sk/cmd04
+main 0x00238C00 0x00238CA4 main/aq/aq07
+main:rodata 0x002EA9F0 0x002EAA1C main/aq/aq07
+main 0x00239360 0x002393AC main/aq/aq08
+main 0x0014B660 0x0014C1A4 main/fl/tx03
+main 0x0011D420 0x0011D580 main/menu/menu25
+main 0x001285A0 0x001285E8 main/pl/shell_work2
+main 0x00128560 0x00128598 main/pl/taru01

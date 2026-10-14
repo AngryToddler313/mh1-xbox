@@ -4,6 +4,7 @@ build/mhg/src/main/net/cng00.c.o .rodata .data
 build/mhg/src/main/net/cpinet16.c.o .rodata .data
 build/mhg/src/main/net/cpinet26.c.o .rodata .data
 build/mhg/src/main/ime/imeu.c.o .rodata .data
+build/mhg/src/main/aq/aq07.c.o .rodata .data
 build/mhg/src/main/pl/plx06.c.o .rodata .data
 build/mhg/src/main/pl/pl72.c.o .rodata .data
 build/mhg/src/main/net/netsyn01.c.o .rodata .data
