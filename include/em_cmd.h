@@ -38,7 +38,12 @@ typedef struct EM_STG_BOX {
     f32 d;              /* 0x14 depth (z) */
 } EM_STG_BOX;
 
+#ifdef VERSION_MHG
+/* G: EMW fields from 0x9C8 on sit 8 bytes lower; offsets in the C stay MH1's */
+#define EM_FIELD(p, T, o) (*(T)((u8 *)(p) + ((o) >= 0x9C8 ? (o) - 8 : (o))))
+#else
 #define EM_FIELD(p, T, o) (*(T)((u8 *)(p) + (o)))
+#endif
 
 /* Condition failed: skip to the matching else (mode 1) or end (mode 2) marker of command
  * CODE, then past it (and past a following end marker). q is the program pointer. */

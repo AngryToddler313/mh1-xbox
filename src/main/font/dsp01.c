@@ -1,5 +1,10 @@
 /* dsp01 - loading screen 0x00162DB0-0x00162E20: Game_clear_ck. Whole file in disp3_nm.c. */
 #include "types.h"
+#ifdef VERSION_MHG
+#define GW_X0D5 0x3E /* G moved x0D5 from 0xD5 */
+#else
+#define GW_X0D5 0xD5
+#endif
 
 extern u8 game_w[];
 extern char *load_msg[2];
@@ -18,7 +23,7 @@ int strlen(const char *);
 
 /* Whether the quest result state (game_w+0xD5) counts as cleared, given kind a. */
 int Game_clear_ck(int a) {
-    switch (game_w[0xD5]) {
+    switch (game_w[GW_X0D5]) {
     case 3:
         if (a == 0) {
             return 1;

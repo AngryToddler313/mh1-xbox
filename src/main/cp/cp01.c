@@ -52,6 +52,7 @@ void flmatMul33(void *, void *, void *);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 f32 cpAng2Rad(s32 a) {
     return 0.0000958738f * (f32)(a & 0xFFFF);
 }
@@ -122,6 +123,8 @@ u16 calc_mat_angY(MAT4 *m) {
 
 /* Builds an orthonormal frame around normal n into m (rows 0, 1, 2 = three axes). `type`
  * picks which world axis is used as the reference to cross with. */
+#endif
+#if !defined(G_PART) || G_PART == 2
 void RotMatVec(f32 *n, MAT4 *m, int type) {
     f32 t[4];
     f32 c[4];
@@ -296,3 +299,4 @@ int PointHitCheckF3(f32 *tri, f32 *p) {
     }
     return v > 0;
 }
+#endif

@@ -56,6 +56,44 @@ void Pl_max_stamina_calc(PLW *pl, int dv) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G: more skills change the drain (skills 0x2B, 0x9B, 0x9E, 0x9F, 0x12, 0xD, 0x17, 0x57; meanings not identified) */
+void Pl_stamina_reduce(PLW *pl) {
+    s16 n;
+    if (Pl_master_ck(pl) != 0) {
+        if ((s16)Stage_env_ck(pl->stg) == 2 && Pl_Skill_ck(pl, 0x2B) == 0 && pl->work91A == 0) {
+            if (Pl_Skill_ck(pl, 0x9B) == 1) {
+                n = 1;
+            } else if (Pl_Skill_ck(pl, 0x9E) == 1) {
+                n = 3;
+            } else if (Pl_Skill_ck(pl, 0x9F) == 1) {
+                n = 4;
+            } else {
+                n = 2;
+            }
+        } else {
+            n = 0;
+        }
+        if (Pl_Skill_ck(pl, 0x12) == 0) {
+            if (Pl_Skill_ck(pl, 0xD) == 0 || (PU16(&game_w, 0x1E) & 1)) {
+                n++;
+            }
+            if (Pl_Skill_ck(pl, 0x17) == 1) {
+                n++;
+            } else if (Pl_Skill_ck(pl, 0x57) == 1 && !(PU16(&game_w, 0x1E) & 1)) {
+                n++;
+            }
+        }
+        if (n > 0) {
+            pl->work8C0 -= n;
+            if (pl->work8C0 <= 0) {
+                pl->work8C0 = 0x2A30;
+                Pl_max_stamina_calc(pl, -0x4B);
+            }
+        }
+    }
+}
+#else
 void Pl_stamina_reduce(PLW *pl) {
     int n;
     if (Pl_master_ck(pl) != 0 && Pl_Skill_ck(pl, 0x12) != 1) {
@@ -76,6 +114,8 @@ void Pl_stamina_reduce(PLW *pl) {
         }
     }
 }
+
+#endif
 
 void Pl_chat_act_req(int act) {
     PLW *p = &player_work[game_w.master];

@@ -5,7 +5,15 @@
 #define S16(p, o)  (*(s16 *)((u8 *)(p) + (o)))
 #define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
 #define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
+#ifdef VERSION_MHG
+#define EMW_SIZE   0xA00
+#define GW_MDL_TMPL 0x90 /* G: model templates sit 8 bytes higher in game_w */
+#define GW_MASTER 0x3A
+#else
 #define EMW_SIZE   0xA10
+#define GW_MDL_TMPL 0x88
+#define GW_MASTER 0xD1
+#endif
 
 typedef struct LPV {            /* camera view (lpView): eye and target, field of view, roll */
     f32 eye[3];                 /* 0x00 */
@@ -66,10 +74,17 @@ typedef struct MDLW {
 } MDLW;
 
 typedef struct GWL {
+#ifdef VERSION_MHG
+    u8 _pad00[GW_MASTER];
+    u8 master;                  /* 0x3A */
+    u8 _pad_3B[GW_MDL_TMPL - GW_MASTER - 1];
+    MDLW *mdl_tmpl[8];          /* 0x90 */
+#else
     u8 _pad00[0x88];
     MDLW *mdl_tmpl[8];          /* 0x88 */
     u8 _pad_a8[0xD1 - 0xA8];
     u8 master;                  /* 0xD1 */
+#endif
 } GWL;
 extern GWL game_w;
 extern u8 mdlw_heap[];
@@ -172,6 +187,9 @@ EWK *pull_enemy_work(void) {
             w->mdl = 0;
             w->x8C3 = game_w.master;
             w->x798 = 1.0f;
+#ifdef VERSION_MHG
+            S16(w, 0x7D4) = 0; /* G: one more field cleared (unknown meaning) */
+#endif
             goto found;
 back:
             return w;
@@ -303,6 +321,9 @@ void senko_init(void) {
     senko_cnt = 0;
 }
 
+#ifdef VERSION_MHG
+void Em_Senko_Ck();
+#endif
 int push_senko(void *p) {
     int i;
 
@@ -311,7 +332,11 @@ int push_senko(void *p) {
     }
     for (i = 0; i < 0x20; i++) {
         if (senko_stack[i] == 0) {
+#ifdef VERSION_MHG
+            Em_Senko_Ck(p); /* MH1's func_539340 has a name in the G symbols */
+#else
             func_539340(p);
+#endif
             senko_stack[i] = p;
             senko_cnt++;
             return 1;

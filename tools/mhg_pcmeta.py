@@ -269,6 +269,9 @@ def add_hand_names(gsyms):
         if len(l) != 3:
             continue
         m, name, a = l[0], l[1], int(l[2], 16)
+        for mm in gsyms:
+            if mm != m:
+                gsyms[mm] = [e for e in gsyms[mm] if e[2] != name]
         lst = [e for e in gsyms[m] if e[2] != name]
         k = [i for i, e in enumerate(lst) if e[0] == a]
         if k:
@@ -282,12 +285,40 @@ def add_hand_names(gsyms):
     print("hand-found G data names: %d (config/mhg/pc_names.txt)" % n)
 
 
+MAP_NAMES = set()
+
+
+def add_map_names(gsyms):
+    """config/mhg/data_map.txt (tools/mhg_datamap.py): G addresses of MH1 data names found from
+    G's code, pointer words, content and layout; high and medium confidence only. An address that
+    already has a name keeps it (the new name is added beside it). The hand list
+    (config/mhg/pc_names.txt) is applied afterwards and wins."""
+    path = P("config/mhg/data_map.txt")
+    if not os.path.exists(path):
+        return
+    have = set(e[2] for m in gsyms for e in gsyms[m])
+    n = 0
+    for l in open(path):
+        l = l.split("#", 1)[0].split()
+        if len(l) < 4 or l[3] not in ("high", "medium") or l[1] in have:
+            continue
+        m, name, a = l[0], l[1], int(l[2], 16)
+        gsyms[m].append((a, 0, name, False))
+        have.add(name)
+        MAP_NAMES.add(name)
+        n += 1
+    for m in gsyms:
+        gsyms[m].sort()
+    print("G data names from tools/mhg_datamap.py: %d (config/mhg/data_map.txt, high/medium)" % n)
+
+
 def main():
     if "--eval" in sys.argv:
         eval_mh1()
         return
     G = M.load_g()
     gsyms = {m: read_syms(P("config/mhg/symbols/%s.txt" % m)) for m in G_MODS}
+    add_map_names(gsyms)
     add_hand_names(gsyms)       # names only (agent B)
     add_pc_data(gsyms)          # names with sizes, imported by gen_rt_tables (agent A)
     _names, lists = M.read_split_names()
@@ -301,8 +332,10 @@ def main():
     for m in G_MODS:
         lst = gsyms[m]
         out = []
+        starts = [e[0] for e in lst]
         for k, (a, sz, n, isf) in enumerate(lst):
-            nxt = lst[k + 1][0] if k + 1 < len(lst) else G[m].end
+            j = bisect.bisect_right(starts, a)
+            nxt = lst[j][0] if j < len(lst) else G[m].end
             if not sz:
                 sz = m1size.get(n, 0)
                 if sz and a + sz > nxt:
@@ -351,7 +384,8 @@ def main():
                 continue
             n_obj += 1
             carried[gm].update(pos)
-            covered[gm].append((ga, ga + gsz))
+            if n not in MAP_NAMES:      # a mapped (not twin-proven) object keeps the scan's words too
+                covered[gm].append((ga, ga + gsz))
     print("data objects with MH1's pointer layout: %d (%d left to the scan: a word is no address)" % (n_obj, n_bad))
     for m in G_MODS:
         cv = sorted(covered[m])

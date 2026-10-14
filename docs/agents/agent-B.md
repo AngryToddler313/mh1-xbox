@@ -1309,3 +1309,22 @@ docs/mhg.md section 5.
   - G's Edit_task is MH1's with a step 0 in front (card check for an MH1 hunter to carry over), so
     every MH1 step number is +1; the jump tables in asm/mhg/select/data give the step layout quickly.
   - G's offline Game_task is rewritten (main 0x239490): the PC's rt_flow/rt_village stand for it.
+
+# G data mapper (13 Oct 2026)
+Assignment: a systematic MH1 -> G data-name mapper instead of the hand list. tools/mhg_datamap.py ->
+config/mhg/data_map.txt (names, G addresses, confidence, methods); mhg_pcmeta.py feeds high/medium into the
+G PC symbol view. 4002 more G data names (of 7000 MH1 data objects mhg_map left); for the PC: stand-ins
+73 -> 50, zero tables 149 -> 111. G run unchanged up to the save, same stop (Local_main). Details and the
+method list: docs/mhg.md section 5 "Data names".
+Lessons:
+- G moved many small MH1 .sdata objects out of gp range: an MH1 `lw x, %gp_rel(yn_tbl)(gp)` is a
+  `lui/lw %lo` in the G twin. Reference matching must accept either form on either side.
+- difflib over opcode tokens lines up edited functions badly around the reference you need. Aligning only
+  the two functions' data-reference sequences (Needleman-Wunsch, refs to already-named objects must agree)
+  is far more robust: one known reference on each side pins the unknown ones between.
+- Many leftovers are not "unknown addresses" but changed tables: the G twin points at a table with a
+  different layout (em01_init's timer table, monster_data). Byte similarity at the candidate tells them apart;
+  those need G code, not a name.
+- The PC build carries the previous build's generated aliases (rt_gen.defsym) into the next one: when a
+  name moves between "table" and "alias", the first build can fail with a duplicate definition; the second
+  build is fine (seen switching data_map.txt off and on).

@@ -386,3 +386,12 @@ obvious workarounds.
   stray stream: the title screen starts no stream of its own.
 - **To revert:** revert the commits "Boot: no forest camp stream under the logos" and "Village: no quest-clear
   music after a won quest".
+
+### G PC: yn_tbl dropped from the hand list config/mhg/pc_names.txt (13 Oct 2026, agent B)
+- **Dropped:** the hand entry `main yn_tbl 0x2EC178` in config/mhg/pc_names.txt.
+- **Now:** tools/mhg_datamap.py finds the same address (medium: the gp load of MH1's mc_yn_ck lines
+  up with G's lui/addiu in the reference sequence of the twin) and writes it to config/mhg/data_map.txt,
+  which tools/mhg_pcmeta.py reads before the hand list. The other three hand entries stay (the tool
+  does not find client_work / filedef_sys, and has no address for mc_sel_tbl).
+- **Why:** one generated source of G data names instead of a hand list that grows per crash.
+- **To revert:** put the line back into config/mhg/pc_names.txt (the hand list wins over data_map.txt).

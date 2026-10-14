@@ -248,19 +248,46 @@ Main (agent C), seen on the way, not blocking:
   no G address: fixed, config/mhg/pc_names.txt.)
 - mc_sel_ck (0x22BD40): G reads its table through the message-table list at 0x2B0B40 (the PC uses
   mc_sel_tbl = 0x2B0780 = entry 7).
-Data names (agent E for the text tables, C/D for the rest): 76 MH1 data objects the PC C reads have no G
-address yet, so the PC build makes them function stand-ins (reading code bytes). Find them as for yn_tbl
-(the G twin of a function that reads it) and add them to config/mhg/pc_names.txt: Friend_data
-Item_preparation_tbl_00 SearchCondition SearchResult armor_shop_tbl category_name_str
-change_character_tbl chatHandleList chatListFlag check_bit_no connect_msg dod_new_reguration_agree_type
-edit_msg em17_rail_add em17_rail_half_add evdemo_03..24 event_demo ex_equip_tbl fight_bgm_tbl
-friend_entry_str game_menu_msg game_menu_msg2 item_box item_ctr item_pre_rate_tbl item_sp item_w_top
-item_work (gone in G) kbd_zen_dat key_quest key_quest_num lbSendInterval lb_guild_str lb_quest_clear
-lb_quest_exp lb_quest_info lb_quest_level_str lb_quest_message lb_set01_msg lb_talk_tbl load_msg
-mix_manual_tbl movie_no my_job_str netDialogMessage omake_str option_max_kind pSceneSubTitle pSceneTitle
-plazaMenuTbl rtcDate shop_armor00_tag shop_armor01_tag shop_process00_tag st64_dir st_sun_rgba_tbl
-st_sun_tb_tbl staff_tbl strButtonHelp text_lobby_msg tl_etc yes_or_no (list: names in
-build/mhg/pctree/build/pc/rt_gen.c's weak stand-ins that are OBJECTs in docs/survey/mh1_symbols.csv).
-sun_pos_tbl (MH1 0x2F7160) has no G name yet either. Besides those, 149 MH1 tables the PC imports have no
-G address and are zero-filled (build/mhg/pctree/build/pc/mhg_tables_missing.txt after a G build:
-monster_data, stage_fog_tbl, Skill_name, em*_timer_tbl, result_w, ...): the same treatment.
+Data names (13 Oct 2026, agent B: tools/mhg_datamap.py; text tables agent E, the rest C/D): the G PC build now
+takes G addresses of MH1 data names from config/mhg/data_map.txt (generated, high/medium only) before the hand
+list config/mhg/pc_names.txt (which still wins). Result on the same new-game run: data stand-ins (rt_gen.c weak
+functions that are MH1 OBJECTs) 73 -> 50, zero-filled tables (mhg_tables_missing.txt) 149 -> 111, D_/lit_
+names (mhg_auto_missing.txt) 16 -> 13; same pictures and warnings up to the save, same stop in Local_main.
+Left as stand-ins: Friend_data SearchCondition SearchResult category_name_str chatHandleList chatListFlag
+check_bit_no dod_new_reguration_agree_type edit_msg em17_rail_add evdemo_03..24 event_demo ex_equip_tbl
+fight_bgm_tbl item_box item_ctr item_sp item_w_top item_work lb_guild_str lb_quest_clear lb_quest_info
+lb_quest_message lb_set01_msg mix_manual_tbl movie_no netDialogMessage omake_str pSceneSubTitle pSceneTitle
+rtcDate shop_armor00_tag shop_armor01_tag shop_process00_tag st64_dir st_sun_tb_tbl staff_tbl text_lobby_msg
+tl_etc. Left zero-filled (111): build/mhg/pctree/build/pc/mhg_tables_missing.txt after a G build (monster_data,
+enemy_name, St_data, Shell_data, Armor_*_Data, em*_timer_tbl, many lit_ strings of f_chat/menu, ...).
+For most of the rest the tool HAS a candidate but only at low confidence (`low` lines in data_map.txt), and
+often because G changed the table, not because the address is unknown: em01_stay_timer_tbl's twin in G
+em01_init passes a main-data table of a different layout (0x2ECD1C), monster_data's G candidate 0x5278D0 shares
+7% of the bytes. Those need G copies of the code (A: em, C: menus, D: lobby), not a name. The functions that
+read them are often `missing` in mhg_map (staff_disp, em_hp_vital_set2, init_item_work: item_work is gone in G).
+mhg_datamap.py (all standard library, about 30 s):
+- per MH1 data object without a G name, evidence from: `ref` (same instruction in an identical/shape twin,
+  gp and lui/lo on either side, G moved small objects out of .sdata), `refseq` (edited/rewritten twins: the
+  two functions' sequences of data references aligned; references to names G has must land on the same G
+  object, the unplaced ones pair up in order between them), `ptr-in` (MH1 pointer word into the object
+  inside a G-named container), `ptr-out` (the object's own pointer words point at G-named objects/functions:
+  find those G words at the same offsets), `content` (bytes with pointer words masked; strings with their
+  NUL, inside the window the neighbours give), `layout` (same distance between two named neighbours, or one
+  neighbour plus agreeing bytes); `bytes=` on each line is how much of MH1's content G has at the address
+  (< 0.25 makes it low: G changed the table, the MH1 C would misread it; < 0.5 is worth a look).
+- four rounds (what one places anchors the next); one name per G address; confidence high/medium/low.
+- `--eval`: holds out every 8th name mhg_map placed and maps it again: high 99.8% right (1582), medium
+  97.5% (118), low 84% (49). Held-out names are easier than the real leftovers: treat medium as likely, not
+  proven. `-v NAME` prints a name's candidates; `--pc` lists the PC names still missing with their best guess.
+- mhg_pcmeta.py: data_map names are added beside an existing G name at the same address (never rename it);
+  scan pointer words inside a data_map object are kept even where MH1's layout has none (G may have changed it);
+  pointer words 33802 -> 35466. Hand-list entries the tool confirms are dropped (yn_tbl; docs/REVIEW.md).
+- Not fed into config/mhg/symbols (the PS2 G rebuild), only into the PC symbol view.
+After merging main (13 Oct 2026, evening) the G new game had regressed on the PC; fixed on the PC side only
+(`#ifndef __MWERKS__`, the PS2 G build is unchanged, 7 OK):
+- omake.c G mode_sel: `Tsk_Execute(D_546E80)` crashed at tick 708: gen_rt_auto.py reads a D_ name's hex part
+  as an MH1 address. On the PC the G block uses MH1's D_5367F0 / D_5375F0 (mapped to G's Edit_task /
+  Cont_task). Rule for G C that the PC links: never a G address in a D_ name; use the symbol name or MH1's D_.
+- mccomb.c G McCardOperation op 0xB: func_002306C0 (carry-over check) is a PC stand-in that never finishes, so
+  Edit_task waited forever at step 0; the PC answers "no MH1 hunter" (2) and logs a stand-in.
+With both: title -> NEW GAME -> character creation -> save -> Game_task -> stop in Local_main (village), as before.

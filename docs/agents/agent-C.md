@@ -1599,3 +1599,143 @@ all_quests 38/38 (run before the headless change). Not done: apiask_28_OpenDic (
 dictionary data, big), init_set_work/clr_used_heap (host owns the set pool in rt_game.c; swapping to setwork needs
 move_set/trans_set wiring, little player impact). Lesson: a "stand-in" in rt_*.c can hide a matched function that is
 already linked; grep src/main for the name before porting.
+
+## G (VERSION=mhg) round 1: per-version code (13 Oct 2026, agent C, Sonnet)
+
+Tools: `VERSION=mhg python3 tools/check.py FILE.c [-v] [--add MODULE NAME]` now checks against G (names/addresses from
+docs/survey/mhg_map.csv incl. G-only functions as `<module>_func_XXXXXXXX`, images from build/mhg/split, -DVERSION_MHG).
+`python3 tools/mhg_addc.py FILE.c...` registers files whose functions all match (moves MH1 jump-table slots through the
+symbol); new lines go under the HAND marker in config/mhg/c_files.txt, which `tools/mhg_cfiles.py` now keeps when it
+reruns. `tools/mhg_offsets.py game_w` shows how MH1 field offsets of a global moved (votes from same-named twins; few).
+check.py cannot see relocation addends or jump-table slots: always finish with `VERSION=mhg python3 tools/build.py`
+(after header edits: `rm -rf build/mhg/src` first, the build only tracks .c mtimes).
+
+Convention used: small differences are `#ifdef VERSION_MHG` inside the shared file (MH1 text unchanged); a file whose
+functions land in two G modules gets copies under src/mhg/ (pl78_main.c, pl78_sub.c). include/version.h holds shared
+constants (ITEM_ROW).
+
+G facts found (all verified by byte match):
+- Item_data rows are 20 bytes (MH1 16); item ids moved (hold items 0x201..0x207; Nikuyaki item 0x25); quest_w.no is u16.
+- EMW is 0xA00 bytes in G (0xA10); every field from 0x9C8 on sits 8 lower (em.h; EM_FIELD in em_cmd.h applies the shift).
+- game_w: master/x0D2/pl_num/hit_id/x0D5 moved from 0xD1..0xD5 to 0x3A..0x3E; model templates (MH1 0x88) are at 0x90.
+  Other game_w fields not mapped. GAME_W in game.h only has the G block; literal `*(u8 *)0x3F34C3` -> 0x35ED5C etc.
+- G-only `sub_main_func_004A1970(x2E, stage)` remaps a stage number when a quest is loaded (Stage_data_get/Stage_mv_data_get).
+- init_move_work/clr_move_work no longer touch item work; weapon3 player_mk loops over 10 slots.
+- Quest_f_dra_ck: quests 3004..3007. Get_string_pow, Pl_stamina_reduce, Pl_vital_calc_item have extra skills (ids in code).
+
+Matched (G): Nikuyaki_ck, Pl_item_idx_calc, Get_Use_itemnum, Pl_item_erase (+pl66), Pl_item_get_se, Stage_item/unique_data_get,
+Quest_f_dra_ck, Check_hold_item, Pl_hold_item_ck, Pl_vital_calc_item, Shell_type_set, Pl_stamina_reduce, Get_string_pow,
+Sansai_talk_ck, pl_light_ck, em_cmd_mind_move_end, em_cmd_egg_ck/cancel_ck, Get_hit_id, clr_em_work, push_em_work_all, player_mk,
+init_move_work, clr_move_work, Stage_data_get, Stage_mv_data_get, em_work_set, pull_enemy_work, push_senko; plus 40+ whole
+shared files that only needed the header fixes.
+Near-match: Pl_slash_calc (pl_slash.c): logic done, 60/97 insns differ only in saved-register choice (original: up s0, dv s1,
+pl s2, (s16)dv s3; mine: temp s0, up s1, dv s2, pl s3); declaration order and a temp variable did not change it.
+Next candidates (small diffs, see `VERSION=mhg tools/check.py -v`): Quest_init (quest_w layout differs), em_trans_sub (switch),
+UseItemChk (menu-local Item_data extern with [16]), Pl_act_set/Pl_act_set2, CameraInit (camera work 0x5F8 not 0x600).
+
+### G round 1 status (stopped for the owner's pause, 13 Oct 2026)
+- config/mhg/c_files.txt hand section is EMPTY on purpose: the baseline (793 files) is the last state verified 7 OK. The
+  `build.py`-only runs I did after adding files were not trustworthy (they did not relink); a real `VERSION=mhg tools/rebuild.sh`
+  with all my files fails. Found by bisecting sub_main (12 s per step with `tools/rebuild.sh sub_main`): pl67 (-64 bytes of
+  data), pl73 (D_00517720 addend), qstb01 each break the link/bytes alone; main, game (shell01..23 etc., missing data names
+  now in config/mhg/g_names.txt, linked via build.py) and lobby (192 bytes short) also failed, culprits not found yet.
+- The C changes (#ifdef VERSION_MHG, src/mhg/*, headers) are all in the tree and byte-match per check.py. Candidate files to
+  re-register one by one (python3 tools/mhg_addc.py FILE, then rebuild that module with tools/rebuild.sh MODULE):
+    game/em/em08_demo
+    game/em/em15_r07
+    game/em/em15_r08
+    game/em/em15_r09
+    game/em/em15_r19
+    game/em/em15_r23
+    game/em/em15_r24
+    game/em/em15_r25
+    game/em/em17_r32
+    game/em/em20_r33
+    game/em/em_cmd_r06
+    game/em/em_cmd_r10
+    game/em/em_cmd_r11
+    game/em/em_cmd_r15
+    game/em/em_cmd_r22
+    game/em/em_cmd_r92
+    game/em/em_cmd_r94
+    game/shell/shell01
+    game/shell/shell02
+    game/shell/shell05
+    game/shell/shell12
+    game/shell/shell13
+    game/shell/shell15
+    game/shell/shell18
+    game/shell/shell19
+    game/shell/shell20
+    game/shell/shell21
+    game/shell/shell23
+    lobby/b/lb_bz17
+    lobby/f/lb_ge2501
+    main/cam/camg
+    main/cp/cp01
+    main/emw/emt01
+    main/emw/emw01
+    main/emw/emw02
+    main/fl/flpad02
+    main/fl/flvu05
+    main/fl/fm02
+    main/fl/fms
+    main/fl/plfcv01
+    main/hit/hitid01
+    main/pl/pl63
+    main/pl/pl66
+    main/pl/pl67
+    main/pl/pl70
+    main/pl/pl72
+    main/pl/pl73
+    main/pl/pl74
+    main/pl/pl75
+    main/pl/pl77
+    main/pl/pl_itemck
+    main/pl/plx01
+    main/pl/plx02
+    main/pl/plx06
+    main/pl/plx07
+    main/pl/plx11
+    main/pl/shell_work
+    main/quest/qstb01
+    main/quest/qstb02
+    main/quest/qstb03
+    main/quest/qstb05
+    main/quest/qstb06
+    main/sk/cmd04
+    main/sprite/putspr
+    main/weapon/weapon3
+    mhg/main/pl/pl78_main
+    mhg/main/pl/pl78_sub
+- Next: bisect the failing files above (script idea: keep k hand entries, rebuild one module), fix link-level causes
+  (data slots, addends, missing names), re-register; then Pl_slash_calc near-match, Pl_act_set, CameraInit, FishWyvernCameraRequest.
+
+
+### G round 2 (main/sub_main lane)
+- All round-1 candidates are registered except the ones whose G range has g-only gaps (camg, cp01, flpad02, flvu05, fm02, pl67,
+  putspr: every function matches, but the file cannot be one range; split them with an OMAKE_PART-style wrapper, see
+  src/mhg/main/omake/omake_a.c) and netname01 (needs lobby data). Causes of the earlier link failures: jump-table
+  rodata slots not moved (pl72, plx06), game_w / NGW / PitMenu layout (include/game.h, netsyn.h, menu.h MHG blocks:
+  master 0x3A, x0D5 0x3E, shl10/meat/trap 0xFC.., reward_item 0x100; PitMenu base is 0x2FF290 and G has 7 extra bytes
+  after x1B), quest_w+0x154, CNFile.last 0xC83, D_ names (config/mhg/g_names.txt).
+- Tools: greedy re-adder in the session scratch (rebuild one module per candidate file, keep what builds); a file with
+  jump tables needs the `MODULE:rodata` line (the G table address is in the asm: jtbl_xxx).
+- Main menu (Select_task family): G versions in src/main/omake/omake.c under VERSION_MHG: csub00, init_mode_sel (+ new
+  func_001EE9F0, the 3D menu scene), Select_task, mode_sel_end/exit, Sel_back_disp, Sel_menu_disp match; mode_sel
+  (4 instr, register swap in the sel==1 arm of sub 1) and disp_mode_menu (register allocation) are near-matches with the
+  right logic. The file is built in three parts (src/mhg/main/omake/omake_a/b/c.c define OMAKE_PART).
+  G menu: NEW GAME / CONTINUE / GALLERY(sub_main 0x4A9960) / OPTIONS / EXTRA(omake); sel 0/1 -> Game_task, game_menu_msg
+  is D_528538 (3 strings) and game_menu_msg2 D_528550 (pairs).
+- McCardOperation (mccomb.c, G): ops 0xB-0xD = func_002306C0 / func_00230390 / func_00231440, op 0xE = op 1; matches.
+- DispSoftkeyboard: sk_nm.c (the C the PC uses) now has G's field offsets (-1 on the key-entry counts) and the 12-key
+  glyph table loop (D_002A5FE0, D_002BE8B0 added to config/mhg/pc_names.txt); not byte-exact.
+
+### G round 3 (main/sub_main lane)
+- CONTINUE on the PC (hidden G run, new game + save, then tools/pc_scripts/continue.txt): Select_task now reaches Cont_task and the
+  village entry (stops in Local_main, agent D's lane, same as NEW GAME). Fixes: Select_task passed D_546E80 / D_548AC0 (G addresses
+  in D_ names, resolved to data on the PC) to Tsk_Execute: now the real names Edit_task / Cont_task / Demo_task / sub_main_func_004A9960
+  (Demo_task added to config/mhg/g_names.txt); `Tsk_Sleep()` in the CONTINUE arm is `Tsk_Sleep(1)` (the original's a0 is 1; still matches).
+- Seven files with G-only gaps registered as parts (G_PART guards inside the shared source, wrappers in src/mhg/main/*_a/_b/_c.c):
+  camg (a, b, c; quake_sub differs in G: flSin call, left asm), cp01, flpad02, flvu05, fm02 (mflInit left asm: sysmemblock is a different
+  object in G, mhg_map says 0x39FAA0, G uses 0x38FE10), pl67 (Pl_item_cnt_up left asm: G's game_w field is at +0xD0, not +0x80), putspr.

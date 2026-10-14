@@ -35,6 +35,23 @@ CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-Iinclude", "-Ibuild/raw", "-p
 # division by a non-constant); see docs/STATUS.md.
 SECTIONS = {"main": "main", "select": "select.bin", "game": "game.bin",
             "yn": "yn.bin", "lobby": "lobby.bin"}
+# VERSION=mhg: compare against PS2 Monster Hunter G (names/addresses from docs/survey/mhg_map.csv,
+# images from build/mhg/split, C list config/mhg/c_files.txt, -DVERSION_MHG).
+MHG = os.environ.get("VERSION", "mh1") == "mhg"
+if MHG:
+    CFLAGS = CFLAGS + ["-DVERSION_MHG"]
+    SECTIONS = dict(SECTIONS, sub_main="sub_main.bin", nethttp="nethttp.bin")
+MODNAMES = "main|sub_main|select|game|yn|lobby|nethttp" if MHG else "main|select|game|yn|lobby"
+
+
+def mhg_rows():
+    """(module, addr, size, name) of every G function that has an MH1 name (mhg_map.csv + symbol files)"""
+    rows = []
+    for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mhg_map.csv"), encoding="utf-8")):
+        if r["g_addr"] and r["class"] != "missing":
+            name = r["name"] or ("func_%s" if r["g_module"] == "main" else r["g_module"] + "_func_%s") % r["g_addr"][2:].upper().zfill(8)
+            rows.append((r["g_module"], int(r["g_addr"], 16), int(r["g_size"]), name))
+    return rows
 
 R_MIPS_32, R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16, R_MIPS_GPREL16 = 2, 4, 5, 6, 7
 MASKS = {R_MIPS_26: 0x03FFFFFF, R_MIPS_HI16: 0xFFFF, R_MIPS_LO16: 0xFFFF,
@@ -43,7 +60,7 @@ MASKS = {R_MIPS_26: 0x03FFFFFF, R_MIPS_HI16: 0xFFFF, R_MIPS_LO16: 0xFFFF,
 
 def module_image(module):
     """(vram, bytes) of a module as built by setup_split.py."""
-    path = os.path.join(ROOT, "disc/mh1/split/%s.bin" % module)
+    path = os.path.join(ROOT, "build/mhg/split/%s.bin" % module if MHG else "disc/mh1/split/%s.bin" % module)
     data = open(path, "rb").read()
     if module == "main":
         return 0x100000, data
@@ -53,7 +70,7 @@ def module_image(module):
 def matched_ranges():
     """module -> [(start, end)] of the byte-matched C runs registered in config/c_files.txt"""
     out = {}
-    for l in open(os.path.join(ROOT, "config/c_files.txt")):
+    for l in open(os.path.join(ROOT, "config/mhg/c_files.txt" if MHG else "config/c_files.txt")):
         p = l.split()
         if len(p) == 4 and not p[0].startswith('#') and ':' not in p[0]:
             try:
@@ -72,6 +89,10 @@ def prefer_unmatched(cands, mr):
 def original_functions():
     """name -> list of (module, addr, size); names repeat across files."""
     out = {}
+    if MHG:
+        for mod, a, sz, n in mhg_rows():
+            out.setdefault(n, []).append((mod, a, sz))
+        return out
     inv = {v: k for k, v in SECTIONS.items()}
     for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mh1_symbols.csv"),
                                  encoding="utf-8")):
@@ -135,6 +156,10 @@ def read_obj(path):
 
 def func_names_by_addr():
     out = {}
+    if MHG:
+        for mod, a, sz, n in mhg_rows():
+            out.setdefault((mod, a), set()).add(n)
+        return out
     inv = {v: k for k, v in SECTIONS.items()}
     for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mh1_symbols.csv"),
                                  encoding="utf-8")):
@@ -154,6 +179,9 @@ def compare(mine, masks, orig, base, calls=None, names=None, module=None):
         if same and calls and i in calls and names is not None:
             tgt = ((base + i + 4) & 0xF0000000) | ((a & 0x3FFFFFF) << 2)
             want = names.get((module, tgt), set()) | names.get(("main", tgt), set())
+            if MHG:
+                for _m in SECTIONS:
+                    want = want | names.get((_m, tgt), set())
             if calls[i] not in want and re.sub(r'_[0-9A-F]{8}$', '', calls[i]) not in want:
                 same = False
                 note = "   (calls %s, original calls %s)" % (calls[i], "/".join(sorted(want)) or "?")
@@ -182,7 +210,7 @@ def main():
     ap.add_argument("--flags", help="replace -O4,p (e.g. '-O3')")
     args = ap.parse_args()
     if not args.module:
-        mm = re.match(r"(?:.*/)?src/(main|select|game|yn|lobby)/", os.path.abspath(args.cfile).replace(ROOT + "/", ""))
+        mm = re.match(r"(?:.*/)?src/(?:mhg/)?(%s)/" % MODNAMES + "", os.path.abspath(args.cfile).replace(ROOT + "/", ""))
         if mm:
             args.module = mm.group(1)
 
@@ -245,7 +273,7 @@ def main():
             "OK" if ok else "--", name, mod, addr, size,
             "" if ok else "  (%d/%d instructions differ)" % (
                 sum(1 for l in lines if l.startswith(">>")), len(lines))))
-        if not ok and args.v:
+        if args.v and (not ok or os.environ.get("CHK_ALL")):
             print("\n".join("      " + l for l in lines))
 
     if args.add and all_ok and results:
@@ -258,7 +286,7 @@ def main():
         if sum(s for _a, s in orig_in) != covered:
             sys.exit("not adding: the C file does not cover every function in "
                      "0x%08X-0x%08X" % (lo, hi))
-        with open(os.path.join(ROOT, "config/c_files.txt"), "a") as f:
+        with open(os.path.join(ROOT, "config/mhg/c_files.txt" if MHG else "config/c_files.txt"), "a") as f:
             f.write("%s 0x%08X 0x%08X %s\n" % (mod, lo, hi, args.add[1]))
         print("added %s 0x%08X-0x%08X %s to config/c_files.txt" % (mod, lo, hi, args.add[1]))
     sys.exit(0 if all_ok else 1)

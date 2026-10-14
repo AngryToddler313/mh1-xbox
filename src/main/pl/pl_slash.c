@@ -3,6 +3,17 @@
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
+#ifdef VERSION_MHG
+/* G: the three messages are pointer variables (set at run time), not literals */
+extern char *D_00528428, *D_0052842C, *D_00528430;
+#define SLASH_MSG_DOWN D_00528428
+#define SLASH_MSG_UP D_0052842C
+#define SLASH_MSG_MAX D_00528430
+#else
+#define SLASH_MSG_DOWN lit_1805_0035B1B0
+#define SLASH_MSG_UP lit_1806_0035B1D0
+#define SLASH_MSG_MAX lit_1807_0035B1F0
+#endif
 extern char lit_1805_0035B1B0[];
 extern char lit_1806_0035B1D0[];
 extern char lit_1807_0035B1F0[];
@@ -17,6 +28,20 @@ void Pl_slash_calc(PLW *pl, int dv) {
     if (pl->kind == 1 || pl->kind == 5) {
         return;
     }
+#ifdef VERSION_MHG
+    /* G: skills 0x3F / 0x40 halve or double sharpness loss */
+    /* G near-match: logic believed right, 60/97 insns differ only in saved-register choice (original: up s0, dv s1, pl s2, (s16)dv s3) */
+    if ((s16)dv < 0) {
+        if (Pl_Skill_ck(pl, 0x3F) == 1) {
+            dv = (s16)((s16)dv / 2);
+            if (dv == 0) {
+                dv = -1;
+            }
+        } else if (Pl_Skill_ck(pl, 0x40) == 1) {
+            dv = (s16)((s16)dv * 2);
+        }
+    }
+#endif
     pl->work87E = pl->work87E + dv;
     if (pl->work87E <= 0) {
         pl->work87E = 0;
@@ -28,13 +53,13 @@ void Pl_slash_calc(PLW *pl, int dv) {
     lv = Pl_slash_lv_ck(pl);
     if (lv != pl->work887) {
         if (lv < pl->work887) {
-            set01_set2(lit_1805_0035B1B0);
+            set01_set2(SLASH_MSG_DOWN);
         } else {
-            set01_set2(lit_1806_0035B1D0);
+            set01_set2(SLASH_MSG_UP);
         }
         pl->work887 = lv;
     }
     if (up) {
-        set01_set2(lit_1807_0035B1F0);
+        set01_set2(SLASH_MSG_MAX);
     }
 }

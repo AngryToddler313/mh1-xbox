@@ -21,6 +21,7 @@ void flps0004(PUT_F *);
 void flps0008(PUT_2TF *);
 void flps0002(PUT_F *);
 
+#if !defined(G_PART) || G_PART == 1
 void Put_2TF(PUT_2TF *p) {
     PUT_2TF q = *p;
 
@@ -37,6 +38,8 @@ void Put_F(PUT_F *p) {
     flps0004(&q);
 }
 
+#endif
+#if !defined(G_PART) || G_PART == 2
 void Paint_square(int x, int y, int w, int h, u32 col) {
     PUT_F q;
 
@@ -47,4 +50,5 @@ void Paint_square(int x, int y, int w, int h, u32 col) {
     q.y0 = y;
     flps0004(&q);
 }
+#endif
 

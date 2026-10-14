@@ -53,6 +53,7 @@ void flPS2DeleteAllVramList(void);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void flInitPhaseStarted(void) {
     flPs2State.phase = 0;
 }
@@ -65,10 +66,14 @@ void flSetFPS(int fps) {
     flPs2State.fps = fps;
 }
 
+#endif
+#if !defined(G_PART)  /* G: sysmemblock is a different object there (not mapped yet) */
 void mflInit(int base, int size, int align) {
     plmemInit(&sysmemmgr, sysmemblock, 0x3000, base, size, align, 1);
 }
 
+#endif
+#if !defined(G_PART) || G_PART == 2
 void mflRegisterS(int a) {
     plmemRegisterS(&sysmemmgr, a);
 }
@@ -114,3 +119,4 @@ void plmemInit(PLMEM *m, void *blocks, int count, int base, int size, int align,
 void plmemRegister(PLMEM *m, int a) {
     plmemRegisterAlign(m, a, m->align);
 }
+#endif

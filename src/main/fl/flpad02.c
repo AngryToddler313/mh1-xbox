@@ -6,6 +6,7 @@ extern u32 flpad_io_map[];
 double atan2(double, double);
 void tarPADFixedAnalogSelectSwitch(int);
 
+#if !defined(G_PART) || G_PART == 1
 void padconf_setup_depth(u8 *d, u8 depth, u32 mask) {
     int i;
     u32 *m;
@@ -87,6 +88,9 @@ void flupdate_pad_on_cnt(u8 *p) {
     } while (i < 24);
 }
 
+#endif
+#if !defined(G_PART) || G_PART == 2
 void flPADFixedAnalogSelectSwitch(int a) {
     tarPADFixedAnalogSelectSwitch(a);
 }
+#endif
