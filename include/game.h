@@ -62,9 +62,9 @@ typedef struct GAME_W {
     u8 _pad074[0x78 - 0x74];
     s8 x78[4];          /* 0x078 */
     u8 _pad07C[0x80 - 0x7C];
-    u8 x80[4];          /* 0x080 */
-    u8 _pad084[0xB0 - 0x84];
-    struct EFT_MDLW *area_mdlw[9]; /* 0x0B0 (MH1 0x0A8) */
+    u8 _pad080[0xB0 - 0x80];
+    struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0) */
+    u8 x80[4];          /* 0x0D0 (MH1 0x080, Pl_item_cnt_up) */
     u8 _pad0D4[0xEC - 0xD4];
     s16 xCC;            /* 0x0EC (MH1 0x0CC) */
     s16 xCE;            /* 0x0EE (MH1 0x0CE) */

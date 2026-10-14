@@ -946,3 +946,10 @@ main 0x0021D0A0 0x0021D6B4 main/net/connect02
 main:rodata 0x002C3CE0 0x002C3D18 main/net/connect02
 main 0x0021CCE0 0x0021D09C main/net/connect03
 game 0x00553750 0x0055381C main/pl/plx12
+sub_main 0x004CC850 0x004CC870 mhg/main/pl/pl67_b
+main 0x001505F0 0x00150618 mhg/main/fl/fm02_c
+main 0x001DDC50 0x001DDE0C mhg/main/cam/camg_d
+main 0x00111040 0x0011109C mhg/main/cp/cp01_g
+main 0x00151CB0 0x00151CB8 mhg/main/fl/flpad02_g
+main 0x0013E750 0x0013E7CC mhg/main/fl/flvu05_g
+main 0x0012A800 0x0012A984 mhg/main/sprite/putspr_g
