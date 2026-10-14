@@ -167,3 +167,21 @@ IPREP *Item_preparation_get(s16 n) {
     return &Item_preparation_tbl_00[n];
 }
 #endif
+
+#ifdef VERSION_MHG
+/* G 0x10DD20 (no symbol in the split, so its asm sits inside the neighbour): may the hunter use this recipe?
+ * Recipes flagged 1 (or no recipe) need the mixing skill 0xA8 or at least one of item 6 (the combo manual). The PC
+ * build had no-op stand-ins that returned 0 here, so no recipe was offered in the mix menu. */
+s32 Pl_Skill_ck(PLW *, int);
+#if !defined(G_PART) || G_PART == 2
+int func_0010DD20(PLW *pl, IPREP *e) {
+    if (e != 0 && (e->flags & 1) == 0) {
+        return 1;
+    }
+    if (Pl_Skill_ck(pl, 0xA8) == 1) {
+        return 1;
+    }
+    return (s16)Pl_item_num_ck(pl, 6) != 0;
+}
+#endif
+#endif

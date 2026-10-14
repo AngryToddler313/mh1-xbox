@@ -12,6 +12,17 @@ obvious workarounds.
 
 ## Open
 
+### Prototype gunner HUD from the unused cockpit2 mock-up (14 Oct 2026, agent F)
+- **Dropped:** nothing; the HUD_ANCHOR one-liners for disp_pl_vital and disp_item in rt_2d.c became small functions
+  that first ask rt_hud_gun.c (unchanged behaviour with the option off, the default).
+- **Now:** `hud = prototype gunner` (F10 menu / mh1pc.ini / --hud) draws a sword gauge, an ammo wheel and an item wheel
+  from cockpit2.apx for bowgun users (docs/pc.md "Prototype gunner HUD").
+- **Design choices for the owner to judge:** health scale 150 = full blade slot, stamina 150 = full hilt slot; the
+  wheel shows next two / previous two types; baked text, icons and digits blacked out and redrawn with the game's font
+  and icons (crag shot keeps the baked yellow pouch); names in the mock-up's green; tabs and the bottom gauge unused;
+  "Restore display defaults" also sets the HUD back to original; the original bullet row (disp_cannon) is kept.
+- **Revert:** this commit (git log --grep "prototype gunner HUD").
+
 ### G on the PC: EMW in MH1's layout, stage-timer lists expanded (14 Oct 2026, agent A)
 - **Dropped:** the G -8 shift of EMW's tail (include/em.h `_pad960`) and of EM_FIELD (em_cmd.h) in the PC
   build (kept for MWCC); the raw 0xA03/0xA04 reads (hit_nm.c, em_cmd 0x71); pc_data's per-stage imports of

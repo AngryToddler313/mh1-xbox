@@ -166,6 +166,15 @@ static int omake_check();
 int func_001F19C0();
 void select_func_00542B80();
 void func_0012E6E0();
+#ifndef __MWERKS__
+/* PC: G-only helpers of the mode menu (G's own code is in the PS2 build). Without them the PC build had
+ * no-op stand-ins: the menu was never queued for drawing and its textures were never loaded. */
+void TransSet();
+void Disp_button(f32, int, int, int, int);
+void func_0012E6E0(void (*f)(), int layer) { TransSet(f); } /* G: TransSet with a layer byte (GameTrans(n) runs layer n) */
+void func_0010EF50(int file, int base, int type) { load_texlist(file, base, type); } /* G: load file into data_load_ptr + load_texlist(base, type, ptr) */
+void func_0012DD90(f32 s, int a, int b, int c, int d) { Disp_button(s, a, b, c, d); } /* G: Disp_button with a fifth argument (-1) */
+#endif
 void View_move();
 void Select_task(tsk)
 SELT *tsk;
@@ -862,7 +871,9 @@ extern char *main_menu_msg[];
 extern char *D_528538[], *D_528550[];
 extern char *D_002EC668;
 void Disp_button_g();
+#ifdef __MWERKS__
 void func_0012DD90();
+#endif
 int func_001D5970();
 OSTATIC void disp_mode_menu(void)
 {

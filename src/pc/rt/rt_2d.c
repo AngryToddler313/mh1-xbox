@@ -210,11 +210,29 @@ void load_pit(void)
  * function and goes back to the 4:3 centre. The font stacks remember the anchor of each print (rt_font.c). */
 #define HUD_ANCHOR(name, edge) void name(void); void rt_hud_##name(void) { gfx_set_2d_anchor(edge); name(); gfx_set_2d_anchor(GFX_A_CENTER); }
 HUD_ANCHOR(disp_timer, GFX_A_LEFT)
-HUD_ANCHOR(disp_pl_vital, GFX_A_LEFT)
 HUD_ANCHOR(disp_slash_level, GFX_A_LEFT)
 HUD_ANCHOR(disp_others_info, GFX_A_LEFT)
 HUD_ANCHOR(disp_map, GFX_A_RIGHT)
-HUD_ANCHOR(disp_item, GFX_A_RIGHT)
+/* hud = prototype gunner (rt_hud_gun.c): a gunner's vitals and item bar come from the cockpit2 mock-up instead */
+int rt_hud_gun_vital(void);
+int rt_hud_gun_item(void);
+void disp_pl_vital(void);
+void rt_hud_disp_pl_vital(void)
+{
+    gfx_set_2d_anchor(GFX_A_LEFT);
+    if (!rt_hud_gun_vital())
+        disp_pl_vital();
+    gfx_set_2d_anchor(GFX_A_CENTER);
+}
+void disp_item(void);
+void rt_hud_disp_item(void)
+{
+    if (rt_hud_gun_item())
+        return;
+    gfx_set_2d_anchor(GFX_A_RIGHT);
+    disp_item();
+    gfx_set_2d_anchor(GFX_A_CENTER);
+}
 HUD_ANCHOR(disp_item_sub_select_ex, GFX_A_RIGHT)
 /* the village (trans_pit_1_lb / trans_pit_2_lb, and the quest-side trans_pit_2): the talk window and the chat / message lines sit
  * at the left of the frame; src/main/chat/chat_nm.c is compiled with these three renamed (tools/build_pc.sh), so every caller

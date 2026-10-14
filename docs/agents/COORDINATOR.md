@@ -132,7 +132,7 @@ reach it through the network loader (tools/xbox_serve.py on the laptop, port 876
 (build/xbox/logs/). Capture card: find the node with tools' dev.sh logic (MacroSilicon "USB
 Video"), raw yuyv422 1280x720. Pad: RetroKM hub 127.0.0.1:24851 (`goto xbox`, then
 `pad <hex>` taps of ~50 ms; the KVM must have the xbox screen active). The Xbox's DHCP address
-changes (192.168.1.115/116/118 so far); the laptop keeps 192.168.1.166 as a saved second address.
+changes (192.168.1.115/116/118/165 so far; MAC 00:0D:3A:31:08:AB); the laptop keeps 192.168.1.166 as a saved second address.
 
 ## Gameplay clips for the owner
 

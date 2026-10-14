@@ -164,6 +164,7 @@ f32 flSin(f32);
 
 /* trans_stage lives in trans_stage.c (single definition, also used by the PC runtime). */
 
+#if !defined(G_PART)
 void stage_se_move(w)
 STGW *w;
 {
@@ -241,7 +242,9 @@ STGW *w;
         se_req2(7, 0x21, 0, pos, n, 1);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void stage_m(STGW *w)
 {
     STG_ITEM *it;
@@ -326,7 +329,9 @@ void stage_m(STGW *w)
     stage_se_move(w);
     stage_mv_ck();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void move_stage(void)
 {
     STGW *w = &stage_work;
@@ -340,7 +345,9 @@ void move_stage(void)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void trans_stage_sub(a, p)
 int a;
 u8 *p;
@@ -349,3 +356,4 @@ u8 *p;
     clay_attr_set(*(s32 *)(p + 0x88));
     flExecuteClay(*(s32 *)p, 0);
 }
+#endif

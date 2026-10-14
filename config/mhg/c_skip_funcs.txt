@@ -14,3 +14,20 @@ src/main/evdemo/evdemo.c check000 # part evdemo/evdemo_p2 did not link (addend /
 src/main/net/ncmreq01.c Ncm_err_mssage_disp_req # part net/ncmreq01_p1 did not link (addend / data)
 src/main/net/ncmreq01.c Net_disp_net_name_req # part net/ncmreq01_p2 did not link (addend / data)
 src/main/net/netbgm04.c ms_network_bb_regulation # part net/netbgm04_p1 did not link (addend / data)
+src/main/chat/f_chat.c Receive_mess_move # part mhg/main/chat/f_chat_p11 did not link
+src/main/chat/f_chat.c SetMessageHaltFlag # part mhg/main/chat/f_chat_p12 did not link
+src/main/chat/f_chat.c ClearMessageHaltFlag # part mhg/main/chat/f_chat_p12 did not link
+src/main/chat/f_chat.c zen_kigou_suuji_chk # part mhg/main/chat/f_chat_p15 did not link
+src/main/chat/f_chat.c ChatKinsoku_chk # part mhg/main/chat/f_chat_p15 did not link
+src/main/chat/f_chat.c Default_reibun_set # part mhg/main/chat/f_chat_p15 did not link
+src/main/chat/f_chat.c Add_to_Monster_list # part mhg/main/chat/f_chat_p7 did not link
+src/main/chat/f_chat.c Monster_list_chk # part mhg/main/chat/f_chat_p7 did not link
+src/main/chat/f_chat.c Monster_list_num # part mhg/main/chat/f_chat_p7 did not link
+src/main/chat/f_chat.c Monster_list_search # part mhg/main/chat/f_chat_p7 did not link
+src/main/chat/f_chat.c Disp_menu_help # part mhg/main/chat/f_chat_p7 did not link
+src/main/net/f_disp.c disp_spr_tex_set_sub # part mhg/main/net/f_disp_p1 did not link
+src/main/ud/f_ud.c ItemCopy_Pl2Ud # part mhg/main/ud/f_ud_p1 did not link
+src/main/ud/f_ud.c ItemCopy_Ud2Pl # part mhg/main/ud/f_ud_p1 did not link
+src/main/ud/f_ud.c Gold_add # part mhg/main/ud/f_ud_p1 did not link
+src/main/ud/f_ud.c Get_pl_id # part mhg/main/ud/f_ud_p5 did not link
+src/main/ud/f_ud.c Copy_user_id # part mhg/main/ud/f_ud_p5 did not link
