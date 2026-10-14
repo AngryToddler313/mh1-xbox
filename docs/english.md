@@ -432,12 +432,21 @@ This is a sample, not a proof: the table is a good base for review, not final te
 
 ### Result (docs/text_coverage.md has the table by area)
 
-- MH1 JP: 4935 of 8148 strings (60%) with official English: village NPC lines 96%, quest board 91%, tutorial 87%, quests
-  83%, skills 100%, weapons 72%, armour 67%, items only 19% (the US reordered the item ids; 116 of ~600 names and help
-  texts), online / keyboard 0% (US online text is another service), code literals 3%.
-- G: 3865 of 13263 string ids (29%); 7064 are G-only (no MH1 twin: G's added armour / weapon tables 3500, plaza and
-  gathering-hall UI, new quests 696, the new monsters, NPC lines); 2110 have a JP twin but the US has no text for it
-  (unlocated table or untranslated); 224 were edited in G.
+- MH1 JP (round 2, 13 Oct): 6183 of 8148 strings (75%) with official English: village NPC lines 96%, quest board 94%, tutorial
+  89%, quests 83%, skills 100%, items 99% (was 19%), weapons 99% (72%), armour 100% (67%), menus / HUD 71%, village UI 66%,
+  monsters 61%, code literals 9%, memory-card / yes-no dialogs 8%, online / keyboard 0% (US online text is another service).
+  What fixed items / weapons / armour: (1) the ordered row alignment gave up where the US reordered ids; rows left over are now
+  matched anywhere by identical records, then by best similarity (`moved_rows`); (2) the weapon / armour / monster name tables
+  were dropped by the prose length check, which says nothing about tables tied by their own record numbers (`RECORD_ALIGNED`);
+  (3) the item help table has 24 prompt rows before item id 0 (`SLAVE_OFF`) and rows that hold an empty string no longer end the
+  other build's table early; (4) two file-local symbols called `menu_str` shared one key (the 100-byte string table and a
+  28-byte index table): duplicates now get an address suffix, so the 25 menu labels are located (US: sub_main 0x5ADAC0);
+  a neighbour's shift is refined by colour codes (`~Cnn`) when a table gained entries (`ObjMap.refine`); (5) the code pairing now
+  also maps the words of a function that no unique 6-gram covers (shared prologues) on the winning diagonal; (6) a JP string no
+  table paired takes the English of identical Japanese text when all paired uses agree (`propagate_same_text`, 69 strings; this is
+  how the item window's title "Items" is reached: the US code no longer reads that table).
+- G: 4943 of 13263 string ids (37%, was 29%); 6824 are G-only (no MH1 twin), 1252 have a JP twin but no US text, 244 were edited
+  in G. G quests tied to MH1 quests: 128 of 245 (was 71), the new ones by the non-text data (`quest_data_ties`).
 - Left over, by area: see the report. For all G-only text the candidate source is the MHG "English Remix" patch
   (section 2; Amaillo allows reuse). It was **not downloaded or used**.
 
@@ -447,8 +456,8 @@ This is a sample, not a proof: the table is a good base for review, not final te
 --frames 400 --size 640x448` (headless shot, nothing on the owner's screen; shot taken with an earlier build of the table, the final one loads 4935 strings,
 0 bad lines, and still holds that line): the
 pause menu's help line shows the US sentence ("View a list of the items you are currently carrying.") in the unmodified font
-code, inside its box, two lines as the US laid them out. The menu labels themselves (Item / Mix / Records ...) stayed Japanese: `menu_str` (28
-bytes, no code reference) was not located in the US build; the pool-order and layout fallbacks do not reach very small tables.
+code, inside its box, two lines as the US laid them out. The menu labels were Japanese in that first shot; round 2 locates `menu_str` (see Result) and the pause menu now shows Items / Combine /
+Reference / Quest Info / Options, and the item window's title "Items" (shots in build/text/shots/, not committed).
 The item list and the quest-check pages could not be shot reliably (the scripted input timing varies with the frame rate).
 
 ### What G needs on top (checked on the discs; the G PC build was not run with a table)
@@ -461,10 +470,12 @@ The item list and the quest-check pages could not be shot reliably (the scripted
   already counts it as main: `en_mhg.txt` writes `main:0x...` for it. game/lobby/select share 0x542600; yn and nethttp
   0xA06200 (unused by the text layer). rt_data_hosts(main) must be able to answer for sub_main addresses (rt_addr / the
   G meta); not tested.
-- **Quests.** rt_hit.c hooks file indices 1999..2177; G's mNNNNN.mib start at AFS index 2934 and the number in the id is the
-  file name's number. G's header (0x48 bytes) holds the title / goal / failure / client text inline from 0x68 up to the
-  offset in word 0x60 and has no string pointers, so rt_text_quest (JP/US layout: pointers at 0x60..0x6C, text at the end)
-  needs a G variant that rebuilds the text block and moves the offsets after it (header words 4..0x30).
+- **Quests.** rt_hit.c hooks file indices 1999..2177; G's mNNNNN.mib start at AFS index 2934 (files in file-name order) and the
+  number in the id is the file name's number. G's header (0x48 bytes) holds the text strings inline from 0x68 up to the offset
+  in word 0x60, and AT that offset (checked on all 245 files) a table of the strings' file offsets (title, goal, failure,
+  client, ...). So `rt_text_quest_g` (src/pc/rt/rt_text.c) does what rt_text_quest does for MH1: appends the replacement at
+  the end of the file and changes the table entry; nothing shifts. It compiles; it is **not hooked up** (the G PC build does
+  not load quests yet; the hook needs the file-name number of AFS index n, which the PC loader has no table for) and not run.
 - **Boxes.** The US strings carry the line breaks the US designers chose for these boxes, so they are used as they are
   (no `{w=}` wrapping is generated). Text G changed from MH1 (the 224 left out and the near matches) may not fit; the
   `~Cnn` colour codes come from the US string unchanged (the US kept 516 of them) and are not compared with the JP ones.

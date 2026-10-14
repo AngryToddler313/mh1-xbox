@@ -587,23 +587,26 @@ class ObjMap:
             jv, = struct.unpack_from("<I", b, a - base + 4 * k)
             if self.jp_class(sp, jv) == "S":
                 js.append((k, self.sig(self.jp.cstr(self.jp.resolve(jv, sp), jv))))
-        if len(js) < minc:
-            return d
+        if sum(1 for _k, sg in js if sg[0] or sg[1]) < 3:
+            return d                    # too few cells with a colour code / conversion to tell shifts apart
         xb, xbuf = self.o.mod[xs]
 
         def score(dd):
-            ok = 0
+            sc = 0
             for k, sg in js:
                 xo = a + dd + 4 * k - xb
                 if not 0 <= xo <= len(xbuf) - 4:
-                    return -1
+                    return -10 ** 6
                 xv, = struct.unpack_from("<I", xbuf, xo)
                 if self.x_class(xs, xv) != "S":
                     continue
                 xsp = self.o.resolve(xv, xs)
-                if self.sig(self.o.cstr(xsp, xv)) == sg:
-                    ok += 1
-            return ok
+                xg = self.sig(self.o.cstr(xsp, xv))
+                if xg == sg:
+                    sc += 1 if (sg[0] or sg[1]) else 0
+                else:
+                    sc -= 2
+            return sc
         best, bd = score(d), d
         for step in range(-span, span + 1):
             sc = score(d + 4 * step)
@@ -1163,6 +1166,54 @@ def quest_pairs_us(J, U, match):
     return out
 
 
+def quest_sections(d, n):
+    """the file split at its header offset words (JP / US: 13 words from 0x00, G the same): {word index: bytes}"""
+    w = struct.unpack_from("<13I", d, 0)
+    offs = sorted(set(w) | {len(d)})
+    out = {}
+    for k in range(13):
+        nxt = min((x for x in offs if x > w[k]), default=len(d))
+        out[k] = d[w[k]:nxt] if w[k] < len(d) else b""
+    return out
+
+
+def _word_agree(a, b):
+    n = min(len(a), len(b)) // 4
+    if not n:
+        return 0.0
+    wa, wb = struct.unpack_from("<%dI" % n, a, 0), struct.unpack_from("<%dI" % n, b, 0)
+    return sum(1 for x, y in zip(wa, wb) if x == y) / n
+
+
+QUEST_KS = (1, 4, 5, 6, 11, 12)         # sections that keep their size and most words between MH1 and G
+
+
+def quest_data_ties(J, G, thr=0.8, margin=0.1):
+    """{G quest no: JP quest no} by the non-text data: the sections of the file that G only edited (same size,
+    mostly the same words) and the rule words (time limit, reward, ...). Taken only when the best JP quest
+    scores at least `thr` and leads the second by `margin` (on the 71 quests the text tie knows: 40 of 40 agree)."""
+    js = {n: quest_sections(d, n) for n, d in J.items()}
+    gs = {n: quest_sections(d, n) for n, d in G.items()}
+    jw = {n: struct.unpack_from("<24I", d, 0) for n, d in J.items()}
+    gw = {n: struct.unpack_from("<27I", d, 0) for n, d in G.items()}
+
+    def score(n, g):
+        s = 0.0
+        for k in QUEST_KS:
+            if len(js[n][k]) == len(gs[g][k]):
+                s += _word_agree(js[n][k], gs[g][k])
+        s /= len(QUEST_KS)
+        a = jw[n][15:16] + jw[n][16:22]
+        b = gw[g][15:16] + gw[g][18:24]
+        return s + 0.3 * sum(1 for x, y in zip(a, b) if x == y) / 7
+    out = {}
+    for g in G:
+        sc = sorted(((score(n, g), n) for n in J), reverse=True)
+        if len(sc) > 1 and sc[0][0] >= thr and sc[0][0] - sc[1][0] >= margin:
+            out[g] = sc[0][1]
+    return out
+
+
 def quest_pairs_g(J, G):
     """{JP quest key: G quest key} for G quests that share at least two identical fields with exactly one JP quest.
     Returns (pairs, equal) where equal says the field text is identical."""
@@ -1188,6 +1239,14 @@ def quest_pairs_g(J, G):
                     gmatch[g] = n
                     for i, ((oj, bj), (og, bg)) in enumerate(zip(jf[n], f)):
                         pairs.setdefault(("quest", n, oj), []).append((("quest", g, og), bj == bg))
+    # G quests with no identical text: tie by the non-text data (monster, map, reward sections, rule words)
+    for g, n in quest_data_ties(J, G).items():
+        if g in gmatch or n not in jf:
+            continue
+        f = quest_fields_g(G[g])
+        gmatch[g] = n
+        for (oj, bj), (og, bg) in zip(jf[n], f):
+            pairs.setdefault(("quest", n, oj), []).append((("quest", g, og), bj == bg))
     return pairs, gmatch
 
 
@@ -1220,6 +1279,39 @@ def good_english(jb, xb):
     if conv_sig(jb) != conv_sig(xb):
         return False, "format mismatch"
     return True, ""
+
+
+def _norm_jp(b):
+    return b.strip(b" ").replace(b"\x81\x40", b" ").strip(b" ")
+
+
+def propagate_same_text(jp, S, owner, en_jp, minlen=4):
+    """A JP string no table paired (its US table was not located, or the US code no longer uses it) takes the
+    English of the same Japanese text (blanks at the ends ignored) when every paired occurrence of that text has
+    the same English: a menu label shown by two windows, one of which the US build rewired. Strings of the line-split
+    dialogs are left out."""
+    eng = collections.defaultdict(collections.Counter)
+    for jk, xb in en_jp.items():
+        if jk[0] == "quest":
+            continue
+        eng[_norm_jp(jp.cstr(*jk))][xb] += 1
+    n = 0
+    for jk in S:
+        if jk in en_jp or jk[0] == "quest":
+            continue
+        ow = owner.get(jk)
+        if ow and LINESPLIT.match(ow[1]):
+            continue
+        b = jp.cstr(*jk)
+        nb = _norm_jp(b)
+        c = eng.get(nb)
+        if len(nb) < minlen or not c or len(c) != 1:
+            continue
+        xb = next(iter(c))
+        if good_english(b, xb)[0]:
+            en_jp[jk] = xb
+            n += 1
+    return n
 
 
 def key_id(k):
@@ -1397,6 +1489,8 @@ def main():
             nq += 1
         else:
             drop["quest " + why] += 1
+    nprop = propagate_same_text(jp, S, owner, en_jp)
+    log("same Japanese text elsewhere: %d more JP strings" % nprop)
     log("US: %d JP strings with English (%d quest fields); dropped %s; %.0fs" % (len(en_jp), nq, dict(drop), time.time() - t0))
     hdr = ["English text table for MH1 JP, made by tools/text_map.py from your own discs. Do not share.",
            "ids are the Japanese build's (rt_text.c); source: the US disc"]
@@ -1574,9 +1668,11 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
            "or by their Japanese text (G); the item-id arrays follow the Item_data record alignment.",
            "3. **Quest number.** MH1 JP quest files are tied to US files by their non-text data (%d of %d JP quests, %d with an identical "
            "data block; the village quests 131-177 and a few others were rebalanced and are left out). G quests are tied to JP "
-           "quests by identical title/goal/failure/details fields (%d of %d G quests)." % (len(qm), len(Jq), q_exact, len(gqmatch), len(Gq)),
+           "quests by identical title/goal/failure/details fields, else by the non-text data (monster, map and reward sections, rule "
+           "words; %d of %d G quests)." % (len(qm), len(Jq), q_exact, len(gqmatch), len(Gq)),
            "4. **Content anchor (G only).** A JP string at least 12 bytes long whose bytes are identical and unique in JP and in G "
-           "gives its table a shift vote (3211 such anchors); nothing is paired by content alone.",
+           "gives its table a shift vote (3211 such anchors); for G nothing is paired by content alone.",
+           "5. **Same Japanese text (MH1 JP).** A JP string left unpaired (its US table not located, or the US code no longer reads it, e.g. the item list's title) takes the English of identical Japanese text elsewhere when all paired occurrences agree.",
            "",
            "A pair is dropped when its printf conversions differ, when the 'English' is still Japanese, or when it equals the JP bytes.",
            "G strings whose Japanese text changed from MH1 get the English of the old text only if the change is small (text "

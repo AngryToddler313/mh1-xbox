@@ -16,7 +16,6 @@ game:0x6CD160	other tables (lit_222_0068F) [G table]	G only
 game:0x6CD190	other tables (lit_222_0068F) [G table]	G only
 game:0x6CD1B0	tutorial pages	edited in G
 game:0x6CD220	tutorial pages	edited in G
-game:0x6CD260	tutorial pages	twin without US English
 game:0x6CD280	tutorial pages	edited in G
 game:0x6CD730	code literals (game)	G only
 game:0x6CD748	code literals (game)	G only
@@ -1439,7 +1438,6 @@ lobby:0x637C70	online, keyboard, word filter	twin without US English
 lobby:0x637D80	online, keyboard, word filter	twin without US English
 lobby:0x637E68	online, keyboard, word filter	twin without US English
 lobby:0x637E78	online, keyboard, word filter	twin without US English
-lobby:0x637E88	online, keyboard, word filter	twin without US English
 lobby:0x637EB0	online, keyboard, word filter	twin without US English
 lobby:0x638050	online, keyboard, word filter	twin without US English
 lobby:0x638110	online, keyboard, word filter	twin without US English
@@ -1503,6 +1501,7 @@ lobby:0x63ECB8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ECC8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ECD8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ECE8	village / plaza / guild / shop UI [G table]	G only
+lobby:0x63ECF0	village / plaza / guild / shop UI	twin without US English
 lobby:0x63ED00	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED10	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED30	village / plaza / guild / shop UI [G table]	G only
@@ -1626,21 +1625,17 @@ lobby:0x640370	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640390	quest board / quest text tables	edited in G
 lobby:0x6403A8	quest board / quest text tables	edited in G
 lobby:0x6403B8	quest board / quest text tables	edited in G
+lobby:0x640410	village / plaza / guild / shop UI	twin without US English
+lobby:0x640420	village / plaza / guild / shop UI	twin without US English
 lobby:0x640430	village / plaza / guild / shop UI	edited in G
-lobby:0x640478	village / plaza / guild / shop UI	edited in G
-lobby:0x640490	village / plaza / guild / shop UI	twin without US English
-lobby:0x6404B0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6404D0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6404F0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640530	village / plaza / guild / shop UI	edited in G
+lobby:0x640478	village / plaza / guild / shop UI	twin without US English
+lobby:0x640530	village / plaza / guild / shop UI	twin without US English
 lobby:0x640550	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640580	village / plaza / guild / shop UI	twin without US English
 lobby:0x6405A0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6405F0	village / plaza / guild / shop UI	twin without US English
 lobby:0x640610	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640640	village / plaza / guild / shop UI	edited in G
 lobby:0x640660	village / plaza / guild / shop UI	twin without US English
-lobby:0x6406C0	village / plaza / guild / shop UI	twin without US English
 lobby:0x6406E0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640720	village / plaza / guild / shop UI	twin without US English
 lobby:0x640740	village / plaza / guild / shop UI	twin without US English
@@ -1669,6 +1664,29 @@ lobby:0x640D80	code literals (lobby)	G only
 lobby:0x640D90	code literals (lobby)	G only
 lobby:0x640DC0	code literals (lobby)	G only
 lobby:0x640DE0	code literals (lobby)	G only
+lobby:0x640E40	village / plaza / guild / shop UI	twin without US English
+lobby:0x640E50	village / plaza / guild / shop UI	twin without US English
+lobby:0x640E60	village / plaza / guild / shop UI	twin without US English
+lobby:0x640E70	village / plaza / guild / shop UI	twin without US English
+lobby:0x640E80	village / plaza / guild / shop UI	twin without US English
+lobby:0x640EA0	village / plaza / guild / shop UI	twin without US English
+lobby:0x640EB0	village / plaza / guild / shop UI	twin without US English
+lobby:0x640EC0	village / plaza / guild / shop UI	twin without US English
+lobby:0x640EE0	village / plaza / guild / shop UI	twin without US English
+lobby:0x640EF8	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F10	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F30	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F48	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F50	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F58	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F68	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F78	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F88	village / plaza / guild / shop UI	twin without US English
+lobby:0x640F98	village / plaza / guild / shop UI	twin without US English
+lobby:0x640FA8	village / plaza / guild / shop UI	twin without US English
+lobby:0x640FB8	village / plaza / guild / shop UI	twin without US English
+lobby:0x640FC8	village / plaza / guild / shop UI	twin without US English
+lobby:0x640FD8	village / plaza / guild / shop UI	twin without US English
 lobby:0x640FE8	quest board / quest text tables [G table]	G only
 lobby:0x640FF8	quest board / quest text tables [G table]	G only
 lobby:0x641000	quest board / quest text tables [G table]	G only
@@ -1755,6 +1773,7 @@ lobby:0x6425C8	village NPC lines and talk [G table]	G only
 lobby:0x6425E0	village NPC lines and talk [G table]	G only
 lobby:0x642600	village NPC lines and talk [G table]	G only
 lobby:0x642618	village NPC lines and talk [G table]	G only
+lobby:0x642640	village NPC lines and talk	twin without US English
 lobby:0x642668	village NPC lines and talk [G table]	G only
 lobby:0x642680	village NPC lines and talk [G table]	G only
 lobby:0x6426A0	village NPC lines and talk [G table]	G only
@@ -1797,11 +1816,19 @@ lobby:0x642B10	village NPC lines and talk [G table]	G only
 lobby:0x642B20	village NPC lines and talk [G table]	G only
 lobby:0x642B30	village NPC lines and talk [G table]	G only
 lobby:0x642B60	village NPC lines and talk [G table]	G only
+lobby:0x642B70	village / plaza / guild / shop UI	twin without US English
+lobby:0x642B90	village / plaza / guild / shop UI	twin without US English
 lobby:0x642BA8	village NPC lines and talk [G table]	G only
-lobby:0x642BC8	village / plaza / guild / shop UI	edited in G
-lobby:0x642C08	village / plaza / guild / shop UI	edited in G
+lobby:0x642BC8	village / plaza / guild / shop UI	twin without US English
+lobby:0x642BD8	village / plaza / guild / shop UI	twin without US English
+lobby:0x642BE8	village / plaza / guild / shop UI	twin without US English
+lobby:0x642BF8	village / plaza / guild / shop UI	twin without US English
+lobby:0x642C08	village / plaza / guild / shop UI	twin without US English
 lobby:0x642C18	village NPC lines and talk [G table]	G only
-lobby:0x642C38	village NPC lines and talk	edited in G
+lobby:0x642C28	village / plaza / guild / shop UI	twin without US English
+lobby:0x642C38	village NPC lines and talk	twin without US English
+lobby:0x642C48	village / plaza / guild / shop UI	twin without US English
+lobby:0x642C50	village / plaza / guild / shop UI	twin without US English
 lobby:0x642C70	village NPC lines and talk [G table]	G only
 lobby:0x642C80	village NPC lines and talk [G table]	G only
 lobby:0x642C90	village NPC lines and talk [G table]	G only
@@ -2424,7 +2451,6 @@ main:0x2C19E0	online, keyboard, word filter	twin without US English
 main:0x2C1A10	online, keyboard, word filter	twin without US English
 main:0x2C1A50	online, keyboard, word filter	twin without US English
 main:0x2C1A68	online, keyboard, word filter	twin without US English
-main:0x2C1A70	online, keyboard, word filter	twin without US English
 main:0x2C1A80	online, keyboard, word filter	twin without US English
 main:0x2C1AB0	online, keyboard, word filter	twin without US English
 main:0x2C1AE0	online, keyboard, word filter	twin without US English
@@ -2579,14 +2605,12 @@ main:0x2C3280	online, keyboard, word filter [G table]	G only
 main:0x2C32B0	other tables (menu00_str_tbl)	twin without US English
 main:0x2C32D0	other tables (menu00_str_tbl)	twin without US English
 main:0x2C32E8	other tables (menu00_str_tbl)	twin without US English
-main:0x2C3300	other tables (menu01_str_tbl)	twin without US English
 main:0x2C3320	other tables (menu01_str_tbl)	twin without US English
 main:0x2C3338	other tables (menu02_str_tbl)	twin without US English
 main:0x2C3350	other tables (menu02_str_tbl)	twin without US English
 main:0x2C3370	other tables (menu02_str_tbl)	twin without US English
 main:0x2C3390	other tables (menu02_str_tbl)	twin without US English
 main:0x2C33A8	other tables (menu06_str_tbl)	twin without US English
-main:0x2C33B0	other tables (menu04_str_tbl)	twin without US English
 main:0x2C33B8	other tables (menu04_str_tbl)	twin without US English
 main:0x2C33C0	other tables (menu05_str_tbl)	twin without US English
 main:0x2C33D0	other tables (menu05_str_tbl)	twin without US English
@@ -2595,7 +2619,6 @@ main:0x2C33E8	other tables (menu08_str_tbl)	twin without US English
 main:0x2C33F8	other tables (menu08_str_tbl)	twin without US English
 main:0x2C3410	other tables (menu08_str_tbl)	twin without US English
 main:0x2C3430	other tables (menu09_str_tbl)	twin without US English
-main:0x2C3438	other tables (menu09_str_tbl)	twin without US English
 main:0x2C3440	other tables (menu0a_str_tbl)	twin without US English
 main:0x2C3460	other tables (menu0a_str_tbl)	twin without US English
 main:0x2C3480	memory card and yes/no dialogs	twin without US English
@@ -5436,7 +5459,6 @@ main:0x2EA910	other tables (zen_num)	twin without US English
 main:0x2EA990	other tables (zen_num) [G table]	G only
 main:0x2EA9A8	other tables (zen_num) [G table]	G only
 main:0x2EC6A8	memory card and yes/no dialogs [G table]	G only
-main:0x2EEB10	tutorial pages	twin without US English
 main:0x2EEE58	other tables (lit_329_00661C) [G table]	G only
 main:0x2EEE60	other tables (lit_329_00661C) [G table]	G only
 main:0x2EEF20	village NPC lines and talk [G table]	G only
@@ -5471,201 +5493,41 @@ main:0x2EF008	village NPC lines and talk [G table]	G only
 main:0x2EF010	village NPC lines and talk [G table]	G only
 main:0x2EF018	village NPC lines and talk [G table]	G only
 main:0x2EF020	village NPC lines and talk [G table]	G only
-main:0x2EF0A0	online, keyboard, word filter	twin without US English
 main:0x2EF0A8	online, keyboard, word filter	twin without US English
-main:0x2EF0B0	online, keyboard, word filter	twin without US English
 main:0x2EF0B8	online, keyboard, word filter [G table]	G only
 main:0x2EF0C0	online, keyboard, word filter [G table]	G only
 main:0x2EF0C8	online, keyboard, word filter [G table]	G only
 main:0x2EF0E8	code literals (main)	G only
-quest:1:0x68	quests	G only
-quest:1:0x77	quests	G only
-quest:1:0x8E	quests	G only
-quest:1:0xA6	quests	G only
-quest:3:0x68	quests	G only
-quest:3:0x7F	quests	G only
-quest:3:0x90	quests	G only
-quest:3:0xA8	quests	G only
-quest:4:0x68	quests	G only
-quest:4:0x7F	quests	G only
-quest:4:0x92	quests	G only
-quest:4:0xAA	quests	G only
-quest:5:0x68	quests	G only
-quest:5:0x81	quests	G only
-quest:5:0x90	quests	G only
-quest:5:0xA8	quests	G only
-quest:6:0x68	quests	G only
-quest:6:0x7B	quests	G only
-quest:6:0x90	quests	G only
-quest:6:0xA8	quests	G only
-quest:7:0x68	quests	G only
-quest:7:0x7B	quests	G only
-quest:7:0x92	quests	G only
-quest:7:0xAA	quests	G only
-quest:8:0x68	quests	G only
-quest:8:0x77	quests	G only
-quest:8:0x8A	quests	G only
-quest:8:0xA2	quests	G only
-quest:9:0x68	quests	G only
-quest:9:0x7B	quests	G only
-quest:9:0x8C	quests	G only
-quest:9:0xA4	quests	G only
-quest:10:0x68	quests	G only
-quest:10:0x7F	quests	G only
-quest:10:0x90	quests	G only
-quest:10:0xA8	quests	G only
-quest:11:0x68	quests	G only
-quest:11:0x79	quests	G only
-quest:11:0x90	quests	G only
-quest:11:0xA8	quests	G only
 quest:12:0x68	quests	G only
 quest:12:0x77	quests	G only
 quest:12:0x88	quests	G only
 quest:12:0xA0	quests	G only
-quest:13:0x68	quests	G only
-quest:13:0x7D	quests	G only
-quest:13:0x90	quests	G only
-quest:13:0xA8	quests	G only
-quest:14:0x68	quests	G only
-quest:14:0x7B	quests	G only
-quest:14:0x90	quests	G only
-quest:14:0xA8	quests	G only
 quest:16:0x68	quests	G only
 quest:16:0x7F	quests	G only
 quest:16:0x94	quests	G only
 quest:16:0xAC	quests	G only
-quest:17:0x68	quests	G only
-quest:17:0x7F	quests	G only
-quest:17:0x92	quests	G only
-quest:17:0xAA	quests	G only
-quest:18:0x68	quests	G only
-quest:18:0x7D	quests	G only
-quest:18:0x90	quests	G only
-quest:18:0xA8	quests	G only
-quest:19:0x68	quests	G only
-quest:19:0x75	quests	G only
-quest:19:0x8E	quests	G only
-quest:19:0xA6	quests	G only
-quest:21:0x68	quests	G only
-quest:21:0x7B	quests	G only
-quest:21:0x8C	quests	G only
-quest:21:0xA4	quests	G only
+quest:19:0x68	quests	edited in G
 quest:22:0x68	quests	G only
 quest:22:0x77	quests	G only
 quest:22:0x86	quests	G only
 quest:22:0x9E	quests	G only
-quest:24:0x68	quests	G only
-quest:24:0x7D	quests	G only
-quest:24:0x94	quests	G only
-quest:24:0xAC	quests	G only
-quest:25:0x68	quests	G only
-quest:25:0x75	quests	G only
-quest:25:0x84	quests	G only
-quest:25:0x9C	quests	G only
-quest:26:0x68	quests	G only
-quest:26:0x7D	quests	G only
-quest:26:0x8E	quests	G only
-quest:26:0xA6	quests	G only
-quest:27:0x68	quests	G only
-quest:27:0x81	quests	G only
-quest:27:0x92	quests	G only
-quest:27:0xAA	quests	G only
-quest:28:0x68	quests	G only
-quest:28:0x7B	quests	G only
-quest:28:0x8E	quests	G only
-quest:28:0xA6	quests	G only
 quest:29:0x68	quests	G only
 quest:29:0x83	quests	G only
 quest:29:0x94	quests	G only
 quest:29:0xAC	quests	G only
-quest:30:0x68	quests	G only
-quest:30:0x77	quests	G only
-quest:30:0x88	quests	G only
-quest:30:0xA0	quests	G only
-quest:31:0x68	quests	G only
-quest:31:0x79	quests	G only
-quest:31:0x8E	quests	G only
-quest:31:0xA6	quests	G only
 quest:33:0x68	quests	G only
 quest:33:0x7D	quests	G only
 quest:33:0x8E	quests	G only
 quest:33:0xA6	quests	G only
-quest:34:0x68	quests	G only
-quest:34:0x7D	quests	G only
-quest:34:0x8E	quests	G only
-quest:34:0xA6	quests	G only
-quest:35:0x68	quests	G only
-quest:35:0x7B	quests	G only
-quest:35:0x92	quests	G only
-quest:35:0xAA	quests	G only
-quest:36:0x68	quests	G only
-quest:36:0x75	quests	G only
-quest:36:0x88	quests	G only
-quest:36:0xA0	quests	G only
-quest:37:0x68	quests	G only
-quest:37:0x7B	quests	G only
-quest:37:0x92	quests	G only
-quest:37:0xAA	quests	G only
-quest:38:0x68	quests	G only
-quest:38:0x7D	quests	G only
-quest:38:0x94	quests	G only
-quest:38:0xAC	quests	G only
-quest:39:0x68	quests	G only
-quest:39:0x7D	quests	G only
-quest:39:0x8C	quests	G only
-quest:39:0xA4	quests	G only
-quest:40:0x68	quests	G only
-quest:40:0x77	quests	G only
-quest:40:0x8A	quests	G only
-quest:40:0xA2	quests	G only
-quest:41:0x68	quests	G only
-quest:41:0x75	quests	G only
-quest:41:0x84	quests	G only
-quest:41:0x9C	quests	G only
-quest:43:0x68	quests	G only
-quest:43:0x73	quests	G only
-quest:43:0x84	quests	G only
-quest:43:0x9C	quests	G only
-quest:44:0x68	quests	G only
-quest:44:0x7D	quests	G only
-quest:44:0x90	quests	G only
-quest:44:0xA8	quests	G only
-quest:45:0x68	quests	G only
-quest:45:0x79	quests	G only
-quest:45:0x8A	quests	G only
-quest:45:0xA2	quests	G only
-quest:1001:0x68	quests	G only
-quest:1001:0x7F	quests	G only
-quest:1001:0x92	quests	G only
-quest:1001:0xAA	quests	G only
+quest:38:0xAC	quests	edited in G
 quest:1002:0x68	quests	G only
 quest:1002:0x7D	quests	G only
 quest:1002:0x90	quests	G only
 quest:1002:0xA8	quests	G only
-quest:1003:0x68	quests	G only
-quest:1003:0x7B	quests	G only
-quest:1003:0x92	quests	G only
-quest:1003:0xAA	quests	G only
-quest:1004:0x68	quests	G only
-quest:1004:0x77	quests	G only
-quest:1004:0x8A	quests	G only
-quest:1004:0xA2	quests	G only
-quest:1005:0x68	quests	G only
-quest:1005:0x7F	quests	G only
-quest:1005:0x90	quests	G only
-quest:1005:0xA8	quests	G only
-quest:1006:0x68	quests	G only
-quest:1006:0x79	quests	G only
-quest:1006:0x90	quests	G only
-quest:1006:0xA8	quests	G only
 quest:1007:0x68	quests	G only
 quest:1007:0x77	quests	G only
 quest:1007:0x88	quests	G only
 quest:1007:0xA0	quests	G only
-quest:1009:0x68	quests	G only
-quest:1009:0x7F	quests	G only
-quest:1009:0x94	quests	G only
-quest:1009:0xAC	quests	G only
 quest:1010:0x68	quests	G only
 quest:1010:0x7B	quests	G only
 quest:1010:0x8C	quests	G only
@@ -5674,70 +5536,22 @@ quest:1011:0x68	quests	G only
 quest:1011:0x77	quests	G only
 quest:1011:0x86	quests	G only
 quest:1011:0x9E	quests	G only
-quest:1013:0x68	quests	G only
-quest:1013:0x7D	quests	G only
-quest:1013:0x94	quests	G only
-quest:1013:0xAC	quests	G only
 quest:1014:0x68	quests	G only
 quest:1014:0x81	quests	G only
 quest:1014:0x92	quests	G only
 quest:1014:0xAA	quests	G only
-quest:1015:0x68	quests	G only
-quest:1015:0x7B	quests	G only
-quest:1015:0x92	quests	G only
-quest:1015:0xAA	quests	G only
-quest:1016:0x68	quests	G only
-quest:1016:0x75	quests	G only
-quest:1016:0x88	quests	G only
-quest:1016:0xA0	quests	G only
-quest:1017:0x68	quests	G only
-quest:1017:0x7D	quests	G only
-quest:1017:0x8C	quests	G only
-quest:1017:0xA4	quests	G only
-quest:1020:0x68	quests	G only
-quest:1020:0x7B	quests	G only
-quest:1020:0x8C	quests	G only
-quest:1020:0xA4	quests	G only
 quest:1021:0x68	quests	G only
 quest:1021:0x7B	quests	G only
 quest:1021:0x8C	quests	G only
 quest:1021:0xA4	quests	G only
-quest:1022:0x68	quests	G only
-quest:1022:0x7F	quests	G only
-quest:1022:0x92	quests	G only
-quest:1022:0xAA	quests	G only
-quest:1024:0x68	quests	G only
-quest:1024:0x7D	quests	G only
-quest:1024:0x8E	quests	G only
-quest:1024:0xA6	quests	G only
 quest:1025:0x68	quests	G only
 quest:1025:0x83	quests	G only
 quest:1025:0x94	quests	G only
 quest:1025:0xAC	quests	G only
-quest:1026:0x68	quests	G only
-quest:1026:0x77	quests	G only
-quest:1026:0x88	quests	G only
-quest:1026:0xA0	quests	G only
 quest:1028:0x68	quests	G only
 quest:1028:0x7D	quests	G only
 quest:1028:0x8E	quests	G only
 quest:1028:0xA6	quests	G only
-quest:1029:0x68	quests	G only
-quest:1029:0x75	quests	G only
-quest:1029:0x84	quests	G only
-quest:1029:0x9C	quests	G only
-quest:1030:0x68	quests	G only
-quest:1030:0x73	quests	G only
-quest:1030:0x84	quests	G only
-quest:1030:0x9C	quests	G only
-quest:1032:0x68	quests	G only
-quest:1032:0x79	quests	G only
-quest:1032:0x8A	quests	G only
-quest:1032:0xA2	quests	G only
-quest:1033:0x68	quests	G only
-quest:1033:0x79	quests	G only
-quest:1033:0x8A	quests	G only
-quest:1033:0xA2	quests	G only
 quest:2001:0x68	quests	G only
 quest:2001:0x7F	quests	G only
 quest:2001:0x92	quests	G only
@@ -5754,14 +5568,6 @@ quest:2004:0x68	quests	G only
 quest:2004:0x75	quests	G only
 quest:2004:0x88	quests	G only
 quest:2004:0xA0	quests	G only
-quest:2005:0x68	quests	G only
-quest:2005:0x81	quests	G only
-quest:2005:0x90	quests	G only
-quest:2005:0xA8	quests	G only
-quest:2006:0x68	quests	G only
-quest:2006:0x81	quests	G only
-quest:2006:0x90	quests	G only
-quest:2006:0xA8	quests	G only
 quest:2007:0x68	quests	G only
 quest:2007:0x77	quests	G only
 quest:2007:0x86	quests	G only
@@ -5879,10 +5685,6 @@ quest:2038:0x68	quests	G only
 quest:2038:0x77	quests	G only
 quest:2038:0x88	quests	G only
 quest:2038:0xA0	quests	G only
-quest:2039:0x68	quests	G only
-quest:2039:0x73	quests	G only
-quest:2039:0x84	quests	G only
-quest:2039:0x9C	quests	G only
 quest:2040:0x68	quests	G only
 quest:2040:0x73	quests	G only
 quest:2040:0x84	quests	G only
@@ -5975,10 +5777,10 @@ quest:10021:0x68	quests	twin without US English
 quest:10021:0x7D	quests	twin without US English
 quest:10021:0x94	quests	twin without US English
 quest:10021:0xAC	quests	twin without US English
-quest:10024:0x68	quests	G only
-quest:10024:0x79	quests	G only
-quest:10024:0x90	quests	G only
-quest:10024:0xA8	quests	G only
+quest:10024:0x68	quests	twin without US English
+quest:10024:0x79	quests	twin without US English
+quest:10024:0x90	quests	twin without US English
+quest:10024:0xA8	quests	twin without US English
 quest:10025:0x68	quests	G only
 quest:10025:0x7B	quests	G only
 quest:10025:0x90	quests	G only
@@ -6040,10 +5842,6 @@ quest:10044:0x68	quests	G only
 quest:10044:0x7F	quests	G only
 quest:10044:0x90	quests	G only
 quest:10044:0xA8	quests	G only
-quest:10045:0x68	quests	G only
-quest:10045:0x7F	quests	G only
-quest:10045:0x92	quests	G only
-quest:10045:0xAA	quests	G only
 quest:10048:0x68	quests	G only
 quest:10048:0x75	quests	G only
 quest:10048:0x90	quests	G only

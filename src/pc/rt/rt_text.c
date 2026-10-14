@@ -321,6 +321,52 @@ size_t rt_text_quest(int no, uint8_t *buf, size_t n, size_t cap)
     return n;
 }
 
+/* Monster Hunter G's mission file (mNNNNN.mib, AFS index 2934 + n in file-name order, `no` is the number in the
+ * file name): a 0x48-byte header, the text strings one after the other from 0x68 up to the offset in word 0x60,
+ * and AT that offset a table of the strings' file offsets (title, goal, failure, client, ...). The replacement is
+ * appended and the table entry changed, as for the MH1 file; nothing after the old text moves. */
+size_t rt_text_quest_g(int no, uint8_t *buf, size_t n, size_t cap)
+{
+    int i;
+    uint32_t end;
+    if (!novr || n < 0x70)
+        return n;
+    memcpy(&end, buf + 0x60, 4);
+    if (end < 0x68 || end + 16 > n)
+        return n;
+    for (i = 0; i < novr; i++) {
+        uint32_t k = (uint32_t)ovrs[i].key;
+        size_t len;
+        uint32_t w, off, v;
+        if ((int)(ovrs[i].key >> 32) != SP_QUEST || (int)(k >> 16) != no)
+            continue;
+        off = k & 0xFFFF;
+        len = strlen(ovrs[i].text) + 1;
+        if (n + len + 4 > cap)
+            continue;
+        for (w = end; w + 4 <= n && w < end + 16; w += 4) {          /* the first four table entries */
+            memcpy(&v, buf + w, 4);
+            if (v == off) {
+                n = (n + 3) & ~(size_t)3;
+                memcpy(buf + n, ovrs[i].text, len);
+                if (ovrs[i].limit > 0) {
+                    if (font_adv)
+                        wrap((char *)buf + n, ovrs[i].limit, font_adv);
+                    else if (npend < 256) {
+                        pending[npend].p = (char *)buf + n;
+                        pending[npend++].limit = ovrs[i].limit;
+                    }
+                }
+                v = (uint32_t)n;
+                memcpy(buf + w, &v, 4);
+                n += len;
+                break;
+            }
+        }
+    }
+    return n;
+}
+
 /* ------------------------------------------------------------ wrapping */
 static int adv_of(const unsigned char *adv, unsigned c)
 {
