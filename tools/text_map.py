@@ -199,11 +199,18 @@ class Index:
 # ---------------------------------------------------------------- JP side data
 def jp_symbols():
     funcs, objs = [], []
+    seen_names = set()
     for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mh1_symbols.csv"))):
         sec = r["section"].replace(".bin", "")
         if sec not in ("main", "game", "lobby", "select", "yn"):
             continue
         a, sz = int(r["addr"], 16), int(r["size"])
+        if r["type"] == "OBJECT" and sz > 0:
+            # file-local statics of different files share names (two `menu_str`): the table key is the name, so
+            # the later ones get their address as suffix
+            if (sec, r["name"]) in seen_names:
+                r = dict(r, name="%s$%X" % (r["name"], a))
+            seen_names.add((sec, r["name"]))
         if r["type"] == "FUNC" and sz >= 8:
             funcs.append((sec, a, sz, r["name"]))
         elif r["type"] == "OBJECT" and sz > 0:
@@ -290,6 +297,21 @@ def pair_code(jp, jpi, other, funcs):
                 for t in range(x + 1, y):
                     if mf[t] == tmw[wmap[x] + (t - x)]:
                         wmap[t] = wmap[x] + (t - x)
+        # words of the winning diagonal that no unique gram covered (function starts are shared prologues, so their
+        # grams are not unique): same masked word in a run of >= 4 equal words on the diagonal
+        eq = [0 <= diag + t < len(tmw) and mf[t] == tmw[diag + t] for t in range(n)]
+        t = 0
+        while t < n:
+            if not eq[t]:
+                t += 1
+                continue
+            u = t
+            while u < n and eq[u]:
+                u += 1
+            if u - t >= 4:
+                for x in range(t, u):
+                    wmap.setdefault(x, diag + x)
+            t = u
         stat["func_exact" if len(wmap) == n else "func_partial"] += 1
         jr = refs_of(fw, a, gpj)
         lo = min(wmap.values())
@@ -535,7 +557,7 @@ class ObjMap:
                 prev = next((self.found[keys[j]] for j in range(i - 1, -1, -1) if keys[j] in self.found), None)
                 nxt = next((self.found[keys[j]] for j in range(i + 1, len(keys)) if keys[j] in self.found), None)
                 if prev and nxt and prev[:2] == nxt[:2]:
-                    self.accept(key, prev[0], prev[1], "layout", 0.97)
+                    self.accept(key, prev[0], self.refine(key, prev[0], prev[1]), "layout", 0.97)
                     continue
                 # directly adjacent neighbour (gap of padding only): same shift
                 for j in (i - 1, i + 1):
@@ -544,8 +566,50 @@ class ObjMap:
                         gap = (a - (na + nsz)) if j < i else (na - (a + sz))
                         if 0 <= gap <= 16:
                             f = self.found[keys[j]]
-                            if self.accept(key, f[0], f[1], "adjacent", 0.97):
+                            if self.accept(key, f[0], self.refine(key, f[0], f[1]), "adjacent", 0.97):
                                 break
+
+    SIG = re.compile(rb"^(~C\d\d)?")
+
+    def sig(self, b):
+        return (self.SIG.match(b).group(0), conv_sig(b))
+
+    def refine(self, key, xs, d, span=24, minc=6):
+        """A table taken from a neighbour's shift may have gained or lost entries (the US menu_str has 4 more
+        in front): try shifts of up to `span` words and keep the one where the most string cells carry the same
+        colour code / printf conversions as the Japanese cell. The neighbour's shift stays on ties."""
+        a, sz = self.info[key]
+        sp = key[0]
+        base, b = self.jp.mod[sp]
+        n = min(sz // 4, (len(b) - (a - base)) // 4)
+        js = []
+        for k in range(n):
+            jv, = struct.unpack_from("<I", b, a - base + 4 * k)
+            if self.jp_class(sp, jv) == "S":
+                js.append((k, self.sig(self.jp.cstr(self.jp.resolve(jv, sp), jv))))
+        if len(js) < minc:
+            return d
+        xb, xbuf = self.o.mod[xs]
+
+        def score(dd):
+            ok = 0
+            for k, sg in js:
+                xo = a + dd + 4 * k - xb
+                if not 0 <= xo <= len(xbuf) - 4:
+                    return -1
+                xv, = struct.unpack_from("<I", xbuf, xo)
+                if self.x_class(xs, xv) != "S":
+                    continue
+                xsp = self.o.resolve(xv, xs)
+                if self.sig(self.o.cstr(xsp, xv)) == sg:
+                    ok += 1
+            return ok
+        best, bd = score(d), d
+        for step in range(-span, span + 1):
+            sc = score(d + 4 * step)
+            if sc > best:
+                best, bd = sc, d + 4 * step
+        return bd
 
     def pairs(self, cells):
         """{jp string key: Counter(other string key)} from the found objects' string cells; rows for the report"""

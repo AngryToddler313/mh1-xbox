@@ -1503,14 +1503,12 @@ lobby:0x63ECB8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ECC8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ECD8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ECE8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x63ECF0	village / plaza / guild / shop UI	twin without US English
 lobby:0x63ED00	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED10	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED30	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED40	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED50	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63ED68	village / plaza / guild / shop UI [G table]	G only
-lobby:0x63ED78	village / plaza / guild / shop UI	twin without US English
 lobby:0x63ED88	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63EDA0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63EDB8	village / plaza / guild / shop UI [G table]	G only
@@ -1557,7 +1555,6 @@ lobby:0x63F9F0	village / plaza / guild / shop UI	twin without US English
 lobby:0x63FB08	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63FB18	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63FB28	village / plaza / guild / shop UI [G table]	G only
-lobby:0x63FB38	village / plaza / guild / shop UI	twin without US English
 lobby:0x63FB48	code literals (lobby)	G only
 lobby:0x63FB50	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63FB70	village / plaza / guild / shop UI [G table]	G only
@@ -1629,19 +1626,13 @@ lobby:0x640370	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640390	quest board / quest text tables	edited in G
 lobby:0x6403A8	quest board / quest text tables	edited in G
 lobby:0x6403B8	quest board / quest text tables	edited in G
-lobby:0x6403E8	village / plaza / guild / shop UI	twin without US English
-lobby:0x6403F0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640400	village / plaza / guild / shop UI	twin without US English
-lobby:0x640410	village / plaza / guild / shop UI	twin without US English
-lobby:0x640420	village / plaza / guild / shop UI	twin without US English
-lobby:0x640430	village / plaza / guild / shop UI	twin without US English
-lobby:0x640440	village / plaza / guild / shop UI	twin without US English
-lobby:0x640478	village / plaza / guild / shop UI	twin without US English
+lobby:0x640430	village / plaza / guild / shop UI	edited in G
+lobby:0x640478	village / plaza / guild / shop UI	edited in G
 lobby:0x640490	village / plaza / guild / shop UI	twin without US English
 lobby:0x6404B0	village / plaza / guild / shop UI	twin without US English
 lobby:0x6404D0	village / plaza / guild / shop UI	twin without US English
 lobby:0x6404F0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640530	village / plaza / guild / shop UI	twin without US English
+lobby:0x640530	village / plaza / guild / shop UI	edited in G
 lobby:0x640550	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640580	village / plaza / guild / shop UI	twin without US English
 lobby:0x6405A0	village / plaza / guild / shop UI [G table]	G only
@@ -1678,29 +1669,6 @@ lobby:0x640D80	code literals (lobby)	G only
 lobby:0x640D90	code literals (lobby)	G only
 lobby:0x640DC0	code literals (lobby)	G only
 lobby:0x640DE0	code literals (lobby)	G only
-lobby:0x640E40	village / plaza / guild / shop UI	twin without US English
-lobby:0x640E50	village / plaza / guild / shop UI	twin without US English
-lobby:0x640E60	village / plaza / guild / shop UI	twin without US English
-lobby:0x640E70	village / plaza / guild / shop UI	twin without US English
-lobby:0x640E80	village / plaza / guild / shop UI	twin without US English
-lobby:0x640EA0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640EB0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640EC0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640EE0	village / plaza / guild / shop UI	twin without US English
-lobby:0x640EF8	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F10	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F30	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F48	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F50	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F58	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F68	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F78	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F88	village / plaza / guild / shop UI	twin without US English
-lobby:0x640F98	village / plaza / guild / shop UI	twin without US English
-lobby:0x640FA8	village / plaza / guild / shop UI	twin without US English
-lobby:0x640FB8	village / plaza / guild / shop UI	twin without US English
-lobby:0x640FC8	village / plaza / guild / shop UI	twin without US English
-lobby:0x640FD8	village / plaza / guild / shop UI	twin without US English
 lobby:0x640FE8	quest board / quest text tables [G table]	G only
 lobby:0x640FF8	quest board / quest text tables [G table]	G only
 lobby:0x641000	quest board / quest text tables [G table]	G only
@@ -1787,7 +1755,6 @@ lobby:0x6425C8	village NPC lines and talk [G table]	G only
 lobby:0x6425E0	village NPC lines and talk [G table]	G only
 lobby:0x642600	village NPC lines and talk [G table]	G only
 lobby:0x642618	village NPC lines and talk [G table]	G only
-lobby:0x642640	village NPC lines and talk	twin without US English
 lobby:0x642668	village NPC lines and talk [G table]	G only
 lobby:0x642680	village NPC lines and talk [G table]	G only
 lobby:0x6426A0	village NPC lines and talk [G table]	G only
@@ -1830,21 +1797,11 @@ lobby:0x642B10	village NPC lines and talk [G table]	G only
 lobby:0x642B20	village NPC lines and talk [G table]	G only
 lobby:0x642B30	village NPC lines and talk [G table]	G only
 lobby:0x642B60	village NPC lines and talk [G table]	G only
-lobby:0x642B70	village / plaza / guild / shop UI	twin without US English
-lobby:0x642B90	village / plaza / guild / shop UI	twin without US English
 lobby:0x642BA8	village NPC lines and talk [G table]	G only
-lobby:0x642BB8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BC0	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BC8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BD8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BE8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BF8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642C08	village / plaza / guild / shop UI	twin without US English
+lobby:0x642BC8	village / plaza / guild / shop UI	edited in G
+lobby:0x642C08	village / plaza / guild / shop UI	edited in G
 lobby:0x642C18	village NPC lines and talk [G table]	G only
-lobby:0x642C28	village / plaza / guild / shop UI	twin without US English
-lobby:0x642C38	village NPC lines and talk	twin without US English
-lobby:0x642C48	village / plaza / guild / shop UI	twin without US English
-lobby:0x642C50	village / plaza / guild / shop UI	twin without US English
+lobby:0x642C38	village NPC lines and talk	edited in G
 lobby:0x642C70	village NPC lines and talk [G table]	G only
 lobby:0x642C80	village NPC lines and talk [G table]	G only
 lobby:0x642C90	village NPC lines and talk [G table]	G only
@@ -7762,19 +7719,7 @@ sub_main:0x537D90	other tables (movie_add_str_tbl) [G table]	G only
 sub_main:0x537DB0	other tables (movie_add_str_tbl) [G table]	G only
 sub_main:0x537DC8	other tables (movie_add_str_tbl) [G table]	G only
 sub_main:0x537DE0	other tables (movie_add_str_tbl) [G table]	G only
-sub_main:0x537DF8	other tables (verify_button_00387D) [G table]	G only
-sub_main:0x537E08	menus, options, HUD [G table]	G only
-sub_main:0x537E10	menus, options, HUD [G table]	G only
-sub_main:0x537E20	menus, options, HUD [G table]	G only
-sub_main:0x537E30	menus, options, HUD [G table]	G only
-sub_main:0x537E40	menus, options, HUD [G table]	G only
-sub_main:0x537E50	menus, options, HUD [G table]	G only
-sub_main:0x537E60	menus, options, HUD [G table]	G only
 sub_main:0x537E70	menus, options, HUD [G table]	G only
-sub_main:0x537E80	menus, options, HUD [G table]	G only
-sub_main:0x537EA0	menus, options, HUD [G table]	G only
-sub_main:0x537ED0	menus, options, HUD [G table]	G only
-sub_main:0x537EF0	menus, options, HUD [G table]	G only
 sub_main:0x537F40	other tables (verify_button_00387D) [G table]	G only
 sub_main:0x537F60	other tables (verify_button_00387D) [G table]	G only
 sub_main:0x537F90	menus, options, HUD [G table]	G only
