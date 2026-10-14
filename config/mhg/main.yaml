@@ -88,6 +88,8 @@ segments:
       - [0x027C20, c, main/set/setwork3]
       - [0x027C30, c, main/set/setwork]
       - [0x027D68, asm, text/init_set_work]
+      - [0x027D70, c, main/set/setwork2]
+      - [0x028108, asm, text/init_shell_work]
       - [0x028110, c, main/pl/shell_work]
       - [0x028560, c, main/pl/taru01]
       - [0x028598, asm, text/Ana_ok_ck]

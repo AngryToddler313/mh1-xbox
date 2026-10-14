@@ -89,6 +89,8 @@ segments:
       - [0x058AC4, asm, text/lobby_func_0059B0D0]
       - [0x058CD0, c, lobby/f/lb_z02]
       - [0x058CD8, asm, text/Lb_send_data_to_myself]
+      - [0x05A750, c, lobby/f/lb_n11]
+      - [0x05A7E4, asm, text/Lb_ck_target]
       - [0x05A7F0, c, lobby/f/lb_gac01]
       - [0x05A8B4, asm, text/Lb_get_angle]
       - [0x05A8C0, c, lobby/f/lb_z03]
