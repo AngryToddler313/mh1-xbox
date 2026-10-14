@@ -443,3 +443,14 @@ obvious workarounds.
 - **Not changed, seen on the way (not caused by the table, same without one):** the item window's title shows
   "(null)" (G title pointer not set), and the character-creation help box shows junk bytes.
 - **To revert:** the hook is the `rt_text_quest_g` block in afs_entry; the tool changes are in tools/text_map.py only.
+
+### G on the Xbox: memory fixes in shared runtime code (14 Oct 2026, agent B)
+- **Dropped:** the G-only collision area sizes in rt_hit.c (256 / 512 KB, "not measured yet"); the whole-image
+  .bss shadow as the only answer for a pointer into .bss with no sized symbol (rt_mem.c rt_bss_shadow); the
+  worst-case output buffer of fmt_mwo_unpack (melt.c) kept for the life of the overlay.
+- **Now:** one size for both games (96 / 192 KB: G's lwg parts have the same largest files); a shadow block for the
+  gap between the named symbols around the address (whole block only when a gap is over 256 KB or a whole block
+  exists already); the unpacked overlay is realloc'd to its real size.
+- **Why:** G on the Xbox had 7 MB free in the village (MH1 16.5 MB); after these, 15.5-16.5 MB. MH1 PC tests
+  (quest loop, progression, urgent) and the MH1 xemu quest loop pass.
+- **To revert:** revert the commit "G on the Xbox: ...".
