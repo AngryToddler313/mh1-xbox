@@ -465,14 +465,14 @@ def main():
         code = collections.defaultdict(list)
         for mm in G_MODS:
             for a0, sz0, n0, isf0 in sized[mm]:
-                if sz0 and not isf0 and re.match(r"^em\d\d_(main_cmd|content|sub_contents|cmd_|main_cmd)", n0):
+                if sz0 and not isf0 and re.match(r"^em\d\d_(main_cmd\d|content_[a-z0-9]+_|sub_contents_[a-z0-9]+_)", n0) and "tbl" not in n0:
                     code[mm].append((a0, a0 + sz0))
         for m in G_MODS:
             s = set(a for a in found[m] | carried[m] if not any(lo <= a < lo + sz for lo, sz in NOPTR_RANGES))
             bad = set(a for a in s if a in found[m] and a not in carried[m] and a not in split_ptrs.get(m, set())
                       and any(lo <= a < hi for lo, hi in code[m]))
             if bad:
-                print("%s: %d scan words inside em command programs dropped" % (m, len(bad)))
+                print("%s: %d scan words inside em command programs dropped: %s" % (m, len(bad), " ".join("%X" % a for a in sorted(bad))))
             s -= bad
             tot["scan"] += len(found[m])
             tot["carried"] += len(carried[m])
