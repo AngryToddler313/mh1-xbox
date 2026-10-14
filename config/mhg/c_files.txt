@@ -914,3 +914,6 @@ main 0x00212E90 0x00213084 main/net/ms03
 main:rodata 0x002C0AA0 0x002C0AC0 main/net/ms03
 sub_main 0x004F8040 0x004F85BC main/reward/f_reward4
 sub_main 0x004FBA40 0x004FBD10 main/net/netsyn05
+main 0x001EE740 0x001EEC4C mhg/main/omake/omake_a
+main 0x001EF060 0x001EF420 mhg/main/omake/omake_b
+main 0x001EF7C0 0x001EFD6C mhg/main/omake/omake_c
