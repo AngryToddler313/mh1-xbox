@@ -227,6 +227,21 @@ def g_result(q, p, rc, d, dt, clear, note, secs):
     elif not re.search(r'x06 6', d2): why.append('no quest failure on time-out')
     return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s (%d monsters), %.0fs' % ('; '.join(note), spawned, dt), p
 
+def g_carts(q=9, kind=11):
+    """G: three faints fail the quest. No GOD and no warp: the hunter walks to the monster's stage (RT_PL_GOTO f)
+    and swings; RT_PL_HP keeps his vital at 5 so the monster's own hits faint him. PASS = two returns to the camp,
+    then the quest fails (x06 6) with time left, no crash."""
+    hp = ','.join('%d:5' % t for t in range(400, 30000, 200))
+    inp = 'idle*60' + ',cam_u*2,idle*30' * 900
+    rc, d, dt = run(q, {'RT_PL_GOTO': '60,f', 'RT_PL_TARGET': 'k%d' % kind, 'RT_PL_HP': hp}, inp, 1000, 'q%d_carts' % q)
+    camp = len(re.findall(r'st_model_load\(21\)', d))
+    fail = re.search(r'x06 6 time (\d+)', d)
+    why = []
+    if rc not in (0, None) or 'Segmentation' in d: why.append('crash/exit %s' % rc)
+    if camp != 2: why.append('%d returns to the camp (want 2)' % camp)
+    if not fail or int(fail.group(1)) <= 0: why.append('no quest failure with time left')
+    return ('PASS' if not why else 'FAIL'), '; '.join(why) or 'carts: 2 camp returns, failed on the third (time left %s), %.0fs' % (fail.group(1), dt)
+
 if __name__ == '__main__':
     qs = [int(a) for a in sys.argv[1:]] or (G_QUESTS if G else [q for lv in sorted(LEVELS) for q in LEVELS[lv]])
     star = {q: lv for lv in LEVELS for q in LEVELS[lv]}
@@ -242,6 +257,10 @@ if __name__ == '__main__':
         elif r == 'PASS' and q in KNOWN:
             why += ' (now passes: drop it from KNOWN)'
         print('%-5s quest %3d %s %s' % (r, q, tag, why), flush=True)
+        bad += r == 'FAIL'
+    if G and not sys.argv[1:]:
+        r, why = g_carts()
+        print('%-5s carts  quest   9 %s' % (r, why), flush=True)
         bad += r == 'FAIL'
     print('%d quests FAILED' % bad if bad else 'no unexpected failures (%d quests, %d skipped, known failures listed above)' % (len(qs), sum(q in SKIP for q in qs)))
     sys.exit(1 if bad else 0)
