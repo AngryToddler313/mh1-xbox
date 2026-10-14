@@ -235,8 +235,10 @@ RT_DMG_MUL=40: kill at tick 154 -> clear (x06 4) -> carve wait -> game3 -> game5
 278 x2) -> reward screen (build/A/g/q10_end*.png). Also on this path: em_cmd 0x56/0x57 take u16 quest
 numbers in G; hit zones per monster state (em_meat_tbl, G 0x509410); carve tables per quest rank
 (em_hagi_type_tbl, G 0x6D5D50); G's move() has no item_check/move_item (no item work in G);
-player_work has 10 entries in G (rt_game.c); EMW keeps MH1's 0xA10 stride on the PC (em.h, emw01/02.c:
-G's 0xA00 only for MWCC). G next_cmd_search checked opcode by opcode against an emulation of G's asm.
+player_work has 10 entries in G (rt_game.c); EMW keeps MH1's 0xA10 stride on the PC (em.h, emw01/02.c,
+version.h EMW_STRIDE: G's 0xA00 only for MWCC; the PC's local EMX/EWK copies are 0xA10). Hidden G new game
+without RT_NO_NPC reaches the hunter's house and runs 110 s (build/A/g/v/s.png); NPC em_cmd tables are
+converted now (pointer words from the split). G next_cmd_search checked opcode by opcode against an emulation of G's asm.
 Still open: EMW bytes G 0x9FB/0x9FC (monster state for hit zones, em command 0x71) have no writer on the
 PC; em_cmd_flag_set/clear/ck: G adds kinds 0x32 and 0x2D (subspecies) to the kind 7/0xF cases (not
 done); the reward screen draws its frame but no item list/text; armour tables not imported.
