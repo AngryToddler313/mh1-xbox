@@ -1363,3 +1363,12 @@ Position traces are bit-identical to the MH1 build for the same input (RT_VILLAG
 - Bulk registration retry: 141 files passed check.py, 127 added, bisecting with a game-only rebuild (15 s each) left 107 registered; 34 parked in config/mhg/c_skip.txt.
   G matched 9.3% -> 14.6% (tools/progress.py with VERSION=mhg). Candidate scan: for f in files of config/c_files.txt not in config/mhg/c_files.txt run
   `VERSION=mhg tools/check.py src/MODULE/PATH.c` (all OK) then tools/mhg_addc.py.
+
+## Clean-build fix (agent D, 14 Oct 2026)
+Registered G files stub unmatched functions with `#include "NAME.inc"`; the G build looks in build/mhg/raw (config/mhg/c_rawfuncs.txt, G bytes) then
+build/raw (MH1 bytes). Commit 8ea67095 had dropped 160 of those entries (the worktree only built because build/mhg/raw kept stale .inc files), and 4 more
+(flPS2matMul, flPS2matMul2, PS2SHADER_ADD_LIGHTVECD3, plMemmove: pulled in via src/mhg/*_pN.c wrappers that include ../src/*.c) were never listed.
+Restored by finding each stub's bytes inside the file's registered G range. c_rawfuncs now 174 lines. Clean proof: rm -rf build/mhg/raw build/raw, MH1 5 OK,
+VERSION=mhg 7 OK (each alone, with `ulimit -v 3000000`; peak child RSS 420 MB, splat 300-420 MB per module).
+The 5.6 GB python was not reproduced by rebuild.sh, build.py (also with a missing .inc), splat or the PC builds (all < 450 MB); a bad merge of main.yaml/sub_main.yaml
+(registered set21/setwork2 whole AND main's _pN split) makes splat stop with "segments out of order", not loop. Keep the ulimit cap on every build.
