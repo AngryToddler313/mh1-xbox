@@ -13,7 +13,6 @@ extern SETW **set_sp;
 extern s32 set_ctr;
 extern SETW *set_w_top;
 void *memset(void *, int, unsigned long);
-#if !defined(G_PART) || G_PART == 1
 void init_set_work(void) {
     int i;
     SETW *p;
@@ -27,8 +26,6 @@ void init_set_work(void) {
     }
     set_ctr = 0x80;
 }
-#endif
-#if !defined(G_PART)
 void clr_set_work(void) {
     SETW *p = set_w_top;
     while (p != 0) {
@@ -41,8 +38,6 @@ void clr_set_work(void) {
         }
     }
 }
-#endif
-#if !defined(G_PART)
 SETW *pull_set_work(int n) {
     int start;
     SETW *sw;
@@ -68,8 +63,6 @@ SETW *pull_set_work(int n) {
     set_used_heap(start, n);
     return sw;
 }
-#endif
-#if !defined(G_PART) || G_PART == 2
 void push_set_work(SETW *sw) {
     if (sw->prev == 0) {
         set_w_top = sw->next;
@@ -86,8 +79,6 @@ void push_set_work(SETW *sw) {
     }
     memset(sw, 0, 8);
 }
-#endif
-#if !defined(G_PART)
 void move_set(void) {
     SETW *p = set_w_top;
     if (p != 0) {
@@ -99,8 +90,6 @@ void move_set(void) {
         } while (p != 0);
     }
 }
-#endif
-#if !defined(G_PART) || G_PART == 3
 void trans_set(void) {
     SETW *p = set_w_top;
     if (p != 0) {
@@ -114,4 +103,3 @@ void trans_set(void) {
         } while (p != 0);
     }
 }
-#endif

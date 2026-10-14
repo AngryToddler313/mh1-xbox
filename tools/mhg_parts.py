@@ -135,7 +135,7 @@ def process(path, dry):
     base = re.sub(r'\.c$', '', os.path.basename(path))
     rel = os.path.relpath(os.path.dirname(path), 'src')
     wdir = os.path.join('src/mhg', rel)
-    for attempt in range(4):
+    for attempt in range(int(os.environ.get('PARTS_TRIES', 4))):
         runs = runs_of(oks)
         guard = {}
         for k, run in enumerate(runs, 1):
@@ -165,6 +165,8 @@ def process(path, dry):
                     bad.append(n)
             if [r[1] for r in got] != [r[1] for r in run] and not bad:
                 bad += [n for n in want]       # part holds other functions than planned
+        if os.environ.get('PARTS_DEBUG'):
+            print('attempt', attempt, 'bad:', ','.join(bad))
         if not bad:
             break
         open(os.path.join(ROOT, path), 'w').write(src)

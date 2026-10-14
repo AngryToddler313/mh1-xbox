@@ -77,9 +77,17 @@ extern u8 edit_w[];
 extern u8 option_w[];
 extern u8 *data_load_ptr;
 extern u8 **McardMsgTbl[];
+#ifdef VERSION_MHG
+extern int yn_tbl[];   /* G: not small data */
+#else
 extern int yn_tbl[2];
+#endif
 extern int mc_sel_tbl[2];
+#ifdef VERSION_MHG
 extern int card_list_frame_tbl_00355430[];
+#else
+extern int card_list_frame_tbl_00355430[];
+#endif
 extern char lit_496_00384EE8[];
 
 void add_prim2();
@@ -124,10 +132,53 @@ int user_data_copy2();
 void McActInit();
 extern u8 select_w[];
 void PatchLoadinDNAS_Init();
+void func_0022B4A0();
+void func_0022CF90();
+void func_0022D8E0();
 int PatchLoadinDNAS_Main();
 
 void trans_card_0();
+#ifdef VERSION_MHG
+#define MC_DTC_LINK         /* G: decode_to_ck is not static (its callers recompute their argument registers) */
+#else
+#define MC_DTC_LINK static
+#endif
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+#define MC_GL 1   /* G's save layout (slot stride, flags, card image size): PS2 build only; the PC runs MH1's layout code on G's memory */
+#endif
 static void mc_r_no_set();
+#ifdef VERSION_MHG
+#ifdef __MWERKS__
+void func_0012BDD0();
+#define FONT_PRINT2(f, a) func_0012BDD0(f, a)
+#define FONT_PRINT1(s) func_0012BDD0(s) /* G: a new printf-style wrapper in front of font_print_sp (G-only 0x12BDD0); the PC keeps font_print_sp */
+#else
+#define FONT_PRINT2(f, a) font_print_sp(f, a)
+#define FONT_PRINT1(s) font_print_sp(s)
+#endif
+#else
+#define FONT_PRINT2(f, a) font_print_sp(f, a)
+#define FONT_PRINT1(s) font_print_sp(s)
+#endif
+#ifdef MC_GL
+#define SELW_B6 0xDC   /* G: select_w is laid out differently (MH1 0xB6) */
+#define MCSLOT 0xE00   /* G: hunter slot stride in option_w and in the card image (MH1 0x480) */
+#define MCIMG 0x9860   /* G: encoded card image words (MH1 0x8A20) */
+#else
+#define SELW_B6 0xB6
+#define MCSLOT 0x480
+#define MCIMG 0x8A20
+#endif
+#ifdef VERSION_MHG
+/* G inserted one step in CardOptsv (new state 7, after CardOptsv06) and in CardCmsv (new state 5): MH1's targets shift */
+#define GOPT(n) ((n) >= 8 ? (n) + 1 : (n))   /* a target: 7 is the new step itself */
+#define GOPTC(n) ((n) >= 7 ? (n) + 1 : (n))  /* a case label */
+#define GCMS(n) ((n) >= 5 ? (n) + 1 : (n))
+#else
+#define GOPT(n) (n)
+#define GOPTC(n) (n)
+#define GCMS(n) (n)
+#endif
 int mc_yn_ck(struct CARDW *, int, s16, u8 *);
 int mc_sel_ck(struct CARDW *, s16, s16, u8 *, int);
 int mc_ok_ck(struct CARDW *, s16, s16, int);
@@ -152,7 +203,7 @@ u16 *buf;
     *buf = 0;
     sum = buf++;
     *buf++ = 0x5963;
-    for (i = 0; i < 0x8A20; i++) {
+    for (i = 0; i < MCIMG; i++) {
         *sum = *sum + *buf;
         *buf ^= key;
         buf++;
@@ -190,7 +241,7 @@ u16 *buf;
         }
         key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
         i++;
-    } while (i < 0x8A20);
+    } while (i < MCIMG);
     out[9] = (stored & 0xFFFF) != (sum & 0xFFFF);
 }
 #endif
@@ -226,7 +277,7 @@ u8 *s;
 #endif
 
 #if !defined(G_PART)
-static int decode_to_ck(out)
+MC_DTC_LINK int decode_to_ck(out)
 u16 *out;
 {
     decode_data(out, data_load_ptr);
@@ -237,7 +288,7 @@ u16 *out;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int mc_copy_opt_only(save)
 int save;
 {
@@ -245,19 +296,59 @@ int save;
 
     if (save == 0) {
         memcpy(option_w, d + 0x10250, 0x10);
+#ifdef MC_GL
+        memcpy(option_w + 0x2A10, d + 0x12C60, 0x10);
+        memcpy(option_w + 0x2A30, d + 0x12C80, 0x21C);
+        *(s32 *)(option_w + 0x2C4C) |= *(s32 *)(d + 0x12E9C);
+        option_w[0x2C50] = d[0x12EA0];
+        option_w[0x2C51] = d[0x12EA1];
+        option_w[0x2C52] |= d[0x12EA2];
+        option_w[0x2C53] |= d[0x12EA3];
+        option_w[0x2C54] |= d[0x12EA4];
+        option_w[0x2C55] |= d[0x12EA5];
+#else
         memcpy(option_w + 0xDB0, d + 0x11000, 0x21C);
         *(s16 *)(option_w + 0xFCC) |= *(s16 *)(d + 0x1121C);
         option_w[0xFCE] = d[0x1121E];
+#endif
         Init_reibun();
         system_w_set();
     } else {
         memcpy(d + 0x10250, option_w, 0x10);
+#ifdef MC_GL
+        memcpy(d + 0x12C60, option_w + 0x2A10, 0x10);
+        memcpy(d + 0x12C80, option_w + 0x2A30, 0x21C);
+        *(s32 *)(d + 0x12E9C) = *(s32 *)(option_w + 0x2C4C);
+        d[0x12EA0] = option_w[0x2C50];
+        d[0x12EA1] = option_w[0x2C51];
+        d[0x12EA2] = option_w[0x2C52];
+        d[0x12EA3] = option_w[0x2C53];
+        d[0x12EA4] = option_w[0x2C54];
+        d[0x12EA5] = option_w[0x2C55];
+#else
         memcpy(d + 0x11000, option_w + 0xDB0, 0x21C);
         *(s16 *)(d + 0x1121C) = *(s16 *)(option_w + 0xFCC);
         d[0x1121E] = option_w[0xFCE];
+#endif
     }
     return 1;
 }
+#endif
+
+#ifdef MC_GL
+/* G only (0x22B4A0): merge the loaded save's option flags into option_w (what mc_copy_opt_only does for a load) */
+#if !defined(G_PART) || G_PART == 2
+void func_0022B4A0(void)
+{
+    u8 *d = data_load_ptr;
+
+    *(s32 *)(option_w + 0x2C4C) |= *(s32 *)(d + 0x12E9C);
+    option_w[0x2C52] |= d[0x12EA2];
+    option_w[0x2C53] |= d[0x12EA3];
+    option_w[0x2C54] |= d[0x12EA4];
+    option_w[0x2C55] |= d[0x12EA5];
+}
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2
@@ -277,7 +368,7 @@ int save;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int user_data_copy2(slot, save)
 int slot;
 int save;
@@ -288,15 +379,15 @@ int save;
     u8 *b;
 
     if (save == 0) {
-        off = (u8)slot * 0x480;
+        off = (u8)slot * MCSLOT;
         a = option_w + off + 0x10;
         b = d + off + 0x10260;
     } else {
-        off = (u8)slot * 0x480;
+        off = (u8)slot * MCSLOT;
         b = option_w + off + 0x10;
         a = d + off + 0x10260;
     }
-    memcpy(a, b, 0x480);
+    memcpy(a, b, MCSLOT);
     if (option_w[0x10 + off] == 0) {
         return 1 << (slot & 0xFF);
     }
@@ -304,16 +395,16 @@ int save;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int user_data_clr(slot)
 int slot;
 {
-    flMemset(option_w + (slot & 0xFF) * 0x480 + 0x10, 0, 0x480);
+    flMemset(option_w + (slot & 0xFF) * MCSLOT + 0x10, 0, MCSLOT);
     return 1;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void User_data_init(void)
 {
     user_data_clr(0);
@@ -322,7 +413,7 @@ void User_data_init(void)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int save_data_sub(save, mask)
 int save;
 int mask;
@@ -337,7 +428,11 @@ int mask;
     if (mask & 1) {
         mc_copy_opt_only(save);
     } else if (save == 0) {
+#ifdef MC_GL
+        *(s32 *)(option_w + 0x2C4C) |= *(s32 *)(d + 0x12E9C);
+#else
         *(s16 *)(option_w + 0xFCC) |= *(s16 *)(d + 0x1121C);
+#endif
     }
     if (mask & 2) {
         r |= user_data_copy2(0, save);
@@ -355,7 +450,7 @@ int mask;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 2
 void card_data_init(w)
 u8 *w;
 {
@@ -375,14 +470,14 @@ u8 *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 5
+#if !defined(G_PART) || G_PART == 3
 void Mem_mes_disp(s16 y, int idx)
 {
     mc_mes_disp(0, y, idx);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 s16 mc_mes_disp(int x, s16 y, int idx)
 {
     u8 **p;
@@ -396,7 +491,7 @@ s16 mc_mes_disp(int x, s16 y, int idx)
         do {
             if (*s != 0) {
                 flfntLocate(0x140 - strlen_sp(s) * 0x12 / 4, y);
-                font_print_sp(s);
+                FONT_PRINT1(s);
             }
             p++;
             s = *p;
@@ -407,7 +502,7 @@ s16 mc_mes_disp(int x, s16 y, int idx)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 4
 static void mc_r_no_set(w, n)
 CARDW *w;
 s8 n;
@@ -419,7 +514,7 @@ s8 n;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
 {
     int i;
@@ -446,7 +541,7 @@ int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
             font_set_palette(0);
         }
         flfntLocate(px, y);
-        font_print_sp(lit_496_00384EE8, *t);
+        FONT_PRINT2(lit_496_00384EE8, *t);
         i++;
         px += 0x5A;
         t++;
@@ -478,7 +573,7 @@ int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
 
 /* original bytes kept (does not match as C yet): build/raw/mc_sel_ck.inc, see config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 asm int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
 {
 #include "mc_sel_ck.inc"
@@ -486,7 +581,7 @@ asm int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
 #endif
 #endif
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 4
 int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
 {
     w->bx = x;
@@ -515,7 +610,7 @@ int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 4
 int mc_remove_ck(port)
 int port;
 {
@@ -525,7 +620,7 @@ int port;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 4
 void McOperationSet(op)
 u8 op;
 {
@@ -559,7 +654,74 @@ u8 op;
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+#ifdef __MWERKS__
+/* G: original bytes (build/mhg/raw/trans_card_0.inc, config/mhg/c_rawfuncs.txt): 13 instructions off as C (register choice of the switch value) */
+#if !defined(G_PART) || G_PART == 4
+asm void trans_card_0(void)
+{
+#include "trans_card_0.inc"
+}
+#endif
+#else
+/* G on the PC: frame kind 8 (disp_savesel_waku gets card_w+3), ops 1 and 14 draw the frames bright */
+void trans_card_0(void)
+{
+    CARDW *w = &card_w;
+    int i;
+    u8 *p;
+
+    flSetRenderState(0x60, 0);
+    SetTrnslMode(4, 5);
+    font_set_stack_no(4);
+    i = 0;
+    p = (u8 *)w;
+    do {
+        switch (p[0x2C]) {
+        default:
+            if (card_w.op == 1 || card_w.op == 14) {
+                DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 255);
+            } else {
+                DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 128);
+            }
+            break;
+        case 5:
+            disp_savesel_waku(edit_w, 0, 0, (s8)edit_w[1]);
+            break;
+        case 6:
+            disp_savesel_waku(edit_w, 2, 0, (s8)edit_w[1]);
+            break;
+        case 8:
+            disp_savesel_waku(edit_w, 0, 0, (s8)p[3]);
+            break;
+        case 0:
+            break;
+        }
+        i++;
+        p++;
+    } while (i < 4);
+    if (w->csr_on != 0) {
+        Sel_csr_disp(w->csr[0], w->csr[1], w->csr[2], w->csr[3], 0xFF20C0C0);
+    }
+    if (w->btn_on != 0) {
+        switch (w->op) {
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            Disp_button(1.0f, 0, w->bx, w->by, 0x11A);
+            break;
+        default:
+            Disp_button(1.0f, 0, w->bx, w->by, 8);
+            break;
+        }
+    }
+    font_set_stack_no(0);
+}
+#endif
+#else
 void trans_card_0(void)
 {
     CARDW *w = &card_w;
@@ -614,7 +776,7 @@ void trans_card_0(void)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 8
+#if !defined(G_PART) || G_PART == 4
 void CardAtld00(w)
 CARDW *w;
 {
@@ -626,7 +788,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardAtld01(w)
 CARDW *w;
 {
@@ -691,7 +853,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 9
+#if !defined(G_PART) || G_PART == 4
 void CardAtld10(w)
 CARDW *w;
 {
@@ -702,7 +864,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardAtld11(w)
 CARDW *w;
 {
@@ -740,7 +902,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 4
 void CardAtld12(w)
 CARDW *w;
 {
@@ -750,7 +912,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 4
 void CardAtld13(w)
 CARDW *w;
 {
@@ -765,7 +927,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 4
 void CardAtld14(w)
 CARDW *w;
 {
@@ -776,7 +938,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 4
 void CardAtld(w)
 CARDW *w;
 {
@@ -809,26 +971,30 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv00(w)
 CARDW *w;
 {
-    mc_r_no_set(w, 1);
+    mc_r_no_set(w, GOPT(1));
     w->sel = 1;
     w->port = 0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv01(w)
 CARDW *w;
 {
+#ifdef VERSION_MHG
+    switch (mc_yn_ck(w, 203, (w->op == 1 ? mc_mes_disp(221, 136, 9) : mc_mes_disp(221, 136, 61)) + 0x24, &w->sel)) {
+#else
     switch (mc_yn_ck(w, 203, mc_mes_disp(221, 136, 9) + 0x24, &w->sel)) {
+#endif
     case 1:
-        mc_r_no_set(w, 12);
+        mc_r_no_set(w, GOPT(12));
         break;
     case 0:
-        mc_r_no_set(w, 2);
+        mc_r_no_set(w, GOPT(2));
         w->sub = 0;
         w->port = 0;
         break;
@@ -836,7 +1002,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 11
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv02(w)
 CARDW *w;
 {
@@ -852,7 +1018,7 @@ CARDW *w;
             w->timer = 4;
             break;
         case 2:
-            mc_r_no_set(w, 1);
+            mc_r_no_set(w, GOPT(1));
             break;
         }
         break;
@@ -861,7 +1027,7 @@ CARDW *w;
         t = w->timer - 1;
         w->timer = t;
         if ((s16)t <= 0) {
-            mc_r_no_set(w, 3);
+            mc_r_no_set(w, GOPT(3));
             w->timer = 30;
             user_data_clr(0);
             user_data_clr(1);
@@ -874,7 +1040,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv03(w)
 CARDW *w;
 {
@@ -887,7 +1053,7 @@ CARDW *w;
         w->res[w->port] = r;
         switch (r) {
         case 0:
-            mc_r_no_set(w, 6);
+            mc_r_no_set(w, GOPT(6));
             w->timer = 30;
             McActNewClr();
             McActLoadSet(w->port, data_load_ptr);
@@ -895,24 +1061,24 @@ CARDW *w;
         case -1:
             break;
         case -253:
-            mc_r_no_set(w, 8);
+            mc_r_no_set(w, GOPT(8));
             break;
         case -252:
-            mc_r_no_set(w, 11);
+            mc_r_no_set(w, GOPT(11));
             w->msg = 12;
             break;
         case -255:
-            mc_r_no_set(w, 11);
+            mc_r_no_set(w, GOPT(11));
             w->msg = 11;
             break;
         case -254:
-            mc_r_no_set(w, 4);
+            mc_r_no_set(w, GOPT(4));
             w->sel = 1;
             McActNewClr();
             McActCheckSet();
             break;
         default:
-            mc_r_no_set(w, 11);
+            mc_r_no_set(w, GOPT(11));
             w->msg = 20;
             break;
         }
@@ -920,7 +1086,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv04(w)
 CARDW *w;
 {
@@ -929,16 +1095,16 @@ CARDW *w;
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     y = mc_mes_disp(40, 352, 13);
     if (mc_remove_ck(w->port) != 0) {
-        mc_r_no_set(w, 11);
+        mc_r_no_set(w, GOPT(11));
         w->msg = 38;
         return;
     }
     switch (mc_yn_ck(w, 22, y + 0x12, &w->sel)) {
     case 1:
-        mc_r_no_set(w, 2);
+        mc_r_no_set(w, GOPT(2));
         break;
     case 0:
-        mc_r_no_set(w, 5);
+        mc_r_no_set(w, GOPT(5));
         w->timer = 30;
         McActFormatSet(w->port);
         break;
@@ -946,7 +1112,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv05(w)
 CARDW *w;
 {
@@ -959,13 +1125,13 @@ CARDW *w;
         w->res[w->port] = r;
         switch (r) {
         case 0:
-            mc_r_no_set(w, 8);
+            mc_r_no_set(w, GOPT(8));
             break;
         case -1:
             break;
         case -256:
         default:
-            mc_r_no_set(w, 11);
+            mc_r_no_set(w, GOPT(11));
             w->msg = 15;
             break;
         }
@@ -973,7 +1139,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv06(w)
 CARDW *w;
 {
@@ -987,11 +1153,17 @@ CARDW *w;
         switch (r) {
         case 0:
             if (decode_to_ck(w) != 0) {
-                mc_r_no_set(w, 11);
+                mc_r_no_set(w, GOPT(11));
                 w->msg = 20;
                 return;
             }
-            mc_r_no_set(w, 7);
+#ifdef MC_GL
+            func_0022B4A0();
+#endif
+            mc_r_no_set(w, GOPT(7));
+#ifdef VERSION_MHG
+            PatchLoadinDNAS_Init();
+#endif
             w->sel = 1;
             McActCheckSet();
             return;
@@ -1001,7 +1173,7 @@ CARDW *w;
         case -252:
         case -255:
         default:
-            mc_r_no_set(w, 11);
+            mc_r_no_set(w, GOPT(11));
             w->msg = 20;
             break;
         }
@@ -1009,7 +1181,21 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G only (0x22CF90): the new Optsv step 7, message 0x28 until PatchLoadinDNAS_Main finishes */
+#if !defined(G_PART) || G_PART == 4
+void func_0022CF90(w)
+CARDW *w;
+{
+    mc_mes_disp(40, 352, 10);
+    if (PatchLoadinDNAS_Main() != 0) {
+        mc_r_no_set(w, 8);
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv07(w)
 CARDW *w;
 {
@@ -1018,27 +1204,27 @@ CARDW *w;
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     y = mc_mes_disp(40, 352, 16);
     if (mc_remove_ck(w->port) != 0) {
-        mc_r_no_set(w, 11);
+        mc_r_no_set(w, GOPT(11));
         w->msg = 38;
         return;
     }
     switch (mc_yn_ck(w, 22, y + 0x12, &w->sel)) {
     case 1:
-        mc_r_no_set(w, 2);
+        mc_r_no_set(w, GOPT(2));
         break;
     case 0:
-        mc_r_no_set(w, 8);
+        mc_r_no_set(w, GOPT(8));
         save_data_sub(0, 14);
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv08(w)
 CARDW *w;
 {
-    mc_r_no_set(w, 9);
+    mc_r_no_set(w, GOPT(9));
     w->timer = 30;
     save_data_sub(1, 31);
     encode_data_002814E0(data_load_ptr);
@@ -1048,7 +1234,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv09(w)
 CARDW *w;
 {
@@ -1060,7 +1246,7 @@ CARDW *w;
     w->res[w->port] = r;
     switch (r) {
     case 0:
-        mc_r_no_set(w, 10);
+        mc_r_no_set(w, GOPT(10));
         se_req(7, 25, 0);
         break;
     case -1:
@@ -1069,38 +1255,38 @@ CARDW *w;
     case -252:
     case -255:
     default:
-        mc_r_no_set(w, 11);
+        mc_r_no_set(w, GOPT(11));
         w->msg = 19;
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv10(w)
 CARDW *w;
 {
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     mc_mes_disp(40, 352, 18);
     if (mc_ok_ck(w, 562, 388, 0) != 0) {
-        mc_r_no_set(w, 12);
+        mc_r_no_set(w, GOPT(12));
     }
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 12
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv11(w)
 CARDW *w;
 {
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     mc_mes_disp(40, 352, w->msg);
     if (mc_ok_ck(w, 562, 388, 1) != 0) {
-        mc_r_no_set(w, 2);
+        mc_r_no_set(w, GOPT(2));
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOptsv(w)
 CARDW *w;
 {
@@ -1126,33 +1312,38 @@ CARDW *w;
     case 6:
         CardOptsv06(w);
         break;
+#ifdef VERSION_MHG
     case 7:
+        func_0022CF90(w);
+        break;
+#endif
+    case GOPTC(7):
         CardOptsv07(w);
         break;
-    case 8:
+    case GOPTC(8):
         CardOptsv08(w);
         break;
-    case 9:
+    case GOPTC(9):
         CardOptsv09(w);
         break;
-    case 10:
+    case GOPTC(10):
         CardOptsv10(w);
         break;
-    case 11:
+    case GOPTC(11):
         CardOptsv11(w);
         break;
-    case 12:
+    case GOPTC(12):
         w->done = 1;
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv00(w)
 CARDW *w;
 {
-    mc_r_no_set(w, 2);
+    mc_r_no_set(w, GCMS(2));
     w->sel = 0;
     w->port = 0;
     w->x33 = 0;
@@ -1162,22 +1353,22 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv12(w)
 CARDW *w;
 {
     switch (mc_yn_ck(w, 82, mc_mes_disp(40, 352, 44) + 0x12, &w->sel)) {
     case 1:
-        mc_r_no_set(w, 14);
+        mc_r_no_set(w, GCMS(14));
         break;
     case 0:
-        mc_r_no_set(w, 1);
+        mc_r_no_set(w, GCMS(1));
         break;
     }
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv01(w)
 CARDW *w;
 {
@@ -1193,7 +1384,7 @@ CARDW *w;
             w->timer = 4;
             break;
         case 2:
-            mc_r_no_set(w, 2);
+            mc_r_no_set(w, GCMS(2));
             w->sel = 0;
             break;
         }
@@ -1203,7 +1394,7 @@ CARDW *w;
         t = w->timer - 1;
         w->timer = t;
         if ((s16)t <= 0) {
-            mc_r_no_set(w, 3);
+            mc_r_no_set(w, GCMS(3));
             w->timer = 30;
             user_data_clr(0);
             user_data_clr(1);
@@ -1216,7 +1407,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv02(w)
 CARDW *w;
 {
@@ -1229,7 +1420,7 @@ CARDW *w;
         w->res[w->port] = r;
         switch (r) {
         case 0:
-            mc_r_no_set(w, 4);
+            mc_r_no_set(w, GCMS(4));
             w->timer = 30;
             McActNewClr();
             McActLoadSet(w->port, data_load_ptr);
@@ -1238,22 +1429,22 @@ CARDW *w;
             break;
         case -253:
         case -254:
-            mc_r_no_set(w, 5);
+            mc_r_no_set(w, GCMS(5));
             w->x02 = 0;
             edit_w[1] = 0;
             McActNewClr();
             McActCheckSet();
             break;
         case -252:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 12;
             break;
         case -255:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 11;
             break;
         default:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 20;
             break;
         }
@@ -1261,7 +1452,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv03(w)
 CARDW *w;
 {
@@ -1275,11 +1466,16 @@ CARDW *w;
         switch (r) {
         case 0:
             if (decode_to_ck(w) != 0) {
-                mc_r_no_set(w, 12);
+                mc_r_no_set(w, GCMS(12));
                 w->msg = 20;
                 return;
             }
+#ifdef VERSION_MHG
             mc_r_no_set(w, 5);
+            PatchLoadinDNAS_Init();
+#else
+            mc_r_no_set(w, 5);
+#endif
             w->x02 = 1;
             w->sel = 1;
             edit_w[1] = 0;
@@ -1289,13 +1485,13 @@ CARDW *w;
         case -1:
             break;
         case -255:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 11;
             break;
         case -253:
         case -252:
         default:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 20;
             break;
         }
@@ -1303,7 +1499,21 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G only (0x22D8E0): the new Cmsv step 5, message 0x1C until PatchLoadinDNAS_Main finishes */
+#if !defined(G_PART) || G_PART == 4
+void func_0022D8E0(w)
+CARDW *w;
+{
+    mc_mes_disp(40, 352, 28);
+    if (PatchLoadinDNAS_Main() != 0) {
+        mc_r_no_set(w, 6);
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv04(w)
 CARDW *w;
 {
@@ -1323,16 +1533,16 @@ CARDW *w;
     }
     mc_mes_disp(40, 352, 42);
     if (mc_remove_ck(w->port) != 0) {
-        mc_r_no_set(w, 12);
+        mc_r_no_set(w, GCMS(12));
         w->msg = 38;
         return;
     }
     if (w->pad & 0x20) {
         se_req(7, 19, 0);
-        mc_r_no_set(w, 6);
+        mc_r_no_set(w, GCMS(6));
         w->sel = 1;
         if (w->x02 == 1) {
-            if (option_w[0x10 + edit_w[1] * 0x480] == 0) {
+            if (option_w[0x10 + edit_w[1] * MCSLOT] == 0) {
                 w->msg = 23;
             } else {
                 w->msg = 22;
@@ -1342,14 +1552,18 @@ CARDW *w;
         }
     } else if (w->pad & 0x40) {
         se_req(7, 20, 0);
-        mc_r_no_set(w, 1);
+        mc_r_no_set(w, GCMS(1));
     }
     w->frame[1] = 5;
+#ifdef VERSION_MHG
+    disp_savesel_moji(edit_w, 0, 0, 0, (s8)edit_w[1]);   /* G: two more arguments */
+#else
     disp_savesel_moji(edit_w, 0, 0);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv05(w)
 CARDW *w;
 {
@@ -1358,27 +1572,27 @@ CARDW *w;
     y = mc_mes_disp(221, 136, w->msg);
     mc_mes_disp(40, 352, 42);
     if (mc_remove_ck(w->port) != 0) {
-        mc_r_no_set(w, 12);
+        mc_r_no_set(w, GCMS(12));
         w->msg = 38;
         return;
     }
     switch (mc_yn_ck(w, 203, y + 0x24, &w->sel)) {
     case 1:
-        mc_r_no_set(w, 5);
+        mc_r_no_set(w, GCMS(5));
         break;
     case 0:
         se_req(1, 115, 0);
         switch (w->res[w->port]) {
         case 0:
         case -253:
-            mc_r_no_set(w, 9);
+            mc_r_no_set(w, GCMS(9));
             break;
         case -254:
-            mc_r_no_set(w, 7);
+            mc_r_no_set(w, GCMS(7));
             w->sel = 1;
             break;
         default:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 19;
             break;
         }
@@ -1387,7 +1601,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv06(w)
 CARDW *w;
 {
@@ -1396,16 +1610,16 @@ CARDW *w;
     y = mc_mes_disp(40, 352, 13);
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     if (mc_remove_ck(w->port) != 0) {
-        mc_r_no_set(w, 12);
+        mc_r_no_set(w, GCMS(12));
         w->msg = 38;
         return;
     }
     switch (mc_yn_ck(w, 22, y + 0x12, &w->sel)) {
     case 1:
-        mc_r_no_set(w, 1);
+        mc_r_no_set(w, GCMS(1));
         break;
     case 0:
-        mc_r_no_set(w, 8);
+        mc_r_no_set(w, GCMS(8));
         w->timer = 30;
         McActFormatSet(w->port);
         break;
@@ -1413,7 +1627,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv07(w)
 CARDW *w;
 {
@@ -1426,13 +1640,13 @@ CARDW *w;
         w->res[w->port] = r;
         switch (r) {
         case 0:
-            mc_r_no_set(w, 9);
+            mc_r_no_set(w, GCMS(9));
             break;
         case -1:
             break;
         case -256:
         default:
-            mc_r_no_set(w, 12);
+            mc_r_no_set(w, GCMS(12));
             w->msg = 15;
             break;
         }
@@ -1440,14 +1654,19 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv08(w)
 CARDW *w;
 {
-    mc_r_no_set(w, 10);
+    mc_r_no_set(w, GCMS(10));
     w->timer = 30;
     func_534650(edit_w, edit_w[1]);
+#ifdef MC_GL
+    option_w[0x2C50] = edit_w[1];
+    option_w[0x2C51] = 3;
+#else
     option_w[0xFCE] = edit_w[1];
+#endif
     save_data_sub(1, 31);
     encode_data_002814E0(data_load_ptr);
     McActNewClr();
@@ -1457,7 +1676,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv09(w)
 CARDW *w;
 {
@@ -1469,7 +1688,7 @@ CARDW *w;
     w->res[w->port] = r;
     switch (r) {
     case 0:
-        mc_r_no_set(w, 11);
+        mc_r_no_set(w, GCMS(11));
         decode_to_ck(w);
         check_sum_set(w);
         w->x33 = 1;
@@ -1481,38 +1700,38 @@ CARDW *w;
     case -252:
     case -255:
     default:
-        mc_r_no_set(w, 12);
+        mc_r_no_set(w, GCMS(12));
         w->msg = 19;
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv10(w)
 CARDW *w;
 {
     mc_mes_disp(40, 352, 24);
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     if (mc_ok_ck(w, 562, 388, 3) != 0) {
-        mc_r_no_set(w, 13);
+        mc_r_no_set(w, GCMS(13));
     }
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 14
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv11(w)
 CARDW *w;
 {
     mc_mes_disp(40, 352, w->msg);
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     if (mc_ok_ck(w, 562, 388, 1) != 0) {
-        mc_r_no_set(w, 1);
+        mc_r_no_set(w, GCMS(1));
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardCmsv(w)
 CARDW *w;
 {
@@ -1535,41 +1754,46 @@ CARDW *w;
         CardCmsv03(w);
         w->frame[1] = 2;
         break;
+#ifdef VERSION_MHG
     case 5:
+        func_0022D8E0(w);
+        break;
+#endif
+    case GCMS(5):
         CardCmsv04(w);
         break;
-    case 6:
+    case GCMS(6):
         CardCmsv05(w);
         w->frame[1] = 2;
         break;
-    case 7:
+    case GCMS(7):
         CardCmsv06(w);
         w->frame[1] = 2;
         break;
-    case 8:
+    case GCMS(8):
         CardCmsv07(w);
         w->frame[1] = 2;
         break;
-    case 9:
+    case GCMS(9):
         CardCmsv08(w);
         w->frame[1] = 2;
         break;
-    case 10:
+    case GCMS(10):
         CardCmsv09(w);
         w->frame[1] = 2;
         break;
-    case 11:
+    case GCMS(11):
         CardCmsv10(w);
         w->frame[1] = 2;
         break;
-    case 12:
+    case GCMS(12):
         CardCmsv11(w);
         w->frame[1] = 2;
         break;
-    case 13:
+    case GCMS(13):
         w->done = 1;
         break;
-    case 14:
+    case GCMS(14):
     default:
         w->done = 2;
         break;
@@ -1577,20 +1801,22 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardConld00(w)
 CARDW *w;
 {
     mc_r_no_set(w, 1);
     w->port = 0;
     w->x33 = 0;
-    user_data_clr(0);
+#ifndef VERSION_MHG
+    user_data_clr(0);       /* G clears the slots in CardConld01 instead */
     user_data_clr(1);
     user_data_clr(2);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardConld01(w)
 CARDW *w;
 {
@@ -1611,6 +1837,11 @@ CARDW *w;
     case 1:
         mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
         if (w->timer <= 0) {
+            #ifdef VERSION_MHG
+            user_data_clr(0);
+            user_data_clr(1);
+            user_data_clr(2);
+#endif
             mc_r_no_set(w, 2);
             w->timer = 30;
             McActInit(0);
@@ -1621,7 +1852,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 15
+#if !defined(G_PART) || G_PART == 4
 void CardConld02(w)
 CARDW *w;
 {
@@ -1663,7 +1894,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardConld03(w)
 CARDW *w;
 {
@@ -1682,7 +1913,11 @@ CARDW *w;
                 return;
             }
             check_sum_set(w);
+#ifdef VERSION_MHG
+            if (save_data_sub(0, 15) == 7) {
+#else
             if (save_data_sub(0, 31) == 7) {
+#endif
                 mc_r_no_set(w, 4);
                 w->msg = 26;
                 return;
@@ -1705,7 +1940,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 16
+#if !defined(G_PART) || G_PART == 4
 void CardConld04(w)
 CARDW *w;
 {
@@ -1718,7 +1953,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 16
+#if !defined(G_PART) || G_PART == 4
 void CardConld05(w)
 CARDW *w;
 {
@@ -1730,7 +1965,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 16
+#if !defined(G_PART) || G_PART == 4
 void CardConld(w)
 CARDW *w;
 {
@@ -1776,7 +2011,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 16
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv100(w)
 CARDW *w;
 {
@@ -1787,7 +2022,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 16
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv101(w)
 CARDW *w;
 {
@@ -1822,7 +2057,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv102(w)
 CARDW *w;
 {
@@ -1862,12 +2097,15 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv103(w)
 CARDW *w;
 {
     mc_r_no_set(w, 4);
-    Save_userdata(select_w[0xB6]);
+    Save_userdata(select_w[SELW_B6]);
+#ifdef MC_GL
+    option_w[0x2C51] = 3;
+#endif
     save_data_sub(1, 31);
     encode_data_002814E0(data_load_ptr);
     McActSaveSet(w->port, data_load_ptr);
@@ -1875,7 +2113,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv104(w)
 CARDW *w;
 {
@@ -1906,7 +2144,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 17
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv105(w)
 CARDW *w;
 {
@@ -1917,7 +2155,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv106(w)
 CARDW *w;
 {
@@ -1934,7 +2172,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 18
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv107(w)
 CARDW *w;
 {
@@ -1972,7 +2210,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 18
+#if !defined(G_PART) || G_PART == 4
 void CardOnsv1(w)
 CARDW *w;
 {
@@ -2022,7 +2260,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv000(w)
 CARDW *w;
 {
@@ -2049,7 +2287,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 19
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv012(w)
 CARDW *w;
 {
@@ -2070,7 +2308,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 19
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv001(w)
 CARDW *w;
 {
@@ -2109,7 +2347,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv002(w)
 CARDW *w;
 {
@@ -2154,7 +2392,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv003(w)
 CARDW *w;
 {
@@ -2196,7 +2434,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv004(w)
 CARDW *w;
 {
@@ -2225,7 +2463,7 @@ CARDW *w;
         mc_r_no_set(w, 6);
         w->sel = 1;
         if (w->x02 == 1) {
-            if (option_w[0x10 + edit_w[1] * 0x480] == 0) {
+            if (option_w[0x10 + edit_w[1] * MCSLOT] == 0) {
                 w->msg = 23;
             } else {
                 w->msg = 22;
@@ -2238,11 +2476,15 @@ CARDW *w;
         mc_r_no_set(w, 1);
     }
     w->frame[1] = 6;
+#ifdef VERSION_MHG
+    disp_savesel_moji(edit_w, 2, 0, 0, (s8)edit_w[1]);   /* G: two more arguments */
+#else
     disp_savesel_moji(edit_w, 2, 0);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv005(w)
 CARDW *w;
 {
@@ -2279,7 +2521,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 20
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv006(w)
 CARDW *w;
 {
@@ -2305,7 +2547,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 20
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv007(w)
 CARDW *w;
 {
@@ -2332,15 +2574,20 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv008(w)
 CARDW *w;
 {
     mc_r_no_set(w, 10);
     w->timer = 30;
     Save_userdata(edit_w[1]);
+#ifdef MC_GL
+    option_w[0x2C51] = 3;
+    option_w[0x2C50] = edit_w[1];
+#else
     option_w[0xFCE] = edit_w[1];
-    select_w[0xB6] = edit_w[1];
+#endif
+    select_w[SELW_B6] = edit_w[1];
     save_data_sub(1, 31);
     encode_data_002814E0(data_load_ptr);
     McActSaveSet(w->port, data_load_ptr);
@@ -2349,7 +2596,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv009(w)
 CARDW *w;
 {
@@ -2380,7 +2627,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 21
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv010(w)
 CARDW *w;
 {
@@ -2392,7 +2639,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 21
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv011(w)
 CARDW *w;
 {
@@ -2404,7 +2651,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 21
+#if !defined(G_PART) || G_PART == 4
 void CardOfsv0(w)
 CARDW *w;
 {
@@ -2481,7 +2728,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 22
+#if !defined(G_PART) || G_PART == 5
 void CardEasysv00(w)
 CARDW *w;
 {
@@ -2492,7 +2739,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 22
+#if !defined(G_PART) || G_PART == 5
 void CardEasysv01(w)
 CARDW *w;
 {
@@ -2526,7 +2773,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 22
+#if !defined(G_PART) || G_PART == 5
 void CardEasysv02(w)
 CARDW *w;
 {
@@ -2552,7 +2799,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 22
+#if !defined(G_PART) || G_PART == 5
 void CardEasysv03(w)
 CARDW *w;
 {
@@ -2563,7 +2810,7 @@ CARDW *w;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 22
+#if !defined(G_PART) || G_PART == 5
 void CardEasysv(w)
 CARDW *w;
 {
@@ -2594,7 +2841,7 @@ CARDW *w;
 void func_002306C0(CARDW *);
 void func_00230390(CARDW *);
 void func_00231440(CARDW *);
-#if !defined(G_PART) || G_PART == 22
+#if !defined(G_PART) || G_PART == 5
 u8 McCardOperation(void)
 {
     CARDW *w = &card_w;

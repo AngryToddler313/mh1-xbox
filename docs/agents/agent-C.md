@@ -1775,3 +1775,34 @@ G facts (all byte-verified):
 - SETW (set objects) is a different layout in G (flag at 0x1F, move at 0x2C): setwork2.c and the set*.c files in game need a G SETW.
 Not done, worth doing next: mccomb (see above), Pl_status_set/Pl_atck_adj_calc/Pl_def_adj_calc/Skill_set_PL/Pl_reg_calc (skill ids moved),
 camera (CAMS layout), pl_snd01 (two 20 KB functions), trans_stage, hit_mark_set_new, sound ids, SETW.
+
+### G round 5 (main/sub_main lane, 13-14 Oct 2026)
+Result: G matched 11.1% -> 11.67% of bytes (VERSION=mhg tools/progress.py); G 7 OK, MH1 5 OK, PC builds (both), test_quest_loop OK,
+hidden G new game still reaches the village (RT_NO_NPC=1, house room).
+- Skill functions (pl53.c): G Pl_status_set / Pl_atck_adj_calc / Pl_def_adj_calc / Pl_reg_calc match (G's Get_equip_value takes the hunter;
+  item ids 0x21..0x24, skills 0x1F/0x20/0x60, 0x25/0x5B..0x5F, 0x74.. and 0x84..0x89 are the new skill ids). G's Skill_set_PL is a new
+  "skill points" system: armor rows (0x20 bytes, D_005207A0[kind][idx], five (skill id, points) pairs at +0x14) give points per skill
+  (sub_main_func_004EF8E0, the 0x2B/0x29/0x2A ids multiply/add), the table D_0050A380 (16-byte rows: id, three "points <= lim -> skill"
+  pairs, three "points >= lim -> skill" pairs) turns points into skills, five strongest kept (pl+0x910 skill, 0x938 source id,
+  0x941 points: PLW skill/skill_src/skill_pts). Near-match C (not linked): sub_main_func_004EF470 (7 instrs off), 004EF7A0 (14),
+  004EF8E0, 004EF540 (only scheduling) and Skill_set_PL (18, store order of the clear loop). MWCC lessons: `r += x` (not `r = r + x`)
+  keeps a non-folded start value; one expression `cond ? f(a) : f(b)` shares the s16 conversion; fields instead of byte offsets
+  fix the `addu v1,a0,v1` operand order; int loop counters do not get dsll32 sign extension.
+- BGM ids (GBGM()/GBGM2() in include/gwx.h): G's stream ids from 73 up are +3 (bgm01/04, fight_bgm_set, option_init) and the village
+  special track is 0x1D (MH1 0x1B). bgm01..04 now match G as whole files (also the PC near-match bgm_nm.c uses the same macros).
+  G fight_bgm_set picks by area byte game_w+0x2E (== 1: by stage, else fight_bgm_tbl[area], 11 entries at 0x2895D8, now in g_names.txt).
+  game_w+0x1E0 is 0x18E in G (adx_se_set/stop). lobby_bgm_set's quest bit is 0x2739 in G (G's Quest_clear_bit_ck maps it; the PC's MH1
+  Quest_clear_bit_ck reads whatever is there: untested).
+- mccomb (main/mc/mccomb.c): 92 functions match G in 5 parts. G inserted one step in CardOptsv (state 7 = func_0022CF90) and CardCmsv
+  (state 5 = func_0022D8E0); GOPT()/GCMS() shift the targets, GOPTC() the case labels; decode_to_ck must be non-static in G (the callers
+  recompute their argument registers; MC_DTC_LINK); G's font text goes through a printf-style wrapper func_0012BDD0 (PS2 only); Disp_button
+  has 20 where MH1 passes 0; option_w layout: slot stride 0xE00, flags at +0x2C4C (word) and +0x2C50..55, card image 0x9860 words.
+  mc_sel_ck and trans_card_0 are kept as G original bytes (c_rawfuncs). All G layout constants are under MC_GL (= G and __MWERKS__): the
+  PC build of G keeps MH1's layout code (using G's layout there made the PC village crash in Lb_St_unique_adr_set). Not done:
+  G-only functions 0x22B0D0 (decode of the MH1-format card image), 0x22B8C0, 0x22BA20 (message list print), 0x22FDE0..0x231600 (30 new
+  card steps), 0x2F8 McCardOperation extras. tools/mhg_parts.py: PARTS_TRIES / PARTS_DEBUG env; a K&R function head with #ifdef inside
+  breaks its span guard (use a macro instead, e.g. MC_DTC_LINK).
+- setwork2.c is a whole-file match in G (SETW G layout was already in include/set.h).
+- Not done: camera (CAMS moved in a non-uniform way: 0x48->0x4C, 0x68->0x70, 0x6A->0x74, 0x94->0x84, 0xDC->0xCC.. see tools/mhg_offdiff.py
+  on the cam functions; get_angle reads ax/ay at 0xDC in G), pl_snd01 (ef_move_sub is "missing" in the map), trans_stage (not even
+  matched in MH1), hit_mark_set_new, McCardOperation extras.

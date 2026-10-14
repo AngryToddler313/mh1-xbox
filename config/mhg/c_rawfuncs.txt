@@ -5,3 +5,5 @@ game 0x00549A20 0x34 em_def_attack_set
 game 0x00549A60 0x34 em_def_defence_set
 game 0x00549B20 0x90 Bdora_hp_ck
 game 0x005499A0 0x74 game_func_005499A0
+main 0x0022BD50 0x1C8 mc_sel_ck
+main 0x0022C130 0x240 trans_card_0
