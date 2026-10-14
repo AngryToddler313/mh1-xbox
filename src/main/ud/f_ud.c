@@ -104,14 +104,19 @@ s16 Ud_item_num_ck(u16);
 extern u32 D_0035178C[];
 int Now_equip_ck(UDW *u, int idx);
 
+#if !defined(G_PART)
 void Load_userdata(int slot) {
     memcpy(User_data, option_w + (slot & 0xFF) * 0x480 + 0x10, 0x480);
 }
+#endif
 
+#if !defined(G_PART)
 void Save_userdata(int slot) {
     memcpy(option_w + (slot & 0xFF) * 0x480 + 0x10, User_data, 0x480);
 }
+#endif
 
+#if !defined(G_PART)
 void Set_equip_data(EQPL *pl, EQUD *u) {
     Set_equip_idx(u);
     pl->x11 = u->x01;
@@ -128,24 +133,32 @@ void Set_equip_data(EQPL *pl, EQUD *u) {
     pl->x356 = u->a3D5;
     pl->x357 = u->a3D6;
 }
+#endif
 
 /* original bytes: build/raw/Set_userdata.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void Set_userdata(PLW *pl)
 {
 #include "Set_userdata.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 1
 void ItemCopy_Pl2Ud(PLW *pl) {
     memcpy((u8 *)User_data + 0x37C, (u8 *)pl + 0x828, 0x50);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void ItemCopy_Ud2Pl(PLW *pl) {
     memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Gold_add(int n) {
     User_data[0].gold = User_data[0].gold + n;
     if (User_data[0].gold > 9999999) {
@@ -155,7 +168,9 @@ void Gold_add(int n) {
         User_data[0].gold = 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 u8 Get_hunter_rank(UDW *u) {
     u32 *p = h_rank_tbl;
     u8 r = 0;
@@ -173,7 +188,9 @@ u8 Get_hunter_rank(UDW *u) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 void Get_hunter_status(UDW *u, u8 *rank, u32 *cur, u32 *next) {
     u32 *p;
     u32 t;
@@ -194,11 +211,15 @@ void Get_hunter_status(UDW *u, u8 *rank, u32 *cur, u32 *next) {
     }
     *next = t;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void stop_level(void *p, int n) {
     *(u32 *)((u8 *)p + 0x1C) = D_0035178C[n] - 1;
 }
+#endif
 
+#if !defined(G_PART)
 static int Hunter_point_add_sub(UDW *p, int add) {
     u8 rank = p->rank;
     u16 ret = 0;
@@ -259,20 +280,26 @@ clamp:
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Hunter_point_add(int n) {
     Hunter_point_add_sub(User_data, n);
 }
+#endif
 
 /* original bytes: build/raw/Ud_item_stack.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int Ud_item_stack(s16 id, s16 num)
 {
 #include "Ud_item_stack.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 s16 Ud_item_num_ck(u16 id) {
     s16 i;
     UDW *u = User_data;
@@ -283,7 +310,9 @@ s16 Ud_item_num_ck(u16 id) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Ud_item_num_ck2(u16 id)
 {
   s16 i;
@@ -310,7 +339,9 @@ int Ud_item_num_ck2(u16 id)
 
   return Item_data[id][3];
 }
+#endif
 
+#if !defined(G_PART)
 int Ud_item_num_ck3(u16 id) {
     s16 i;
     int new_var;
@@ -336,7 +367,9 @@ int Ud_item_num_ck3(u16 id) {
     }
     return n == 0 ? -1 : Item_data[id][3];
 }
+#endif
 
+#if !defined(G_PART)
 int Ud_item_search_space(void) {
     s16 i;
     for (i = 0; i < 20; i++) {
@@ -346,7 +379,9 @@ int Ud_item_search_space(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Ud_item_erase(s16 i) {
     UDW *u = User_data;
     if (i >= 20) {
@@ -359,7 +394,9 @@ int Ud_item_erase(s16 i) {
     u->item[i].id = 0;
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 s16 Ud_stock_item_num_ck(u16 id) {
     s16 i;
     UDW *u = User_data;
@@ -370,7 +407,9 @@ s16 Ud_stock_item_num_ck(u16 id) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 s16 Ud_stock_item_num_ck3(u16 id) {
     s16 i;
     UDW *u = User_data;
@@ -382,36 +421,50 @@ s16 Ud_stock_item_num_ck3(u16 id) {
     }
     return n;
 }
+#endif
 
 /* original bytes: build/raw/Ud_u_item_stack.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s16 Ud_u_item_stack(u16 id, u16 num)
 {
 #include "Ud_u_item_stack.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 4
 void Event_flag_set(int n) {
     User_data->evflag[n / 16] |= (u16)(1 << (n & 0xF));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void Event_flag_clear(int n) {
     User_data->evflag[n / 16] &= (u16)~(1 << (n & 0xF));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 int Event_flag_ck(int n) {
     return (User_data->evflag[n / 16] & (1 << (n & 0xF))) != 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Omake_flag_set(int n) {
     *(s16 *)(option_w + 0xFCC) |= (s16)(1 << n);
 }
+#endif
 
+#if !defined(G_PART)
 int Omake_flag_ck(int n) {
     return (*(s16 *)(option_w + 0xFCC) & (1 << n)) != 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Set_mini_data_to_pl(s8 *key, u8 *pl) {
     u8 *m;
     s8 id;
@@ -433,7 +486,9 @@ void Set_mini_data_to_pl(s8 *key, u8 *pl) {
     memcpy(pl + 0x352, m + 0xE, 6);
     strcpy((char *)pl + 0x8D4, room_member_handle[id]);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 s8 Get_pl_id(s8 *key) {
     s8 i;
     s8 j;
@@ -449,7 +504,9 @@ s8 Get_pl_id(s8 *key) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void Copy_user_id(u8 no)
 {
   u8 *d = (((u8 *) (&game_w)) + 0x1E8) - (-(no * 8));
@@ -462,7 +519,9 @@ void Copy_user_id(u8 no)
   d[6] = my_user_id[6];
   d[7] = my_user_id[7];
 }
+#endif
 
+#if !defined(G_PART)
 s16 Get_atk_value(u8 *p, u8 kind) {
     s16 r = 0;
     switch (kind) {
@@ -476,7 +535,9 @@ s16 Get_atk_value(u8 *p, u8 kind) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 s16 Get_equip_value(u8 kind) {
     UDW *u = User_data;
     s16 r = 0;
@@ -542,24 +603,32 @@ s16 Get_equip_value(u8 kind) {
     }
     return r;
 }
+#endif
 
 /* original bytes: build/raw/Get_bowgun_atk.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s16 Get_bowgun_atk(u8 *w)
 {
 #include "Get_bowgun_atk.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 void Quest_clear_bit_set(int n) {
     User_data->qclear[n / 32] |= 1LL << (n % 32);
 }
+#endif
 
+#if !defined(G_PART)
 int Quest_clear_bit_ck(int n) {
     return (User_data->qclear[n / 32] & (1LL << (n % 32))) != 0;
 }
+#endif
 
+#if !defined(G_PART)
 u8 Warehouse_search_space(void) {
     UDW *u = User_data;
     s16 i;
@@ -570,7 +639,9 @@ u8 Warehouse_search_space(void) {
     }
     return 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 u8 Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
     s16 i;
     for (i = 0; i < 64; i++) {
@@ -584,7 +655,9 @@ u8 Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
     }
     return 0xFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 int Warehouse_equip_erase(UDW *u, u16 idx) {
     if (Now_equip_ck(u, idx) == 0) {
         u->ware[idx].use = 0;
@@ -595,7 +668,9 @@ int Warehouse_equip_erase(UDW *u, u16 idx) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static void Equip_idx_renew(UDW *u) {
     u8 m = 0;
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
@@ -606,7 +681,9 @@ static void Equip_idx_renew(UDW *u) {
     if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * 0x14))) { u->widx[4] = 0xFF; }
     if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * 0x14))) { u->widx[1] = 0xFF; }
 }
+#endif
 
+#if !defined(G_PART)
 int Warehouse_equip(UDW *u, u8 idx) {
     if (u->ware[idx].use == 0) {
         return 0;
@@ -629,7 +706,9 @@ int Warehouse_equip(UDW *u, u8 idx) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int Warehouse_equip_out(UDW *u, u32 kind) {
     switch (kind) {
     case 0: u->widx[1] = 0xFF; break;
@@ -645,7 +724,9 @@ int Warehouse_equip_out(UDW *u, u32 kind) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 static int equip_idx_ck(UDW *u, u8 idx, u8 k1, u8 k2) {
     if (idx == 0xFF) {
         return 0;
@@ -659,7 +740,9 @@ static int equip_idx_ck(UDW *u, u8 idx, u8 k1, u8 k2) {
 one:
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void Set_equip_idx(UDW *u) {
     if (equip_idx_ck(u, u->widx[0], 6, 7) == 1) {
         u->wkind = u->ware[u->widx[0]].kind;
@@ -696,7 +779,9 @@ void Set_equip_idx(UDW *u) {
         u->armor[4] = 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int Now_equip_ck(UDW *u, int idx)
 {
   if (u->widx[0] == idx)
@@ -728,11 +813,15 @@ int Now_equip_ck(UDW *u, int idx)
   }
   return u->widx[5] == idx;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int Warehouse_space_ck(UDW *u, int idx) {
     return u->ware[idx].use == 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     u8 *ent;
     s16 j;
@@ -799,36 +888,46 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static int gun_check(UDW *u, s16 i) {
     return u->ware[i].kind == 7;
 }
+#endif
 
 /* original bytes: build/raw/Gun_level_up.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void Gun_level_up(UDW *u, s16 i)
 {
 #include "Gun_level_up.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 int Get_Gun_level(UDW *u, s16 i) {
     if (gun_check(u, i) == 0) {
         return 0;
     }
     return u->ware[i].opt & 0xF;
 }
+#endif
 
 /* original bytes: build/raw/Gun_option_ck.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int Gun_option_ck(UDW *u, s16 i, int mask)
 {
 #include "Gun_option_ck.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 void Gun_barrel_set(UDW *u, s16 i, int off) {
     if (gun_check(u, i) != 0) {
         if (off == 0) {
@@ -839,7 +938,9 @@ void Gun_barrel_set(UDW *u, s16 i, int off) {
         u->ware[i].opt &= 0xFFDF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Gun_Silencer_set(UDW *u, s16 i, int off) {
     if (gun_check(u, i) != 0) {
         if (off == 0) {
@@ -850,7 +951,9 @@ void Gun_Silencer_set(UDW *u, s16 i, int off) {
         u->ware[i].opt &= 0xFFEF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Gun_Scope_set(UDW *u, s16 i, int off) {
     if (gun_check(u, i) != 0) {
         if (off == 0) {
@@ -860,7 +963,9 @@ void Gun_Scope_set(UDW *u, s16 i, int off) {
         u->ware[i].opt &= 0xFFBF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int Equip_ok_ck(UDW *u, UD_WARE *w) {
     u8 m = 0;
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
@@ -877,7 +982,9 @@ int Equip_ok_ck(UDW *u, UD_WARE *w) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int Get_equip_bit(UDW *u, UD_WARE *w) {
     switch (w->kind) {
     case 2: return Armor_Head_Data[w->id][2];
@@ -890,7 +997,9 @@ int Get_equip_bit(UDW *u, UD_WARE *w) {
     default: return 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void wyvern_kill_cnt_up(UDW *u, int n) {
     if (Online_ck() != 0) {
         if (n == 0) {
@@ -906,7 +1015,9 @@ void wyvern_kill_cnt_up(UDW *u, int n) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Gunner_wasure_ck(UDW *u) {
     s16 i;
     u8 *p;
@@ -925,7 +1036,9 @@ void Gunner_wasure_ck(UDW *u) {
         set01_set2(lit_1515_003735D0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 int Ex_quest_ck(UDW *u, u8 n) {
     s16 j;
     u16 *t;
@@ -950,4 +1063,5 @@ int Ex_quest_ck(UDW *u, u8 n) {
     }
     return 0;
 }
+#endif
 

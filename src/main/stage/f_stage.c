@@ -47,6 +47,7 @@ void flSetRenderState();
 void clay_attr_set();
 void flExecuteClay();
 
+#if !defined(G_PART)
 void stage_mv_ck(void) {
     STG_MV *p;
     PLW *pl = &player_work[game_w.master];
@@ -113,31 +114,41 @@ void stage_mv_ck(void) {
         }
     }
 }
+#endif
 
 
+#if !defined(G_PART)
 void clr_stg_work(void) {
     memset(&stage_work, 0, 0x64);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void clr_flash(void) {
     flash_flag = 0;
     flash_timer = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s16 Stage_env_ck(u8 stg) {
     return Stg_env_type[stg];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Pile_on(void) {
     game_w.x1B2 = 1;
     if (Pl_master_ck() != 0) {
         PilebunkerCameraRequest();
     }
 }
+#endif
 
 /* Ambient sound sources per stage: stage_i starts the first one and
  * stage_se_move re-targets the nearest one to the master player every 4th
  * frame.  stNN_se_pos hold x/z pairs. */
+#if !defined(G_PART)
 void stage_i(STGW *w) {
     f32 pos[3];
     f32 *p;
@@ -186,3 +197,4 @@ void stage_i(STGW *w) {
     pos[2] = p[1];
     se_req2(7, 0x21, 0, pos, n, 0);
 }
+#endif

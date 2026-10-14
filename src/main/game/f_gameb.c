@@ -4,6 +4,7 @@
 
 /* Mode 5 (game4): wait until every player is ready (select_w ready flags),
  * then count down and return to mode 0.  Shows a "waiting" text. Guess. */
+#if !defined(G_PART)
 void game4(void) {
     GAME_W *gw = &game_w;
     SELECT_W *sel = &select_w;
@@ -63,8 +64,10 @@ void game4(void) {
     }
     font_draw();
 }
+#endif
 
 /* Mode 6 (game5): result screen with a 60-frame network sync tick. */
+#if !defined(G_PART)
 void game5(void) {
     s16 t;
 
@@ -78,7 +81,9 @@ void game5(void) {
     trans();
     font_draw();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int game_core(void) {
     swset();
     move();
@@ -86,3 +91,4 @@ int game_core(void) {
     hit_check();
     return 0;
 }
+#endif
