@@ -70,49 +70,147 @@ extern u16 System_timer;
 f32 flSin(f32);
 u8 *sortup_idx_chk();
 void se_req();
+#ifdef VERSION_MHG
+void Skill_set_PL();
+/* G (lobby 0x5524C0): more fields to clear (the 16-bit cursors, the new +0x33), the box starts "shown" (+0x30 = 1),
+ * the hunter's skills are collected (Skill_set_PL) and the camera zooms on the hunter (G's NPCZoomInCameraRequest(0):
+ * not ported, the camera work of G is laid out differently) */
 s32 Lb_ItemBox_open() {
-    F(s32, ib, 4) = 0;
-    F(s16, ib, 2) = 0;
-    F(s8, ib, 0xB) = F(u16, ib, 8) = 0;
-    F(s8, ib, 0x1F) = 0;
-    F(u8, ib, 0x20) = 0xFF;
+    F(s32, ib, IBO(4)) = 0;
+    F(s16, ib, IBO(2)) = 0;
+    F(s32, ib, 0x10) = 0;
+    F(s8, ib, IBO(0xB)) = 0;
+    F(s8, ib, IBO(0x1F)) = 0;
+    F(u8, ib, IBO(0x20)) = 0xFF;
+    F(u8, ib, 0x33) = 0;
+    *(s8 *)0x39DAD1 = 5;
+    *(s8 *)0x39DAD0 = 0;
+    *(s16 *)0x39DAD2 = 0;
+    F(u8, ib, 0x30) = 1;
+    Skill_set_PL(player_work + game_w.master * 0xA00);
+    se_req(7, 0x11, 0);
+    return 1;
+}
+#else
+s32 Lb_ItemBox_open() {
+    F(s32, ib, IBO(4)) = 0;
+    F(s16, ib, IBO(2)) = 0;
+    F(s8, ib, IBO(0xB)) = F(u16, ib, IBO(8)) = 0;
+    F(s8, ib, IBO(0x1F)) = 0;
+    F(u8, ib, IBO(0x20)) = 0xFF;
     *(s8 *)0x39DAD1 = 5;
     *(s8 *)0x39DAD0 = 0;
     *(s16 *)0x39DAD2 = 0;
     se_req(7, 0x11, 0, 0xFF);
     return 1;
 }
+#endif
 void ListSelect();
 int itembox_stock();
 int itembox_pickup();
 int itembox_equipchange();
 int itembox_sortup();
 int itembox_sellout();
+#ifdef VERSION_MHG
+void NPCZoomInCameraCancel();
+/* G (lobby 0x552580): bit 0x8000 of the pad toggles +0x30 (the box shown / hidden: while hidden the pad counts as 0);
+ * leaving the tab list clears the new fields +0x2F; closing the box cancels the camera zoom */
 s32 Lb_ItemBox_mv(int arg0) {
-    s32 s0;
+    s32 s0, s1;
     u8 *a;
-    s0 = arg0 & 0xFFFF;
     F(s8, ib, 0) = 0;
+    if (arg0 & 0x8000) {
+        F(u8, ib, 0x30) = (F(u8, ib, 0x30) + 1) & 1;
+    }
+    s1 = arg0;
+    if (F(u8, ib, 0x30) == 0) {
+        s1 = 0;
+    }
     a = ib;
-    switch (a[4]) {
+    s0 = s1 & 0xFFFF;
+    switch (a[IBO(4)]) {
     case 0:
         *(s8 *)0x39DAD0 = 0;
         if (!(s0 & 0x40)) {
-            ListSelect(a + 2, arg0, 5);
+            ListSelect(a + IBO(2), s1, 5);
             if (s0 & 0x20) {
-                arg0 = 0;
+                s1 = 0;
                 F(s8, ib, 3) = 0;
-                F(s16, ib, 8) = F(u8, ib, 0xB) = 0;
-                F(s8, ib, 0x1F) = 0;
-                F(s8, ib, 0x1D) = -1;
-                F(u8, ib, 0x1E) = 0xFF;
+                F(s8, ib, IBO(0xB)) = 0;
+                F(s32, ib, 0x10) = 0;
+                F(s8, ib, IBO(0x1F)) = 0;
+                F(s8, ib, 0x24) = 0;
+                F(s8, ib, IBO(0x1D)) = -1;
+                F(s16, ib, IBO(0x1E)) = -1;
+                F(s8, ib, 0x2F) = 0;
+                F(s8, ib, 1) = 0;
                 F(u8, ib, 4) = F(u8, ib, 4) + 1;
                 F(s8, ib, 5) = 0;
                 se_req(7, 0x13, 0, -1);
     case 1:
                 a = ib;
                 *(u8 *)0x39DAD0 = 1;
-                switch (a[2]) {
+                switch (a[IBO(2)]) {
+                case 0:
+                    s0 = itembox_stock(s1) & 0xFFFF;
+                    break;
+                case 1:
+                    s0 = itembox_pickup(s1) & 0xFFFF;
+                    break;
+                case 2:
+                    s0 = itembox_equipchange(s1) & 0xFFFF;
+                    break;
+                case 3:
+                    s0 = itembox_sortup(s1) & 0xFFFF;
+                    break;
+                case 4:
+                    s0 = itembox_sellout(s1) & 0xFFFF;
+                    break;
+                }
+                if ((u16)s0 & 0x40) {
+                    s0 = (u16)(s0 & 0xFFBF);
+                    *(u8 *)0x39DAD0 = 0;
+                    F(u8, ib, 4) = 0;
+                    se_req(7, 0x14, 0);
+                }
+            }
+        }
+        break;
+    }
+    if ((u16)s0 & 0x40) {
+        NPCZoomInCameraCancel();
+        se_req(7, 0x14, 0);
+        return 0;
+    }
+    F(s8, ib, 0) = 1;
+    return 1;
+}
+#else
+s32 Lb_ItemBox_mv(int arg0) {
+    s32 s0;
+    u8 *a;
+    s0 = arg0 & 0xFFFF;
+    F(s8, ib, IBO(0)) = 0;
+    a = ib;
+    switch (a[IBO(4)]) {
+    case 0:
+        *(s8 *)0x39DAD0 = 0;
+        if (!(s0 & 0x40)) {
+            ListSelect(a + IBO(2), arg0, 5);
+            if (s0 & 0x20) {
+                arg0 = 0;
+                F(s8, ib, IBO(3)) = 0;
+                F(s16, ib, IBO(8)) = F(u8, ib, IBO(0xB)) = 0;
+                F(s8, ib, IBO(0x1F)) = 0;
+                F(s8, ib, IBO(0x1D)) = -1;
+                F(u8, ib, IBO(0x1E)) = 0xFF;
+                F(u8, ib, IBO(4)) = F(u8, ib, IBO(4)) + 1;
+                F(s8, ib, IBO(5)) = 0;
+                se_req(7, 0x13, 0, -1);
+    case 1:
+                a = ib;
+                *(u8 *)0x39DAD0 = 1;
+                switch (a[IBO(2)]) {
                 case 0:
                     s0 = itembox_stock(arg0) & 0xFFFF;
                     break;
@@ -132,7 +230,7 @@ s32 Lb_ItemBox_mv(int arg0) {
                 if ((u16)s0 & 0x40) {
                     s0 = (u16)(s0 & 0xFFBF);
                     *(u8 *)0x39DAD0 = 0;
-                    F(u8, ib, 4) = 0;
+                    F(u8, ib, IBO(4)) = 0;
                     se_req(7, 0x14, 0);
                 }
             }
@@ -143,10 +241,11 @@ s32 Lb_ItemBox_mv(int arg0) {
         se_req(7, 0x14, 0);
         return 0;
     }
-    F(s8, ib, 0) = 1;
+    F(s8, ib, IBO(0)) = 1;
     return 1;
 }
 
+#endif
 extern char frame_itembox_cmd[];
 extern u32 D_3C733C[];
 extern char *yes_or_no[2];
@@ -173,7 +272,7 @@ int disp_itembox_cmd(int a) {
     } else {
         *(s32 *)(frame_itembox_cmd + 0x10) = 0x808080;
     }
-    return DispFrameList(frame_itembox_cmd, 0, F(u8, ib, 2));
+    return DispFrameList(frame_itembox_cmd, 0, F(u8, ib, IBO(2)));
 }
 
 void item_explanation(a, b, c)
@@ -191,31 +290,31 @@ int c;
 int yes_no_disp_sub(void) {
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x1B0, 0x18E);
-    return font_print_sp(yes_or_no[F(u8, ib, 0x21)]);
+    return font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
 }
 
 /* amount selector: two-digit number with up/down arrows */
 void kosuu_disp_sub(void) {
     s8 buf[8];
     u8 *w;
-    if (F(s16, ib, 0x1A) != 0x270F) {
+    if (F(s16, ib, IBO(0x1A)) != 0x270F) {
         flfntSetSize(0x12, 0x12);
         font_set_palette(0);
         flfntLocate(0x22E, 0x17A);
         w = ib;
         buf[0] = 0x82;
-        buf[1] = F(s16, w, 0x1A) / 10 + 0x4F;
+        buf[1] = F(s16, w, IBO(0x1A)) / 10 + 0x4F;
         buf[2] = 0x82;
-        buf[3] = F(s16, w, 0x1A) % 10 + 0x4F;
+        buf[3] = F(s16, w, IBO(0x1A)) % 10 + 0x4F;
         buf[4] = 0;
         font_print_uf(buf, 0xA, w, -0x7E);
         SetFilterMode(1);
         reload_tex(1, 0x11A);
         SetTextureStage(0x11A);
-        if (F(u8, ib, 0x1C) == 0) {
+        if (F(u8, ib, IBO(0x1C)) == 0) {
             PutArrow(0x234, 0x168, 0x18, 0x12, 0xFF20FF28, 2);
         }
-        if (F(s16, ib, 0x1A) != 1) {
+        if (F(s16, ib, IBO(0x1A)) != 1) {
             PutArrow(0x234, 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
         }
     }
@@ -231,7 +330,7 @@ void selling_price_disp_sub(void) {
     int price;
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x132, 0x166);
-    price = F(s32, ib, 0xC);
+    price = F(s32, ib, IBO(0xC));
     if (price != 0) {
         sprintf((char *)txt, lit_2148, price);
         c = txt[0];
@@ -254,7 +353,7 @@ void selling_price_disp_sub(void) {
         font_print_uf(lit_2150);
     }
     flfntLocate(0x1B0, 0x18E);
-    font_print_sp(yes_or_no[F(u8, ib, 0x21)]);
+    font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
 }
 
 /* edit a quantity byte with the d-pad: mode 0 = two decimal digits, otherwise two octal digits (hi << 3 | lo) */
@@ -332,55 +431,55 @@ s32 itembox_stock(s32 pad) {
     int k;
     u = User_data;
     w = ib;
-    switch (F(u8, w, 5)) {
+    switch (F(u8, w, IBO(5))) {
     case 0:
         *(s16 *)0x39DAD2 = 0;
-        if (F(u8, w, 0x1F) != 0) {
+        if (F(u8, w, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, w, 0x1F) = 0;
+                F(u8, w, IBO(0x1F)) = 0;
                 se_req(7, 0x14, 0);
             }
             pad = (u16)(pad & 0xFFBF);
         } else if ((u16)pad & 0x200) {
-            F(u8, w, 0x1F) = 1;
+            F(u8, w, IBO(0x1F)) = 1;
             se_req(7, 9, 0);
         }
-        Menu_select_mv(ib + 0xB, pad, 0x14);
+        Menu_select_mv(ib + IBO(0xB), pad, 0x14);
         if ((u16)pad & 0x20) {
-            k = F(u8, ib, 0xB) * 4;
-            if (*(u16 *)(k + (int)u + 0x37C) != 0) {
-                left = Ud_u_item_stack(*(u16 *)(k + (int)u + 0x37C), *(u16 *)(k + (int)u + 0x37E)) & 0xFFFF;
+            k = F(u8, ib, IBO(0xB)) * 4;
+            if (*(u16 *)(k + (int)u + UDO(0x37C)) != 0) {
+                left = Ud_u_item_stack(*(u16 *)(k + (int)u + UDO(0x37C)), *(u16 *)(k + (int)u + UDO(0x37E))) & 0xFFFF;
                 if (left == 0) {
-                    k = F(u8, ib, 0xB) * 4;
+                    k = F(u8, ib, IBO(0xB)) * 4;
                     *(s16 *)(k + (int)u + 0x37E) = 0;
-                    k = F(u8, ib, 0xB) * 4;
+                    k = F(u8, ib, IBO(0xB)) * 4;
                     *(u16 *)(k + (int)u + 0x37C) = 0;
-                    F(s8, ib, 0x1D) = 1;
+                    F(s8, ib, IBO(0x1D)) = 1;
                     se_req(7, 0x2C, 0, left);
                 } else {
-                    k = F(u8, ib, 0xB) * 4;
+                    k = F(u8, ib, IBO(0xB)) * 4;
                     *(s16 *)(k + (int)u + 0x37E) = left;
-                    F(s8, ib, 0x1D) = 2;
+                    F(s8, ib, IBO(0x1D)) = 2;
                     se_req(7, 0x15, 0, left);
                 }
                 v = ib;
-                *(s16 *)0x39DAD2 = F(s8, v, 0x1D);
-                F(u8, v, 0x1F) = 0;
-                F(u8, ib, 5) = F(u8, ib, 5) + 1;
+                *(s16 *)0x39DAD2 = F(s8, v, IBO(0x1D));
+                F(u8, v, IBO(0x1F)) = 0;
+                F(u8, ib, IBO(5)) = F(u8, ib, IBO(5)) + 1;
             } else {
                 se_req(7, 0x15, 0);
             }
         }
         break;
     case 1:
-        *(s16 *)0x39DAD2 = F(s8, w, 0x1D);
-        F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+        *(s16 *)0x39DAD2 = F(s8, w, IBO(0x1D));
+        F(u8, w, IBO(0x20)) = F(u8, w, IBO(0x20)) + 1;
         if ((u16)pad & 0x20) {
             v = ib;
             *(s16 *)0x39DAD2 = 0;
-            F(u8, v, 5) = 0;
-            F(u8, ib, 0x1F) = 0;
-            F(u8, ib, 0x20) = 0xFF;
+            F(u8, v, IBO(5)) = 0;
+            F(u8, ib, IBO(0x1F)) = 0;
+            F(u8, ib, IBO(0x20)) = 0xFF;
             se_req(7, 9, 0);
         }
         pad = 0;
@@ -394,17 +493,17 @@ s32 ib_select_sub(s32 pad) {
     s32 p;
     u8 *w;
     w = ib;
-    if (F(u8, w, 3) == 0) {
-        if (F(u8, w, 0x1F) != 0) {
+    if (F(u8, w, IBO(3)) == 0) {
+        if (F(u8, w, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, w, 0x1F) = 0;
+                F(u8, w, IBO(0x1F)) = 0;
                 se_req(7, 0x14, 0);
             }
             pad = (u16)(pad & 0xFFBF);
         } else {
             p = (u16)pad;
             if (p & 0x200) {
-                F(u8, w, 0x1F) = 1;
+                F(u8, w, IBO(0x1F)) = 1;
                 se_req(7, 9, 0);
             }
             if (p & 0x40) {
@@ -412,15 +511,15 @@ s32 ib_select_sub(s32 pad) {
                 return 0x40;
             }
         }
-        itembox_cursor_mv(ib + 8, pad, 0);
+        itembox_cursor_mv(ib + IBO(8), pad, 0);
         goto done;
     }
-    if (F(u8, w, 0x1F) != 0) {
+    if (F(u8, w, IBO(0x1F)) != 0) {
         if ((u16)pad & 0x240) {
-            F(u8, w, 0x1F) = 0;
+            F(u8, w, IBO(0x1F)) = 0;
             se_req(7, 0x14, 0);
         } else {
-            PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            PageSelect(w + IBO(0x18), pad, F(u8, w, IBO(0x19)));
         }
         return 0;
     }
@@ -429,13 +528,13 @@ s32 ib_select_sub(s32 pad) {
         se_req(7, 0x14, 0);
         return 0x40;
     }
-    itembox_cursor_mv(w + 9, pad, 1);
+    itembox_cursor_mv(w + IBO(9), pad, 1);
     if (!(p & 0x20) && (p & 0x200)) {
-        F(u8 *, ib, 0x14) = User_data + F(u8, ib, 9) * 6 + 0x44;
-        if (*F(u8 *, ib, 0x14) != 0) {
-            F(u8, ib, 0x1F) = 2;
-            F(s8, ib, 0x18) = 0;
-            F(u8, ib, 0x19) = 4;
+        F(u8 *, ib, IBO(0x14)) = User_data + F(u8, ib, IBO(9)) * 6 + 0x44;
+        if (*F(u8 *, ib, IBO(0x14)) != 0) {
+            F(u8, ib, IBO(0x1F)) = 2;
+            F(s8, ib, IBO(0x18)) = 0;
+            F(u8, ib, IBO(0x19)) = 4;
             se_req(7, 0x11, 0);
         } else {
             se_req(7, 0x15, 0);
@@ -491,31 +590,31 @@ s32 itembox_sortup(s32 pad) {
     u8 second;
     u8 col;
     w = ib;
-    *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x14;
-    p3 = w + 3;
-    switch (F(u8, w, 5)) {
+    *(s16 *)D_39DAD2 = F(u8, w, IBO(3)) + 0x14;
+    p3 = w + IBO(3);
+    switch (F(u8, w, IBO(5))) {
     case 0:
         ListSelect(p3, pad, 2);
         if ((u16)pad & 0x20) {
-            F(s8, ib, 0x1F) = 0;
-            F(u8, ib, 5) = F(u8, ib, 5) + 1;
-            F(u8, ib, 6) = 0;
+            F(s8, ib, IBO(0x1F)) = 0;
+            F(u8, ib, IBO(5)) = F(u8, ib, IBO(5)) + 1;
+            F(u8, ib, IBO(6)) = 0;
             se_req(7, 0x13, 0);
         } else {
             *(s8 *)D_39DAD0 = 0;
         }
         break;
     case 1:
-        switch (F(u8, w, 6)) {
+        switch (F(u8, w, IBO(6))) {
         case 0:
             pad = ib_select_sub(pad) & 0xFFFF;
             if (pad & 0x40) {
                 pad = (u16)(pad & 0xFFBF);
                 *(u8 *)D_39DAD0 = 0;
-                F(u8, ib, 5) = 0;
+                F(u8, ib, IBO(5)) = 0;
             } else if (pad & 0x20) {
-                F(u8, ib, 0xA) = F(u8, F(u8, ib, 3) + (int)ib, 8);
-                F(u8, ib, 6) = F(u8, ib, 6) + 1;
+                F(u8, ib, IBO(0xA)) = F(u8, F(u8, ib, IBO(3)) + (int)ib, 8);
+                F(u8, ib, IBO(6)) = F(u8, ib, IBO(6)) + 1;
                 se_req(7, 0x25, 0);
             }
             break;
@@ -523,33 +622,33 @@ s32 itembox_sortup(s32 pad) {
             pad = ib_select_sub(pad) & 0xFFFF;
             if (pad & 0x40) {
                 pad = (u16)(pad & 0xFFBF);
-                F(u8, ib, 6) = 0;
+                F(u8, ib, IBO(6)) = 0;
             } else if (pad & 0x20) {
-                second = F(u8, ib, 0xA);
-                first = *(u8 *)((int)(ib + 8) + F(u8, ib, 3));
-                col = F(u8, ib, 3);
-                if (first != F(u8, ib, 0xA)) {
+                second = F(u8, ib, IBO(0xA));
+                first = *(u8 *)((int)(ib + IBO(8)) + F(u8, ib, IBO(3)));
+                col = F(u8, ib, IBO(3));
+                if (first != F(u8, ib, IBO(0xA))) {
                     u = User_data;
                     if (col == 0) {
-                        tmp4 = *(SW4 *)((first << 2) + (int)u + 0x1C4);
+                        tmp4 = *(SW4 *)((first << 2) + (int)u + UDO(0x1C4));
                         *(SW4 *)((first << 2) + (int)u + 0x1C4) = *(SW4 *)((second << 2) + (int)u + 0x1C4);
-                        *(SW4 *)((F(u8, ib, 0xA) << 2) + (int)u + 0x1C4) = tmp4;
+                        *(SW4 *)((F(u8, ib, IBO(0xA)) << 2) + (int)u + 0x1C4) = tmp4;
                     } else {
                         i1 = sortup_idx_chk(first, second);
-                        i2 = sortup_idx_chk(F(u8, ib, 0xA));
+                        i2 = sortup_idx_chk(F(u8, ib, IBO(0xA)));
                         w = ib;
-                        p10 = w + 0xA;
-                        tmp6 = ((SW6 *)(u + 0x44))[F(u8, F(u8, w, 3) + (int)w, 8)];
-                        ((SW6 *)(u + 0x44))[F(u8, F(u8, w, 3) + (int)w, 8)] = ((SW6 *)(u + 0x44))[F(u8, w, 0xA)];
-                        ((SW6 *)(u + 0x44))[F(u8, w, 0xA)] = tmp6;
+                        p10 = w + IBO(0xA);
+                        tmp6 = ((SW6 *)(u + 0x44))[F(u8, F(u8, w, IBO(3)) + (int)w, 8)];
+                        ((SW6 *)(u + 0x44))[F(u8, F(u8, w, IBO(3)) + (int)w, 8)] = ((SW6 *)(u + 0x44))[F(u8, w, IBO(0xA))];
+                        ((SW6 *)(u + 0x44))[F(u8, w, IBO(0xA))] = tmp6;
                         if (i1 != 0) {
                             *i1 = *p10;
                         }
                         if (i2 != 0) {
-                            *i2 = F(u8, F(u8, ib, 3) + (int)ib, 8);
+                            *i2 = F(u8, F(u8, ib, IBO(3)) + (int)ib, 8);
                         }
                     }
-                    F(u8, ib, 6) = 0;
+                    F(u8, ib, IBO(6)) = 0;
                     se_req(7, 0x26, 0);
                 } else {
                     se_req(7, 0x15, 0);
@@ -570,17 +669,17 @@ void Disp_lb_item_box(void) {
     int pos;
     u8 *w;
     u8 a;
-    if (F(u8, ib, 0) != 0 && Chk_lb_status(0x1C) != 0) {
+    if (F(u8, ib, IBO(0)) != 0 && Chk_lb_status(0x1C) != 0) {
         if (*(u8 *)0x39DAD0 != 0) {
-            a = F(u8, ib, 0x1F);
+            a = F(u8, ib, IBO(0x1F));
             if (a != 1) {
                 Disp_menu_help(a);
-                if ((F(u8, ib, 0x20) & 0x1F) < 0x14) {
+                if ((F(u8, ib, IBO(0x20)) & 0x1F) < 0x14) {
                     PutButtonICON(verify_button_0038A008, 1);
                 }
             }
         }
-        switch (F(u8, ib, 4)) {
+        switch (F(u8, ib, IBO(4))) {
         case 0:
             disp_itembox_cmd(0);
             return;
@@ -588,12 +687,12 @@ void Disp_lb_item_box(void) {
             disp_itembox_cmd(1);
             w = ib;
             pos = 4;
-            switch (F(u8, w, 2)) {
+            switch (F(u8, w, IBO(2))) {
             case 0:
-                switch (F(u8, w, 5)) {
+                switch (F(u8, w, IBO(5))) {
                 case 0:
-                    ItemListWindow(F(u8, w, 0xB), 0xA9182, 8, 3);
-                    item_explanation(F(u8, ib, 0x1F), F(u8, ib, 0xB));
+                    ItemListWindow(F(u8, w, IBO(0xB)), 0xA9182, 8, 3);
+                    item_explanation(F(u8, ib, IBO(0x1F)), F(u8, ib, IBO(0xB)));
                     return;
                 case 1:
                     ItemboxWindow(-1, 0, 2, 3);
@@ -601,88 +700,88 @@ void Disp_lb_item_box(void) {
                 }
                 break;
             case 1:
-                switch (F(u8, w, 5)) {
+                switch (F(u8, w, IBO(5))) {
                 case 0:
-                    if (F(u8, w, 0x1F) != 0) {
+                    if (F(u8, w, IBO(0x1F)) != 0) {
                     } else {
                         pos = 0;
-                        Put_shousai(F(u8, w, 5), 1, 2, 3);
+                        Put_shousai(F(u8, w, IBO(5)), 1, 2, 3);
                     }
-                    ItemboxWindow(F(u8, ib, 8), pos);
+                    ItemboxWindow(F(u8, ib, IBO(8)), pos);
                     return;
                 case 1:
-                    ItemboxWindow(F(u8, w, 8), 0x10, 2, 3);
-                    ItemListWindow(F(u8, ib, 0xB), 0xA9182, 8);
-                    item_explanation(F(u8, ib, 0x1F), F(u8, ib, 0xB));
+                    ItemboxWindow(F(u8, w, IBO(8)), 0x10, 2, 3);
+                    ItemListWindow(F(u8, ib, IBO(0xB)), 0xA9182, 8);
+                    item_explanation(F(u8, ib, IBO(0x1F)), F(u8, ib, IBO(0xB)));
                     return;
                 case 2:
                     kosuu_disp_sub();
-                    ItemboxWindow(F(u8, ib, 8), 0x10);
-                    ItemListWindow(F(u8, ib, 0xB), 0x808080, 0);
+                    ItemboxWindow(F(u8, ib, IBO(8)), 0x10);
+                    ItemListWindow(F(u8, ib, IBO(0xB)), 0x808080, 0);
                     return;
                 case 3:
                     yes_no_disp_sub();
                 case 4:
-                    ItemboxWindow(F(u8, ib, 8), 0x10);
-                    ItemListWindow(F(u8, ib, 0xB), 0x808080, 0);
+                    ItemboxWindow(F(u8, ib, IBO(8)), 0x10);
+                    ItemListWindow(F(u8, ib, IBO(0xB)), 0x808080, 0);
                     return;
                 }
                 break;
             case 2:
-                a = F(u8, w, 5);
+                a = F(u8, w, IBO(5));
                 switch (a) {
                 case 0:
-                    if (F(u8, w, 0x1F) != 0) {
-                        pos = (F(u8, w, 0x18) & 3) | 0x21C;
+                    if (F(u8, w, IBO(0x1F)) != 0) {
+                        pos = (F(u8, w, IBO(0x18)) & 3) | 0x21C;
                     } else {
                         pos = 0x208;
-                        if (F(s8, w, 0x1D) < 0) {
+                        if (F(s8, w, IBO(0x1D)) < 0) {
                             Put_shousai(1, a, 2, 3);
                         }
                     }
-                    ItemboxWindow(F(u8, ib, 9), pos);
+                    ItemboxWindow(F(u8, ib, IBO(9)), pos);
                     return;
                 case 1:
-                    EquipmentCompareWindow(F(s32, w, 0x10), F(s32, w, 0x14), 0x132, 0x38, F(u8, w, 0x18));   /* t0 (asm 0x60D154) */
+                    EquipmentCompareWindow(F(s32, w, IBO(0x10)), F(s32, w, IBO(0x14)), 0x132, 0x38, F(u8, w, IBO(0x18)));   /* t0 (asm 0x60D154) */
                     return;
                 case 2:
-                    EquipmentDescriptionWindow(F(s32, w, 0x14), 0x132, 0x38, F(u8, w, 0x18), 0);   /* t0 = 0 (asm 0x60D17C) */
+                    EquipmentDescriptionWindow(F(s32, w, IBO(0x14)), 0x132, 0x38, F(u8, w, IBO(0x18)), 0);   /* t0 = 0 (asm 0x60D17C) */
                     return;
                 }
                 break;
             case 3:
-                a = F(u8, w, 5);
+                a = F(u8, w, IBO(5));
                 switch (a) {
                 case 0:
                     *(s16 *)(frame_itembox_item_equip + 2) = 0x74;
-                    DispFrameList(frame_itembox_item_equip, 0, F(u8, w, 3), 3);
+                    DispFrameList(frame_itembox_item_equip, 0, F(u8, w, IBO(3)), 3);
                     return;
                 case 1:
-                    if (F(u8, w, 0x1F) != 0) {
-                        if (F(u8, w, 3) == 0) {
+                    if (F(u8, w, IBO(0x1F)) != 0) {
+                        if (F(u8, w, IBO(3)) == 0) {
                         } else {
-                            pos = (F(u8, w, 0x18) & 3) | 0x1C;
+                            pos = (F(u8, w, IBO(0x18)) & 3) | 0x1C;
                         }
                     } else {
-                        pos = (F(u8, w, 3) & 1) * 8;
+                        pos = (F(u8, w, IBO(3)) & 1) * 8;
                         Put_shousai(1, a, 2, 3);
                     }
                     w = ib;
-                    ItemboxWindow(F(u8, w + F(u8, w, 3), 8), pos);
+                    ItemboxWindow(F(u8, w + F(u8, w, IBO(3)), 8), pos);
                     w = ib;
-                    if (F(u8, w, 0x1F) != 0) {
-                        if (F(u8, w, 3) == 0) {
+                    if (F(u8, w, IBO(0x1F)) != 0) {
+                        if (F(u8, w, IBO(3)) == 0) {
                             goto cursor;
                         }
                     } else {
 cursor:
-                        a = F(u8, w, 6);
+                        a = F(u8, w, IBO(6));
                         if (a == 1) {
                             ang = ((System_timer & 0x1F) << 11) & 0xFFFF;
                             fa = (f32)ang;
                             new_var = flSin(0.0000958738f * fa);
                             w = ib;
-                            ItemboxWindowCursor(F(u8, w, 0xA), (((((s8)(int)(96.0f * new_var)) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, 3));
+                            ItemboxWindowCursor(F(u8, w, IBO(0xA)), (((((s8)(int)(96.0f * new_var)) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, IBO(3)));
                             return;
                         }
                     }
@@ -690,25 +789,25 @@ cursor:
                 }
                 break;
             case 4:
-                a = F(u8, w, 5);
+                a = F(u8, w, IBO(5));
                 switch (a) {
                 case 0:
                     *(s16 *)(frame_itembox_item_equip + 2) = 0x8A;
-                    DispFrameList(frame_itembox_item_equip, 0, F(u8, w, 3), 1);
+                    DispFrameList(frame_itembox_item_equip, 0, F(u8, w, IBO(3)), 1);
                     return;
                 case 1: {
-                    u8 col = F(u8, w, 3);
-                    u8 st = F(u8, w, 6);
+                    u8 col = F(u8, w, IBO(3));
+                    u8 st = F(u8, w, IBO(6));
                     pos = col != 0 ? 0xE8 : 0x60;
                     switch (st) {
                     case 0:
-                        if (F(u8, w, 0x1F) != 0) {
+                        if (F(u8, w, IBO(0x1F)) != 0) {
                             pos = 0x64;
                             if (col == 0) {
                             } else {
-                                pos = (F(u8, w, 0x18) & 3) | 0xFC;
+                                pos = (F(u8, w, IBO(0x18)) & 3) | 0xFC;
                             }
-                        } else if (F(s8, w, 0x1D) < 0) {
+                        } else if (F(s8, w, IBO(0x1D)) < 0) {
                             Put_shousai(st, 0xE8, col, 1);
                         }
                         break;
@@ -720,7 +819,7 @@ cursor:
                         break;
                     }
                     w = ib;
-                    ItemboxWindow(F(u8, w + F(u8, w, 3), 8), pos);
+                    ItemboxWindow(F(u8, w + F(u8, w, IBO(3)), 8), pos);
                     break;
                 }
                 }
@@ -747,77 +846,77 @@ s32 itembox_pickup(s32 pad) {
     int j;
     u = User_data;
     w = ib;
-    p5 = w + 5;
+    p5 = w + IBO(5);
     switch (*p5) {
     case 0:
         *(s16 *)D_39DAD2 = 3;
-        if (F(u8, w, 0x1F) != 0) {
+        if (F(u8, w, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, w, 0x1F) = 0;
+                F(u8, w, IBO(0x1F)) = 0;
                 se_req(7, 0x14, 0);
             }
             pad = (u16)(pad & 0xFFBF);
         } else if ((u16)pad & 0x200) {
-            F(u8, w, 0x1F) = 1;
+            F(u8, w, IBO(0x1F)) = 1;
             se_req(7, 9, 0);
         }
-        itembox_cursor_mv(ib + 8, pad, 0);
+        itembox_cursor_mv(ib + IBO(8), pad, 0);
         if ((u16)pad & 0x20) {
-            if (u_item_chk(F(u8, ib, 8)) == 0) {
+            if (u_item_chk(F(u8, ib, IBO(8))) == 0) {
                 se_req(7, 0x15, 0);
             } else {
-                F(u8, ib, 0x1F) = 0;
-                F(u8, ib, 0xB) = 0;
-                while (F(u8, ib, 0xB) < 0x14) {
-                    if (*(u16 *)(u + (F(u8, ib, 0xB) & 0xFF) * 4 + 0x37C) == *(u16 *)(u + F(u8, ib, 8) * 4 + 0x1C4)) {
+                F(u8, ib, IBO(0x1F)) = 0;
+                F(u8, ib, IBO(0xB)) = 0;
+                while (F(u8, ib, IBO(0xB)) < 0x14) {
+                    if (*(u16 *)(u + (F(u8, ib, IBO(0xB)) & 0xFF) * 4 + UDO(0x37C)) == *(u16 *)(u + F(u8, ib, IBO(8)) * 4 + UDO(0x1C4))) {
                         break;
                     }
-                    F(u8, ib, 0xB) += 1;
+                    F(u8, ib, IBO(0xB)) += 1;
                 }
-                if (F(u8, ib, 0xB) < 0x14) {
-                    cur = F(u8, ib, 0xB);
-                    id16 = *(u16 *)(cur * 4 + (int)u + 0x37C) * 0x10;
+                if (F(u8, ib, IBO(0xB)) < 0x14) {
+                    cur = F(u8, ib, IBO(0xB));
+                    id16 = *(u16 *)(cur * 4 + (int)u + UDO(0x37C)) * 0x10;
                     mx = D_3396D3[id16];
-                    if (mx != 0xFF && *(s16 *)(F(u8, ib, 0xB) * 4 + (int)u + 0x37E) < mx) {
+                    if (mx != 0xFF && *(s16 *)(F(u8, ib, IBO(0xB)) * 4 + (int)u + UDO(0x37E)) < mx) {
                         if (pick_kosuu_sel_chk() == 0) {
-                            k = F(u8, ib, 0xB) * 4;
+                            k = F(u8, ib, IBO(0xB)) * 4;
                             *(s16 *)(k + (int)u + 0x37E) += 1;
-                            k = F(u8, ib, 8) * 4;
+                            k = F(u8, ib, IBO(8)) * 4;
                             *(s16 *)(k + (int)u + 0x1C6) -= 1;
-                            k = F(u8, ib, 8) * 4;
-                            if (*(s16 *)(k + (int)u + 0x1C6) == 0) {
-                                k = F(u8, ib, 8) * 4;
+                            k = F(u8, ib, IBO(8)) * 4;
+                            if (*(s16 *)(k + (int)u + UDO(0x1C6)) == 0) {
+                                k = F(u8, ib, IBO(8)) * 4;
                                 *(u16 *)(k + (int)u + 0x1C4) = 0;
                             }
-                            F(s8, ib, 0x1D) = 7;
+                            F(s8, ib, IBO(0x1D)) = 7;
                             *(s16 *)D_39DAD2 = 7;
-                            F(u8, ib, 5) = 4;
+                            F(u8, ib, IBO(5)) = 4;
                             se_req(7, 0x2C, 0);
                         } else {
                             *(s16 *)D_39DAD2 = 5;
-                            F(s16, ib, 0x1A) = 1;
-                            F(s8, ib, 0x1C) = 0;
-                            F(u8, ib, 5) = 2;
-                            F(u8, ib, 6) = 0;
-                            F(s8, ib, 0x1D) = 3;
+                            F(s16, ib, IBO(0x1A)) = 1;
+                            F(s8, ib, IBO(0x1C)) = 0;
+                            F(u8, ib, IBO(5)) = 2;
+                            F(u8, ib, IBO(6)) = 0;
+                            F(s8, ib, IBO(0x1D)) = 3;
                             se_req(7, 0x13, 0);
                         }
                     } else {
-                        F(s8, ib, 0x1D) = 6;
+                        F(s8, ib, IBO(0x1D)) = 6;
                         *(s16 *)D_39DAD2 = 6;
-                        F(u8, ib, 5) = 4;
+                        F(u8, ib, IBO(5)) = 4;
                         se_req(7, 0x15, 0);
                     }
                 } else {
-                    F(u8, ib, 0xB) = 0;
+                    F(u8, ib, IBO(0xB)) = 0;
                     pad = 0;
                     for (e = 0; e < 0x14; e++) {
-                        if (*(u16 *)(u + e * 4 + 0x37C) == 0) {
-                            F(u8, ib, 0xB) = e;
+                        if (*(u16 *)(u + e * 4 + UDO(0x37C)) == 0) {
+                            F(u8, ib, IBO(0xB)) = e;
                             break;
                         }
                     }
-                    F(u8, ib, 5) = 1;
+                    F(u8, ib, IBO(5)) = 1;
                     se_req(7, 0x13, 0);
                 }
             }
@@ -826,9 +925,9 @@ s32 itembox_pickup(s32 pad) {
     case 1:
 case1:
         w = ib;
-        if (F(u8, w, 0x1F) != 0) {
+        if (F(u8, w, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, w, 0x1F) = 0;
+                F(u8, w, IBO(0x1F)) = 0;
                 se_req(7, 0x14, 0);
             }
             pad = (u16)(pad & 0xFFBF);
@@ -837,76 +936,76 @@ case1:
         tmp = (u16)pad;
         if (tmp & 0x40) {
             *(s16 *)D_39DAD2 = 3;
-            F(u8, w, 5) = 0;
+            F(u8, w, IBO(5)) = 0;
             pad = 0;
             se_req(7, 0x14, 0);
         } else {
             if (tmp & 0x200) {
-                F(u8, w, 0x1F) = 1;
+                F(u8, w, IBO(0x1F)) = 1;
                 se_req(7, 9, 0);
             }
 menu:
             *(s16 *)D_39DAD2 = 4;
-            Menu_select_mv(ib + 0xB, pad, 0x14);
+            Menu_select_mv(ib + IBO(0xB), pad, 0x14);
             if ((u16)pad & 0x20) {
-                F(u8, ib, 0x1F) = 0;
+                F(u8, ib, IBO(0x1F)) = 0;
                 w = ib;
-                k = F(u8, w, 0xB) * 4;
-                if (*(u16 *)(k + (int)u + 0x37C) != 0) {
+                k = F(u8, w, IBO(0xB)) * 4;
+                if (*(u16 *)(k + (int)u + UDO(0x37C)) != 0) {
                     *(s16 *)D_39DAD2 = 8;
-                    F(u8, w, 5) = 3;
-                    F(u8, ib, 0x21) = 0;
+                    F(u8, w, IBO(5)) = 3;
+                    F(u8, ib, IBO(0x21)) = 0;
                     se_req(7, 0x13, 0);
                 } else if (item_kosuu_sel_chk() == 0) {
-                    j = F(u8, ib, 8);
-                    k = F(u8, ib, 0xB);
+                    j = F(u8, ib, IBO(8));
+                    k = F(u8, ib, IBO(0xB));
                     *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
-                    j = F(u8, ib, 8);
-                    k = F(u8, ib, 0xB);
+                    j = F(u8, ib, IBO(8));
+                    k = F(u8, ib, IBO(0xB));
                     *(s16 *)((k * 4) + (int)u + 0x37E) = *(s16 *)((j * 4) + (int)u + 0x1C6);
-                    k = F(u8, ib, 8) * 4;
+                    k = F(u8, ib, IBO(8)) * 4;
                     *(s16 *)(k + (int)u + 0x1C6) = 0;
-                    k = F(u8, ib, 8) * 4;
+                    k = F(u8, ib, IBO(8)) * 4;
                     *(u16 *)(k + (int)u + 0x1C4) = 0;
-                    F(s8, ib, 0x1D) = 7;
+                    F(s8, ib, IBO(0x1D)) = 7;
                     *(s16 *)D_39DAD2 = 7;
-                    F(u8, ib, 5) = 4;
+                    F(u8, ib, IBO(5)) = 4;
                     se_req(7, 0x2C, 0);
                 } else {
                     pad = 0;
-                    F(s16, ib, 0x1A) = 1;
-                    F(s8, ib, 0x1C) = 0;
-                    F(u8, ib, 5) = 2;
+                    F(s16, ib, IBO(0x1A)) = 1;
+                    F(s8, ib, IBO(0x1C)) = 0;
+                    F(u8, ib, IBO(5)) = 2;
                     se_req(7, 0x13, 0);
-                    F(u8, ib, 6) = 1;
-                    F(s8, ib, 0x1D) = 4;
+                    F(u8, ib, IBO(6)) = 1;
+                    F(s8, ib, IBO(0x1D)) = 4;
     case 2:
                     sel = (u16)pad;
                     if (sel & 0x40) {
                         w = ib;
                         pad = (u16)(pad & 0xFFBF);
-                        *(s16 *)D_39DAD2 = F(s8, w, 0x1D);
-                        F(u8, w, 5) = F(u8, w, 6);
+                        *(s16 *)D_39DAD2 = F(s8, w, IBO(0x1D));
+                        F(u8, w, IBO(5)) = F(u8, w, IBO(6));
                         se_req(7, 0x14, 0);
                     } else {
                         *(s16 *)D_39DAD2 = 5;
-                        kosuu_select(pad, F(u8, ib, 6));
+                        kosuu_select(pad, F(u8, ib, IBO(6)));
                         if (sel & 0x20) {
-                            j = F(u8, ib, 8);
-                            k = F(u8, ib, 0xB);
+                            j = F(u8, ib, IBO(8));
+                            k = F(u8, ib, IBO(0xB));
                             *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
-                            k = F(u8, ib, 0xB) * 4;
-                            *(s16 *)(k + (int)u + 0x37E) = *(s16 *)(k + (int)u + 0x37E) + F(s16, ib, 0x1A);
-                            k = F(u8, ib, 8) * 4;
-                            *(s16 *)(k + (int)u + 0x1C6) = *(s16 *)(k + (int)u + 0x1C6) - F(s16, ib, 0x1A);
-                            k = F(u8, ib, 8) * 4;
-                            if (*(s16 *)(k + (int)u + 0x1C6) == 0) {
-                                k = F(u8, ib, 8) * 4;
+                            k = F(u8, ib, IBO(0xB)) * 4;
+                            *(s16 *)(k + (int)u + 0x37E) = *(s16 *)(k + (int)u + 0x37E) + F(s16, ib, IBO(0x1A));
+                            k = F(u8, ib, IBO(8)) * 4;
+                            *(s16 *)(k + (int)u + 0x1C6) = *(s16 *)(k + (int)u + 0x1C6) - F(s16, ib, IBO(0x1A));
+                            k = F(u8, ib, IBO(8)) * 4;
+                            if (*(s16 *)(k + (int)u + UDO(0x1C6)) == 0) {
+                                k = F(u8, ib, IBO(8)) * 4;
                                 *(u16 *)(k + (int)u + 0x1C4) = 0;
                             }
-                            F(s8, ib, 0x1D) = 7;
+                            F(s8, ib, IBO(0x1D)) = 7;
                             *(s16 *)D_39DAD2 = 7;
-                            F(u8, ib, 5) = 4;
+                            F(u8, ib, IBO(5)) = 4;
                             se_req(7, 0x2C, 0);
                         }
                     }
@@ -927,32 +1026,32 @@ menu:
             if (sel & 0x20) {
                 w = ib;
                 pad = 0;
-                if (F(u8, w, 0x21) != 0) {
+                if (F(u8, w, IBO(0x21)) != 0) {
                     *(s16 *)D_39DAD2 = 4;
-                    F(u8, w, 5) = 1;
+                    F(u8, w, IBO(5)) = 1;
                     se_req(7, 0x14, 0);
                 } else {
-                    k = F(u8, w, 0xB) * 4;
-                    tmp4 = *(SW4 *)(k + (int)u + 0x37C);
-                    j = F(u8, w, 8);
-                    k = F(u8, w, 0xB);
+                    k = F(u8, w, IBO(0xB)) * 4;
+                    tmp4 = *(SW4 *)(k + (int)u + UDO(0x37C));
+                    j = F(u8, w, IBO(8));
+                    k = F(u8, w, IBO(0xB));
                     *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
                     *(s16 *)((k * 4) + (int)u + 0x37E) = *(s16 *)((j * 4) + (int)u + 0x1C6);
-                    k = F(u8, ib, 8) * 4;
+                    k = F(u8, ib, IBO(8)) * 4;
                     *(u16 *)(k + (int)u + 0x1C4) = 0;
-                    k = F(u8, ib, 8) * 4;
+                    k = F(u8, ib, IBO(8)) * 4;
                     *(s16 *)(k + (int)u + 0x1C6) = 0;
                     Ud_u_item_stack(tmp4.a, tmp4.b);
-                    F(s8, ib, 0x1D) = 7;
-                    F(u8, ib, 5) = 4;
+                    F(s8, ib, IBO(0x1D)) = 7;
+                    F(u8, ib, IBO(5)) = 4;
                     se_req(7, 0x2C, 0);
     case 4:
                     w = ib;
-                    *(s16 *)D_39DAD2 = F(s8, w, 0x1D);
-                    F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+                    *(s16 *)D_39DAD2 = F(s8, w, IBO(0x1D));
+                    F(u8, w, IBO(0x20)) = F(u8, w, IBO(0x20)) + 1;
                     if ((u16)pad & 0x20) {
-                        F(u8, ib, 5) = 0;
-                        F(u8, ib, 0x20) = 0xFF;
+                        F(u8, ib, IBO(5)) = 0;
+                        F(u8, ib, IBO(0x20)) = 0xFF;
                         se_req(7, 9, 0);
                     }
                     pad = 0;
@@ -979,99 +1078,99 @@ s32 itembox_equipchange(s32 pad) {
     u8 *p5;
     u = User_data;
     w = ib;
-    p5 = w + 5;
+    p5 = w + IBO(5);
     switch (*p5) {
     case 0:
-        if (F(s8, w, 0x1D) >= 0) {
+        if (F(s8, w, IBO(0x1D)) >= 0) {
             if ((u16)pad & 0x20) {
-                F(s8, w, 0x1D) = -1;
+                F(s8, w, IBO(0x1D)) = -1;
                 pad = 0;
-                F(u8, ib, 0x20) = 0xFF;
+                F(u8, ib, IBO(0x20)) = 0xFF;
                 se_req(7, 9, 0);
                 goto select;
             }
-            F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
-            *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
+            F(u8, w, IBO(0x20)) = F(u8, w, IBO(0x20)) + 1;
+            *(s16 *)0x39DAD2 = F(s8, ib, IBO(0x1D));
             return 0;
         }
 select:
         *(s16 *)0x39DAD2 = 0xA;
-        if (F(u8, ib, 0x1F) != 0) {
+        if (F(u8, ib, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, ib, 0x1F) = 0;
+                F(u8, ib, IBO(0x1F)) = 0;
                 se_req(7, 0x14, 0);
             } else {
-                PageSelect(ib + 0x18, pad, F(u8, ib, 0x19));
+                PageSelect(ib + IBO(0x18), pad, F(u8, ib, IBO(0x19)));
             }
             pad = 0;
         }
-        itembox_cursor_mv(ib + 9, pad, 1);
+        itembox_cursor_mv(ib + IBO(9), pad, 1);
         r = (u16)pad;
         if (r & 0x20) {
             w = ib;
-            F(u8 *, w, 0x14) = u + F(u8, w, 9) * 6 + 0x44;
+            F(u8 *, w, IBO(0x14)) = u + F(u8, w, IBO(9)) * 6 + 0x44;
             w = ib;
             ok = 0;
-            if (*F(u8 *, w, 0x14) != 0) {
-                F(s8, w, 0x18) = 0;
-                F(u8, ib, 0x19) = 2;
-                F(u8, ib, 1) = 0;
+            if (*F(u8 *, w, IBO(0x14)) != 0) {
+                F(s8, w, IBO(0x18)) = 0;
+                F(u8, ib, IBO(0x19)) = 2;
+                F(u8, ib, IBO(1)) = 0;
                 w = ib;
-                kind = F(u8 *, w, 0x14)[1];
+                kind = F(u8 *, w, IBO(0x14))[1];
                 ok = 1;
                 switch (kind) {
                 case 0:
-                    eq = u[0x457];
+                    eq = UDEQ(u, 1);
                     break;
                 case 2:
-                    eq = u[0x458];
+                    eq = UDEQ(u, 2);
                     break;
                 case 3:
-                    eq = u[0x459];
+                    eq = UDEQ(u, 3);
                     break;
                 case 4:
-                    eq = u[0x45A];
+                    eq = UDEQ(u, 4);
                     break;
                 case 5:
-                    eq = u[0x45B];
+                    eq = UDEQ(u, 5);
                     break;
                 case 6:
                 case 7:
-                    eq = u[0x456];
-                    F(u8, w, 1) = 1;
+                    eq = UDEQ(u, 0);
+                    F(u8, w, IBO(1)) = 1;
                     break;
                 }
                 if ((eq & 0xFF) != 0xFF) {
-                    F(u8 *, ib, 0x10) = u + (eq & 0xFF) * 6 + 0x44;
+                    F(u8 *, ib, IBO(0x10)) = u + (eq & 0xFF) * 6 + 0x44;
                 } else {
-                    F(u8 *, ib, 0x10) = 0;
+                    F(u8 *, ib, IBO(0x10)) = 0;
                 }
                 w = ib;
-                e2 = F(u8 *, w, 0x14);
-                e1 = F(u8 *, w, 0x10);
+                e2 = F(u8 *, w, IBO(0x14));
+                e1 = F(u8 *, w, IBO(0x10));
                 if (e1 == e2) {
-                    if (F(u8, w, 1) != 0) {
+                    if (F(u8, w, IBO(1)) != 0) {
                         ok = 0;
-                        F(s8, w, 0x1D) = 0xC;
-                        F(u8, ib, 0x1E) = F(u8, ib, 9);
+                        F(s8, w, IBO(0x1D)) = 0xC;
+                        F(u8, ib, IBO(0x1E)) = F(u8, ib, IBO(9));
                     }
-                    F(u8 *, ib, 0x14) = 0;
-                } else if (F(u8, w, 1) == 0) {
+                    F(u8 *, ib, IBO(0x14)) = 0;
+                } else if (F(u8, w, IBO(1)) == 0) {
                     st = Get_equip_data_ptr(e2, w)[2];
                     if (!(st & ((u[1] == 0 ? 1 : 2) & 0xFF))) {
                         ok = 0;
-                        F(s8, ib, 0x1D) = 0xE;
-                        F(u8, ib, 0x1E) = F(u8, ib, 9);
+                        F(s8, ib, IBO(0x1D)) = 0xE;
+                        F(u8, ib, IBO(0x1E)) = F(u8, ib, IBO(9));
                     } else {
-                        if (u[u[0x456] * 6 + 0x45] == 6) {
+                        if (u[UDEQ(u, 0) * 6 + 0x45] == 6) {
                             mask = 4;
                         } else {
                             mask = 8;
                         }
                         if (!(st & (mask & 0xFF))) {
                             ok = 0;
-                            F(s8, ib, 0x1D) = 0xD;
-                            F(u8, ib, 0x1E) = F(u8, ib, 9);
+                            F(s8, ib, IBO(0x1D)) = 0xD;
+                            F(u8, ib, IBO(0x1E)) = F(u8, ib, IBO(9));
                         }
                     }
                 } else {
@@ -1081,29 +1180,29 @@ select:
                         }
                     } else {
 set4:
-                        F(u8, w, 0x19) = 4;
+                        F(u8, w, IBO(0x19)) = 4;
                     }
                     w = ib;
-                    if (F(u8 *, w, 0x10)[1] != F(u8 *, w, 0x14)[1]) {
-                        F(u8, w, 1) = 2;
+                    if (F(u8 *, w, IBO(0x10))[1] != F(u8 *, w, IBO(0x14))[1]) {
+                        F(u8, w, IBO(1)) = 2;
                     }
                 }
             }
             if (ok == 1) {
-                F(u8, ib, 5) = F(u8, ib, 5) + 1;
+                F(u8, ib, IBO(5)) = F(u8, ib, IBO(5)) + 1;
                 se_req(7, 0x13, 0);
             } else {
                 se_req(7, 0x15, 0);
             }
         } else if (r & 0x200) {
             w = ib;
-            F(u8 *, w, 0x14) = u + F(u8, w, 9) * 6 + 0x44;
+            F(u8 *, w, IBO(0x14)) = u + F(u8, w, IBO(9)) * 6 + 0x44;
             w = ib;
-            if (*F(u8 *, w, 0x14) != 0) {
+            if (*F(u8 *, w, IBO(0x14)) != 0) {
                 *(s16 *)0x39DAD2 = 0xA;
-                F(u8, w, 0x1F) = 2;
-                F(s8, ib, 0x18) = 0;
-                F(u8, ib, 0x19) = 4;
+                F(u8, w, IBO(0x1F)) = 2;
+                F(s8, ib, IBO(0x18)) = 0;
+                F(u8, ib, IBO(0x19)) = 4;
                 se_req(7, 0x11, 0);
             } else {
                 se_req(7, 0x15, 0);
@@ -1119,29 +1218,29 @@ set4:
             pad = (u16)(pad & 0xFFBF);
             se_req(7, 0x14, 0);
         } else {
-            if (F(u8 *, w, 0x14) == 0) {
+            if (F(u8 *, w, IBO(0x14)) == 0) {
                 *(s16 *)0x39DAD2 = 0x10;
-            } else if (F(u8 *, w, 0x10) == 0) {
+            } else if (F(u8 *, w, IBO(0x10)) == 0) {
                 *(s16 *)0x39DAD2 = 0x11;
-            } else if (F(u8, w, 1) != 2) {
+            } else if (F(u8, w, IBO(1)) != 2) {
                 *(s16 *)0x39DAD2 = 0xF;
             } else {
                 *(s16 *)0x39DAD2 = 0xB;
             }
             w = ib;
-            PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            PageSelect(w + IBO(0x18), pad, F(u8, w, IBO(0x19)));
             if (r & 0x20) {
                 w = ib;
-                if (F(u8 *, w, 0x14) == 0) {
-                    r = Warehouse_equip_out(u, F(u8 *, w, 0x10)[1]);
+                if (F(u8 *, w, IBO(0x14)) == 0) {
+                    r = Warehouse_equip_out(u, F(u8 *, w, IBO(0x10))[1]);
                 } else {
-                    r = Warehouse_equip(u, F(u8, w, 9));
+                    r = Warehouse_equip(u, F(u8, w, IBO(9)));
                 }
                 if (r == 1) {
                     *(s16 *)0x39DAD2 = 0x12;
-                    F(s8, ib, 0x18) = 0;
-                    F(u8, ib, 5) = F(u8, ib, 5) + 1;
-                    F(u8, ib, 6) = 0;
+                    F(s8, ib, IBO(0x18)) = 0;
+                    F(u8, ib, IBO(5)) = F(u8, ib, IBO(5)) + 1;
+                    F(u8, ib, IBO(6)) = 0;
                     se_req(7, 0x2D, 0);
                     se_req(7, 0x13, 0);
                 } else {
@@ -1152,30 +1251,30 @@ set4:
         break;
     case 2:
         *(s16 *)0x39DAD2 = 0x12;
-        switch (F(u8, w, 6)) {
+        switch (F(u8, w, IBO(6))) {
         case 0:
-            if (!(F(u8, w, 1) & 1)) {
-                F(u8, w, 6) = F(u8, w, 6) + 1;
+            if (!(F(u8, w, IBO(1)) & 1)) {
+                F(u8, w, IBO(6)) = F(u8, w, IBO(6)) + 1;
             } else {
-                Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, u, w + 6);
-                F(u8, ib, 6) = 2;
+                Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, u, w + IBO(6));
+                F(u8, ib, IBO(6)) = 2;
             }
             break;
         case 1:
-            armor_set_myArmor(2, w, w + 6);
-            F(u8, ib, 6) = F(u8, ib, 6) + 1;
+            armor_set_myArmor(2, w, w + IBO(6));
+            F(u8, ib, IBO(6)) = F(u8, ib, IBO(6)) + 1;
             break;
         case 2:
             *(s16 *)0x39DAD2 = 0x13;
-            F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+            F(u8, w, IBO(0x20)) = F(u8, w, IBO(0x20)) + 1;
             w = ib;
-            if (F(u8 *, w, 0x14) != 0) {
-                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            if (F(u8 *, w, IBO(0x14)) != 0) {
+                PageSelect(w + IBO(0x18), pad, F(u8, w, IBO(0x19)));
             }
             if ((u16)pad & 0x20) {
-                F(u8, ib, 0x20) = 0xFF;
+                F(u8, ib, IBO(0x20)) = 0xFF;
                 *(s16 *)0x39DAD2 = 0xA;
-                F(u8, ib, 5) = 0;
+                F(u8, ib, IBO(5)) = 0;
                 se_req(7, 9, 0, 0xFF);
             }
             break;
@@ -1199,15 +1298,15 @@ s32 itembox_sellout(s32 pad) {
     int mx;
     u = User_data;
     w = ib;
-    switch (F(u8, w, 5)) {
+    switch (F(u8, w, IBO(5))) {
     case 0:
-        ListSelect(w + 3, pad, 2);
+        ListSelect(w + IBO(3), pad, 2);
         if ((u16)pad & 0x20) {
             w = ib;
-            *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
-            F(s8, w, 0x1D) = -1;
-            F(u8, ib, 5) = F(u8, ib, 5) + 1;
-            F(u8, ib, 6) = 0;
+            *(s16 *)D_39DAD2 = F(u8, w, IBO(3)) + 0x16;
+            F(s8, w, IBO(0x1D)) = -1;
+            F(u8, ib, IBO(5)) = F(u8, ib, IBO(5)) + 1;
+            F(u8, ib, IBO(6)) = 0;
             se_req(7, 0x13, 0);
         } else {
             *(s8 *)D_39DAD0 = 0;
@@ -1215,18 +1314,18 @@ s32 itembox_sellout(s32 pad) {
     default:
         break;
     case 1:
-        switch (F(u8, w, 6)) {
+        switch (F(u8, w, IBO(6))) {
         case 0:
-            if (F(s8, w, 0x1D) >= 0) {
+            if (F(s8, w, IBO(0x1D)) >= 0) {
                 if ((u16)pad & 0x20) {
-                    F(s8, w, 0x1D) = -1;
+                    F(s8, w, IBO(0x1D)) = -1;
                     pad = 0;
-                    F(u8, ib, 0x20) = 0xFF;
+                    F(u8, ib, IBO(0x20)) = 0xFF;
                     se_req(7, 9, 0);
                     goto sel;
                 }
-                F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
-                *(s16 *)D_39DAD2 = F(s8, ib, 0x1D);
+                F(u8, w, IBO(0x20)) = F(u8, w, IBO(0x20)) + 1;
+                *(s16 *)D_39DAD2 = F(s8, ib, IBO(0x1D));
                 return 0;
             }
 sel:
@@ -1234,50 +1333,50 @@ sel:
             if (pad & 0x40) {
                 *(u8 *)D_39DAD0 = 0;
                 pad = 0;
-                F(u8, ib, 5) = 0;
+                F(u8, ib, IBO(5)) = 0;
             } else {
                 w = ib;
-                p3 = w + 3;
+                p3 = w + IBO(3);
                 *(s16 *)D_39DAD2 = *p3 + 0x16;
                 if (pad & 0x20) {
                     if (*p3 == 0) {
-                        ok = u_item_chk(F(u8, w, 8));
+                        ok = u_item_chk(F(u8, w, IBO(8)));
                         if (ok == 1) {
                             if (item_kosuu_sel_chk() == 0) {
                                 *(s16 *)D_39DAD2 = 0x19;
-                                F(u8, ib, 6) = 2;
-                                F(u8, ib, 0x21) = 0;
+                                F(u8, ib, IBO(6)) = 2;
+                                F(u8, ib, IBO(0x21)) = 0;
                                 w = ib;
-                                k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
-                                F(s32, w, 0xC) = *(u16 *)(D_3396DE + F(u16, k + (int)u, 0x1C4) * 0x10);
+                                k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                F(s32, w, IBO(0xC)) = *(u16 *)(D_3396DE + F(u16, k + (int)u, UDO(0x1C4)) * 0x10);
                             } else {
-                                F(s16, ib, 0x1A) = 1;
+                                F(s16, ib, IBO(0x1A)) = 1;
                                 *(s16 *)D_39DAD2 = 0x18;
-                                F(u8, ib, 6) = 1;
+                                F(u8, ib, IBO(6)) = 1;
                             }
                         }
                     } else {
-                        r = (s8)u_equip_chk(F(u8, w, 9));
+                        r = (s8)u_equip_chk(F(u8, w, IBO(9)));
                         if (r > 0) {
                             *(s16 *)D_39DAD2 = 0x19;
-                            F(u8, ib, 6) = 2;
-                            F(u8, ib, 0x21) = 0;
+                            F(u8, ib, IBO(6)) = 2;
+                            F(u8, ib, IBO(0x21)) = 0;
                             w = ib;
-                            k = F(u8, F(u8, w, 3) + (int)w, 8) * 6;
+                            k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 6;
                             s = (u8 *)(k + (int)u);
-                            F(s32, ib, 0xC) = Get_equip_kaitori(F(u8, s, 0x45), F(u16, s, 0x46));
+                            F(s32, ib, IBO(0xC)) = Get_equip_kaitori(F(u8, s, 0x45), F(u16, s, 0x46));
                             ok = 1;
                         } else {
                             ok = 0;
                             if (r == 0) {
-                                F(s8, ib, 0x1D) = 0x1A;
+                                F(s8, ib, IBO(0x1D)) = 0x1A;
                             }
                         }
                     }
                     if (ok == 1) {
-                        F(s8, ib, 0x1F) = 0;
-                        F(s16, ib, 0x1A) = 1;
-                        F(s8, ib, 0x1C) = 0;
+                        F(s8, ib, IBO(0x1F)) = 0;
+                        F(s16, ib, IBO(0x1A)) = 1;
+                        F(s8, ib, IBO(0x1C)) = 0;
                         se_req(7, 0x13, 0);
                     } else {
                         se_req(7, 0x15, 0);
@@ -1290,7 +1389,7 @@ sel:
             if (sel & 0x40) {
                 *(s16 *)D_39DAD2 = 0x16;
                 pad = (u16)(pad & 0xFFBF);
-                F(u8, w, 6) = 0;
+                F(u8, w, IBO(6)) = 0;
                 se_req(7, 0x14, 0);
             } else {
                 *(s16 *)D_39DAD2 = 0x18;
@@ -1298,22 +1397,22 @@ sel:
                 if (sel & 0x20) {
                     w = ib;
                     pad = 0;
-                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
-                    mx = F(u16, k + (int)u, 0x1C4) * 0x10;
-                    F(s32, w, 0xC) = F(s16, w, 0x1A) * *(u16 *)(D_3396DE + mx);
-                    F(u8, ib, 6) = F(u8, ib, 6) + 1;
-                    F(u8, ib, 0x21) = 0;
+                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                    mx = F(u16, k + (int)u, UDO(0x1C4)) * 0x10;
+                    F(s32, w, IBO(0xC)) = F(s16, w, IBO(0x1A)) * *(u16 *)(D_3396DE + mx);
+                    F(u8, ib, IBO(6)) = F(u8, ib, IBO(6)) + 1;
+                    F(u8, ib, IBO(0x21)) = 0;
                     se_req(7, 0x13, 0);
     case 2:
                     sel = (u16)pad;
                     if (sel & 0x40) {
-                        if (F(u8, ib, 3) == 0 && item_kosuu_sel_chk() == 1) {
+                        if (F(u8, ib, IBO(3)) == 0 && item_kosuu_sel_chk() == 1) {
                             *(s16 *)D_39DAD2 = 0x18;
-                            F(u8, ib, 6) = 1;
+                            F(u8, ib, IBO(6)) = 1;
                         } else {
                             w = ib;
-                            *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
-                            F(u8, w, 6) = 0;
+                            *(s16 *)D_39DAD2 = F(u8, w, IBO(3)) + 0x16;
+                            F(u8, w, IBO(6)) = 0;
                         }
                         pad = (u16)(pad & 0xFFBF);
                         se_req(7, 0x14, 0);
@@ -1322,45 +1421,45 @@ sel:
                         yes_no_select(pad);
                         if (sel & 0x20) {
                             w = ib;
-                            if (F(u8, w, 0x21) != 0) {
-                                if (F(u8, w, 3) == 0 && item_kosuu_sel_chk() == 1) {
+                            if (F(u8, w, IBO(0x21)) != 0) {
+                                if (F(u8, w, IBO(3)) == 0 && item_kosuu_sel_chk() == 1) {
                                     *(s16 *)D_39DAD2 = 0x18;
-                                    F(u8, ib, 6) = 1;
+                                    F(u8, ib, IBO(6)) = 1;
                                 } else {
                                     w = ib;
-                                    *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
-                                    F(u8, w, 6) = 0;
+                                    *(s16 *)D_39DAD2 = F(u8, w, IBO(3)) + 0x16;
+                                    F(u8, w, IBO(6)) = 0;
                                 }
                                 se_req(7, 0x14, 0);
                             } else {
-                                if (F(u8, w, 3) == 0) {
-                                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                                if (F(u8, w, IBO(3)) == 0) {
+                                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
                                     s = (u8 *)(k + (int)u);
-                                    if (*(D_3396D3 + F(u16, s, 0x1C4) * 0x10) == 0xFF) {
-                                        F(u16, s, 0x1C4) = 0;
+                                    if (*(D_3396D3 + F(u16, s, UDO(0x1C4)) * 0x10) == 0xFF) {
+                                        F(u16, s, UDO(0x1C4)) = 0;
                                         w = ib;
-                                        k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
-                                        F(s16, k + (int)u, 0x1C6) = 0;
+                                        k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                        F(s16, k + (int)u, UDO(0x1C6)) = 0;
                                     } else {
-                                        F(s16, s, 0x1C6) = F(s16, s, 0x1C6) - F(s16, w, 0x1A);
+                                        F(s16, s, UDO(0x1C6)) = F(s16, s, UDO(0x1C6)) - F(s16, w, IBO(0x1A));
                                         w = ib;
-                                        k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
-                                        if (F(s16, k + (int)u, 0x1C6) == 0) {
-                                            k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
-                                            F(u16, k + (int)u, 0x1C4) = 0;
+                                        k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                        if (F(s16, k + (int)u, UDO(0x1C6)) == 0) {
+                                            k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                            F(u16, k + (int)u, UDO(0x1C4)) = 0;
                                         }
                                     }
                                 } else {
-                                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 6;
+                                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 6;
                                     F(s16, k + (int)u, 0x46) = 0;
                                     w = ib;
-                                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 6;
+                                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 6;
                                     F(s8, k + (int)u, 0x44) = 0;
                                 }
-                                Gold_add(F(s32, ib, 0xC));
+                                Gold_add(F(s32, ib, IBO(0xC)));
                                 w = ib;
-                                *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
-                                F(u8, w, 6) = 0;
+                                *(s16 *)D_39DAD2 = F(u8, w, IBO(3)) + 0x16;
+                                F(u8, w, IBO(6)) = 0;
                                 se_req(7, 0x1A, 0);
                             }
                         }
@@ -1424,7 +1523,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         }
         ic.w = 0x19;
         ic.h = 0x19;
-        p = (u16 *)(User_data + 0x1C4);
+        p = (u16 *)(User_data + UDO(0x1C4));
         for (i = 0; i < 100; i = (s16)(i + 1), p += 2) {
             if (*p != 0) {
                 d = (u8 *)Item_data + *p * 0x10;
@@ -1556,11 +1655,11 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         font_set_palette(col);
         if (!equip) {
             d = User_data + cur * 4;
-            if (*(u16 *)(d + 0x1C4) == 0) {
+            if (*(u16 *)(d + UDO(0x1C4)) == 0) {
                 sprintf(text, lit_1923_00668480, *(s32 *)0x33AB40);
                 price = -1;
             } else {
-                k = *(u16 *)(d + 0x1C4);
+                k = *(u16 *)(d + UDO(0x1C4));
                 switch (D_3396D3[k * 0x10]) {
                 case 1:
                     sprintf(text, lit_1923_00668480, item_str[k]);
@@ -1569,7 +1668,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
                     sprintf(text, lit_1924, item_str[k]);
                     break;
                 default:
-                    cs = *(s16 *)(d + 0x1C6);
+                    cs = *(s16 *)(d + UDO(0x1C6));
                     if (cs >= D_3396D3[k * 0x10]) {
                         sprintf(text, lit_1925, item_str[k], (s16)amount);
                     } else {
@@ -1577,7 +1676,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
                     }
                     break;
                 }
-                price = *(s32 *)(D_3396DE + *(u16 *)(d + 0x1C4) * 0x10);
+                price = *(s32 *)(D_3396DE + *(u16 *)(d + UDO(0x1C4)) * 0x10);
             }
         } else {
             e = User_data + cur * 6;
@@ -1603,7 +1702,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         }
         if (flags & 4) {
             if (!equip) {
-                Disp_help_mess(1, (u16)(*(u16 *)(User_data + cur * 4 + 0x1C4) + 0x18));
+                Disp_help_mess(1, (u16)(*(u16 *)(User_data + cur * 4 + UDO(0x1C4)) + 0x18));
             } else {
                 if (*(User_data + cur * 6 + 0x44) != 0) {
                     EquipmentDescriptionWindow(User_data + cur * 6 + 0x44, (int)base, 0xB8, flags & 3, 0);   /* asm 0x60CBB8: x = base, t0 = 0 */

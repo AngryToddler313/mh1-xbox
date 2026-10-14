@@ -70,6 +70,7 @@ def main():
     if ver != "mhg":
         o += ["const int rt_meta_version = 0;", 'const char rt_meta_elf[] = "SLPM_654.95";',
               "const uint32_t rt_meta_main_data = 0;"]
+        o += c_u32("rt_meta_main_lobby", [])
         for s in sets:
             o += c_syms("rt_meta_syms_" + s, []) + c_u32("rt_meta_ptrs_" + s, [])
             o += ["const rt_meta_va rt_meta_va_%s[] = { { 0, 0, 0 } };" % s, "const size_t rt_meta_va_%s_n = 0;" % s]
@@ -77,6 +78,8 @@ def main():
         return
     o += ["const int rt_meta_version = 1;", 'const char rt_meta_elf[] = "SLPM_658.69";',
           "const uint32_t rt_meta_main_data = 0x253D20;     /* tools/setup_split.py G_MAIN data_start */"]
+    ml = [int(l.split()[0], 16) for l in open(P("config/mhg/pc_main_lobby.txt")) if l.strip() and not l.startswith("#")]
+    o += c_u32("rt_meta_main_lobby", sorted(set(ml)))     # main data words that point into lobby.bin (tools/mhg_main_lobby.py)
     view = {s: read_syms(P("build/mhg/pc/symbols/%s.txt" % s)) for s in sets}
     ptrs = {}
     cur = None

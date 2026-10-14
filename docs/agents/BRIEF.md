@@ -167,3 +167,13 @@ anything the coordinator must know to merge. Then stop.
 
 - Never run the game in a visible window (e.g. mhview --play without --shot): it plays on the
   owner's screen in real time. Replays: use the command tools/show_report.py --replay prints.
+
+## Memory cap and clean builds (14 Oct 2026)
+
+The laptop has 7.8 GB and several agents build at once. A python process grew to 5.6 GB during a
+G rebuild and the kernel's OOM killer took down the coordinator's session twice. Run every build
+under a cap so a runaway dies alone: `(ulimit -v 3000000; VERSION=mhg tools/rebuild.sh)` (same
+for tools/rebuild.sh, build_pc*.sh, tests). Before claiming a rebuild passes after changing
+config/mhg/c_rawfuncs.txt or registrations, prove it from clean
+(`rm -rf build/mhg/raw build/raw build/mhg/src`): stale generated .inc files hid a broken branch once.
+

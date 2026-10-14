@@ -1337,3 +1337,38 @@ of the G PC link. G stand-ins (rt_log_standin): Lb_make_quest_tbl_local (G rebui
 Result: hidden new-game run reaches the hunter's house with the hunter drawn (RT_NO_NPC=1 skips the NPCs). Open: village NPCs (em_cmd tables of NPC kinds are
 unrelocated: cmd_tbl garbage in em_cmd_init), x68 talk codes are +2 in G from some value on (0x20->0x22, 0x21->0x23: other talk states still MH1's),
 Lb_move_common / lb_basic_master / Lb_stage_load(st, 1) G copies not diffed yet, cw per-member records are 0x5C in G (MH1 0x2FC).
+
+## G round 3 (agent D, Sonnet, 13-14 Oct 2026): the village walks on the PC
+Hidden G run (`@village1` waits for the village, then pad `idle*1500,down*100,square*3` ...; `RT_NO_NPC=1`): intro event, the hunter gets up, leaves the
+house (square at the door), walks all of Kokoto, re-enters the house, opens the item box chest (square next to it: menu draws, tabs work).
+Position traces are bit-identical to the MH1 build for the same input (RT_VILLAGE_TRACE=1 RT_QUEST_TRACE=1).
+- Talk-mode numbering (lb_sys x68): G has two new modes (3 and 18): G = MH1 for 0..2, +1 for 3..16, +2 from 17 (0x20->0x22 ...). The PC keeps MH1's
+  numbers everywhere (all C is MH1's); G copies written from G asm use the MH1 equivalent (Local_main exits 0x20/0x25, event 0x21). Using G numbers
+  made lb_check_status run the quest-counter states during the intro (never finished).
+- G copies / edits (all under VERSION_MHG): Lb_stage_load(st, arg) (CameraInit at the end, Lb_pl_init(arg), random arrival slot), Lb_pl_init (10 hunters, prim
+  only when arg), Lb_move_common (10 hunters, cw+0xB5A countdowns, pl_num count), Lb_put_unique_act_hint (action list from lobby_func_00595530),
+  Lb_put_help ("%s%s" with net_etc_mes_tbl[6] as separator, room price via strcat, blink counter lb_sys+0x91/0x92; the rule-sheet frame
+  lobby_func_005926C0 not ported), lbc_text_lobby_trans (pNet is a pointer, prims at +0..+0xC; a 5th prim on a new ot not drawn), Lb_ItemBox_init/open/mv.
+- main -> lobby pointer words (hint_tbl, ...): G's ELF has no relocations, so config/mhg/pc_main_lobby.txt (tools/mhg_main_lobby.py, from MH1's list by
+  symbol name; only 22 of 73 words found: the others have no G name) -> rt_meta_main_lobby -> rt_mem.c. hint_tbl was pointing into game.bin (crash).
+- Item box: ib = item_box 0x653330 (G Lb_ItemBox_init = lobby 0x552470, called from main's Pit_init; the old "no init" stand-in is gone). IBO(mh1 offset) in
+  lbsys_g.h maps the struct (cursors 8/9/0xA became u16 at 0x10/0x12/0x14). G's User_data is re-laid out: pouch/box 0x1C4 -> +0x588, 0x37C -> +0x8A8, the six
+  equipped-slot bytes 0x456.. -> u16 at 0xCFE.. (UDO/UDEQ in lbsys_g.h). NOT ported: G's tidy-up prompt (ib+0x2F, func_0021DFA0 compacts the pouch),
+  3-digit quantity editor (itembox_cursor_mv uses User_data+0xC97 bits), skills; the header shows "(null)" (category_name_str has no G address), item tables
+  (D_3396D3 stride) and main's Ud_* functions still use MH1's User_data layout, so item counts are wrong until they are ported.
+- Still open: Lb_make_quest_tbl_local (G: u16 quest ids, lb_quest_all 16 bytes per level, guildStr; the quest counter UI is rewritten with it, needs the NPCs),
+  lb_basic_master (G adds NPC talk branches: get_questLevelNum(46/50/60/80) story checks, new talk modes, NPC_Message, trade; MH1's version drives walking
+  fine), Lb_make... CameraWork: G's CAMS has its union at +0x80 (MH1 +0x90; ax/ay moved into the demo struct): the PC runs MH1's camera C on it, which is
+  self-consistent; G's NPCZoomInCameraRequest(0) (zoom on the hunter) has no MH1 equivalent.
+- Bulk registration retry: 141 files passed check.py, 127 added, bisecting with a game-only rebuild (15 s each) left 107 registered; 34 parked in config/mhg/c_skip.txt.
+  G matched 9.3% -> 14.6% (tools/progress.py with VERSION=mhg). Candidate scan: for f in files of config/c_files.txt not in config/mhg/c_files.txt run
+  `VERSION=mhg tools/check.py src/MODULE/PATH.c` (all OK) then tools/mhg_addc.py.
+
+## Clean-build fix (agent D, 14 Oct 2026)
+Registered G files stub unmatched functions with `#include "NAME.inc"`; the G build looks in build/mhg/raw (config/mhg/c_rawfuncs.txt, G bytes) then
+build/raw (MH1 bytes). Commit 8ea67095 had dropped 160 of those entries (the worktree only built because build/mhg/raw kept stale .inc files), and 4 more
+(flPS2matMul, flPS2matMul2, PS2SHADER_ADD_LIGHTVECD3, plMemmove: pulled in via src/mhg/*_pN.c wrappers that include ../src/*.c) were never listed.
+Restored by finding each stub's bytes inside the file's registered G range. c_rawfuncs now 174 lines. Clean proof: rm -rf build/mhg/raw build/raw, MH1 5 OK,
+VERSION=mhg 7 OK (each alone, with `ulimit -v 3000000`; peak child RSS 420 MB, splat 300-420 MB per module).
+The 5.6 GB python was not reproduced by rebuild.sh, build.py (also with a missing .inc), splat or the PC builds (all < 450 MB); a bad merge of main.yaml/sub_main.yaml
+(registered set21/setwork2 whole AND main's _pN split) makes splat stop with "segments out of order", not loop. Keep the ulimit cap on every build.

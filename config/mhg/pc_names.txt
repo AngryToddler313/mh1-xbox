@@ -10,3 +10,4 @@ main filedef_sys 0x25D130     # G mkTexture (0x10F140) reads its file numbers fr
 main lb_gbyte_2EF2A4 0x2EF2A4  # G lobby 0x59A270 (Clear_lobby_ram) copies this main .sbss byte into lb_sys[0x93]; written at lobby 0x59B7F0 and 0x57B0F4
 main D_002A5FE0 0x2A5FE0     # G DispSoftkeyboard (0x20B020): s8[12] glyph index table for the 12 palette keys
 main D_002BE8B0 0x2BE8B0     # G DispSoftkeyboard: format string for those 12 prints
+lobby item_box 0x653330     # G Lb_ItemBox_init (lobby 0x552470, called from main 0x118F60 / 0x11917C) stores this address in ib (gp-12564)

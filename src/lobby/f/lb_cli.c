@@ -635,6 +635,23 @@ asm int lbc_login_init()
 }
 #endif
 
+#ifdef VERSION_MHG
+/* G (lobby 0x57A120): no argument; pNet is a pointer and its first five words are the prims (G moved them from +0x14.. to +0..):
+ * ot5, ot6, ot7, ot2 (entry 0 of 16) and a fifth on an ordering table G added (the PC has no draw for it yet) */
+void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0) {
+    int i;
+    (void)arg0;
+    for (i = 0; i < 4; i++) {
+        int p = F(int, pNet, i * 4);
+        if (p != 0 && F(s32, p, 0x14) != 0) {
+            if (i == 0) add_prim2(&ot5, p, 0, 1);
+            else if (i == 1) add_prim2(&ot6, p, 0, 1);
+            else if (i == 2) add_prim2(&ot7, p, 0, 1);
+            else add_prim2(&ot2, p, 0, 0x10);
+        }
+    }
+}
+#else
 void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0) {
     int temp_a1;
     int temp_a1_2;
@@ -658,6 +675,8 @@ void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0) {
         add_prim2(&ot2, temp_a1_4, 0, 0x10);
     }
 }
+
+#endif
 
 void text_lobby_trans_ot0(ARG_text_lobby_trans_ot0_arg0 *arg0) {
     u8 temp_a0;

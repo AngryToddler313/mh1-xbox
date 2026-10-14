@@ -1,0 +1,11 @@
+# G main data words that point into lobby.bin (tools/mhg_main_lobby.py): G addresses
+0x002A9F40
+0x002A9F44
+0x002EEF10
+0x002EF038
+0x002EF088
+0x002EF08C
+0x002EF0D0
+0x002EF0F0
+0x002EF0F4
+0x002EF0F8

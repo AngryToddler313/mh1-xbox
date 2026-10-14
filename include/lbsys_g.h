@@ -60,4 +60,24 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
 #define PNET_OFS(o) (o)
 #define CW_OFS(o) (o)
 #endif
+#ifdef VERSION_MHG
+/* G (lobby item box, ib = item_box 0x653330): the fields moved and the cursors grew to 16 bits; IBO(MH1 offset) = G offset
+ * (tools/mhg_addrmap.py --ptr ib and the twin functions: 8/9/0xA are now u16 at 0x10/0x12/0x14) */
+#define IBO(o) ((o) <= 6 ? (o) : (o) == 8 ? 0x10 : (o) == 9 ? 0x12 : (o) == 0xA ? 0x14 : (o) == 0xB ? 0x16 : (o) == 0xC ? 0x18 : \
+    (o) == 0x10 ? 0x1C : (o) == 0x14 ? 0x20 : (o) == 0x18 ? 0x24 : (o) == 0x19 ? 0x26 : (o) == 0x1A ? 0x28 : (o) == 0x1C ? 0x27 : \
+    (o) == 0x1D ? 0x2C : (o) == 0x1E ? 0x2A : (o) == 0x1F ? 0x2D : (o) == 0x20 ? 0x2E : (o) == 0x21 ? 0x17 : (o))
+#else
+#define IBO(o) (o)
+#endif
+#ifdef VERSION_MHG
+/* G's User_data (0x32C210, tools/mhg_addrmap.py votes: pouch 0x1C4 -> 0x74C, item box 0x37C -> 0xC24, the six equipped-slot
+ * bytes at 0x456.. -> u16 at 0xCFE..): UDO(MH1 offset) = G offset for the places the village C reads by raw offset */
+#define UDO(o) ((o) < 0x1C4 ? (o) : (o) < 0x37C ? (o) + 0x588 : (o) + 0x8A8)
+#define UDEQO(i) (0xCFE + 2 * (i))
+#define UDEQ(u, i) (*(u16 *)((u8 *)(u) + UDEQO(i)))
+#else
+#define UDO(o) (o)
+#define UDEQO(i) (0x456 + (i))
+#define UDEQ(u, i) (((u8 *)(u))[UDEQO(i)])
+#endif
 #endif
