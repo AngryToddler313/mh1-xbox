@@ -21,6 +21,7 @@ int lb_guild_check_keyQuest();
 int Lb_guild_check_requireF();
 s8 lb_set_key_quest_local(void);
 
+#ifndef VERSION_MHG
 int lb_guild_check_keyQuest(u32 a) {
     switch (a) {
     case 0:
@@ -58,3 +59,4 @@ int lb_guild_check_keyQuest(u32 a) {
     }
     return 0;
 }
+#endif

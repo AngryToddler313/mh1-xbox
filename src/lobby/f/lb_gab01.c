@@ -1,5 +1,6 @@
 /* lb_gab01 - near-match fixes 0x005CD4A0-0x005CD6CC: Lb_check_newCommer. Whole file in lb_ab.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern char lit_236_00664CC0[];
 extern u8 D_3E4C05[];
@@ -23,7 +24,7 @@ void Lb_check_newCommer(int a) {
     int i;
     u8 *pl;
     u8 st;
-    if (*(s8 *)(cw + 0x2C08) != 0) {
+    if (*(s8 *)(cw + CW_OFS(0x2C08)) != 0) {
         if (lb_member_outCheck() == 1) {
             st = game_w.stage;
             if (st != 0x4C) {

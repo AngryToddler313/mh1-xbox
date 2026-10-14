@@ -1,5 +1,6 @@
 /* lb_gv02 - near-match fixes 0x005C7350-0x005C74A4: check_questLevelSelect. Whole file in lb_v.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern s8 key_quest_num;
 extern u8 key_quest;
 extern u8 *pNet;
@@ -96,7 +97,7 @@ rest:
         if (key_quest_num != 0) {
             return 0;
         }
-    } else if (Online_ck() == 1 && *(s8 *)(cw + 0x2C2F) != 0 && s0 == 7) {
+    } else if (Online_ck() == 1 && *(s8 *)(cw + CW_OFS(0x2C2F)) != 0 && s0 == 7) {
         return 0;
     }
 ret1:

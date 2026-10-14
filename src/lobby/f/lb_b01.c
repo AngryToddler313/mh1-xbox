@@ -59,7 +59,7 @@ void Lb_back_money(void) {
 }
 
 void lb_guild_end(void) {
-    CW8(0x2C08) = 1;
+    CW8(CW_OFS(0x2C08)) = 1;
     ((u8 *)&lb_sys)[LBSYS_OFS(0x87)] = 0x14;
     lb_sys.x6C = 0;
     ((u8 *)&lb_sys)[LBSYS_OFS(6)] = 0;

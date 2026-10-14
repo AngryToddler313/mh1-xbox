@@ -1,6 +1,7 @@
 /* lb_pz12_nm - lobby.bin 0x00597640-0x00597B04: Plaza_add_friend(id), near-match (15 instructions differ: only the register numbers of sw/a/st: original has sw in a3, a in a1, step pointer in a2; mine a1/a2/a3). Not built for the PS2 (raw there); the ONLINE PC build links it (tools/build_pc.sh). */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+#include "lbsys_g.h"
 #define X05 (*(u8 *)&a->x05)
 extern u8 my_user_id[];
 extern u8 D_32D471[];
@@ -31,7 +32,7 @@ u8 *id;
         (*st)++;
         SetDialogData(0x1D, 2);
         SetDialogYesNo(0);
-        cw[0x2C08] = 0;
+        cw[CW_OFS(0x2C08)] = 0;
         *(s8 *)0x3F36AB = 0;
         break;
     case 1:
@@ -83,7 +84,7 @@ u8 *id;
             cpn_PutCNData();
             SaveNetFile_init();
             pNet->x05++;
-            cw[0x2C08] = 0;
+            cw[CW_OFS(0x2C08)] = 0;
             *(s8 *)0x3F36AB = 0;
             break;
         case 3:
@@ -100,7 +101,7 @@ u8 *id;
                 if (((LB_CW *)cw)->x35D5 != 0) {
                     str_fadein_vol(0, 0x1E, D_32D471[*(u8 *)0x3F3404 * 2]);
                 }
-                cw[0x2C08] = 1;
+                cw[CW_OFS(0x2C08)] = 1;
                 *(s8 *)0x3F36AB = 1;
                 pNet->x05 = 0;
                 return 0;
@@ -111,7 +112,7 @@ u8 *id;
                     str_fadein_vol(0, 0x1E, D_32D471[*(u8 *)0x3F3404 * 2]);
                 }
                 pNet->x05 = 0;
-                cw[0x2C08] = 1;
+                cw[CW_OFS(0x2C08)] = 1;
                 *(s8 *)0x3F36AB = 1;
                 return 0;
             }
@@ -126,7 +127,7 @@ u8 *id;
         if (sw & 0x20) {
             a->x05 = 0;
             cnWrap_SoundRequest(0);
-            cw[0x2C08] = 1;
+            cw[CW_OFS(0x2C08)] = 1;
             *(s8 *)0x3F36AB = 1;
             return 0;
         }
@@ -135,7 +136,7 @@ u8 *id;
         if (sw & 0x20) {
             a->x05 = 0;
             cnWrap_SoundRequest(0);
-            cw[0x2C08] = 1;
+            cw[CW_OFS(0x2C08)] = 1;
             *(s8 *)0x3F36AB = 1;
             return 1;
         }

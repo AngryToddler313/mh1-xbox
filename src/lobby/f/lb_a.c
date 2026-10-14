@@ -1,5 +1,6 @@
 /* Lobby: commer/trade/status receivers (SLPM_654.95 lobby overlay 0x5C4E60-0x5C5E80). Whole file; matching runs split into lb_aNN.c */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern char lit_238_0065ECF0[];
 extern char lit_476_0065ED10[];
 extern u8 D_3E54FB[];
@@ -7,7 +8,7 @@ extern u8 D_3E54FB[];
 void lb_commer_message(s8 id, u8 *src) {
     u8 buf[0x120];
     char *name;
-    if (CW8(0x35D5) != 0) {
+    if (CW8(CW_OFS(0x35D5)) != 0) {
         name = lbCommer[id].name;
         memcpy(name, src, 0x10);
         memcpy(CWPLAYER(id) + 0x1334, src, 0x10);
@@ -186,7 +187,7 @@ void lb_set_pl_stage(s8 id, u8 *stg) {
         me->x3B0 = 0;
     }
     if (*stg == 0) {
-        if (CW8(0x35D5) != 0) {
+        if (CW8(CW_OFS(0x35D5)) != 0) {
             if (lbCommer[uid].name[0] != 0) {
                 memset(buf, 0, 0x120);
                 buf[0x11F] = 6;

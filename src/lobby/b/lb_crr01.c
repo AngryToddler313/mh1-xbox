@@ -1,5 +1,6 @@
 /* lb_crr01 - agent C 0x005B0A80-0x005B0B98: check_room_require (can this hunter enter the selected guild room: quest/rank requirement; qq = lb_quest_all[lv] hoisted before the switch). */
 #include "lobby_b.h"
+#include "lbsys_g.h"
 typedef struct { u8 pad[0x158]; s32 x158; } LBROOM;
 extern LBROOM *Lbs_GetRoomInfo();
 s32 check_room_require(void) {
@@ -10,7 +11,7 @@ s32 check_room_require(void) {
     lv = ((u32)(Lbs_GetRoomInfo(lb_sys.x73)->x158 & 0x1FE) >> 1) & 0xFF;
     if (lv >= 0xC8) {
         q = (u8 *)get_quest_info();
-        if (F(s8, cw, 0x2C2F) == 0 || q[0x1D] != lv) {
+        if (F(s8, cw, CW_OFS(0x2C2F)) == 0 || q[0x1D] != lv) {
             lb_pit.x0 = 0;
             lb_pit.x08 = 4;
             return 1;

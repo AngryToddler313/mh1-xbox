@@ -1,5 +1,6 @@
 /* lb_gad04 - near-match fixes 0x005D59E0-0x005D5B0C: Lb_send_chat. Whole file in lb_ad.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *St_unique_tbl[];
 extern u8 chatIDList[];
@@ -43,7 +44,7 @@ char *s;
         if (len >= 0x40) {
             len = 0x3F;
         }
-        if (cw[0x32BE] == 0) {
+        if (cw[CW_OFS(0x32BE)] == 0) {
             cnLBS_Send_ChatMessage(s, len);
             return;
         }
@@ -56,13 +57,13 @@ char *s;
             i += 1;
             id += 8;
         } while (i < 7);
-        strcpy(buf, (char *)cw + 0x440);
-        strcpy(buf + 8, (char *)cw + 0x448);
+        strcpy(buf, (char *)cw + CW_OFS(0x440));
+        strcpy(buf + 8, (char *)cw + CW_OFS(0x448));
         strcpy(buf + 0x1C, s);
         buf[0x11E] = 0;
         buf[0x11F] = 5;
         buf[0x11D] = 0;
-        if (cw[0x35D5] != 0) {
+        if (cw[CW_OFS(0x35D5)] != 0) {
             Lb_chat_receipt(buf);
             return;
         }

@@ -1,6 +1,7 @@
 /* lb_fz02 0x005C4E60-0x005C50F0: Lb_check_receipt */
 /* Lobby: player actions (sleep/bed, bell, cart), receive dispatcher, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 *pNet;
 extern s16 ang_894;
 void McOperationSet();
@@ -47,7 +48,7 @@ u8 *p;
     int t;
     t = p[0];
     q = p + 1;
-    if (cw[0x35D5] != 0) {
+    if (cw[CW_OFS(0x35D5)] != 0) {
         id = Lb_get_plID() & 0xFF;
         if (id == 0xFF) {
             return;
@@ -97,7 +98,7 @@ u8 *p;
         Lbc_SendNetComment(a);
         return;
     case 8:
-        if (cw[0x35D5] != 0) {
+        if (cw[CW_OFS(0x35D5)] != 0) {
             memcpy(cw + (id & 0xFF) * 0x62 + 0x288C, q, 0x62);
             memcpy(cw + 0x2B9C, q, 0x62);
             return;

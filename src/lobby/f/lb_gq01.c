@@ -1,5 +1,6 @@
 /* lb_gq01 - stage load 0x005D7050-0x005D778C: Lb_stage_load. Whole file in lb_q.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 typedef struct LBSP { f32 x, y, z; u16 ang; u8 _pad[2]; } LBSP;
 extern LBSP lb_start_pos[];
 extern LBSP lb_return_pos[];
@@ -117,7 +118,7 @@ void Lb_stage_load(int stage) {
     pl->work936 = 0;
     pl->work7ED = 0;
     if (game_w.stage == 0x4E) {
-        switch (*(s32 *)(cw + 0xBF3C) & 3) {
+        switch (*(s32 *)(cw + CW_OFS(0xBF3C)) & 3) {
         case 1:
             Set06_set(2);
             break;
@@ -148,7 +149,7 @@ void Lb_stage_load(int stage) {
             }
             break;
         case 0x4C:
-            p = &lb_start_pos[cw[0x35D1] % 8];
+            p = &lb_start_pos[cw[CW_OFS(0x35D1)] % 8];
             LBPLACE(pl, p);
             break;
         default:
@@ -158,11 +159,11 @@ void Lb_stage_load(int stage) {
     } else if (lb_sys.x71 == 0) {
         switch (stage) {
         case 0x4D:
-            if (cw[0x35D2] == 0) {
+            if (cw[CW_OFS(0x35D2)] == 0) {
                 p = &lb_start_pos[8];
                 LBPLACE(pl, p);
             } else {
-                p = &lb_return_pos[cw[0x35D1] % 4];
+                p = &lb_return_pos[cw[CW_OFS(0x35D1)] % 4];
                 LBPLACE(pl, p);
             }
             break;

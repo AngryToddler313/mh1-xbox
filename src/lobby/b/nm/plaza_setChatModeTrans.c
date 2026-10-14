@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern u8 chatListFlag;
 extern char text_lobby_msg[];
 extern char lit_2602[];
@@ -46,7 +47,7 @@ void plaza_setChatModeTrans(void) {
         put_main_cursor(F(u8, pNet, 0xA) - 1);
         Lb_put_msg_type2(temp_s0 + 0x150);
         flfntLocate( ((s16)((F(s16, temp_s0, 0x150) + 0x90))), F(s16, temp_s0, 0x152));
-        sprintf(spD0, &lit_2602, 7 - F(u8, (u8 *)cw, 0x32BE));
+        sprintf(spD0, &lit_2602, 7 - F(u8, (u8 *)cw, CW_OFS(0x32BE)));
         han2zen(spD0, &spA0);
         font_print(&lit_2316, &spA0);
         temp_s0_2 = temp_s0 + 0x158;
@@ -55,7 +56,7 @@ void plaza_setChatModeTrans(void) {
         } else {
             Lb_put_msg_type2();
         }
-        if (F(u8, (u8 *)cw, 0x32BE) == 0) {
+        if (F(u8, (u8 *)cw, CW_OFS(0x32BE)) == 0) {
             Put_megaphone( ((s16)((F(s16, temp_s0, 0x158) - 0x1A))),  ((s16)((F(s16, temp_s0_2, 2) - 4))), 0);
         }
         temp_a0 = (int)pNet;

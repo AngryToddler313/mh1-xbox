@@ -2,6 +2,7 @@
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
 #include "lobby_b.h"
+#include "lbsys_g.h"
 #undef flfntLocate
 #undef font_print_double
 void font_print_double(int, int, int, int, char *);
@@ -73,7 +74,7 @@ void lb_select_tag(void) {    /* (not static: Lb_join_trans, lb_bz134.c, calls i
                 if (lv != 0) {
                     if (lv >= 0xC8) {
                         q = (QI *)get_quest_info();
-                        if (F(s8, cw, 0x2C2F) == 0 || q->x1D != lv) {
+                        if (F(s8, cw, CW_OFS(0x2C2F)) == 0 || q->x1D != lv) {
                             col = 9;
                             t.col = 0xFF756143;
                             font_print_double((s16)(t.x + 0x28), (s16)(t.y + 0xC), 1, 9, lit_554_0065E298);

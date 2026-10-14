@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char lit_2528[];
 extern char Friend_data[];
 extern char Friend_data[];
@@ -57,7 +58,7 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
             /* (the asm passes all 8: the online friend's mini data in tl_member_buff, the page pNet+0x12, 3 pages, the
              * comment cw+0x2B9C) */
             disp_status(arg0, arg1, temp_a2_2, temp_a2_2 + 8, (int)tl_member_buff + F(u8, temp_a2, 6) * 0x2FC + 0x29A,
-                        F(s8, temp_a2, 0x12), 3, (int)cw + 0x2B9C);
+                        F(s8, temp_a2, 0x12), 3, (int)cw + CW_OFS(0x2B9C));
             return;
         }
         temp_s1 =  ((s16)((( ((s16)(arg1))) + 0x3E)));
@@ -66,7 +67,7 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
         put_titles( ((s16)(temp_s2)),  ((s16)(temp_s0)), F(s32, &tl_mail_tbl, 0x14));
         plaza_disp_mail(pNet,  ((s16)(temp_s2)));
         put_mail_input_square(pNet,  ((s16)(temp_s2)),  ((s16)(temp_s0)));
-        if (F(s8, (u8 *)cw, 0x2F99) != 0) {
+        if (F(s8, (u8 *)cw, CW_OFS(0x2F99)) != 0) {
             font_set_palette(0);
         } else {
             font_set_palette(0xA);

@@ -2,6 +2,7 @@
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #define Lb_on_dialog Lb_on_dialog_hdr
 #include "lbui_proto.h"
+#include "lbsys_g.h"
 #undef Lb_on_dialog
 #undef Lbs_MatchStart
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
@@ -752,10 +753,10 @@ int disp_status(int x0, int y0, int id, int handle, int mini_, int page_, int pa
         flfntLocate(xt, y);
         font_print(lit_2316, *(int *)(tl_mail_tbl + 0x24));
         flfntLocate((s16)(xt + 0x50), y);
-        if ((n = *(u16 *)((u8 *)cw + 0x30B4)) != 0)
+        if ((n = *(u16 *)((u8 *)cw + CW_OFS(0x30B4))) != 0)
             font_print(lit_193_0065DBE8, Get_ServerName(), (u8 *)PlazaInfo + (n - 1) * 0x15C + 0x14);
         flfntLocate((s16)(xt + 0x50), (s16)(y + 0x16));
-        if ((n = *(u16 *)((u8 *)cw + 0x30B6)) != 0) {
+        if ((n = *(u16 *)((u8 *)cw + CW_OFS(0x30B6))) != 0) {
             sprintf(b1, lit_193_0065DBE8, Get_ServerName(), (u8 *)LobbyInfo + (n - 1) * 0x15C + 0x14);
             han2zen(b1, b2);
             font_print(lit_2316, b2);
@@ -1000,18 +1001,18 @@ void plaza_disp_mail(int a, s16 x, s16 y)
     font_print(lit_2316, *(int *)(tl_mail_tbl + 8));
     flfntLocate(x + 0x3C, y);
     flfntSetSize(0x16, 0x12);
-    font_print(lit_2316, (char *)cw + 0x2F88);
+    font_print(lit_2316, (char *)cw + CW_OFS(0x2F88));
     flfntSetSize(0x12, 0x12);
     y += 0x16;
     flfntLocate(x, y);
     font_print(lit_2316, *(int *)(tl_mail_tbl + 0xC));
     flfntLocate(x + 0x3C, y);
-    han2zen((char *)cw + 0x2F80, buf);
+    han2zen((char *)cw + CW_OFS(0x2F80), buf);
     font_print(lit_2316, buf);
     flfntLocate(x, y + 0x16);
     font_print(lit_2316, *(int *)(tl_mail_tbl + 0x10));
     font_set_palette(0);
-    p = (char *)cw + 0x2F99;
+    p = (char *)cw + CW_OFS(0x2F99);
     KinshiYogo_chk(p);
     for (i = 0; i < 4; i++) {
         if (p == 0) break;
@@ -1198,7 +1199,7 @@ void Lb_on_dialog() {
                 return;
             }
             if (n->step == 13) {
-                DispNameAndIDonDialog(0x98, (char *)(cw + 0x2F88), (char *)(cw + 0x2F80));
+                DispNameAndIDonDialog(0x98, (char *)(cw + CW_OFS(0x2F88)), (char *)(cw + CW_OFS(0x2F80)));
             }
             break;
         }

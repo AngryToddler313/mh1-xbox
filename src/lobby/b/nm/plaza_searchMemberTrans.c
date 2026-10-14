@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char tl_msg_tbl[];
 extern char text_lobby_msg[];
 extern char text_lobby_msg[];
@@ -37,7 +38,7 @@ void plaza_searchMemberTrans(int arg0) {
     case 10:                                        /* switch 1 */
         temp_a2 = (int)SearchResult + ((F(u8, arg0, 0xA) + (F(s16, arg0, 0x24) * 7)) * 0x5C) + 4;
         /* (the asm passes all 8: the record's mini data +0x1C, the page pNet+0x12, 3 pages, the comment cw+0x2B9C) */
-        disp_status(0xD8, 0x50, temp_a2, temp_a2 + 8, temp_a2 + 0x1C, F(s8, arg0, 0x12), 3, (int)cw + 0x2B9C);
+        disp_status(0xD8, 0x50, temp_a2, temp_a2 + 8, temp_a2 + 0x1C, F(s8, arg0, 0x12), 3, (int)cw + CW_OFS(0x2B9C));
         return;
     case 11:                                        /* switch 1 */
     case 9:                                         /* switch 1 */

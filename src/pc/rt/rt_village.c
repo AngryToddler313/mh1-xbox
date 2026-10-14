@@ -79,6 +79,18 @@ void rt_village_enter(void)
         void Event_flag_set(int);
         Event_flag_set(2);
     }
+    if (getenv("RT_EVENT_SET")) {       /* test aid: "1,51,...": event flags set (decimal), as the story would have */
+        void Event_flag_set(int);
+        const char *e = getenv("RT_EVENT_SET");
+        while (*e) {
+            char *end;
+            long f = strtol(e, &end, 0);
+            if (end == e)
+                break;
+            Event_flag_set((int)f);
+            e = *end ? end + 1 : end;
+        }
+    }
     if (getenv("RT_QCLEAR")) {          /* test aid: "83,84-87,...": hex quest numbers marked cleared, as f_reward's
                                            Quest_clear_bit_set does after a won quest (a save with these quests done) */
         void Quest_clear_bit_set(int);
@@ -265,6 +277,12 @@ int rt_village_tick(void)
         fprintf(stderr, "rt_village: tick %d talk %d/%d pit x0 %d pos %p page %d sel %d done %d\n", tick, (s8)lb_sys[LBSYS_OFS(6)], (s8)lb_sys[LBSYS_OFS(7)],
                 *(s32 *)lb_pit, *(void **)(lb_pit + 4), (s8)lb_pit[8], (s8)lb_pit[9], (s8)lb_pit[0xB]);
     }
+    if (getenv("RT_FH_TRACE") && (tick % 10 == 0 || getenv("RT_FH_EVERY"))) {      /* the area record under the hunter (player+0x878): kind at +2 */
+        u8 *pl = player_work + 0xA00 * game_w[GWX(0xD1)];
+        u8 *fh = *(u8 **)(pl + 0x878);
+        fprintf(stderr, "rt_village: tick %d fh %p kind %d pos %.0f %.0f\n", tick, (void *)fh, fh ? *(u16 *)(fh + 2) : -1,
+                *(float *)(pl + 0xAC), *(float *)(pl + 0xB4));
+    }
     if (getenv("RT_QUEST_TRACE") && *(s32 *)(lb_sys + LBSYS_OFS(0x68)) != 0 && lb_sys[LBSYS_OFS(6)] != last_6) {
         extern u8 lb_pit[];
         fprintf(stderr, "rt_village: tick %d talk state %d (x68 %d) page %d sel %d\n", tick, (s8)lb_sys[LBSYS_OFS(6)],
@@ -276,7 +294,7 @@ int rt_village_tick(void)
         extern u8 *cw;
         fprintf(stderr, "rt_village: tick %d step %d sub %d x68 %d stage %d pl %.0f %.0f %.0f act %d/%d quest %d (accepted %d)\n",
                 tick, (s8)lb_sys[LBSYS_OFS(3)], (s8)lb_sys[LBSYS_OFS(4)], *(s32 *)(lb_sys + LBSYS_OFS(0x68)), game_w[0x14],
-                p[0], p[1], p[2], player_work[0x14], player_work[0x15], *(s16 *)(select_w + 0xAC), cw ? cw[0x35D3] : -1);
+                p[0], p[1], p[2], player_work[0x14], player_work[0x15], *(s16 *)(select_w + (rt_ver_mhg() ? 0xD0 : 0xAC)), cw ? cw[rt_ver_mhg() ? 0xFA5F : 0x35D3] : -1);
         if (0) {
             int i;
             for (i = 0; i < 20; i++) {

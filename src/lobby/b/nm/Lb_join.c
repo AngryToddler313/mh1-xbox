@@ -1,4 +1,5 @@
 #include "lobby_b.h"
+#include "lbsys_g.h"
 extern s32 quest_price;
 extern u32 joinQuest;
 extern char Lb_join_trans[];
@@ -47,7 +48,7 @@ void Lb_join(void) {
         lb_pit.pos = npc_dialog_table[0x63];
         Lbc_init_network_work();
         Lbc_set_prim(0, &Lb_join_trans, 0);
-        F(s8, (u8 *)cw, 0x2C08) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
     default:                                        /* switch 1 */
 block_88:
         lb_join_talk();
@@ -56,14 +57,14 @@ block_88:
         temp_v0 = Lbc_ReadRoomInfo();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
-            F(s8, (u8 *)cw, 0x2C08) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
             lb_pit.x08 = 0;
             lb_pit.x0 = 0;
             lb_sys.x06 = (s8) (lb_sys.x06 + 1);
             Gunner_wasure_ck(&User_data, 1);
             break;
         case 1:                                     /* switch 2 */
-            F(s8, (u8 *)cw, 0x2C08) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
             lb_sys.x06 = 0xF;
             *(s8 *)0x3F36AB = 0;
             break;
@@ -79,7 +80,7 @@ block_88:
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             lb_sys.x06 = (s8) (lb_sys.x06 + 1);
-            F(s8, (u8 *)cw, 0x2C08) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
             break;
         case 3:                                     /* switch 3 */
             lb_sys.x06 = 0xE;
@@ -107,7 +108,7 @@ block_88:
         if (Lbc_GuestReadRoom(lb_sys.x73) != 0) {
 
         } else {
-            F(s8, (u8 *)cw, 0x2C08) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
             lb_sys.x06 = (s8) (lb_sys.x06 + 1);
             pNet->depth = 0;
             joinQuest = (u32) ((u32) (F(s32, Lbs_GetRoomInfo(lb_sys.x73), 0x158) & 0x1FE) >> 1);
@@ -148,7 +149,7 @@ block_46:
         case 3:                                     /* switch 6 */
             if ((sx2 = Lb_talk_check_default(0)) != 0) {
                 if (lb_pit.x09 == 0) {
-                    if (F(u8, (u8 *)cw, 0x35D3) != 0) {
+                    if (F(u8, (u8 *)cw, CW_OFS(0x35D3)) != 0) {
                         lb_pit.x0 = 0;
                         lb_pit.x08 = 7;
                         lb_sys.x06 = 0xD;
@@ -209,11 +210,11 @@ block_46:
         }
         goto block_88;
     case 10:                                        /* switch 1 */
-        F(s8, (u8 *)cw, 0x2C08) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
         temp_v0_6 = Lbs_GuestEnterRoom();
         switch (temp_v0_6) {                        /* switch 8; irregular */
         case 0:                                     /* switch 8 */
-            F(s8, (u8 *)cw, 0x2C08) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
             temp_v1_2 = joinQuest;
             if (temp_v1_2 >= 0xC8) {
                 var_v0 = get_quest_info(1);
@@ -246,7 +247,7 @@ block_46:
             }
             break;
         case 1:                                     /* switch 8 */
-            F(s8, (u8 *)cw, 0x2C08) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
             lb_sys.x06 = 0xF;
             *(u8 *)0x3F36AB = 0;
             break;

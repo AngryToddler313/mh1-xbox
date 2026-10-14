@@ -1,5 +1,6 @@
 /* Lobby: chat send, player status window, friend list, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 chatIDList[];
 extern u8 frame_status_main_0064DDC0[];
 extern u8 frame_status_sub_0064DDF0[];
@@ -40,10 +41,10 @@ int c;
     u8 *p;
     u8 *id;
     if (*(u8 *)0x39DAD5 != 0) {
-        cw[0x32BE] = 0;
+        cw[CW_OFS(0x32BE)] = 0;
     } else {
         bit = 1;
-        cw[0x32BE] = 1;
+        cw[CW_OFS(0x32BE)] = 1;
         i = 0;
         p = (u8 *)lb_player;
         id = chatIDList;

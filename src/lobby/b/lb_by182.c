@@ -2,6 +2,7 @@
 #define DispNameAndIDonDialog DispNameAndIDonDialog_hdr
 #define Lb_on_dialog Lb_on_dialog_hdr
 #include "lbui.h"
+#include "lbsys_g.h"
 #undef DispNameAndIDonDialog
 #undef Lb_on_dialog
 void DispNameAndIDonDialog(s16 y, char *name, char *id);
@@ -34,7 +35,7 @@ void Lb_on_dialog(void) {
                 return;
             }
             if (n->step == 13) {
-                DispNameAndIDonDialog(0x98, (char *)(cw + 0x2F88), (char *)(cw + 0x2F80));
+                DispNameAndIDonDialog(0x98, (char *)(cw + CW_OFS(0x2F88)), (char *)(cw + CW_OFS(0x2F80)));
             }
             break;
         }

@@ -1,6 +1,7 @@
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
 #include "lobby_a.h"
+#include "lbsys_g.h"
 #undef flfntLocate
 #undef font_print_double
 void flfntLocate(int x, s16 y);
@@ -22,7 +23,7 @@ u8 b;
     if ((s8)cw[0x2B + b * 0x11] == 0) {
         strcpy(buf, *net_etc_mes_tbl[8]);
     } else {
-        strcpy(buf, cw + 0x2B + b * 0x11);
+        strcpy(buf, cw + CW_OFS(0x2B) + b * 0x11);
     }
     cnWrap_SetFontSize(20.0f);
     idx = b;

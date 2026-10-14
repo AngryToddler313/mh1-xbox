@@ -1,6 +1,7 @@
 /* lb_ab04 - lobby member out-check 0x005CD0F0-0x005CD2B8: lb_member_outCheck (a member that left lbCommer: free its player/prim, clear the client records; returns 1 if any left).
    Declaration order = descending register (s5 result, i, c, off, pl, lp); i is an int wrapped with (s8)(i + 1). Whole file in lb_ab.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern char lit_236_00664CC0[];
 extern u8 D_3E4C05[];
@@ -44,7 +45,7 @@ int lb_member_outCheck(void) {
                 release_prim(*(s16 *)(pl + 0x568));
                 *(s32 *)(pl + 0x564) = 0;
             }
-            if (cw[0x35D5] != 0 && (cw + off + 0x1334) != 0) {
+            if (cw[CW_OFS(0x35D5)] != 0 && (cw + off + 0x1334) != 0) {
                 memset(buf, 0, 0x120);
                 buf[0x11F] = 6;
                 buf[0x11E] = 6;

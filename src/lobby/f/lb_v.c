@@ -93,7 +93,7 @@ rest:
         if (key_quest_num != 0) {
             return 0;
         }
-    } else if (Online_ck() == 1 && *(s8 *)(cw + 0x2C2F) != 0 && s0 == 7) {
+    } else if (Online_ck() == 1 && *(s8 *)(cw + CW_OFS(0x2C2F)) != 0 && s0 == 7) {
         return 0;
     }
 ret1:
@@ -266,7 +266,7 @@ int lb_guild_make_room(void) {
             lb_sys.x07 = lb_sys.x07 + 1;
             break;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             *(s8 *)0x3F36AB = 0;
             lb_sys.x07 = 6;
             break;
@@ -308,10 +308,10 @@ int lb_guild_make_room(void) {
         switch (Lbc_SetPropaty(mhRule.x5C, pad)) {
         case 0:
             lb_sys.x07 = 0;
-            cw[0x32C5] = 1;
+            cw[CW_OFS(0x32C5)] = 1;
             return 0;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             *(u8 *)0x3F36AB = 0;
             lb_sys.x07 = 6;
             break;

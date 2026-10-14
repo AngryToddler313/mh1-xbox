@@ -1,5 +1,6 @@
 /* lb_by132 - agent B 0x005B0BA0-0x005B0CDC: lb_select_room_list (room list: choose / join a quest room; online). get_quest_info is called without arguments in the original. */
 #include "lobby_b.h"
+#include "lbsys_g.h"
 extern u32 joinQuest;
 s32 lb_select_room_list(void) {
     s32 sw;
@@ -21,7 +22,7 @@ s32 lb_select_room_list(void) {
         lv = ((u32)(*(s32 *)(room + 0x158) & 0x1FE) >> 1) & 0xFF;
         if (lv >= 0xC8) {
             q = (u8 *)get_quest_info();
-            if (F(s8, cw, 0x2C2F) == 0 || q[0x1D] != lv) {
+            if (F(s8, cw, CW_OFS(0x2C2F)) == 0 || q[0x1D] != lv) {
                 cnWrap_SoundRequest(7);
                 return 1;
             }

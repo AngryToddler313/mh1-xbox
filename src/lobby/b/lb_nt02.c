@@ -1,5 +1,6 @@
 /* lb_nt02 - agent C 0x005C1D50-0x005C1F18: net_time_move (online play-time clock widget state machine; nested switches, ladder = reverse label order). */
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern s32 net_time_flag;
 typedef struct { u8 pad0000[0x1]; s8 x0001; u8 pad0002[0x2]; u8 x0004; u8 x0005; u8 pad0006[0x12]; u8 *x0018; } ARG_net_time_move_arg0;
 void net_time_str(f32);
@@ -20,7 +21,7 @@ void net_time_move(ARG_net_time_move_arg0 *arg0) {
             *(s16 *)(w + 4) = 0x78;
             break;
         case 1:
-            if (F(s8, (u8 *)cw, 0x2C30) != 0) {
+            if (F(s8, (u8 *)cw, CW_OFS(0x2C30)) != 0) {
                 arg0->x0005 = 0;
             } else {
                 t = *(s16 *)(w + 4) - 1;
@@ -51,7 +52,7 @@ void net_time_move(ARG_net_time_move_arg0 *arg0) {
             net_time_str(1.0f);
             break;
         case 2:
-            if (F(s8, (u8 *)cw, 0x2C30) != 0) {
+            if (F(s8, (u8 *)cw, CW_OFS(0x2C30)) != 0) {
                 arg0->x0004 = 0;
                 arg0->x0005 = 0;
                 arg0->x0001 = 0;

@@ -133,6 +133,7 @@ WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15
 LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
        $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
 [ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
+[ "$VERSION" = mhg ] && LOBBY="$LOBBY src/lobby/f/lb_guild_g.c"     # the G quest counter (written from G's asm; the MH1 copies are #ifndef VERSION_MHG)
 # the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init and
 # the menu's move and draw (matched b/ runs)
 LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \

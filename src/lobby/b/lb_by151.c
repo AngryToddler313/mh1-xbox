@@ -1,5 +1,6 @@
 /* lb_by151 - agent B 0x005B3ED0-0x005B4330: Lb_menu_move_Core (village / lobby start menu: step 0 = open (ListSelect offline, Menu_select_mv online; confirm calls the page init), step 1 = per-page move handler; the *_i / *_mv handlers take no arguments, a0 is whatever lbmw left in it). */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 *lbmw;
 int Chk_lb_status();
 int Cockpit_chat_chk();
@@ -83,7 +84,7 @@ s32 Lb_menu_move_Core(void) {
                 Menu_item_i();
                 break;
             case 2:
-                F(s8, cw, 0x2C08) = 0;
+                F(s8, cw, CW_OFS(0x2C08)) = 0;
                 keys = Menu_mix_i();
                 break;
             case 3:
@@ -198,13 +199,13 @@ s32 Lb_menu_move_Core(void) {
         k = r & 0xFFFF;
         if (k & 0x8000) {
             F(u8, lbmw, 5) = 0;
-            F(u8, cw, 0x2C08) = 1;
+            F(u8, cw, CW_OFS(0x2C08)) = 1;
             return 1;
         }
         if (k & 0x40) {
             lb_menu_init();
             se_req(7, 0x14, 0);
-            F(u8, cw, 0x2C08) = 1;
+            F(u8, cw, CW_OFS(0x2C08)) = 1;
         }
         break;
     }

@@ -44,7 +44,7 @@ int lb_member_outCheck(void) {
                 release_prim(*(s16 *)(pl + 0x568));
                 *(s32 *)(pl + 0x564) = 0;
             }
-            if (cw[0x35D5] != 0 && (cw + off + 0x1334) != 0) {
+            if (cw[CW_OFS(0x35D5)] != 0 && (cw + off + 0x1334) != 0) {
                 memset(buf, 0, 0x120);
                 buf[0x11F] = 6;
                 buf[0x11E] = 6;
@@ -124,7 +124,7 @@ void Lb_check_newCommer(int a) {
     int i;
     u8 *pl;
     u8 st;
-    if (*(s8 *)(cw + 0x2C08) != 0) {
+    if (*(s8 *)(cw + CW_OFS(0x2C08)) != 0) {
         if (lb_member_outCheck() == 1) {
             st = game_w.stage;
             if (st != 0x4C) {

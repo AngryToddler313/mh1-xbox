@@ -1,5 +1,6 @@
 /* lb_gaf06 - plaza init phase 0x005D8920-0x005D8C0C: vs_square_init_init (my_user_id is declared 16 bytes so that it is not gp-addressed; the stage store is done in each branch). Whole file in lb_af.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *pNet;
 extern u8 D_32D471[];
@@ -84,7 +85,7 @@ void vs_square_init_init(void) {
             Lb_make_quest_tbl_local();
             Q_camera_init();
         }
-        cw[0x2C08] = 0;
+        cw[CW_OFS(0x2C08)] = 0;
         fade_reset();
         lb_sys.x03 = lb_sys.x03 + 1;
         InitRenderState(0);
@@ -109,7 +110,7 @@ void vs_square_init_init(void) {
         Pit_init();
         lb_sys.x71 = -1;
         if (Online_ck() == 1) {
-            if (cw[0x35D2] == 0) {
+            if (cw[CW_OFS(0x35D2)] == 0) {
                 p->x73A = 0x4C;
             } else {
                 lb_sys.x71 = 0;
@@ -119,7 +120,7 @@ void vs_square_init_init(void) {
             p->x73A = 0x57;
         }
         Lb_stage_load(p->x73A);
-        cw[0x35D2] = 0;
+        cw[CW_OFS(0x35D2)] = 0;
         Lbc_connect();
         Lb_npc_set(p->x73A);
         i = 0;
@@ -135,7 +136,7 @@ void vs_square_init_init(void) {
         if ((Fade_busy_ck() & 0xFF) != 1) {
             lb_sys.x04 = 0;
             lb_sys.x03 = lb_sys.x03 + 1;
-            cw[0x35D2] = 0;
+            cw[CW_OFS(0x35D2)] = 0;
         }
     }
 }

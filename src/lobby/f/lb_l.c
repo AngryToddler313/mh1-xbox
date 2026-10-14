@@ -76,7 +76,7 @@ void pl_sleeping(PLW *pl) {
 void lb_exit_save(PLW *pl) {
     pl_flag_clr(pl, 0x20000);
     Lb_Pl_act_set2(pl, 0, 0x35, 0);
-    CW8(0x2C08) = 1;
+    CW8(CW_OFS(0x2C08)) = 1;
     *(s8 *)0x3F36AB = 1;
     str_pause(0, 0);
     str_volume(0, 0);
@@ -94,7 +94,7 @@ void lb_goto_guest_room(PLW *pl, int no) {
     case 1:
         if (no == 0x55) {
             r = ran_suu(1);
-            CW8(0x35D8) = (r % 27) * 2;
+            CW8(CW_OFS(0x35D8)) = (r % 27) * 2;
         }
         t = &lbs_command_jmp[0xB3];
         Gold_add(-t[no]);

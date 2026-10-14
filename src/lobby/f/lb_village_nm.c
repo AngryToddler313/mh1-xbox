@@ -1460,6 +1460,7 @@ void Lb_set_mini_data_to_pl(s32 no, u8 *src) {
     memcpy(pl + 0x352, b + 0xE, 6);
 }
 
+#ifndef VERSION_MHG
 void Lb_make_quest_tbl_local(void) {
     s32 sp100;
     u32 spF0;
@@ -1650,6 +1651,7 @@ loop_40:
         key_quest_num = 1;
     }
 }
+#endif
 
 s32 lb_set_key_quest_local(void) {
     s32 var_s0;
@@ -1689,6 +1691,7 @@ s32 lb_set_key_quest_local(void) {
     return var_s0;
 }
 
+#ifndef VERSION_MHG
 u8 get_flag_quest(s32 arg0) {
     s32 temp_hi;
     s32 temp_s1;
@@ -1752,7 +1755,9 @@ block_20:
 block_24:
     return 0U;
 }
+#endif
 
+#ifndef VERSION_MHG
 u8 get_new_quest(s32 arg0) {
     s32 temp_hi;
     s32 temp_s1;
@@ -1812,6 +1817,7 @@ block_21:
 block_25:
     return 0U;
 }
+#endif
 
 void Lb_check_newCommer(void) {
     s32 temp_a1;
@@ -3793,7 +3799,7 @@ void lb_check_status(void) {
                 break;
             case 1:                                 /* switch 4 */
                 M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x17U;
-                SetDialogData_HTML(cw + 0x32D1);
+                SetDialogData_HTML(cw + CW_OFS(0x32D1));
                 break;
             }
             break;
@@ -3806,7 +3812,7 @@ void lb_check_status(void) {
                 break;
             case 1:                                 /* switch 5 */
                 M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x17U;
-                SetDialogData_HTML(cw + 0x32D1);
+                SetDialogData_HTML(cw + CW_OFS(0x32D1));
                 break;
             }
             break;
@@ -3991,6 +3997,7 @@ void lb_menu_init(void) {
     *(s8 *)0x39DADC = 0;
 }
 
+#ifndef VERSION_MHG
 void Lb_guild(void) {
     s32 temp_a0_2;
     s32 temp_v0_2;
@@ -4408,7 +4415,9 @@ block_136:
         goto block_137;
     }
 }
+#endif
 
+#ifndef VERSION_MHG
 void lb_guild_talk(void) {
     u8 *temp_v0;
     u8 *temp_s0;
@@ -4442,7 +4451,9 @@ void lb_guild_talk(void) {
         }
     }
 }
+#endif
 
+#ifndef VERSION_MHG
 s32 lb_guild_startMsg(void) {
     s32 temp_a1;
     u8 *temp_s0;
@@ -4512,7 +4523,9 @@ block_30:
         goto block_32;
     }
 }
+#endif
 
+#ifndef VERSION_MHG
 s32 lb_select_quest(void) {
     s32 temp_s0;
     s32 temp_v1_2;
@@ -4636,7 +4649,9 @@ block_43:
         goto block_43;
     }
 }
+#endif
 
+#ifndef VERSION_MHG
 s32 lb_select_quest_level(void) {
     s32 temp_a1;
     s32 temp_s0;
@@ -4671,7 +4686,9 @@ s32 lb_select_quest_level(void) {
 block_11:
     return 2;
 }
+#endif
 
+#ifndef VERSION_MHG
 s32 check_questLevelSelect(s32 arg0) {
     s32 temp_s0;
     s32 temp_s1;
@@ -4705,7 +4722,9 @@ s32 check_questLevelSelect(s32 arg0) {
 block_22:
     return 1;
 }
+#endif
 
+#ifndef VERSION_MHG
 s32 lb_get_quest_level(s32 arg0) {
     s32 var_v0;
     s32 var_v0_2;
@@ -4753,7 +4772,9 @@ s32 lb_get_quest_level(s32 arg0) {
     }
     return -(Quest_clear_bit_ck(0x83) != 1);
 }
+#endif
 
+#ifndef VERSION_MHG
 void lb_set_questpage_info(void) {
     s32 temp_a1;
     s32 temp_s2_4;
@@ -4870,7 +4891,9 @@ block_26:
     strcpy(lb_quest_exp + 0x4B4, M2C_FIELD(temp_s0_2, s32 *, 8));
     pDetail = (s32) M2C_FIELD((temp_s0_2 + 8), s32 *, 4);
 }
+#endif
 
+#ifndef VERSION_MHG
 void lb_questpage_trans(u8 *arg0) {
     u8 *var_s2_2;  /* was int *var_s2_2 */
     u8 *var_s4_2;  /* was int *var_s4_2 */
@@ -4994,11 +5017,13 @@ block_44:
     }
     guild_trans_ot0(arg0);
 }
+#endif
 
 /* lb_select_quest_level_trans (0x5C8810): the quest counter's level list:
  * one 2TF bar per level (lb_quest_level_str: {s16 x, s16 y, char *text}),
  * the cursor icon, grey (9) for levels not open yet, a mark (lit_462) for
  * cleared levels, then the key-quest / extra lines */
+#ifndef VERSION_MHG
 void lb_select_quest_level_trans(void) {
     u8 tf[0x14];
     u8 *rec, *r2, *done;
@@ -5084,7 +5109,9 @@ void lb_select_quest_level_trans(void) {
 #undef TFX
 #undef TFY
 }
+#endif
 
+#ifndef VERSION_MHG
 void guild_trans_ot0(u8 *arg0) {
     u8 *var_s2;  /* was int *var_s2 */
     s32 temp_s0;
@@ -5125,6 +5152,7 @@ block_11:
         }
     }
 }
+#endif
 
 void lb_disp_name(u8 *arg0) {
     f32 sp100[3];

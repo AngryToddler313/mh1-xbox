@@ -1,5 +1,6 @@
 /* lobby_client_admin_message (0x5BEF30): 7/85 differ: cw reload register. if-chain instead of switch. Not built. */
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char lbc_admin_message_jmp_3260[];
 s32 lobby_client_admin_message(void) {
     s8 sx1;
@@ -29,8 +30,8 @@ s32 lobby_client_admin_message(void) {
         }
         if (F(s8, temp_v1_2, 0x2C30) != 0) {
             F(s8, temp_v1_2, 0x2C30) = 0;
-            F(u8, (u8 *)cw, 0x2F79) = 0xFF;
-            F(u8, (u8 *)cw, 0x2F78) = 0U;
+            F(u8, (u8 *)cw, CW_OFS(0x2F79)) = 0xFF;
+            F(u8, (u8 *)cw, CW_OFS(0x2F78)) = 0U;
             cnLbc_EraseDialog(0x4C);
         }
         temp_a0_2 = (int)cw;

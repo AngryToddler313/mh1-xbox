@@ -1,5 +1,6 @@
 /* Lobby: small hand-written functions (quest type, room member, stat), SLPM_654.95 lobby overlay. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 typedef struct LBM { u8 p[0x2FC]; } LBM;
 extern s32 CA_size_list[2];
 s8 Lb_get_quest_type(u16 *p) {
@@ -47,7 +48,7 @@ int HttpTaskPullCheck(void) {
 }
 extern u8 CnetSys_w[];
 void http_test_14(u8 *p) {
-    if (*(s32 *)(cw + 0x35F4) < 0) {
+    if (*(s32 *)(cw + CW_OFS(0x35F4)) < 0) {
         CnetSys_w[0xFED] = 2;
         *(s8 *)(p + 0x3D) = 0x11;
         *(s8 *)(p + 0x3C) = 0;

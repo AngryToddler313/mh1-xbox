@@ -481,8 +481,8 @@ s32 internet_connect_minimum_cleanup() {
 }
 
 static void CallBackWaitInit() {
-    F(s32, (u8 *)cw, 0x35DC) = 0xE10;
-    F(s8, (u8 *)cw, 0x35D9) = 0;
+    F(s32, (u8 *)cw, CW_OFS(0x35DC)) = 0xE10;
+    F(s8, (u8 *)cw, CW_OFS(0x35D9)) = 0;
 }
 
 s32 Check_CallBackWait() {
@@ -521,7 +521,7 @@ s32 internet_lobby_act() {
     if (CWX->x2C31 != 5) {
         if (cnWrap_IsAccessMemoryCard() == 0 && CWX->x2C08 != 0) {
             if (sw != 0 || F(u8, lpSKey, 0x658) != 0 || (*(u16 *)0x3F3718 & 0x3C3C) != 0) {
-                cnLbc_SetIspRestTime((u8 *)cw + 0x35F8);
+                cnLbc_SetIspRestTime((u8 *)cw + CW_OFS(0x35F8));
             }
             v = CWX->x35F8 - 1;
             CWX->x35F8 = v;
@@ -548,7 +548,7 @@ s32 internet_lobby_act() {
             }
         } else if (CWX->x2C44 == 1 && BsLbsErrNum == 0) {
             if (sw != 0 || F(u8, lpSKey, 0x658) != 0) {
-                cnLbc_SetIspRestTime((u8 *)cw + 0x35F8);
+                cnLbc_SetIspRestTime((u8 *)cw + CW_OFS(0x35F8));
             }
             if (CWX->x35F4 < 0) {
                 BsLbsErrNum = 1;
@@ -592,7 +592,7 @@ void Lbc_connect() {
 loop_2:
         if (cnLBS_RecvData(*(s32 *)0x4E36F4) == 1) {
             var_s0 += 1;
-            F(s32, (u8 *)cw, 0x35F4) = 0xE10;
+            F(s32, (u8 *)cw, CW_OFS(0x35F4)) = 0xE10;
             if (var_s0 < 0x64) {
                 goto loop_2;
             }
@@ -601,7 +601,7 @@ loop_2:
 }
 
 void lobby_client_login() {
-    ((int (**)())lobby_client_login_jmp_324)[F(u8, (u8 *)cw, 0x2C33)]();
+    ((int (**)())lobby_client_login_jmp_324)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
 }
 
 #ifdef VERSION_MHG
@@ -871,8 +871,8 @@ void lbc_login_patch() {
     switch (temp_a1) {
     case 0:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        F(s8, (u8 *)cw, 0x2C08) = 0;
-        cnLBS_Get_PatchInformation((u8 *)cw + 0xBF20, temp_a1, temp_a2);
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
+        cnLBS_Get_PatchInformation((u8 *)cw + CW_OFS(0xBF20), temp_a1, temp_a2);
         ms_net_patch_set_init();
         all_reset();
         F(s8, &network_work, 0x11) = 1;
@@ -889,7 +889,7 @@ void lbc_login_patch() {
             F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
             cnWrap_InitWork();
         } else if (temp_v0 == -1) {
-            F(u8, (u8 *)cw, 0x2C34) = 6U;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 6U;
             cnWrap_InitWork();
         }
         Net_trans_set(0);
@@ -901,7 +901,7 @@ void lbc_login_patch() {
         return;
     case 4:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        F(s8, (u8 *)cw, 0x2C08) = 1;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
         CallBackWaitInit();
         cnLBS_Answer_PatchFinish();
         return;
@@ -933,8 +933,8 @@ void lbc_login_id_select() {
     u8 *stp;
     s32 r;
 
-    st = cw[0x2C34];
-    stp = cw + 0x2C34;
+    st = cw[CW_OFS(0x2C34)];
+    stp = cw + CW_OFS(0x2C34);
     switch (st) {
     case 0:
         *stp = st + 1;
@@ -961,8 +961,8 @@ void lbc_login_id_select() {
         }
         if (cnWrap_IsBBConnect() != 0) {
             if (cw[0] == 0) {
-                cw[0x2C33] = 5;
-                cw[0x2C34] = 0;
+                cw[CW_OFS(0x2C33)] = 5;
+                cw[CW_OFS(0x2C34)] = 0;
                 return;
             }
         }
@@ -975,7 +975,7 @@ void lbc_login_id_select() {
         return;
     case 2:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            cw[0x2C34]++;
+            cw[CW_OFS(0x2C34)]++;
             if (CnetWork_c12.x05 == 0) {
                 fade_set(2);
                 return;
@@ -986,7 +986,7 @@ void lbc_login_id_select() {
         r = net_SetMenu_SelectHandleName(&network_work);
         switch (r) {
         case 0:
-            cw[0x2C34]++;
+            cw[CW_OFS(0x2C34)]++;
             return;
         case -1:
         case -2:
@@ -995,11 +995,11 @@ void lbc_login_id_select() {
         break;
     case 4:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            cw[0x2C34]++;
+            cw[CW_OFS(0x2C34)]++;
             Lbc_set_prim_k(0, 0, 0);
         }
     case 5:
-        cw[0x2C34]++;
+        cw[CW_OFS(0x2C34)]++;
         ix = F(u8, pNet, PNET_OFS(8));
         cw[1] = ix;
         CallBackWaitInit();
@@ -1011,8 +1011,8 @@ void lbc_login_id_select() {
         } else {
             cnLBS_Send_LoginUserAccount(cw + ix * 8 + 0xB, cw + of + 0x2B, cw + (ix << 6) + 0x6F);
         }
-        cnetGet_Login_DecideUserID(cw + 0x440);
-        cnetGet_Login_DecideUserHandle(cw + 0x448);
+        cnetGet_Login_DecideUserID(cw + CW_OFS(0x440));
+        cnetGet_Login_DecideUserHandle(cw + CW_OFS(0x448));
         return;
     case 6:
         Check_CallBackWait();
@@ -1029,14 +1029,14 @@ void CallBack_SendMiniData(CNET_RES res) {
     if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 2)) {
         F(u8, temp_a1, 0x2C45) = 0U;
         if (res.val == 0) {
-            memcpy((u8 *)cw + 0x45A, &my_user_mini_data, 0x40);
+            memcpy((u8 *)cw + CW_OFS(0x45A), &my_user_mini_data, 0x40);
             temp_a0 = (u8 *)cw;
             F(u8, temp_a0, 0x2C34) = (u8) (F(u8, temp_a0, 0x2C34) + 1);
             return;
         }
         temp_v1 = (u8 *)cw;
         F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
     }
 }
 
@@ -1109,12 +1109,12 @@ void CallBack_Result_LoginPersonalDataRegist(CNET_RES res) {
     if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 0xD)) {
         F(u8, temp_a1, 0x2C45) = 0U;
         if (res.val == 0) {
-            F(u8, (u8 *)cw, 0x2C34) = 8U;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 8U;
             return;
         }
         temp_v1 = (u8 *)cw;
         F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
     }
 }
 
@@ -1129,7 +1129,7 @@ void lbc_login_error() {
         CWX_c16->x2C34++;
         fade_set(2);
         CWX_c16->x2C4C = 0x258;
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
         break;
     case 1:
         F(s8, pNet, PNET_OFS(0xC)) = 1;
@@ -1368,69 +1368,69 @@ void CallBack_Result_LoginLobbyServer(CNET_RES res) {
     if (res.val != -1) {
         switch ((s8)sw) {
         case 4:
-            F(s8, (u8 *)cw, 0x2C33) = 2;
-            F(u8, (u8 *)cw, 0x2C34) = 0;
-            cnLBS_Get_LoginWarningMessage((u8 *)cw + 0x35FE, res.id);
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 2;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+            cnLBS_Get_LoginWarningMessage((u8 *)cw + CW_OFS(0x35FE), res.id);
             return;
         case 1:
             switch (F(u8, &CnetWork, 5)) {
             case 0:
-                F(s8, (u8 *)cw, 0x2C33) = 4;
-                F(u8, (u8 *)cw, 0x2C34) = 0;
-                F(s8, (u8 *)cw, 0x2C35) = 0;
+                F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 4;
+                F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+                F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
                 fade_set(1);
                 return;
             case 1:
             case 2:
-                F(s8, (u8 *)cw, 0x2C33) = 4;
-                F(u8, (u8 *)cw, 0x2C34) = 6;
-                F(s8, (u8 *)cw, 0x2C35) = 0;
+                F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 4;
+                F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 6;
+                F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
                 CallBackWaitInit();
-                cnLBS_Send_LoginUserAccount((u8 *)cw + 0x440, (u8 *)cw + 0x448, &my_user_mini_data);
+                cnLBS_Send_LoginUserAccount((u8 *)cw + CW_OFS(0x440), (u8 *)cw + CW_OFS(0x448), &my_user_mini_data);
                 return;
             case 3:
-                F(s8, (u8 *)cw, 0x2C33) = 4;
-                F(u8, (u8 *)cw, 0x2C34) = 6;
-                F(s8, (u8 *)cw, 0x2C35) = 0;
+                F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 4;
+                F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 6;
+                F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
                 CallBackWaitInit();
                 cnLBS_Send_LoginUserAccount(my_user_id, my_user_handle, &my_user_mini_data);
                 return;
             }
             break;
         case 2:
-            cnetGet_Login_DecideUserID((u8 *)cw + 0x440, res.id);
-            memcpy(my_user_id, (u8 *)cw + 0x440, 8);
-            cnetGet_Login_DecideUserHandle((u8 *)cw + 0x448);
-            memcpy(my_user_handle, (u8 *)cw + 0x448, 0x12);
-            F(u8, (u8 *)cw, 0x2C34) = F(u8, (u8 *)cw, 0x2C34) + 1;
+            cnetGet_Login_DecideUserID((u8 *)cw + CW_OFS(0x440), res.id);
+            memcpy(my_user_id, (u8 *)cw + CW_OFS(0x440), 8);
+            cnetGet_Login_DecideUserHandle((u8 *)cw + CW_OFS(0x448));
+            memcpy(my_user_handle, (u8 *)cw + CW_OFS(0x448), 0x12);
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = F(u8, (u8 *)cw, CW_OFS(0x2C34)) + 1;
             return;
         case 5:
-            F(s8, (u8 *)cw, 0x2C33) = 1;
-            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 1;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
             return;
         case 3:
-            F(s8, (u8 *)cw, 0x2C33) = 3;
-            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
             return;
         case 0:
-            F(s8, (u8 *)cw, 0x2C33) = 7;
-            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 7;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
             return;
         }
     } else {
         switch ((s8)sw) {
         case 7:
-            F(s8, (u8 *)cw, 0x2C33) = 6;
-            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 6;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
             F(s8, (u8 *)cw, 2) = 1;
             fade_set(1);
-            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
+            cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1));
             return;
         case 8:
-            F(s8, (u8 *)cw, 0x2C33) = 6;
-            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 6;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
             F(s8, (u8 *)cw, 2) = 2;
-            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, res.id);
+            cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), res.id);
             return;
         case 9:
             To_LogOut(4);
@@ -1441,13 +1441,13 @@ void CallBack_Result_LoginLobbyServer(CNET_RES res) {
 }
 
 void lbc_browser() {
-    ((int (**)())lbc_user_regist_jmp_939)[F(u8, (u8 *)cw, 0x2C43)]();
+    ((int (**)())lbc_user_regist_jmp_939)[F(u8, (u8 *)cw, CW_OFS(0x2C43))]();
 }
 
 void To_BootUpBrowser() {
-    F(s8, (u8 *)cw, 0x2C43) = 0;
-    F(s8, (u8 *)cw, 0x2C44) = 1;
-    F(s8, (u8 *)cw, 0x2C08) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C43)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C44)) = 1;
+    F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
 }
 
 void lbc_browser_00() {
@@ -1455,7 +1455,7 @@ void lbc_browser_00() {
 
     temp_a0 = (u8 *)cw;
     F(u8, temp_a0, 0x2C43) = (u8) (F(u8, temp_a0, 0x2C43) + 1);
-    F(s8, (u8 *)cw, 0x2C08) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
     BsLbsErrNum_c23 = 0;
 }
 
@@ -1500,9 +1500,9 @@ void lbc_browser_04() {
     case 1:
         MainBsDispose();
         if (memcmp(&tmpPersonalData_c25, &BrPersonalData_c25, 0x1D0) != 0) {
-            F(s8, (u8 *)cw, 0x2C3C) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C3C)) = 1;
         } else {
-            F(s8, (u8 *)cw, 0x2C3C) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C3C)) = 0;
         }
         ((CWS_lbc_browser_04 *)cw)->x2C43 = (u8) (((CWS_lbc_browser_04 *)cw)->x2C43 + 1);
         fade_set(1);
@@ -1526,8 +1526,8 @@ void lbc_browser_05() {
         all_reset(temp_a0);
         Lbs_load();
         net_char_change = 0;
-        F(s8, (u8 *)cw, 0x2C08) = 1;
-        F(s8, (u8 *)cw, 0x2C44) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
+        F(s8, (u8 *)cw, CW_OFS(0x2C44)) = 2;
         BsLbsErrNum_c26 = 0;
     }
 }
@@ -1570,18 +1570,18 @@ void CallBack_Result_LoginPersonalDataRegist2(CNET_RES res) {
             return;
         }
         F(u8, temp_a1, 0x2C35) = 3U;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1);
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
     }
 }
 
 void To_MyLobby() {
-    F(s8, (u8 *)cw, 0x2C31) = 8;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
-    F(s8, (u8 *)cw, 0x2C35) = 0;
-    F(s8, (u8 *)cw, 0x2C3F) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 8;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C3F)) = 0;
     Init_InterruptFlag();
 }
 
@@ -1635,7 +1635,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(CNET_RES res) {
     int i;
     PLZ *p;
 
-    if ((F(u8, (u8 *)cw, 0x2C31) != 5) && ((res.val != 2) || (res.id != 0xB)) && (res.val == 0)) {
+    if ((F(u8, (u8 *)cw, CW_OFS(0x2C31)) != 5) && ((res.val != 2) || (res.id != 0xB)) && (res.val == 0)) {
         cnLBS_Get_LobbyCount(&ClassInfo.x6);
         i = 0;
         if (0 < ClassInfo.x6) {
@@ -1678,13 +1678,13 @@ void CallBack_ReadCurrentPlace(CNET_RES res) {
 void MH_lobbyClear() {
     u8 *m;
 
-    memset((u8 *)cw + 0x10AC, 0, 0x17E0);
-    memset((u8 *)cw + 0x2BFE, 0, 8);
+    memset((u8 *)cw + CW_OFS(0x10AC), 0, 0x17E0);
+    memset((u8 *)cw + CW_OFS(0x2BFE), 0, 8);
     memset(&lbCommer, 0, 0xB80);
     F(s8, (u8 *)cw, 3) = 0;
-    F(s8, (u8 *)cw, 0x2C06) = 0;
-    F(s8, (u8 *)cw, 0x32C5) = 0;
-    F(s8, (u8 *)cw, 0x2C07) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C06)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C5)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C07)) = 0;
     Lb_clearChatList();
     m = (u8 *)&my_user_mini_data;
     if ((m[2] != 0) || (m[0x15] != 0)) {
@@ -1695,20 +1695,20 @@ void MH_lobbyClear() {
 }
 
 void lobby_client_top_menu() {
-    ((int (**)())lobby_client_top_menu_jmp_1131)[F(u8, (u8 *)cw, 0x2C32)]();
+    ((int (**)())lobby_client_top_menu_jmp_1131)[F(u8, (u8 *)cw, CW_OFS(0x2C32))]();
 }
 
 void lbc_top_menu() {
-    ((int (**)())lobby_client_top_menu_jmp_1136)[F(u8, (u8 *)cw, 0x2C33)]();
+    ((int (**)())lobby_client_top_menu_jmp_1136)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
 }
 
 void To_TopMenu() {
-    F(s8, (u8 *)cw, 0x2C31) = 1;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
-    F(s8, (u8 *)cw, 0x2C35) = 0;
-    F(s8, (u8 *)cw, 0x2C3F) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 1;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C3F)) = 0;
     Init_InterruptFlag();
 }
 
@@ -1716,7 +1716,7 @@ void lbc_top_menu_00() {
     int var_v1;
     s32 var_a0;
 
-    F(s8, (u8 *)cw, 0x2C33) = 5;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 5;
     F(s8, &ClassInfo_c36, 0) = 0;
     F(s8, &ClassInfo_c36, 4) = 0;
     F(s8, &ClassInfo_c36, 8) = 0;
@@ -1772,7 +1772,7 @@ void lbc_top_menu_02() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, temp_a1);
-        F(s8, (u8 *)cw, 0x2C45) = 4;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 4;
         cnLBS_PlazaEntry(cnLbc_CheckInFloorOrder(0) & 0xFFFF, &CallBack_Result_Plaza_PlazaEntry_o);
         return;
     case 1:
@@ -1787,40 +1787,40 @@ void CallBack_Result_Plaza_PlazaEntry(CNET_RES res) {
             To_EnterPlaza();
             return;
         }
-        F(s8, (u8 *)cw, 0x2C32) = 0;
-        F(s8, (u8 *)cw, 0x2C33) = 0;
-        F(s8, (u8 *)cw, 0x2C34) = 0;
-        F(s8, (u8 *)cw, 0x2C35) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
     }
 }
 
 s32 Lbs_ExitAndEnterPlaza(arg0)
 int arg0;
 {
-    switch (F(u8, (u8 *)cw, 0x2C35)) {
+    switch (F(u8, (u8 *)cw, CW_OFS(0x2C35))) {
     case 0:
-        F(u8, (u8 *)cw, 0x2C35)++;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35))++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 9;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 9;
         cnLBS_PlazaExit(CallBack_Result_Plaza_PlazaExit2);
         break;
     case 1:
         Check_CallBackWait();
         break;
     case 2:
-        F(u8, (u8 *)cw, 0x2C35)++;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35))++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 4;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 4;
         cnLBS_PlazaEntry(arg0 & 0xFFFF, CallBack_Result_Plaza_PlazaEntry2);
         break;
     case 3:
         Check_CallBackWait();
         break;
     case 4:
-        F(u8, (u8 *)cw, 0x2C35) = 0;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
         return 0;
     case 5:
-        F(u8, (u8 *)cw, 0x2C35) = 0;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
         return 1;
     }
     return 2;
@@ -1840,7 +1840,7 @@ void CallBack_Result_Plaza_PlazaExit2(CNET_RES res) {
             Init_InterruptFlag(temp_a0_2, 5, temp_a0 + 0x2C45);
             return;
         }
-        F(u8, (u8 *)cw, 0x2C35) = 5U;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 5U;
     }
 }
 
@@ -1855,7 +1855,7 @@ void CallBack_Result_Plaza_PlazaEntry2(CNET_RES res) {
             F(u8, temp_a0_2, 0x2C35) = (u8) (F(u8, temp_a0_2, 0x2C35) + 1);
             return;
         }
-        F(u8, (u8 *)cw, 0x2C35) = 5U;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 5U;
     }
 }
 
@@ -1879,7 +1879,7 @@ void lbc_top_menu_05() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, temp_a1);
-        F(s8, (u8 *)cw, 0x2C45) = 6;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 6;
         cnLBS_Read_PlazaAllocation(0, 7, &CallBack_Result_Plaza_ReadAllocation_o);
         return;
     case 1:
@@ -1912,8 +1912,8 @@ void CallBack_Result_Plaza_ReadAllocation(CNET_RES res) {
 }
 
 void lbc_top_menu_06() {
-    F(s8, (u8 *)cw, 0x2C33) = 1;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 1;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     F(s8, &ClassInfo_c44, 0) = 0;
     F(s8, &ClassInfo_c44, 4) = 0;
     F(s8, &ClassInfo_c44, 8) = 0;
@@ -1923,22 +1923,22 @@ void lbc_top_menu_06() {
 
 void lobby_client_game_in_plaza() {
     if (Check_InterruptFlag() == 0) {
-        if (((int *)&lbc_in_plaza_jmp_1345)[F(u8, (u8 *)cw, 0x2C33)] == 0) {
+        if (((int *)&lbc_in_plaza_jmp_1345)[F(u8, (u8 *)cw, CW_OFS(0x2C33))] == 0) {
             To_TopMenu();
         }
-        ((int (**)())&lbc_in_plaza_jmp_1345)[F(u8, (u8 *)cw, 0x2C33)]();
+        ((int (**)())&lbc_in_plaza_jmp_1345)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
     }
 }
 
 void To_EnterPlaza() {
-    F(s8, (u8 *)cw, 0x2C31) = 2;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
-    F(s8, (u8 *)cw, 0x2C35) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 2;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
     Init_InterruptFlag();
-    F(s8, (u8 *)cw, 0x2C41) = 0;
-    F(s8, (u8 *)cw, 0x2C42) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C41)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C42)) = 0;
     F(s8, &ClassInfo_c46, 4) = 0;
     F(s8, &ClassInfo_c46, 8) = 0;
     memset(&LobbyInfo_c46, 0, 0x1308);
@@ -1949,13 +1949,13 @@ void To_EnterPlaza() {
 }
 
 void To_EnterPlaza2Lobby() {
-    F(s8, (u8 *)cw, 0x2C31) = 2;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 2;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     Init_InterruptFlag();
     Lbc_init_network_work();
-    F(s8, (u8 *)cw, 0x2C08) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
     F(s8, &ClassInfo_c46, 4) = 0;
     F(s8, &ClassInfo_c46, 8) = 0;
     memset(&LobbyInfo_c46, 0, 0x1308);
@@ -1973,7 +1973,7 @@ void CallBack_Result_Plaza_ReadAllocation2(CNET_RES res) {
     int i;
     PLZ *p;
 
-    if ((F(u8, (u8 *)cw, 0x2C31) != 5) && (res.val != 2) && (res.val == 0)) {
+    if ((F(u8, (u8 *)cw, CW_OFS(0x2C31)) != 5) && (res.val != 2) && (res.val == 0)) {
         cnLBS_Get_PlazaCount(&ClassInfo_c47.x2);
         i = 0;
         if (0 < ClassInfo_c47.x2) {
@@ -2003,7 +2003,7 @@ void lbc_in_plaza_00() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, 1, temp_a2);
-        F(s8, (u8 *)cw, 0x2C45) = 0xB;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xB;
         cnLBS_Read_LobbyAllocation(0, 7, &CallBack_Result_Plaza_ReadLobbyAllocation_o);
         return;
     case 1:
@@ -2011,8 +2011,8 @@ void lbc_in_plaza_00() {
         return;
     case 2:
         if ((Fade_busy_ck(temp_a0_2, 1, temp_a2) & 0xFF) != 1) {
-            F(s8, (u8 *)cw, 0x2C33) = 1;
-            F(u8, (u8 *)cw, 0x2C34) = 0U;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 1;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0U;
         }
     }
 }
@@ -2086,7 +2086,7 @@ s32 Lbs_request_enter_lobby() {
         F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
         MH_lobbyClear(temp_a0, temp_a1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 8;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 8;
         cnLBS_LobbyEntry(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyEntry_o);
         break;
     case 1:
@@ -2095,7 +2095,7 @@ s32 Lbs_request_enter_lobby() {
     case 2:
         F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
         CallBackWaitInit(temp_a0, temp_a1);
-        F(s8, (u8 *)cw, 0x2C45) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
         cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember_o);
         break;
     case 3:
@@ -2123,7 +2123,7 @@ s32 Lbs_request_enter_lobby2() {
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
         cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember_o);
         break;
     case 1:
@@ -2145,12 +2145,12 @@ void CallBack_Result_Plaza_LobbyEntry(CNET_RES res) {
     if ((F(u8, temp_a0, 0x2C31) != 5) && (F(u8, temp_a0, 0x2C45) == 8)) {
         F(u8, temp_a0, 0x2C45) = 0U;
         if (res.val == 0) {
-            F(s8, (u8 *)cw, 0x2C35) = 2;
-            F(s8, (u8 *)cw, 0x35D5) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 2;
+            F(s8, (u8 *)cw, CW_OFS(0x35D5)) = 1;
             return;
         }
-        F(s8, (u8 *)cw, 0x2C35) = 5;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, 5, temp_a0 + 0x2C45);
+        F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 5;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), 5, temp_a0 + 0x2C45);
     }
 }
 
@@ -2165,9 +2165,9 @@ void CallBack_Result_Plaza_LobbyMember(CNET_RES res) {
     u8 *p3;
     u8 *e;
 
-    if (cw[0x2C31] != 5) {
-        if (cw[0x2C45] == 10) {
-            cw[0x2C45] = 0;
+    if (cw[CW_OFS(0x2C31)] != 5) {
+        if (cw[CW_OFS(0x2C45)] == 10) {
+            cw[CW_OFS(0x2C45)] = 0;
             if (res.val == 0) {
                 game_w.pl_num = 0;
                 i = 0;
@@ -2193,7 +2193,7 @@ void CallBack_Result_Plaza_LobbyMember(CNET_RES res) {
                             memcpy(w, cw + off + 0x132C, 8);
                             memcpy(w + 8, cw + off + 0x1334, 0x10);
                             memcpy(w + 0x1C, cw + off + 0x1346, 0x40);
-                            if (memcmp(&u, cw + 0x440, 8) == 0) {
+                            if (memcmp(&u, cw + CW_OFS(0x440), 8) == 0) {
                                 game_w.master = i;
                             }
                             if (game_w.pl_num == 0 || 0 > memcmp(p3 = cw + 3, cw + off + 0x132C, 8)) {
@@ -2209,12 +2209,12 @@ void CallBack_Result_Plaza_LobbyMember(CNET_RES res) {
                     off += 0x2FC;
                     w += 0x5C;
                 } while (i < 8);
-                cw[0x35D1] = game_w.pl_num;
-                cw[0x2C35]++;
+                cw[CW_OFS(0x35D1)] = game_w.pl_num;
+                cw[CW_OFS(0x2C35)]++;
                 lb_sys.x04 = 0;
             } else {
-                cnLBS_Get_ServerMessage(cw + 0x32D1);
-                cw[0x2C35] += 2;
+                cnLBS_Get_ServerMessage(cw + CW_OFS(0x32D1));
+                cw[CW_OFS(0x2C35)] += 2;
             }
         }
     }
@@ -2272,17 +2272,17 @@ void lbc_in_plaza_03() {
     case 0:
         F(u8, temp_a2, 0x2C34) = (u8) (var_a0 + 1);
         Lbc_init_network_work(var_a0, temp_a1, temp_a2);
-        F(s32, (u8 *)cw, 0x2C4C) = 0x44;
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
+        F(s32, (u8 *)cw, CW_OFS(0x2C4C)) = 0x44;
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
         /* fallthrough */
     case 1:
         F(s8, pNet, PNET_OFS(0xC)) = 1;
-        F(s32, (u8 *)cw, 0x2C4C) = (F(s32, (u8 *)cw, 0x2C4C) - 1);
-        if (F(s32, (u8 *)cw, 0x2C4C) <= 0) {
+        F(s32, (u8 *)cw, CW_OFS(0x2C4C)) = (F(s32, (u8 *)cw, CW_OFS(0x2C4C)) - 1);
+        if (F(s32, (u8 *)cw, CW_OFS(0x2C4C)) <= 0) {
         case 2:
-            F(u8, (u8 *)cw, 0x2C34) = (u8) (F(u8, (u8 *)cw, 0x2C34) + 1);
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = (u8) (F(u8, (u8 *)cw, CW_OFS(0x2C34)) + 1);
             CallBackWaitInit();
-            F(s8, (u8 *)cw, 0x2C45) = 9;
+            F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 9;
             cnLBS_PlazaExit(&CallBack_Result_Plaza_PlazaExit_o);
             return;
         }
@@ -2296,16 +2296,16 @@ void CallBack_Result_Plaza_PlazaExit(CNET_RES res) {
     if ((((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C45 == 9)) {
         ((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C45 = 0U;
         if (res.val == 0) {
-            F(u8, (u8 *)cw, 0x2C31) = 1U;
-            F(s8, (u8 *)cw, 0x2C32) = 0;
-            F(s8, (u8 *)cw, 0x2C33) = 0;
-            F(s8, (u8 *)cw, 0x2C34) = 0;
+            F(u8, (u8 *)cw, CW_OFS(0x2C31)) = 1U;
+            F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
             Init_InterruptFlag();
             return;
         }
-        F(s8, (u8 *)cw, 0x2C32) = 0;
-        F(s8, (u8 *)cw, 0x2C33) = 0;
-        F(s8, (u8 *)cw, 0x2C34) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     }
 }
 
@@ -2360,10 +2360,10 @@ int arg1;
     s8 n;
     u8 st;
 
-    st = F(u8, (u8 *)cw, 0x2C35);
+    st = F(u8, (u8 *)cw, CW_OFS(0x2C35));
     switch (st) {
     case 0:
-        F(u8, (u8 *)cw, 0x2C35) = st + 1;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = st + 1;
         sp.a = 0x50;
         i = 0;
         n = arg1;
@@ -2372,7 +2372,7 @@ int arg1;
             sp.item[i] = *arg0++;
         }
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
         cnLBS_ConditionSearchUser(&sp, CallBack_Result_ConditionSearchUser);
         break;
     case 1:
@@ -2380,10 +2380,10 @@ int arg1;
         break;
     case 2:
         cnLBS_Get_ConditionSearchUser(&SearchResult);
-        F(u8, (u8 *)cw, 0x2C35) = 0;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
         return 0;
     case 3:
-        F(u8, (u8 *)cw, 0x2C35) = 0;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
         return 1;
     }
     return 2;
@@ -2415,8 +2415,8 @@ s32 Lbs_SeekId() {
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0xA;
-        cnLBS_SerchUserPlace((u8 *)cw + 0x2F80, &CallBack_Result_SearchUserPlace_o);
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
+        cnLBS_SerchUserPlace((u8 *)cw + CW_OFS(0x2F80), &CallBack_Result_SearchUserPlace_o);
         break;
     case 1:
         Check_CallBackWait(temp_a0);
@@ -2425,11 +2425,11 @@ s32 Lbs_SeekId() {
         F(u8, temp_v1, 0x2C35) = 0U;
         temp_v0 = (int)cw;
         cnLBS_Get_SerchUserPlace(temp_v0 + 0x30B4, temp_v0 + 0x30B6, temp_v0 + 0x30B8, temp_v0 + 0x30BB);
-        cnLBS_Get_SerchUserPlaceMessage((u8 *)cw + 0x30BC);
+        cnLBS_Get_SerchUserPlaceMessage((u8 *)cw + CW_OFS(0x30BC));
         return 0;
     case 3:
         F(u8, temp_v1, 0x2C35) = 0U;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1));
         return 1;
     }
     return 2;
@@ -2450,21 +2450,21 @@ void CallBack_Result_SearchUserPlace(CNET_RES res) {
 
 void To_PlazaExit(s32 arg0) {
     if (arg0 == 0) {
-        F(s8, (u8 *)cw, 0x2C31) = 2;
-        F(s8, (u8 *)cw, 0x2C32) = 0;
-        F(s8, (u8 *)cw, 0x2C33) = 3;
-        F(s8, (u8 *)cw, 0x2C34) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+        F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 2;
     } else {
-        F(s8, (u8 *)cw, 0x2C31) = 2;
-        F(s8, (u8 *)cw, 0x2C32) = 0;
-        F(s8, (u8 *)cw, 0x2C33) = 3;
-        F(s8, (u8 *)cw, 0x2C34) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+        F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     }
     Init_InterruptFlag();
-    F(s8, (u8 *)cw, 0x2C30) = 0;
-    F(u8, (u8 *)cw, 0x2F79) = 0xFF;
-    F(s8, (u8 *)cw, 0x2F78) = 0;
-    F(s8, (u8 *)cw, 0x2C09) = 2;
+    F(s8, (u8 *)cw, CW_OFS(0x2C30)) = 0;
+    F(u8, (u8 *)cw, CW_OFS(0x2F79)) = 0xFF;
+    F(s8, (u8 *)cw, CW_OFS(0x2F78)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C09)) = 2;
 }
 
 void lobby_client_game_in_lobby() {
@@ -2478,33 +2478,33 @@ void lobby_client_game_in_lobby() {
         }
         return;
     }
-    if (((int *)&lbc_in_lobby_jmp_1826)[F(u8, (u8 *)cw, 0x2C33)] == 0) {
+    if (((int *)&lbc_in_lobby_jmp_1826)[F(u8, (u8 *)cw, CW_OFS(0x2C33))] == 0) {
         To_LogOut(1);
     }
-    ((int (**)())&lbc_in_lobby_jmp_1826)[F(u8, (u8 *)cw, 0x2C33)]();
+    ((int (**)())&lbc_in_lobby_jmp_1826)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
 }
 
 void lbc_in_lobby_00() {
-    if (((int *)&lbc_in_lobby_00_jmp_1842)[F(u8, (u8 *)cw, 0x2C34)] == 0) {
+    if (((int *)&lbc_in_lobby_00_jmp_1842)[F(u8, (u8 *)cw, CW_OFS(0x2C34))] == 0) {
         To_LogOut(1);
     }
-    ((int (**)())&lbc_in_lobby_00_jmp_1842)[F(u8, (u8 *)cw, 0x2C34)]();
+    ((int (**)())&lbc_in_lobby_00_jmp_1842)[F(u8, (u8 *)cw, CW_OFS(0x2C34))]();
 }
 
 void To_EnterLobby() {
-    F(s8, (u8 *)cw, 0x2C31) = 3;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
-    F(s8, (u8 *)cw, 0x2C35) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 3;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
     Init_InterruptFlag();
     memset(&RoomInfo, 0, 0xAE0);
     F(s8, &ClassInfo_c67, 8) = 0;
-    F(s8, (u8 *)cw, 0x32C0) = 0;
-    F(s8, (u8 *)cw, 0x32C1) = 0;
-    F(s8, (u8 *)cw, 0x32C2) = 0;
-    F(s8, (u8 *)cw, 0x35D3) = 0;
-    F(s8, (u8 *)cw, 0x35D4) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C0)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C1)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C2)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x35D4)) = 0;
     F(s8, &lb_sys, LBSYS_OFS(0x70)) = 0;
     Plaza_chat_clear();
     Lb_clearChatList();
@@ -2514,7 +2514,7 @@ void To_EnterLobby() {
 void CallBack_Result_Lobby_JoinUser(CNET_RES res) {
     int n;
 
-    if (F(u8, cw, 0x2C31) != 5) {
+    if (F(u8, cw, CW_OFS(0x2C31)) != 5) {
         n = cnLbc_CheckInFloorOrder(1);
         if (res.val == 0) {
             cnLBS_Get_mhLobbyJoinUser(n & 0xFFFF, (u8 *)&LobbyInfo_c68[n - 1] + 2, (u8 *)&LobbyInfo_c68[n - 1] + 0xE);
@@ -2530,10 +2530,10 @@ void lbc_in_lobby_00_00() {
     cnLbc_CheckInFloorOrder(1);
     temp_v1 = (u8 *)cw;
     F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
-    F(s8, (u8 *)cw, 0x2C35) = 0;
-    F(s8, (u8 *)cw, 0x2C39) = 0;
-    F(s8, (u8 *)cw, 0x32C5) = 0;
-    F(s8, (u8 *)cw, 0x32C2) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C39)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C5)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C2)) = 0;
     cnWrap_InitWork();
     Lbc_init_network_work();
     Lbc_set_prim_k(0, 0, 0);
@@ -2554,9 +2554,9 @@ s32 Lbc_DownloadQuest() {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
-        F(s8, (u8 *)cw, 0x2C2F) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C2F)) = 0;
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0xC;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xC;
         cnLBS_Read_FileDownload(mission_area_c70, &CallBack_Result_ReadFileDownload_o);
         break;
     case 1:
@@ -2583,7 +2583,7 @@ void CallBack_Result_ReadFileDownload(CNET_RES res) {
             F(u8, temp_a2, 0x2C35) = (u8) (F(u8, temp_a2, 0x2C35) + 1);
             cnLBS_Get_FileDownloadInfo(&sp18, &sp1C, temp_a2);
             if (sp18 != 0) {
-                F(s8, (u8 *)cw, 0x2C2F) = 1;
+                F(s8, (u8 *)cw, CW_OFS(0x2C2F)) = 1;
             }
         } else {
             F(u8, temp_a2, 0x2C35) = 3U;
@@ -2610,7 +2610,7 @@ s32 Lbc_ReadRoomInfo() {
         F(s16, &RoomInfo, 0x828) = 7;
         F(s16, &RoomInfo, 0x984) = 8;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0xE;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xE;
         cnLBS_Read_RoomAllocation(0, 0xBB, &CallBack_Result_Lobby_ReadRoomAllocation_o);
         break;
     case 1:
@@ -2657,8 +2657,8 @@ void CallBack_Result_Lobby_ReadRoomAllocation(CNET_RES res) {
             }
         } else {
             CWX_c73->x2C35 = 3;
-            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
-            SetDialogData_HTML((u8 *)cw + 0x32D1);
+            cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1));
+            SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
         }
     }
 }
@@ -2690,7 +2690,7 @@ void lbc_in_lobby_00_05() {
             CWX_c76->x2C34 = 0;
             CWX_c76->x2C35 = 0;
             CWX_c76->x2C36 = 0;
-            F(s8, (u8 *)cw, 0x32C2) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x32C2)) = 0;
             break;
         default:
         case 0:
@@ -2700,8 +2700,8 @@ void lbc_in_lobby_00_05() {
         case 6:
         case 7:
         case 8:
-            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
-            SetDialogData_HTML((u8 *)cw + 0x32D1);
+            cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1));
+            SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
             *(s8 *)0x3F36AB = 0;
             F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
             F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x17;
@@ -2721,7 +2721,7 @@ s32 Lbc_getDate() {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
-        F(s8, (u8 *)cw, 0x2C45) = 0x17;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x17;
         CallBackWaitInit(temp_a0);
         cnLBS_Read_TimingValue(&CallBack_GetDate_o);
         break;
@@ -2743,9 +2743,9 @@ void CallBack_GetDate(CNET_RES res) {
     if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 0x17)) {
         F(u8, temp_a1, 0x2C45) = 0U;
         if (res.val == 0) {
-            cnLBS_Get_TimingValue((u8 *)cw + 0xBF3C, temp_a1, temp_a1 + 0x2C45);
+            cnLBS_Get_TimingValue((u8 *)cw + CW_OFS(0xBF3C), temp_a1, temp_a1 + 0x2C45);
         } else {
-            F(s32, (u8 *)cw, 0xBF3C) = 0;
+            F(s32, (u8 *)cw, CW_OFS(0xBF3C)) = 0;
         }
         temp_a0 = (u8 *)cw;
         F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
@@ -2757,7 +2757,7 @@ s32 Lbc_ReserveRoom() {
     u8 *st;
 
 
-    st = (u8 *)cw + 0x2C35;
+    st = (u8 *)cw + CW_OFS(0x2C35);
     switch (*st) {
     case 0:
         for (i = 0; i < 8; i++) {
@@ -2793,13 +2793,13 @@ void CallBack_Result_Lobby_RoomCreate(CNET_RES res) {
     if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 0xF)) {
         F(u8, temp_a1, 0x2C45) = 0U;
         if (res.val == 0) {
-            F(s8, (u8 *)cw, 0x32C5) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x32C5)) = 1;
             temp_a0 = (u8 *)cw;
             F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
             return;
         }
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
-        F(u8, (u8 *)cw, 0x2C35) = 3U;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 3U;
     }
 }
 
@@ -2820,15 +2820,15 @@ void CallBack_Result_RuleAllocation(CNET_RES res) {
         if (res.val == 0) {
             temp_a1_2 = (u8 *)cw;
             F(u8, temp_a1_2, 0x2C35) = (u8) (F(u8, temp_a1_2, 0x2C35) + 1);
-            F(s8, (u8 *)cw, 0x32C2) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x32C2)) = 1;
             return;
         }
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
         *(s8 *)0x3F36AB = 0;
         F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
         F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x17;
-        F(u8, (u8 *)cw, 0x2C35) = 0U;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0U;
         F(s8, &lb_sys, LBSYS_OFS(6)) = 0;
     }
 }
@@ -2845,7 +2845,7 @@ s32 Lbc_SetRoomRule() {
     case 0:
         *stp = 1;
         CallBackWaitInit();
-        cw[0x2C45] = 0x11;
+        cw[CW_OFS(0x2C45)] = 0x11;
         memcpy(buf, (u8 *)&RoomRule + 0x12, 0x41);
         memcpy(buf + 0x41, (u8 *)&RoomRule + 2, 9);
         memcpy(buf + 0x4A, mhRule.msg, 0x3D);
@@ -2868,7 +2868,7 @@ void CallBack_Result_Lobby_SetRoomRule() {
     if ((((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C45 == 0x11)) {
         ((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C45 = 0U;
         ((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C35 + 1);
-        F(s8, (u8 *)cw, 0x35D3) = 1;
+        F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 1;
     }
 }
 
@@ -2906,7 +2906,7 @@ s32 Lbc_GuestReadRoom(s32 arg0) {
     case 1:
         *stp = st + 1;
         CallBackWaitInit();
-        cw[0x2C45] = 0x13;
+        cw[CW_OFS(0x2C45)] = 0x13;
         cnLBS_Read_RoomRuleAllocation(((arg0 & 0xFFFF) + 1) & 0xFFFF, CallBack_Result_Lobby_GuestRuleAllocation_o, 0x13);
         break;
     case 2:
@@ -2947,7 +2947,7 @@ s32 Lbc_GuestReadRoom(s32 arg0) {
             } while (i < RoomRule.n);
         }
         CallBackWaitInit();
-        cw[0x2C45] = 0x14;
+        cw[CW_OFS(0x2C45)] = 0x14;
         cnLBS_Read_RoomMemberList(r, CallBack_Result_Lobby_GuestRoomMember_o);
         break;
     case 4:
@@ -2963,8 +2963,8 @@ s32 Lbc_GuestReadRoom(s32 arg0) {
             i++;
             jm += 0x2FC;
         } while (i < 4);
-        cw[0x2C3A] = 1;
-        cw[0x32BF] = 3;
+        cw[CW_OFS(0x2C3A)] = 1;
+        cw[CW_OFS(0x32BF)] = 3;
         F(s8, pNet, PNET_OFS(6)) = 2;
         return 0;
     }
@@ -2982,12 +2982,12 @@ void CallBack_Result_Lobby_GuestRuleAllocation(CNET_RES res) {
             temp_a0 = (int)cw;
             F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
         } else if (res.val == -1) {
-            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
-            SetDialogData_HTML((u8 *)cw + 0x32D1);
+            cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
+            SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
             *(s8 *)0x3F36AB = 0;
             F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
             F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x17;
-            F(u8, (u8 *)cw, 0x2C35) = 0U;
+            F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0U;
             F(s8, &lb_sys, LBSYS_OFS(6)) = 0;
         }
     }
@@ -3012,7 +3012,7 @@ s32 Lbs_GuestEnterRoom() {
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0x15;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x15;
         F(s8, &ClassInfo_c88, 8) = (s8) (F(u8, &lb_sys, LBSYS_OFS(0x73)) + 1);
         cnLBS_RoomEntry(cnLbc_CheckInFloorOrder(2) & 0xFFFF, &RoomRule_c88[2], &CallBack_Result_Lobby_RoomEntry_o);
         break;
@@ -3040,17 +3040,17 @@ void CallBack_Result_Lobby_RoomEntry(CNET_RES res) {
         if (res.val == 0) {
             temp_a1_2 = (u8 *)cw;
             F(u8, temp_a1_2, 0x2C35) = (u8) (F(u8, temp_a1_2, 0x2C35) + 1);
-            F(s8, (u8 *)cw, 0x35D3) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 1;
             return;
         }
-        F(u8, (u8 *)cw, 0x2C35) = 3U;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 3U;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
     }
 }
 
 void lbc_in_lobby_03() {
-    ((int (**)())lbc_in_lobby_03_jmp_2430)[F(u8, (u8 *)cw, 0x2C34)]();
+    ((int (**)())lbc_in_lobby_03_jmp_2430)[F(u8, (u8 *)cw, CW_OFS(0x2C34))]();
 }
 
 void To_LobbyExit(s32 arg0) {
@@ -3063,43 +3063,43 @@ void To_LobbyExit(s32 arg0) {
         var_a0 = 2;
         switch (temp_v0) {                          /* irregular */
         case 0:
-            F(s8, (u8 *)cw, 0x2C31) = 3;
-            F(s8, (u8 *)cw, 0x2C32) = 0;
-            F(s8, (u8 *)cw, 0x2C33) = 3;
-            F(s8, (u8 *)cw, 0x2C34) = 1;
-            F(s8, (u8 *)cw, 0x2C35) = 2;
+            F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 3;
+            F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+            F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 2;
             break;
         case 1:
-            F(s8, (u8 *)cw, 0x2C31) = 3;
-            F(s8, (u8 *)cw, 0x2C32) = 0;
-            F(s8, (u8 *)cw, 0x2C33) = 3;
-            F(s8, (u8 *)cw, 0x2C34) = 1;
-            F(s8, (u8 *)cw, 0x2C35) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 3;
+            F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+            F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
             break;
         case 2:
-            F(s8, (u8 *)cw, 0x2C31) = 3;
-            F(s8, (u8 *)cw, 0x2C32) = 0;
-            F(s8, (u8 *)cw, 0x2C33) = 3;
-            F(s8, (u8 *)cw, 0x2C34) = 2;
-            F(s8, (u8 *)cw, 0x2C35) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 3;
+            F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+            F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 2;
+            F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
             break;
         }
     } else {
-        F(s8, (u8 *)cw, 0x2C31) = 3;
-        F(s8, (u8 *)cw, 0x2C32) = 0;
-        F(s8, (u8 *)cw, 0x2C33) = 3;
-        F(s8, (u8 *)cw, 0x2C34) = 2;
-        F(s8, (u8 *)cw, 0x2C35) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 3;
+        F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 3;
+        F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 2;
     }
     Init_InterruptFlag(var_a0);
-    F(s8, (u8 *)cw, 0x2C30) = 0;
-    F(u8, (u8 *)cw, 0x2F79) = 0xFF;
-    F(s8, (u8 *)cw, 0x2F78) = 0;
-    F(s8, (u8 *)cw, 0x32C2) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C30)) = 0;
+    F(u8, (u8 *)cw, CW_OFS(0x2F79)) = 0xFF;
+    F(s8, (u8 *)cw, CW_OFS(0x2F78)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C2)) = 0;
     cnLbc_EraseDialog(0x4C);
     SoftKeyboard_exit();
-    F(s8, (u8 *)cw, 0x2C0A) = 2;
-    F(s8, (u8 *)cw, 0x2C0B) = 2;
+    F(s8, (u8 *)cw, CW_OFS(0x2C0A)) = 2;
+    F(s8, (u8 *)cw, CW_OFS(0x2C0B)) = 2;
 }
 
 void lbc_in_lobby_03_00() {
@@ -3109,7 +3109,7 @@ void lbc_in_lobby_03_00() {
     case 0:
         CWX_c92->x2C35++;
         CWX_c92->x2C4C = 0;
-        nwSetEff_FreeDialog(0x14, (u8 *)cw + 0x32D1);
+        nwSetEff_FreeDialog(0x14, (u8 *)cw + CW_OFS(0x32D1));
         return;
     case 1:
         if (CWX_c92->x2C4C++ >= 0x258 || (CWX_c92->x2C4C >= 0x3C && (sw & 0x60))) {
@@ -3156,7 +3156,7 @@ void lbc_in_lobby_03_01() {
         CWX_c93->x2C35 = t + 1;
         Lbc_init_network_work();
         CWX_c93->x2C4C = 0x26;
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
         /* fallthrough */
     case 1:
         F(s8, pNet, PNET_OFS(0xC)) = 1;
@@ -3195,8 +3195,8 @@ s32 Lbc_SendMiniData() {
     if (memcmp(sp10, &my_user_mini_data, 0x40) == 0) {
         return 0;
     }
-    memcpy((s32)(game_w.master * 0x2FC) + cw + 0x1346, sp10, 0x40);
-    memcpy((s32)cw + 0x45A, sp10, 0x40);
+    memcpy((s32)(game_w.master * 0x2FC) + cw + CW_OFS(0x1346), sp10, 0x40);
+    memcpy((s32)cw + CW_OFS(0x45A), sp10, 0x40);
     memcpy(&my_user_mini_data, sp10, 0x40);
     memcpy((int)&lbCommer + (game_w.master * 0x5C) + 0x1C, sp10, 0x40);
     cnLBS_Send_UserMiniData(sp10, 0x40, &CallBack_Result_SendUserMiniData_o);
@@ -3233,7 +3233,7 @@ void CallBack_NoticeUserMiniData(CNET_RES res) {
 s32 Lbs_LobbyExit() {
     u8 temp_v1;
 
-    temp_v1 = F(u8, (u8 *)cw, 0x2C35);
+    temp_v1 = F(u8, (u8 *)cw, CW_OFS(0x2C35));
     switch (temp_v1) {                              /* irregular */
     case 0:
         Lbc_init_network_work();
@@ -3243,7 +3243,7 @@ s32 Lbs_LobbyExit() {
     case 1:
         ((CWS_Lbs_LobbyExit *)cw)->x2C35 = (u8) (((CWS_Lbs_LobbyExit *)cw)->x2C35 + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0x16;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x16;
         cnLBS_LobbyExit(&CallBack_Result_Lobby_LobbyExit_o);
         break;
     case 2:
@@ -3251,7 +3251,7 @@ s32 Lbs_LobbyExit() {
         break;
     case 3:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            F(u8, (u8 *)cw, 0x2C35) = 0U;
+            F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0U;
             return 1;
         }
         break;
@@ -3266,9 +3266,9 @@ void CallBack_Result_Lobby_LobbyExit(CNET_RES res) {
             ((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 + 1);
             return;
         }
-        F(s8, (u8 *)cw, 0x2C32) = 0;
-        F(s8, (u8 *)cw, 0x2C33) = 0;
-        F(s8, (u8 *)cw, 0x2C34) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
         cnLbc_EraseDialog(0x4C);
     }
 }
@@ -3279,7 +3279,7 @@ void lbc_in_lobby_03_02() {
         Lbc_init_network_work();
         CWX_c99->x2C35++;
         CWX_c99->x2C4C = 0x44;
-        nwSetEff_FreeDialog(0x14, (u8 *)cw + 0x32D1);
+        nwSetEff_FreeDialog(0x14, (u8 *)cw + CW_OFS(0x32D1));
         /* fallthrough */
     case 1:
         CWX_c99->x2C4C--;
@@ -3298,7 +3298,7 @@ void lbc_in_lobby_03_02() {
 }
 
 s32 Lbs_InRoomCheck() {
-    return F(u8, (u8 *)cw, 0x35D3) != 0;
+    return F(u8, (u8 *)cw, CW_OFS(0x35D3)) != 0;
 }
 
 s32 Lbs_RoomExit() {
@@ -3318,7 +3318,7 @@ s32 Lbs_RoomExit() {
         temp_v1_3 = (int)cw;
         F(u8, temp_v1_3, 0x2C35) = (u8) (F(u8, temp_v1_3, 0x2C35) + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0x18;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x18;
         cnLBS_RoomExit(&CallBack_Result_Lobby_RoomExit_o);
         break;
     case 2:
@@ -3335,11 +3335,11 @@ void CallBack_Result_Lobby_RoomExit(CNET_RES res) {
     if ((((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C45 == 0x18)) {
         ((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C45 = 0U;
         if (res.val == 0) {
-            F(s8, (u8 *)cw, 0x35D3) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 0;
             ((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C35 + 1);
             return;
         }
-        F(s8, (u8 *)cw, 0x35D3) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 0;
         To_LogOut(4);
     }
 }
@@ -3347,13 +3347,13 @@ void CallBack_Result_Lobby_RoomExit(CNET_RES res) {
 void To_EnterRoom() {
     int temp_s0;
 
-    F(s8, (u8 *)cw, 0x2C35) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
     Init_InterruptFlag();
-    F(s16, (u8 *)cw, 0x32C8) = 0;
-    F(s16, (u8 *)cw, 0x32C6) = 0;
-    F(s8, (u8 *)cw, 0x32C1) = 1;
-    F(s8, (u8 *)cw, 0x32C2) = 0;
-    F(s16, (u8 *)cw, 0x32CA) = 0;
+    F(s16, (u8 *)cw, CW_OFS(0x32C8)) = 0;
+    F(s16, (u8 *)cw, CW_OFS(0x32C6)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x32C1)) = 1;
+    F(s8, (u8 *)cw, CW_OFS(0x32C2)) = 0;
+    F(s16, (u8 *)cw, CW_OFS(0x32CA)) = 0;
     temp_s0 = F(u8, &ClassInfo_c103, 8);
     cnLBS_Read_RoomMemberList(temp_s0, &CallBack_Result_InRoom00_Member_o);
     cnLBS_Read_RoomJoinUser(temp_s0, &CallBack_Result_InRoom00_JoinUser_o);
@@ -3382,7 +3382,7 @@ void CallBack_Result_InRoom00_Member(CNET_RES res) {
 void CallBack_Result_InRoom00_JoinUser(CNET_RES res) {
     int n;
 
-    if (F(u8, cw, 0x2C31) != 5) {
+    if (F(u8, cw, CW_OFS(0x2C31)) != 5) {
         n = ClassInfo_c105[8];
         if (res.val == 0) {
             cnLBS_Get_mhRoomJoinUser(n & 0xFFFF, (u8 *)&RoomInfo_c105[ClassInfo_c105[8] - 1] + 2, (u8 *)&RoomInfo_c105[ClassInfo_c105[8] - 1] + 0xE);
@@ -3399,8 +3399,8 @@ void CallBack_Result_InRoom00_EntryJoinUser(CNET_RES res) {
         cnLBS_Get_MatchEntryJoinUser(F(u8, &ClassInfo_c106, 8), temp_v0 + 0x32C6, temp_v0 + 0x32C8);
         return;
     }
-    F(s16, (u8 *)cw, 0x32C6) = 0;
-    F(s16, (u8 *)cw, 0x32C8) = 0;
+    F(s16, (u8 *)cw, CW_OFS(0x32C6)) = 0;
+    F(s16, (u8 *)cw, CW_OFS(0x32C8)) = 0;
 }
 
 s32 Lbs_MatchEntryCancel() {
@@ -3415,7 +3415,7 @@ s32 Lbs_MatchEntryCancel() {
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0x1D;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1D;
         cnLBS_MatchEntry(0, &CallBack_Result_InRoom_MatchEntryCancel_o);
         break;
     case 1:
@@ -3441,12 +3441,12 @@ void CallBack_Result_InRoom_MatchEntryCancel(CNET_RES res) {
         if (res.val == 0) {
             temp_a0 = (u8 *)cw;
             F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
-            F(s8, (u8 *)cw, 0x35D4) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x35D4)) = 0;
             return;
         }
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
-        SetDialogData_HTML((u8 *)cw + 0x32D1);
-        F(u8, (u8 *)cw, 0x2C35) = 3U;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 3U;
     }
 }
 
@@ -3462,7 +3462,7 @@ s32 Lbs_MatchEntry() {
     case 0:
         F(u8, temp_a0, 0x2C35) = (u8) (temp_v1 + 1);
         CallBackWaitInit(temp_a0, temp_a1);
-        F(s8, (u8 *)cw, 0x2C45) = 0x1C;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1C;
         cnLBS_MatchEntry(1, &CallBack_Result_InRoom_MatchEntry_o);
         break;
     case 1:
@@ -3489,10 +3489,10 @@ void CallBack_Result_InRoom_MatchEntry(CNET_RES res) {
         if (res.val == 0) {
             temp_a1_2 = (u8 *)cw;
             F(u8, temp_a1_2, 0x2C35) = (u8) (F(u8, temp_a1_2, 0x2C35) + 1);
-            F(s8, (u8 *)cw, 0x35D4) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x35D4)) = 1;
             return;
         }
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
         temp_a0 = (u8 *)cw;
         F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 2);
     }
@@ -3501,21 +3501,21 @@ void CallBack_Result_InRoom_MatchEntry(CNET_RES res) {
 s32 Lbc_SetPropaty(arg1)
 int arg1;
 {
-    switch (F(u8, (u8 *)cw, 0x2C35)) {
+    switch (F(u8, (u8 *)cw, CW_OFS(0x2C35))) {
     case 0:
-        F(u8, (u8 *)cw, 0x2C35)++;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35))++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0x1B;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1B;
         cnLBS_Set_RoomProperty(arg1, CallBack_Result_SetRoomPropaty);
         break;
     case 1:
         Check_CallBackWait();
         break;
     case 2:
-        F(u8, (u8 *)cw, 0x2C35) = 0;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
         return 0;
     case 3:
-        F(u8, (u8 *)cw, 0x2C35) = 0;
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
         return 1;
     }
     return 2;
@@ -3533,8 +3533,8 @@ void CallBack_Result_SetRoomPropaty(CNET_RES res) {
             F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
             return;
         }
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
-        F(u8, (u8 *)cw, 0x2C35) = 3U;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 3U;
     }
 }
 
@@ -3547,19 +3547,19 @@ int Lbs_MatchStart() {
 
 void lobby_client_game_ready() {
     if (Check_InterruptFlag() == 0) {
-        ((int (**)())&lobby_client_game_ready_jmp_2838)[F(u8, (u8 *)cw, 0x2C33)]();
+        ((int (**)())&lobby_client_game_ready_jmp_2838)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
         Disp_NowLoading2(4);
     }
 }
 
 void To_ReadyBattle() {
-    F(s8, (u8 *)cw, 0x2C31) = 4;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 4;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     Init_InterruptFlag();
-    F(s8, (u8 *)cw, 0x2C30) = 0;
-    F(s8, (u8 *)cw, 0x35D5) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C30)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x35D5)) = 0;
     cnLbc_EraseDialog(0x4C);
 }
 
@@ -3641,8 +3641,8 @@ void CallBack_Result_Match_MatchInformation(CNET_RES res) {
             F(u8, temp_a0_2, 0x2C34) = (u8) (F(u8, temp_a0_2, 0x2C34) + 1);
             return;
         }
-        F(s8, (u8 *)cw, 0x2C0D) = 1;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a2);
+        F(s8, (u8 *)cw, CW_OFS(0x2C0D)) = 1;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a2);
     }
 }
 
@@ -3651,7 +3651,7 @@ void lbc_game_ready_01() {
 
     temp_a0 = (u8 *)cw;
     F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
-    F(s8, (u8 *)cw, 0x2C34) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
 }
 
 void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
@@ -3668,21 +3668,21 @@ void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         F(u8, temp_v1, 0x2C34) = (u8) (temp_v1_2 + 1);
-        F(s8, (u8 *)cw, 0x2C48) = 0;
-        F(s8, (u8 *)cw, 0x2C49) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C48)) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C49)) = 0;
         var_a3 = 0;
-        if (0 < F(u8, (u8 *)cw, 0x2C47)) {
+        if (0 < F(u8, (u8 *)cw, CW_OFS(0x2C47))) {
             var_a2 = 0;
             do {
                 temp_v0 = F(u8, ((u8 *)cw + var_a2), 0x7B1);
                 if (temp_v0 == 1) {
-                    F(u8, (u8 *)cw, 0x2C48) = (u8) (F(u8, (u8 *)cw, 0x2C48) + 1);
+                    F(u8, (u8 *)cw, CW_OFS(0x2C48)) = (u8) (F(u8, (u8 *)cw, CW_OFS(0x2C48)) + 1);
                 } else if (temp_v0 == 2) {
-                    F(u8, (u8 *)cw, 0x2C49) = (u8) (F(u8, (u8 *)cw, 0x2C49) + 1);
+                    F(u8, (u8 *)cw, CW_OFS(0x2C49)) = (u8) (F(u8, (u8 *)cw, CW_OFS(0x2C49)) + 1);
                 }
                 var_a3 += 1;
                 var_a2 += 0x2FC;
-            } while (var_a3 < F(u8, (u8 *)cw, 0x2C47));
+            } while (var_a3 < F(u8, (u8 *)cw, CW_OFS(0x2C47)));
         }
         cnLbc_LoadNetModel(2, (u8 *)cw, var_a2, var_a3);
         net_char_change = 1;
@@ -3691,7 +3691,7 @@ void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
         if (cnLbc_LoadModelWait(2, temp_v1 + 0x2C34) != 0) {
             temp_a0 = (int)cw;
             F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
-            F(u8, (u8 *)cw, 0x2C34) = 0U;
+            F(u8, (u8 *)cw, CW_OFS(0x2C34)) = 0U;
         }
         break;
     }
@@ -3702,7 +3702,7 @@ void lbc_game_ready_03() {
 
     temp_a0 = (u8 *)cw;
     F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
-    F(s8, (u8 *)cw, 0x2C34) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
 }
 
 void lbc_game_ready_04() {
@@ -3733,7 +3733,7 @@ void lbc_game_ready_04() {
         temp_v1_4 = (int)cw;
         F(u8, temp_v1_4, 0x2C34) = (u8) (F(u8, temp_v1_4, 0x2C34) + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0x21;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x21;
         cnLBS_LogoutLobbyServer(&CallBack_Result_Match_Logout_o);
         return;
     case 4:
@@ -3766,16 +3766,16 @@ void CallBack_Result_Match_Logout() {
 }
 
 void lobby_client_matching_failed() {
-    ((int (**)())lobby_client_matching_failed_jmp_2996)[F(u8, (u8 *)cw, 0x2C33)]();
+    ((int (**)())lobby_client_matching_failed_jmp_2996)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
 }
 
 void To_MatchingFailed(arg0)
 int arg0;
 {
-    F(s8, (u8 *)cw, 0x2C31) = 6;
-    F(s8, (u8 *)cw, 0x2C32) = arg0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 6;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = arg0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     Init_InterruptFlag(arg0);
 }
 
@@ -3796,7 +3796,7 @@ void lbc_matching_failed_01() {
 
     temp_a0 = (int)cw;
     F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
-    F(s32, (u8 *)cw, 0x2C4C) = 0;
+    F(s32, (u8 *)cw, CW_OFS(0x2C4C)) = 0;
     F(s8, pNet, PNET_OFS(0xC)) = 1;
     temp_v1 = (int)cw;
     if (F(u8, temp_v1, 0x2C32) == 0) {
@@ -3804,7 +3804,7 @@ void lbc_matching_failed_01() {
     } else {
         SetDialogData_HTML(temp_v1 + 0x32D1);
     }
-    F(s32, (u8 *)cw, 0x2C4C) = 0x14;
+    F(s32, (u8 *)cw, CW_OFS(0x2C4C)) = 0x14;
     fade_set(2);
 }
 
@@ -3819,7 +3819,7 @@ void lbc_matching_failed_02() {
     temp_a1 = (u8 *)cw;
     temp_a0 = F(s32, temp_a1, 0x2C4C);
     F(s32, temp_a1, 0x2C4C) = (temp_a0 + 1);
-    if ((temp_a0 >= 0x12C) || ((F(s32, (u8 *)cw, 0x2C4C) >= 0x3C) && ((u16)temp_a2 & 0x60))) {
+    if ((temp_a0 >= 0x12C) || ((F(s32, (u8 *)cw, CW_OFS(0x2C4C)) >= 0x3C) && ((u16)temp_a2 & 0x60))) {
         temp_v1 = (u8 *)cw;
         F(u8, temp_v1, 0x2C33) = (u8) (F(u8, temp_v1, 0x2C33) + 1);
         fade_set(1, temp_a1, temp_a2);
@@ -3842,7 +3842,7 @@ void lbc_matching_failed_04() {
     if (net_char_change_c127 != 0) {
         temp_a0 = (u8 *)cw;
         F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
-        F(s8, (u8 *)cw, 0x2C08) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
         return;
     }
     all_reset();
@@ -3854,7 +3854,7 @@ void lbc_matching_failed_04() {
 
 void lbc_matching_failed_05() {
     if (cnLbc_LoadModelWait(1) != 0) {
-        F(s8, (u8 *)cw, 0x2C08) = 1;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
         cnWrap_ScreenReset();
         all_reset();
         Lbs_load();
@@ -3870,11 +3870,11 @@ u8 arg0;
     void *temp_a0;
     void *temp_a2;
 
-    F(s8, (u8 *)cw, 0x2C31) = 5;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = arg0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
-    F(s8, (u8 *)cw, 0x2C35) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 5;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = arg0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
     temp_a2 = (u8 *)cw;
     F(s8, temp_a2, 0x2C46) = arg0;
     temp_a0 = (u8 *)cw;
@@ -3908,7 +3908,7 @@ void Set_ErrorDialog(int arg0) {
         return;
     case 5:
     case 7:
-        SetDialogData_HTML((s32)cw + 0x32D1);
+        SetDialogData_HTML((s32)cw + CW_OFS(0x32D1));
         /* fallthrough */
     default:
         return;
@@ -3916,7 +3916,7 @@ void Set_ErrorDialog(int arg0) {
 }
 
 void lobby_client_logout() {
-    ((int (**)())lobby_client_logout_jmp_3078)[F(u8, (u8 *)cw, 0x2C33)]();
+    ((int (**)())lobby_client_logout_jmp_3078)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
 }
 
 void lbc_logout_00() {
@@ -4127,12 +4127,12 @@ void lbc_logout_01() {
 }
 
 void To_GoToTop() {
-    F(s8, (u8 *)cw, 0x2C31) = 7;
-    F(s8, (u8 *)cw, 0x2C32) = 0;
-    F(s8, (u8 *)cw, 0x2C33) = 0;
-    F(s8, (u8 *)cw, 0x2C34) = 0;
-    F(s8, (u8 *)cw, 0x2C35) = 0;
-    F(s8, (u8 *)cw, 0x2C36) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 7;
+    F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C36)) = 0;
 }
 
 void lobby_client_goto_top() {
@@ -4147,7 +4147,7 @@ void lobby_client_goto_top() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, temp_a1);
-        F(s8, (u8 *)cw, 0x2C45) = 0x22;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x22;
         cnLBS_TopPageJump(&CallBack_Result_GotoTop_o);
         return;
     case 1:
@@ -4159,11 +4159,11 @@ void CallBack_Result_GotoTop(CNET_RES res) {
     if ((((CWS_CallBack_Result_GotoTop *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_GotoTop *)cw)->x2C45 == 0x22)) {
         ((CWS_CallBack_Result_GotoTop *)cw)->x2C45 = 0U;
         if (res.val == 0) {
-            F(u8, (u8 *)cw, 0x2C31) = 1U;
-            F(s8, (u8 *)cw, 0x2C32) = 0;
-            F(s8, (u8 *)cw, 0x2C33) = 0;
-            F(s8, (u8 *)cw, 0x2C34) = 0;
-            F(s8, (u8 *)cw, 0x2C35) = 0;
+            F(u8, (u8 *)cw, CW_OFS(0x2C31)) = 1U;
+            F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
+            F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
             return;
         }
         To_LogOut(4);
@@ -4200,8 +4200,8 @@ s32 lobby_client_admin_message() {
         }
         if (F(s8, temp_v1_2, 0x2C30) != 0) {
             F(s8, temp_v1_2, 0x2C30) = 0;
-            F(u8, (u8 *)cw, 0x2F79) = 0xFF;
-            F(u8, (u8 *)cw, 0x2F78) = 0U;
+            F(u8, (u8 *)cw, CW_OFS(0x2F79)) = 0xFF;
+            F(u8, (u8 *)cw, CW_OFS(0x2F78)) = 0U;
             cnLbc_EraseDialog(0x4C);
         }
         temp_a0_2 = (int)cw;
@@ -4236,13 +4236,13 @@ void lbc_admin_message_00() {
     case 1:
         temp_a0_3 = (int)cw;
         F(u8, temp_a0_3, 0x2F6F) = (u8) (F(u8, temp_a0_3, 0x2F6F) + 1);
-        F(s8, (u8 *)cw, 0x2C5C) = 2;
-        SetDialogData_HTML((u8 *)cw + 0x2C6E);
+        F(s8, (u8 *)cw, CW_OFS(0x2C5C)) = 2;
+        SetDialogData_HTML((u8 *)cw + CW_OFS(0x2C6E));
         /* fallthrough */
     case 2:
         temp_a1_2 = (int)cw;
         F(u8, temp_a1_2, 0x2F6F) = (u8) (F(u8, temp_a1_2, 0x2F6F) + 1);
-        F(s16, (u8 *)cw, 0x2F74) = 0x258;
+        F(s16, (u8 *)cw, CW_OFS(0x2F74)) = 0x258;
         return;
     case 3:
         F(s8, pNet, PNET_OFS(0xC)) = 1;
@@ -4251,8 +4251,8 @@ void lbc_admin_message_00() {
         temp_v1_2 = (int)cw;
         if (F(s16, temp_v1_2, 0x2F74) == 0) {
             F(u8, temp_v1_2, 0x2F6E) = (u8) (F(u8, temp_v1_2, 0x2F6E) + 1);
-            F(u8, (u8 *)cw, 0x2F6F) = 0U;
-            F(s16, (u8 *)cw, 0x2F74) = 0;
+            F(u8, (u8 *)cw, CW_OFS(0x2F6F)) = 0U;
+            F(s16, (u8 *)cw, CW_OFS(0x2F74)) = 0;
         }
         font_set_stack_no(3);
         cnWrap_SetFontColor(0);
@@ -4294,24 +4294,24 @@ void lbc_admin_message_01() {
 }
 
 void lbc_admin_message_02() {
-    F(s8, (u8 *)cw, 0x2C5C) = 0;
-    F(s8, (u8 *)cw, 0x2F6E) = 0;
-    F(s8, (u8 *)cw, 0x2F6F) = 0;
-    F(s8, (u8 *)cw, 0x2F76) = 0;
-    F(s8, (u8 *)cw, 0x2F72) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C5C)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2F6E)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2F6F)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2F76)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2F72)) = 0;
 }
 
 void Init_InterruptFlag() {
-    memset((u8 *)cw + 0x2C09, 0, 3);
-    F(s8, (u8 *)cw, 0x2C0C) = 0;
-    F(s8, (u8 *)cw, 0x2C0D) = 0;
-    F(s8, (u8 *)cw, 0x2C45) = 0;
+    memset((u8 *)cw + CW_OFS(0x2C09), 0, 3);
+    F(s8, (u8 *)cw, CW_OFS(0x2C0C)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C0D)) = 0;
+    F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0;
     cnLBS_Init_LobbyBgProcess();
     cnLBS_Init_LobbyBgBurstProcess();
 }
 
 s32 Lbs_CheckMatchingFlag() {
-    return F(s8, (u8 *)cw, 0x2C0C) != 0;
+    return F(s8, (u8 *)cw, CW_OFS(0x2C0C)) != 0;
 }
 
 s32 Check_InterruptFlag() {
@@ -4328,7 +4328,7 @@ s32 Check_InterruptFlag() {
         temp_v1 = F(s8, temp_a1, 0x2C0D);
         if (temp_v1 == 1) {
             To_MatchingFailed(0, temp_a1);
-            SetDialogData_HTML((u8 *)cw + 0x32D1);
+            SetDialogData_HTML((u8 *)cw + CW_OFS(0x32D1));
             return 1;
         }
         if (temp_v1 == 2) {
@@ -4356,8 +4356,8 @@ s32 Check_InterruptFlag() {
                 *(s8 *)0x3F36AB = 0;
                 F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x15;
                 F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
-                F(s8, (u8 *)cw, 0x2C45) = 0;
-                F(s8, (u8 *)cw, 0x2C35) = 0;
+                F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0;
+                F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
                 Lbc_init_network_work();
                 Lbc_set_prim_k(0, 0, 0);
                 Init_InterruptFlag();
@@ -4875,8 +4875,8 @@ void net_ToNetworkLobby(void) {
     CWX_by95->x2C36 = 0;
     CWX_by95->x2C37 = 0;
     CWX_by95->x2C38 = 0;
-    cnLbc_SetIspRestTime(cw + 0x35F8);
-    *(s32 *)(cw + 0x35F4) = 0xE10;
+    cnLbc_SetIspRestTime(cw + CW_OFS(0x35F8));
+    *(s32 *)(cw + CW_OFS(0x35F4)) = 0xE10;
     CWX_by95->x2C0E = 0;
     CWX_by95->x2C44 = 0;
     CWX_by95->x35D5 = 0;
@@ -4915,7 +4915,7 @@ s32 Lbc_SendMail(void) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0x23;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x23;
         temp_v0 = (int)cw;
         cnLBS_SendMessage(temp_v0 + 0x301A, temp_v0 + 0x3033, &CallBack_Result_Mail_SendMail);
         temp_v1_3 = (int)cw;
@@ -4949,8 +4949,8 @@ void CallBack_Result_Mail_SendMail(CNET_RES res) {
             F(u8, temp_a0, 0x2C35) = (u8) (F(u8, temp_a0, 0x2C35) + 1);
             return;
         }
-        F(u8, (u8 *)cw, 0x2C35) = 3U;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 3U;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1, temp_a1 + 0x2C45);
     }
 }
 
@@ -5027,7 +5027,7 @@ void CallBack_Event_System_ShutDown(CNET_RES res) {
     temp_a1 = (u8 *)cw;
     if (F(u8, temp_a1, 0x2C31) != 5) {
         F(s8, temp_a1, 0x2C0E) = 1;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1);
     }
 }
 
@@ -5038,7 +5038,7 @@ void CallBack_Event_LobbyFull(CNET_RES res) {
     temp_a1 = (u8 *)cw;
     if (F(u8, temp_a1, 0x2C31) != 5) {
         F(s8, temp_a1, 0x2C0E) = 2;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1);
     }
 }
 
@@ -5067,7 +5067,7 @@ void CallBack_Event_MatchCancel(CNET_RES res) {
     temp_a0 = F(u8, temp_a1, 0x2C31);
     if ((temp_a0 != 5) && (temp_a0 == 4)) {
         cnLBS_Get_ServerMessage(temp_a1 + 0x32D1, temp_a1);
-        F(s8, (u8 *)cw, 0x2C0D) = 2;
+        F(s8, (u8 *)cw, CW_OFS(0x2C0D)) = 2;
     }
 }
 
@@ -5098,7 +5098,7 @@ void CallBack_Event_ChatMessage(CNET_RES res) {
     chat.b = get_font_col(chat.b);
     chat.c = get_font_col(chat.c);
     chat.d = get_font_col(chat.d);
-    if (F(u8, (u8 *)cw, 0x35D5) != 0) {
+    if (F(u8, (u8 *)cw, CW_OFS(0x35D5)) != 0) {
         Lb_chat_receipt(&chat);
         return;
     }
@@ -5117,7 +5117,7 @@ void CallBack_Event_ChatMessageTU(CNET_RES res) {
         chat.b = 0;
         chat.d = 5;
     }
-    if (F(u8, (u8 *)cw, 0x35D5) != 0) {
+    if (F(u8, (u8 *)cw, CW_OFS(0x35D5)) != 0) {
         Lb_chat_receipt(&chat);
         return;
     }
@@ -5135,7 +5135,7 @@ void CallBack_Event_PlazaRemove(CNET_RES res) {
     temp_a0 = F(u8, temp_a1, 0x2C31);
     if ((temp_a0 != 5) && (temp_a0 == 2) && (F(s8, temp_a1, 0x2C09) == 0)) {
         F(s8, temp_a1, 0x2C09) = 1;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1);
     }
 }
 
@@ -5147,7 +5147,7 @@ void CallBack_Event_LobbyRemove(CNET_RES res) {
     temp_a0 = F(u8, temp_a1, 0x2C31);
     if ((temp_a0 != 5) && (temp_a0 == 3) && (F(s8, temp_a1, 0x2C0A) == 0)) {
         F(s8, temp_a1, 0x2C0A) = 1;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1);
     }
 }
 
@@ -5159,7 +5159,7 @@ void CallBack_Event_RoomRemove(CNET_RES res) {
     temp_a0 = F(u8, temp_a1, 0x2C31);
     if ((temp_a0 != 5) && (temp_a0 == 3) && (F(s8, temp_a1, 0x2C0C) == 0) && (F(s8, temp_a1, 0x2C0B) == 0)) {
         F(s8, temp_a1, 0x2C0B) = 1;
-        cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1);
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1), temp_a1);
     }
 }
 
@@ -5175,7 +5175,7 @@ void CallBack_Event_MatchStart(CNET_RES res) {
     char *handle;
     char *mini;
 
-    F(s8, (u8 *)cw, 0x2C0C) = 1;
+    F(s8, (u8 *)cw, CW_OFS(0x2C0C)) = 1;
     Lbc_set_prim(0, 0, 0);
     *(s8 *)0x3F3404 = 0;
     Lb_send_stage();
@@ -5236,9 +5236,9 @@ void CallBack_Event_RecvMail(CNET_RES res) {
     strncpy(RecvMailInfo[0].body, (char *)&m + 0x1C, 0x80);
     KinshiYogo_chk(RecvMailInfo[0].body);
     RecvMailInfo[0].flag = 1;
-    cw[0x2F7E]++;
-    c = cw + 0x2F7E;
-    if (cw[0x2F7E] > 8) {
+    cw[CW_OFS(0x2F7E)]++;
+    c = cw + CW_OFS(0x2F7E);
+    if (cw[CW_OFS(0x2F7E)] > 8) {
         *c = 8;
     }
 }
@@ -5250,10 +5250,10 @@ void CallBack_Event_AdminMessage(CNET_RES res) {
     char sp20[32];
     int temp_v0;
 
-    memset((u8 *)cw + 0x2C5C, 0, 0x31C);
+    memset((u8 *)cw + CW_OFS(0x2C5C), 0, 0x31C);
     temp_v0 = (int)cw;
     cnLBS_Get_RecvMessage(&sp20, temp_v0 + 0x2C5D, temp_v0 + 0x2C6E);
-    F(s8, (u8 *)cw, 0x2C5C) = 1;
+    F(s8, (u8 *)cw, CW_OFS(0x2C5C)) = 1;
 }
 
 /* ---- formerly b/lb_bz52.c ---- */
@@ -5330,7 +5330,7 @@ void CallBack_Event_LobbyCommer(CNET_RES res) {
         j++;
         q += 0x5C;
     } while (j < 8);
-    if (cw[0x35D5] != 0 && user.name[0] != 0) {
+    if (cw[CW_OFS(0x35D5)] != 0 && user.name[0] != 0) {
         memset(&chat, 0, 0x120);
         chat.d = 6;
         chat.c = 6;
@@ -5486,7 +5486,7 @@ void CallBack_Event_RoomCommer(CNET_RES res) {
         i++;
         p += 0x2FC;
     } while (i < 4);
-    if (cw[0x35D5] != 0 && user.name[0] != 0) {
+    if (cw[CW_OFS(0x35D5)] != 0 && user.name[0] != 0) {
         memset(&chat, 0, 0x120);
         chat.d = 6;
         chat.c = 6;

@@ -63,6 +63,7 @@ void font_print_uf();
 void Lb_num_to_str();
 void font_print_uf();
 
+#ifndef VERSION_MHG
 int lb_guild_startMsg(void) {
     int a1;
     int s0;
@@ -126,3 +127,4 @@ int lb_guild_startMsg(void) {
     }
     return 0;
 }
+#endif

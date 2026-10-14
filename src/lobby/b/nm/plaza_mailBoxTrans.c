@@ -4,6 +4,7 @@
  * font_print_double. RecvMailInfo: 8 x 0x9A (+0 unread, +1 id[8], +9 handle[0x11], +0x1A text[0x80]). pNet: +3 the
  * box's step, +0xA the cursor, +0xE the mail shown, +0x26 the number of mails (counted here). */
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char RecvMailInfo[];
 extern char tl_msg_tbl[];
 extern char tl_mail_tbl[];
@@ -77,7 +78,7 @@ void plaza_mailBoxTrans(int arg0, int arg1, int arg2) {
     put_titles(xt, yt, F(s32, &tl_mail_tbl, 0x14));
     plaza_disp_mail(pNet, xt, (s16)(yt + 0x16));
     put_mail_input_square(pNet, xt, yt);
-    font_set_palette(F(s8, (u8 *)cw, 0x2F99) != 0 ? 0 : 0xA);
+    font_set_palette(F(s8, (u8 *)cw, CW_OFS(0x2F99)) != 0 ? 0 : 0xA);
     flfntLocate(xt, (s16)(yt + 0xB0));
     font_print(lit_2316, F(int, &tl_mail_tbl, 0x18));
 }

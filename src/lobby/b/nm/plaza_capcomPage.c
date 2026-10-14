@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char jtbl_2033[];
 extern char first_url[];
 extern char jtbl_2033[];
@@ -20,7 +21,7 @@ void plaza_capcomPage(void) {
     case 0:                                         /* switch 1 */
         F(u8, temp_a2, 3) = (u8) (temp_a1 + 1);
         fade_set(1);
-        F(s8, (u8 *)cw, 0x2C08) = 0;
+        F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 0;
         return;
     case 1:                                         /* switch 1 */
         if ((Fade_busy_ck(&jtbl_2033) & 0xFF) != 1) {
@@ -35,13 +36,13 @@ void plaza_capcomPage(void) {
     default:                                        /* switch 1 */
         break;
     case 2:                                         /* switch 1 */
-        if (F(u8, (u8 *)cw, 0x2C44) == 2) {
+        if (F(u8, (u8 *)cw, CW_OFS(0x2C44)) == 2) {
             F(u8, temp_a2, 3) = (u8) (temp_a1 + 1);
             F(s8, pNet, 4) = 0;
-            F(u8, (u8 *)cw, 0x2C44) = 0U;
+            F(u8, (u8 *)cw, CW_OFS(0x2C44)) = 0U;
             fade_set(2);
             lobby_bgm_set2(0x48);
-            if (F(u8, (u8 *)cw, 0x2C3C) != 0) {
+            if (F(u8, (u8 *)cw, CW_OFS(0x2C3C)) != 0) {
                 F(u8, pNet, 3) = 4U;
             }
             return;
@@ -56,7 +57,7 @@ void plaza_capcomPage(void) {
         temp_v0 = Lbc_SendBrowserResult();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
-            F(s8, (u8 *)cw, 0x2C08) = 1;
+            F(s8, (u8 *)cw, CW_OFS(0x2C08)) = 1;
 block_22:
             F(s8, pNet, 3) = 3;
             break;

@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char CallBack_Result_SetRoomPropaty[];
 s32 Lbc_SetPropaty(s32 arg0, int arg1) {
     s32 temp_a0;
@@ -12,7 +13,7 @@ s32 Lbc_SetPropaty(s32 arg0, int arg1) {
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 0x1B;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1B;
         cnLBS_Set_RoomProperty(arg1, &CallBack_Result_SetRoomPropaty);
 block_11:
     default:

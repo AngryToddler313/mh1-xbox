@@ -1,5 +1,6 @@
 /* lb_q01 - lb_check_status 0x005D6740-0x005D704C: lb_check_status. Whole file in lb_q.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 typedef struct LBSP { f32 x, y, z; u16 ang; u8 _pad[2]; } LBSP;
 extern LBSP lb_start_pos[];
 extern LBSP lb_return_pos[];
@@ -109,7 +110,7 @@ void lb_check_status(void) {
     case 21:
         lb_sys.x68 = 0x16;
         lb_sys.x6C = 1;
-        cw[0x2C35] = 0;
+        cw[CW_OFS(0x2C35)] = 0;
         lb_sys.x06 = 0;
         break;
     case 22:
@@ -160,7 +161,7 @@ void lb_check_status(void) {
         break;
     case 29:
         q = *(s8 *)&mhRule + 1;
-        if (q > 1 && (*(u16 *)(cw + 0x32C6) + 1) == q) {
+        if (q > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) == q) {
             pNet[0xC] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
@@ -186,7 +187,7 @@ void lb_check_status(void) {
         break;
     case 48: {
         u8 *ri = Lbs_GetRoomInfo((s16)(ClassInfo[8] - 1));
-        if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + 0x32C6) + 1) < (s32)*(u16 *)(ri + 2)) {
+        if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) < (s32)*(u16 *)(ri + 2)) {
             pNet[0xC] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
@@ -266,7 +267,7 @@ void lb_check_status(void) {
             break;
         case 1:
             lb_sys.x68 = 0x17;
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             break;
         }
         break;
@@ -278,7 +279,7 @@ void lb_check_status(void) {
             break;
         case 1:
             lb_sys.x68 = 0x17;
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             break;
         }
         break;
@@ -368,7 +369,7 @@ void lb_check_status(void) {
     case 16:
         v = Fade_busy_ck() & 0xFF;
         if (v != 1 && Lbs_LobbyExit(v) == 1) {
-            cw[0x35D5] = 0;
+            cw[CW_OFS(0x35D5)] = 0;
             SoftKeyboard_exit();
             Lbc_set_prim(0, 0, 0);
             To_EnterPlaza2Lobby();

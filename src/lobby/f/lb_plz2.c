@@ -39,6 +39,7 @@ int Lbc_ConditionSearch();
 int strlen();
 #define X6 (*(u8 *)&a->x06)
 #include "sysw.h"
+#include "lbsys_g.h"
 extern u8 D_32D471[];
 int mail_input();
 void get_friend_page_num();
@@ -168,8 +169,8 @@ int plaza_enterLobby()
         if (sw & 0x20) {
             pNet->step = 4;
             ClassInfo.lobby = X0Ap(pNet) + 1;
-            cw[0x2C41] = X0Ap(pNet);
-            cw[0x2C35] = 0;
+            cw[CW_OFS(0x2C41)] = X0Ap(pNet);
+            cw[CW_OFS(0x2C35)] = 0;
             SetDialogData(0x15, 5);
             pNet->x0C = 1;
             cnWrap_SoundRequest(0);
@@ -227,7 +228,7 @@ int plaza_enterLobby()
             pNet->step = 6;
             ((LB_CW *)cw)->x30B6 = 0;
             ClassInfo.lobby = 0;
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             break;
         }
         break;
@@ -249,9 +250,9 @@ int plaza_enterLobby()
     case 6:
         pNet->x0C = 1;
         if (sw & 0x20) {
-            cw[0x2C32] = 0;
-            cw[0x2C33] = 0;
-            cw[0x2C34] = 0;
+            cw[CW_OFS(0x2C32)] = 0;
+            cw[CW_OFS(0x2C33)] = 0;
+            cw[CW_OFS(0x2C34)] = 0;
             return 1;
         }
         break;
@@ -543,9 +544,9 @@ int plaza_checkFriend()
                     return 3;
                 }
                 pNet->step = 0xB;
-                cw[0x2C08] = 0;
+                cw[CW_OFS(0x2C08)] = 0;
                 system_w.softkey = 0;
-                if (cw[0x35D5] != 0) {
+                if (cw[CW_OFS(0x35D5)] != 0) {
                     str_stop(1, 1);
                     str_pause(0, 1);
                 } else {
@@ -569,7 +570,7 @@ int plaza_checkFriend()
             }
             cnWrap_SoundRequest(3);
             pNet->step = 0xB;
-            cw[0x2C08] = 0;
+            cw[CW_OFS(0x2C08)] = 0;
             system_w.softkey = 0;
             str_pause(0, 1);
             str_pause(1, 1);
@@ -583,9 +584,9 @@ int plaza_checkFriend()
                 pNet->step++;
                 *(u8 *)&pNet->x06 = *(u8 *)&pNet->x0A;
                 *(u8 *)&pNet->x12 = 0;
-                strcpy((char *)cw + 0x2F80, (char *)Friend_data + (*(u8 *)&pNet->x06 + pNet->x24 * 7) * 0x30);
+                strcpy((char *)cw + CW_OFS(0x2F80), (char *)Friend_data + (*(u8 *)&pNet->x06 + pNet->x24 * 7) * 0x30);
                 memset(cw + 0x2B9C, 0, 0x62);
-                cw[0x2F99] = 0;
+                cw[CW_OFS(0x2F99)] = 0;
                 cnWrap_SoundRequest(0);
             } else {
                 cnWrap_SoundRequest(7);
@@ -595,9 +596,9 @@ int plaza_checkFriend()
             *(u8 *)&pNet->x06 = *(u8 *)&pNet->x0A;
             *(u8 *)&pNet->x0A = 0;
             e = Friend_data + (*(u8 *)&pNet->x06 + pNet->x24 * 7) * 0x30;
-            strcpy((char *)cw + 0x2F80, (char *)e);
-            strcpy((char *)cw + 0x2F88, (char *)e + 8);
-            cw[0x2F99] = 0;
+            strcpy((char *)cw + CW_OFS(0x2F80), (char *)e);
+            strcpy((char *)cw + CW_OFS(0x2F88), (char *)e + 8);
+            cw[CW_OFS(0x2F99)] = 0;
             cnWrap_SoundRequest(6);
         } else if (sw & 0x200) {
             pNet->step = 0xA;
@@ -676,7 +677,7 @@ int plaza_checkFriend()
             *(u8 *)&pNet->x12 = 0;
             break;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             pNet->step = 9;
             break;
         }
@@ -691,9 +692,9 @@ int plaza_checkFriend()
             pNet->step++;
             *(u8 *)&pNet->x0A = 0;
             e = Friend_data + (*(u8 *)&pNet->x06 + pNet->x24 * 7) * 0x30;
-            strcpy((char *)cw + 0x2F80, (char *)e);
-            strcpy((char *)cw + 0x2F88, (char *)e + 8);
-            cw[0x2F99] = 0;
+            strcpy((char *)cw + CW_OFS(0x2F80), (char *)e);
+            strcpy((char *)cw + CW_OFS(0x2F88), (char *)e + 8);
+            cw[CW_OFS(0x2F99)] = 0;
             cnWrap_SoundRequest(6);
         } else if (sw & 0x200) {
             pNet->step = 0xA;
@@ -732,19 +733,19 @@ int plaza_checkFriend()
                 pNet->x0C = 1;
                 SetDialogData(0x2A, 2);
                 SetDialogYesNo(1);
-                *(BLK9A *)(cw + 0x3019) = *(BLK9A *)(cw + 0x2F7F);
+                *(BLK9A *)(cw + CW_OFS(0x3019)) = *(BLK9A *)(cw + CW_OFS(0x2F7F));
             }
             cnWrap_SoundRequest(0);
-        } else if ((sw & 0x3000) && *(s8 *)(cw + 0x2F99) != 0) {
+        } else if ((sw & 0x3000) && *(s8 *)(cw + CW_OFS(0x2F99)) != 0) {
             *(u8 *)&pNet->x0A = *(u8 *)&pNet->x0A ^ 1;
             cnWrap_SoundRequest(1);
         }
         break;
     case 6:
-        if (mail_input(a, cw + 0x2F99) == 1) {
-            KinshiYogo_chk(cw + 0x2F99);
+        if (mail_input(a, cw + CW_OFS(0x2F99)) == 1) {
+            KinshiYogo_chk(cw + CW_OFS(0x2F99));
             pNet->step = 5;
-            if (*(s8 *)(cw + 0x2F99) != 0) {
+            if (*(s8 *)(cw + CW_OFS(0x2F99)) != 0) {
                 *(u8 *)&pNet->x0A = 1;
             } else {
                 *(u8 *)&pNet->x0A = 0;
@@ -771,7 +772,7 @@ int plaza_checkFriend()
             pNet->step++;
             break;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             pNet->step++;
             break;
         }
@@ -811,7 +812,7 @@ int plaza_checkFriend()
                     *q = *q - 1;
                 }
             }
-            cw[0x2C08] = 0;
+            cw[CW_OFS(0x2C08)] = 0;
             system_w.softkey = 0;
             pNet->step = 0xD;
             SetDialogData(0x17, 3);
@@ -827,11 +828,11 @@ int plaza_checkFriend()
             switch (SaveNetFile_ForLobby()) {
             case 1:
             case -1:
-                cw[0x2C08] = 1;
+                cw[CW_OFS(0x2C08)] = 1;
                 system_w.softkey = 1;
                 str_pause(0, 0);
                 str_pause(1, 0);
-                if (cw[0x35D5] != 0) {
+                if (cw[CW_OFS(0x35D5)] != 0) {
                     str_fadein_vol(0, 0x1E, D_32D471[*(u8 *)0x3F3404 * 2]);
                 }
                 return 3;
@@ -984,7 +985,7 @@ void plaza_searchAll(void)
                 break;
             }
             pNet->step = 9;
-            strcpy((char *)cw + 0x2F80, (char *)SearchResult + (X0A + pNet->x24 * 7) * 0x5C + 4);
+            strcpy((char *)cw + CW_OFS(0x2F80), (char *)SearchResult + (X0A + pNet->x24 * 7) * 0x5C + 4);
             memset(cw + 0x2B9C, 0, 0x62);
             cnWrap_SoundRequest(6);
             break;
@@ -1070,7 +1071,7 @@ void plaza_searchAll(void)
             X12P = 0;
             break;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             pNet->step = 7;
             break;
         }
@@ -1257,7 +1258,7 @@ LB_NETW *a;
                 break;
             }
             a->step = 9;
-            strcpy((char *)cw + 0x2F80, (char *)SearchResult + (XA + a->x24 * 7) * 0x5C + 4);
+            strcpy((char *)cw + CW_OFS(0x2F80), (char *)SearchResult + (XA + a->x24 * 7) * 0x5C + 4);
             memset(cw + 0x2B9C, 0, 0x62);
             cnWrap_SoundRequest(6);
             break;
@@ -1341,7 +1342,7 @@ LB_NETW *a;
             X12 = 0;
             break;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             a->step = 11;
             break;
         }
@@ -1604,7 +1605,7 @@ int plaza_mailBox()
         pNet->x28 = Get_sw_on2(0);
         if (sw & 0x20) {
             if (pNet->x26 != 0) {
-                *(BLK9A *)(cw + 0x2F7F) = *(BLK9A *)RecvMailInfo[MXA];
+                *(BLK9A *)(cw + CW_OFS(0x2F7F)) = *(BLK9A *)RecvMailInfo[MXA];
                 MXE = MXA;
                 MXA = 0;
                 RecvMailInfo[MXE][0] = 0;
@@ -1621,9 +1622,9 @@ int plaza_mailBox()
         if (sw & 0x80) {
             pNet->step = 8;
             MXA = 0;
-            cw[0x2F80] = 0;
-            cw[0x2F88] = 0;
-            cw[0x2F99] = 0;
+            cw[CW_OFS(0x2F80)] = 0;
+            cw[CW_OFS(0x2F88)] = 0;
+            cw[CW_OFS(0x2F99)] = 0;
             cnWrap_SoundRequest(6);
         } else {
             w = pNet;
@@ -1641,7 +1642,7 @@ int plaza_mailBox()
             cnWrap_SoundRequest(3);
         } else if (sw & 0x200) {
             pNet->step++;
-            cw[0x2F99] = 0;
+            cw[CW_OFS(0x2F99)] = 0;
             cnWrap_SoundRequest(6);
         }
         break;
@@ -1656,21 +1657,21 @@ int plaza_mailBox()
                 pNet->step++;
             } else {
                 MX6 = 3;
-                *(BLK9A *)(cw + 0x3019) = *(BLK9A *)(cw + 0x2F7F);
+                *(BLK9A *)(cw + CW_OFS(0x3019)) = *(BLK9A *)(cw + CW_OFS(0x2F7F));
                 pNet->step = 5;
                 SetDialogData(0x2A, 2);
                 SetDialogYesNo(1);
             }
             cnWrap_SoundRequest(0);
-        } else if ((sw & 0x3000) && *(s8 *)(cw + 0x2F99) != 0) {
+        } else if ((sw & 0x3000) && *(s8 *)(cw + CW_OFS(0x2F99)) != 0) {
             MXA = MXA ^ 1;
             cnWrap_SoundRequest(1);
         }
         break;
     case 4:
-        if (mail_input3(a, cw + 0x2F99, st) == 1) {
-            KinshiYogo_chk(cw + 0x2F99);
-            if (*(s8 *)(cw + 0x2F99) != 0) {
+        if (mail_input3(a, cw + CW_OFS(0x2F99), st) == 1) {
+            KinshiYogo_chk(cw + CW_OFS(0x2F99));
+            if (*(s8 *)(cw + CW_OFS(0x2F99)) != 0) {
                 MXA = 1;
             } else {
                 MXA = 0;
@@ -1701,7 +1702,7 @@ int plaza_mailBox()
             pNet->step++;
             break;
         case 1:
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             pNet->step++;
             break;
         }
@@ -1711,7 +1712,7 @@ int plaza_mailBox()
         if (sw & 0x20) {
             pNet->step = 1;
             MXA = MXE;
-            cw[0x2F99] = 0;
+            cw[CW_OFS(0x2F99)] = 0;
             cnWrap_SoundRequest(0);
         }
         break;
@@ -1729,7 +1730,7 @@ int plaza_mailBox()
                 a->step++;
                 pNet->x04 = 1;
                 seekStr[0] = 0;
-                cw[0x2F80] = 0;
+                cw[CW_OFS(0x2F80)] = 0;
                 cnWrap_SoundRequest(0);
                 break;
             case 1:
@@ -1738,14 +1739,14 @@ int plaza_mailBox()
                 break;
             case 2:
                 MX6 = 8;
-                *(BLK9A *)(cw + 0x3019) = *(BLK9A *)(cw + 0x2F7F);
+                *(BLK9A *)(cw + CW_OFS(0x3019)) = *(BLK9A *)(cw + CW_OFS(0x2F7F));
                 pNet->step = 5;
                 SetDialogData(0x2A, 2);
                 SetDialogYesNo(1);
                 cnWrap_SoundRequest(0);
                 break;
             }
-        } else if (*(s8 *)(cw + 0x2F99) != 0) {
+        } else if (*(s8 *)(cw + CW_OFS(0x2F99)) != 0) {
             MXA = Lb_cursorUD(MXA, 3);
         } else {
             MXA = Lb_cursorUD(MXA, 2);
@@ -1753,17 +1754,17 @@ int plaza_mailBox()
         break;
     case 9:
         if (plaza_req_input3(a, seekStr, st) == 1) {
-            strcpy((char *)cw + 0x2F80, seekStr);
+            strcpy((char *)cw + CW_OFS(0x2F80), seekStr);
             if (strlen(seekStr) < 6) {
                 SetDialogData(0x1B, 3);
                 pNet->step = 0xC;
-                cw[0x2F80] = 0;
-                cw[0x2F88] = 0;
-            } else if (memcmp(my_user_id, cw + 0x2F80, 6) == 0) {
+                cw[CW_OFS(0x2F80)] = 0;
+                cw[CW_OFS(0x2F88)] = 0;
+            } else if (memcmp(my_user_id, cw + CW_OFS(0x2F80), 6) == 0) {
                 SetDialogData(0x2E, 3);
                 pNet->step = 0xC;
-                cw[0x2F80] = 0;
-                cw[0x2F88] = 0;
+                cw[CW_OFS(0x2F80)] = 0;
+                cw[CW_OFS(0x2F88)] = 0;
             } else {
                 pNet->step++;
             }
@@ -1781,9 +1782,9 @@ int plaza_mailBox()
         }
         break;
     case 11:
-        if (mail_input3(a, cw + 0x2F99, st) == 1) {
-            KinshiYogo_chk(cw + 0x2F99);
-            if (*(s8 *)(cw + 0x2F99) != 0) {
+        if (mail_input3(a, cw + CW_OFS(0x2F99), st) == 1) {
+            KinshiYogo_chk(cw + CW_OFS(0x2F99));
+            if (*(s8 *)(cw + CW_OFS(0x2F99)) != 0) {
                 MXA++;
             } else {
                 MXA = 1;
@@ -1956,7 +1957,7 @@ LB_NETW *a;
             XAC = XAC - 1;
             break;
         }
-        XAC = Lb_cursorUD(XAC, cw[0x32BE] + 1);
+        XAC = Lb_cursorUD(XAC, cw[CW_OFS(0x32BE)] + 1);
         break;
     }
 }

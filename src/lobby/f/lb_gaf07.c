@@ -1,5 +1,6 @@
 /* lb_gaf07 - plaza init phase 0x005D9050-0x005D9198: vs_square_init (pl = &player_work[m] before the cw store, then the phase counter). Whole file in lb_af.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *pNet;
 extern u8 D_32D471[];
@@ -74,7 +75,7 @@ void vs_square_init(void) {
     PLW *pl;
     m = game_w.master;
     pl = &player_work[m];
-    cw[0x2C08] = 0;
+    cw[CW_OFS(0x2C08)] = 0;
     lb_sys.x04 = lb_sys.x04 + 1;
     Disp_NowLoading();
     Lb_stage_load(pl->x73A);
@@ -84,7 +85,7 @@ void vs_square_init(void) {
         str_fadein_vol(0, 0xF, D_32D471[game_w.stage * 2]);
     } else {
         st = game_w.stage;
-        if (st == 0x4E && *(u32 *)(cw + 0xBF3C) >= 4U) {
+        if (st == 0x4E && *(u32 *)(cw + CW_OFS(0xBF3C)) >= 4U) {
             lobby_bgm_set2(0x11);
         } else {
             lobby_bgm_set(st);
@@ -96,5 +97,5 @@ void vs_square_init(void) {
     lb_sys.x87 = 0x14;
     lb_sys.x03 = lb_sys.x03 + 1;
     Lb_check_newCommer();
-    cw[0x2C08] = 1;
+    cw[CW_OFS(0x2C08)] = 1;
 }

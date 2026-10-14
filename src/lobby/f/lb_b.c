@@ -3,6 +3,7 @@
 #include "lobby_f.h"
 #define USER_GOLD (*(s32 *)0x3C6FE0)
 
+#ifndef VERSION_MHG
 int Lb_check_money(u32 n) {
     LBQUEST *q;
     s32 fee;
@@ -19,6 +20,7 @@ int Lb_check_money(u32 n) {
     cnWrap_SoundRequest(8);
     return 0;
 }
+#endif
 
 LBQUEST *get_quest_info(void) {
     s32 *p = (s32 *)mission_area;
@@ -52,8 +54,9 @@ void Lb_back_money(void) {
     cnWrap_SoundRequest(8);
 }
 
+#ifndef VERSION_MHG
 void lb_guild_end(void) {
-    CW8(0x2C08) = 1;
+    CW8(CW_OFS(0x2C08)) = 1;
     ((u8 *)&lb_sys)[LBSYS_OFS(0x87)] = 0x14;
     lb_sys.x6C = 0;
     ((u8 *)&lb_sys)[LBSYS_OFS(6)] = 0;
@@ -61,3 +64,4 @@ void lb_guild_end(void) {
     Lbc_init_network_work(1);
     NPCZoomInCameraCancel();
 }
+#endif

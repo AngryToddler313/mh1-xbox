@@ -1,5 +1,6 @@
 /* lb_v06 - guild quest board 0x005C8FF0-0x005C9590: lb_set_questpage_info. Whole file in lb_x.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern s8 key_quest_num;
 extern u8 *pNet;
 extern u8 lb_quest_info[];
@@ -36,7 +37,7 @@ void lb_set_questpage_info(void) {
     UV *d2;
     UV *c1;
     UV *c2;
-    if (cw[0x35D3] != 0) {
+    if (cw[CW_OFS(0x35D3)] != 0) {
         if ((u8)mhRule.quest >= 200) {
             qb = (u8 *)get_quest_info();
         } else {

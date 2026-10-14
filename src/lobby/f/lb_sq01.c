@@ -8,6 +8,7 @@ int lb_get_quest_level();
 s32 check_questLevelSelect();
 int Lb_cursorUD();
 
+#ifndef VERSION_MHG
 s32 lb_select_quest_level(void) {
     u16 pad;
     u8 *n;
@@ -37,3 +38,4 @@ s32 lb_select_quest_level(void) {
 done:
     return 2;
 }
+#endif

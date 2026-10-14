@@ -1,5 +1,6 @@
 /* Lobby: player actions (sleep/bed, bell, cart), receive dispatcher, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 *pNet;
 extern s16 ang_894;
 void McOperationSet();
@@ -54,7 +55,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
     {
         switch (pl->x05) {
         case 0:
-            cw[0x2C08] = 0;
+            cw[CW_OFS(0x2C08)] = 0;
             pl->x05 = pl->x05 + 1;
             Lb_Pl_basic_flagset(pl, 0, 0, 0);
             pl->work39C = 0;
@@ -96,7 +97,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
                         lb_exit_save(pl);
                     } else {
                         pl->x05 = pl->x05 + 1;
-                        cw[0x2C08] = 1;
+                        cw[CW_OFS(0x2C08)] = 1;
                         SetDialogData(0x37, 2);
                         SetDialogYesNo(1);
                     }
@@ -333,7 +334,7 @@ u8 *p;
     u8 t;
     t = p[0];
     q = p + 1;
-    if (cw[0x35D5] != 0) {
+    if (cw[CW_OFS(0x35D5)] != 0) {
         id = Lb_get_plID() & 0xFF;
         if (id == 0xFF) {
             return;
@@ -378,7 +379,7 @@ u8 *p;
         Lbc_SendNetComment(a);
         return;
     case 8:
-        if (cw[0x35D5] != 0) {
+        if (cw[CW_OFS(0x35D5)] != 0) {
             memcpy(cw + (id & 0xFF) * 0x62 + 0x288C, q, 0x62);
             memcpy(cw + 0x2B9C, q, 0x62);
             return;

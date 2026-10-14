@@ -1,6 +1,7 @@
 /* lb_tu_act - one translation unit 0x005CDF70-0x005CF100 (all functions are C now): Lb_Pl_act_set, ck_pl_send, Lb_pl_to_normal, lb_pl_to_normal_clr, lb_pl_to_normal_clr2, lb_to_normal, lb_action_timer_calc, Lb_act_ck, Lb_stick_pow_get, Lb_stick_dir_set, Lb_Pl_basic_flagset, Lb_Pl_adj_calc, Lb_Em_adj_calc, Lb_Pl_pos_adj, Lb_Em_pos_adj, lb_pl_flag_clr, Lb_pl_flag_set, Lb_St_unique_adr_set, lb_ck_unique_act, Lb_put_unique_act_hint, Lb_Pl_stg_ck, Lb_hit_stop_calc, Lb_act_set. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 f32 *Stage_data_get(int stg);
 int Get_view_dir();
 f32 flvecCalcDistance(f32 *, f32 *);
@@ -380,7 +381,7 @@ int a;
             case 43:
                 if (game_w.stage == 0x4D || lb_sys.x66 == 0x10) {
                     Lb_put_hint(0, 1);
-                } else if (cw[0x35D6] != 0) {
+                } else if (cw[CW_OFS(0x35D6)] != 0) {
                     Lb_put_hint(0, 1);
                 }
                 break;
@@ -391,7 +392,7 @@ int a;
             break;
         case 26:
             if (lb_sys.x68 != 0x11) {
-                if (cw[0x35D6] == 0) {
+                if (cw[CW_OFS(0x35D6)] == 0) {
                     Lb_put_hint(0, 0x13);
                 } else {
                     Lb_put_hint(0, 0x63);

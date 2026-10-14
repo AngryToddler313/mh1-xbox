@@ -1,5 +1,6 @@
 /* lb_gad03 - near-match fixes 0x005D82D0-0x005D8368: Lb_put_chat. Whole file in lb_ad.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *St_unique_tbl[];
 extern u8 chatIDList[];
@@ -38,7 +39,7 @@ void Lb_put_chat(int a) {
     buf[0x11E] = 6;
     buf[0x11D] = 6;
     buf[0x11F] = 6;
-    if (cw[0x35D5] != 0) {
+    if (cw[CW_OFS(0x35D5)] != 0) {
         Chat_log_add(0, buf);
         return;
     }

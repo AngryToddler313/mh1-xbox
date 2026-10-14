@@ -1,5 +1,6 @@
 /* lb_gae02 - near-match fixes 0x005D1000-0x005D14C8: lb_pl_mv052. Whole file in lb_ae.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 *pNet;
 extern s16 ang_894;
 void McOperationSet();
@@ -55,7 +56,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
     {
         switch (pl->x05) {
         case 0:
-            cw[0x2C08] = 0;
+            cw[CW_OFS(0x2C08)] = 0;
             pl->x05 = pl->x05 + 1;
             Lb_Pl_basic_flagset(pl, 0, 0, 0);
             pl->work39C = 0;
@@ -97,7 +98,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
                         lb_exit_save(pl);
                     } else {
                         pl->x05 = pl->x05 + 1;
-                        cw[0x2C08] = 1;
+                        cw[CW_OFS(0x2C08)] = 1;
                         SetDialogData(0x37, 2);
                         SetDialogYesNo(1);
                     }

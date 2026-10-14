@@ -1,5 +1,6 @@
 /* lb_v10 - lobby member stage change 0x005C5980-0x005C5AB4: lb_set_pl_stage (stores the member's stage, drops a held target, logs a leave in chat). */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern char lit_476_0065ED10[];
 void lb_set_pl_stage(id, stg)
 int id;
@@ -19,7 +20,7 @@ u8 *stg;
         me->x3B0 = 0;
     }
     if (*stg == 0) {
-        if (CW8(0x35D5) != 0) {
+        if (CW8(CW_OFS(0x35D5)) != 0) {
             if (lbCommer[uid].name[0] != 0) {
                 memset(buf, 0, 0x120);
                 buf[0x11F] = 6;

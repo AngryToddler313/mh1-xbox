@@ -1,5 +1,6 @@
 /* CallBack_Event_RoomLeaver (0x5C18A0): the PC copy of an original-bytes stub in src/lobby/f/lb_cli.c (ONLINE=1). 15/152 differ: only j/off register naming (s0/s2 swapped in the second loop). */
 #include "lobby_b.h"
+#include "lbsys_g.h"
 extern char lit_4622[];
 typedef struct { u8 pad[0x1C]; char msg[0x100]; u8 a, b, c, d; } CHATM;
 typedef struct { char id[8]; char name[0x10]; u8 pad18[4]; char mini[0x40]; } LUSER;
@@ -16,8 +17,8 @@ void CallBack_Event_RoomLeaver(CNET_RES res) {
     i = 0;
     off = 0;
     do {
-        if ((s8)cw[0x2C0C] == 0 && memcmp(cw + off + 0x73C, &user, 8) == 0) {
-            if (cw[0x35D5] != 0 && (s8)cw[off + 0x744] != 0) {
+        if ((s8)cw[CW_OFS(0x2C0C)] == 0 && memcmp(cw + off + 0x73C, &user, 8) == 0) {
+            if (cw[CW_OFS(0x35D5)] != 0 && (s8)cw[off + 0x744] != 0) {
                 memset(&chat, 0, 0x120);
                 chat.d = 6;
                 chat.c = 6;

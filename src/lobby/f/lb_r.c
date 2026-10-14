@@ -1,5 +1,6 @@
 /* Lobby: lb_basic_master (town player master: stick, NPC talk, chairs, doors) hand-written. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 npc_sound_tbl[0x3B];
 extern u8 lb_pit[0xC];
 extern u8 User_data[];
@@ -283,7 +284,7 @@ block_119:
                     if (!(lb_sys.chair_mask & (1 << n))) {
                         if (game_w.stage == 0x4D) {
                             lb_sys.x66 = n;
-                            if (memcmp(cw + 3, cw + 0x440, 8) == 0) {
+                            if (memcmp(cw + 3, cw + CW_OFS(0x440), 8) == 0) {
                                 lb_sys.x74 = 0x96;
                                 lb_sys.x68 = 0x18;
                                 lb_sys.x6C = 1;
@@ -302,7 +303,7 @@ block_119:
                 }
                 return;
             case 26:
-                if (cw[0x35D6] == 0) {
+                if (cw[CW_OFS(0x35D6)] == 0) {
                     lb_sys.x66 = *(u16 *)fh2;
                     lb_sys.x68 = 0x11;
                     Lb_pl_to_chair();
@@ -311,7 +312,7 @@ block_119:
             case 5:
                 switch (game_w.stage) {
                 case 0x4D:
-                    if (cw[0x35D3] == 1) {
+                    if (cw[CW_OFS(0x35D3)] == 1) {
                         Lb_put_set01(1);
                     } else {
                         pl->x73A = 0x4C;
@@ -368,12 +369,12 @@ block_119:
             case 6:
                 switch (game_w.stage) {
                 case 0x4D:
-                    if (cw[0x35D3] != 0) {
-                        a = cw[0x32C5];
+                    if (cw[CW_OFS(0x35D3)] != 0) {
+                        a = cw[CW_OFS(0x32C5)];
                         if (a == 1) {
                             if (lb_sys.x68 != 7 && lb_sys.x68 != 8) {
                                 ri = Lbs_GetRoomInfo((s16)(ClassInfo[8] - 1));
-                                if ((*(u16 *)(cw + 0x32C6) + 1) >= (s32) * (u16 *)(ri + 2)) {
+                                if ((*(u16 *)(cw + CW_OFS(0x32C6)) + 1) >= (s32) * (u16 *)(ri + 2)) {
                                     SetDialogData(0x36, 2);
                                     SetDialogYesNo(0);
                                     *(s8 *)0x3F36AB = 0;
@@ -407,7 +408,7 @@ block_119:
                     }
                     return;
                 case 0x57:
-                    if (cw[0x35D3] != 0) {
+                    if (cw[CW_OFS(0x35D3)] != 0) {
                         lb_sys.x68 = 0x1E;
                         fade_set(1);
                     }
@@ -468,7 +469,7 @@ block_119:
                 lb_sys.x71 = 0;
                 break;
             case 12:
-                if (Online_ck() == 0 && cw[0x35D3] == 1) {
+                if (Online_ck() == 0 && cw[CW_OFS(0x35D3)] == 1) {
                     Lb_put_set01(1);
                 } else {
                     lb_sys.x68 = 0x14;

@@ -2,6 +2,7 @@
    in the 0x39DAD6 bit mask) and calls Lb_send_chat(a, b, c). The repeated `bit = 1` and the statement order of the initialisers only steer the
    register assignment (found with a statement-order search). Whole file in lb_aa.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 chatIDList[];
 char *strcpy();
 void Lb_send_chat();
@@ -15,10 +16,10 @@ int c;
     u8 *p;
     u8 *id;
     if (*(u8 *)0x39DAD5 != 0) {
-        cw[0x32BE] = 0;
+        cw[CW_OFS(0x32BE)] = 0;
     } else {
         bit = 1;
-        cw[0x32BE] = 1;
+        cw[CW_OFS(0x32BE)] = 1;
         i = 0;
         p = (u8 *)lb_player;
         id = chatIDList;

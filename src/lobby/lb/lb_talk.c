@@ -4,6 +4,7 @@
 #include "pl.h"
 #include "ud.h"
 #include "em.h"
+#include "lbsys_g.h"
 
 int Lb_put_npc_default();
 void lb_talk_init();
@@ -504,7 +505,7 @@ void lb_talk_setLocalShop(void) {
 }
 
 void lb_talk_setGondola(void) {
-    u32 v = *(u32 *)(cw + 0xBF3C);
+    u32 v = *(u32 *)(cw + CW_OFS(0xBF3C));
 
     if (v >= 4) {
         lb_pit.x08 = 0x10;
@@ -549,7 +550,7 @@ void lb_talk_init(EMW *pl) {
     cnWrap_SoundRequest(0xC);
     switch (npc->kind) {
     case 0x56:
-        lb_pit.x08 = *(u8 *)(cw + 0x35D8);
+        lb_pit.x08 = *(u8 *)(cw + CW_OFS(0x35D8));
         lb_pit.x0 = 0;
         lb_pit.pos += lb_pit.x08 * 8;
         break;

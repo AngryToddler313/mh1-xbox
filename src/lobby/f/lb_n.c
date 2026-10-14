@@ -45,9 +45,9 @@ u8 *data;
     int t;
     u8 m;
     int l;
-    if (Online_ck() != 0 && (t = type, CW8(0x35D5) != 0)) {
+    if (Online_ck() != 0 && (t = type, CW8(CW_OFS(0x35D5)) != 0)) {
         if (t == 3 || Lbs_CheckMatchingFlag(t) != 1) {
-            m = CW8(0x2C31);
+            m = CW8(CW_OFS(0x2C31));
             switch (m) {
             default:
                 return;
@@ -91,6 +91,11 @@ u8 *data;
 }
 
 void Lb_put_set01(int n) {
+#ifdef VERSION_MHG
+    /* G inserted messages: MH1 number -> G's lb_set01_msg entry (made by comparing the texts; 6 and 9 are reworded) */
+    static const unsigned char g_set01_map[18] = { 0, 1, 2, 3, 4, 5, 8, 9, 10, 14, 11, 12, 13, 33, 14, 15, 24, 25 };
+    n = g_set01_map[n];
+#endif
     if (lb_sys.x72 == 0) {
         set01_set2(lb_set01_msg[n]);
         lb_sys.x72 = 0x5A;
@@ -114,6 +119,7 @@ s8 Lb_get_quest_type(u16 *p) {
     return v;
 }
 
+#ifndef VERSION_MHG
 void Lb_guild_trans(u8 *p) {
     if (lb_sys.x06 >= 2) {
         font_set_stack_no(F(s32, p, 0x18));
@@ -132,6 +138,7 @@ void Lb_guild_trans(u8 *p) {
         }
     }
 }
+#endif
 
 int Lb_check_existF(void) {
     if (Quest_clear_bit_ck(0x67) == 1) {
@@ -252,6 +259,7 @@ void Lb_put_hint(int a, int n) {
     sprintf((char *)&lb_sys + a * 0x1E + LBSYS_OFS(0xA), lit_743_00665D60, *(int *)((u8 *)hint_tbl[a] + t));
 }
 
+#ifndef VERSION_MHG
 int lb_key_quest_ck(int n) {
     switch (n & 0xFF) {
     case 0x27:
@@ -279,3 +287,4 @@ int lb_key_quest_ck(int n) {
     }
     return 0;
 }
+#endif

@@ -1,6 +1,7 @@
 /* lbui, run 5: DispSceneTitle .. DispSceneSubTitle (lobby.bin 0x00593070-0x005931AC): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+#include "lbsys_g.h"
 
 
 /* sprite template for Put_2TF / Put_sprite_rotate (helpLineTbl entries, stride 0x14) */
@@ -32,7 +33,7 @@ void DispSceneTitle(void) {
 
 void DispSceneSubTitle(void) {
     flfntSetSize(0x12, 0x12);
-    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + 0x2BFE) != 0) {
+    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + CW_OFS(0x2BFE)) != 0) {
         Draw_menu_square(0xD4, 0x30, 0xC0, 0x20, 0, 0);
         font_print_double(pSceneSubTitle->x, 0x38, 1, 0, pSceneSubTitle->s);
         return;

@@ -1,5 +1,6 @@
 /* Lobby: plaza ("vs_square") main loop phases: init, event, exit, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *pNet;
 extern u8 D_32D471[];
@@ -208,7 +209,7 @@ void vs_square_init_init(void) {
             Lb_make_quest_tbl_local();
             Q_camera_init();
         }
-        cw[0x2C08] = 0;
+        cw[CW_OFS(0x2C08)] = 0;
         fade_reset();
         lb_sys.x03 = lb_sys.x03 + 1;
         InitRenderState(0);
@@ -234,7 +235,7 @@ void vs_square_init_init(void) {
         lb_sys.x71 = -1;
         if (Online_ck() == 1) {
             st = 0x4C;
-            if (cw[0x35D2] == 0) {
+            if (cw[CW_OFS(0x35D2)] == 0) {
             } else {
                 lb_sys.x71 = 0;
                 st = 0x4D;
@@ -244,7 +245,7 @@ void vs_square_init_init(void) {
         }
         *(u16 *)(p + 0x73A) = st;
         Lb_stage_load(*(u16 *)(p + 0x73A));
-        cw[0x35D2] = 0;
+        cw[CW_OFS(0x35D2)] = 0;
         Lbc_connect();
         Lb_npc_set(*(u16 *)(p + 0x73A));
         i = 0;
@@ -260,7 +261,7 @@ void vs_square_init_init(void) {
         if ((Fade_busy_ck(lb_sys.x04) & 0xFF) != 1) {
             lb_sys.x04 = 0;
             lb_sys.x03 = lb_sys.x03 + 1;
-            cw[0x35D2] = 0;
+            cw[CW_OFS(0x35D2)] = 0;
         }
         return;
     }
@@ -334,7 +335,7 @@ int c;
                 if (Event_flag_ck(2) == 1 || Online_ck() == 1) {
                     lb_sys.x04 = 0xB;
                 } else {
-                    cw[0x2C08] = 1;
+                    cw[CW_OFS(0x2C08)] = 1;
                     fade_set(2);
                     lb_sys.x04 = 0;
                     lb_sys.x03 = 6;
@@ -342,7 +343,7 @@ int c;
             } else {
                 lb_sys.x04 = lb_sys.x04 + 1;
                 str_fadeout(0, 0xF);
-                *(s32 *)(cw + 0x2C4C) = 0xF;
+                *(s32 *)(cw + CW_OFS(0x2C4C)) = 0xF;
                 McOperationSet(9);
                 Lbc_set_prim(put_back, 0, 0);
             }
@@ -350,7 +351,7 @@ int c;
         }
         return;
     case 9: {
-        s32 *c2 = (s32 *)(cw + 0x2C4C);
+        s32 *c2 = (s32 *)(cw + CW_OFS(0x2C4C));
         int t = *c2;
         if (t != 0) {
             *c2 = t - 1;
@@ -375,7 +376,7 @@ int c;
     case 11:
         pNet[0x11] = 0;
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            cw[0x2C08] = 1;
+            cw[CW_OFS(0x2C08)] = 1;
             fade_set(2);
             lobby_bgm_set(game_w.stage);
             lb_sys.x04 = 0;
@@ -395,7 +396,7 @@ int a;
     u8 *pl;
     m = game_w.master;
     a0 = m * 0xA00;
-    cw[0x2C08] = 0;
+    cw[CW_OFS(0x2C08)] = 0;
     pl = (u8 *)player_work + a0;
     lb_sys.x04 = lb_sys.x04 + 1;
     Disp_NowLoading(a0, m);
@@ -406,7 +407,7 @@ int a;
         str_fadein_vol(0, 0xF, D_32D471[game_w.stage * 2]);
     } else {
         st = game_w.stage;
-        if (st == 0x4E && *(u32 *)(cw + 0xBF3C) >= 4U) {
+        if (st == 0x4E && *(u32 *)(cw + CW_OFS(0xBF3C)) >= 4U) {
             lobby_bgm_set2(0x11);
         } else {
             lobby_bgm_set(st);
@@ -418,7 +419,7 @@ int a;
     lb_sys.x87 = 0x14;
     lb_sys.x03 = lb_sys.x03 + 1;
     Lb_check_newCommer();
-    cw[0x2C08] = 1;
+    cw[CW_OFS(0x2C08)] = 1;
 }
 void vs_square_exit(a)
 int a;

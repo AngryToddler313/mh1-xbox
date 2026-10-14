@@ -4,6 +4,7 @@
 #include "lbui_proto.h"
 #ifdef VERSION_MHG
 #include "lbdlg_g.h"
+#include "lbsys_g.h"
 #endif
 
 void Lb_eat()
@@ -773,7 +774,7 @@ void DispSceneTitle(void) {
 
 void DispSceneSubTitle(void) {
     flfntSetSize(0x12, 0x12);
-    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + 0x2BFE) != 0) {
+    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + CW_OFS(0x2BFE)) != 0) {
         Draw_menu_square(0xD4, 0x30, 0xC0, 0x20, 0, 0);
         font_print_double(pSceneSubTitle->x, 0x38, 1, 0, pSceneSubTitle->s);
         return;

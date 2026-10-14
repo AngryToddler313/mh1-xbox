@@ -138,3 +138,61 @@ s8 kind;
         set_dialog_square(maxw * 10 + 0x3C, lines * 20 + 0x3C);
     }
 }
+
+#ifdef VERSION_MHG
+/* SetDialogData of G (0x59F430): the message is entry gid of G's table (8 bytes: u16 kind flags, pad, pointer); the kinds of G's
+ * flags (3 / 4 / 5 ...) are MH1's dialog kinds 2 / 3 / 4 on the PC's dialog drawing */
+void SetDialogData_G(int gid)
+{
+    u8 *ent = (u8 *)netDialogMessage + 8 * gid;
+    u16 fl = *(u16 *)ent;
+    int kind = fl & 0x7F;
+    int lines = 0, maxw = 0, w;
+    char *p, *line;
+    switch (kind) {
+    case 3: kind = 2; break;
+    case 4: kind = 3; break;
+    case 5: kind = 4; break;
+    default: break;
+    }
+    dialogData.id = 0x1000 + gid;
+    dialogData.msg = *(char **)(ent + 4);
+    dialogData.html = kind;
+    dialogData.x04 = 0;
+    dialogData.x06 = 0;
+    p = dialogData.msg;
+    line = p;
+    if (*p != 0) {
+        do {
+            p = strchr(p, 0xA);
+            lines++;
+            if (p != 0) {
+                w = p - line;
+                line = p;
+            } else {
+                w = strlen_sp(line);
+            }
+            if (w < 0) {
+                w = -w;
+            }
+            if (maxw < w) {
+                maxw = w;
+            }
+            if (p == 0) {
+                break;
+            }
+            p++;
+        } while (*p != 0);
+    }
+    switch (kind) {
+    case 2:
+    case 4:
+        dialogData.yesno = 0;
+    case 3:
+        lines += 2;
+        break;
+    }
+    dialogData.lines = lines;
+    set_dialog_square(maxw * 10 + 0x3C, lines * 20 + 0x3C);
+}
+#endif

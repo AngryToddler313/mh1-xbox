@@ -262,7 +262,7 @@ b11:
                     } else {
 b69:
                         if (*(u16 *)((u8 *)pl->fish878 + 2) == 6) {
-                            if (cw[0x32C5] != 0) {
+                            if (cw[CW_OFS(0x32C5)] != 0) {
                                 goto b72;
                             }
                             font_set_palette(0);

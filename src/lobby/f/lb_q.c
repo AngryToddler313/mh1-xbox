@@ -1,5 +1,6 @@
 /* Lobby: stage load, status check, hand-written (SLPM_654.95 lobby overlay). */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 typedef struct LBSP { f32 x, y, z; u16 ang; u8 _pad[2]; } LBSP;
 extern LBSP lb_start_pos[];
 extern LBSP lb_return_pos[];
@@ -71,7 +72,7 @@ void Lb_stage_load(int stage) {
     pl->work936 = 0;
     pl->work7ED = 0;
     if (game_w.stage == 0x4E) {
-        switch (*(s32 *)(cw + 0xBF3C) & 3) {
+        switch (*(s32 *)(cw + CW_OFS(0xBF3C)) & 3) {
         case 1:
             Set06_set(2);
             break;
@@ -102,7 +103,7 @@ void Lb_stage_load(int stage) {
             }
             break;
         case 0x4C:
-            p = &lb_start_pos[cw[0x35D1] % 8];
+            p = &lb_start_pos[cw[CW_OFS(0x35D1)] % 8];
             LBPLACE(pl, p);
             break;
         default:
@@ -112,11 +113,11 @@ void Lb_stage_load(int stage) {
     } else if (lb_sys.x71 == 0) {
         switch (stage) {
         case 0x4D:
-            if (cw[0x35D2] == 0) {
+            if (cw[CW_OFS(0x35D2)] == 0) {
                 p = &lb_start_pos[8];
                 LBPLACE(pl, p);
             } else {
-                p = &lb_return_pos[cw[0x35D1] % 4];
+                p = &lb_return_pos[cw[CW_OFS(0x35D1)] % 4];
                 LBPLACE(pl, p);
             }
             break;
@@ -261,7 +262,7 @@ void lb_check_status(void) {
     case 21:
         lb_sys.x68 = 0x16;
         lb_sys.x6C = 1;
-        cw[0x2C35] = 0;
+        cw[CW_OFS(0x2C35)] = 0;
         lb_sys.x06 = 0;
         break;
     case 22:
@@ -312,7 +313,7 @@ void lb_check_status(void) {
         break;
     case 29:
         q = *(s8 *)&mhRule + 1;
-        if (q > 1 && (*(u16 *)(cw + 0x32C6) + 1) == q) {
+        if (q > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) == q) {
             pNet[0xC] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
@@ -338,7 +339,7 @@ void lb_check_status(void) {
         break;
     case 48: {
         u8 *ri = Lbs_GetRoomInfo((s16)(ClassInfo[8] - 1));
-        if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + 0x32C6) + 1) < (s32)*(u16 *)(ri + 2)) {
+        if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) < (s32)*(u16 *)(ri + 2)) {
             pNet[0xC] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
@@ -418,7 +419,7 @@ void lb_check_status(void) {
             break;
         case 1:
             lb_sys.x68 = 0x17;
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             break;
         }
         break;
@@ -430,7 +431,7 @@ void lb_check_status(void) {
             break;
         case 1:
             lb_sys.x68 = 0x17;
-            SetDialogData_HTML(cw + 0x32D1);
+            SetDialogData_HTML(cw + CW_OFS(0x32D1));
             break;
         }
         break;
@@ -520,7 +521,7 @@ void lb_check_status(void) {
     case 16:
         v = Fade_busy_ck() & 0xFF;
         if (v != 1 && Lbs_LobbyExit(v) == 1) {
-            cw[0x35D5] = 0;
+            cw[CW_OFS(0x35D5)] = 0;
             SoftKeyboard_exit();
             Lbc_set_prim(0, 0, 0);
             To_EnterPlaza2Lobby();

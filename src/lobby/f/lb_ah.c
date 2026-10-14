@@ -1,5 +1,6 @@
 /* Lobby: lock-on angle zones and unique-action hint, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 void Lb_put_hint();
 int Event_flag_ck();
 void lb_target_angle(PLW *pl, u8 *tgt, u32 dir, u32 rng, u8 mode) {
@@ -174,7 +175,7 @@ int a;
                 if (lb_sys.x66 == 0x10) {
                     goto b21;
                 }
-                if (cw[0x35D6] != 0) {
+                if (cw[CW_OFS(0x35D6)] != 0) {
                     Lb_put_hint(0, 1);
                     return;
                 }
@@ -186,7 +187,7 @@ b21:
             break;
         case 26:
             if (lb_sys.x68 != 0x11) {
-                if (cw[0x35D6] == 0) {
+                if (cw[CW_OFS(0x35D6)] == 0) {
                     Lb_put_hint(0, 0x13);
                     return;
                 }

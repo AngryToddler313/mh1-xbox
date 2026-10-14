@@ -1,5 +1,6 @@
 /* Lobby: quest board (lb_select_quest, lb_set_questpage_info), hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern s8 key_quest_num;
 extern u8 *pNet;
 extern u8 lb_quest_info[];
@@ -136,7 +137,7 @@ void lb_set_questpage_info(void) {
     int secs;
     int i;
     int c;
-    if (cw[0x35D3] != 0) {
+    if (cw[CW_OFS(0x35D3)] != 0) {
         if ((u8)mhRule.quest >= 0xC8) {
             q = get_quest_info();
         } else {
@@ -332,7 +333,7 @@ void lb_select_quest_level_trans(void) {
     font_print_double((s16)(((LBS8 *)p)->x + (s16)s2), ((LBS8 *)p)->y, 1, (s16)s0);
     sp80.x -= s2;
     sp80.y += 0x30;
-    s0 = *(s8 *)(cw + 0x2C2F);
+    s0 = *(s8 *)(cw + CW_OFS(0x2C2F));
     s1 = -0xC;
     if (pNet[8] == (sx = get_questLevelNum()) + 1) {
     } else {

@@ -1,5 +1,6 @@
 /* lb_gad02 - near-match fixes 0x005D7D60-0x005D7E34: Lb_check_hotel. Whole file in lb_ad.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *St_unique_tbl[];
 extern u8 chatIDList[];
@@ -40,7 +41,7 @@ int Lb_check_hotel(int a) {
         return 0;
     }
     v = 1;
-    if (cw[0x35D7] & (1 << s0)) {
+    if (cw[CW_OFS(0x35D7)] & (1 << s0)) {
         return 2;
     }
     if ((s8)rank >= s0) {

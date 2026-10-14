@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern char tl_mail_tbl[];
 extern char lit_2316[];
 extern char lit_2316[];
@@ -47,12 +48,12 @@ void plaza_setMyCommentTrans(int arg0, s32 arg1, int arg2) {
     font_print(&lit_2316, F(int, &tl_mail_tbl, 8));
     temp_s1 = ( ((s16)((temp_s0 + 0xA)))) + 0x36;
     flfntLocate( ((s16)(temp_s1)), temp_s3_2);
-    font_print(&lit_2316, (s32)cw + 0x448);
+    font_print(&lit_2316, (s32)cw + CW_OFS(0x448));
     temp_s3_3 =  ((s16)((temp_s3_2 + 0x16)));
     flfntLocate( ((s16)((temp_s0 + 0xA))), temp_s3_3);
     font_print(&lit_2316, F(int, &tl_mail_tbl, 0xC));
     flfntLocate( ((s16)(temp_s1)), temp_s3_3);     /* (asm: a1 = the line's y) */
-    memcpy(sp70, (s32)cw + 0x440, 8);
+    memcpy(sp70, (s32)cw + CW_OFS(0x440), 8);
     han2zen(sp70, sp50);
     font_print(&lit_2316, sp50);
     var_s2 = Get_weapon_job(&D_3C738C) & 0xFF;

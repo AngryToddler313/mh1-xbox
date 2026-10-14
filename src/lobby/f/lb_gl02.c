@@ -17,7 +17,7 @@ void lb_goto_guest_room(PLW *pl, int no) {
     case 1:
         if (no == 0x55) {
             r = ran_suu(1);
-            CW8(0x35D8) = (r % 27) * 2;
+            CW8(CW_OFS(0x35D8)) = (r % 27) * 2;
         }
         t = &lbs_command_jmp[0xB3];
         Gold_add(-t[no]);

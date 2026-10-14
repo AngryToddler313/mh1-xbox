@@ -1,5 +1,6 @@
 /* lbc_login_init (0x5B74C0, login step machine). Logic complete; frame/layout match (-144). 257/267 instr differ only because st/stp land in a1/a2 instead of a0/a1: the original computes the stp address before the step load (a0 reused). Not built. */
 #include "lobby_a.h"
+#include "lbsys_g.h"
 extern s32 netr_ret;
 extern char text_lobby_trans_ot0[];
 extern char MediaVersion[];
@@ -46,8 +47,8 @@ void lbc_login_init(void) {
     u8 st;
     u8 *stp;
 
-    stp = cw + 0x2C34;
-    st = cw[0x2C34];
+    stp = cw + CW_OFS(0x2C34);
+    st = cw[CW_OFS(0x2C34)];
     switch (st) {
     case 0:
         all_reset();
@@ -55,10 +56,10 @@ void lbc_login_init(void) {
         Lbc_set_prim(text_lobby_trans_ot0, 0, 0);
         Lbs_load();
         netr_ret = 1;
-        cw[0x2C34]++;
-        cw[0x35EF] = 1;
-        *(s32 *)(cw + 0x35F0) = 0;
-        cw[0x2C08] = 1;
+        cw[CW_OFS(0x2C34)]++;
+        cw[CW_OFS(0x35EF)] = 1;
+        *(s32 *)(cw + CW_OFS(0x35F0)) = 0;
+        cw[CW_OFS(0x2C08)] = 1;
         memset(cw + 0x2C5C, 0, 0x31C);
         memset(cw + 0x35FE, 0, 0x1004);
         memset(cw + 0x4602, 0, 0x1004);
@@ -114,7 +115,7 @@ void lbc_login_init(void) {
         *stp = st + 1;
         F(s8, pNet, 0xC) = 2;
     case 2:
-        cw[0x2C34]++;
+        cw[CW_OFS(0x2C34)]++;
         F(s8, pNet, 0xC) = 1;
         memset(&lg, 0, 0x40);
         lg.x00 = 1;

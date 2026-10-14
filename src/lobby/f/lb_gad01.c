@@ -1,5 +1,6 @@
 /* lb_gad01 - near-match fixes 0x005D5B10-0x005D5B9C: CallBack_Result_SendChatMessageTU. Whole file in lb_ad.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *St_unique_tbl[];
 extern u8 chatIDList[];
@@ -41,7 +42,7 @@ long a;
         buf[0x11F] = 6;
         buf[0x11E] = 6;
         buf[0x11D] = 6;
-        if (cw[0x35D5] != 0) {
+        if (cw[CW_OFS(0x35D5)] != 0) {
             Lb_chat_receipt(buf);
             return;
         }

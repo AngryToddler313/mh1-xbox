@@ -1,5 +1,6 @@
 /* lb_v15 - hotel/guild help line 0x005CBF30-0x005CC584: Lb_put_help (room price lines, rule message, then lb_put_sprite). */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern char D_6EAE5A[];
 extern char D_6EAE78[];
 extern u8 room_price[];
@@ -116,7 +117,7 @@ u8 *a;
                 default:
                     flfntLocate(0x30, 0x1F);
                     if (lb_sys.x68 == 8 || lb_sys.x68 == 0x28) {
-                        if (F(u16, *(u8 **)((int)pl + 0x878), 2) != 6 || F(u8, cw, 0x32C5) != 0) {
+                        if (F(u16, *(u8 **)((int)pl + 0x878), 2) != 6 || F(u8, cw, CW_OFS(0x32C5)) != 0) {
                             if (PLU8(pl, 0x14) == 1) {
                                 return;
                             }

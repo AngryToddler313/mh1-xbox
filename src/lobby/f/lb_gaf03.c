@@ -1,5 +1,6 @@
 /* lb_gaf03 - near-match fixes 0x005D8C10-0x005D903C: vs_square_init_se. Whole file in lb_af.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern PLW player_work[];
 extern u8 *pNet;
 extern u8 D_32D471[];
@@ -137,7 +138,7 @@ int c;
                 if (Event_flag_ck(2) == 1 || Online_ck() == 1) {
                     lb_sys.x04 = 0xB;
                 } else {
-                    cw[0x2C08] = 1;
+                    cw[CW_OFS(0x2C08)] = 1;
                     fade_set(2);
                     lb_sys.x04 = 0;
                     lb_sys.x03 = 6;
@@ -145,7 +146,7 @@ int c;
             } else {
                 lb_sys.x04 = lb_sys.x04 + 1;
                 str_fadeout(0, 0xF);
-                *(s32 *)(cw + 0x2C4C) = 0xF;
+                *(s32 *)(cw + CW_OFS(0x2C4C)) = 0xF;
                 McOperationSet(9);
                 Lbc_set_prim(put_back, 0, 0);
             }
@@ -153,7 +154,7 @@ int c;
         }
         return;
     case 9: {
-        s32 *c2 = (s32 *)(cw + 0x2C4C);
+        s32 *c2 = (s32 *)(cw + CW_OFS(0x2C4C));
         int t = *c2;
         if (t != 0) {
             *c2 = t - 1;
@@ -178,7 +179,7 @@ int c;
     case 11:
         pNet[0x11] = 0;
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            cw[0x2C08] = 1;
+            cw[CW_OFS(0x2C08)] = 1;
             fade_set(2);
             lobby_bgm_set(game_w.stage);
             lb_sys.x04 = 0;

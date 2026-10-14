@@ -2,6 +2,7 @@
 #define flfntLocate flfntLocate_hdr
 #define DispDialogData DispDialogData_hdr
 #include "lbui.h"
+#include "lbsys_g.h"
 #undef flfntLocate
 #undef DispDialogData
 void flfntLocate(s16 x, s16 y);
@@ -27,7 +28,7 @@ void DispDialogData(void) {
     if (t >= 0x28) {
         dialogData.x06 = 0;
     }
-    if (dialogData.html == 1 && *(u8 *)(cw + 0x2C33) != 8) {
+    if (dialogData.html == 1 && *(u8 *)(cw + CW_OFS(0x2C33)) != 8) {
         Disp_back();
     }
     reload_tex(1, 0x157);
@@ -115,7 +116,7 @@ void DispDialogData(void) {
         }
     } else {
         nwDispStr_Html(100.0f, 60.0f, 1.0f, htmlStr);
-        if (*(u8 *)(cw + 0x2F6E) == 0) {
+        if (*(u8 *)(cw + CW_OFS(0x2F6E)) == 0) {
             Lb_put_inputMsgForHTML();
         }
     }

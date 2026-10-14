@@ -495,6 +495,7 @@ extern u8 lb_prim[];
 extern u8 ot2[], ot5[], ot6[], ot7[];
 int add_prim2();
 
+#ifndef VERSION_MHG
 void guild_trans_ot0(u8 *arg0) {
     u8 *var_s2;  /* was int *var_s2 */
     s32 temp_s0;
@@ -535,3 +536,4 @@ block_11:
         }
     }
 }
+#endif

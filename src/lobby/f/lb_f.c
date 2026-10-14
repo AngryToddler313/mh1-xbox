@@ -1,5 +1,6 @@
 /* Lobby: gold display, player init/load/release, timers (SLPM_654.95 lobby overlay 0x5CCFF0-). Whole file; runs split into lb_fNN.c */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 
 typedef unsigned __int128 u128;
 typedef struct LBQ20 { u128 q; f32 f; } LBQ20;
@@ -73,14 +74,14 @@ void Lb_pl_init(int a0) {
 
 #endif
 void Lb_player_load(PLW *pl) {
-    CW8(0x2C07) = 1;
+    CW8(CW_OFS(0x2C07)) = 1;
     pl_create_model(pl->id);
     armor_create_model(pl);
     yure_init(pl);
     pl_chr_set3(pl, 1, 0, 0, 0);
     pl_chr_set3(pl, 0x65, 0, 0, 1);
     parts_init(pl);
-    CW8(0x2C07) = 0;
+    CW8(CW_OFS(0x2C07)) = 0;
     cw[pl->id + 0x2BFE] = 1;
 }
 

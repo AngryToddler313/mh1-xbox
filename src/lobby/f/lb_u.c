@@ -1,5 +1,6 @@
 /* Lobby: guild (quest counter) state machine, hand-written from the m2c draft (SLPM_654.95 lobby overlay). */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern u8 lb_rule_exp[];
 extern u8 lb_pit[0xC];
 extern u8 lb_quest_info[0x40];
@@ -46,6 +47,7 @@ int Quest_clear_bit_ck();
 s8 lb_set_key_quest_local();
 void flMemset();
 extern u8 User_data[];
+#ifndef VERSION_MHG
 void Lb_guild(void) {
     PLW *pl;
     u8 *em;
@@ -67,7 +69,7 @@ void Lb_guild(void) {
         lb_rule_exp[0x194] = 0;
         a = em[0xE] * 4;
         *(s32 *)(lb_pit + 4) = *(s32 *)((u8 *)npc_dialog_table + a);
-        if (*(s8 *)(cw + 0x2C2F) != 0) {
+        if (*(s8 *)(cw + CW_OFS(0x2C2F)) != 0) {
             lb_quest_info[0x23] = *((u8 *)q + 0x1D);
         }
         lb_sys.x07 = 0;
@@ -91,7 +93,7 @@ void Lb_guild(void) {
             lb_sys.x68 = 5;
             return;
         }
-        cw[0x2C08] = 0;
+        cw[CW_OFS(0x2C08)] = 0;
         break;
     case 1:
         Lbc_init_network_work();
@@ -198,9 +200,9 @@ void Lb_guild(void) {
             if (*(s8 *)(lb_pit + 9) == 0) {
                 if (Lb_check_money(mhRule.quest) == 0) {
                     if (Online_ck() == 0) {
-                        cw[0x35D3] = 1;
-                        cw[0x32C5] = 1;
-                        D_3F360A[0] = cw[0x32C5];
+                        cw[CW_OFS(0x35D3)] = 1;
+                        cw[CW_OFS(0x32C5)] = 1;
+                        D_3F360A[0] = cw[CW_OFS(0x32C5)];
                         Lb_menu_quest_info(lb_quest_all[mhRule.quest]);
                         *(s32 *)lb_pit = 0;
                         lb_pit[8] = 4;
@@ -307,7 +309,7 @@ void Lb_guild(void) {
                 if (Online_ck() == 0) {
                     *(s32 *)lb_pit = 0;
                     lb_pit[8] = 3;
-                    cw[0x35D3] = 0;
+                    cw[CW_OFS(0x35D3)] = 0;
                     lb_sys.x06 = 0xD;
                     qq = lb_quest_all[mhRule.quest];
                     a = game_w.master;
@@ -324,7 +326,7 @@ void Lb_guild(void) {
                     }
                     goto b111;
                 }
-                if (cw[0x32C5] == 1) {
+                if (cw[CW_OFS(0x32C5)] == 1) {
                     lb_pit[9] = 1;
                     lb_pit[8] = 0xB;
                     *(s32 *)lb_pit = 0;
@@ -368,10 +370,10 @@ b111:
         break;
     case 17:
         if (Lbs_RoomExit() == 1) {
-            if (cw[0x32C5] == 1) {
+            if (cw[CW_OFS(0x32C5)] == 1) {
                 Lb_back_money();
                 quest_price = 0;
-                cw[0x32C5] = 0;
+                cw[CW_OFS(0x32C5)] = 0;
             }
             *(s32 *)lb_pit = 0;
             lb_pit[8] = 0xC;
@@ -392,7 +394,7 @@ b111:
             lb_sys.x68 = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
-            cw[0x2C08] = 1;
+            cw[CW_OFS(0x2C08)] = 1;
         }
         break;
     case 11:
@@ -426,10 +428,11 @@ b111:
             lb_sys.x68 = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
-            cw[0x2C08] = 1;
+            cw[CW_OFS(0x2C08)] = 1;
         }
     default:
         break;
     }
     lb_guild_talk();
 }
+#endif

@@ -27,6 +27,7 @@ void put_button_help(int a, int b, int c, u16 d);
 #include "lbui.h"
 #ifdef VERSION_MHG
 #include "lbdlg_g.h"
+#include "lbsys_g.h"
 #endif
 #undef flfntLocate
 #undef DispDialogData
@@ -601,7 +602,7 @@ void DispDialogData() {
     if (t >= 0x28) {
         dialogData.x06 = 0;
     }
-    if (dialogData.html == 1 && *(u8 *)(cw + 0x2C33) != 8) {
+    if (dialogData.html == 1 && *(u8 *)(cw + CW_OFS(0x2C33)) != 8) {
         Disp_back();
     }
     reload_tex(1, 0x157);
@@ -689,7 +690,7 @@ void DispDialogData() {
         }
     } else {
         nwDispStr_Html(100.0f, 60.0f, 1.0f, htmlStr);
-        if (*(u8 *)(cw + 0x2F6E) == 0) {
+        if (*(u8 *)(cw + CW_OFS(0x2F6E)) == 0) {
             Lb_put_inputMsgForHTML();
         }
     }
@@ -711,7 +712,7 @@ void DispSceneTitle() {
 
 void DispSceneSubTitle() {
     flfntSetSize(0x12, 0x12);
-    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + 0x2BFE) != 0) {
+    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + CW_OFS(0x2BFE)) != 0) {
         Draw_menu_square(0xD4, 0x30, 0xC0, 0x20, 0, 0);
         font_print_double(pSceneSubTitle->x, 0x38, 1, 0, pSceneSubTitle->s);
         return;

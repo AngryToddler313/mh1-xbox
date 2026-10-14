@@ -10,13 +10,13 @@ void Lb_shop_init_member()
     Lb_shop_tag_init();
     switch (lb_sys.x68) {
     case 0xA:
-        lbShop.tbl = material_shop_tbl[*(int *)((u8 *)cw + 0xBF3C) & 3];
+        lbShop.tbl = material_shop_tbl[*(int *)((u8 *)cw + CW_OFS(0xBF3C)) & 3];
         break;
     case 9:
-        lbShop.tbl = tool_shop_tbl[*(int *)((u8 *)cw + 0xBF3C) & 3];
+        lbShop.tbl = tool_shop_tbl[*(int *)((u8 *)cw + CW_OFS(0xBF3C)) & 3];
         break;
     case 0xC:
-        lbShop.tbl = foods_shop_tbl[*(int *)((u8 *)cw + 0xBF3C) & 3];
+        lbShop.tbl = foods_shop_tbl[*(int *)((u8 *)cw + CW_OFS(0xBF3C)) & 3];
         break;
     case 3:
         if (*(u8 *)0x3F3404 == 0x57) {
@@ -235,7 +235,7 @@ void lb_shop_tag_decide(void) {
                 break;
             }
             strcpy(sl->name, item_str[v]);
-            if (Online_ck() == 1 && *(u32 *)((u8 *)cw + 0xBF3C) >= 4 && lb_sys.x68 != 3) {
+            if (Online_ck() == 1 && *(u32 *)((u8 *)cw + CW_OFS(0xBF3C)) >= 4 && lb_sys.x68 != 3) {
                 sl->price = Item_data[v].buy >> 1;
             } else {
                 sl->price = Item_data[v].buy;
@@ -432,7 +432,7 @@ int CheckItemPrice_005AFEE0(id, qty)
 u16 id;
 s16 qty;
 {
-    if (*(u32 *)((u8 *)cw + 0xBF3C) >= 4 && lb_sys.x68 != 3) {
+    if (*(u32 *)((u8 *)cw + CW_OFS(0xBF3C)) >= 4 && lb_sys.x68 != 3) {
         if (*(s32 *)0x3C6FE0 < qty * (Item_data[id].buy >> 1)) {
             return 0;
         }

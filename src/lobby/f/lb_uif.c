@@ -25,6 +25,7 @@ extern struct { HLMSG *msg; int pos; int tick; } helpLineStr_c2;
 #define font_print_double_a3 font_print_double_hdr
 #define Draw_square_a3 Draw_square_hdr
 #include "lbui.h"
+#include "lbsys_g.h"
 #undef font_print_double_a3
 #undef Draw_square_a3
 void font_print_double_a3(int x, s16 y, int a, int b, char *s);
@@ -280,7 +281,7 @@ void DispNameAndIDonDialog(s16 y, char *name, char *id) {
     int y1;
     int y2;
 
-    if (*(u8 *)(cw + 0x2C5C) == 0 && *(u8 *)(cw + 0x2C31) != 5) {
+    if (*(u8 *)(cw + CW_OFS(0x2C5C)) == 0 && *(u8 *)(cw + CW_OFS(0x2C31)) != 5) {
         flfntSetSize(0x1C, 0x14);
         font_print_double_a3(0xEE, y, 1, 4, name);
         y1 = y;

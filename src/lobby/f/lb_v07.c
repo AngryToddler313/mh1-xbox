@@ -1,5 +1,6 @@
 /* lb_v07 - guild quest level list 0x005C8810-0x005C8D70: lb_select_quest_level_trans. Whole file in lb_x.c. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 extern s8 key_quest_num;
 extern u8 *pNet;
 extern u8 lb_quest_info[];
@@ -147,7 +148,7 @@ void lb_select_quest_level_trans(void) {
     py = &sp80.y;
     sp80.x -= xo2;
     *py += 0x30;
-    pal3 = (*(s8 *)(cw + 0x2C2F) != 0) ? 5 : 9;
+    pal3 = (*(s8 *)(cw + CW_OFS(0x2C2F)) != 0) ? 5 : 9;
     if (pNet[8] == (sx = get_questLevelNum()) + 1) {
         xo3 = -0xC;
     } else {

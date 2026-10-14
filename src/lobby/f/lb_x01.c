@@ -52,6 +52,7 @@ int Quest_clear_bit_ck();
 void guild_trans_ot0();
 extern u8 key_quest;
 
+#ifndef VERSION_MHG
 void lb_questpage_trans(int a) {
     int s3;
     int s2;
@@ -148,3 +149,4 @@ void lb_questpage_trans(int a) {
     }
     guild_trans_ot0(a);
 }
+#endif

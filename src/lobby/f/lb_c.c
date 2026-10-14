@@ -1,5 +1,6 @@
 /* Lobby: small helpers (SLPM_654.95 lobby overlay). Whole file; matching runs split into lb_cNN.c */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 
 void lb_rule_seet_trans_ot2(s32 *p) {
     if (SoftKeyboard_alive_check() != 0) {
@@ -9,18 +10,20 @@ void lb_rule_seet_trans_ot2(s32 *p) {
 }
 
 void Lb_Matching(void) {
-    u8 m = CW8(0x32C5);
+    u8 m = CW8(CW_OFS(0x32C5));
     if (m == 1) {
         Lbs_MatchStart(m);
     }
 }
 
+#ifndef VERSION_MHG
 int get_questLevelNum(void) {
     if (Online_ck() == 1) {
         return 6;
     }
     return 5;
 }
+#endif
 
 int Chk_lb_status(int n) {
     return lb_sys.x68 == n;

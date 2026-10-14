@@ -4,6 +4,7 @@
  * 257/267 instructions only differing by register choice; tk_logout_message_sub: src/lobby/b/nm; check_halfcode). */
 #include "lobby_a.h"
 #include "lbnet.h"
+#include "lbsys_g.h"
 char *strncpy();
 char *strcpy();
 
@@ -59,8 +60,8 @@ extern s8 D_3A6EA2;
 /* CallBackWaitInit is file-static in lb_cli.c: the same two stores */
 static void wait_init(void)
 {
-    *(s32 *)(cw + 0x35DC) = 0xE10;
-    *(s8 *)(cw + 0x35D9) = 0;
+    *(s32 *)(cw + CW_OFS(0x35DC)) = 0xE10;
+    *(s8 *)(cw + CW_OFS(0x35D9)) = 0;
 }
 
 typedef struct { u8 b10, b11, b12, b13; char ver[0x10]; s16 h[10]; } LFD;   /* 0x24 used + the two halves the asm also clears */
@@ -72,7 +73,7 @@ void lbc_login_init(void)
     LFD fd;
     CNET_LOGIN lg;
     s16 a = 0, b = 0, c = 0, d = 0;
-    u8 st = cw[0x2C34];
+    u8 st = cw[CW_OFS(0x2C34)];
 
     switch (st) {
     case 0:
@@ -81,10 +82,10 @@ void lbc_login_init(void)
         Lbc_set_prim((void *)text_lobby_trans_ot0, 0, 0);
         Lbs_load();
         netr_ret = 1;
-        cw[0x2C34]++;
-        cw[0x35EF] = 1;
-        *(s32 *)(cw + 0x35F0) = 0;
-        cw[0x2C08] = 1;
+        cw[CW_OFS(0x2C34)]++;
+        cw[CW_OFS(0x35EF)] = 1;
+        *(s32 *)(cw + CW_OFS(0x35F0)) = 0;
+        cw[CW_OFS(0x2C08)] = 1;
         memset(cw + 0x2C5C, 0, 0x31C);
         memset(cw + 0x35FE, 0, 0x1004);
         memset(cw + 0x4602, 0, 0x1004);
@@ -133,11 +134,11 @@ void lbc_login_init(void)
         pNet[0xC] = 1;
         break;
     case 1:
-        cw[0x2C34] = st + 1;
+        cw[CW_OFS(0x2C34)] = st + 1;
         pNet[0xC] = 2;
         /* fallthrough */
     case 2:
-        cw[0x2C34]++;
+        cw[CW_OFS(0x2C34)]++;
         pNet[0xC] = 1;
         memset(&lg, 0, sizeof lg);
         lg.x00[0] = 1;
@@ -175,7 +176,7 @@ s32 Lbc_GetRoomRule(void)
 {
     static u8 buf[0x2A000];             /* the PS2 keeps it on its 0x29520-byte stack frame (sp+0x70) */
     int room = cnLbc_CheckInFloorOrder(2) & 0xFFFF;
-    u8 *stp = cw + 0x2C35;
+    u8 *stp = cw + CW_OFS(0x2C35);
     int i, j, a, t;
     u8 *s, *d;
 
@@ -186,7 +187,7 @@ s32 Lbc_GetRoomRule(void)
     case 1:
         *stp = 2;
         wait_init();
-        cw[0x2C45] = 0x10;
+        cw[CW_OFS(0x2C45)] = 0x10;
         cnLBS_Read_RoomRuleAllocation(room, (int)(long)CallBack_Result_RuleAllocation);
         break;
     case 2:
@@ -194,8 +195,8 @@ s32 Lbc_GetRoomRule(void)
         break;
     case 3:
         *stp = 0;
-        cw[0x2C3A] = 0;
-        cw[0x32BF] = 1;
+        cw[CW_OFS(0x2C3A)] = 0;
+        cw[CW_OFS(0x32BF)] = 1;
         cnLBS_Get_RoomRuleAllocation(room, buf);
         memset(RoomRule, 0, 0x29555);
         RoomRule[0] = buf[0];
