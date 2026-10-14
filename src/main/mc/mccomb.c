@@ -2407,6 +2407,88 @@ CARDW *w;
     }
 }
 
+#ifdef VERSION_MHG
+/* G: ops 0xB-0xD are the MH1-hunter carry-over screens (func_002306C0 / func_00230390 / func_00231440), 0xE = op 1 */
+void func_002306C0(CARDW *);
+void func_00230390(CARDW *);
+void func_00231440(CARDW *);
+u8 McCardOperation(void)
+{
+    CARDW *w = &card_w;
+
+    font_set_stack_no(4);
+    *(s32 *)w->frame = 0;
+    w->csr_on = 0;
+    w->btn_on = 0;
+    w->pad = Psw[2];
+    w->held = Psw[0];
+    if (w->timer > 0) {
+        w->timer--;
+    }
+    switch (w->op) {
+    case 3:
+        CardCmsv(w);
+        w->frame[0] = 1;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 0:
+        CardAtld(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 14:
+    case 1:
+        CardOptsv(w);
+        if (w->rno > 1 && w->rno != 13) {
+            w->frame[0] = 1;
+        }
+        w->frame[1] = 2;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 6:
+    case 7:
+    case 8:
+    case 10:
+        CardOnsv1(w);
+        w->frame[0] = 3;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 2:
+        CardEasysv(w);
+        break;
+    case 5:
+    case 9:
+        CardOfsv0(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 4:
+        CardConld(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 11:
+        func_002306C0(w);
+        w->frame[0] = 2;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 12:
+        func_00230390(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 13:
+        func_00231440(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    default:
+        w->done = 1;
+        break;
+    }
+    font_set_stack_no(0);
+    McActMain();
+    if (w->done != 0) {
+        system_w[0x12] = 1;
+    }
+    return w->done;
+}
+#else
 u8 McCardOperation(void)
 {
     CARDW *w = &card_w;
@@ -2469,3 +2551,4 @@ u8 McCardOperation(void)
     }
     return w->done;
 }
+#endif
