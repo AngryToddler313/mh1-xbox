@@ -50,6 +50,7 @@ static struct {
     int depth;
     int pad_prev, hold_dir, hold_rep, close_wait;
     int frame_step, step_pending, r3_held;
+    int mask;                       /* buttons held when the menu closed: the game sees them only after a release */
     int freecam;
     /* the main page's values */
     int hp_pct_i, dmg_i;
@@ -129,6 +130,7 @@ static void do_close(void)
     if (!M.open)
         return;
     M.open = 0;
+    M.mask = 0xFFFF;
     audio_pause(0);
     rt_log("debug menu: closed");
 }
@@ -407,6 +409,8 @@ void dbgmenu_tick_pad(pad_state *ps)
     static int prev;
     if (M.step_pending > 0)
         M.step_pending--;
+    ps->bits &= (uint16_t)~M.mask;          /* the press that closed the menu (cross, circle, Enter = start) stays ours */
+    M.mask &= b;
     if (M.enabled && (b & COMBO) == COMBO && (prev & COMBO) != COMBO) {
         prev = b;
         ps->bits &= (uint16_t)~COMBO;       /* the game does not see the combo */

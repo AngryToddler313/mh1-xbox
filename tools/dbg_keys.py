@@ -6,7 +6,7 @@ per drawn frame and acts on a new press).
     python3 tools/dbg_keys.py "w60 open d5 x x r1 o w300"
 
 Words: open (Back + R3), uN / dN / lN / rN (N presses of the d-pad, N default 1), x (cross), o (circle),
-sq (square), l1, r1, st (start), wN (N idle ticks). Standard library only."""
+sq (square), l1, r1, r3 (a frame step), st (start), wN (N idle ticks). Standard library only."""
 import sys
 
 
@@ -19,7 +19,7 @@ def build(words):
     for t in words.split():
         if t == "open":
             press("select+r3")
-        elif t in ("l1", "r1"):
+        elif t in ("l1", "r1", "r3"):
             press(t)
         elif t[0] == "w" and t[1:].isdigit():
             out.append("idle*" + t[1:])
