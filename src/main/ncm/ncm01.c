@@ -33,6 +33,7 @@ void ncm_get_char_size_num(u8 *s, int *wide, int *narrow);
 s16 ncm_center_x(char *s, int size);
 void ncm_str_disp_sub(char *s, int x, int y, int col, int col2, int size);
 
+#if !defined(G_PART) || G_PART == 1
 u8 ncm_char_length(u8 *s) {
     u8 c = *s;
     u8 r = 0;
@@ -46,7 +47,9 @@ u8 ncm_char_length(u8 *s) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void ncm_get_char_size_num(u8 *s, int *wide, int *narrow) {
     int i;
 
@@ -64,7 +67,9 @@ void ncm_get_char_size_num(u8 *s, int *wide, int *narrow) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 s16 ncm_center_x(char *s, int size) {
     int wide = 0;
     int narrow = 0;
@@ -74,3 +79,4 @@ s16 ncm_center_x(char *s, int size) {
     half = size / 2;
     return (640 - size * wide - narrow * half) / 2;
 }
+#endif

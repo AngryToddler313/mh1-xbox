@@ -187,10 +187,13 @@ void Ncm_spr_kill2(int m);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 u8 *SoftKey_Getstr(void) {
     return SoftKeyWork + 4;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void SoftKey_onoff(int on) {
     switch (on & 0xFF) {
     case 0:
@@ -201,21 +204,30 @@ void SoftKey_onoff(int on) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void SoftKey_trans(void) {
     if (SoftKeyWork[0] == 1) {
         DispSoftkeyboard(1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Def_net_data_set(void) {
     memset(CNFile, 0, 0x1BEC);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Net_Fade_Sub(void) {
     /* empty */
 }
+#endif
 
+#if !defined(G_PART)
 void YnFile_Data_load(int a, int b) {
     load_file_mdl(b, a + 2313);
 }
+#endif

@@ -44,7 +44,7 @@ s16 Pl_trap_use_ck(PLW *pl) {
 }
 
 #endif
-#if !defined(G_PART)  /* G: game_w.x80 is at +0xD0 there (layout not mapped) */
+#if !defined(G_PART) || G_PART == 3
 void Pl_item_cnt_up(PLW *pl) {
     game_w.x80[pl->id]++;
 }

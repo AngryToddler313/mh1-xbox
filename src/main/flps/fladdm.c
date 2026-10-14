@@ -79,103 +79,142 @@ void flmatNormalize33(void *m);
     v[9] = -LF(0x108); \
     v[10] = -LF(0x10C);
 
+#if !defined(G_PART) || G_PART == 1
 static asm u32 *flPS2matMul(void *dst, void *a, void *b)
 {
 #include "flPS2matMul.inc"
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static asm u32 *flPS2matMul2(void *dst, void *tmp, void *a, void *b, void *c)
 {
 #include "flPS2matMul2.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *flPS2matNormalize33(void *dst, void *a)
 {
 #include "flPS2matNormalize33.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *flPS2matMulNormalize33(void *dst, void *a, void *b, void *c)
 {
 #include "flPS2matMulNormalize33.inc"
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static asm u32 *PS2SHADER_ADD_LIGHTVECD3(void *dst, void *m, void *v)
 {
 #include "PS2SHADER_ADD_LIGHTVECD3.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTVECP1(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECP1.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTVECP3(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECP3.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTVECD1P2(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD1P2.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTVECD2P1(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD2P1.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTVECD1P2_2(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD1P2_2.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTVECD2P1_2(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD2P1_2.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *flPS2SHADER_ADD_SVEC1(void *dst, void *a, void *b)
 {
 #include "flPS2SHADER_ADD_SVEC1.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *flPS2SHADER_ADD_SVEC2(void *dst, void *a, void *b)
 {
 #include "flPS2SHADER_ADD_SVEC2.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTCOL3(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTCOL3_2(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3_2.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTCOL3_3(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3_3.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_LIGHTCOL1(f32 s, void *dst, void *a)
 {
 #include "PS2SHADER_ADD_LIGHTCOL1.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_ADD_UVSCROLL(void *dst)
 {
 #include "PS2SHADER_ADD_UVSCROLL.inc"
 }
+#endif
 
+#if !defined(G_PART)
 static asm u32 *PS2SHADER_FLMATRIX_COPY(void *dst, u32 mask)
 {
 #include "PS2SHADER_FLMATRIX_COPY.inc"
 }
+#endif
 
 
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0000(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -210,7 +249,9 @@ void flPS2AddMatrix_0000(AMDL *m, u32 id, u32 n) {
     p[74] = 0;
     p[75] = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0001(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0xf30, 0x200000f2, 0x6cf00000)
@@ -229,19 +270,25 @@ void flPS2AddMatrix_0001(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
     TAIL(0xf20)
 }
+#endif
 
 /* original bytes kept: flPS2AddMatrix_0002 (near-match C in fladdm_nm.c), see config/c_rawfuncs.txt */
+#if !defined(G_PART)
 asm void flPS2AddMatrix_0002(void)
 {
 #include "flPS2AddMatrix_0002.inc"
 }
+#endif
 
 /* original bytes kept: flPS2AddMatrix_0003 (near-match C in fladdm_nm.c), see config/c_rawfuncs.txt */
+#if !defined(G_PART)
 asm void flPS2AddMatrix_0003(void)
 {
 #include "flPS2AddMatrix_0003.inc"
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0005(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -264,7 +311,9 @@ void flPS2AddMatrix_0005(AMDL *m, u32 id, u32 n) {
     p[46] = 0;
     p[47] = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0006(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -278,7 +327,9 @@ void flPS2AddMatrix_0006(AMDL *m, u32 id, u32 n) {
     FOG(0x120)
     TAIL(0x130)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0007(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -288,7 +339,9 @@ void flPS2AddMatrix_0007(AMDL *m, u32 id, u32 n) {
     FOG(0xb0)
     TAIL(0xc0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0008(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -302,7 +355,9 @@ void flPS2AddMatrix_0008(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 72);
     TAIL(0x150)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0009(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -312,7 +367,9 @@ void flPS2AddMatrix_0009(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 44);
     TAIL(0xe0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_000A(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -327,7 +384,9 @@ void flPS2AddMatrix_000A(AMDL *m, u32 id, u32 n) {
     FOG(0x150)
     TAIL(0x160)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_000B(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -338,7 +397,9 @@ void flPS2AddMatrix_000B(AMDL *m, u32 id, u32 n) {
     FOG(0xe0)
     TAIL(0xf0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_000C(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -351,13 +412,17 @@ void flPS2AddMatrix_000C(AMDL *m, u32 id, u32 n) {
     FOG(0x100)
     TAIL(0x110)
 }
+#endif
 
 /* original bytes kept: flPS2AddMatrix_000D (does not match as C yet, see config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 asm void flPS2AddMatrix_000D(void)
 {
 #include "flPS2AddMatrix_000D.inc"
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_000E(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -371,7 +436,9 @@ void flPS2AddMatrix_000E(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 60);
     TAIL(0x130)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_000F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -381,7 +448,9 @@ void flPS2AddMatrix_000F(AMDL *m, u32 id, u32 n) {
     p = flPS2matMul(p + 32, tmp, flPS2CLIPPROJ);
     TAIL(0xc0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0010(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -396,7 +465,9 @@ void flPS2AddMatrix_0010(AMDL *m, u32 id, u32 n) {
     FOG(0x130)
     TAIL(0x140)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0011(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -407,7 +478,9 @@ void flPS2AddMatrix_0011(AMDL *m, u32 id, u32 n) {
     FOG(0xc0)
     TAIL(0xd0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0012(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -422,7 +495,9 @@ void flPS2AddMatrix_0012(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 76);
     TAIL(0x160)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0013(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -433,7 +508,9 @@ void flPS2AddMatrix_0013(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 48);
     TAIL(0xf0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0014(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -449,7 +526,9 @@ void flPS2AddMatrix_0014(AMDL *m, u32 id, u32 n) {
     FOG(0x160)
     TAIL(0x170)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0015(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -461,7 +540,9 @@ void flPS2AddMatrix_0015(AMDL *m, u32 id, u32 n) {
     FOG(0xf0)
     TAIL(0x100)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0016(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -473,7 +554,9 @@ void flPS2AddMatrix_0016(AMDL *m, u32 id, u32 n) {
     FOG(0xc0)
     TAIL(0x110)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0017(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -486,7 +569,9 @@ void flPS2AddMatrix_0017(AMDL *m, u32 id, u32 n) {
     FOG(0xf0)
     TAIL(0x140)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0018(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -500,7 +585,9 @@ void flPS2AddMatrix_0018(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0x120) = flPS2VIEWPORT;
     TAIL(0x160)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0019(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -517,7 +604,9 @@ void flPS2AddMatrix_0019(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0x170) = flPS2VIEWPORT;
     TAIL(0x1b0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_001A(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -529,7 +618,9 @@ void flPS2AddMatrix_001A(AMDL *m, u32 id, u32 n) {
     FOG(0x100)
     TAIL(0x110)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_001B(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0x8d0, 0x2000008c, 0x6c8a0000)
@@ -539,7 +630,9 @@ void flPS2AddMatrix_001B(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_FLMATRIX_COPY(p + 48, *(u32 *)((u8 *)m + 0x54));
     TAIL(0x8c0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_001C(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -549,7 +642,9 @@ void flPS2AddMatrix_001C(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0xb0) = flPS2VIEWPORT;
     TAIL(0xf0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_001D(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -560,7 +655,9 @@ void flPS2AddMatrix_001D(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0xc0) = flPS2VIEWPORT;
     TAIL(0x100)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_001E(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0xf40, 0x200000f3, 0x6cf10000)
@@ -580,7 +677,9 @@ void flPS2AddMatrix_001E(AMDL *m, u32 id, u32 n) {
     FOG(0x120)
     TAIL(0xf30)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_001F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0xf70, 0x200000f6, 0x6cf40000)
@@ -600,7 +699,9 @@ void flPS2AddMatrix_001F(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0x120) = flPS2VIEWPORT;
     TAIL(0xf60)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0020(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0x8e0, 0x2000008d, 0x6c8b0000)
@@ -611,7 +712,9 @@ void flPS2AddMatrix_0020(AMDL *m, u32 id, u32 n) {
     FOG(0x40)
     TAIL(0x8d0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0021(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0xf60, 0x200000f5, 0x6cf30000)
@@ -631,7 +734,9 @@ void flPS2AddMatrix_0021(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
     TAIL(0xf50)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0022(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0x900, 0x2000008f, 0x6c8d0000)
@@ -642,7 +747,9 @@ void flPS2AddMatrix_0022(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_FLMATRIX_COPY(p + 60, *(u32 *)((u8 *)m + 0x54));
     TAIL(0x8f0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0023(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0x940, 0x20000093, 0x6c910000)
@@ -654,7 +761,9 @@ void flPS2AddMatrix_0023(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_FLMATRIX_COPY(p + 76, *(u32 *)((u8 *)m + 0x54));
     TAIL(0x930)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0024(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0x910, 0x20000090, 0x6c8e0000)
@@ -665,7 +774,9 @@ void flPS2AddMatrix_0024(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_FLMATRIX_COPY(p + 64, *(u32 *)((u8 *)m + 0x54));
     TAIL(0x900)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0025(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -676,7 +787,9 @@ void flPS2AddMatrix_0025(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0xc0) = flPS2VIEWPORT;
     TAIL(0x100)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0026(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -687,7 +800,9 @@ void flPS2AddMatrix_0026(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0xe0) = flPS2VIEWPORT;
     TAIL(0x120)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0027(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -699,7 +814,9 @@ void flPS2AddMatrix_0027(AMDL *m, u32 id, u32 n) {
     *(M64 *)PB(0xF0) = flPS2VIEWPORT;
     TAIL(0x130)
 }
+#endif
 
+#if !defined(G_PART)
 void *flPS2AddMatrix_0028(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -714,7 +831,9 @@ void *flPS2AddMatrix_0028(AMDL *m, u32 id, u32 n) {
     TAIL(0x110)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0029(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -739,7 +858,9 @@ void * flPS2AddMatrix_0029(AMDL *m, u32 id, u32 n) {
     TAIL(0x150)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_002A(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -765,7 +886,9 @@ void * flPS2AddMatrix_002A(AMDL *m, u32 id, u32 n) {
     TAIL(0x160)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_002B(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -791,7 +914,9 @@ void * flPS2AddMatrix_002B(AMDL *m, u32 id, u32 n) {
     TAIL(0x150)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_002C(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -828,7 +953,9 @@ void flPS2AddMatrix_002C(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x100));
     TAIL(0xF60)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_002D(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -865,7 +992,9 @@ void flPS2AddMatrix_002D(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_3(AMB, PB(0x100));
     TAIL(0xf50)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_002E(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -897,7 +1026,9 @@ void * flPS2AddMatrix_002E(AMDL *m, u32 id, u32 n) {
     TAIL(0x240)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_002F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -933,7 +1064,9 @@ void * flPS2AddMatrix_002F(AMDL *m, u32 id, u32 n) {
     TAIL(0x240)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0030(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -979,7 +1112,9 @@ void flPS2AddMatrix_0030(AMDL *m, u32 id, u32 n) {
     F(0x1cc) = LF(0x20);
     TAIL(0xfd0)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0031(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1032,7 +1167,9 @@ void flPS2AddMatrix_0031(AMDL *m, u32 id, u32 n) {
     F(0x1cc) = LF(0x88);
     TAIL(0xfd0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0032(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1068,7 +1205,9 @@ void * flPS2AddMatrix_0032(AMDL *m, u32 id, u32 n) {
     TAIL(0x250)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0033(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1121,7 +1260,9 @@ void flPS2AddMatrix_0033(AMDL *m, u32 id, u32 n) {
     F(0x1dc) = LF(0x88);
     TAIL(0xfe0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0034(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1148,7 +1289,9 @@ void * flPS2AddMatrix_0034(AMDL *m, u32 id, u32 n) {
     TAIL(0x190)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0035(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1186,7 +1329,9 @@ void flPS2AddMatrix_0035(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_3(AMB, PB(0x140));
     TAIL(0xf90)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0036(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1221,7 +1366,9 @@ void * flPS2AddMatrix_0036(AMDL *m, u32 id, u32 n) {
     TAIL(0x210)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0037(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1273,7 +1420,9 @@ void flPS2AddMatrix_0037(AMDL *m, u32 id, u32 n) {
     F(0x19c) = LF(0x88);
     TAIL(0xfa0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0038(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1306,7 +1455,9 @@ void * flPS2AddMatrix_0038(AMDL *m, u32 id, u32 n) {
     TAIL(0x280)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0039(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1353,7 +1504,9 @@ void flPS2AddMatrix_0039(AMDL *m, u32 id, u32 n) {
     F(0x20c) = LF(0x20);
     TAIL(0x1010)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_003A(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1390,7 +1543,9 @@ void * flPS2AddMatrix_003A(AMDL *m, u32 id, u32 n) {
     TAIL(0x280)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_003B(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1444,7 +1599,9 @@ void flPS2AddMatrix_003B(AMDL *m, u32 id, u32 n) {
     F(0x20c) = LF(0x88);
     TAIL(0x1010)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_003C(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1471,7 +1628,9 @@ void * flPS2AddMatrix_003C(AMDL *m, u32 id, u32 n) {
     TAIL(0x1a0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_003D(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1509,7 +1668,9 @@ void flPS2AddMatrix_003D(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x140));
     TAIL(0xfa0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_003E(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1534,7 +1695,9 @@ void * flPS2AddMatrix_003E(AMDL *m, u32 id, u32 n) {
     TAIL(0x150)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_003F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1570,7 +1733,9 @@ void flPS2AddMatrix_003F(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0xf0));
     TAIL(0xf50)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0040(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1597,7 +1762,9 @@ void * flPS2AddMatrix_0040(AMDL *m, u32 id, u32 n) {
     TAIL(0x170)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0041(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1635,7 +1802,9 @@ void flPS2AddMatrix_0041(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x110));
     TAIL(0xf70)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0042(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1663,7 +1832,9 @@ void * flPS2AddMatrix_0042(AMDL *m, u32 id, u32 n) {
     TAIL(0x1a0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0043(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1702,7 +1873,9 @@ void flPS2AddMatrix_0043(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x140));
     TAIL(0xfa0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0044(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1736,7 +1909,9 @@ void * flPS2AddMatrix_0044(AMDL *m, u32 id, u32 n) {
     TAIL(0x290)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0045(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1799,7 +1974,9 @@ void flPS2AddMatrix_0045(AMDL *m, u32 id, u32 n) {
     F(0x21c) = LF(0x20);
     TAIL(0x1030)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0046(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1828,7 +2005,9 @@ void * flPS2AddMatrix_0046(AMDL *m, u32 id, u32 n) {
     TAIL(0x1e0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0047(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1868,7 +2047,9 @@ void flPS2AddMatrix_0047(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x180));
     TAIL(0xfe0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0048(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1897,7 +2078,9 @@ void * flPS2AddMatrix_0048(AMDL *m, u32 id, u32 n) {
     TAIL(0x1e0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0049(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -1937,7 +2120,9 @@ void flPS2AddMatrix_0049(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x180));
     TAIL(0xfe0)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_004A(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1958,7 +2143,9 @@ void * flPS2AddMatrix_004A(AMDL *m, u32 id, u32 n) {
     TAIL(0x1a0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_004B(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -1978,7 +2165,9 @@ void * flPS2AddMatrix_004B(AMDL *m, u32 id, u32 n) {
     TAIL(0x190)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_004C(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -2007,7 +2196,9 @@ void * flPS2AddMatrix_004C(AMDL *m, u32 id, u32 n) {
     TAIL(0x1e0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_004D(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -2035,7 +2226,9 @@ void * flPS2AddMatrix_004D(AMDL *m, u32 id, u32 n) {
     TAIL(0x1d0)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_004E(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0xf70, 0x200000f6, 0x6cf40000)
@@ -2056,7 +2249,9 @@ void flPS2AddMatrix_004E(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 76);
     TAIL(0xf60)
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_004F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -2094,7 +2289,9 @@ void flPS2AddMatrix_004F(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x130));
     TAIL(0xf90)
 }
+#endif
 
+#if !defined(G_PART)
 void * flPS2AddMatrix_0050(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -2113,7 +2310,9 @@ void * flPS2AddMatrix_0050(AMDL *m, u32 id, u32 n) {
     TAIL(0x150)
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2AddMatrix_0051(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -2125,3 +2324,4 @@ void flPS2AddMatrix_0051(AMDL *m, u32 id, u32 n) {
     *(M64 *)((u8 *)p + 0xf0) = flPS2VIEWPORT;
     TAIL(0x130)
 }
+#endif

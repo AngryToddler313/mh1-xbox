@@ -32,10 +32,13 @@ int ListSelect();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 int Item_ok_chk(PLW *pl) {
     return *((u8 *)pl + 0x8F0) != 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Pit_shot_ok_chk(PLW *pl) {
     if (*((u8 *)pl + 0x8ED) != 0) {
         return 1;
@@ -45,3 +48,4 @@ int Pit_shot_ok_chk(PLW *pl) {
     }
     return 0;
 }
+#endif

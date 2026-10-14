@@ -55,6 +55,7 @@ typedef struct LOADQ {
 } LOADQ;
 extern LOADW load_w;
 extern LOADQ load_q[64];
+#if !defined(G_PART)
 void load_work_init(void) {
     int i;
 
@@ -63,6 +64,8 @@ void load_work_init(void) {
         load_q[i].kind = -1;
     }
 }
+#endif
+#if !defined(G_PART)
 void load_bin_req(u32 id, void *dst) {
     LOADQ *q = &load_q[load_w.wr];
     int n;
@@ -75,8 +78,10 @@ void load_bin_req(u32 id, void *dst) {
     load_w.wr = n;
     load_w.wr = n % 64;
 }
+#endif
 void next_que_set(LOADQ *q);
 void call_func(LOADQ *q);
+#if !defined(G_PART)
 void load_task(void) {
     LOADW *w = &load_w;
     LOADQ *q = &load_q[load_w.rd];
@@ -124,6 +129,8 @@ void load_task(void) {
     }
     }
 }
+#endif
+#if !defined(G_PART)
 void next_que_set(LOADQ *q) {
     LOADW *w = &load_w;
     int n;
@@ -136,11 +143,15 @@ void next_que_set(LOADQ *q) {
         w->busy = 0;
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 s8 load_busy_ck(void) {
     return load_w.busy;
 }
+#endif
 /* Calls the function queued as kind 2 (q->id holds the address, nargs picks how many of the four
    queued arguments are real; unused ones are passed along anyway). */
+#if !defined(G_PART) || G_PART == 1
 void call_func(LOADQ *q) {
     void (*f)() = (void (*)())q->id;
     s32 a = q->arg[0];
@@ -162,6 +173,7 @@ void call_func(LOADQ *q) {
         f(a, b, c, d);
     }
 }
+#endif
 typedef struct STRW {
     s32 stat;           /* 0x00 ADXT_GetStat result */
     s16 vol_max;        /* 0x04 option volume of the channel (adx_cnfvol_tbl) */
@@ -237,6 +249,7 @@ void SetOpeMode(int);
 void Eft_rendope_set(int);
 
 /* AFS file size in bytes (sectors * 0x800). */
+#if !defined(G_PART) || G_PART == 2
 int afs_file_length(u32 id) {
     u16 file = id;
     u16 part = id >> 16;
@@ -251,3 +264,4 @@ int afs_file_length(u32 id) {
     ADXF_Close(h);
     return n << 11;
 }
+#endif

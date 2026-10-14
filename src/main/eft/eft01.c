@@ -126,6 +126,7 @@ static void eft01_d(EFTW *ew);
 static void eft01_e(EFTW *ew);
 static void eft01_t(PRIM *pr);
 
+#if !defined(G_PART) || G_PART == 1
 static void eft01_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -142,7 +143,9 @@ static void eft01_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft01_i(EFTW *ew) {
     EFT01_WORK *w;
     s16 i;
@@ -189,7 +192,9 @@ static void eft01_i(EFTW *ew) {
     }
     eft01_m(ew);
 }
+#endif
 
+#if !defined(G_PART)
 static void eft01_m(EFTW *ew) {
     EFT01_WORK *w;
     s16 i;
@@ -246,7 +251,9 @@ static void eft01_m(EFTW *ew) {
     ew->prim->pos[2] = ew->pos[2];
     add_prim(ot0, ew->prim, 0x40, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft01_d(EFTW *ew) {
     EFT01_WORK *w;
     s16 i;
@@ -272,11 +279,15 @@ static void eft01_d(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft01_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft01_material_set(EFT01_CHR *chr, EFT_MAT *mats, CLAY *cl) {
     int i;
     EFT_MAT *mt;
@@ -287,7 +298,9 @@ static void eft01_material_set(EFT01_CHR *chr, EFT_MAT *mats, CLAY *cl) {
         flSetRenderState((u8)(i + 0x3A), (u32)mt);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSkinTransKKK(SKIN_NODE *node, u32 h) {
     FLMAT r;
     FLMAT m;
@@ -309,7 +322,9 @@ void SetSkinTransKKK(SKIN_NODE *node, u32 h) {
         SetSkinTransKKK(node->next, h);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft01_t(PRIM *pr) {
     f32 v[3];
     FLMAT mt;
@@ -434,7 +449,9 @@ static void eft01_t(PRIM *pr) {
     flSetRenderState(0x6C, 1);
     clay_attr_reset();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void eft01_set(EFT01_CHR *chr, s16 kind) {
     EFTW *ew;
 
@@ -460,3 +477,4 @@ void eft01_set(EFT01_CHR *chr, s16 kind) {
         }
     }
 }
+#endif

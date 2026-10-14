@@ -35,6 +35,7 @@ int load_file_mdl(void *, int);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void SetTrnslMode(int src, int dst) {
     if (system_w.src_mode != src || system_w.dst_mode != dst) {
         system_w.src_mode = src;
@@ -42,19 +43,25 @@ void SetTrnslMode(int src, int dst) {
         flSetRenderState(0x5E, src_mode_255[src] | dst_mode_256[dst]);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void SetFilterMode(int mode) {
     if (system_w.filter != mode) {
         system_w.filter = mode;
         flSetRenderState(0x63, filter_mode_265[mode]);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void SetTextureStage(int n) {
     system_w.tex_stage = n;
     flSetRenderState(4, mem_tex[n]);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void InitRenderState(int soft) {
     f32 far_ = 20000.0f;
     f32 near_ = 30000.0f;
@@ -80,14 +87,18 @@ void InitRenderState(int soft) {
     flSetRenderState(0xD, 0);
     flSetRenderState(0x60, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void SetOpeMode(int mode) {
     if (system_w.ope != mode) {
         system_w.ope = mode;
         flSetRenderState(0xD, ope_mode_287[mode]);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void ot_init(void) {
     plplInit(0x40, ot0);
     plplInit(0x20, ot1);
@@ -99,3 +110,4 @@ void ot_init(void) {
     plplInit(1, ot7);
     plplInit(1, ot8);
 }
+#endif

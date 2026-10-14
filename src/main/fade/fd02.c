@@ -39,6 +39,7 @@ void flps0D00(void *);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void fade_draw(void) {
     f32 t;
     f32 q[9];
@@ -63,7 +64,9 @@ void fade_draw(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void fade_set(int n) {
     FADE_W *w = &fade_w;
     FADE_ENT *e;
@@ -84,10 +87,13 @@ void fade_set(int n) {
     w->cur = w->req;
     w->alpha = fade_data[w->cur - 1].start;
 }
+#endif
 
+#if !defined(G_PART)
 void fade_reset(void) {
     fade_w.state = 0;
     fade_w.req = 0;
     fade_w.ent = 0;
     fade_w.prev = 0;
 }
+#endif

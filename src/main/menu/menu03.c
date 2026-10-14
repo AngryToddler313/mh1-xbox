@@ -137,6 +137,7 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART) || G_PART == 1
 void menu_init(void) {
     lpPit->x05 = 1;
     lpPit->x40 = 0;
@@ -149,8 +150,10 @@ void menu_init(void) {
     }
     lpPit->x84 = 0;
 }
+#endif
 
 /* Main pit menu: x40 0 = choose entry, 1 = run the entry's move function. */
+#if !defined(G_PART)
 void menu_move(int sw) {
     int r;
     int a;
@@ -229,3 +232,4 @@ void menu_move(int sw) {
         break;
     }
 }
+#endif

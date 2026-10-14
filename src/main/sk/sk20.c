@@ -8,6 +8,7 @@ void reload_tex(int, int);
 void SetTextureStage(int);
 void SetTrnslMode(int, int);
 
+#if !defined(G_PART)
 void Reibun_print(u8 n, char *src) {
     char buf[0x30];
     int cnt;
@@ -35,19 +36,27 @@ void Reibun_print(u8 n, char *src) {
     *p = 0;
     font_print_uf(buf);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void SoftkeyAppInit(void) {
 }
+#endif
 
+#if !defined(G_PART)
 void SoftkeyLoad(void) {
     mkTexture(4, 0x11C, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void SoftkeyTextureSet(void) {
     reload_tex(1, 0x11C);
     SetTextureStage(0x11C);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetBlendingMode(int mode) {
     if (mode != 1) {
         SetTrnslMode(4, 5);
@@ -55,3 +64,4 @@ void SetBlendingMode(int mode) {
         SetTrnslMode(4, 1);
     }
 }
+#endif

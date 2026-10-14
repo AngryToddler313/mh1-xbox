@@ -44,6 +44,7 @@ f32 flPS2ConvScreenFZ(f32);
 #define SET_RGBAQ(r, g, b, a, q) ((u64)(r) | ((u64)(g) << 8) | ((u64)(b) << 16) | ((u64)(a) << 24) | ((u64)(q) << 32))
 #define SET_XYZ(x, y, z) ((u64)(x) | ((u64)(y) << 16) | ((u64)(z) << 32))
 
+#if !defined(G_PART)
 int flPS2psAddQueue(u32 *p) {
     int n;
     u64 buf;
@@ -59,7 +60,9 @@ int flPS2psAddQueue(u32 *p) {
     flPS2DmaAddQueue2(0, t, buf, flPs2VIF1Control);
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int flPS2CheckGSClip(f32 x, f32 y, f32 z) {
     if (flViewportCX + flViewportLX < x) {
         return 0;
@@ -81,12 +84,14 @@ static int flPS2CheckGSClip(f32 x, f32 y, f32 z) {
     }
     return 1;
 }
+#endif
 
 typedef struct LINEF {
     s16 x0, y0, x1, y1;
     u32 col;
 } LINEF;
 
+#if !defined(G_PART)
 int flps0002(LINEF *q) {
     u32 c;
     s16 x;
@@ -115,7 +120,9 @@ int flps0002(LINEF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int flps0004(LINEF *q) {
     u32 c;
     s16 x;
@@ -138,6 +145,7 @@ int flps0004(LINEF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 typedef struct SPRG {
     s16 x0, y0, x1, y1;
@@ -147,6 +155,7 @@ typedef struct SPRG {
 #define RGBAQ_OF(c) SET_RGBAQ(((c) >> 16) & 0xFF, ((c) >> 8) & 0xFF, (c) & 0xFF, ((c) >> 24) & 0xFF, 1)
 #define XYZ_OF(x, y) SET_XYZ((PS2S(int, 0x3A4) + (x)) << 4, (PS2S(int, 0x3A8) + (y)) << 4, (u32)PS2S(f32, 0x44))
 
+#if !defined(G_PART)
 int flps0005(SPRG *q) {
     u32 c;
     s16 x0;
@@ -179,6 +188,7 @@ int flps0005(SPRG *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 #define SET_UV(u, v) ((u64)(u) | ((u64)(v) << 16))
 
@@ -188,6 +198,7 @@ typedef struct SPR2TF {
     s16 u0, v0, u1, v1;
 } SPR2TF;
 
+#if !defined(G_PART)
 int flps0008(SPR2TF *q) {
     u32 c;
     s16 x;
@@ -216,12 +227,14 @@ int flps0008(SPR2TF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 typedef struct TRIF {
     s16 x0, y0, x1, y1, x2, y2;
     u32 col;
 } TRIF;
 
+#if !defined(G_PART)
 int flps0009(TRIF *q) {
     u32 c;
     s16 x;
@@ -247,6 +260,7 @@ int flps0009(TRIF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 typedef struct TRITF {
     s16 x0, y0, x1, y1, x2, y2;
@@ -254,6 +268,7 @@ typedef struct TRITF {
     s16 u0, v0, u1, v1, u2, v2;
 } TRITF;
 
+#if !defined(G_PART)
 int flps000C(TRITF *q) {
     u32 c;
     s16 x;
@@ -287,6 +302,7 @@ int flps000C(TRITF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 #define XYZF_OF(x, y, z) SET_XYZ((int)((f32)PS2S(int, 0x3A4) + (x)) << 4, (int)((f32)PS2S(int, 0x3A8) + (y)) << 4, (u32)(z))
 
@@ -298,6 +314,7 @@ typedef struct SPR3DF {
     u32 col;
 } SPR3DF;
 
+#if !defined(G_PART)
 int flps0D00(SPR3DF *q) {
     u32 c;
     f32 x;
@@ -323,6 +340,7 @@ int flps0D00(SPR3DF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 #define SET_ST(s, t) ((u64)(s) | ((u64)(t) << 32))
 
@@ -333,6 +351,7 @@ typedef struct SPR3DTF {
     f32 s0, t0, s1, t1;
 } SPR3DTF;
 
+#if !defined(G_PART)
 int flps0F00(SPR3DTF *q) {
     u32 c;
     f32 x;
@@ -374,6 +393,7 @@ int flps0F00(SPR3DTF *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 typedef struct SPR3DM {
     f32 v0[3];
@@ -381,6 +401,7 @@ typedef struct SPR3DM {
     u32 col;
 } SPR3DM;
 
+#if !defined(G_PART)
 int flps1300(SPR3DM *q) {
     u32 c;
     f32 x;
@@ -414,6 +435,7 @@ int flps1300(SPR3DM *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 typedef struct SPR3DMT {
     f32 v0[3];
@@ -422,6 +444,7 @@ typedef struct SPR3DMT {
     f32 s0, t0, s1, t1;
 } SPR3DMT;
 
+#if !defined(G_PART)
 int flps1400(SPR3DMT *q) {
     u32 c;
     f32 x;
@@ -463,6 +486,7 @@ int flps1400(SPR3DMT *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif
 
 typedef struct TRI3DTG {
     f32 v0[3];
@@ -472,6 +496,7 @@ typedef struct TRI3DTG {
     f32 st[3][2];
 } TRI3DTG;
 
+#if !defined(G_PART)
 int flps1600(TRI3DTG *q) {
     u32 c;
     f32 x;
@@ -526,3 +551,4 @@ int flps1600(TRI3DTG *q) {
     flPS2psAddQueue((u32 *)0x70000000);
     return 1;
 }
+#endif

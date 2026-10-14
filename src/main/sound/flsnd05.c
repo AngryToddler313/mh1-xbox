@@ -22,6 +22,7 @@ void FlushCache(int);
 void sceGsSyncV(int);
 void *memset(void *, int, unsigned int);
 
+#if !defined(G_PART)
 void flSndModuleInit(void)
 {
     flPS2IopModuleLoad(lit_190_003671F0, 0, 0, 0);
@@ -29,7 +30,9 @@ void flSndModuleInit(void)
     flPS2IopModuleLoad(lit_192_00367240, 0, 0, 0);
     flPS2IopModuleLoad(lit_193_00367270, 0, 0, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flSndInitialize(void)
 {
     SdrInit();
@@ -37,11 +40,14 @@ void flSndInitialize(void)
     SdrSendReq(0);
     memset(tsb2, 0, 0x800);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flSndControll(void)
 {
     SdrSendReq();
 }
+#endif
 
 typedef struct SNDPACK {
     u8 x00[8];
@@ -57,6 +63,7 @@ typedef struct SNDPACK {
 
 int SdrDmaLoadReq(u32, void *, int, void *, int, void *, int);
 
+#if !defined(G_PART) || G_PART == 1
 int flSndPackLoadSub(void *pack, u32 bank)
 {
     s8 *p;
@@ -99,7 +106,9 @@ int flSndPackLoadSub(void *pack, u32 bank)
     SdrSendReq(1);
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flSndPackLoad(SNDPACK *pack, u32 bank)
 {
     int r;
@@ -116,7 +125,9 @@ int flSndPackLoad(SNDPACK *pack, u32 bank)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flSndPackLoadBG(SNDPACK *pack, u32 bank)
 {
     int r;
@@ -127,7 +138,9 @@ int flSndPackLoadBG(SNDPACK *pack, u32 bank)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flSndPackLoadStatus(void)
 {
     int r = SdrChkSendReq(1);
@@ -136,3 +149,4 @@ int flSndPackLoadStatus(void)
     }
     return SdrGetState(0x8000000C, 1);
 }
+#endif

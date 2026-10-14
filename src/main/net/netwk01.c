@@ -187,10 +187,13 @@ void Ncm_spr_kill2(int m);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void network_work_init(void) {
     memset(&net_common_w, 0, 0x94);
 }
+#endif
 
+#if !defined(G_PART)
 int ms_network_sub(void) {
     int ret = 0;
     int r;
@@ -339,7 +342,9 @@ int ms_network_sub(void) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 int ms_network_init(void) {
     int ret = 0;
 
@@ -377,7 +382,9 @@ int ms_network_init(void) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int ms_network_save_game(void) {
     int ret = 0;
 
@@ -439,3 +446,4 @@ int ms_network_save_game(void) {
     }
     return ret;
 }
+#endif

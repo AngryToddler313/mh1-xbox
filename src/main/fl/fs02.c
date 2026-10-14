@@ -45,22 +45,31 @@ void flPS2SystemTmpBuffFlush(void);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 int flAllocMemory(int n) {
     return fmsAllocMemory(flFMS, n, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flGetFrame(int out) {
     return fmsGetFrame(flFMS, 0, out);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flReleaseFrame(int n) {
     fmsReleaseFrame(flFMS, n);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flAllocMemoryS(int n) {
     return fmsAllocMemory(flFMS, n, 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flPS2GetSystemMemoryHandle(int size, int sys) {
     int h = mflRegisterS(size);
 
@@ -73,21 +82,29 @@ int flPS2GetSystemMemoryHandle(int size, int sys) {
     }
     return h;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2ReleaseSystemMemory(int h) {
     mflRelease(h);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *flPS2GetSystemBuffAdrs(int h) {
     return mflRetrieve(h);
 }
+#endif
 
+#if !defined(G_PART)
 void flCompact(void) {
     flPS2DmaTerminate();
     mflCompact();
     flPS2ClayRetouchMaterialTag();
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2SystemTmpBuffInit(void) {
     int i;
     int *s = (int *)&flPs2State;
@@ -98,3 +115,4 @@ void flPS2SystemTmpBuffInit(void) {
     }
     flPS2SystemTmpBuffFlush();
 }
+#endif

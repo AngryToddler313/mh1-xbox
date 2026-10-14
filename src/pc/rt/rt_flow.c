@@ -12,6 +12,7 @@
  * reload) do PS2 file/IOP work the host does its own way; their callees
  * here are weak no-ops that say so once (RT_TRACE=1).
  */
+#include "gwx.h"
 #include "rt.h"
 #include "types.h"
 extern u8 game_w[];   /* +0: mode (no game header here: the no-ops below are K&R) */
@@ -54,11 +55,11 @@ int rt_flow_tick(void)
     static u32 last = 0xFFFFFFFF;
     static int tick;
     int m = game_w[0];
-    u32 st = game_w[0] | game_w[1] << 8 | game_w[0xD5] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24 ^ (u32)*(s16 *)(quest_w + 0x30) * 0x9E3779B1u ^ (u32)*(s16 *)(quest_w + 0x32) * 0x85EBCA6Bu;
+    u32 st = game_w[0] | game_w[1] << 8 | game_w[GWX(0xD5)] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24 ^ (u32)*(s16 *)(quest_w + 0x30) * 0x9E3779B1u ^ (u32)*(s16 *)(quest_w + 0x32) * 0x85EBCA6Bu;
     tick++;
     {   /* the debug log: mode / stage / quest changes (quest id = select_w+0xAC) */
         extern u8 select_w[];
-        rt_log_game(m, game_w[1], game_w[0x14], select_w[0xAC], game_w[0xD5]);
+        rt_log_game(m, game_w[1], game_w[0x14], select_w[0xAC], game_w[GWX(0xD5)]);
     }
     rt_font_tick_begin();       /* the text of the previous tick is replaced */
     rt_prims_reset();           /* ot_init */
@@ -85,7 +86,7 @@ int rt_flow_tick(void)
         old_gold = g;
     }
     if (getenv("RT_QUEST_TRACE") && game_w[0] == 5 && game_w[1] == 1 && st != last) {   /* the reward list (game_w+0x128) */
-        s16 *r = (s16 *)(game_w + 0x128);
+        s16 *r = (s16 *)(game_w + GWX(0x128));
         int i;
         fprintf(stderr, "rt_flow: rewards:");
         for (i = 0; i < 32; i++)
@@ -95,7 +96,7 @@ int rt_flow_tick(void)
     }
     if (getenv("RT_QUEST_TRACE") && st != last) {   /* mode, step, game_w+0xD5, quest_w x00/x01/x06 */
         fprintf(stderr, "rt_flow: tick %d mode %d step %d D5 %d quest x00 %d x01 %d x06 %d time %d monsters %d kills left %d x %d, %d x %d\n",
-                tick, game_w[0], game_w[1], game_w[0xD5], (s8)quest_w[0], (s8)quest_w[1], (s8)quest_w[6],
+                tick, game_w[0], game_w[1], game_w[GWX(0xD5)], (s8)quest_w[0], (s8)quest_w[1], (s8)quest_w[6],
                 *(s32 *)(quest_w + 0x10), *(s16 *)(quest_w + 0x34),
                 *(s16 *)(quest_w + 0x30), *(s16 *)(quest_w + 0x2C), *(s16 *)(quest_w + 0x32), *(s16 *)(quest_w + 0x2E));
         last = st;

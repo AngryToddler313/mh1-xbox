@@ -21,19 +21,26 @@ f32 flSqrt(f32);
 void flBeginRender(void);
 void flEndRender(void);
 
+#if !defined(G_PART) || G_PART == 1
 void system_w_init(void) {
     memset(system_w, 0, 0x80);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void system_error(void) {
 }
+#endif
 
+#if !defined(G_PART)
 void init_ran_suu(void) {
     Rnd_w[0] = rtcDate[1];
     Rnd_w[1] = rtcDate[1];
 }
+#endif
 
 /* Tiny linear congruential generator, one state per stream n. */
+#if !defined(G_PART) || G_PART == 2
 int ran_suu(int n) {
     u32 r;
     u32 v;
@@ -47,7 +54,9 @@ int ran_suu(int n) {
     *p = r;
     return r & 0xFFFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void init_std_rate(void) {
     int i;
 
@@ -59,11 +68,15 @@ void init_std_rate(void) {
         std_rate_all += std_rate_tbl[i];
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void sprite_work_init(void) {
     memset(sprite_w, 0, 0x100);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void sprite_work_free(s16 n) {
     s8 *p = (s8 *)&sprite_w[n * 4];
 
@@ -71,7 +84,9 @@ void sprite_work_free(s16 n) {
         *p = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void all_sprite_free(void) {
     s16 i;
 
@@ -79,7 +94,9 @@ void all_sprite_free(void) {
         sprite_work_free(i);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void render_start(void) {
     flBeginRender();
     reload_tex_total = 0;
@@ -87,8 +104,11 @@ void render_start(void) {
     reload_tex_num = -1;
     render_flag++;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void render_end(void) {
     flEndRender();
     render_flag--;
 }
+#endif

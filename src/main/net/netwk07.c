@@ -187,14 +187,19 @@ void Ncm_spr_kill2(int m);
 
 
 
+#if !defined(G_PART)
 void Net_put_overlay_data(int n) {
     Load_overlay(n & 0xFF, 2);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int NetLoadWait(void) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int Net_kb_input_sub(void) {
     int r = 0;
 
@@ -204,3 +209,4 @@ int Net_kb_input_sub(void) {
     }
     return r;
 }
+#endif

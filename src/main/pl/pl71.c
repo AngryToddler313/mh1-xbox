@@ -43,11 +43,15 @@ u8 Get_weapon_job2(u8 kind, u16 id) {
         return Battle_type[Ken_data[id].type];
     }
     if (kind == 7) {
+#ifdef VERSION_MHG
+        return Battle_type[Gun_data[id].type];   /* G: no type-5 special case */
+#else
         j = Battle_type[Gun_data[id].type];
         if (j == 5) {
             j = 1;
         }
         return j;
+#endif
     }
     return 0;
 }

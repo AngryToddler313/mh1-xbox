@@ -1,4 +1,5 @@
 /* emsrch03 - monster effect prim set-up and area lookup (SLPM_654.95 0x0010B6C0-0x0010B7E8): em_effect_pull, Em_max_parts_get, Em_area_ck. */
+#include "version.h"
 #include "types.h"
 #include "em.h"
 #include "pl.h"
@@ -28,7 +29,7 @@ void em_effect_pull(void) {
     s16 i;
     EMP *e;
 
-    for (i = 0, e = (EMP *)em_work; i < 20; i++, e = (EMP *)((u8 *)e + 0xA10)) {
+    for (i = 0, e = (EMP *)em_work; i < 20; i++, e = (EMP *)((u8 *)e + EMW_STRIDE)) {
         if (e->on != 0) {
             e->vt->init((EMW *)e);
             e->prim_no = get_prim();

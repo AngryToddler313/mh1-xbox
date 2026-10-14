@@ -82,16 +82,21 @@ s32 Game_clear_ck(s32);
 void cam_plEX_fishing(CAMW *, CAMS *, CAMFISH *);
 void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
+#if !defined(G_PART)
 void CameraWorkInit(void) {
     flMemset(&CameraWork, 0, sizeof(CAMW));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Q_camera_init(void) {
     CameraWork.demo_req = 0;
     CameraWork.demo_arg = 0;
     CameraWork.zoom = 2;
 }
+#endif
 
+#if !defined(G_PART)
 void CameraInit(void) {
     CameraWork.init.w = 0;
     CameraWork.qk[1].on = 0;
@@ -100,3 +105,4 @@ void CameraInit(void) {
     CameraWork.pl = &player_work[game_w.master];
     StageCamInit(&CameraWork, game_w.master);
 }
+#endif

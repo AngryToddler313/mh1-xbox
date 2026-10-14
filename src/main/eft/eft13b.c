@@ -88,6 +88,7 @@ s16 eft13_set_pos_em(f32 *pos, EFT13_CHR *chr, s16 j, int arg);
 void eft13_set_sub_em(EFT13_CHR *chr, s16 j, int arg, EFTW *ew);
 s8 eft13_water_set(EFT13_CHR *chr, f32 *pos, s16 kind, f32 scale);
 
+#if !defined(G_PART) || G_PART == 1
 void eft13_d(EFTW *ew) {
     s16 n;
     s16 i;
@@ -101,11 +102,15 @@ void eft13_d(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void eft13_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART)
 void eft13_t(PRIM *pr) {
     u8 r;
     u8 g;
@@ -292,7 +297,9 @@ void eft13_t(PRIM *pr) {
         SetFilterMode(1);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void eft13_se_req(EFTW *ew) {
     switch (ew->arg) {
     case 0x1A:
@@ -300,7 +307,9 @@ void eft13_se_req(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s16 eft13_water_ck(EFT13_CHR *chr, f32 *pos, s16 arg) {
     s16 *flag = &eft13_water_flag[arg];
     f32 h;
@@ -327,7 +336,9 @@ s16 eft13_water_ck(EFT13_CHR *chr, f32 *pos, s16 arg) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft13_set_sub(EFT13_CHR *chr, s16 j, int arg, EFTW *ew) {
     FLMAT m;
 
@@ -364,4 +375,5 @@ void eft13_set_sub(EFT13_CHR *chr, s16 j, int arg, EFTW *ew) {
     }
     ew->owner = (EMW *)chr;
 }
+#endif
 

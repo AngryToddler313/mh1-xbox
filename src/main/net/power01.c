@@ -44,6 +44,7 @@ typedef struct THREAD_PARAM {
     s32 pad[6];
 } THREAD_PARAM;
 
+#if !defined(G_PART) || G_PART == 1
 int ps2HddPowerOffSet()
 {
     int sema;
@@ -64,7 +65,9 @@ int ps2HddPowerOffSet()
     sceCdPOffCallback(PowerOffHandler, sema);
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void PowerOffThread()
 {
     int sp1C;
@@ -90,8 +93,11 @@ void PowerOffThread()
     do {
     } while (!sceCdPowerOff(&sp1C) || sp1C != 0);
 }
+#endif
 
+#if !defined(G_PART)
 void PowerOffHandler()
 {
     iSignalSema();
 }
+#endif

@@ -54,6 +54,7 @@ typedef struct STW {
     s16 first;                  /* 0x38 first slot */
 } STW;
 extern STW stage_work;
+#if !defined(G_PART) || G_PART == 1
 void release_stage_model(void) {
     s16 i;
     s16 t;
@@ -81,6 +82,8 @@ void release_stage_model(void) {
         }
     }
 }
+#endif
+#if !defined(G_PART)
 void set_create_model(int n) {
     int h;
     int off = n * 4;
@@ -99,6 +102,7 @@ void set_create_model(int n) {
         set_mdlw = 0;
     }
 }
+#endif
 typedef struct GWM {            /* game_w: monster model bookkeeping, 4 slots */
     u8 _pad00[0x28];
     u8 em_kind[4];              /* 0x28 monster kind per slot, 0 = none */

@@ -24,13 +24,16 @@ void mcsls_syssend_command_drop2(int a, int b);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void mcsls_syssend_command_drop2(int a, int b) {
     CCnNetMsg_CnWriteU16(&app_recv_que, 0xF003);
     CCnNetMsg_CnWriteU8(&app_recv_que, 1);
     CCnNetMsg_CnWriteU8(&app_recv_que, a);
     CCnNetMsg_CnWriteU8(&app_recv_que, b);
 }
+#endif
 
+#if !defined(G_PART)
 int mcsls_get_error_code(void) {
     if (mcsls_w.crit != 0 || mcsls_w.code != 0) {
         if (mcsls_w.crit != 0) {
@@ -40,12 +43,16 @@ int mcsls_get_error_code(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void mcsls_critical_error(int code) {
     mcsls_set_error(6, code, 0);
     mcsls_w.crit = code;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void mcsls_force_drop(u32 n) {
     if (n < (u8)mcsls_w.num && n != mcsls_w.me) {
         if (mcsls_w.pl[n].alive != 0) {
@@ -56,7 +63,10 @@ void mcsls_force_drop(u32 n) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u16 mcsls_get_ping_ave(int n) {
     return mcsls_w.pl[n].ping_ave;
 }
+#endif

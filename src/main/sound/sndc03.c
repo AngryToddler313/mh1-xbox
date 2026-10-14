@@ -71,6 +71,7 @@ extern s8 *Snd_armor_tbl[];
 
 /* w is the character work (PLW or EMW): +0x02 kind (EMW), +0x0C u16 side, +0x10 u8 flag */
 
+#if !defined(G_PART) || G_PART == 1
 void Pl_se_req2(void *w, int a, int b, f32 *c, int d, int e) {
     if (Pl_stg_ck(w) & 0xFF) {
         int k;
@@ -82,7 +83,9 @@ void Pl_se_req2(void *w, int a, int b, f32 *c, int d, int e) {
         se_req2(k, a, b, c, d, e);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Em_se_req2(void *w, int a, int b, f32 *c, int d, int e) {
     if (Em_stg_ck(w) & 0xFF) {
         int k;
@@ -94,34 +97,47 @@ void Em_se_req2(void *w, int a, int b, f32 *c, int d, int e) {
         se_req2(k, a, Snd_em_id_conv_tbl[WB(w, 2)], c, d, e);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Npc_se_req(int u, int a, f32 *b, int c) {
     if (Em_stg_ck() & 0xFF) {
         se_req2(6, a, 0, b, c, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Npc_se_req_com(int u, int a, f32 *b, int c) {
     if (Em_stg_ck() & 0xFF) {
         se_req2(1, a, 0, b, c, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void se_chg_sub(int a, int b, int c, int d, int e, int f) {
     if (b != 0xFFFF) {
         flSndChange(a, b, d, e, f, c);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void se_stop_all(void) {
     flSndAllStop();
 }
+#endif
 
+#if !defined(G_PART)
 void se_stat(void) {
     flSndStatGet();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void snd_joint_load_init(s8 kind) {
     memset(emsnd_p, 0, 7);
     emsnd_p[2] = kind;
 }
+#endif

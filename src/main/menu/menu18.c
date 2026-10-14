@@ -137,12 +137,15 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART)
 void disp_retire(void) {
     DispFrameMessage(frame_retire, retire_str);
     flfntLocate(0x18F, 0x106);
     font_print_sp(retire_yesno_str[lpPit->yn]);
 }
+#endif
 
+#if !defined(G_PART)
 void trans_pit_0(void) {
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);
@@ -162,7 +165,9 @@ void trans_pit_0(void) {
         disp_cannon();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void trans_pit_1(void) {
     u8 c;
 
@@ -202,7 +207,9 @@ void trans_pit_1(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void trans_pit_2(void) {
     font_set_stack_no(2);
     disp_item_sub_select_ex();
@@ -223,7 +230,9 @@ void trans_pit_2(void) {
         DispSoftkeyboard(FLD8(system_w, 0x31));
     }
 }
+#endif
 
+#if !defined(G_PART)
 void trans_pit_1_lb(void) {
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);
@@ -239,7 +248,9 @@ void trans_pit_1_lb(void) {
     }
     func_60CE50();
 }
+#endif
 
+#if !defined(G_PART)
 void trans_pit_2_lb(void) {
     font_set_stack_no(2);
     if (PitMenu.x06 != 0) {
@@ -256,3 +267,4 @@ void trans_pit_2_lb(void) {
         DispSoftkeyboard(FLD8(system_w, 0x31));
     }
 }
+#endif

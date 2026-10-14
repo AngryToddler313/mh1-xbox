@@ -38,11 +38,14 @@ int str_volume();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void lobby_bgm_set2(int n) {
     str_play(0, n & 0xFF);
     game_w[0x25] = n;
 }
+#endif
 
+#if !defined(G_PART)
 void fight_bgm_set(void) {
     u8 id;
 
@@ -73,7 +76,9 @@ void fight_bgm_set(void) {
     str_play_f_vol(0, id, 0xF, 0x7F);
     game_w[0x25] = id;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int stage_bgm_etc_ck(int n) {
     u8 *p = stage_bgm_etc_tbl;
 
@@ -85,9 +90,12 @@ int stage_bgm_etc_ck(int n) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void demo_bgm_set(int n) {
     game_w[0x11] = 0;
     str_play_f_vol(0, n, 0xF, 0x7F);
     game_w[0x25] = n;
 }
+#endif

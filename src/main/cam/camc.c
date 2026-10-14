@@ -82,6 +82,7 @@ s32 Game_clear_ck(s32);
 void cam_plEX_fishing(CAMW *, CAMS *, CAMFISH *);
 void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
+#if !defined(G_PART) || G_PART == 1
 s32 PachiTypeCheck(PLW *pl) {
     if ((s16)act_ck(pl, 0, 0x65) != 0 || (s16)act_ck(pl, 0, 0x66) != 0) {
         return 1;
@@ -94,7 +95,9 @@ s32 PachiTypeCheck(PLW *pl) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART)
 s8 GetPachingerInfo(PLW *pl, u8 *step, u8 *zoom, f32 *rate) {
     CAMS *cs = &CameraWork.sl[2];
     CAMD_PCH *d;
@@ -108,7 +111,9 @@ s8 GetPachingerInfo(PLW *pl, u8 *step, u8 *zoom, f32 *rate) {
     }
     return d->type;
 }
+#endif
 
+#if !defined(G_PART)
 void cam_init_sub_playerEX(CAMW *cw, CAMS *cs) {
     cs->fov = 0.9599311f;
     cs->roll = 0.0f;
@@ -116,7 +121,9 @@ void cam_init_sub_playerEX(CAMW *cw, CAMS *cs) {
     *(s32 *)&cs->d.ex.zoom.step = 0;
     cs->d.ex.zoom.req = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void cam_sub_playerEX(CAMW *cw, CAMS *cs) {
     CAMD_EX *d = &cs->d.ex;
 
@@ -125,7 +132,9 @@ void cam_sub_playerEX(CAMW *cw, CAMS *cs) {
         cam_plEX_zoom(cw, cs, &d->zoom);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void cam_plEX_fishing(CAMW *cw, CAMS *cs, CAMFISH *f) {
     PLW *pl;
 
@@ -149,11 +158,15 @@ void cam_plEX_fishing(CAMW *cw, CAMS *cs, CAMFISH *f) {
         cs->act = 1;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 fishing_cam_chk(PLW *pl) {
     return pl_flag_ck(pl, 0x80000) != 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 fish_cam_sub(CAMW *cw, CAMS *cs, CAMFISH *f) {
     f32 v[3];
     PLW *pl;
@@ -177,3 +190,4 @@ s32 fish_cam_sub(CAMW *cw, CAMS *cs, CAMFISH *f) {
     AddVector(cs->tar, pl->pos, v);
     return 0;
 }
+#endif

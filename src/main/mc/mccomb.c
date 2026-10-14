@@ -135,6 +135,7 @@ int mc_remove_ck();
 
 s16 mc_mes_disp(int, s16, int);
 
+#if !defined(G_PART)
 void encode_data_002814E0(buf)
 u16 *buf;
 {
@@ -161,7 +162,9 @@ u16 *buf;
         key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void decode_data(out, buf)
 u16 *out;
 u16 *buf;
@@ -190,7 +193,9 @@ u16 *buf;
     } while (i < 0x8A20);
     out[9] = (stored & 0xFFFF) != (sum & 0xFFFF);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void check_sum_set(s)
 u8 *s;
 {
@@ -201,7 +206,9 @@ u8 *s;
     *(s32 *)(s + 0x60) = t[0];
     *(s32 *)(s + 0x64) = t[1];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int check_sum_ck(s)
 u8 *s;
 {
@@ -216,7 +223,9 @@ u8 *s;
     }
     return *(s32 *)(s + 0x64) == t[1];
 }
+#endif
 
+#if !defined(G_PART)
 static int decode_to_ck(out)
 u16 *out;
 {
@@ -226,7 +235,9 @@ u16 *out;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int mc_copy_opt_only(save)
 int save;
 {
@@ -247,7 +258,9 @@ int save;
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int mc_copy_patch(save)
 int save;
 {
@@ -262,7 +275,9 @@ int save;
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int user_data_copy2(slot, save)
 int slot;
 int save;
@@ -287,21 +302,27 @@ int save;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int user_data_clr(slot)
 int slot;
 {
     flMemset(option_w + (slot & 0xFF) * 0x480 + 0x10, 0, 0x480);
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void User_data_init(void)
 {
     user_data_clr(0);
     user_data_clr(1);
     user_data_clr(2);
 }
+#endif
 
+#if !defined(G_PART)
 int save_data_sub(save, mask)
 int save;
 int mask;
@@ -332,7 +353,9 @@ int mask;
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void card_data_init(w)
 u8 *w;
 {
@@ -350,12 +373,16 @@ u8 *w;
     *(s32 *)(w + 0x48) = McActAvailSet(d + 0x12000);
 #endif
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void Mem_mes_disp(s16 y, int idx)
 {
     mc_mes_disp(0, y, idx);
 }
+#endif
 
+#if !defined(G_PART)
 s16 mc_mes_disp(int x, s16 y, int idx)
 {
     u8 **p;
@@ -378,7 +405,9 @@ s16 mc_mes_disp(int x, s16 y, int idx)
     }
     return y - 0x12;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 static void mc_r_no_set(w, n)
 CARDW *w;
 s8 n;
@@ -388,7 +417,9 @@ s8 n;
     w->blink = 15;
     w->blinkf = 1;
 }
+#endif
 
+#if !defined(G_PART)
 int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
 {
     int i;
@@ -443,15 +474,19 @@ int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
     }
     return -1;
 }
+#endif
 
 /* original bytes kept (does not match as C yet): build/raw/mc_sel_ck.inc, see config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
+#if !defined(G_PART)
 asm int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
 {
 #include "mc_sel_ck.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
 {
     w->bx = x;
@@ -478,7 +513,9 @@ int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int mc_remove_ck(port)
 int port;
 {
@@ -486,7 +523,9 @@ int port;
     if (McActConChk(port) != 0) return 0;
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 void McOperationSet(op)
 u8 op;
 {
@@ -518,7 +557,9 @@ u8 op;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void trans_card_0(void)
 {
     CARDW *w = &card_w;
@@ -571,7 +612,9 @@ void trans_card_0(void)
     }
     font_set_stack_no(0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 void CardAtld00(w)
 CARDW *w;
 {
@@ -581,7 +624,9 @@ CARDW *w;
     card_data_init();
     McActSave0Set(w->port, data_load_ptr, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void CardAtld01(w)
 CARDW *w;
 {
@@ -644,7 +689,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 9
 void CardAtld10(w)
 CARDW *w;
 {
@@ -653,7 +700,9 @@ CARDW *w;
     mc_mes_disp(100, 136, 2);
     w->timer = 30;
 }
+#endif
 
+#if !defined(G_PART)
 void CardAtld11(w)
 CARDW *w;
 {
@@ -689,7 +738,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 void CardAtld12(w)
 CARDW *w;
 {
@@ -697,7 +748,9 @@ CARDW *w;
         mc_r_no_set(w, 7);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 void CardAtld13(w)
 CARDW *w;
 {
@@ -710,7 +763,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 void CardAtld14(w)
 CARDW *w;
 {
@@ -719,7 +774,9 @@ CARDW *w;
         mc_r_no_set(w, 4);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 void CardAtld(w)
 CARDW *w;
 {
@@ -750,7 +807,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv00(w)
 CARDW *w;
 {
@@ -758,7 +817,9 @@ CARDW *w;
     w->sel = 1;
     w->port = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv01(w)
 CARDW *w;
 {
@@ -773,7 +834,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void CardOptsv02(w)
 CARDW *w;
 {
@@ -809,7 +872,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv03(w)
 CARDW *w;
 {
@@ -853,7 +918,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv04(w)
 CARDW *w;
 {
@@ -877,7 +944,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv05(w)
 CARDW *w;
 {
@@ -902,7 +971,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv06(w)
 CARDW *w;
 {
@@ -936,7 +1007,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv07(w)
 CARDW *w;
 {
@@ -959,7 +1032,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv08(w)
 CARDW *w;
 {
@@ -971,7 +1046,9 @@ CARDW *w;
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
     mc_mes_disp(40, 352, 17);
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv09(w)
 CARDW *w;
 {
@@ -997,7 +1074,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv10(w)
 CARDW *w;
 {
@@ -1007,7 +1086,9 @@ CARDW *w;
         mc_r_no_set(w, 12);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 void CardOptsv11(w)
 CARDW *w;
 {
@@ -1017,7 +1098,9 @@ CARDW *w;
         mc_r_no_set(w, 2);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOptsv(w)
 CARDW *w;
 {
@@ -1063,7 +1146,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv00(w)
 CARDW *w;
 {
@@ -1075,7 +1160,9 @@ CARDW *w;
     user_data_clr(1);
     user_data_clr(2);
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv12(w)
 CARDW *w;
 {
@@ -1088,7 +1175,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 void CardCmsv01(w)
 CARDW *w;
 {
@@ -1125,7 +1214,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv02(w)
 CARDW *w;
 {
@@ -1168,7 +1259,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv03(w)
 CARDW *w;
 {
@@ -1208,7 +1301,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv04(w)
 CARDW *w;
 {
@@ -1252,7 +1347,9 @@ CARDW *w;
     w->frame[1] = 5;
     disp_savesel_moji(edit_w, 0, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv05(w)
 CARDW *w;
 {
@@ -1288,7 +1385,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv06(w)
 CARDW *w;
 {
@@ -1312,7 +1411,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv07(w)
 CARDW *w;
 {
@@ -1337,7 +1438,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv08(w)
 CARDW *w;
 {
@@ -1352,7 +1455,9 @@ CARDW *w;
     mc_mes_disp(40, 352, 17);
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv09(w)
 CARDW *w;
 {
@@ -1381,7 +1486,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv10(w)
 CARDW *w;
 {
@@ -1391,7 +1498,9 @@ CARDW *w;
         mc_r_no_set(w, 13);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 14
 void CardCmsv11(w)
 CARDW *w;
 {
@@ -1401,7 +1510,9 @@ CARDW *w;
         mc_r_no_set(w, 1);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardCmsv(w)
 CARDW *w;
 {
@@ -1464,7 +1575,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardConld00(w)
 CARDW *w;
 {
@@ -1475,7 +1588,9 @@ CARDW *w;
     user_data_clr(1);
     user_data_clr(2);
 }
+#endif
 
+#if !defined(G_PART)
 void CardConld01(w)
 CARDW *w;
 {
@@ -1504,7 +1619,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 15
 void CardConld02(w)
 CARDW *w;
 {
@@ -1544,7 +1661,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardConld03(w)
 CARDW *w;
 {
@@ -1584,7 +1703,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 void CardConld04(w)
 CARDW *w;
 {
@@ -1595,7 +1716,9 @@ CARDW *w;
         w->sub = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 void CardConld05(w)
 CARDW *w;
 {
@@ -1605,7 +1728,9 @@ CARDW *w;
         mc_r_no_set(w, 6);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 void CardConld(w)
 CARDW *w;
 {
@@ -1649,7 +1774,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 void CardOnsv100(w)
 CARDW *w;
 {
@@ -1658,7 +1785,9 @@ CARDW *w;
     card_data_init();
     McActSave0Set(w->port, data_load_ptr, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 void CardOnsv101(w)
 CARDW *w;
 {
@@ -1691,7 +1820,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOnsv102(w)
 CARDW *w;
 {
@@ -1729,7 +1860,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOnsv103(w)
 CARDW *w;
 {
@@ -1740,7 +1873,9 @@ CARDW *w;
     McActSaveSet(w->port, data_load_ptr);
     mc_mes_disp(100, 136, 31);
 }
+#endif
 
+#if !defined(G_PART)
 void CardOnsv104(w)
 CARDW *w;
 {
@@ -1769,7 +1904,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 void CardOnsv105(w)
 CARDW *w;
 {
@@ -1778,7 +1915,9 @@ CARDW *w;
         mc_r_no_set(w, 8);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOnsv106(w)
 CARDW *w;
 {
@@ -1793,7 +1932,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 void CardOnsv107(w)
 CARDW *w;
 {
@@ -1829,7 +1970,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 void CardOnsv1(w)
 CARDW *w;
 {
@@ -1877,7 +2020,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv000(w)
 CARDW *w;
 {
@@ -1902,7 +2047,9 @@ CARDW *w;
         w->rno = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 void CardOfsv012(w)
 CARDW *w;
 {
@@ -1921,7 +2068,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 void CardOfsv001(w)
 CARDW *w;
 {
@@ -1958,7 +2107,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv002(w)
 CARDW *w;
 {
@@ -2001,7 +2152,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv003(w)
 CARDW *w;
 {
@@ -2041,7 +2194,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv004(w)
 CARDW *w;
 {
@@ -2085,7 +2240,9 @@ CARDW *w;
     w->frame[1] = 6;
     disp_savesel_moji(edit_w, 2, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv005(w)
 CARDW *w;
 {
@@ -2120,7 +2277,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 void CardOfsv006(w)
 CARDW *w;
 {
@@ -2144,7 +2303,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 void CardOfsv007(w)
 CARDW *w;
 {
@@ -2169,7 +2330,9 @@ CARDW *w;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv008(w)
 CARDW *w;
 {
@@ -2184,7 +2347,9 @@ CARDW *w;
     mc_mes_disp(40, 352, 17);
     mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
 }
+#endif
 
+#if !defined(G_PART)
 void CardOfsv009(w)
 CARDW *w;
 {
@@ -2213,7 +2378,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 21
 void CardOfsv010(w)
 CARDW *w;
 {
@@ -2223,7 +2390,9 @@ CARDW *w;
         mc_r_no_set(w, 13);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 21
 void CardOfsv011(w)
 CARDW *w;
 {
@@ -2233,7 +2402,9 @@ CARDW *w;
         mc_r_no_set(w, 1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 21
 void CardOfsv0(w)
 CARDW *w;
 {
@@ -2308,7 +2479,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 void CardEasysv00(w)
 CARDW *w;
 {
@@ -2317,7 +2490,9 @@ CARDW *w;
     card_data_init();
     McActSave0Set(w->port, data_load_ptr, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 void CardEasysv01(w)
 CARDW *w;
 {
@@ -2349,7 +2524,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 void CardEasysv02(w)
 CARDW *w;
 {
@@ -2373,7 +2550,9 @@ CARDW *w;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 void CardEasysv03(w)
 CARDW *w;
 {
@@ -2382,7 +2561,9 @@ CARDW *w;
         mc_r_no_set(w, 4);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 void CardEasysv(w)
 CARDW *w;
 {
@@ -2406,12 +2587,14 @@ CARDW *w;
         break;
     }
 }
+#endif
 
 #ifdef VERSION_MHG
 /* G: ops 0xB-0xD are the MH1-hunter carry-over screens (func_002306C0 / func_00230390 / func_00231440), 0xE = op 1 */
 void func_002306C0(CARDW *);
 void func_00230390(CARDW *);
 void func_00231440(CARDW *);
+#if !defined(G_PART) || G_PART == 22
 u8 McCardOperation(void)
 {
     CARDW *w = &card_w;
@@ -2496,6 +2679,7 @@ u8 McCardOperation(void)
     }
     return w->done;
 }
+#endif
 #else
 u8 McCardOperation(void)
 {

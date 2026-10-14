@@ -76,6 +76,7 @@ extern u8 flPs2VIF1Control[];
 
 
 
+#if !defined(G_PART) || G_PART == 1
 int flUnlockTexture(u32 h) {
     TEXH *t = &flTexture[h - 1];
 
@@ -87,7 +88,9 @@ int flUnlockTexture(u32 h) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flUnlockPalette(u32 h) {
     TEXH *t = &flPalette[h - 1];
 
@@ -99,6 +102,7 @@ int flUnlockPalette(u32 h) {
     }
     return 0;
 }
+#endif
 
 /* Unlocks a texture: writes the locked copy (x2C) back to the texture's own memory in the texture's pixel layout
  * (lock mode 0 converts R/B order through plConvertContext, mode 1 copies, 2/3 use the locked copy in place) and,
@@ -106,10 +110,12 @@ int flUnlockPalette(u32 h) {
 /* near-match (4 instructions: the original copies the buffer pointer into its saved register inside both branches
  * of the sysmem test; here the copy sinks below the join), original bytes linked; the C is the reading copy */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int flPS2UnlockTexture(TEXH *t)
 {
 #include "flPS2UnlockTexture.inc"
 }
+#endif
 #else
 int flPS2UnlockTexture(TEXH *t) {
     PLCTX s;

@@ -94,6 +94,7 @@ void func_533A00(void);
 
 
 
+#if !defined(G_PART)
 void font_set_stack_no(int n) {
     if (n < 0) {
         n = 0;
@@ -103,29 +104,39 @@ void font_set_stack_no(int n) {
     }
     flfntSetZ(1.0f + (1000.0f * (f32)n) / 5.0f);
 }
+#endif
 
+#if !defined(G_PART)
 void font_set_palette(int n) {
     if ((s16)n >= 0x10) {
         n = 0;
     }
     flfntSetPalette(n);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void font_reset(void) {
     flfntSetSize(0x14, 0x14);
     font_set_stack_no(0);
     font_set_palette(0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void font_draw_end(void) {
     font_reset_flag = 1;
 }
+#endif
 
+#if !defined(G_PART)
 void LoadAskData(void) {
     ask_load_adrs = (int)flAllocMemory(0x97C00);
     load_file_mdl((void *)ask_load_adrs, 0x883);
 }
+#endif
 
+#if !defined(G_PART)
 void all_reset(void) {
     system_w.loading = 1;
     Info_Initialization();
@@ -170,7 +181,9 @@ void all_reset(void) {
     system_w.loading = 0;
     system_w.x12 = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void all_motion_free(void) {
     int i;
     u32 *p = motion_set_handle_tbl;
@@ -184,7 +197,9 @@ void all_motion_free(void) {
         p++;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_motion_free(s16 em) {
     s16 i;
     u32 *p;
@@ -205,16 +220,22 @@ void em_motion_free(s16 em) {
         } while (i < end);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void stage_free(void) {
     release_stage_model();
     clr_stg_work();
 }
+#endif
 
+#if !defined(G_PART)
 void init_game_work(void) {
     memset(game_w, 0, 0x224);
 }
+#endif
 
+#if !defined(G_PART)
 void init_select_work(void) {
     u16 a;
     u8 b;
@@ -225,11 +246,15 @@ void init_select_work(void) {
     *(u16 *)(select_w + 0xAC) = a;
     select_w[0xB6] = b;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void init_demo_work(void) {
     memset(demo_w, 0, 0x44);
 }
+#endif
 
+#if !defined(G_PART)
 void softreset(void) {
     vib_stop_all();
     all_reset();
@@ -246,22 +271,30 @@ void softreset(void) {
     SchedulerInit();
     Tsk_Execute(func_533A00, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 int softreset_ck(void) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 int softkey_ck(void) {
     if (system_w.softkey == 0 || (s8)SoftKeyboard_alive_check() != 0) {
         return 0;
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 int Get_sw(int n) {
     return (Psw[n].w[12] | Psw[n].w[2]) & 0xFFFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 u16 Get_sw2(int n) {
     u16 r = 0;
 
@@ -270,14 +303,18 @@ u16 Get_sw2(int n) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 u16 Get_sw_on2(int n) {
     if (SoftKeyboard_alive_check() != 0) {
         return 0;
     }
     return Psw[n].w[2];
 }
+#endif
 
+#if !defined(G_PART)
 int kb_input_ck_enter(void) {
     switch (lpSKey[0x65A]) {
     case 0x28:
@@ -286,11 +323,15 @@ int kb_input_ck_enter(void) {
         return 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 u8 Get_kb_input(void) {
     return lpSKey[0x65A];
 }
+#endif
 
+#if !defined(G_PART)
 int kb_chat_in_chk(void) {
     u8 c = lpSKey[0x65A];
 
@@ -299,30 +340,43 @@ int kb_chat_in_chk(void) {
     }
     return c != 0x29;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void decide_se(void) {
     se_req(1, 0x73, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void cursor_se(void) {
     se_req(1, 0x72, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void cancel_se(void) {
     se_req(7, 0x14, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void unmei_se(int a) {
     adx_se_set(a, 9);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 int Online_ck(void) {
     return system_w.online != 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 int Now_Game_ck(void) {
     if (game_w[0] == 2 || game_w[0] == 3) {
         return 1;
     }
     return 0;
 }
+#endif

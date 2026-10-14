@@ -71,6 +71,7 @@ extern s8 *Snd_armor_tbl[];
 
 /* Loads the player's weapon/armour sound joint tables, one step per call (emsnd_p[0] is the step);
  * returns 1 when done. w is the player work, +0x34C weapon kind, +0x8D3 armour. */
+#if !defined(G_PART)
 int snd_joint_load_pl(u8 *top, void *w) {
     int done = 0;
     int id;
@@ -111,7 +112,9 @@ int snd_joint_load_pl(u8 *top, void *w) {
     }
     return done;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lbs_se_load(void) {
     void *p = data_load_ptr;
 
@@ -120,7 +123,9 @@ void Lbs_se_load(void) {
     load_bin(0x10003, p);
     flSndPackLoad(p, 6);
 }
+#endif
 
+#if !defined(G_PART)
 void Menu_snd_load(void) {
     void *p = data_load_ptr;
 
@@ -133,7 +138,9 @@ void Menu_snd_load(void) {
     load_bin(0x10006, p);
     flSndPackLoad(p, 7);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int edit_se_load(void) {
     u8 *p = pl_area_top;
 
@@ -149,3 +156,4 @@ int edit_se_load(void) {
     system_w.loading = 0;
     return 1;
 }
+#endif
