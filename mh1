@@ -4,6 +4,7 @@
 #   ./mh1 linux   DISC [--out DIR] [--online] [--setup]     PC build for this Linux machine  -> dist/linux/
 #   ./mh1 windows DISC [--out DIR] [--online] [--setup]     PC build for Windows (cross-built here) -> dist/windows/
 #   ./mh1 xbox    DISC [--out DIR] [--setup]                original Xbox: XBE + data folder  -> dist/xbox/MH1/
+#                                                           (a Monster Hunter G disc: dist/xbox/MHG/, Xbox only for now)
 #   ./mh1 check   DISC                                      only check the disc
 #
 # DISC is your own disc image of the JAPANESE Monster Hunter for the PlayStation 2 (SLPM-65495): the .iso file,
@@ -58,6 +59,11 @@ python3 -c 'import sys; sys.exit(sys.version_info < (3, 8))' || die "python3 is 
 say "checking the disc (the checksum pass reads about 1 GB, 5 to 60 seconds)"
 python3 tools/disc_files.py check "$DISC" || die "stopping: the disc is not usable (see above). Nothing was built."
 [ "$TARGET" = check ] && exit 0
+GAME=$(python3 tools/disc_files.py game "$DISC") || die "cannot tell which game the disc is"
+if [ "$GAME" = mhg ] && [ "$TARGET" != xbox ]; then
+    die "this is the Monster Hunter G disc. G is only packaged for the Xbox so far (./mh1 xbox DISC); its PC
+build is still a work in progress (docs/mhg.md)."
+fi
 
 # ---------------------------------------------------------------- 2. tools
 command -v git >/dev/null || echo "note: git not found; the build will be labelled 'unknown'"
@@ -188,6 +194,24 @@ windows)
 xbox)
     need_xbox_tools
     need_linux_tools     # the Xbox build reuses the objects of the PC build
+    if [ "$GAME" = mhg ]; then
+        # Monster Hunter G: its own folder, title id and save id, so it installs next to MH1 (docs/xbox.md)
+        say "building the G PC objects the Xbox build reuses (first build: 10 to 30 minutes)"
+        sh tools/build_pc_mhg.sh > build/mhg_linux_build.log 2>&1 || { tail -20 build/mhg_linux_build.log; die "the G PC build failed; full log: build/mhg_linux_build.log"; }
+        say "building the Xbox game (nxdk; 5 to 10 minutes)"
+        python3 tools/build_xbox.py --version mhg --gfx nv2a > build/mhg_xbox_build.log 2>&1 || { tail -20 build/mhg_xbox_build.log; die "the Xbox build failed; full log: build/mhg_xbox_build.log"; }
+        [ -f build/mhg/xbox/nv2a/default.xbe ] || die "build_xbox.py did not produce build/mhg/xbox/nv2a/default.xbe (log: build/mhg_xbox_build.log)"
+        rm -rf "$OUT/MHG"; mkdir -p "$OUT/MHG"
+        cp build/mhg/xbox/nv2a/default.xbe "$OUT/MHG/default.xbe"
+        [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
+        say "copying the game files from your disc to $OUT/MHG/data (about 1.1 GB)"
+        mkdir -p "$OUT/MHG/data"
+        python3 tools/disc_files.py extract "$DISC" "$OUT/MHG/data" --files "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_658.69" || die "copying the disc files failed"
+        say "done. Copy the folder $OUT/MHG to your Xbox's hard disk as E:\\Games\\MHG (so that"
+        say "E:\\Games\\MHG\\default.xbe and E:\\Games\\MHG\\data\\AFS_DATA.AFS exist), e.g. with any FTP program,"
+        say "then start 'Monster Hunter G' from your dashboard's games list. (G is a work in progress.)"
+        exit 0
+    fi
     say "building the PC objects the Xbox build reuses (first build: 10 to 30 minutes)"
     sh tools/build_pc.sh > build/mh1_linux_build.log 2>&1 || { tail -20 build/mh1_linux_build.log; die "the PC build failed; full log: build/mh1_linux_build.log"; }
     say "building the Xbox game (nxdk; 5 to 10 minutes)"

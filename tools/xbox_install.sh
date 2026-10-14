@@ -12,7 +12,10 @@ XBOX=$1
 [ -n "$XBOX" ] || { echo "usage: $0 XBOX_IP [FOLDER]   (FOLDER defaults to dist/xbox/MH1)"; exit 2; }
 SRC=${2:-dist/xbox/MH1}
 command -v curl >/dev/null || { echo "curl is needed (sudo apt install curl), or use an FTP program"; exit 1; }
-for f in default.xbe data/AFS_DATA.AFS data/AFS00.AFS data/AFS01.AFS data/SLPM_654.95; do
+# a Monster Hunter G folder (./mh1 xbox with the G disc: dist/xbox/MHG) goes to E:\Games\MHG
+ELF=SLPM_654.95; DIR=MH1; NAME="Monster Hunter"
+[ -f "$SRC/data/SLPM_658.69" ] && { ELF=SLPM_658.69; DIR=MHG; NAME="Monster Hunter G"; }
+for f in default.xbe data/AFS_DATA.AFS data/AFS00.AFS data/AFS01.AFS data/$ELF; do
 	[ -f "$SRC/$f" ] || { echo "$SRC/$f is missing: run ./mh1 xbox DISC first"; exit 1; }
 done
 if grep -q "machine $XBOX" ~/.netrc 2>/dev/null; then
@@ -25,13 +28,13 @@ else
 	AUTH=(--netrc-file "$NETRC")
 fi
 [ -n "$XBOX_PASSIVE" ] || AUTH+=(--ftp-port -)
-URL=ftp://$XBOX/${XBOX_DIR:-E/Games/MH1}
+URL=ftp://$XBOX/${XBOX_DIR:-E/Games/$DIR}
 echo "copying to $URL"
-for f in default.xbe data/SLPM_654.95 data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
+for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
 	want=$(stat -c %s "$SRC/$f")
 	have=$(curl -sSI "${AUTH[@]}" "$URL/$f" 2>/dev/null | tr -d '\r' | awk '/Content-Length/{print $2}')
 	if [ "$have" = "$want" ]; then echo "== $f already there"; continue; fi
 	echo "-> $f ($((want >> 20)) MB)"
 	curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f"
 done
-echo "done. On the Xbox start 'Monster Hunter' from the games list (E:\\Games\\MH1\\default.xbe)."
+echo "done. On the Xbox start '$NAME' from the games list (E:\\Games\\$DIR\\default.xbe)."

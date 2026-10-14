@@ -6,6 +6,7 @@
 #define PL8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
 #define PL16(p, o) (*(u16 *)((u8 *)(p) + (o)))
 
+#if !defined(G_PART)
 void game0(void) {
     s16 i;
 
@@ -29,7 +30,9 @@ void game0(void) {
     Load_overlay(2, 1);
     Tsk_Execute(Plsel_task, 6);
 }
+#endif
 
+#if !defined(G_PART)
 void game10(void) {
     Disp_NowLoading2(4);
     if (game_w.x12 == 0) {
@@ -39,7 +42,9 @@ void game10(void) {
         net_send_sys(8, game_w.master);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void game11(void) {
     s16 i;
 
@@ -89,7 +94,9 @@ void game11(void) {
     game_w.step++;
     net_send_sys(8, game_w.master);
 }
+#endif
 
+#if !defined(G_PART)
 void game12(void) {
     u8 *top = pl_area_top;
     int n, idx;
@@ -191,7 +198,9 @@ void game12(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void game13(void) {
     Disp_NowLoading2(1);
     if (Online_ck() == 1 && net_start_ck() == 0) {
@@ -228,7 +237,9 @@ void game13(void) {
     CameraMove();
     fade_set(2);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void game1(void) {
     swset();
     switch (game_w.step) {
@@ -246,10 +257,12 @@ void game1(void) {
         break;
     }
 }
+#endif
 
 
 /* In-quest main loop (mode 2/3?): step 0 runs the quest, 2-6 reload the
  * stage for the next area. Guesses on meaning. */
+#if !defined(G_PART)
 void game2(void) {
     PLW *pl = &player_work[game_w.master];
     int idx;
@@ -383,6 +396,7 @@ void game2(void) {
         }
     }
 }
+#endif
 
 /* Sprite request passed to SpritePut: a full-screen fade quad (guess) */
 typedef struct SPRQ {
@@ -401,6 +415,7 @@ typedef struct SPRQ {
 
 /* Mode 4 (game3): fade-in then wait screen shown before the quest, ends by
  * marking this player ready.  Guess. */
+#if !defined(G_PART)
 void game3(void) {
     SPRQ sp;
     GAME_W *gw = &game_w;
@@ -472,3 +487,4 @@ void game3(void) {
     move();
     trans();
 }
+#endif

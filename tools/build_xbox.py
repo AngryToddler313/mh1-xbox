@@ -9,6 +9,8 @@ drawing yet, no memory card), a symbol table from the objects (rt_data.c),
 then linked with nxdk-link and turned into build/xbox/default.xbe by cxbe.
 
     . ~/xboxdev/env.sh; python3 tools/build_xbox.py      # see docs/xbox.md
+    python3 tools/build_xbox.py --version mhg --gfx nv2a  # Monster Hunter G: from tools/build_pc_mhg.sh's
+                                                          # build (build/mhg/pctree) -> build/mhg/xbox/
 Standard library only.
 """
 import re
@@ -32,9 +34,12 @@ SKIP = {'rt_mc', 'rt_save', 'rt_symtab', 'rt_memstat'}
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
         'libnxdk_automount_d.lib', 'libpbkit.lib', 'nxdk_usb.lib', 'libxboxrt.lib', 'libzlib.lib', 'libSDL2.lib']
 
-def title_identity():
-    """title id and name from src/pc/xbox/xbox_title.h (the same constants the save code uses)"""
+def title_identity(version):
+    """title id and name from src/pc/xbox/xbox_title.h (the same constants the save code uses):
+    the VERSION_MHG block for G, the #else block for MH1"""
     h = open('src/pc/xbox/xbox_title.h').read()
+    g, e = h.index('#ifdef VERSION_MHG'), h.index('#else')
+    h = h[g:e] if version == 'mhg' else h[e:]
     tid = int(re.search(r'XBOX_TITLE_ID\s+(0x[0-9A-Fa-f]+)', h).group(1), 16)
     name = re.search(r'XBOX_TITLE_NAME\s+"([^"]*)"', h).group(1)
     return tid, name
@@ -113,6 +118,20 @@ def shaders():
     return out
 
 def main():
+    global OUT, OBJ
+    # --version mhg: Monster Hunter G. Its PC build (tools/build_pc_mhg.sh) lives in build/mhg/pctree, a
+    # tree of symlinks to src/ include/ tools/ ... with its own build/pc; the same steps run there, the
+    # output goes to build/mhg/xbox (through the tree's build/mhg link).
+    version = sys.argv[sys.argv.index('--version') + 1] if '--version' in sys.argv else os.environ.get('VERSION', 'mh1')
+    if version == 'mhg':
+        if not os.path.isdir('build/mhg/pctree/build/pc'):
+            sys.exit('build_xbox: no G PC build (build/mhg/pctree); run tools/build_pc_mhg.sh first')
+        os.chdir('build/mhg/pctree')
+        OUT = 'build/mhg/xbox'
+        OBJ = OUT + '/obj'
+    elif version != 'mh1':
+        sys.exit('build_xbox: --version mh1 or mhg')
+    iso_name = 'mhg.iso' if version == 'mhg' else 'mh1.iso'
     # --gfx null (default: draws nothing, for a first headless boot) or nv2a (pbkit, gfx_nv2a.c)
     gfx = sys.argv[sys.argv.index('--gfx') + 1] if '--gfx' in sys.argv else 'null'
     FRONT[FRONT.index('src/pc/xbox/gfx_null.c')] = 'src/pc/xbox/gfx_%s.c' % gfx
@@ -158,6 +177,8 @@ def main():
     for f in FRONT + ['src/pc/rt/rt_memstat.c']:
         b = 'x_' + os.path.basename(f)[:-2]
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl
+        if version == 'mhg':
+            args.append('-DVERSION_MHG')     # as tools/build_pc.sh's CFLAGS for VERSION=mhg
         if f != 'src/pc/rt/rt_memstat.c':
             args += ['-include', 'src/pc/rt/rt_memstat.h']
         if 'xbox_libc' not in f and 'xbox_log' not in f:
@@ -193,9 +214,9 @@ def main():
     open(dst + '/link.log', 'w').write(r.stdout + r.stderr)
     if r.returncode:
         und = sorted(set(l.split('undefined symbol: ')[1] for l in (r.stdout + r.stderr).splitlines() if 'undefined symbol:' in l))
-        print('link failed: %d undefined symbols (build/xbox/link.log): %s' % (len(und), ' '.join(und[:40])))
+        print('link failed: %d undefined symbols (%s/link.log): %s' % (len(und), dst, ' '.join(und[:40])))
         sys.exit(1)
-    tid, tname = title_identity()
+    tid, tname = title_identity(version)
     subprocess.run([NXDK + '/tools/cxbe/cxbe', '-OUT:' + dst + '/default.xbe', '-TITLE:' + tname, dst + '/main.exe'],
                    check=True, capture_output=True)
     patch_xbe_title_id(dst + '/default.xbe', tid)
@@ -205,11 +226,12 @@ def main():
     iso_dir = dst + '/iso'
     os.makedirs(iso_dir, exist_ok=True)
     shutil.copy(dst + '/default.xbe', iso_dir + '/default.xbe')
-    if os.path.exists(dst + '/mh1.iso'):
-        os.remove(dst + '/mh1.iso')
-    subprocess.run([NXDK + '/tools/extract-xiso/build/extract-xiso', '-c', iso_dir, dst + '/mh1.iso'],
+    iso = dst + '/' + iso_name
+    if os.path.exists(iso):
+        os.remove(iso)
+    subprocess.run([NXDK + '/tools/extract-xiso/build/extract-xiso', '-c', iso_dir, iso],
                    check=True, capture_output=True)
-    print('built %s/mh1.iso (%d bytes)' % (dst, os.path.getsize(dst + '/mh1.iso')))
+    print('built %s (%d bytes)' % (iso, os.path.getsize(iso)))
 
 if __name__ == '__main__':
     main()

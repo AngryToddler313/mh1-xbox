@@ -60,6 +60,7 @@ static void disp_spr_tex_set_sub(int n);
 static void disp_spr_sub(int flag);
 static void disp_spr_sub_sub(s16 *d, int n, int y);
 
+#if !defined(G_PART)
 void net_connect_draw(void) {
     int i;
 
@@ -155,11 +156,15 @@ void net_connect_draw(void) {
     SetFilterMode(1);
     InitRenderState(1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void disp_spr_tex_set_sub(int n) {
     flSetRenderState(4, mem_tex[0x14D + n]);
 }
+#endif
 
+#if !defined(G_PART)
 static void disp_spr_sub(int flag) {
     s16 buf[90];
     u16 cnt;
@@ -888,7 +893,9 @@ static void disp_spr_sub(int flag) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void disp_spr_sub_sub(s16 *d, int n, int y) {
     int c;
     SPR spr;
@@ -911,3 +918,4 @@ static void disp_spr_sub_sub(s16 *d, int n, int y) {
         flps0008(&spr);
     }
 }
+#endif

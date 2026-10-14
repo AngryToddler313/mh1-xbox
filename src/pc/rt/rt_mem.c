@@ -244,6 +244,37 @@ void *rt_bss_shadow(uint32_t va)
                 size[0] = ph[i].memsz - ph[i].filesz;
             }
     }
+    if (!shadow[k] && nsshadow < MAXSHADOW && symset[0] && size[k]) {
+        /* no sized symbol holds va: a block for the gap between the named symbols around it (an
+         * unsized symbol at or below va counts as part of the gap), as long as no whole-image block
+         * exists yet (the two must not both stand for one address). G's symbols (generated, not the
+         * ELF's) leave many small .sbss objects unnamed: the whole main .bss (1.7 MB) and sub_main /
+         * game.bin .bss blocks cost ~2 MB on the Xbox; the gaps take a few KB. */
+        uint32_t lo = base[k], hi = base[k] + size[k];
+        size_t i, n = nsymset[0];
+        const rt_sym *ss = symset[0];
+        for (i = 0; i < n; i++) {
+            uint32_t e = ss[i].size ? ss[i].va + ss[i].size : ss[i].va;
+            if (ss[i].va <= va && e <= va + (ss[i].size ? 0 : 1) && e > lo)
+                lo = ss[i].size ? e : ss[i].va;
+            if (ss[i].va > va && ss[i].va < hi)
+                hi = ss[i].va;
+        }
+        if (lo <= va && va < hi && hi - lo <= (256u << 10)) {
+            const char *o = rt_ms_push("overlay data copies + relocations");
+            uint8_t *m = calloc(1, hi - lo + 64);
+            rt_ms_pop(o);
+            if (m) {
+                sshadow[nsshadow].va = lo;
+                sshadow[nsshadow].size = hi - lo;
+                sshadow[nsshadow].mem = m;
+                nsshadow++;
+                if (getenv("RT_TRACE"))
+                    fprintf(stderr, "rt: .bss gap shadow 0x%X..0x%X for 0x%X\n", (unsigned)lo, (unsigned)hi, (unsigned)va);
+                return m + (va - lo);
+            }
+        }
+    }
     if (getenv("RT_TRACE"))
         fprintf(stderr, "rt: whole .bss shadow for 0x%X (no sized symbol)\n", (unsigned)va);
     if (!shadow[k] && !(shadow[k] = calloc(1, size[k])))

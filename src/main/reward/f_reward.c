@@ -5,6 +5,7 @@
  * money payout (gold_init/gold_main). Meanings are guesses. */
 #include "reward.h"
 
+#if !defined(G_PART) || G_PART == 1
 int key_quest_ck(s16 no)
 {
     s16 *p = key_quest_tbl;
@@ -17,7 +18,9 @@ int key_quest_ck(s16 no)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int movie_add_ck(no, set)
 int no;
 int set;
@@ -38,7 +41,9 @@ int set;
     }
     return 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 void disp_mark(void)
 {
     SPR2TF spr;
@@ -57,14 +62,18 @@ void disp_mark(void)
     spr.col = 0xFF808080;
     Put_2TF(spr.pos, spr.size);
 }
+#endif
 
+#if !defined(G_PART)
 void trans_result_0(void)
 {
     Disp_back();
     disp_mark();
     disp_reward();
 }
+#endif
 
+#if !defined(G_PART)
 void trans_result_1(void)
 {
     GAME_W *gw = &game_w;
@@ -83,7 +92,9 @@ void trans_result_1(void)
         Disp_button(1.0f, 0, 0x32, 0x16D, 0x11A);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void trans_result_2(void)
 {
     Disp_back();
@@ -91,7 +102,9 @@ void trans_result_2(void)
     SetTrnslMode(4, 5);
     DispFrameListA(card_list_frame_tbl_00357850[0], 0, -1, 0xFF);
 }
+#endif
 
+#if !defined(G_PART)
 void trans_result_3(void)
 {
     Disp_back();
@@ -102,12 +115,16 @@ void trans_result_3(void)
         Disp_button(1.0f, 0, 0x230, 0xF7, 0x11A);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void end_fade_set(void)
 {
     str_fadein_vol(0, 0x1E, 0);
 }
+#endif
 
+#if !defined(G_PART)
 int movie_add_check(GAME_W *t, int go)
 {
     int r = movie_add_ck(quest_w.no);
@@ -139,7 +156,9 @@ int movie_add_check(GAME_W *t, int go)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void result_prog(void)
 {
     GAME_W *t = &game_w;
@@ -322,7 +341,9 @@ void result_prog(void)
         add_prim2(ot8, card_prim, 0, 1);
     }
 }
+#endif
 
+#if !defined(G_PART)
 int gold_init(GAME_W *t)
 {
     int i;
@@ -351,7 +372,9 @@ int gold_init(GAME_W *t)
     fade_set(2);
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int gold_main(GAME_W *t)
 {
     int amt;
@@ -427,3 +450,4 @@ int gold_main(GAME_W *t)
     }
     return 0;
 }
+#endif

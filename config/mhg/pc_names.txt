@@ -12,3 +12,6 @@ main D_002A5FE0 0x2A5FE0     # G DispSoftkeyboard (0x20B020): s8[12] glyph index
 main D_002BE8B0 0x2BE8B0     # G DispSoftkeyboard: format string for those 12 prints
 main fight_bgm_tbl 0x002895D8  # G fight_bgm_set (0x1D8130) reads it by game_w+0x2E (11 bytes: 51 51 52..57 57 57 52), stage_bgm_etc_tbl follows at 0x2895E8
 lobby item_box 0x653330     # G Lb_ItemBox_init (lobby 0x552470, called from main 0x118F60 / 0x11917C) stores this address in ib (gp-12564)
+main item_list_title 0x002EC640  # G Pit_disp_item_list family: pointers to the two list titles (アイテム / 調合); found by matching MH1's two strings' G twins (data_map.txt had it only as low); without it the item list title printed "(null)"
+sub_main item_cmd_str 0x005263C0  # G Pit_disp_item_list (0x11E4D0): five variants of three command strings (捨てる / 渡す / 納品する), stride 0xC (MH1: three variants of two, stride 8)
+sub_main equip_exp_str_sw_attr 0x00527EA0  # the seven element names (火 水 雷 龍 毒 麻痺 睡眠) as pointers; data_map.txt's low guess 0x527E10 is the format-string block
