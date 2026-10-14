@@ -1287,7 +1287,8 @@ frames per second.
   routed), shops/forge/armour pieces from agent B's b/ and b/nm files
   (LOBBY2 in build_pc.sh, linked weak). D_610370 (NPC body volumes for the
   camera) is lobby.bin's table (the zeroed placeholder crashed the camera).
-- Test aids: `RT_BOOT_TRACE=1` (task slots), `RT_LB_WARP="tick,x,z[,ang];..."`
+- Test aids: `RT_VILLAGE_LEAVE="tick,quest[,title]"` (leave the village for that quest at that village tick, as if
+  accepted at the counter; the title goes to quest_title for the loading screen), `RT_BOOT_TRACE=1` (task slots), `RT_LB_WARP="tick,x,z[,ang];..."`
   (village warp), `RT_SHOP_TRACE=1`, `RT_VILLAGE_TRACE` lists each stage's
   spots (house door kind 12 at 11225,14350; in the house bed kind 14 at
   2230,745, item box kind 15 at 1950,1160; spots need square).

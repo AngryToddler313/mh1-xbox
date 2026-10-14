@@ -173,6 +173,19 @@ int rt_village_tick(void)
         }
     }
     r = Local_main();
+    if (getenv("RT_VILLAGE_LEAVE")) {   /* test aid "tick,quest[,title]": leave for that quest at that village tick
+                                         * (all ticks), as if accepted at the counter (which sets quest_title, shown on
+                                         * the loading screen) and left by the gate */
+        extern char quest_title[];
+        int t = -1, q = 0, n = 0;
+        if (sscanf(getenv("RT_VILLAGE_LEAVE"), "%d,%d%n", &t, &q, &n) >= 2 && t == all_ticks) {
+            const char *title = getenv("RT_VILLAGE_LEAVE") + n;
+            *(s16 *)(select_w + (rt_ver_mhg() ? 0xD0 : 0xAC)) = (s16)q;
+            if (*title == ',')
+                snprintf(quest_title, 32, "%s", title + 1);  /* (0x20 bytes) */
+            r = 1;
+        }
+    }
     if (getenv("RT_QUEST_TRACE")) {     /* the saved hunter's data when it changes: money, pouch, item box, stored equipment, worn gear */
         extern u8 User_data[];
         static u8 last[0x460];
@@ -291,7 +304,7 @@ int rt_village_tick(void)
         game_w[GWX(0x1DC)] = 0;
         rt_motion_em_release();         /* the NPCs' motions go with the village */
         com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
-        return r == 1 ? *(s16 *)(select_w + 0xAC) : -1;
+        return r == 1 ? *(s16 *)(select_w + (rt_ver_mhg() ? 0xD0 : 0xAC)) : -1;     /* the quest number (G +0xD0) */
     }
     return 0;
 }
