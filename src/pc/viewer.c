@@ -1725,6 +1725,7 @@ static void npc_draw(const fl_light *L)
  * Headless --shot runs draw no extra frames, unless RT_FLIP_SHOT=prefix is set: then
  * each flip frame is also written to prefix_<tick>_<n>.png (test aid). */
 static int in_tick, flip_rec, flip_ticks;
+static int quest_dark_tick = -1;    /* the tick a quest started from the village (quest_from_village) */
 extern int gfx_rec_on;           /* gfx_rec.c */
 static void game_flip(void)
 {
@@ -1760,11 +1761,36 @@ static void game_flip(void)
         flip_rec = 1;
 }
 
+#ifdef VERSION_MHG
+/* G's loading screen (disp1_nm.c): a request the game sets before a load; the PS2 draws it on each vsync
+ * the load waits for (load_bin). Here after each disc read, at most 60 times a second; the first read
+ * after the request draws at once. Headless runs show nothing extra (game_flip). */
+int Disp_load_req(void);
+void Disp_load_req_end(void), Disp_load_screen(void);
+static void load_wait(void)
+{
+    static Uint32 last;
+    Uint32 now;
+    if (!in_tick || !Disp_load_req()) {
+        last = 0;
+        return;
+    }
+    now = SDL_GetTicks();
+    if (last && now - last < 17)
+        return;
+    last = now ? now : 1;
+    Disp_load_screen();
+}
+#endif
+
 /* the end of a tick: what was drawn after the last flip is not shown (the frame
  * the viewer draws next replaces it) */
 static void flip_tick_end(void)
 {
     in_tick = 0;
+#ifdef VERSION_MHG
+    Disp_load_req_end();        /* G clears the request after each frame (main 0x12DB20) */
+#endif
     if (flip_rec) {
         gfx_rec_end();
         gfx_rec_clear();
@@ -1793,9 +1819,15 @@ static void quest_from_village(void)
     {   /* game11: the loading screen with the quest's title (quest_title, set by Quest_start
          * in rt_quest_load) while the stage loads */
         extern uint8_t game_w[];
+#ifdef VERSION_MHG
+        void Disp_load_start(int arg, int mode);
+        Disp_load_start(*(uint16_t *)(game_w + 0x2C), 0);     /* G: the request (drawn by the loads, load_wait) */
+#else
         void Disp_load_start(int arg);
         Disp_load_start(*(uint16_t *)(game_w + 0x2C));
+#endif
     }
+    quest_dark_tick = flip_ticks;
     st = rt_game_stage();
     if (st != stage_no)
         load_stage_models(st);
@@ -2404,6 +2436,9 @@ int main(int argc, char **argv)
     {
         void rt_set_flip(void (*fn)(void));
         rt_set_flip(game_flip);
+#ifdef VERSION_MHG
+        rt_set_load_wait(load_wait);
+#endif
     }
     rt_set_npc_model_loader(npc_model_load);
     {
@@ -2655,6 +2690,13 @@ int main(int argc, char **argv)
                 gfx_begin_frame(0);
                 goto frame_done;
             }
+        }
+        if (quest_dark_tick >= 0 && quest_dark_tick == flip_ticks) {
+            /* the quest start (game11-13 on the PS2, one tick here): the screen stays dark (MH1) or on the
+             * loading screen (G) until game13's fade_set(2) fades the base camp in on the next tick. Drawing
+             * the scene here showed the new stage from a camera not set yet (and in G the title text) */
+            gfx_begin_frame(0);
+            goto frame_done;
         }
         if (game_cam) {
             rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);

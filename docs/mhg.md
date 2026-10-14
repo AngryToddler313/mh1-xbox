@@ -306,3 +306,7 @@ em_vital_tbl x em_lv_rate_tbl (em_hp_vital_tbl is MH1-only), attack/defence rate
 (0xE00 bytes), G blade-hit sharpness, G reward list. tools/pc_g_exclude.txt keeps matched MH1 files whose functions
 G edited (emu01/emu02/ems01, f_ud) out of the G PC build. pc_data `list:N`: a G {stage, value} list's own length.
 Quest 10 fails by time-out (quest-failed screen); quests on map 6 (89, 129) hang in an em program (open).
+Loading screens and transitions (14 Oct 2026, agent F; docs/agents/agent-F.md "G: loading screens"): G's loading screen
+is a request drawn on each vsync of a load (main 0x12DA20 from load_bin's wait); the PC draws it after disc reads
+(disp1_nm.c VERSION_MHG, viewer.c load_wait). Area-change map drawn white as G does; the quest start shows black until
+the fade-in (MH1 too). rt_village.c reads the accepted quest at select_w+0xD0 in G.
