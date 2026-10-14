@@ -1,5 +1,6 @@
 /* bgm04 - f_bgm 0x0021DF80-0x0021E268: stage_bgm_set. Whole file in bgm_nm.c. */
 #include "types.h"
+#include "gwx.h"
 
 extern u8 game_w[];
 extern u8 player_work[];
@@ -53,7 +54,7 @@ void stage_bgm_set(int n)
   {
     if (q == 1)
     {
-      if (game_w[0x25] == 0x49)
+      if (game_w[0x25] == GBGM(0x49))
       {
         str_pause(0, 0);
         str_volume(0, 0);
@@ -62,12 +63,12 @@ void stage_bgm_set(int n)
       else
       {
         game_w[0x11] = 9;
-        str_play_f_vol(0, 0x49, 0xF, 0x7F);
-        game_w[0x25] = 0x49;
+        str_play_f_vol(0, GBGM(0x49), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x49);
       }
     }
     else
-      if (game_w[0x25] == 0x57)
+      if (game_w[0x25] == GBGM(0x57))
     {
       str_pause(0, 0);
       str_volume(0, 0);
@@ -76,16 +77,16 @@ void stage_bgm_set(int n)
     else
     {
       game_w[0x11] = 0xB;
-      str_play_f_vol(0, 0x57, 0xF, 0x7F);
-      game_w[0x25] = 0x57;
+      str_play_f_vol(0, GBGM(0x57), 0xF, 0x7F);
+      game_w[0x25] = GBGM(0x57);
     }
   }
   else
   {
     if ((*((s32 *) (quest_w + 0x40))) & 0x800)
     {
-      str_play_f_vol(0, 0x55, 0xF, 0x7F);
-      game_w[0x25] = 0x55;
+      str_play_f_vol(0, GBGM(0x55), 0xF, 0x7F);
+      game_w[0x25] = GBGM(0x55);
     }
     else
       if ((*((s32 *) (quest_w + 0x40))) & 0x400)

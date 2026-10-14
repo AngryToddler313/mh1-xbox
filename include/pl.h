@@ -401,7 +401,11 @@ typedef struct PLW {
     s16   work934;           /* 0x934 */
     u8    work936;           /* 0x936 */
     s8    work937;           /* 0x937 */
-    u8 _pad938[0xC8];
+    u8    skill_src[5];      /* 0x938 G: source of each active skill (Skill_set_PL) */
+    s8    work93D;           /* 0x93D (G: Pl_status_set flag 0x40 for type 6) */
+    u8 _pad93E[3];
+    s8    skill_pts[5];      /* 0x941 G: points behind each active skill */
+    u8 _pad946[0xBA];
 } PLW;
 
 extern PLW player_work[];

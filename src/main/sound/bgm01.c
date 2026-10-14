@@ -1,5 +1,6 @@
 /* BGM server (SLPM_654.95 0x0021D5E0-0x0021DBE0): bgm_server, adx_se_set/stop, die_bgm_set. See bgm_nm.c. */
 #include "types.h"
+#include "gwx.h"
 
 extern u8 game_w[];
 extern u8 player_work[];
@@ -38,7 +39,6 @@ int str_volume();
 
 
 
-#if !defined(G_PART)
 void bgm_server(void) {
     if (*(u16 *)(game_w + 0x26) > 0) {
         *(u16 *)(game_w + 0x26) = *(u16 *)(game_w + 0x26) - 1;
@@ -84,8 +84,8 @@ void bgm_server(void) {
         if (*(u16 *)(game_w + 0x26) > 0) break;
         game_w[0x11]++;
         *(u16 *)(game_w + 0x26) = 0x96;
-        str_play_f_vol(0, 0x56, 0xF, 0x7F);
-        game_w[0x25] = 0x56;
+        str_play_f_vol(0, GBGM(0x56), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x56);
         break;
     case 2:
         if (*(u16 *)(game_w + 0x26) > 0) break;
@@ -136,49 +136,45 @@ void bgm_server(void) {
     case 8:
         if (*(u16 *)(game_w + 0x26) > 0) break;
         game_w[0x11]++;
-        str_play_f_vol(0, 0x49, 0xF, 0x7F);
-        game_w[0x25] = 0x49;
+        str_play_f_vol(0, GBGM(0x49), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x49);
     case 9:
         if (Quest_clear_ck(1) == -1) {
             game_w[0x11] = 0xB;
-            str_play_f_vol(0, 0x57, 0xF, 0x7F);
-            game_w[0x25] = 0x57;
+            str_play_f_vol(0, GBGM(0x57), 0xF, 0x7F);
+            game_w[0x25] = GBGM(0x57);
         }
         break;
     case 10:
         if (*(u16 *)(game_w + 0x26) > 0) break;
         game_w[0x11]++;
-        str_play_f_vol(0, 0x57, 0xF, 0x7F);
-        game_w[0x25] = 0x57;
+        str_play_f_vol(0, GBGM(0x57), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x57);
     case 11:
         if (Quest_clear_ck(1) == 1) {
             game_w[0x11] = 9;
-            str_play_f_vol(0, 0x49, 0xF, 0x7F);
-            game_w[0x25] = 0x49;
+            str_play_f_vol(0, GBGM(0x49), 0xF, 0x7F);
+            game_w[0x25] = GBGM(0x49);
         }
         break;
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void adx_se_set(int a0, int id) {
     if (Pl_master_ck() == 1) {
         str_play(1, id);
-        *(s16 *)(game_w + 0x1E0) = id;
+        *(s16 *)(game_w + GWX(0x1E0)) = id;
         if (game_w[0x11] != 0 && Quest_clear_ck(1) == 0) {
             game_w[0x10] = game_w[0x10] | 2;
             str_fadein_vol(0, 0xF, 0x5F);
         }
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void adx_se_stop(void) {
     if (Pl_master_ck() == 1) {
-        if (*(u16 *)(game_w + 0x1E0) == 0xA) {
-            str_stop(1, *(u16 *)(game_w + 0x1E0));
+        if (*(u16 *)(game_w + GWX(0x1E0)) == 0xA) {
+            str_stop(1, *(u16 *)(game_w + GWX(0x1E0)));
         }
         if (game_w[0x10] & 2) {
             game_w[0x10] = game_w[0x10] & 0xFD;
@@ -190,11 +186,8 @@ void adx_se_stop(void) {
         }
     }
 }
-#endif
 
-#if !defined(G_PART)
 void die_bgm_set(void) {
     game_w[0x11] = 6;
-    str_play_f_vol(0, 0x4A, 0xF, 0x7F);
+    str_play_f_vol(0, GBGM(0x4A), 0xF, 0x7F);
 }
-#endif

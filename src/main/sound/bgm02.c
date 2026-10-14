@@ -8,7 +8,11 @@ extern u8 quest_w[];
 extern u8 Snd_bgm_tbl[];
 extern u8 Snd_rev_data_tbl[];
 extern s32 Snd_rev_set_tbl[][4];
+#ifdef VERSION_MHG
+extern u8 fight_bgm_tbl[]; /* G: 11 entries, not small data */
+#else
 extern u8 fight_bgm_tbl[8];
+#endif
 extern u8 stage_bgm_etc_tbl[];
 
 void fight_bgm_set();
@@ -38,14 +42,44 @@ int str_volume();
 
 
 
-#if !defined(G_PART) || G_PART == 1
 void lobby_bgm_set2(int n) {
     str_play(0, n & 0xFF);
     game_w[0x25] = n;
 }
-#endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G: the area byte game_w+0x2E == 1 picks by stage, any other area reads fight_bgm_tbl (11 entries); ids +3 */
+void fight_bgm_set(void) {
+    u8 id;
+
+    if (game_w[0x2E] != 1) {
+        id = fight_bgm_tbl[game_w[0x2E]];
+    } else {
+        switch (game_w[0x14]) {
+        case 14:
+            id = 0x51;
+            break;
+        case 30:
+            id = 0x4E;
+            break;
+        case 28:
+            id = 0x4F;
+            break;
+        case 11:
+            id = 0x50;
+            break;
+        case 12:
+            id = 0x4A;
+            break;
+        default:
+            id = 0x51;
+            break;
+        }
+    }
+    str_play_f_vol(0, id, 0xF, 0x7F);
+    game_w[0x25] = id;
+}
+#else
 void fight_bgm_set(void) {
     u8 id;
 
@@ -78,7 +112,6 @@ void fight_bgm_set(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
 int stage_bgm_etc_ck(int n) {
     u8 *p = stage_bgm_etc_tbl;
 
@@ -90,12 +123,9 @@ int stage_bgm_etc_ck(int n) {
     }
     return 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void demo_bgm_set(int n) {
     game_w[0x11] = 0;
     str_play_f_vol(0, n, 0xF, 0x7F);
     game_w[0x25] = n;
 }
-#endif

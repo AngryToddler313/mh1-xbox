@@ -8,8 +8,6 @@ src/main/net/netwk02.c ms_net_end_wait # part net/netwk02_p1 did not link (adden
 src/main/net/power01.c ps2HddPowerOffSet # part net/power01_p1 did not link (addend / data)
 src/main/sk/cmd02.c kouhogun_table_set # part sk/cmd02_p1 did not link (addend / data)
 src/main/sk/cmd02.c yn_kouho_work_set # part sk/cmd02_p1 did not link (addend / data)
-src/main/sound/bgm01.c adx_se_set # part sound/bgm01_p1 did not link (addend / data)
-src/main/sound/bgm01.c adx_se_stop # part sound/bgm01_p1 did not link (addend / data)
 src/main/plsel/plsel01.c player_wait # part plsel/plsel01_p1 did not link (addend / data)
 src/main/evdemo/evdemo.c EvDemoMove # part evdemo/evdemo_p2 did not link (addend / data)
 src/main/evdemo/evdemo.c check000 # part evdemo/evdemo_p2 did not link (addend / data)

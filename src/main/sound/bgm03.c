@@ -1,5 +1,6 @@
 /* bgm03 - f_bgm 0x0021DBE0-0x0021DDC0: lobby_bgm_set. Whole file in bgm_nm.c. */
 #include "types.h"
+#include "gwx.h"
 
 extern u8 game_w[];
 extern u8 player_work[];
@@ -46,9 +47,14 @@ void lobby_bgm_set(int n)
   u8 *r;
   long long y;
   int x;
+  #ifdef VERSION_MHG
+  /* G: both 0x56 and 0x57 (and a quest number 0x2739 that G's Quest_clear_bit_ck maps to a bit), stream 0x1D */
+  if ((((n & 0xFF) == 0x56) || ((n & 0xFF) == 0x57)) && (Quest_clear_bit_ck(0x2739) == 1))
+#else
   if (((n & 0xFF) == 0x57) && (Quest_clear_bit_ck(0xAB) == 1))
+#endif
   {
-    if (game_w[0x25] == 0x1B)
+    if (game_w[0x25] == GBGM2(0x1B))
     {
       str_pause(0, 0);
       str_volume(0, 0);
@@ -56,9 +62,9 @@ void lobby_bgm_set(int n)
     }
     else
     {
-      str_play_f_vol(0, 0x1B, 0xF, Snd_bgm_tbl[1 + ((n & 0xFF) * 2)]);
+      str_play_f_vol(0, GBGM2(0x1B), 0xF, Snd_bgm_tbl[1 + ((n & 0xFF) * 2)]);
     }
-    game_w[0x25] = 0x1B;
+    game_w[0x25] = GBGM2(0x1B);
   }
   else
   {

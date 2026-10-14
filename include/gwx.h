@@ -13,6 +13,7 @@
 #define GWX_0x1B2 0x188
 #define GWX_0x1B3 0x189
 #define GWX_0x1DC 0x3F
+#define GWX_0x1E0 0x18E
 #define GWX_0x1DD 0xF1
 #define GWX_0x1E 0x1E
 #define GWX_0x20 0x20
@@ -53,5 +54,13 @@
 #define GWX_0xF 0xF
 #else
 #define GWX(o) (o)
+#endif
+/* G renumbered its BGM streams (AFS00 entries) from 73 up: G id = MH1 id + 3 (bgm01..04, option) */
+#ifdef VERSION_MHG
+#define GBGM(x) ((x) + 3)
+#define GBGM2(x) ((x) + 2) /* the stream 0x1B (a special village track) moved by 2 */
+#else
+#define GBGM(x) (x)
+#define GBGM2(x) (x)
 #endif
 #endif

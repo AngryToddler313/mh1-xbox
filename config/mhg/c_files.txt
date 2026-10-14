@@ -1114,8 +1114,6 @@ main 0x00117990 0x001179E8 mhg/main/option/option01_p2
 main 0x001F1300 0x001F15C4 mhg/main/pad/usbkbdm_p1
 main 0x001F1760 0x001F17E0 mhg/main/pad/usbkbdm_p2
 sub_main 0x004EE390 0x004EE49C mhg/main/pl/normal_char_set_p1
-sub_main 0x004EEF60 0x004EEFC8 mhg/main/pl/pl53_p1
-sub_main 0x004EFFD0 0x004F0018 mhg/main/pl/pl53_p2
 sub_main 0x004EE610 0x004EE6C8 mhg/main/pl/pl_normal2_p1
 sub_main 0x004E25B0 0x004E2624 mhg/main/plsel/plsel00_p1
 sub_main 0x004F7FE0 0x004F8034 mhg/main/reward/f_reward3_p1
@@ -1134,8 +1132,6 @@ main 0x00127FB0 0x00128048 mhg/main/set/setwork2_p2
 main 0x001280A0 0x00128108 mhg/main/set/setwork2_p3
 main 0x002278B0 0x002278B8 mhg/main/sk/sk20_p1
 main 0x002278F0 0x0022792C mhg/main/sk/sk20_p2
-main 0x001D80F0 0x001D8124 mhg/main/sound/bgm02_p1
-main 0x001D8210 0x001D82A4 mhg/main/sound/bgm02_p2
 main 0x001D4640 0x001D492C mhg/main/sound/flsnd05_p1
 main 0x00128F10 0x00129164 mhg/main/sound/sndc03_p1
 main 0x001291A0 0x001291D4 mhg/main/sound/sndc03_p2
@@ -1153,3 +1149,12 @@ main 0x00100D20 0x00100E10 mhg/main/sys/adxs03_p2
 sub_main 0x004C7FC0 0x004C7FE8 mhg/main/ud/udgun01_t_p1
 main 0x001DBD10 0x001DBDE0 mhg/main/cam/camc_p1
 main 0x001DBEB0 0x001DC0C4 mhg/main/cam/camc_p2
+sub_main 0x004EEF60 0x004EF46C mhg/main/pl/pl53_p1
+sub_main 0x004EFB20 0x004EFB68 mhg/main/pl/pl53_p2
+sub_main 0x004EFFD0 0x004F0018 mhg/main/pl/pl53_p3
+sub_main 0x004F0070 0x004F08F8 mhg/main/pl/pl53_p4
+main 0x001D7900 0x001D7F00 main/sound/bgm01
+main:rodata 0x002BCE40 0x002BCE70 main/sound/bgm01
+main 0x001D80F0 0x001D82A4 main/sound/bgm02
+main 0x001D7F00 0x001D80E8 main/sound/bgm03
+main 0x001D82B0 0x001D8598 main/sound/bgm04

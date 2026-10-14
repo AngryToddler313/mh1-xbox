@@ -3,7 +3,11 @@
 #include "game.h"
 #include "plf.h"
 extern u8 Equip_Bonus[0x630];
+#ifdef VERSION_MHG
+s16 Get_equip_value(PLW *pl, u8 kind); /* G: takes the hunter */
+#else
 s16 Get_equip_value(u8 kind);
+#endif
 s16 Pl_item_num_ck(PLW *, int);
 
 #if !defined(G_PART) || G_PART == 1
@@ -15,7 +19,41 @@ s32 Pl_bari_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G: 0x16 or 0x18 sets bit 4; the sums only test > 0; bit 0x40 = kind 6 with work93D; no 0x80 */
+#if !defined(G_PART) || G_PART == 1
+void Pl_status_set(PLW *pl) {
+    u8 f = 0;
+    int t;
+    if (Pl_master_ck(pl) != 0) {
+        if (pl->x7BA != 0) {
+            f |= 1;
+        }
+        if (act_ck(pl, 2, 0x15) != 0) {
+            f |= 2;
+        }
+        if (act_ck(pl, 2, 0x16) != 0 || act_ck(pl, 2, 0x18) != 0) {
+            f |= 4;
+        }
+        if (act_ck(pl, 2, 0x13) != 0) {
+            f |= 8;
+        }
+        t = (s16)(pl->work6A4 + pl->work6A5);
+        if (t > 0) {
+            f |= 0x10;
+        }
+        t = (s16)(pl->work6A8 + pl->work6A9);
+        if (t > 0) {
+            f |= 0x20;
+        }
+        if (pl->kind == 6 && pl->work93D != 0) {
+            f |= 0x40;
+        }
+        pl->work4D5 = f;
+    }
+}
+#endif
+#else
 void Pl_status_set(PLW *pl) {
     u8 f = 0;
     int t;
@@ -49,7 +87,40 @@ void Pl_status_set(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G: item ids 0x21/0x22 (+6/+9), skills 0x1F/0x20/0x60 (+3/+5/+10), cap 0x320 */
+#if !defined(G_PART) || G_PART == 1
+void Pl_atck_adj_calc(PLW *pl) {
+    int v = 0;
+    if (Pl_master_ck(pl) == 1) {
+        v += Get_equip_value(pl, 0);
+        if (Pl_item_num_ck(pl, 0x21) != 0) {
+            v += 6;
+        }
+        if (Pl_item_num_ck(pl, 0x22) != 0) {
+            v += 9;
+        }
+        v += pl->work6A4;
+        v += pl->work6A5;
+        if (Pl_Skill_ck(pl, 0x1F) == 1) {
+            v += 3;
+        } else if (Pl_Skill_ck(pl, 0x20) == 1) {
+            v += 5;
+        } else if (Pl_Skill_ck(pl, 0x60) == 1) {
+            v += 10;
+        }
+        if (v < 0) {
+            v = 1;
+        }
+        pl->work6AC = v;
+        if (pl->work6AC >= 0x320) {
+            pl->work6AC = 0x320;
+        }
+    }
+    pl->atk_rate = (u32)pl->work6AC / 100.0f;
+}
+#endif
+#else
 void Pl_atck_adj_calc(PLW *pl) {
     int v = 0;
     if (Pl_master_ck(pl) == 1) {
@@ -76,7 +147,44 @@ void Pl_atck_adj_calc(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G: item ids 0x23/0x24 (+8/+12), skills 0x25 (+10) 0x5B (+15) 0x5C (+20) 0x5D..0x5F (-10/-15/-20) */
+#if !defined(G_PART) || G_PART == 1
+void Pl_def_adj_calc(PLW *pl) {
+    int v = 1;
+    v += Get_equip_value(pl, 1);
+    if (Pl_item_num_ck(pl, 0x23) != 0) {
+        v += 8;
+    }
+    if (Pl_item_num_ck(pl, 0x24) != 0) {
+        v += 12;
+    }
+    v += pl->work6A8;
+    v += pl->work6A9;
+    if (Pl_Skill_ck(pl, 0x25) == 1) {
+        v += 10;
+    } else if (Pl_Skill_ck(pl, 0x5B) == 1) {
+        v += 15;
+    } else if (Pl_Skill_ck(pl, 0x5C) == 1) {
+        v += 20;
+    } else if (Pl_Skill_ck(pl, 0x5D) == 1) {
+        v -= 10;
+    } else if (Pl_Skill_ck(pl, 0x5E) == 1) {
+        v -= 15;
+    } else if (Pl_Skill_ck(pl, 0x5F) == 1) {
+        v -= 20;
+    }
+    if (v < 0) {
+        v = 1;
+    }
+    if ((f32)pl->vital / (f32)pl->work792 <= 0.4f) {
+        v += 0x1E;
+    }
+    pl->work6AE = v;
+    pl->work7DC = (u32)pl->work6AE;
+}
+#endif
+#else
 void Pl_def_adj_calc(PLW *pl) {
     int v = 1;
     v += Get_equip_value(1);
@@ -101,7 +209,264 @@ void Pl_def_adj_calc(PLW *pl) {
 }
 #endif
 
+
+#ifdef VERSION_MHG
+/* G skill points (replaces MH1's Equip_Bonus set table): every armor row (0x20 bytes, kind table
+ * D_005207A0[kind][idx]) holds five (skill id, points) pairs at +0x14. */
+typedef struct SkRow {
+    u8 x00[0x14];
+    struct { u8 id; s8 pt; } sk[5]; /* 0x14 */
+    u8 x1E[2];
+} SkRow;
+extern SkRow *D_005207A0[];
+typedef struct SkTbl { /* 0x10 bytes */
+    u16 id;
+    struct { s8 lim; u8 sk; } lo[3]; /* 2: points <= lim */
+    struct { s8 lim; u8 sk; } hi[3]; /* 8: points >= lim */
+    u8 x0E[2];
+} SkTbl;
+extern u8 D_0050A380[];
+s8 sub_main_func_004EF7A0(u16 kind, u8 idx);
+s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id);
+s8 sub_main_func_004EF8E0(PLW *pl, u8 id);
+void sub_main_func_004EFB20(PLW *pl, u8 skill, u8 *cnt, u16 id, s8 pts);
+
 #if !defined(G_PART)
+s8 sub_main_func_004EF470(u16 kind, u8 idx, u8 id) {
+    SkRow *row = D_005207A0[kind] + idx;
+    s8 r;
+    r = 0;
+    if (row->sk[0].id == id) {
+        r += row->sk[0].pt;
+    }
+    if (row->sk[1].id == id) {
+        r += row->sk[1].pt;
+    }
+    if (row->sk[2].id == id) {
+        r += row->sk[2].pt;
+    }
+    if (row->sk[3].id == id) {
+        r += row->sk[3].pt;
+    }
+    if (row->sk[4].id == id) {
+        r += row->sk[4].pt;
+    }
+    return r;
+}
+#endif
+
+#if !defined(G_PART)
+s8 sub_main_func_004EF540(PLW *pl, u8 id) {
+    SkRow *row = &D_005207A0[3][pl->work352[3]];
+    s8 acc = 0;
+    s8 n;
+    if (row->sk[0].id == id) {
+        acc += row->sk[0].pt;
+    }
+    if (row->sk[1].id == id) {
+        acc += row->sk[1].pt;
+    }
+    if (row->sk[2].id == id) {
+        acc += row->sk[2].pt;
+    }
+    if (row->sk[3].id == id) {
+        acc += row->sk[3].pt;
+    }
+    if (row->sk[4].id == id) {
+        acc += row->sk[4].pt;
+    }
+    if (acc != 0) {
+        n = 1;
+        if (sub_main_func_004EF470(2, pl->work352[2], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(3, pl->work352[3], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(4, pl->work352[4], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(5, pl->work352[5], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(0, pl->work352[0], 0x2B) != 0) {
+            n += 1;
+        }
+        acc = n * acc;
+        acc += sub_main_func_004EF7A0(2, pl->work352[2]);
+        acc += sub_main_func_004EF7A0(3, pl->work352[3]);
+        acc += sub_main_func_004EF7A0(4, pl->work352[4]);
+        acc += sub_main_func_004EF7A0(5, pl->work352[5]);
+        acc += sub_main_func_004EF7A0(0, pl->work352[0]);
+    }
+    return acc;
+}
+#endif
+
+#if !defined(G_PART)
+s8 sub_main_func_004EF7A0(u16 kind, u8 idx) {
+    SkRow *row = D_005207A0[kind] + idx;
+    s8 r;
+    r = 0;
+    if (row->sk[0].id == 0x29) {
+        r += 1;
+    }
+    if (row->sk[1].id == 0x29) {
+        r += 1;
+    }
+    if (row->sk[2].id == 0x29) {
+        r += 1;
+    }
+    if (row->sk[3].id == 0x29) {
+        r += 1;
+    }
+    if (row->sk[4].id == 0x29) {
+        r += 1;
+    }
+    if (row->sk[0].id == 0x2A) {
+        r += 2;
+    }
+    if (row->sk[1].id == 0x2A) {
+        r += 2;
+    }
+    if (row->sk[2].id == 0x2A) {
+        r += 2;
+    }
+    if (row->sk[3].id == 0x2A) {
+        r += 2;
+    }
+    if (row->sk[4].id == 0x2A) {
+        r += 2;
+    }
+    return r;
+}
+#endif
+
+#if !defined(G_PART)
+s8 sub_main_func_004EF8E0(PLW *pl, u8 id) {
+    s8 acc = 0;
+    s8 p;
+    s8 n = 1;
+    acc += sub_main_func_004EF470(2, pl->work352[2], id);
+    acc += sub_main_func_004EF470(4, pl->work352[4], id);
+    acc += sub_main_func_004EF470(5, pl->work352[5], id);
+    acc += sub_main_func_004EF470(0, pl->work352[0], id);
+    p = sub_main_func_004EF470(3, pl->work352[3], id);
+    if (p != 0) {
+        if (sub_main_func_004EF470(2, pl->work352[2], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(3, pl->work352[3], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(4, pl->work352[4], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(5, pl->work352[5], 0x2B) != 0) {
+            n += 1;
+        }
+        if (sub_main_func_004EF470(0, pl->work352[0], 0x2B) != 0) {
+            n += 1;
+        }
+        p = n * p;
+        p += sub_main_func_004EF7A0(2, pl->work352[2]);
+        p += sub_main_func_004EF7A0(3, pl->work352[3]);
+        p += sub_main_func_004EF7A0(4, pl->work352[4]);
+        p += sub_main_func_004EF7A0(5, pl->work352[5]);
+        p += sub_main_func_004EF7A0(0, pl->work352[0]);
+        acc += p;
+    }
+    return acc;
+}
+#endif
+
+#if !defined(G_PART) || G_PART == 2
+void sub_main_func_004EFB20(PLW *pl, u8 skill, u8 *cnt, u16 id, s8 pts) {
+    if (*cnt < 5) {
+        pl->skill[*cnt] = skill;
+        pl->skill_src[*cnt] = id;
+        pl->skill_pts[*cnt] = pts;
+        *cnt = *cnt + 1;
+    }
+}
+#endif
+
+/* G Skill_set_PL: every table row (16 bytes: id, then (limit, skill) pairs) names a point total
+ * (sub_main_func_004EF8E0) and the first matching threshold gives a skill; the five strongest stay. */
+#if !defined(G_PART)
+void Skill_set_PL(PLW *pl) {
+    u8 cnt = 0;
+    SkTbl *e;
+    s16 key[5];
+    u8 src[5];
+    u8 sk[5];
+    int i, j;
+    s16 t;
+    u8 tb;
+    for (i = 0; i < 5; i++) {
+        pl->skill[i] = 0;
+        pl->skill_src[i] = 0;
+        pl->skill_pts[i] = 0;
+    }
+    e = (SkTbl *)D_0050A380;
+    if (e->id != 0xFFFF) do {
+        s8 pt = sub_main_func_004EF8E0(pl, (u8)e->id);
+        if (pt <= e->lo[0].lim) {
+            sub_main_func_004EFB20(pl, e->lo[0].sk, &cnt, e->id, pt);
+        } else if (pt <= e->lo[1].lim) {
+            sub_main_func_004EFB20(pl, e->lo[1].sk, &cnt, e->id, pt);
+        } else if (pt <= e->lo[2].lim) {
+            sub_main_func_004EFB20(pl, e->lo[2].sk, &cnt, e->id, pt);
+        } else if (pt >= e->hi[2].lim) {
+            sub_main_func_004EFB20(pl, e->hi[2].sk, &cnt, e->id, pt);
+        } else if (pt >= e->hi[1].lim) {
+            sub_main_func_004EFB20(pl, e->hi[1].sk, &cnt, e->id, pt);
+        } else if (pt >= e->hi[0].lim) {
+            sub_main_func_004EFB20(pl, e->hi[0].sk, &cnt, e->id, pt);
+        }
+        e++;
+    } while (e->id != 0xFFFF);
+    for (i = 0; i < 5; i++) {
+        int v = pl->skill_pts[i];
+        if (v != 0) {
+            if (v > 0) {
+                key[i] = (s16)v + 200;
+                src[i] = pl->skill_src[i];
+                sk[i] = pl->skill[i];
+            } else {
+                key[i] = (s16)(-v) + 100;
+                src[i] = pl->skill_src[i];
+                sk[i] = pl->skill[i];
+            }
+        } else {
+            key[i] = 0;
+            src[i] = 0;
+            sk[i] = 0;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        for (j = i + 1; j < 5; j++) {
+            if (key[i] < key[j] || (key[i] == key[j] && src[i] < src[j])) {
+                t = key[i];
+                tb = src[i];
+                key[i] = key[j];
+                src[i] = src[j];
+                key[j] = t;
+                src[j] = tb;
+                tb = sk[i];
+                sk[i] = sk[j];
+                sk[j] = tb;
+            }
+        }
+    }
+    for (i = 0; i < 5; i++) {
+        pl->skill_pts[i] = key[i];
+        pl->skill_src[i] = src[i];
+        pl->skill[i] = sk[i];
+    }
+}
+#endif
+#else
 void Skill_set_PL(PLW *pl) {
     u8 *e = Equip_Bonus;
     s16 i;
@@ -128,7 +493,7 @@ void Skill_set_PL(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 3
 s32 Pl_Skill_ck(PLW *pl, int id) {
     s16 i;
     for (i = 0; i < 5; i++) {
@@ -140,7 +505,129 @@ s32 Pl_Skill_ck(PLW *pl, int id) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G: per-element skills 1..8, 0x74..0x7F (+-5/+3), all-element skills 0x84..0x89 (+-3/5/10) */
+#if !defined(G_PART) || G_PART == 4
+void Pl_reg_calc(PLW *pl) {
+    pl->work920 = (f32) Get_equip_value(pl, 2);
+    pl->work924 = (f32) Get_equip_value(pl, 3);
+    pl->work928 = (f32) Get_equip_value(pl, 4);
+    pl->work92C = (f32) Get_equip_value(pl, 5);
+    if (Pl_Skill_ck(pl, 0x1) == 1) {
+        pl->work920 = pl->work920 + 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x74) == 1) {
+        pl->work920 = pl->work920 + 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x7C) == 1) {
+        pl->work920 = pl->work920 + 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x5) == 1) {
+        pl->work920 = pl->work920 - 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x78) == 1) {
+        pl->work920 = pl->work920 - 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x80) == 1) {
+        pl->work920 = pl->work920 - 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x2) == 1) {
+        pl->work924 = pl->work924 + 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x75) == 1) {
+        pl->work924 = pl->work924 + 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x7D) == 1) {
+        pl->work924 = pl->work924 + 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x6) == 1) {
+        pl->work924 = pl->work924 - 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x79) == 1) {
+        pl->work924 = pl->work924 - 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x81) == 1) {
+        pl->work924 = pl->work924 - 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x3) == 1) {
+        pl->work928 = pl->work928 + 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x76) == 1) {
+        pl->work928 = pl->work928 + 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x7E) == 1) {
+        pl->work928 = pl->work928 + 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x7) == 1) {
+        pl->work928 = pl->work928 - 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x7A) == 1) {
+        pl->work928 = pl->work928 - 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x82) == 1) {
+        pl->work928 = pl->work928 - 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x4) == 1) {
+        pl->work92C = pl->work92C + 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x77) == 1) {
+        pl->work92C = pl->work92C + 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x7F) == 1) {
+        pl->work92C = pl->work92C + 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x8) == 1) {
+        pl->work92C = pl->work92C - 10.0f;
+    } else if (Pl_Skill_ck(pl, 0x7B) == 1) {
+        pl->work92C = pl->work92C - 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x83) == 1) {
+        pl->work92C = pl->work92C - 3.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x84) == 1) {
+        pl->work920 += 3.0f;
+        pl->work924 += 3.0f;
+        pl->work928 += 3.0f;
+        pl->work92C += 3.0f;
+    } else if (Pl_Skill_ck(pl, 0x85) == 1) {
+        pl->work920 += 5.0f;
+        pl->work924 += 5.0f;
+        pl->work928 += 5.0f;
+        pl->work92C += 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x86) == 1) {
+        pl->work920 += 10.0f;
+        pl->work924 += 10.0f;
+        pl->work928 += 10.0f;
+        pl->work92C += 10.0f;
+    }
+    if (Pl_Skill_ck(pl, 0x87) == 1) {
+        pl->work920 -= 3.0f;
+        pl->work924 -= 3.0f;
+        pl->work928 -= 3.0f;
+        pl->work92C -= 3.0f;
+    } else if (Pl_Skill_ck(pl, 0x88) == 1) {
+        pl->work920 -= 5.0f;
+        pl->work924 -= 5.0f;
+        pl->work928 -= 5.0f;
+        pl->work92C -= 5.0f;
+    } else if (Pl_Skill_ck(pl, 0x89) == 1) {
+        pl->work920 -= 10.0f;
+        pl->work924 -= 10.0f;
+        pl->work928 -= 10.0f;
+        pl->work92C -= 10.0f;
+    }
+    if (pl->work920 < -100.0f) {
+        pl->work920 = -100.0f;
+    }
+    if (pl->work924 < -100.0f) {
+        pl->work924 = -100.0f;
+    }
+    if (pl->work928 < -100.0f) {
+        pl->work928 = -100.0f;
+    }
+    if (pl->work92C < -100.0f) {
+        pl->work92C = -100.0f;
+    }
+    if (!(pl->work920 <= 100.0f)) {
+        pl->work920 = 100.0f;
+    }
+    if (!(pl->work924 <= 100.0f)) {
+        pl->work924 = 100.0f;
+    }
+    if (!(pl->work928 <= 100.0f)) {
+        pl->work928 = 100.0f;
+    }
+    if (!(pl->work92C <= 100.0f)) {
+        pl->work92C = 100.0f;
+    }
+}
+#endif
+#else
 void Pl_reg_calc(PLW *pl) {
     pl->work920 = (f32) Get_equip_value(2);
     pl->work924 = (f32) Get_equip_value(3);

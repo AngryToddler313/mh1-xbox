@@ -25,3 +25,4 @@ PROVIDE(Armor_Arm_Data = 0x0051B9A0);
 PROVIDE(Item_preparation_tbl_00 = 0x00254220);
 PROVIDE(mix_manual_tbl = 0x00254B58);
 PROVIDE(item_pre_rate_tbl = 0x002EAB88);
+PROVIDE(fight_bgm_tbl = 0x002895D8);

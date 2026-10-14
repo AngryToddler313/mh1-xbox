@@ -3,6 +3,7 @@
  * Not matching: em_status_ck (15, second loop register order), lobby_bgm_set and stage_bgm_set (the two flSndSetRev
  * argument loads come out in the other order; stage_bgm_set 4 diffs). Raw byte offsets into game_w. */
 #include "types.h"
+#include "gwx.h"
 
 extern u8 game_w[];
 extern u8 player_work[];
@@ -11,7 +12,11 @@ extern u8 quest_w[];
 extern u8 Snd_bgm_tbl[];
 extern u8 Snd_rev_data_tbl[];
 extern s32 Snd_rev_set_tbl[][4];
+#ifdef VERSION_MHG
+extern u8 fight_bgm_tbl[]; /* G: 11 entries, not small data */
+#else
 extern u8 fight_bgm_tbl[8];
+#endif
 extern u8 stage_bgm_etc_tbl[];
 
 void fight_bgm_set();
@@ -103,8 +108,8 @@ void bgm_server(void) {
         if (*(u16 *)(game_w + 0x26) > 0) break;
         game_w[0x11]++;
         *(u16 *)(game_w + 0x26) = 0x96;
-        str_play_f_vol(0, 0x56, 0xF, 0x7F);
-        game_w[0x25] = 0x56;
+        str_play_f_vol(0, GBGM(0x56), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x56);
         break;
     case 2:
         if (*(u16 *)(game_w + 0x26) > 0) break;
@@ -155,25 +160,25 @@ void bgm_server(void) {
     case 8:
         if (*(u16 *)(game_w + 0x26) > 0) break;
         game_w[0x11]++;
-        str_play_f_vol(0, 0x49, 0xF, 0x7F);
-        game_w[0x25] = 0x49;
+        str_play_f_vol(0, GBGM(0x49), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x49);
     case 9:
         if (Quest_clear_ck(1) == -1) {
             game_w[0x11] = 0xB;
-            str_play_f_vol(0, 0x57, 0xF, 0x7F);
-            game_w[0x25] = 0x57;
+            str_play_f_vol(0, GBGM(0x57), 0xF, 0x7F);
+            game_w[0x25] = GBGM(0x57);
         }
         break;
     case 10:
         if (*(u16 *)(game_w + 0x26) > 0) break;
         game_w[0x11]++;
-        str_play_f_vol(0, 0x57, 0xF, 0x7F);
-        game_w[0x25] = 0x57;
+        str_play_f_vol(0, GBGM(0x57), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x57);
     case 11:
         if (Quest_clear_ck(1) == 1) {
             game_w[0x11] = 9;
-            str_play_f_vol(0, 0x49, 0xF, 0x7F);
-            game_w[0x25] = 0x49;
+            str_play_f_vol(0, GBGM(0x49), 0xF, 0x7F);
+            game_w[0x25] = GBGM(0x49);
         }
         break;
     }
@@ -182,7 +187,7 @@ void bgm_server(void) {
 void adx_se_set(int a0, int id) {  /* PC: Pl_master_ck gets a0 (the player), as on the PS2 where a0 is left over */
     if (Pl_master_ck(a0) == 1) {
         str_play(1, id);
-        *(s16 *)(game_w + 0x1E0) = id;
+        *(s16 *)(game_w + GWX(0x1E0)) = id;
         if (game_w[0x11] != 0 && Quest_clear_ck(1) == 0) {
             game_w[0x10] = game_w[0x10] | 2;
             str_fadein_vol(0, 0xF, 0x5F);
@@ -192,8 +197,8 @@ void adx_se_set(int a0, int id) {  /* PC: Pl_master_ck gets a0 (the player), as 
 
 void adx_se_stop(void *pl) {
     if (Pl_master_ck(pl) == 1) {
-        if (*(u16 *)(game_w + 0x1E0) == 0xA) {
-            str_stop(1, *(u16 *)(game_w + 0x1E0));
+        if (*(u16 *)(game_w + GWX(0x1E0)) == 0xA) {
+            str_stop(1, *(u16 *)(game_w + GWX(0x1E0)));
         }
         if (game_w[0x10] & 2) {
             game_w[0x10] = game_w[0x10] & 0xFD;
@@ -208,7 +213,7 @@ void adx_se_stop(void *pl) {
 
 void die_bgm_set(void) {
     game_w[0x11] = 6;
-    str_play_f_vol(0, 0x4A, 0xF, 0x7F);
+    str_play_f_vol(0, GBGM(0x4A), 0xF, 0x7F);
 }
 
 /* PC: the 'same track, keep playing' branches also need the stream to be alive: vs_square_event (entering a house) calls str_stop_all just before, and without this the village stayed silent from then on */
@@ -221,9 +226,14 @@ void lobby_bgm_set(int n)
   u8 *r;
   long long y;
   int x;
+  #ifdef VERSION_MHG
+  /* G: both 0x56 and 0x57 (and a quest number 0x2739 that G's Quest_clear_bit_ck maps to a bit), stream 0x1D */
+  if ((((n & 0xFF) == 0x56) || ((n & 0xFF) == 0x57)) && (Quest_clear_bit_ck(0x2739) == 1))
+#else
   if (((n & 0xFF) == 0x57) && (Quest_clear_bit_ck(0xAB) == 1))
+#endif
   {
-    if (game_w[0x25] == 0x1B && str_getstat(0) != 0)
+    if (game_w[0x25] == GBGM2(0x1B) && str_getstat(0) != 0)
     {
       str_pause(0, 0);
       str_volume(0, 0);
@@ -231,9 +241,9 @@ void lobby_bgm_set(int n)
     }
     else
     {
-      str_play_f_vol(0, 0x1B, 0xF, Snd_bgm_tbl[1 + ((n & 0xFF) * 2)]);
+      str_play_f_vol(0, GBGM2(0x1B), 0xF, Snd_bgm_tbl[1 + ((n & 0xFF) * 2)]);
     }
-    game_w[0x25] = 0x1B;
+    game_w[0x25] = GBGM2(0x1B);
   }
   else
   {
@@ -266,6 +276,39 @@ void lobby_bgm_set2(int n) {
     game_w[0x25] = n;
 }
 
+#ifdef VERSION_MHG
+/* G: the area byte game_w+0x2E == 1 picks by stage, any other area reads fight_bgm_tbl (11 entries); ids +3 */
+void fight_bgm_set(void) {
+    u8 id;
+
+    if (game_w[0x2E] != 1) {
+        id = fight_bgm_tbl[game_w[0x2E]];
+    } else {
+        switch (game_w[0x14]) {
+        case 14:
+            id = 0x51;
+            break;
+        case 30:
+            id = 0x4E;
+            break;
+        case 28:
+            id = 0x4F;
+            break;
+        case 11:
+            id = 0x50;
+            break;
+        case 12:
+            id = 0x4A;
+            break;
+        default:
+            id = 0x51;
+            break;
+        }
+    }
+    str_play_f_vol(0, id, 0xF, 0x7F);
+    game_w[0x25] = id;
+}
+#else
 void fight_bgm_set(void) {
     u8 id;
 
@@ -296,6 +339,7 @@ void fight_bgm_set(void) {
     str_play_f_vol(0, id, 0xF, 0x7F);
     game_w[0x25] = id;
 }
+#endif
 
 int stage_bgm_etc_ck(int n) {
     u8 *p = stage_bgm_etc_tbl;
@@ -330,7 +374,7 @@ void stage_bgm_set(int n)
   {
     if (q == 1)
     {
-      if (game_w[0x25] == 0x49)
+      if (game_w[0x25] == GBGM(0x49))
       {
         str_pause(0, 0);
         str_volume(0, 0);
@@ -339,12 +383,12 @@ void stage_bgm_set(int n)
       else
       {
         game_w[0x11] = 9;
-        str_play_f_vol(0, 0x49, 0xF, 0x7F);
-        game_w[0x25] = 0x49;
+        str_play_f_vol(0, GBGM(0x49), 0xF, 0x7F);
+        game_w[0x25] = GBGM(0x49);
       }
     }
     else
-      if (game_w[0x25] == 0x57)
+      if (game_w[0x25] == GBGM(0x57))
     {
       str_pause(0, 0);
       str_volume(0, 0);
@@ -353,16 +397,16 @@ void stage_bgm_set(int n)
     else
     {
       game_w[0x11] = 0xB;
-      str_play_f_vol(0, 0x57, 0xF, 0x7F);
-      game_w[0x25] = 0x57;
+      str_play_f_vol(0, GBGM(0x57), 0xF, 0x7F);
+      game_w[0x25] = GBGM(0x57);
     }
   }
   else
   {
     if ((*((s32 *) (quest_w + 0x40))) & 0x800)
     {
-      str_play_f_vol(0, 0x55, 0xF, 0x7F);
-      game_w[0x25] = 0x55;
+      str_play_f_vol(0, GBGM(0x55), 0xF, 0x7F);
+      game_w[0x25] = GBGM(0x55);
     }
     else
       if ((*((s32 *) (quest_w + 0x40))) & 0x400)

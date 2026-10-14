@@ -3,6 +3,7 @@
  * (step at +8, sub step +9, counter +0xA, cursor row +0x14, sub-screen flag +0x15). option_w is the saved
  * settings block (bytes 0-0xF are the 16 options, +5/+6 screen offsets). Field meanings are guesses from use. */
 #include "types.h"
+#include "gwx.h"
 
 typedef struct OPTTSK {
     u8 pad00[8];
@@ -116,7 +117,7 @@ void option_init(OPTTSK *t) {
     if ((Fade_busy_ck() & 0xFF) != 1) {
         t->cur = 0;
         t->step++;
-        str_play(0, 0x4E);
+        str_play(0, GBGM(0x4E));
         setBGcolor(0);
         fade_set(2);
         disp_option_menu(t);

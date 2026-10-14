@@ -10,3 +10,4 @@ main filedef_sys 0x25D130     # G mkTexture (0x10F140) reads its file numbers fr
 main lb_gbyte_2EF2A4 0x2EF2A4  # G lobby 0x59A270 (Clear_lobby_ram) copies this main .sbss byte into lb_sys[0x93]; written at lobby 0x59B7F0 and 0x57B0F4
 main D_002A5FE0 0x2A5FE0     # G DispSoftkeyboard (0x20B020): s8[12] glyph index table for the 12 palette keys
 main D_002BE8B0 0x2BE8B0     # G DispSoftkeyboard: format string for those 12 prints
+main fight_bgm_tbl 0x002895D8  # G fight_bgm_set (0x1D8130) reads it by game_w+0x2E (11 bytes: 51 51 52..57 57 57 52), stage_bgm_etc_tbl follows at 0x2895E8

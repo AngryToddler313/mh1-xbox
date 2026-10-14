@@ -1,5 +1,6 @@
 /* SLPM_654.95 0x001267C0-0x00127440: option_default_set .. disp_option_sub_menu. See option_nm.c. */
 #include "types.h"
+#include "gwx.h"
 
 typedef struct OPTTSK {
     u8 pad00[8];
@@ -135,7 +136,7 @@ void option_init(OPTTSK *t) {
     if ((Fade_busy_ck() & 0xFF) != 1) {
         t->cur = 0;
         t->step++;
-        str_play(0, 0x4E);
+        str_play(0, GBGM(0x4E));
         setBGcolor(0);
         fade_set(2);
         disp_option_menu(t);
