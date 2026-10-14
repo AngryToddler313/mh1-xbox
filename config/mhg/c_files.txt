@@ -1072,7 +1072,7 @@ main 0x0010D150 0x0010D3C0 mhg/main/item/item01_a
 main 0x0010D9C0 0x0010DC74 mhg/main/item/item03_a
 main 0x0010DD20 0x0010DD98 mhg/main/item/item_g
 sub_main 0x004EDD90 0x004EE218 main/pl/pl51
-sub_main 0x004DDF20 0x004DE2C8 mhg/main/hit/hit_1
+sub_main 0x004DDF20 0x004DEDCC mhg/main/hit/hit_1
 sub_main 0x004DEDD0 0x004DF7E0 mhg/main/hit/hit_2
 main 0x002382E0 0x00238388 mhg/main/aq/aq02_p1
 main 0x00238770 0x00238858 mhg/main/aq/aq02_p2
@@ -1304,3 +1304,5 @@ main 0x001DB790 0x001DBD10 main/cam/camp
 main:rodata 0x002BCE70 0x002BCEA8 mhg/main/cam/camd_p4
 game 0x0054FD80 0x00550AF8 mhg/main/pl/f_pl_p7
 game:rodata 0x006D6AC0 0x006D6AF8 mhg/main/pl/f_pl_p7
+sub_main 0x004F0900 0x004F0940 mhg/main/pl/pl_guard_g
+sub_main:rodata 0x0052C320 0x0052C340 mhg/main/hit/hit_1
