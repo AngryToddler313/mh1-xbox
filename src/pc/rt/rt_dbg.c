@@ -370,6 +370,7 @@ int rt_dbg_money(void) { return *(s32 *)(User_data + 0x20); }
 void rt_dbg_set_money(int v)
 {
     *(s32 *)(User_data + 0x20) = v < 0 ? 0 : v > 9999999 ? 9999999 : v;     /* Gold_add's range */
+    rt_log("debug menu: money %d", *(s32 *)(User_data + 0x20));
 }
 
 #ifdef VERSION_MHG
@@ -378,7 +379,11 @@ void rt_dbg_set_hr(int v) { (void)v; }
 int rt_dbg_clear_all_quests(void) { return 0; }
 #else
 int rt_dbg_hr(void) { return User_data[0x37B]; }
-void rt_dbg_set_hr(int v) { User_data[0x37B] = (u8)(v < 0 ? 0 : v > 99 ? 99 : v); }
+void rt_dbg_set_hr(int v)
+{
+    User_data[0x37B] = (u8)(v < 0 ? 0 : v > 99 ? 99 : v);
+    rt_log("debug menu: hunter rank %d", User_data[0x37B]);
+}
 void Quest_clear_bit_set(int n);
 int rt_dbg_clear_all_quests(void)
 {
