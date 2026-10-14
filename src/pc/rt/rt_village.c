@@ -315,7 +315,7 @@ void rt_village_files_gc(void)
 void com_motion_load(int n)
 {
     struct kept *keep = com_keep;
-    const uint8_t *p = rt_addr(0x2EBC70 + 4 * (uint32_t)n, 4);
+    const uint8_t *p = rt_addr(RTVA(0x2EBC70) + 4 * (uint32_t)n, 4);
     int32_t idx;
     if (n < 0 || n > 2 || !p)
         return;
@@ -342,7 +342,7 @@ void rt_em_motion_create(int slot, int kind, const uint8_t *tbl);
 void em_motion_load(int slot, int n)
 {
     struct kept *keep = em_keep;
-    const uint8_t *p = rt_addr(0x2EC830 + 4 * (uint32_t)n, 4);
+    const uint8_t *p = rt_addr(RTVA(0x2EC830) + 4 * (uint32_t)n, 4);
     int32_t idx;
     if (n < 0 || n >= 64 || !p)
         return;
@@ -355,7 +355,7 @@ void em_motion_load(int slot, int n)
 void npc_create_model(int slot)
 {
     static const int motions[4] = { -1, 10, 9, 32 };
-    const uint8_t *a = rt_addr(0x2ECED0 + 4 * (uint32_t)slot, 4), *t = rt_addr(0x2EF2C0 + 4 * (uint32_t)slot, 4);
+    const uint8_t *a = rt_addr(RTVA(0x2ECED0) + 4 * (uint32_t)slot, 4), *t = rt_addr(RTVA(0x2EF2C0) + 4 * (uint32_t)slot, 4);
     int32_t amh, tex;
     if (slot < 0 || slot > 3 || !a || !t)
         return;

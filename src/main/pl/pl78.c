@@ -35,7 +35,9 @@ void init_move_work(void) {
     init_set_work();
     init_eft_work();
     init_shell_work();
+#ifndef VERSION_MHG     /* G (main 0x127AE0) has no item work any more */
     init_item_work();
+#endif
     clr_used_heap(0, 0x100);
 }
 
