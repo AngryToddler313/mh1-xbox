@@ -49,11 +49,6 @@ typedef struct SELECT_W {
     s8 ready[4];        /* 0x8C per player ready flag (game3/game4) */
     u8 _pad90[0x94 - 0x90];
     s8 x94[4];
-#ifdef VERSION_MHG
-    u8 _pad98[0xD0 - 0x98];
-    u16 xAC;            /* 0xD0 selected quest number (Quest_start; MH1 0xAC). G's select_w is 0xF0 bytes */
-    u8 _padD2[0xF0 - 0xD2];
-#else
     u8 _pad98[0xAC - 0x98];
     u16 xAC;            /* 0xAC selected quest number (Quest_start) */
 #endif
