@@ -930,7 +930,11 @@ def main():
         for n, c in v.items():
             by_name[n][k] += c
     n_edit = 0
+    dbg = set(os.environ.get("MHG_DEBUG_EDIT", "").split(","))
     for nm_, cnt in by_name.items():
+        if nm_ in dbg:
+            print("EDITVOTE", nm_, "taken" if nm_ in taken else "",
+                  [(m, hex(a), c, (m, a) in gaddr_taken) for (m, a), c in cnt.most_common(4)], file=sys.stderr)
         if nm_ in taken:
             continue
         (best, c1), *rest = cnt.most_common()

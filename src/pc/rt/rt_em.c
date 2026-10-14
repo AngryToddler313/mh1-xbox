@@ -476,7 +476,8 @@ static int event_quest_ready(int no)
 }
 int rt_quest_load(int no)
 {
-    if (no <= 0 || (no >= 0xB2 && !event_quest_ready(no))) {
+    if (rt_ver_mhg() ? (no <= 0 || no >= 50000) :   /* G: quest groups 00xxx..20xxx (mNNNNN.mib) */
+            (no <= 0 || (no >= 0xB2 && !event_quest_ready(no)))) {
         rt_warn("quest %d: not a valid quest number", no);
         return -1;
     }
@@ -486,8 +487,7 @@ int rt_quest_load(int no)
     game_w.master = 0;
     game_w.pl_num = 1;
     game_w.pl_state[0] = 1;
-    *((u8 *)&select_w + 0xAC) = (u8)no;
-    *((u8 *)&select_w + 0xAD) = 0;
+    select_w.xAC = (u16)no;     /* MH1 +0xAC, G +0xD0 (include/flow.h) */
     Quest_start();
     if (getenv("RT_MISSION_DUMP") && no < 0xC8) {   /* test aid: the loaded mission file (the buffer, trailing zeros
                                                      * cut), e.g. to serve as an event quest (tools/mk_event_quest.py) */

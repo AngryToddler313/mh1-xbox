@@ -117,6 +117,15 @@ static int tuto_flag_set_sub(int flag) {
 }
 
 int Tutorial_quest_ck(void) {
+#ifdef VERSION_MHG      /* G (game.bin 0x66E180): the training quests 10001-10007, 10010, 10014, 10015, 10019 */
+    if (quest_w.no > 10000 && quest_w.no < 10008) {
+        return 1;
+    }
+    if (quest_w.no == 10010 || (u16)(quest_w.no - 10014) < 2 || quest_w.no == 10019) {
+        return 1;
+    }
+    return 0;
+#endif
     if (quest_w.no >= 0x83 && quest_w.no < 0x8B) {
         return 1;
     }

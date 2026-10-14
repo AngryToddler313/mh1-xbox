@@ -53,6 +53,8 @@ extern const rt_meta_sym rt_meta_syms_main[], rt_meta_syms_game[], rt_meta_syms_
 extern const size_t rt_meta_syms_main_n, rt_meta_syms_game_n, rt_meta_syms_lobby_n, rt_meta_syms_select_n;
 extern const uint32_t rt_meta_ptrs_main[], rt_meta_ptrs_game[], rt_meta_ptrs_lobby[], rt_meta_ptrs_select[];
 extern const size_t rt_meta_ptrs_main_n, rt_meta_ptrs_game_n, rt_meta_ptrs_lobby_n, rt_meta_ptrs_select_n;
+extern const uint32_t rt_meta_main_lobby[];     /* G: main data words that point into lobby.bin (config/mhg/pc_main_lobby.txt) */
+extern const size_t rt_meta_main_lobby_n;
 
 /* The program headers, kept after the file copy is freed (rt_mem_trim). */
 #define MAXPH 16
@@ -341,7 +343,17 @@ static void meta_list(const uint32_t *a, size_t na, const uint32_t *b, size_t nb
 
 int rt_load_relocs(void)
 {
-    if (rt_ver_mhg()) {         /* no relocations in G's ELF: config/mhg/pc_ptrs.txt */
+    if (rt_ver_mhg()) {
+        size_t k;
+        for (k = 0; k < rt_meta_main_lobby_n; k++) {      /* the main -> lobby words, values read before relocation */
+            const uint8_t *w = rt_addr(rt_meta_main_lobby[k], 4);
+            if (!w)
+                continue;
+            main_to_lb = realloc(main_to_lb, (nmain_to_lb + 1) * 2 * sizeof *main_to_lb);
+            main_to_lb[2 * nmain_to_lb] = rt_meta_main_lobby[k];
+            main_to_lb[2 * nmain_to_lb + 1] = rd32(w);
+            nmain_to_lb++;
+        }         /* no relocations in G's ELF: config/mhg/pc_ptrs.txt */
         meta_list(rt_meta_ptrs_main, rt_meta_ptrs_main_n, rt_meta_ptrs_game, rt_meta_ptrs_game_n, &rel32, &nrel32);
         meta_list(rt_meta_ptrs_lobby, rt_meta_ptrs_lobby_n, NULL, 0, &rel32_lb, &nrel32_lb);
         meta_list(rt_meta_ptrs_select, rt_meta_ptrs_select_n, NULL, 0, &rel32_sel, &nrel32_sel);

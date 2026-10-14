@@ -6,7 +6,11 @@
 #define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
 #define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
 #ifdef VERSION_MHG
+#ifdef __MWERKS__
 #define EMW_SIZE   0xA00
+#else
+#define EMW_SIZE   0xA10    /* G on the PC keeps MH1's EMW stride (include/em.h) */
+#endif
 #define GW_MDL_TMPL 0x90 /* G: model templates sit 8 bytes higher in game_w */
 #define GW_MASTER 0x3A
 #else

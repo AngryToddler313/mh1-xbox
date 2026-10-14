@@ -1,5 +1,10 @@
 /* Lobby: per-frame common move (SLPM_654.95 lobby overlay 0x5D6420-). Whole file; runs split into lb_pNN.c */
 #include "lobby_f.h"
+#ifdef VERSION_MHG
+#define PL_MAX 10
+#else
+#define PL_MAX 8
+#endif
 
 int Lb_move_common(void) {
     PLW *pl2;
@@ -13,6 +18,15 @@ int Lb_move_common(void) {
     int r;
     u8 *k;
     e = em_work;
+#ifdef VERSION_MHG
+    /* G (lobby 0x59B350): ten players; a ten-entry byte counter at cw+0xB5A counts down; the loop over the commers also counts
+     * the players in game_w.pl_num; */
+    for (i = 0; i < 10; i++) {
+        if (cw[0xB5A + i] != 0) {
+            cw[0xB5A + i]--;
+        }
+    }
+#endif
     if (lb_sys.x72 != 0) {
         lb_sys.x72 = lb_sys.x72 - 1;
     }
@@ -29,14 +43,21 @@ int Lb_move_common(void) {
     c = (u8 *)lbCommer;
     pl = player_work;
     CW8(3) = 0;
+#ifdef VERSION_MHG
+    game_w.pl_num = 0;
+#endif
     do {
-        if (*(s8 *)c != 0 && PLU8(pl, 0x736) != 0 && ((k = cw, ((s8 *)k)[3] == 0) || memcmp(k + 3, c, 8) < 0)) {
+        if (*(s8 *)c != 0 && PLU8(pl, 0x736) != 0 && (
+#ifdef VERSION_MHG
+            game_w.pl_num++,
+#endif
+            (k = cw, ((s8 *)k)[3] == 0) || memcmp(k + 3, c, 8) < 0)) {
             memcpy(cw + 3, c, 8);
         }
         i++;
         c += 0x5C;
         pl++;
-    } while ((u32)i < 8);
+    } while ((u32)i < PL_MAX);
     if (lb_sys.x7C != 0) {
         r = lb_sys.x7C - 1;
         lb_sys.x7C = r;
@@ -72,7 +93,7 @@ int Lb_move_common(void) {
     move_eft();
     move_set();
     move_stage();
-    Pit_mv_lb();
+    Pit_mv_lb();       /* G skips it in its new talk mode 18, which the PC (MH1's x68 numbering) does not have */
     Lb_cockpit_move();
     j = 0;
     pl2 = player_work;
@@ -88,6 +109,6 @@ int Lb_move_common(void) {
         }
         j++;
         pl2++;
-    } while ((u32)j < 8);
+    } while ((u32)j < PL_MAX);
     return r;
 }

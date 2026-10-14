@@ -46,6 +46,17 @@ def load_symbols(files=SYMFILES):
     return syms
 
 
+def load_pc_data():
+    """config/mhg/pc_data.txt: {name: (G address, G size)} (see tools/mhg_pcmeta.py)"""
+    out = {}
+    for raw in open("config/mhg/pc_data.txt"):
+        line = raw.split("#", 1)[0].strip()
+        m = LINE.match(line)
+        if m and "noimport" not in line:   # noimport: a name for the symbol view only (rt_data.c reads it)
+            out[m.group(1)] = (int(m.group(2), 16), int(m.group(3), 16))
+    return out
+
+
 def main():
     if len(sys.argv) != 3:
         sys.exit("usage: gen_rt_tables.py tables.txt out.c")
@@ -60,7 +71,12 @@ def main():
                     gsyms[m.group(1)] = (int(m.group(2), 16), 0)
     missing = []
     entries = []
-    for raw in open(sys.argv[1]):
+    gdata = load_pc_data() if G else {}
+    lines = list(open(sys.argv[1]))
+    if G:   # G-only tables (config/mhg/pc_data.txt) not in tables.txt are imported too
+        listed = set(r.split("#", 1)[0].split()[0] for r in lines if r.split("#", 1)[0].split())
+        lines += [n + "\n" for n in gdata if n not in listed]
+    for raw in lines:
         line = raw.split("#", 1)[0].split()
         if not line:
             continue
@@ -71,6 +87,9 @@ def main():
                 entries.append((name, 0, int(line[2], 16), True))
                 continue
             entries.append((name, int(line[1], 16), int(line[2], 16), False))
+            continue
+        if G and name in gdata:     # G's own address and size (host array at G's size)
+            entries.append((name, gdata[name][0], gdata[name][1], work, gdata[name][1]))
             continue
         if name not in syms:
             sys.exit("gen_rt_tables: %s not in %s" % (name, " / ".join(SYMFILES)))

@@ -19,6 +19,34 @@ void Lb_put_gold(void) {
     font_print_ex(0x1DA, 0x1E, 0, lit_695_00664CB8, *(s32 *)0x3C6FE0);
 }
 
+#ifdef VERSION_MHG
+/* G (lobby 0x566D80): ten players; the prim for the draw callback is only taken when the argument is non-zero (Lb_stage_load
+ * passes its second argument: 1 at the first load) */
+void Lb_pl_init(int a0) {
+    int i = 0;
+    PLW *pl = player_work;
+    int use = a0 & 0xFF;
+    do {
+        if (pl->be_flag != 0) {
+            if (pl->id == game_w.master) {
+                Eft26_set(pl);
+            }
+            PLU8(pl, 0x8C4) = 0;
+            if (use != 0) {
+                pl->work568 = get_prim();
+                if ((s16)pl->work568 != -1) {
+                    pl->work564 = get_prim_ptr((s16)pl->work568);
+                    *(s32 *)((u8 *)pl->work564 + 0x18) = *(u16 *)&pl->id;
+                    *(void **)((u8 *)pl->work564 + 0x14) = Lb_trans_pl;
+                }
+            }
+        }
+        i++;
+        pl++;
+    } while (i < 10);
+    hit_chk_init();
+}
+#else
 void Lb_pl_init(int a0) {
     int i = 0;
     PLW *pl = player_work;
@@ -43,6 +71,7 @@ void Lb_pl_init(int a0) {
     hit_chk_init(a0);
 }
 
+#endif
 void Lb_player_load(PLW *pl) {
     CW8(0x2C07) = 1;
     pl_create_model(pl->id);

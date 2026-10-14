@@ -97,6 +97,31 @@ typedef struct QUEST_W {
     s16 x14C;           /* 0x14C */
     s8 x14E;            /* 0x14E */
     s8 x14F;            /* 0x14F */
+#ifdef VERSION_MHG
+    /* G (0x290 bytes, Quest_init's memset): MH1's x150 and x180.. block moved; offsets in the
+     * comments are G's (sub_main Quest_start 0x4B3AA0, Quest_condition_judging) */
+    u8 _pad150[0x154 - 0x150];
+    s8 x150;            /* 0x154 (MH1 0x150; G clears 0x154 where MH1 cleared 0x150: a guess) */
+    u8 rnd[15];         /* 0x155 random bytes per quest (offline ran_suu, online from the host);
+                         * seed of the quest's own generator (Quest_rand_seed); [master] picks the start area */
+    u8 _pad164;
+    s8 x165[3];         /* 0x165 mission header bytes 0x45..0x47 */
+    u8 x168;            /* 0x168 cleared by Quest_start */
+    s8 x169;            /* 0x169 (time limit - 1) / 9000, not capped (xAF is capped at 2) */
+    u16 rnd_seed;       /* 0x16A the quest's generator state (Quest_rand) */
+    s16 x16C[52];       /* 0x16C cleared by Quest_start */
+    s16 x1D4[52];       /* 0x1D4 cleared by Quest_start */
+    s16 x23C;           /* 0x23C cleared by Quest_start */
+    s16 x23E;           /* 0x23E */
+    s16 x240;           /* 0x240 */
+    u8 _pad242[0x280 - 0x242];
+    s8 x180;            /* 0x280 (MH1 0x180; Quest_condition_judging) */
+    s8 x181;            /* 0x281 */
+    s16 x182;           /* 0x282 */
+    s16 x184;           /* 0x284 */
+    s16 x186;           /* 0x286 */
+    u8 _pad288[0x290 - 0x288];
+#else
     s8 x150;            /* 0x150 */
     u8 _pad151[0x180 - 0x151];
     s8 x180;            /* 0x180 */
@@ -104,6 +129,7 @@ typedef struct QUEST_W {
     s16 x182;           /* 0x182 */
     s16 x184;           /* 0x184 */
     s16 x186;           /* 0x186 */
+#endif
 } QUEST_W;
 extern QUEST_W quest_w;
 
@@ -125,7 +151,12 @@ typedef struct QEM {
     f32 pos[3];         /* 0x20 */
     s16 x2C;            /* 0x2C */
     s16 x2E;            /* 0x2E flags: 1 gone, 2, 4 dead, 8 captured */
+#ifdef VERSION_MHG
+    s16 x30;            /* 0x30 G: size in percent (quest_em_init_sub: 100, or random for big monsters) */
+    u8 _pad32[0xA];
+#else
     u8 _pad30[0xC];     /* 0x30 (entry size is 0x3C) */
+#endif
 } QEM;
 
 /* One extra pick-up point (StiEM_data[20], 0x1C bytes): treasure/hagi spot

@@ -217,7 +217,31 @@ Lb_make_quest_tbl_local, Lb_check_newCommer, lb_basic_master, Lb_npc_mv, lbc_tex
 Lbc_init_network_work, Lbc_set_prim; main: Pit_reset (agent C). lb_set_key_quest_local is missing in G.
 G's Game_task (main 0x239490) is rewritten (offline step 2 = 0x239F60: Local_main every tick, 1 ->
 quest, -1 -> back to the title); the PC's rt_flow/rt_village stand for it.
-Quest path (agent A): Quest_start (sub_main 0x4B3AA0), em_cmd_init / em tables (A has WIP on agent-A).
+Quest path (agent A, 14 Oct 2026): `--quest N` (G numbers: 1 = m00001.mib, 10001 = training ...) loads
+G's mission file and starts the hunt: build/A/g/q1.png (quest 1, forest base camp, hunter, HUD). Done, all
+under VERSION_MHG, written from G's asm for the PC, not byte-checked (they need G's GAME_W layout):
+Quest_start, Quest_pl_stage_init (random start areas), quest_em_init_sub/_sub2 (+ G's quest random
+generator 0x4B52E0/0x4B5480, random monster sizes 0x4B7810/0x4B7920), f_quest.c; Stage_data_get /
+Stage_mv_data_get per map (agent C's hunks + 0x4A1970, qstb02/05.c); Tutorial_quest_ck; em_cmd_init
+(11 levels, 52 kinds); em command interpreter: G's new commands 0x2C (species select), 0x69, 0x70 (the
+old 0x2C), 0x71, 0x99 and their lengths (em_cmd_nm.c); fish_type_set (eft23.c). include/quest.h: G's
+QUEST_W tail (0x290) and QEM+0x30; include/flow.h: select_w quest number at +0xD0.
+G tables for the PC: config/mhg/pc_data.txt (names, G addresses and sizes; G-only tables under descriptive names, never D_ with a G address; kind tables
+grown from 35 to 52 kinds; sun_pos_tbl = 0x5243E0, G's stage_set_set copies it into stage_work+0xC8).
+tools/mhg_pcmeta.py also takes pointer words from the G split (`.word SYMBOL`) and its labels as targets;
+a word pointing into another module must hit a label start (em20's byte code had been rewritten).
+Full hunt checked (scripted, hidden): G quest 10 (Rathian, stage 40) with RT_QUEST_STAGE=1 RT_EM_HP=30
+RT_DMG_MUL=40: kill at tick 154 -> clear (x06 4) -> carve wait -> game3 -> game5 -> reward list (204, 205,
+278 x2) -> reward screen (build/A/g/q10_end*.png). Also on this path: em_cmd 0x56/0x57 take u16 quest
+numbers in G; hit zones per monster state (em_meat_tbl, G 0x509410); carve tables per quest rank
+(em_hagi_type_tbl, G 0x6D5D50); G's move() has no item_check/move_item (no item work in G);
+player_work has 10 entries in G (rt_game.c); EMW keeps MH1's 0xA10 stride on the PC (em.h, emw01/02.c,
+version.h EMW_STRIDE: G's 0xA00 only for MWCC; the PC's local EMX/EWK copies are 0xA10). Hidden G new game
+without RT_NO_NPC reaches the hunter's house and runs 110 s (build/A/g/v/s.png); NPC em_cmd tables are
+converted now (pointer words from the split). G next_cmd_search checked opcode by opcode against an emulation of G's asm.
+Still open: EMW bytes G 0x9FB/0x9FC (monster state for hit zones, em command 0x71) have no writer on the
+PC; em_cmd_flag_set/clear/ck: G adds kinds 0x32 and 0x2D (subspecies) to the kind 7/0xF cases (not
+done); the reward screen draws its frame but no item list/text; armour tables not imported.
 Main (agent C), blocking CONTINUE: Select_task's menu family is edited in G (csub00 0x1EE8B0, init_mode_sel
 0x1EEAD0, mode_sel 0x1EEC50, mode_sel_end 0x1EF060, mode_sel_exit 0x1EF270, disp_mode_menu 0x1EF420; G's menu
 is NEW GAME / CONTINUE / GALLERY / OPTIONS). NEW GAME happens to work with MH1's C; CONTINUE (with a save on

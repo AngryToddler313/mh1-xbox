@@ -296,7 +296,7 @@ char *pick_game_json(void)
     int ang = 0, any = 0;
     if (!o) return NULL;
     put(&s, "{\"tick\":%d,\"mode\":%u,\"step\":%u,\"stage\":%u,\"quest\":%u,\"map_areas\":[%u,%u,%u,%u],\"random_seed\":%d",
-        rt_log_tick(), game_w[0], game_w[1], game_w[0x14], select_w[0xAC], game_w[0x28], game_w[0x29], game_w[0x2A], game_w[0x2B], rt_seed_get());
+        rt_log_tick(), game_w[0], game_w[1], game_w[0x14], select_w[rt_ver_mhg() ? 0xD0 : 0xAC], game_w[0x28], game_w[0x29], game_w[0x2A], game_w[0x2B], rt_seed_get());
     rt_cam_view(eye, tar, &roll, &fov);
     put(&s, ",\"camera\":{\"eye\":[%.1f,%.1f,%.1f],\"target\":[%.1f,%.1f,%.1f],\"roll\":%.3f,\"fov\":%.3f}", eye[0], eye[1], eye[2], tar[0], tar[1], tar[2], roll, fov);
     {

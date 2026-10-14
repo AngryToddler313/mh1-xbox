@@ -24,6 +24,7 @@ Usage: python3 tools/mhg_pcmeta.py [--eval]
 """
 import bisect
 import collections
+import glob
 import os
 import re
 import struct
@@ -56,6 +57,84 @@ def read_syms(path):
     return out
 
 
+def split_data():
+    """G's split data (asm/mhg/<module>/data, VERSION=mhg tools/rebuild.sh), if present: its
+    labelled objects (dlabel .. enddlabel) as sized objects that pointers may point into (the
+    scan's targets), and the words it writes as `.word SYMBOL` (pointers within the module:
+    splat's own symbolisation). Without asm/mhg both are empty."""
+    objs, ptrs = collections.defaultdict(list), collections.defaultdict(set)
+    ins = re.compile(r"^\s*/\* [0-9A-F]+ ([0-9A-F]{8})(?: [0-9A-F]+)? \*/\s*\.(\w+)\s+(.*)$")
+    for m in G_MODS:
+        for path in sorted(glob.glob(P("asm/mhg/%s/data/data/*.s" % m))):
+            cur, first, last, has_sym = None, None, None, False
+            for line in open(path):
+                if line.startswith("dlabel "):
+                    cur, first, last, has_sym = line.split()[1], None, None, False
+                    continue
+                if line.startswith("enddlabel"):
+                    if cur and first is not None and last is not None and last > first:
+                        objs[m].append((first, last - first, cur, False))
+                        if has_sym:
+                            PTR_OBJ.setdefault(m, []).append((first, last))
+                    cur = None
+                    continue
+                mm = ins.match(line)
+                if not mm:
+                    continue
+                a, kind, arg = int(mm.group(1), 16), mm.group(2), mm.group(3).strip()
+                if first is None:
+                    first = a
+                n = {"word": 4, "short": 2, "half": 2, "byte": 1}.get(kind)
+                if n is None:               # .asciz: up to the next line's address
+                    n = 1
+                last = max(last or 0, a + n)
+                if kind == "word" and re.match(r"^[A-Za-z_]\w*$", arg) and a & 3 == 0:
+                    ptrs[m].add(a)
+                    has_sym = True
+    return objs, ptrs
+
+
+PTR_OBJ = {}         # module -> sorted [(start, end)] of split objects holding a `.word SYMBOL` (pointer tables)
+
+
+def in_ptr_obj(m, a):
+    lst = PTR_OBJ.get(m) or []
+    k = bisect.bisect_right(lst, (a, 1 << 40)) - 1
+    return k >= 0 and lst[k][0] <= a < lst[k][1]
+
+
+RESIDENT = {"main": "main", "sub_main": "main"}     # one resident module for the scan's exact rule
+PC_DATA_RANGES = []                                 # objects config/mhg/pc_data.txt names (trusted targets)
+
+
+def add_pc_data(gsyms):
+    """config/mhg/pc_data.txt: G data the PC imports that config/mhg/symbols lacks or sizes
+    wrongly (G-only tables under their split names D_XXXXXXXX, G sizes of grown objects such as
+    quest_w). `[module]` lines start a module; `NAME = 0xADDR; // size:0xN` lines as in the
+    symbol files. A listed address replaces the entry at that address (name and size)."""
+    path = P("config/mhg/pc_data.txt")
+    if not os.path.exists(path):
+        return
+    mod = None
+    for l in open(path):
+        l = l.split("#", 1)[0].strip()
+        mm = re.match(r"^\[(\w+)\]$", l)
+        if mm:
+            mod = mm.group(1)
+            continue
+        m = PAT.match(l)
+        if not m or mod not in gsyms:
+            continue
+        a = int(m.group(2), 16)
+        sz = re.search(r"size:0x([0-9A-Fa-f]+)", m.group(3) or "")
+        lst = [e for e in gsyms[mod] if e[0] != a and e[2] != m.group(1)]
+        lst.append((a, int(sz.group(1), 16) if sz else 0, m.group(1), False))
+        if sz:
+            PC_DATA_RANGES.append((a, int(sz.group(1), 16)))
+        lst.sort()
+        gsyms[mod] = lst
+
+
 class SymIndex:
     """sorted symbols of one module: start set, and 'inside a sized data object'"""
 
@@ -72,10 +151,13 @@ class SymIndex:
             return False
         return all(0x20 <= c < 0x7F or 0x81 <= c <= 0xFC for c in d[o:o + 2])
 
-    def resolves(self, v, init_hi):
-        """v starts a symbol, or points into a sized data object below init_hi (not .bss)"""
+    def resolves(self, v, init_hi, exact=False):
+        """v starts a symbol, or points into a sized data object below init_hi (not .bss);
+        exact: only a symbol or split-label start counts (pointers into another module)"""
         if v in self.starts:
             return True
+        if exact:
+            return any(a <= v < a + sz for a, sz in PC_DATA_RANGES)
         if v >= init_hi:
             return False
         if LOOSE and self.dlo <= v and (v & 3 == 0 or self.mod_.data[v - self.mod_.vram - 1] == 0):
@@ -143,7 +225,9 @@ def scan(mods, idx, dr, sees):
                 if t not in mods:
                     continue
                 r0, r1 = mod_range(mods, t)
-                if r0 <= v < r1 and idx[t].resolves(v, mods[t].vram + len(mods[t].data)):
+                # from an overlay into main/sub_main: a label start only (game.bin byte code such as
+                # em20's programs held words like 0x00280100 that are inside main's data but no pointer)
+                if r0 <= v < r1 and idx[t].resolves(v, mods[t].vram + len(mods[t].data), exact=(m not in RESIDENT and t in RESIDENT and not in_ptr_obj(m, a))):
                     found[m].add(a)
                     break
     return found
@@ -235,7 +319,8 @@ def main():
     G = M.load_g()
     gsyms = {m: read_syms(P("config/mhg/symbols/%s.txt" % m)) for m in G_MODS}
     add_map_names(gsyms)
-    add_hand_names(gsyms)
+    add_hand_names(gsyms)       # names only (agent B)
+    add_pc_data(gsyms)          # names with sizes, imported by gen_rt_tables (agent A)
     _names, lists = M.read_split_names()
     m1size = {}
     for m, lst in lists.items():
@@ -257,7 +342,9 @@ def main():
                     sz = nxt - a
             out.append((a, sz, n, isf))
         sized[m] = out
-    idx = {m: SymIndex(sized[m], G[m], 0x253D20 if m == "main" else G[m].text_hi) for m in G_MODS}
+    split_objs, split_ptrs = split_data()
+    idx = {m: SymIndex(sorted(sized[m] + split_objs.get(m, [])), G[m], 0x253D20 if m == "main" else G[m].text_hi)
+           for m in G_MODS}
     dr = data_ranges(G, G_MODS)
     dr["main"] = (0x253D20, G["main"].vram + len(G["main"].data))
     found = scan(G, idx, dr, SEES)
@@ -306,10 +393,10 @@ def main():
         keep = set()
         for a in found[m]:
             k = bisect.bisect_right(starts, a) - 1
-            if k >= 0 and cv[k][0] <= a < cv[k][1]:
-                continue
+            if k >= 0 and cv[k][0] <= a < cv[k][1] and not in_ptr_obj(m, a):
+                continue        # (in a pointer table of the split, G's own layout wins: em01's tables grew)
             keep.add(a)
-        found[m] = keep
+        found[m] = keep | split_ptrs.get(m, set())     # the split's own `.word SYMBOL` words always count
     tot = collections.Counter()
     with open(P("config/mhg/pc_ptrs.txt"), "w") as fh:
         fh.write("# Generated by tools/mhg_pcmeta.py: PS2 Monster Hunter G data words that hold a pointer\n"
