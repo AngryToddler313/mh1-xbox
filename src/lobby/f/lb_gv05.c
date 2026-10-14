@@ -1,4 +1,5 @@
 /* lb_gv05 - mutation fixes 0x005C9910-0x005C9A50: guild_trans_ot0. Whole file in lb_village_nm.c. */
+#include "lbsys_g.h"
 #include "types.h"
 #define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
 typedef double f64;
@@ -521,9 +522,9 @@ block_4:
         var_s2 += 0x14;
     } while (var_s1 <= 3);
     Lb_put_button(0x1E6, 0x134, 3);
-    if ((M2C_FIELD(lb_sys, s32 *, 0x68) == 2) && (M2C_FIELD(lb_sys, s8 *, 6) < 0xA)) {
+    if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 2) && (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) < 0xA)) {
         temp_s1 = M2C_FIELD(mhRule, u8 *, 0x58);
-        if ((s32) temp_s1 >= (((s8)(get_questLevelNum(M2C_FIELD(lb_sys, s32 *, 0x68)))))) {
+        if ((s32) temp_s1 >= (((s8)(get_questLevelNum(M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))))))) {
             if (key_quest_num > 1) {
                 goto block_11;
             }

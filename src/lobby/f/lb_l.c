@@ -1,4 +1,5 @@
 /* Lobby: trade, sleep, exit (SLPM_654.95 lobby overlay 0x5D0750-). Whole file; runs split into lb_lNN.c */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 
 int trade_get_ck_005D0750(PLW *pl) {
@@ -104,7 +105,7 @@ void lb_goto_guest_room(PLW *pl, int no) {
             *p = v + 1;
         }
     case 2:
-        ((u8 *)&lb_sys)[0x71] = 0;
+        ((u8 *)&lb_sys)[LBSYS_OFS(0x71)] = 0;
         lb_sys.x03 = 5;
         F(s16, pl, 0x73A) = no;
         c = cw;

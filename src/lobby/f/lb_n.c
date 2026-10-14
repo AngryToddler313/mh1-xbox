@@ -1,4 +1,5 @@
 /* Lobby: generic senders, sound call, set01 helper (SLPM_654.95 lobby overlay 0x5D3640-0x5D6420). Whole file; runs split into lb_nNN.c */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 
 void sound_call_005D3640(a, b)
@@ -184,6 +185,33 @@ int Lb_get_pl_stat2(int a0) {
 
 extern u8 D_3E55F0[], D_3E5FF0[], D_3E69F0[], D_3E73F0[], D_3E7DF0[], D_3E87F0[], D_3E91F0[];
 
+#ifdef VERSION_MHG
+/* G (lobby 0x59A270, lobby_func_0059A270): lb_sys is 0x98 bytes at 0x6548F0 (our lb_sys symbol = 0x654906, i.e. field 0x16
+ * of it), lb_player has 10 entries of 0x38 bytes whose pl points at player_work[i] (0xA00 apart), and ten client work
+ * bytes at +0xB64 are cleared. */
+void Clear_lobby_ram(void) {
+    int i;
+    u8 *lbs = (u8 *)&lb_sys - 0x16;
+    extern u8 lb_gbyte_2EF2A4;
+    u8 b = lb_gbyte_2EF2A4;             /* a main .sbss byte, stored to lb_sys[LBSYS_OFS(0x93)] */
+
+    flMemset(lbs, 0, 0x98);
+    lbs[0x95] = 1;
+    lbs[0x93] = b;
+    for (i = 0; i < 10; i++) {
+        *(PLW **)((u8 *)lb_player + i * 0x38) = (PLW *)((u8 *)player_work + i * 0xA00);
+        client_work[0xB64 + i] = 0;
+    }
+    init_set_work();
+    cw = client_work;
+    pNet = network_work;
+    Lbc_init_network_work();
+    if (*((u8 *)player_work + game_w.master * 0xA00) != 0) {
+        Lb_set_mini_data(my_user_mini_data);
+    }
+    ((u8 *)&game_w)[0x25] = 0;
+}
+#else
 void Clear_lobby_ram(void) {
     flMemset(&lb_sys, 0, 0x90);
     client_work[0x2BFE] = 0;
@@ -209,14 +237,15 @@ void Clear_lobby_ram(void) {
     cw = client_work;
     lbSendInterval = 0xF;
 }
+#endif
 
 void Lb_put_hint(int a, int n) {
     int t = n * 4;
     if (n == 0x63) {
-        sprintf((char *)&lb_sys + a * 0x1E + 0xA, lit_275_00665668, t);
+        sprintf((char *)&lb_sys + a * 0x1E + LBSYS_OFS(0xA), lit_275_00665668, t);
         return;
     }
-    sprintf((char *)&lb_sys + a * 0x1E + 0xA, lit_743_00665D60, *(int *)((u8 *)hint_tbl[a] + t));
+    sprintf((char *)&lb_sys + a * 0x1E + LBSYS_OFS(0xA), lit_743_00665D60, *(int *)((u8 *)hint_tbl[a] + t));
 }
 
 int lb_key_quest_ck(int n) {

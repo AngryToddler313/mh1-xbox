@@ -1,6 +1,7 @@
 #ifndef LBNPC_H
 #define LBNPC_H
 /* lobby town NPC movement scripts (npcMv*, npcCat*, npcPig*, lb_npc_*_move): shared declarations. */
+#include "lbsys_g.h"
 #include "lobby.h"
 #include "em.h"
 #include "pl.h"

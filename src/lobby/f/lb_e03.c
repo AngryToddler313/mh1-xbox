@@ -1,4 +1,5 @@
 /* lb_e03 - lobby members/cockpit/icons 0x005CB830-0x005CB980: Lb_equip_set, Lb_cockpit_move. Whole file in lb_e.c. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 
 
@@ -13,7 +14,7 @@
 void Lb_equip_set(u16 *p, int a1) {
     Set_equip_idx(a1);
     Set_userdata(p);
-    ((u8 *)&lb_sys)[0x78] = 1;
+    ((u8 *)&lb_sys)[LBSYS_OFS(0x78)] = 1;
     Lb_set_mini_data((u8 *)&lbCommer[p[6]] + 0x1C);
     Lb_set_mini_data(CWPLAYER(p[6]) + 0x1346);
 }

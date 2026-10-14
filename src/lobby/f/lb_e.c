@@ -1,4 +1,5 @@
 /* Lobby: room members, friend list, status set, cockpit (SLPM_654.95 lobby overlay 0x5CB310-0x5CCEE0). Whole file; matching runs split into lb_eNN.c */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 
 void Lobby_quest_print(void) {
@@ -57,7 +58,7 @@ void Lb_PlStatusSet(int id) {
 void Lb_equip_set(u16 *p, int a1) {
     Set_equip_idx(a1);
     Set_userdata(p);
-    ((u8 *)&lb_sys)[0x78] = 1;
+    ((u8 *)&lb_sys)[LBSYS_OFS(0x78)] = 1;
     Lb_set_mini_data((u8 *)&lbCommer[p[6]] + 0x1C);
     Lb_set_mini_data(CWPLAYER(p[6]) + 0x1346);
 }

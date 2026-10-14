@@ -15,6 +15,10 @@ typedef struct LB_PIT {
 } LB_PIT;
 
 /* lb_sys (0x006EAE50, size 0x90): lobby town system state */
+#include "lbsys_g.h"
+#ifdef VERSION_MHG
+typedef LBSYS_G LB_SYS;
+#else
 typedef struct LB_SYS {
     u8 _pad00;
     s8 x01;             /* 0x01 (client state counters) */
@@ -50,6 +54,7 @@ typedef struct LB_SYS {
     s8 x87;             /* 0x87 */
     u8 x88[8];          /* 0x88 per-stage flags, indexed by stage - 0x51 (up to 0x55: the object is larger than its declared size) */
 } LB_SYS;
+#endif
 
 /* lobby NPC work: the per-monster area of an EMW at EMW+0x444 (EMW.ex) */
 typedef struct LB_NPCW {

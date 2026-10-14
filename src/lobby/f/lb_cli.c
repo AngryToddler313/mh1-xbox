@@ -1,5 +1,6 @@
 /* lb_cli - one translation unit 0x005B7020-0x005C1B5C (lbtu3): the lobby client, the small HTML text renderer (nwDispStr_Html), the mail / comment requests and the server notice callbacks. */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
+#include "lbsys_g.h"
 #include "lobby_b.h"
 #undef Lbs_MatchStart
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
@@ -2474,7 +2475,7 @@ void To_EnterLobby() {
     F(s8, (u8 *)cw, 0x32C2) = 0;
     F(s8, (u8 *)cw, 0x35D3) = 0;
     F(s8, (u8 *)cw, 0x35D4) = 0;
-    F(s8, &lb_sys, 0x70) = 0;
+    F(s8, &lb_sys, LBSYS_OFS(0x70)) = 0;
     Plaza_chat_clear();
     Lb_clearChatList();
     cnLBS_Read_LobbyJoinUser(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Lobby_JoinUser_o);
@@ -2672,8 +2673,8 @@ void lbc_in_lobby_00_05() {
             cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
             SetDialogData_HTML((u8 *)cw + 0x32D1);
             *(s8 *)0x3F36AB = 0;
-            F(s32, &lb_sys, 0x6C) = 1;
-            F(s32, &lb_sys, 0x68) = 0x17;
+            F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
+            F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x17;
             break;
         }
     }
@@ -2732,7 +2733,7 @@ s32 Lbc_ReserveRoom() {
         for (i = 0; i < 8; i++) {
             if (RoomInfo_c79[i].st == 1) {
                 F(s8, &ClassInfo_c79, 8) = RoomInfo_c79[i].x0;
-                F(s8, &lb_sys, 0x73) = i;
+                F(s8, &lb_sys, LBSYS_OFS(0x73)) = i;
                 break;
             }
         }
@@ -2795,10 +2796,10 @@ void CallBack_Result_RuleAllocation(CNET_RES res) {
         cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
         SetDialogData_HTML((u8 *)cw + 0x32D1);
         *(s8 *)0x3F36AB = 0;
-        F(s32, &lb_sys, 0x6C) = 1;
-        F(s32, &lb_sys, 0x68) = 0x17;
+        F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
+        F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x17;
         F(u8, (u8 *)cw, 0x2C35) = 0U;
-        F(s8, &lb_sys, 6) = 0;
+        F(s8, &lb_sys, LBSYS_OFS(6)) = 0;
     }
 }
 
@@ -2954,10 +2955,10 @@ void CallBack_Result_Lobby_GuestRuleAllocation(CNET_RES res) {
             cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, temp_a1, temp_a1 + 0x2C45);
             SetDialogData_HTML((u8 *)cw + 0x32D1);
             *(s8 *)0x3F36AB = 0;
-            F(s32, &lb_sys, 0x6C) = 1;
-            F(s32, &lb_sys, 0x68) = 0x17;
+            F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
+            F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x17;
             F(u8, (u8 *)cw, 0x2C35) = 0U;
-            F(s8, &lb_sys, 6) = 0;
+            F(s8, &lb_sys, LBSYS_OFS(6)) = 0;
         }
     }
 }
@@ -2982,7 +2983,7 @@ s32 Lbs_GuestEnterRoom() {
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit();
         F(s8, (u8 *)cw, 0x2C45) = 0x15;
-        F(s8, &ClassInfo_c88, 8) = (s8) (F(u8, &lb_sys, 0x73) + 1);
+        F(s8, &ClassInfo_c88, 8) = (s8) (F(u8, &lb_sys, LBSYS_OFS(0x73)) + 1);
         cnLBS_RoomEntry(cnLbc_CheckInFloorOrder(2) & 0xFFFF, &RoomRule_c88[2], &CallBack_Result_Lobby_RoomEntry_o);
         break;
     case 1:
@@ -3169,7 +3170,7 @@ s32 Lbc_SendMiniData() {
     memcpy(&my_user_mini_data, sp10, 0x40);
     memcpy((int)&lbCommer + (game_w.master * 0x5C) + 0x1C, sp10, 0x40);
     cnLBS_Send_UserMiniData(sp10, 0x40, &CallBack_Result_SendUserMiniData_o);
-    F(s8, &lb_sys, 0x78) = 0;
+    F(s8, &lb_sys, LBSYS_OFS(0x78)) = 0;
     return 0;
 }
 
@@ -4323,8 +4324,8 @@ s32 Check_InterruptFlag() {
             if (F(s8, temp_a1, 0x2C0B) == 1) {
                 SetDialogData_HTML(temp_a1 + 0x32D1, temp_a1);
                 *(s8 *)0x3F36AB = 0;
-                F(s32, &lb_sys, 0x68) = 0x15;
-                F(s32, &lb_sys, 0x6C) = 1;
+                F(s32, &lb_sys, LBSYS_OFS(0x68)) = 0x15;
+                F(s32, &lb_sys, LBSYS_OFS(0x6C)) = 1;
                 F(s8, (u8 *)cw, 0x2C45) = 0;
                 F(s8, (u8 *)cw, 0x2C35) = 0;
                 Lbc_init_network_work();

@@ -1,4 +1,5 @@
 /* lb_gl02 - near-match fixes 0x005D4960-0x005D4A94: lb_goto_guest_room. Whole file in lb_l.c. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 
 
@@ -27,7 +28,7 @@ void lb_goto_guest_room(PLW *pl, int no) {
             *p = v + 1;
         }
     case 2:
-        ((u8 *)&lb_sys)[0x71] = 0;
+        ((u8 *)&lb_sys)[LBSYS_OFS(0x71)] = 0;
         lb_sys.x03 = 5;
         F(s16, pl, 0x73A) = no;
         c = cw;

@@ -1,4 +1,5 @@
 /* Lobby: room member in/out/change checks, newcomer handling, player load/set, hand-written from m2c drafts. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern char lit_236_00664CC0[];
@@ -198,7 +199,7 @@ int b;
     u32 i;
     u8 *pl;
     u8 *c;
-    if (*(u8 *)((u8 *)&lb_sys + 0x70) == 0) {
+    if (*(u8 *)((u8 *)&lb_sys + LBSYS_OFS(0x70)) == 0) {
         c = cw;
         if (*(s8 *)(c + 0x2C06) == 0) {
             *(s8 *)(c + 0x2C06) = 1;
@@ -226,7 +227,7 @@ int b;
         Lbc_connect(a);
         npc_create_model();
         Lbc_connect(a);
-        *(u8 *)((u8 *)&lb_sys + 0x70) = 1;
+        *(u8 *)((u8 *)&lb_sys + LBSYS_OFS(0x70)) = 1;
     }
 }
 void Lb_set_player(a, b, c)

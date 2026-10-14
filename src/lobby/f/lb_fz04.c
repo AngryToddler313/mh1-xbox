@@ -1,5 +1,6 @@
 /* lb_fz04 0x005CF700-0x005CFA44: Lb_check_target */
 /* Lobby: target selection (lock-on list), unique-action lookup, receive dispatcher, hand-written from m2c drafts. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern u8 sw_flag_1260;
@@ -34,7 +35,7 @@ void Lb_check_target(void) {
     }
     if (lb_sys.x6C == 1 || lb_sys.x68 != 0) {
         if (*(u8 *)0x3F33FE != 0 || SoftKeyboard_alive_check() != 0 || lb_sys.x68 != 0) {
-            *((u8 *)&lb_sys + 0x86) = 1;
+            *((u8 *)&lb_sys + LBSYS_OFS(0x86)) = 1;
         }
         return;
     }
@@ -55,7 +56,7 @@ void Lb_check_target(void) {
     do {
         if (em[0] != 0) {
             st = game_w.stage;
-            if (st >= 0x51 && st < 0x56 && em[2] == 3 && *((u8 *)&lb_sys + st + 0x37) != 0) {
+            if (st >= 0x51 && st < 0x56 && em[2] == 3 && *((u8 *)&lb_sys + st + LBSYS_OFS(0x37)) != 0) {
             } else {
                 cnt += (u8)lb_check_target(pl, em, &list, 0x2AAB, sw_flag_1260, range);
             }
