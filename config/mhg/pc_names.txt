@@ -1,9 +1,10 @@
-# G addresses of MH1 data names that tools/mhg_map.py did not find, found by hand for the PC
-# build (tools/mhg_pcmeta.py adds them to build/mhg/pc/symbols). Without one the PC build turns
-# the name into a function stand-in and the game C reads code bytes as data.
+# G addresses of MH1 data names that neither tools/mhg_map.py nor tools/mhg_datamap.py
+# (config/mhg/data_map.txt) finds, found by hand for the PC build (tools/mhg_pcmeta.py adds them
+# to build/mhg/pc/symbols after data_map.txt; an entry here wins). Without one the PC build turns
+# the name into a function stand-in and the game C reads code bytes as data. Drop an entry once
+# data_map.txt gives the same address (yn_tbl 0x2EC178 was dropped that way, 13 Oct 2026).
 # module  name  G address   # how it was found
-main yn_tbl 0x2EC178        # G mc_yn_ck (0x22BB70) loads its two strings from here where MH1's reads yn_tbl
-main mc_sel_tbl 0x2B0780     # G mc_sel_ck (0x22BD40) prints from the table that the pointer at 0x2B0B5C (one of a list of message tables at 0x2B0B40) names
+main mc_sel_tbl 0x2B0780     # (data_map.txt: no address; G's MH1-layout copy near yn_tbl is not the one G reads) G mc_sel_ck (0x22BD40) prints from the table that the pointer at 0x2B0B5C (one of a list of message tables at 0x2B0B40) names
 lobby client_work 0x6DEC10  # G lobby_func_0059A270 (G's Clear_lobby_ram, 0x59A270) sets cw to this address, as MH1's Clear_lobby_ram sets cw = client_work
 main filedef_sys 0x25D130     # G mkTexture (0x10F140) reads its file numbers from here where MH1 reads filedef_sys (8 entries in G, 9 in MH1)
 main D_002A5FE0 0x2A5FE0     # G DispSoftkeyboard (0x20B020): s8[12] glyph index table for the 12 palette keys
