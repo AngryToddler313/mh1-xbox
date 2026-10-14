@@ -105,6 +105,36 @@ int sub_main_func_004F3B00(int no)
             return Event_flag_ck(p[0]) == 1;
     return 1;
 }
+
+/* G monster program entries that had no host function, so em_create_model refused the kind (no Velociprey,
+ * Genprey, Ioprey, Hornetaur-type kinds 3/4/5/32 spawned in G: swarm quests 19, 31, 10018 never cleared).
+ * game 0x5B7010 (em03's local init / move entries [0] [1]): a tail call eft01_set(em, 0). */
+void eft01_set();
+void game_func_005B7010(EMW *em)
+{
+    eft01_set(em, 0);
+}
+/* sub_main 0x4EDCD0 (em04's effect move, kinds 4/5/32): step 0 -> 1, then the sound/effect script
+ * sub_main 0x4ECD00 and, when the gp option byte func_001F19C0(2) is 2, the effect script 0x4EDAA0. G's
+ * scripts are not ported: MH1's em04 script (ef_move_sub_0058E500, em04_nm.c) stands in for the first (sounds by
+ * frame; G edited it), the second (Eft13 dust) is left out. */
+struct EM04W;
+void ef_move_sub_0058E500(EMW *em, struct EM04W *w);
+void sub_main_func_004EDCD0(EMW *em)
+{
+    u8 *w = (u8 *)em + 0x444;
+    static int said;
+    switch (*w) {
+    case 0:
+        *w = 1;
+        break;
+    case 1:
+        if (!said++)
+            rt_log_standin("sub_main_func_004ECD00 (G em04 sound script: MH1's)");
+        ef_move_sub_0058E500(em, (struct EM04W *)w);
+        break;
+    }
+}
 #endif
 /* Bdora_hp_ck (0x53B5C0, em_master: Fatalis' hit points), Fish_set
  * (0x5589F0: a stage's fish, eft23) and Em09_item_sub (0x5A8170) */

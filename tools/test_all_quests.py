@@ -155,7 +155,7 @@ def test(q):
         order, tot = [], 0                # most monsters first until the quest's count is reached
         for s in sorted(cand, key=lambda s: (-cand[s], s)):
             order.append(s); tot += cand[s]
-            if tot >= need: break
+            if tot >= need and not G: break     # (G: every stage; some cannot be walked to, e.g. jungle 74)
         if tot < need and not wave:       # e.g. the count of a large monster, or small ones that respawn: kill what is there
             note.append('(%d wanted, %d in the stage lists)' % (need, tot))
         order += sorted(wave)      # then the second wave's stages (wraps around)

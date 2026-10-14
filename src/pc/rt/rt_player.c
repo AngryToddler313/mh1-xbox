@@ -27,6 +27,7 @@
 
 #include <math.h>
 #include <stdio.h>
+static int goto_no_path;     /* RT_PL_GOTO: the last goal had no path (a stage list goes on to the next) */
 #include <stdlib.h>
 #include <string.h>
 
@@ -392,7 +393,7 @@ void rt_player_tick(int no)
             goal = -1;
             for (i = 0; i < 20 && goal < 0; i++) {
                 u8 *e = em_work + 0xA10 * i;
-                if (e[0] && e[2] == kind && *(s16 *)(e + 0x302) > 0 && e[0x736] < 0x58)
+                if (e[0] && e[2] == kind && *(s16 *)(e + 0x302) > 0 && e[0x736] < 0x60)
                     goal = e[0x736];
             }
         } else {   /* "tick,stageA,stageB,...": with RT_PL_TARGET=kN, go on to the next stage once no living monster of kind N is
@@ -401,6 +402,11 @@ void rt_player_tick(int no)
             const char *g = getenv("RT_PL_GOTO"), *tt = getenv("RT_PL_TARGET");
             int n = 0, i;
             extern u8 em_work[];
+            if (goto_no_path) {     /* the exits lead nowhere near this goal (G jungle 74 has no way in): the next one */
+                goto_no_path = 0;
+                idx++;
+                fprintf(stderr, "rt_player: tick %d goal unreachable, next goal\n", tk);
+            }
             for (i = 0, g = strchr(g, ','); g; g = strchr(g + 1, ','), i++)
                 ;
             if (idx >= i)       /* past the last stage: start over (stages restock when re-entered) */
@@ -480,6 +486,7 @@ void rt_player_tick(int no)
             } else if (tk - last > 300) {
                 fprintf(stderr, "rt_player: tick %d no path from stage %d to %d\n", tk, p->stg, goal);
                 last = tk;
+                goto_no_path = 1;
             }
         }
     }
