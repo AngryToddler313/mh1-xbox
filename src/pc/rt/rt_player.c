@@ -425,15 +425,15 @@ void rt_player_tick(int no)
         }
         if (tk >= t0 && goal >= 0 && p->stg != goal && p->x738 == 0 && tk - last > 30) {
             void *Stage_mv_data_get(int st, int pl);
-            static s16 prev[0x58];
-            int q[0x58], qh = 0, qt = 0, st, nx = -1;
+            static s16 prev[0x60];
+            int q[0x60], qh = 0, qt = 0, st, nx = -1;
             memset(prev, 0xFF, sizeof prev);
             prev[p->stg] = p->stg;
             q[qt++] = p->stg;
             while (qh < qt && prev[goal] < 0) {         /* breadth first over the exit lists */
                 u8 *m = Stage_mv_data_get(st = q[qh++], 0);
                 for (; m && *(u16 *)m != 0xFFFF; m += 0x34)
-                    if (*(u16 *)m < 0x58 && prev[*(u16 *)m] < 0) {
+                    if (*(u16 *)m < 0x60 && prev[*(u16 *)m] < 0) {
                         prev[*(u16 *)m] = (s16)st;
                         q[qt++] = *(u16 *)m;
                     }
@@ -559,7 +559,9 @@ void rt_player_tick(int no)
         }
     }
     if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
-        PF(&player_work[no], s16, 0x302) = 100;
+        PF(&player_work[no], s16, 0x302) = rt_ver_mhg() ? 30000 : 100;  /* G: a high-rank hit takes more than 100 in one
+                                                                            * tick (quest 9's Rathian carted a GOD hunter); Pl_vital_calc
+                                                                            * clamps it to the maximum after the hit */
         PF(&player_work[no], s16, 0x7AA) = 0;
     }
     if (getenv("RT_PL_TRACE")) {

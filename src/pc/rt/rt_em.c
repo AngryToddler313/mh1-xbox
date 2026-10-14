@@ -517,6 +517,27 @@ int rt_quest_load(int no)
         if (getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "rt_quest: quest %d event demo slot: %d\n", PU16(&game_w, 0x2C), event_demo[4]);
     }
+    if (getenv("RT_PICK_ALL")) {    /* test aid: every stage's gathering points that give an item at 100% or a carried one
+                                     * (egg / ore nests: tools/test_all_quests.py finds the carried item's nest) */
+        void *Stage_item_data_get(int st);
+        u16 *Stage_item_probability_get(int);
+        int st;
+        for (st = 0; quest_w.x8C && st < 0x5B; st++) {     /* G: 92 stages; entries are mission-file offsets */
+            s32 o = ((s32 *)quest_w.x8C)[st + 1];
+            u8 *d;
+            if (o < 0 || o >= 0x40000 || (o & 3))
+                break;
+            d = Stage_item_data_get(st);
+            for (; d && *(float *)d != -1.0f; d += 0x18) {
+                int id = *(u16 *)(d + 0x10) & 0x7FFF;
+                u16 *pr = id < 376 ? Stage_item_probability_get(id) : NULL;     /* G Item_get_tbl: 376 ids */
+                for (; pr && *pr != 0xFFFF; pr += 2)
+                    if (pr[1] >= 512 || pr[0] == 100)       /* G's carried items are 512.. */
+                        fprintf(stderr, "rt_quest: nest stage %d item %d at %.0f %.0f %.0f r %.0f chance %d kind %d\n", st, pr[1],
+                                *(float *)d, *(float *)(d + 4), *(float *)(d + 8), *(float *)(d + 0xC), pr[0], *(u16 *)(d + 0x14));
+            }
+        }
+    }
     if (getenv("RT_QEM_DUMP")) {    /* test aid: every stage's monster list of this quest */
         int st;
         int var;

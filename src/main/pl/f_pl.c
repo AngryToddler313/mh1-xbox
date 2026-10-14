@@ -23,6 +23,13 @@
 #include "f_game.h"
 #include "flow.h"
 #include "hit.h"
+#ifdef VERSION_MHG      /* G renumbered the items: pickaxes 112-114, bug nets 115-117 (G search_act_set 0x54BE90) */
+#define PICKAXE0 112
+#define BUGNET0 115
+#else
+#define PICKAXE0 0x83
+#define BUGNET0 0x86
+#endif
 #ifdef VERSION_MHG
 s32 sub_main_func_004CE8E0(PLW *pl, u8 ammo);   /* pl77.c */
 #endif
@@ -1516,16 +1523,16 @@ block_3:
             case 3:
                 if (mode == 2) {
                     switch (pl->item[pl->work888].id) {
-                    case 0x83:
-                    case 0x84:
-                    case 0x85:
+                    case PICKAXE0:
+                    case PICKAXE0 + 1:
+                    case PICKAXE0 + 2:
                         pl->ang_y = (s16)((calc_vec_ang2(pl->pos, sp30) & 0xFFFF) - 0x4000);
                         pl->work88A = pl->item[pl->work888].id;
                         Pl_act_set(pl, 0, 0x51, 0);
                         break;
-                    case 0x86:
-                    case 0x87:
-                    case 0x88:
+                    case BUGNET0:
+                    case BUGNET0 + 1:
+                    case BUGNET0 + 2:
                         se_req(7, 0x15, 0);
                         break;
                     }
@@ -1535,15 +1542,15 @@ block_3:
                 if (mode == 2) {
                     id = pl->item[pl->work888].id;
                     switch (id) {
-                    case 0x86:
-                    case 0x87:
-                    case 0x88:
+                    case BUGNET0:
+                    case BUGNET0 + 1:
+                    case BUGNET0 + 2:
                         pl->work88A = id;
                         Pl_act_set(pl, 0, 0x52, 0);
                         break;
-                    case 0x83:
-                    case 0x84:
-                    case 0x85:
+                    case PICKAXE0:
+                    case PICKAXE0 + 1:
+                    case PICKAXE0 + 2:
                         se_req(7, 0x15, 0);
                         break;
                     }
@@ -1555,12 +1562,12 @@ block_3:
         } else {
 block_24:
             switch (pl->item[pl->work888].id) {
-            case 0x83:
-            case 0x84:
-            case 0x85:
-            case 0x86:
-            case 0x87:
-            case 0x88:
+            case PICKAXE0:
+            case PICKAXE0 + 1:
+            case PICKAXE0 + 2:
+            case BUGNET0:
+            case BUGNET0 + 1:
+            case BUGNET0 + 2:
                 if (mode == 2) {
                     se_req(7, 0x15, 0);
                 }
@@ -2298,12 +2305,12 @@ static void item_action_set(PLW *pl, u8 mode) {
         }
         Pl_act_set2(pl, 0, 0x65, 0);
         return;
-    case 0x83:
-    case 0x84:
-    case 0x85:
-    case 0x86:
-    case 0x87:
-    case 0x88:
+    case PICKAXE0:          /* (G ids: search_act_set) */
+    case PICKAXE0 + 1:
+    case PICKAXE0 + 2:
+    case BUGNET0:
+    case BUGNET0 + 1:
+    case BUGNET0 + 2:
         break;
     default:
         se_req(7, 0x15, 0);
@@ -5050,22 +5057,22 @@ static void pl_mv071(PLW *pl, u32 arg1) {
             case 4:
             case 5:
                 switch (pl->work88A) {
-                case 0x83:
+                case PICKAXE0:
                     n = 3;
                     break;
-                case 0x84:
+                case PICKAXE0 + 1:
                     n = 0xA;
                     break;
-                case 0x85:
+                case PICKAXE0 + 2:
                     n = 0xF;
                     break;
-                case 0x86:
+                case BUGNET0:
                     n = 3;
                     break;
-                case 0x87:
+                case BUGNET0 + 1:
                     n = 0xA;
                     break;
-                case 0x88:
+                case BUGNET0 + 2:
                     n = 0xF;
                     break;
                 }

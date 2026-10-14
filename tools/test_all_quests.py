@@ -35,7 +35,8 @@ EGGS = {145: (40, 11400, 12100, None),      # item -> (stage, x, z) of the nest 
 SKIP = {}
 KNOWN = {}
 if G:
-    EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests
+    EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests; other carried
+                                                # items: the nest the dry run's RT_PICK_ALL lists (one item at 100%)
     SKIP = {}
     KNOWN = {}
 
@@ -55,7 +56,7 @@ def run(q, env, inp, secs, tag):
     return rc, open(log, errors='replace').read(), time.time() - t0
 
 def plan(q):
-    rc, d, _ = run(q, {'RT_QEM_DUMP': '1', 'RT_SPOT_TRACE': '1'}, 'idle*30', 1, 'dry%d' % q)
+    rc, d, _ = run(q, dict({'RT_QEM_DUMP': '1', 'RT_SPOT_TRACE': '1'}, **({'RT_PICK_ALL': '1'} if G else {})), 'idle*30', 1, 'dry%d' % q)
     m = re.search(r'type (\d+) reward (\d+) fee (\d+) program: (.*)', d)
     ops = [tuple(map(int, t.split('/'))) for t in m.group(4).split()] if m else []
     start = int(re.search(r'start stage (\d+)', d).group(1)) if 'start stage' in d else None
@@ -72,7 +73,18 @@ def plan(q):
         stages.setdefault(int(mk.group(2)), []).append(int(mk.group(1)))
     boss = int(mk.group(1)) if mk else -1
     spot = re.search(r'stage %s spot kind 21 at (\d+) \S+ (\d+) r \d+ ang (\w+)' % start, d) if start is not None else None
-    return dict(waves=waves, boss=boss, reward=int(m.group(2)) if m else None, ops=ops, start=start, items=items, hunts=hunts, stages=stages,
+    nests = {}                      # G: carried item -> (stage, x, z, y) of a point that gives it at 100% (RT_PICK_ALL)
+    best = {}
+    nest_kind = {}
+    stages_here = {int(x) % 100 for x in re.findall(r'stage (\d+) kinds:', d)}
+    for st, it, x, y, z, ch, kd in re.findall(r'nest stage (\d+) item (\d+) at (-?\d+) (-?\d+) (-?\d+) r \d+ chance (\d+) kind (\d+)', d):
+        # the point most likely to give it, on this quest's map (a stage with a monster list; the pick lists cover every map)
+        score = int(ch) + (1000 if int(st) in stages_here else 0)
+        if score > best.get(int(it), 0):
+            best[int(it)] = score
+            nests[int(it)] = (int(st), int(x), int(z), int(y))
+            nest_kind[int(it)] = (int(kd), int(ch))
+    return dict(nests=nests, nest_kind=nest_kind, waves=waves, boss=boss, reward=int(m.group(2)) if m else None, ops=ops, start=start, items=items, hunts=hunts, stages=stages,
                 spot=spot.groups() if spot else None, rc=rc)
 
 def test(q):
@@ -83,32 +95,43 @@ def test(q):
     ev = ''
     note = []
     t_hunt = 60      # (warps to the monster start at 900 at the earliest: intro demos freeze the hunter)
-    eggs = {k: v for k, v in p['items'].items() if k in EGGS}
+    if G:
+        egg_at = dict(EGGS)         # the quest map's own nest first (items 512.. are the carried ones)
+        egg_at.update({k: v for k, v in p['nests'].items() if k >= 512})
+    else:
+        egg_at = EGGS
+    eggs = {k: v for k, v in p['items'].items() if k in egg_at}
     if eggs:
         # egg quests: the egg is a carried "hold" item (one at a time): pick it at the nest, walk it to the camp, deliver it.
         # Each trip: GOTO the nest stage, warp onto the pick point + circle, GOTO the camp, warp to the box + circle.
         # The nest's monster is slain first (a hit makes the hunter drop the egg: it breaks, the item is gone).
         (item, n), = eggs.items()
-        st, x, z, y = EGGS[item]
+        st, x, z, y = egg_at[item]
         if st is None:
             return 'SKIP', 'egg item %d: nest pick point not found' % item, p
         ev, gotos, warps = [], [], []
         t = 0
-        for i in range(n):
+        mine = G and p['nest_kind'].get(item, (0, 0))[0] == 3     # G's carried ores: a mining point, pickaxe + square
+        trips = n + 3 if mine else n          # one swing per trip (a second swing loses the carried ore); spare trips for misses
+        for i in range(trips):
             base = 150 + i * 3600
-            gotos += ['%d,%d' % (base, st), '%d,%d' % (base + 1300, p['start'])]
+            gotos += ['%d,%d' % (base, st), '%d,%d' % (base + (2000 if mine else 1300), p['start'])]
             warps += ['%d,%d,%d%s' % (base + 700, x, z, ',0,%d' % y if y is not None else ''), '%d,%s,%s,%s' % (base + 3300, p['spot'][0], p['spot'][1], p['spot'][2])]
-            ev += [(base + 720, 'circle*2'), (base + 3320, 'circle*2'), (base + 3380, 'circle*2'), (base + 3440, 'circle*2')]
+            ev += [(base + 3320, 'circle*2'), (base + 3380, 'circle*2'), (base + 3440, 'circle*2')]
+            # mining gives other items too (the ore at its chance)
+            ev += [(base + 720, 'square*2')] if mine else [(base + 720, 'circle*2')]
         env['RT_PL_GOTO'] = '99999,0'
         env['RT_PL_GOTO2'] = ';'.join(gotos)
         env['RT_PL_WARP'] = ';'.join(warps)
         kinds = sorted({k for d in (p['stages'], p['waves']) for ks in d.values() for k in ks} | ({p['boss']} if p['boss'] >= 0 else set()))
         env['RT_PL_SLAY'] = '300,' + ','.join(map(str, kinds))      # nothing may knock the hunter down on the way (the egg would break)
         note.append('egg %d x%d: nest stage %d, %d trips' % (item, n, st, n))
+        if G and p['nest_kind'].get(item, (0, 0))[0] == 3:
+            env['RT_PL_ITEMS'] = '114:10'       # a mining point (G's carried ores): pickaxes (114) in the pouch
         egg_ev = ev
     else:
         egg_ev = None
-    rest = {k: v for k, v in p['items'].items() if k not in EGGS}
+    rest = {k: v for k, v in p['items'].items() if k not in egg_at}
     if rest:
         if not p['spot']:
             return 'FAIL', 'no delivery box spot on start stage %s' % p['start'], p
@@ -117,9 +140,13 @@ def test(q):
         env['RT_PL_WARP'] = '100,%s,%s,%s' % (x, z, a)
         note.append('items %s' % env['RT_PL_ITEMS'])
         t_hunt = 700
-    secs = 300 if not eggs else 150 + 3600 * 3 // 30 + 100
+    secs = 300 if not eggs else (150 + 3600 * trips) // 30 + 100
     if p['hunts']:
         kind = max(p['hunts'], key=lambda k: p['hunts'][k])
+        listed = {k for d in (p['stages'], p['waves']) for ks in d.values() for k in ks}
+        extra = [k for k in p['hunts'] if k != p['boss'] and k not in listed]     # more bosses (not in the stage lists, e.g. G 10047)
+        if G and p['boss'] in p['hunts'] and extra:
+            kind = p['boss']
         need = p['hunts'][kind]
         cand = {s: ks.count(kind) for s, ks in p['stages'].items() if kind in ks}
         wave = {s: ks.count(kind) for s, ks in p['waves'].items() if kind in ks}    # appear when program op 32 fires
@@ -137,7 +164,10 @@ def test(q):
                    RT_PL_TARGET='k%d' % kind, RT_PL_WARP_EM='%d-90000' % (max(t_hunt + 40, 900) if kind == p['boss'] else t_hunt + 40), RT_DMG_MUL='40')
         note.append('hunt kind %d x%d on stage(s) %s%s' % (kind, need, '+'.join('%d(%d)' % (s, cand.get(s, wave.get(s, 0))) for s in order), ' (follows the monster)' if kind == p['boss'] else ''))
         secs = 1500
-        if kind == p['boss']:
+        if kind == p['boss'] and G and extra:      # the other bosses are slain by the aid; the followed one is fought
+            env['RT_PL_SLAY'] = '300,' + ','.join(map(str, extra))
+            note.append('other bosses %s slain by RT_PL_SLAY' % '+'.join(map(str, extra)))
+        elif kind == p['boss']:
             env['RT_PL_SLAY'] = '8000'       # a boss that stays out of reach (Rathalos aloft) is brought down after 8000 ticks
         elif p['boss'] >= 0:                 # the quest's main monster must die too (quest_enemy_ck): slay it from the start
             env['RT_PL_SLAY'] = '300,%d' % p['boss']
@@ -178,7 +208,9 @@ def g_result(q, p, rc, d, dt, clear, note, secs):
     """G: spawn + clear + reward screen, then a time-out run that must fail the quest."""
     why = []
     crash = rc not in (0, None) or 'Segmentation' in d or 'Assertion' in d
-    spawned = max([int(n) for n in re.findall(r'^rt_flow: tick \d+ .* monsters (\d+)', d, re.M)] or [0])
+    spawned = max([int(n) for n in re.findall(r'^rt_flow: tick \d+ .* monsters (\d+)', d, re.M)] or [0])   # large monsters
+    if not spawned and ('(carve point' in d or 'takes a lethal hit' in d):    # the warp aid / slay aid found a living monster
+        spawned = 1
     if crash: why.append('crash/exit %s' % rc)
     if not spawned and p['hunts']: why.append('no monster spawned')
     if not clear:
