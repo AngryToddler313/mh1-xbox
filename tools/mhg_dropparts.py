@@ -44,6 +44,19 @@ def main():
                 drop.add(m[1])
                 print('cdiff %s' % m[1])
     if drop:
+        # remember the functions of the dropped parts (tools/mhg_parts.py leaves them out next time)
+        skip = os.path.join(ROOT, 'config/mhg/c_skip_funcs.txt')
+        with open(skip, 'a') as fh:
+            for part in sorted(drop):
+                w = 'src/%s.c' % part
+                m = re.match(r'(.*)/(\w+)_p\d+$', part)
+                src = open(os.path.join(ROOT, w)).read()
+                inc = re.search(r'#include "\.\./(.*)"', src)[1]
+                r = subprocess.run(['python3', 'tools/check.py', w], cwd=ROOT, capture_output=True, text=True,
+                                   env=dict(os.environ, VERSION='mhg')).stdout
+                for l in r.splitlines():
+                    if l.startswith('OK'):
+                        fh.write('%s %s # part %s did not link\n' % (inc, l.split()[1], part))
         open(LIST, 'w').write('\n'.join(l for l in lines if not (len(l.split()) == 4 and l.split()[3] in drop)))
 
 

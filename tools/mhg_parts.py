@@ -75,7 +75,40 @@ def runs_of(oks):
     return runs
 
 
+def strip_parts(path):
+    """undo an earlier run on this file: guards, wrappers, list lines (only for files whose parts this tool made)"""
+    base = re.sub(r'\.c$', '', os.path.basename(path))
+    rel = os.path.relpath(os.path.dirname(path), 'src')
+    wdir = os.path.join(ROOT, 'src/mhg', rel)
+    ws = [f for f in (os.listdir(wdir) if os.path.isdir(wdir) else []) if re.fullmatch(re.escape(base) + r'_p\d+\.c', f)]
+    if not ws:
+        return False
+    src = open(os.path.join(ROOT, path)).read().split('\n')
+    out, i = [], 0
+    while i < len(src):
+        if re.fullmatch(r'#if !defined\(G_PART\)( \|\| G_PART == \d+)?', src[i]):
+            j = i + 1
+            while src[j] != '}':
+                j += 1
+            if src[j + 1] != '#endif':
+                raise RuntimeError('unexpected guard layout in %s' % path)
+            out += src[i + 1:j + 1]
+            i = j + 2
+            continue
+        out.append(src[i])
+        i += 1
+    open(os.path.join(ROOT, path), 'w').write('\n'.join(out))
+    names = {'mhg/%s/%s' % (rel, f[:-2]) for f in ws}
+    lines = open(LIST).read().split('\n')
+    open(LIST, 'w').write('\n'.join(l for l in lines if not (len(l.split()) == 4 and l.split()[3] in names)))
+    for f in ws:
+        os.remove(os.path.join(wdir, f))
+    return True
+
+
 def process(path, dry):
+    if '--redo' in sys.argv:
+        strip_parts(path)
     src = open(os.path.join(ROOT, path)).read()
     if 'G_PART' in src:
         return 'has G_PART guards'
@@ -83,7 +116,13 @@ def process(path, dry):
     if not rows:
         return 'no rows'
     cov = covered()
-    oks = [r for r in rows if r[0] == 'OK' and not any(lo <= r[3] and r[3] + r[4] <= hi for lo, hi in cov.get(r[2], []))]
+    skipf = set()
+    if os.path.exists(os.path.join(ROOT, 'config/mhg/c_skip_funcs.txt')):
+        for l in open(os.path.join(ROOT, 'config/mhg/c_skip_funcs.txt')):
+            q = l.split('#')[0].split()
+            if len(q) == 2 and q[0] == path:
+                skipf.add(q[1])
+    oks = [r for r in rows if r[0] == 'OK' and r[1] not in skipf and not any(lo <= r[3] and r[3] + r[4] <= hi for lo, hi in cov.get(r[2], []))]
     if not oks:
         return 'nothing to add'
     if all(r[0] == 'OK' for r in rows) and len(runs_of(rows)) == 1:

@@ -960,8 +960,6 @@ main 0x0010DD20 0x0010DD98 mhg/main/item/item_g
 sub_main 0x004EDD90 0x004EE218 main/pl/pl51
 sub_main 0x004DDF20 0x004DE2C8 mhg/main/hit/hit_1
 sub_main 0x004DEDD0 0x004DF7E0 mhg/main/hit/hit_2
-main 0x001DBD10 0x001DBDE0 mhg/main/cam/camc_p1
-main 0x001DBEB0 0x001DC0C4 mhg/main/cam/camc_p2
 main 0x002382E0 0x00238388 mhg/main/aq/aq02_p1
 main 0x00238770 0x00238858 mhg/main/aq/aq02_p2
 main 0x00239230 0x00239328 mhg/main/aq/aq05_p1
@@ -1144,3 +1142,5 @@ main 0x00100950 0x001009BC mhg/main/sys/adxs02_p2
 main 0x00100BC0 0x00100C90 mhg/main/sys/adxs03_p1
 main 0x00100D20 0x00100E10 mhg/main/sys/adxs03_p2
 sub_main 0x004C7FC0 0x004C7FE8 mhg/main/ud/udgun01_t_p1
+main 0x001DBD10 0x001DBDE0 mhg/main/cam/camc_p1
+main 0x001DBEB0 0x001DC0C4 mhg/main/cam/camc_p2
