@@ -91,6 +91,10 @@ def split_data():
     return objs, ptrs
 
 
+RESIDENT = {"main": "main", "sub_main": "main"}     # one resident module for the scan's exact rule
+PC_DATA_RANGES = []                                 # objects config/mhg/pc_data.txt names (trusted targets)
+
+
 def add_pc_data(gsyms):
     """config/mhg/pc_data.txt: G data the PC imports that config/mhg/symbols lacks or sizes
     wrongly (G-only tables under their split names D_XXXXXXXX, G sizes of grown objects such as
@@ -113,6 +117,8 @@ def add_pc_data(gsyms):
         sz = re.search(r"size:0x([0-9A-Fa-f]+)", m.group(3) or "")
         lst = [e for e in gsyms[mod] if e[0] != a and e[2] != m.group(1)]
         lst.append((a, int(sz.group(1), 16) if sz else 0, m.group(1), False))
+        if sz:
+            PC_DATA_RANGES.append((a, int(sz.group(1), 16)))
         lst.sort()
         gsyms[mod] = lst
 
@@ -133,10 +139,13 @@ class SymIndex:
             return False
         return all(0x20 <= c < 0x7F or 0x81 <= c <= 0xFC for c in d[o:o + 2])
 
-    def resolves(self, v, init_hi):
-        """v starts a symbol, or points into a sized data object below init_hi (not .bss)"""
+    def resolves(self, v, init_hi, exact=False):
+        """v starts a symbol, or points into a sized data object below init_hi (not .bss);
+        exact: only a symbol or split-label start counts (pointers into another module)"""
         if v in self.starts:
             return True
+        if exact:
+            return any(a <= v < a + sz for a, sz in PC_DATA_RANGES)
         if v >= init_hi:
             return False
         if LOOSE and self.dlo <= v and (v & 3 == 0 or self.mod_.data[v - self.mod_.vram - 1] == 0):
@@ -204,7 +213,9 @@ def scan(mods, idx, dr, sees):
                 if t not in mods:
                     continue
                 r0, r1 = mod_range(mods, t)
-                if r0 <= v < r1 and idx[t].resolves(v, mods[t].vram + len(mods[t].data)):
+                # into another module: a label start only (game.bin byte code such as em20's
+                # programs held words like 0x00280100 that are inside main's data but no pointer)
+                if r0 <= v < r1 and idx[t].resolves(v, mods[t].vram + len(mods[t].data), exact=(RESIDENT.get(t, t) != RESIDENT.get(m, m))):
                     found[m].add(a)
                     break
     return found
