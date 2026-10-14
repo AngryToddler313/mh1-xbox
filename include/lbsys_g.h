@@ -96,4 +96,25 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
 #define LBSHOP_OFS(o) (o)
 #define LBSHOP_SIZE 0x90
 #endif
+/* the monster-list items of the shop (collection items that need the monster to be in the hunter's monster list): ids 293..322
+ * in MH1, 474..503 in G (G renumbered its items) */
+#ifdef VERSION_MHG
+#define ML_BASE 474
+#define ML_END 504
+#else
+#define ML_BASE 293
+#define ML_END 323
+#endif
+/* The shop's help messages. MH1 keeps them in shop_default_help[0..7]; G has one table (shop_mix_help, G 0x636A70, 12
+ * entries) whose entries 1.. serve both: the MH1 index -> G entry map below was made by comparing the texts (G dropped the
+ * "free of charge" message, it sits at the end). SDH(k) = MH1's shop_default_help[k]; SDH_F(byte offset) the raw-offset form. */
+#ifdef VERSION_MHG
+extern s32 shop_mix_help[];
+static const unsigned char g_dflt_help_map[8] = { 1, 2, 3, 5, 11, 8, 9, 10 };
+#define SDH(k) (shop_mix_help[g_dflt_help_map[(k)]])
+#define SDH_F(o) SDH((o) / 4)
+#else
+#define SDH(k) (shop_default_help[k])
+#define SDH_F(o) F(s32, &shop_default_help, o)
+#endif
 #endif

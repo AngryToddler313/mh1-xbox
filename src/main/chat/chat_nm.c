@@ -426,7 +426,8 @@ void Disp_menu_help(void) {
     Disp_help_mess(PitMenu.x11, PitMenu.x12);
 }
 
-extern u8 Item_data[][16];
+#include "version.h"
+extern u8 Item_data[][ITEM_ROW];
 extern u8 help_mess_00354680[];
 extern u32 item_col_tbl[];
 extern char lit_2796[];
@@ -1195,7 +1196,7 @@ extern char lit_3512[];
 extern char lit_3513[];
 extern char lit_3514[];
 extern char *item_str[];
-extern u8 Item_data[][16];
+extern u8 Item_data[][ITEM_ROW];
 int Item_preparation_one_ck(s16);
 
 void ItemListWindow(int page, int cursel, int mode) {

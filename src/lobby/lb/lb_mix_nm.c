@@ -261,7 +261,7 @@ void lb_mix_put_itemDetail(void) {
     flfntSetSize(0x12, 0x12);
     switch (lbShop.x1C) {
     case 0:
-        off = id * 0x10;
+        off = id * ITEM_ROW;
         rp = (u8 *)&Item_data[0].rare + off;
         font_print_ex(0x168, 0x104, Equip_moji_color_rare(*rp), shopList[lbShop.cur].name);
         font_set_palette(0);

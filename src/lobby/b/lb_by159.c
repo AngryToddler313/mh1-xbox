@@ -13,7 +13,7 @@ void Lb_put_itemIcon(s16 x, s16 y, s16 z, int id) {
     s16 spr[10];
     int icon;
 
-    icon = (&Item_data[0][5])[id * 16] + 1;
+    icon = (&Item_data[0][5])[id * ITEM_ROW] + 1;
     spr[3] = z;
     spr[1] = y;
     spr[0] = x;
@@ -22,11 +22,11 @@ void Lb_put_itemIcon(s16 x, s16 y, s16 z, int id) {
     spr[7] = (icon >> 3) * 32 + 1;
     spr[8] = (icon & 7) * 32 + 0x1F;
     spr[9] = (icon >> 3) * 32 + 0x1F;
-    *(u32 *)&spr[4] = item_col_tbl[(&Item_data[0][6])[id * 16]];
+    *(u32 *)&spr[4] = item_col_tbl[(&Item_data[0][6])[id * ITEM_ROW]];
     reload_tex(1, 0x118);
     SetTextureStage(0x118);
     Lb_put_2TF(spr, 1);
-    if ((&Item_data[0][4])[id * 16] & 2) {
+    if ((&Item_data[0][4])[id * ITEM_ROW] & 2) {
         spr[6] = 0x80;
         spr[7] = 0xE0;
         spr[8] = spr[6] + 0x20;

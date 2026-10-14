@@ -6,10 +6,10 @@ extern char shop_default_help[];
 s32 lb_armor_select(void) {
     switch (F(s8, &lbShop, LBSHOP_OFS(0x19))) {       /* irregular */
     case 0:
-        F(s32, &lbShop, LBSHOP_OFS(0x4C)) = F(s32, &shop_default_help, 8);
+        F(s32, &lbShop, LBSHOP_OFS(0x4C)) = SDH_F(8);
         return lb_armor_itemBuy();
     case 1:
-        F(s32, &lbShop, LBSHOP_OFS(0x4C)) = F(s32, &shop_default_help, 0xC);
+        F(s32, &lbShop, LBSHOP_OFS(0x4C)) = SDH_F(0xC);
         return lb_armor_itemSell();
     default:
         return 0;

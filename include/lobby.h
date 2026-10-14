@@ -2,6 +2,7 @@
 #define LOBBY_H
 /* lobby.bin (online town) shared declarations. Field meanings are guesses
  * from usage; offsets in comments. */
+#include "version.h"
 #include "types.h"
 
 /* lb_pit (0x006EAE40, size 0xC): current NPC talk script position */
@@ -132,6 +133,18 @@ typedef struct LB_SHOPITEM {
 
 /* Item_data row (0x10 bytes); the member offset folds into the symbol only with a struct array.
  * Do not include together with plf.h / plitem.h (they declare Item_data differently). */
+#ifdef VERSION_MHG
+/* G: 0x14 bytes, the prices are s32 (buy at 0x0C, sell at 0x10) */
+typedef struct LB_ITEMROW {
+    u8 type;            /* 0x00 */
+    u8 use;             /* 0x01 */
+    u8 rare;            /* 0x02 rarity (colour index) */
+    u8 max;             /* 0x03 stack limit, 0xFF unlimited */
+    u8 _04[8];
+    s32 buy;            /* 0x0C buy price */
+    s32 sell;           /* 0x10 sell price */
+} LB_ITEMROW;
+#else
 typedef struct LB_ITEMROW {
     u8 type;            /* 0x00 */
     u8 use;             /* 0x01 */
@@ -141,6 +154,7 @@ typedef struct LB_ITEMROW {
     u16 buy;            /* 0x0C buy price */
     u16 sell;           /* 0x0E sell price */
 } LB_ITEMROW;
+#endif
 extern LB_ITEMROW Item_data[];
 
 /* mixData entry (8 bytes): one forge recipe offered in the list */

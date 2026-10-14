@@ -1,6 +1,7 @@
 /* lbshop2, run 4: lb_shop_decide .. lb_shop_decide (lobby.bin 0x005AFCC0-0x005AFE58): the matching functions of lbshop2_nm.c. */
 #pragma readonly_strings on
 #include "lbshop2_proto.h"
+#include "lbsys_g.h"
 
 void lb_shop_decide(void) {
     int id;
@@ -11,8 +12,13 @@ void lb_shop_decide(void) {
     case 0:
         Gold_add(-(lbShop.qty * shopList[lbShop.cur].price), lbShop.cur, lbShop.mode);
         if (lb_monster_list_check(id) == 1) {
-            Add_to_Monster_list((id - 0x125) & 0xFF);
+            Add_to_Monster_list((id - ML_BASE) & 0xFF);
             Lb_put_set01(5);
+#ifdef VERSION_MHG
+        } else if (id == 472 || id == 473) {    /* G: one-off items: mark bought, message 6 / 7 */
+            ((u8 *)User_data)[0xC97] |= 1 << ((id - 472) & 1);
+            Lb_put_set01(id == 472 ? 6 : 7);
+#endif
         } else {
             Ud_item_stack(id & 0xFFFF, (s16)lbShop.qty);
         }

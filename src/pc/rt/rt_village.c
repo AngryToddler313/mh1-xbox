@@ -116,8 +116,8 @@ void rt_village_enter(void)
                 *(s32 *)(User_data + 0x20) = atoi(getenv("RT_MONEY"));
             if ((q = getenv("RT_BOX_ITEMS")))
                 for (k = 0; k < 100 && sscanf(q, "%i:%i%n", &id, &n, &used) == 2; k++) {
-                    *(u16 *)(User_data + 0x1C4 + 4 * k) = (u16)id;
-                    *(s16 *)(User_data + 0x1C6 + 4 * k) = (s16)n;
+                    *(u16 *)(User_data + UDO(0x1C4) + 4 * k) = (u16)id;
+                    *(s16 *)(User_data + UDO(0x1C6) + 4 * k) = (s16)n;
                     q += used;
                     if (*q++ != ',')
                         break;
@@ -206,26 +206,26 @@ int rt_village_tick(void)
     }
     if (getenv("RT_QUEST_TRACE")) {     /* the saved hunter's data when it changes: money, pouch, item box, stored equipment, worn gear */
         extern u8 User_data[];
-        static u8 last[0x460];
+        static u8 last[0xE00];
         static int first = 1;
-        if (first || memcmp(last, User_data, 0x460)) {
+        if (first || memcmp(last, User_data, rt_ver_mhg() ? 0xE00 : 0x460)) {
             int k;
             first = 0;
-            memcpy(last, User_data, 0x460);
+            memcpy(last, User_data, rt_ver_mhg() ? 0xE00 : 0x460);
             fprintf(stderr, "rt_village: tick %d ud money %d pouch:", tick, *(s32 *)(User_data + 0x20));
             for (k = 0; k < 20; k++)
-                if (*(u16 *)(User_data + 0x37C + 4 * k))
-                    fprintf(stderr, " %d:%d", *(u16 *)(User_data + 0x37C + 4 * k), *(s16 *)(User_data + 0x37E + 4 * k));
+                if (*(u16 *)(User_data + UDO(0x37C) + 4 * k))
+                    fprintf(stderr, " %d:%d", *(u16 *)(User_data + UDO(0x37C) + 4 * k), *(s16 *)(User_data + UDO(0x37E) + 4 * k));
             fprintf(stderr, " | box:");
             for (k = 0; k < 100; k++)
-                if (*(u16 *)(User_data + 0x1C4 + 4 * k))
-                    fprintf(stderr, " %d:%d", *(u16 *)(User_data + 0x1C4 + 4 * k), *(s16 *)(User_data + 0x1C6 + 4 * k));
+                if (*(u16 *)(User_data + UDO(0x1C4) + 4 * k))
+                    fprintf(stderr, " %d:%d", *(u16 *)(User_data + UDO(0x1C4) + 4 * k), *(s16 *)(User_data + UDO(0x1C6) + 4 * k));
             fprintf(stderr, " | ware:");
             for (k = 0; k < 64; k++)
                 if (User_data[0x44 + 6 * k])
                     fprintf(stderr, " %d/%d/%d", User_data[0x45 + 6 * k], *(u16 *)(User_data + 0x46 + 6 * k), *(u16 *)(User_data + 0x48 + 6 * k));
-            fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d\n", User_data[0x3CD], *(u16 *)(User_data + 0x3CE), *(u16 *)(User_data + 0x3D0),
-                    User_data[0x3D2], User_data[0x3D3], User_data[0x3D4], User_data[0x3D5], User_data[0x3D6]);
+            fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d\n", User_data[UDO(0x3CD)], *(u16 *)(User_data + UDO(0x3CE)), *(u16 *)(User_data + UDO(0x3D0)),
+                    User_data[UDO(0x3D2)], User_data[UDO(0x3D3)], User_data[UDO(0x3D4)], User_data[UDO(0x3D5)], User_data[UDO(0x3D6)]);
         }
     }
     static int spots_stage = -1;
@@ -324,7 +324,7 @@ int rt_village_tick(void)
         if (v != last)
             fprintf(stderr, "rt_village: tick %d shop step %d sub %d mode %d x1B %d x68 %d | count %d cur %d tbl %08x help %d list %08x key %04x item0 price %d state %d name %.12s\n", tick, (s8)LBS(0x14),
                     (s8)LBS(0x15), (s8)LBS(0x19), LBS(0x1B), *(s32 *)(lb_sys + LBSYS_OFS(0x68)), LBW(0x80), LBW(0x74), LBW(0x64), LBW(0x4C),
-                    (u32)LBW(0x50), (u32)*(u16 *)(lbShop + LBSHOP_OFS(0x8C)), *(s32 *)LBW(0x50), *(s16 *)((u8 *)LBW(0x50) + 0x24), (char *)LBW(0x50) + 4);
+                    (u32)LBW(0x50), (u32)*(u16 *)(lbShop + LBSHOP_OFS(0x8C)), LBW(0x50) ? *(s32 *)LBW(0x50) : 0, LBW(0x50) ? *(s16 *)((u8 *)LBW(0x50) + 0x24) : 0, LBW(0x50) ? (char *)LBW(0x50) + 4 : "");
         last = v;
     }
     if (r == 1 || r == -1) {

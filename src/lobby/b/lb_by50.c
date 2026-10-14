@@ -1,12 +1,13 @@
 /* lb_by50 - agent B promoted near-match 0x0053CC30-0x0053CD44: lb_armor_sel2Prog (first drafted by tools/lbauto.py). */
 #include "lobby_s.h"
+#include "lbsys_g.h"
 extern char shop_default_help[];
 
 s32 lb_armor_sel2Prog(void) {
     if (lbShop.key & 0x20) {
         if (lbShop.x78 == 0) {
             cnWrap_SoundRequest(0);
-            lbShop.help = F(s32, &shop_default_help, 8);
+            lbShop.help = SDH_F(8);
             return 0;
         }
         cnWrap_SoundRequest(3);

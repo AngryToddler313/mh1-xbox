@@ -4,5 +4,10 @@ extern char shop_default_tag_00389E90[4];
 typedef struct { u8 pad[0x48]; int tag; } LBSHOP48;
 
 void lb_shop_init(void) {
+#ifdef VERSION_MHG
+    extern int shop_default_tag_00610A68[];     /* G keeps it in the lobby data, 4 bytes into the default tag table */
+    ((LBSHOP48 *)lbShop)->tag = (int)(shop_default_tag_00610A68 + 1);
+#else
     ((LBSHOP48 *)lbShop)->tag = (int)shop_default_tag_00389E90;
+#endif
 }

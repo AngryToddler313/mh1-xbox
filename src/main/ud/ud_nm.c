@@ -13,7 +13,8 @@
 #define GUN_SZ 0x14
 #endif
 
-extern u8 Item_data[327][16];
+#include "version.h"
+extern u8 Item_data[327][ITEM_ROW];
 extern u8 h_rank_tbl[];
 typedef struct { s16 v; u8 _p[GUN_SZ - 2]; } GE;
 typedef struct { s16 v; u8 _p[0x16]; } KE;
@@ -266,7 +267,7 @@ int Ud_item_erase(s16 i) {
 s16 Ud_stock_item_num_ck(u16 id) {
     s16 i;
     UDW *u = User_data;
-    for (i = 0; i < 100; i++) {
+    for (i = 0; i < UD_STOCK_N(u); i++) {
         if (u->stock[i].id == id) {
             return u->stock[i].num;
         }
@@ -278,7 +279,7 @@ s16 Ud_stock_item_num_ck3(u16 id) {
     s16 i;
     UDW *u = User_data;
     s16 n = 0;
-    for (i = 0; i < 100; i++) {
+    for (i = 0; i < UD_STOCK_N(u); i++) {
         if (u->stock[i].id == id) {
             n += u->stock[i].num;
         }
@@ -302,7 +303,7 @@ s16 Ud_u_item_stack(u16 id, u16 num) {
     }
     if (m != 0xFF) {
         p = u->stock;
-        for (i = 100; i != 0; i--, p++) {
+        for (i = UD_STOCK_N(u); i != 0; i--, p++) {
             if (p->id == id) {
                 s16 cur = p->num;
                 u32 room = m - cur;
@@ -318,7 +319,7 @@ s16 Ud_u_item_stack(u16 id, u16 num) {
         }
     }
     p = u->stock;
-    for (i = 100; i != 0; i--, p++) {
+    for (i = UD_STOCK_N(u); i != 0; i--, p++) {
         if (p->id == 0) {
             p->id = id;
             p->num = num;
@@ -588,7 +589,7 @@ int Quest_clear_bit_ck(int n) {
 u8 Warehouse_search_space(void) {
     UDW *u = User_data;
     s16 i;
-    for (i = 0; i < 64; i++) {
+    for (i = 0; i < UD_WARE_N(u); i++) {
         if (u->ware[i].use == 0) {
             return i;
         }
@@ -598,7 +599,7 @@ u8 Warehouse_search_space(void) {
 
 u8 Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
     s16 i;
-    for (i = 0; i < 64; i++) {
+    for (i = 0; i < UD_WARE_N(u); i++) {
         if (u->ware[i].use == 0) {
             u->ware[i].use = 1;
             u->ware[i].kind = kind;
@@ -627,14 +628,14 @@ static void Equip_idx_renew(UDW *u) {
     u8 m = 0;
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
     if (u->wkind == 7) { m |= 8; } else { m |= 4; }
-    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * ARMOR_SZ))) { u->widx[2] = 0xFF; }
-    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * ARMOR_SZ))) { u->widx[3] = 0xFF; }
-    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * ARMOR_SZ))) { u->widx[5] = 0xFF; }
-    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * ARMOR_SZ))) { u->widx[4] = 0xFF; }
-    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * ARMOR_SZ))) { u->widx[1] = 0xFF; }
+    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * ARMOR_SZ))) { u->widx[2] = WIDX_NONE; }
+    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * ARMOR_SZ))) { u->widx[3] = WIDX_NONE; }
+    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * ARMOR_SZ))) { u->widx[5] = WIDX_NONE; }
+    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * ARMOR_SZ))) { u->widx[4] = WIDX_NONE; }
+    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * ARMOR_SZ))) { u->widx[1] = WIDX_NONE; }
 }
 
-int Warehouse_equip(UDW *u, u8 idx) {
+int Warehouse_equip(UDW *u, u16 idx) {
     if (u->ware[idx].use == 0) {
         return 0;
     }
@@ -646,7 +647,7 @@ int Warehouse_equip(UDW *u, u8 idx) {
     case 5: u->widx[5] = idx; break;
     case 6:
     case 7:
-        if (idx == 0xFF) {
+        if (idx == WIDX_NONE) {
             return 0;
         }
         u->widx[0] = idx;
@@ -659,11 +660,11 @@ int Warehouse_equip(UDW *u, u8 idx) {
 
 int Warehouse_equip_out(UDW *u, u32 kind) {
     switch (kind) {
-    case 0: u->widx[1] = 0xFF; break;
-    case 2: u->widx[2] = 0xFF; break;
-    case 3: u->widx[3] = 0xFF; break;
-    case 4: u->widx[4] = 0xFF; break;
-    case 5: u->widx[5] = 0xFF; break;
+    case 0: u->widx[1] = WIDX_NONE; break;
+    case 2: u->widx[2] = WIDX_NONE; break;
+    case 3: u->widx[3] = WIDX_NONE; break;
+    case 4: u->widx[4] = WIDX_NONE; break;
+    case 5: u->widx[5] = WIDX_NONE; break;
     case 6:
     case 7:
         return 0;
@@ -673,8 +674,8 @@ int Warehouse_equip_out(UDW *u, u32 kind) {
     return 1;
 }
 
-static int equip_idx_ck(UDW *u, u8 idx, u8 k1, u8 k2) {
-    if (idx == 0xFF) {
+static int equip_idx_ck(UDW *u, u16 idx, u8 k1, u8 k2) {
+    if (idx == WIDX_NONE) {
         return 0;
     }
     if (u->ware[idx].use != 0) {
@@ -973,7 +974,7 @@ int Ex_quest_ck(UDW *u, u8 n) {
     while (id != 0xFF) {
         j = 0;
         w = (u8 *)u;
-        for (; j < 64; j++, w += 6) {
+        for (; j < UD_WARE_N(u); j++, w += 6) {
             if (w[0x44] != 0 && w[0x45] == id && *(u16 *)(w + 0x46) == t[1]) {
                 return 1;
             }

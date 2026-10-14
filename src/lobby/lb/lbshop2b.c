@@ -1,6 +1,7 @@
 /* lbshop2, run 2: Lb_shop .. lb_shop_select (lobby.bin 0x005AEA50-0x005AEEB8): the matching functions of lbshop2_nm.c. */
 #pragma readonly_strings on
 #include "lbshop2_proto.h"
+#include "lbsys_g.h"
 
 void Lb_shop(void) {
     EMW *pl = ((EMW **)((u8 *)D_3E4FA0 + *(u8 *)0x3F34C1 * 0xA00))[0];
@@ -66,25 +67,36 @@ int lb_shop_select(void) {
     if (lbShop.mode == 0) {
         id = lbShop.tbl[lbShop.cur];
         if (lb_monster_list_check(id) == 1) {
-            if (Monster_list_chk((id - 0x125) & 0xFF, 1) == 1) {
+            if (Monster_list_chk((id - ML_BASE) & 0xFF, 1) == 1) {
                 return 0;
             }
+#ifdef VERSION_MHG
+        } else if (id == 472 || id == 473) {    /* G: one-off items (User_data+0xC97 bit id-472) */
+            if ((((u8 *)User_data)[0xC97] >> ((id - 472) & 1)) & 1) {
+                return 0;
+            }
+#endif
         } else if (Lb_shop_item_checkMax(id & 0xFFFF, 1) == 0) {
             return 0;
         }
         if (Item_data[id].type == 4 && *(u8 *)0x3C738D != 7) {
             Lb_put_set01(0);
+#ifdef VERSION_MHG
+        } else if (id == 120 && *(u8 *)0x3C738D != 6) {
+            Lb_put_set01(0xC);
+#else
         } else if (id == 0x69 && *(u8 *)0x3C738D != 6) {
             Lb_put_set01(0xB);
+#endif
         }
-        lbShop.help = shop_default_help[0];
+        lbShop.help = SDH(0);
         lbShop.f40 = lb_shop_put_shopHelp;
     } else {
         if (User_data[0].item[lbShop.cur].num <= 0) {
             return 0;
         }
         if (lbShop.mode == 1) {
-            lbShop.help = shop_default_help[1];
+            lbShop.help = SDH(1);
         }
         lbShop.f40 = lb_shop_put_shopHelp;
     }

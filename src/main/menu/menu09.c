@@ -10,7 +10,8 @@ extern u8 room_member_id[];
 
 void *memset(void *, int, int);
 void se_req(int, int, int);
-extern u8 Item_data[327][16];
+#include "version.h"
+extern u8 Item_data[327][ITEM_ROW];
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);

@@ -67,7 +67,8 @@ typedef struct UDN { u8 pad[8]; s8 name[0x12]; } UDN;
  * flags, hunter points, equipment values) as near-match C, not built; matching runs are built from it.
  * Field meanings are guesses. */
 #include "game.h"
-extern u8 Item_data[327][16];
+#include "version.h"
+extern u8 Item_data[327][ITEM_ROW];
 typedef struct { s16 v; u8 _p[0x12]; } GE;
 typedef struct { s16 v; u8 _p[0x16]; } KE;
 extern u8 Ken_data[][0x18];

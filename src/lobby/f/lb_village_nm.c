@@ -455,7 +455,7 @@ s32 Local_main(void) {
     font_set_stack_no(0);
     ((void (**)(void))vs_square_func_213)[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();
     if (M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) == 0) {
-        lbc_text_lobby_trans(network_work);
+        lbc_text_lobby_trans(pNet);
     }
     switch (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))) {
     case 0x20:
@@ -478,7 +478,7 @@ s32 Local_main(void) {
     font_set_stack_no(0);
     ((void (**)(void))vs_square_func_213)[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();
     if (M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) == 0) {
-        lbc_text_lobby_trans(network_work);
+        lbc_text_lobby_trans(pNet);
     }
     switch (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))) {
     case 32:

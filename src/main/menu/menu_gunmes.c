@@ -117,7 +117,8 @@ typedef struct PFLP12 {
 
 
 /* ===== item window and gauges (0x12E3E0-0x1306A0) ===== */
-extern u8 Item_data[][16];
+#include "version.h"
+extern u8 Item_data[][ITEM_ROW];
 extern u32 item_col_tbl[];
 extern u8 item_normal_base[];
 extern u8 btn_item_sel_3262[];

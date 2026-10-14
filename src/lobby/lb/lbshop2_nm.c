@@ -2,6 +2,7 @@
  * forge shop code (lb_mix_nm.c) for buying/selling items. Near-match file in address order (tools/lbmerge.py). */
 #pragma readonly_strings on
 #include "lbshop2_proto.h"
+#include "lbsys_g.h"
 
 void Lb_shop_init_member()
 {
@@ -96,25 +97,36 @@ int lb_shop_select(void) {
     if (lbShop.mode == 0) {
         id = lbShop.tbl[lbShop.cur];
         if (lb_monster_list_check(id) == 1) {
-            if (Monster_list_chk((id - 0x125) & 0xFF, 1) == 1) {
+            if (Monster_list_chk((id - ML_BASE) & 0xFF, 1) == 1) {
                 return 0;
             }
+#ifdef VERSION_MHG
+        } else if (id == 472 || id == 473) {    /* G: one-off items (User_data+0xC97 bit id-472) */
+            if ((((u8 *)User_data)[0xC97] >> ((id - 472) & 1)) & 1) {
+                return 0;
+            }
+#endif
         } else if (Lb_shop_item_checkMax(id & 0xFFFF, 1) == 0) {
             return 0;
         }
         if (Item_data[id].type == 4 && *(u8 *)0x3C738D != 7) {
             Lb_put_set01(0);
+#ifdef VERSION_MHG
+        } else if (id == 120 && *(u8 *)0x3C738D != 6) {
+            Lb_put_set01(0xC);
+#else
         } else if (id == 0x69 && *(u8 *)0x3C738D != 6) {
             Lb_put_set01(0xB);
+#endif
         }
-        lbShop.help = shop_default_help[0];
+        lbShop.help = SDH(0);
         lbShop.f40 = lb_shop_put_shopHelp;
     } else {
         if (User_data[0].item[lbShop.cur].num <= 0) {
             return 0;
         }
         if (lbShop.mode == 1) {
-            lbShop.help = shop_default_help[1];
+            lbShop.help = SDH(1);
         }
         lbShop.f40 = lb_shop_put_shopHelp;
     }
@@ -142,7 +154,7 @@ void lb_shop_put_itemDetail(void) {
     }
     flfntSetSize(0x12, 0x12);
     if (lbShop.x1C == 0) {
-        off = id * 0x10;
+        off = id * ITEM_ROW;
         font_print_ex(0x168, 0x104, Equip_moji_color_rare(*((u8 *)&Item_data[0].rare + off)), shopList[lbShop.cur].name);
         font_set_palette(0);
         Lb_put_msg_type2(lb_shop_msg + 0x18);
@@ -152,7 +164,7 @@ void lb_shop_put_itemDetail(void) {
         }
         flfntSetSize(0x1C, 0x14);
         if (lb_monster_list_check(id) == 1) {
-            if (Monster_list_chk((id - 0x125) & 0xFF) == 1) {
+            if (Monster_list_chk((id - ML_BASE) & 0xFF) == 1) {
                 have = 1;
             } else {
                 have = 0;
@@ -204,13 +216,17 @@ void lb_shop_tag_decide(void) {
     int pages;
     int n;
 
+#ifdef VERSION_MHG
+    memset(shopList, 0, 0x51B8);        /* G: 523 entries */
+#else
     memset(shopList, 0, 0x5000);
+#endif
     if (lbShop.mode == 0) {
         cnt = 0;
         if (Ud_item_search_space() != 0) {
-            lbShop.help = shop_default_help[5];
+            lbShop.help = SDH(5);
         } else {
-            lbShop.help = shop_default_help[6];
+            lbShop.help = SDH(6);
         }
         n = 0;
         for (i = 0; ; ) {
@@ -225,11 +241,21 @@ void lb_shop_tag_decide(void) {
                 sl->price = Item_data[v].buy;
             }
             if (lb_monster_list_check(v) == 1) {
-                if (Monster_list_chk((v - 0x125) & 0xFF) == 1 || *(u32 *)0x3C6FE0 < (u32)sl->price) {
+                if (Monster_list_chk((v - ML_BASE) & 0xFF) == 1 || *(u32 *)0x3C6FE0 < (u32)sl->price) {
                     sl->state = 1;
                 } else {
                     sl->state = 0;
                 }
+#ifdef VERSION_MHG
+            } else if (v == 472 || v == 473) {  /* G: two one-off items, bought once (User_data+0xC97 bit v-472) */
+                if ((((u8 *)User_data)[0xC97] >> ((v - 472) & 1)) & 1) {
+                    sl->state = 1;
+                } else if (*(u32 *)0x3C6FE0 < (u32)sl->price) {
+                    sl->state = 1;
+                } else {
+                    sl->state = 0;
+                }
+#endif
             } else if (Lb_shop_item_checkMax(v & 0xFFFF, 1) == 0) {
                 sl->state = 1;
             } else {
@@ -239,7 +265,11 @@ void lb_shop_tag_decide(void) {
             cnt++;
             sl++;
             i++;
+#ifdef VERSION_MHG
+            if (n >= 523) {
+#else
             if (n >= 0x1F4) {
+#endif
                 break;
             }
         }
@@ -249,7 +279,7 @@ void lb_shop_tag_decide(void) {
             pages++;
         }
     } else {
-        lbShop.help = shop_default_help[7];
+        lbShop.help = SDH(7);
         for (i = 0; i < 20; i++, sl++, it++) {
             if (it->num <= 0) {
                 sl->state = 2;
@@ -277,9 +307,9 @@ int lb_shop_item_select(void) {
     else id = User_data[0].item[lbShop.cur].id;
     if (keys & 0x20) {
         lbShop.x78 = 0;
-        lbShop.help = shop_default_help[2 + lbShop.mode];
+        lbShop.help = SDH(2 + lbShop.mode);
         if (lbShop.mode == 1 && Item_data[id].sell == 0) {
-            lbShop.help = shop_default_help[4];
+            lbShop.help = SDH(4);
         }
         cnWrap_SoundRequest(0);
         return 0;
@@ -373,8 +403,13 @@ void lb_shop_decide(void) {
     case 0:
         Gold_add(-(lbShop.qty * shopList[lbShop.cur].price), lbShop.cur, lbShop.mode);
         if (lb_monster_list_check(id) == 1) {
-            Add_to_Monster_list((id - 0x125) & 0xFF);
+            Add_to_Monster_list((id - ML_BASE) & 0xFF);
             Lb_put_set01(5);
+#ifdef VERSION_MHG
+        } else if (id == 472 || id == 473) {    /* G: one-off items: mark bought, message 6 / 7 */
+            ((u8 *)User_data)[0xC97] |= 1 << ((id - 472) & 1);
+            Lb_put_set01(id == 472 ? 6 : 7);
+#endif
         } else {
             Ud_item_stack(id & 0xFFFF, (s16)lbShop.qty);
         }

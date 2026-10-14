@@ -3,7 +3,8 @@
 #include "game.h"
 #include "pl.h"
 
-extern u8 Item_data[327][16];
+#include "version.h"
+extern u8 Item_data[327][ITEM_ROW];
 extern u8 PIT_TEX[];
 extern u8 PitMenu[];
 

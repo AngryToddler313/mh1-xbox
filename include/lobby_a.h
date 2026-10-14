@@ -2,6 +2,7 @@
 #ifndef LOBBY_A_H
 #define LOBBY_A_H
 /* generated from lobby.h by tools/lbauto.py: function prototypes replaced by K&R declarations */
+#include "version.h"
 #include "types.h"
 #include "pl.h"
 #include "game.h"
@@ -240,7 +241,7 @@ long Ud_item_num_ck();
 long Ud_item_num_ck2();
 long Ud_item_search_space();
 void set01_set2();
-extern u8 Item_data[327][16];
+extern u8 Item_data[327][ITEM_ROW];
 extern char lit_516_00664D50[];
 void Lb_send_item_request();
 void Eft06_set2();

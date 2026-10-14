@@ -13,7 +13,8 @@ extern f32 map_size[][2];
 extern u8 room_member_id[];
 void *memset(void *, int, int);
 void se_req(int, int, int);
-extern u8 Item_data[327][16];
+#include "version.h"
+extern u8 Item_data[327][ITEM_ROW];
 void PlayerStatusWindow(PLW *, u8);
 void DispFrameMessage(void *, int);
 void flfntLocate(int, int);

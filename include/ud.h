@@ -7,6 +7,41 @@
 typedef struct UD_ITEM { u16 id; s16 num; } UD_ITEM;
 typedef struct UD_WARE { u8 use; u8 kind; u16 id; u16 opt; } UD_WARE; /* one stored equipment (6 bytes) */
 
+#ifdef VERSION_MHG
+/* G (0xE00 bytes): the warehouse and the item box hold 100/200/300 entries (byte 0xC97 bits 0 and 1 are the two bought
+ * expansions, G sub_main 0x4C9250), the pouch and everything after it moved by the same amount, the worn-equipment indexes are
+ * 16 bits (0xFFFF = none). Offsets from G's f_ud (sub_main 0x4C5000..0x4C9300). */
+#define UD_STOCK_N(u) ((1 + (((u8 *)(u))[0xC97] & 1) + ((((u8 *)(u))[0xC97] >> 1) & 1)) * 100)
+#define UD_WARE_N(u) UD_STOCK_N(u)
+#define WIDX_NONE 0xFFFF
+typedef struct UDW {
+    u8 _pad00[0x1];
+    u8 x01;                  /* 0x001 */
+    u8 _pad02[0x1C - 0x2];
+    u32 point;               /* 0x01C hunter points */
+    s32 gold;                /* 0x020 gold (zeni) */
+    u16 evflag[0x10];        /* 0x024 event flags */
+    UD_WARE ware[300];       /* 0x044 warehouse equipment */
+    UD_ITEM stock[300];      /* 0x74C item box */
+    u32 qclear[8];           /* 0xBFC quest-clear bits */
+    u32 x374;                /* 0xC1C */
+    u8 _pad378[0x3];
+    u8 rank;                 /* 0xC23 hunter rank */
+    UD_ITEM item[20];        /* 0xC24 pouch */
+    u8 _padC74[0x1];
+    u8 wkind;                /* 0xC75 equipped weapon kind (7 = bowgun) */
+    u16 wid;                 /* 0xC76 equipped weapon id */
+    u16 wopt;                /* 0xC78 equipped weapon option bits */
+    u8 armor[5];             /* 0xC7A leg, head, body, arm, waist */
+    u8 _padC7F[0xCFE - 0xC7F];
+    u16 widx[6];             /* 0xCFE warehouse index of weapon, leg, head, body, arm, waist (0xFFFF none) */
+    u8 wyv_kill[2];          /* 0xD0A wyvern kill counters (online; guess) */
+    u8 _padD0C[0xE00 - 0xD0C];
+} UDW;
+#else
+#define UD_STOCK_N(u) 100
+#define UD_WARE_N(u) 64
+#define WIDX_NONE 0xFF
 typedef struct UDW {
     u8 _pad00[0x1];
     u8 x01;                  /* 0x001 (selects armor bit 1 or 2: sex, a guess) */
@@ -30,5 +65,6 @@ typedef struct UDW {
     u8 widx[6];              /* 0x456 warehouse index of weapon, leg, head, body, arm, waist (0xFF none) */
     u8 wyv_kill[2];          /* 0x45C wyvern kill counters (online) */
 } UDW;
+#endif
 extern UDW User_data[];
 #endif

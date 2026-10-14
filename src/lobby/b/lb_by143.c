@@ -1,6 +1,7 @@
 /* lb_by143 - agent B 0x005AF7B0-0x005AFB00: lb_shop_item_select (item shop list: quantity +/-, jump to the max, arrow colours; sibling of lb_mix_item_select). */
 #define Lb_shop_item_checkMax Lb_shop_item_checkMax_hdr
 #include "lbshop2_proto.h"
+#include "lbsys_g.h"
 #undef Lb_shop_item_checkMax
 int Lb_shop_item_checkMax(u16 id, s8 qty);
 int lb_shop_item_select(void) {
@@ -17,9 +18,9 @@ int lb_shop_item_select(void) {
     k = keys & 0xFFFF;
     if (k & 0x20) {
         lbShop.x78 = 0;
-        lbShop.help = shop_default_help[2 + lbShop.mode];
+        lbShop.help = SDH(2 + lbShop.mode);
         if (lbShop.mode == 1 && Item_data[id].sell == 0) {
-            lbShop.help = shop_default_help[4];
+            lbShop.help = SDH(4);
         }
         cnWrap_SoundRequest(0);
         return 0;

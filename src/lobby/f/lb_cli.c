@@ -2025,7 +2025,8 @@ void Lbc_init_network_work() {
     F(int, pNet, PNET_OFS(0x18)) = (int)&lb_prim + 0x20;
     F(int, pNet, PNET_OFS(0x1C)) = (int)&lb_prim + 0x40;
     F(int, pNet, PNET_OFS(0x20)) = (int)&lb_prim + 0x60;
-    F(int, F(int, pNet, PNET_OFS(0x20)), 0x14) = (int)&text_lobby_trans_ot3_o;
+    /* G's fifth prim (the text, text_lobby_trans_ot3 on its own ordering table) is not drawn on the PC: no callback here
+     * (MH1's text_lobby_trans_ot3_o has no G address) */
     F(s32, F(int, pNet, PNET_OFS(0x14)), 0x18) = 0;
     F(s32, F(int, pNet, PNET_OFS(0x18)), 0x18) = 1;
     F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x18) = 2;

@@ -4,7 +4,8 @@
 #include "pl.h"
 #include "ud.h"
 
-extern u8 Item_data[327][16];
+#include "version.h"
+extern u8 Item_data[327][ITEM_ROW];
 extern u8 h_rank_tbl[];
 typedef struct { s16 v; u8 _p[0x12]; } GE;
 typedef struct { s16 v; u8 _p[0x16]; } KE;
