@@ -60,7 +60,12 @@ s32 CameraAreaCheck(CAMAREA *, PLW *, s32);
 void cam2view(CAMW *);
 void View_move(void);
 s32 Cockpit_menu_chk(void);
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+s8 SoftKeyboard_alive_check(void); /* G: the chat check is this one (signed byte) */
+#define Cockpit_chat_chk SoftKeyboard_alive_check
+#else
 s32 Cockpit_chat_chk(void);
+#endif
 s32 fishing_cam_chk(PLW *);
 s32 Pl_bari_ck(PLW *);
 s32 pl_flag_ck(PLW *, s32);
@@ -92,7 +97,7 @@ void WyvernFindPlayer(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void BBQcamera_set(PLW *pl) {
     CAMW *cw = &CameraWork;
 
@@ -104,7 +109,7 @@ void BBQcamera_set(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 s32 manual_cam_chk(CAMW *cw, PLW *pl) {
     if (Cockpit_menu_chk() == 1) {
         return 0;
@@ -128,11 +133,15 @@ s32 manual_cam_chk(CAMW *cw, PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void std_cam_sw_set_sub(CAMW *cw, CAMD_STD *d) {
     PLW *pl;
 
+#ifdef VERSION_MHG
+    if (cw->cam_no == 0 && cw->sl[4].act == 0) {
+#else
     if (cw->cam_no == 0) {
+#endif
         pl = cw->pl;
         if (manual_cam_chk(cw, pl) == 1) {
             d->on = cw->sw_on;
@@ -154,7 +163,7 @@ void std_cam_sw_set_sub(CAMW *cw, CAMD_STD *d) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 1
 void set_to_std_cam(s32 no) {
     CAMS *cs = &CameraWork.sl[0];
 
@@ -169,7 +178,7 @@ void set_to_std_cam(s32 no) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 2
 void cam_init_sub_stg(CAMW *cw, CAMS *cs) {
     cs->roll = 0.0f;
     cs->fov = 0.9599311f;

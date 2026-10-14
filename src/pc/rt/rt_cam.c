@@ -107,7 +107,7 @@ void rt_cam_tick(void)
         CAMD_STD *d = &cs->d.std;
         fprintf(stderr, "cam: no %d area %p type %d zoom %d sw %04X | std ang %04X want %04X wall %d | eye %.0f %.0f %.0f tar %.0f %.0f %.0f fov %.2f\n",
                 CameraWork.cam_no, (void *)CameraWork.area, CameraWork.area ? CameraWork.area->type : -1,
-                CameraWork.zoom, CameraWork.sw_on, cs->ang & 0xFFFF, d->ang & 0xFFFF, d->wall,
+                CameraWork.zoom, CameraWork.sw_on, CS_STD_ANG(cs) & 0xFFFF, d->ang & 0xFFFF, d->wall,
                 lpView[0], lpView[1], lpView[2], lpView[3], lpView[4], lpView[5], lpView[0x2C / 4]);
         {
             int k;

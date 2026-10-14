@@ -2,6 +2,7 @@
 build/mhg/src/main/font/dsp01.c.o .rodata .data
 build/mhg/src/main/fl/flrs05.c.o .rodata .data
 build/mhg/src/main/sound/bgm01.c.o .rodata .data
+build/mhg/src/mhg/main/cam/camd_p4.c.o .rodata .data
 build/mhg/src/main/net/cng00.c.o .rodata .data
 build/mhg/src/main/net/cpinet16.c.o .rodata .data
 build/mhg/src/main/net/cpinet26.c.o .rodata .data

@@ -51,7 +51,13 @@ typedef struct CAMD_STD {
     f32 old[3];         /* 0x18 eye last frame */
     f32 gnd;            /* 0x24 ground under the target */
     s8 gflag;           /* 0x28 */
+#ifdef VERSION_MHG
+    u8 x29;             /* 0x29 (G only) */
+    s16 x2A;            /* 0x2A (G only) */
+    f32 x2C;            /* 0x2C (G only) */
+#else
     u8 _pad29[0x30 - 0x29];
+#endif
     f32 eye_d[3];       /* 0x30 wanted eye */
     f32 tar_d[3];       /* 0x3C wanted target */
     f32 fov;            /* 0x48 */
@@ -62,11 +68,24 @@ typedef struct CAMD_STD {
     CAMCNFE *cnfe;      /* 0x5C current zoom entry */
     f32 hit_h;          /* 0x60 eye raised by k_HitWallCamera */
     f32 rate;           /* 0x64 blend step */
+#ifdef VERSION_MHG
+    f32 x68;            /* 0x68 (G only, zeroed by cam_init_sub_std) */
+    f32 x6C;            /* 0x6C (G only) */
+    s16 ang;            /* 0x70 wanted yaw */
+    s16 ang2;           /* 0x72 camera yaw (MH1: CAMS.ang) */
+    u16 on;             /* 0x74 buttons held */
+    u16 trg;            /* 0x76 buttons pressed */
+    u8 x6E;             /* 0x78 */
+    u8 wall;            /* 0x79 GetWallHitLine result */
+    u8 x7A;             /* 0x7A (G only) */
+    u8 x7B;             /* 0x7B (G only) */
+#else
     s16 ang;            /* 0x68 wanted yaw */
     u16 on;             /* 0x6A buttons held */
     u16 trg;            /* 0x6C buttons pressed */
     u8 x6E;             /* 0x6E */
     u8 wall;            /* 0x6F GetWallHitLine result */
+#endif
 } CAMD_STD;
 
 typedef struct CAMD_STG {
@@ -78,11 +97,22 @@ typedef struct CAMD_STG {
     f32 roll;           /* 0x34 */
     f32 fov_f;          /* 0x38 */
     f32 roll_f;         /* 0x3C */
+#ifdef VERSION_MHG
+    s16 vx;             /* 0x40 pitch speed */
+    s16 vy;             /* 0x42 yaw speed */
+    u8 _pad44[0x48 - 0x44];
+    s16 ax;             /* 0x48 pitch (MH1: CAMS.ax) */
+    s16 ay;             /* 0x4A yaw (MH1: CAMS.ay) */
+    u8 _pad4C[0x50 - 0x4C];
+    f32 rate;           /* 0x50 */
+    s16 cnt;            /* 0x54 blend frames left */
+#else
     u8 _pad40[0x42 - 0x40];
     s16 cnt;            /* 0x42 blend frames left */
     f32 rate;           /* 0x44 */
     s16 vx;             /* 0x48 pitch speed */
     s16 vy;             /* 0x4A yaw speed */
+#endif
 } CAMD_STG;
 
 typedef struct CAMD_PCH {
@@ -93,10 +123,18 @@ typedef struct CAMD_PCH {
     f32 range;          /* 0x54 */
     f32 fov0;           /* 0x58 */
     f32 fov1;           /* 0x5C */
+#ifdef VERSION_MHG
+    s16 x60;            /* 0x60 (G only) */
+    s16 ang;            /* 0x62 */
+    s8 type;            /* 0x64 PachiTypeCheck */
+    u8 x63;             /* 0x65 */
+    u8 zoom;            /* 0x66 */
+#else
     s16 ang;            /* 0x60 */
     s8 type;            /* 0x62 PachiTypeCheck */
     u8 x63;             /* 0x63 */
     u8 zoom;            /* 0x64 */
+#endif
 } CAMD_PCH;
 
 typedef struct CAMFISH {
@@ -110,8 +148,18 @@ typedef struct CAMZOOM {
     PLW *npc;           /* 0x04 */
     f32 pos[3];         /* 0x08 */
     f32 tar[3];         /* 0x14 */
+#ifdef VERSION_MHG
+    u8 req;             /* 0x20 (a byte in G) */
+    u8 x21;             /* 0x21 (G only) mode: 0 NPC, 1 manual, 2 fixed */
+#else
     u16 req;            /* 0x20 */
+#endif
     s16 cnt;            /* 0x22 */
+#ifdef VERSION_MHG
+    f32 x24;            /* 0x24 manual: height above the hunter */
+    f32 x28;            /* 0x28 manual: distance */
+    f32 x2C;            /* 0x2C field of view at full zoom */
+#endif
 } CAMZOOM;
 
 typedef struct CAMD_EX {
@@ -142,7 +190,17 @@ typedef struct CAMD_DEMO {
     s32 arg;            /* 0x50 */
     f32 x54;            /* 0x54 */
     f32 x58;            /* 0x58 */
+#ifdef VERSION_MHG
+    s16 ax;             /* 0x5C (MH1: CAMS.ax) */
+    s16 ay;             /* 0x5E */
+    s16 ax0;            /* 0x60 */
+    s16 ay0;            /* 0x62 */
+    u8 stop;            /* 0x64 */
+    u8 x65;             /* 0x65 (G only) */
+    u8 x66;             /* 0x66 (G only) */
+#else
     u8 stop;            /* 0x5C */
+#endif
 } CAMD_DEMO;
 
 /* One camera (0x100 bytes). The head has the same layout as CAMW's. */
@@ -172,21 +230,46 @@ typedef struct CAMS {
         s32 w;
         u8 b;
     } step;             /* 0x7C */
+#ifndef VERSION_MHG
     s16 ax;             /* 0x80 */
     s16 ay;             /* 0x82 */
     s16 ax0;            /* 0x84 */
     s16 ay0;            /* 0x86 */
     s16 ang;            /* 0x88 yaw */
     u8 _pad8A[0x90 - 0x8A];
+#endif
     union {
+#ifdef VERSION_MHG
+        u8 b[0x80];
+#else
         u8 b[0x70];
+#endif
         CAMD_STD std;
         CAMD_STG stg;
         CAMD_PCH pch;
         CAMD_EX ex;
         CAMD_DEMO demo;
-    } d;                /* 0x90 */
+    } d;                /* 0x90 (G: 0x80, the five angles live in the per-mode work) */
 } CAMS;
+
+/* The camera angles: in CAMS for MH1, in the per-mode work (std, stage, demo) for G. */
+#ifdef VERSION_MHG
+#define CS_STD_ANG(cs) ((cs)->d.std.ang2)
+#define CS_STG_AX(cs) ((cs)->d.stg.ax)
+#define CS_STG_AY(cs) ((cs)->d.stg.ay)
+#define CS_DEMO_AX(cs) ((cs)->d.demo.ax)
+#define CS_DEMO_AY(cs) ((cs)->d.demo.ay)
+#define CS_DEMO_AX0(cs) ((cs)->d.demo.ax0)
+#define CS_DEMO_AY0(cs) ((cs)->d.demo.ay0)
+#else
+#define CS_STD_ANG(cs) ((cs)->ang)
+#define CS_STG_AX(cs) ((cs)->ax)
+#define CS_STG_AY(cs) ((cs)->ay)
+#define CS_DEMO_AX(cs) ((cs)->ax)
+#define CS_DEMO_AY(cs) ((cs)->ay)
+#define CS_DEMO_AX0(cs) ((cs)->ax0)
+#define CS_DEMO_AY0(cs) ((cs)->ay0)
+#endif
 
 typedef struct CAMQUAKE {
     f32 pos[3];         /* 0x00 */
@@ -235,7 +318,15 @@ typedef struct CAMW {
     u8 demo_req;        /* 0x5F4 */
     u8 _pad5F5;
     u8 zoom;            /* 0x5F6 */
+#ifdef VERSION_MHG
+    u8 x5F7;            /* 0x5F7 (G only, cleared by cam_init_sub_std) */
+    f32 x5F8;           /* 0x5F8 (G only: 0x3E99999A when the camera is close to the hunter, else 1.0) */
+    u8 x5FC;            /* 0x5FC (G only: cleared at the start of CameraMove; if set, func_001DD5E0 runs) */
+    u8 x5FD;            /* 0x5FD (G only, cleared by CameraInit) */
+    u8 _pad5FE[2];
+#else
     u8 _pad5F7;
+#endif
 } CAMW;
 
 extern CAMW CameraWork;
