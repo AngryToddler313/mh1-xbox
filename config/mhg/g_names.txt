@@ -19,3 +19,4 @@ PROVIDE(Em_Senko_Ck = 0x00548090); /* game overlay function, called from main (p
 PROVIDE(D_00517720 = 0x00517720);
 PROVIDE(select_func_00542B50 = 0x00542B50);
 PROVIDE(select_func_00542B80 = 0x00542B80);
+PROVIDE(Demo_task = 0x00543DB0);

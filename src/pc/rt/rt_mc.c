@@ -453,3 +453,10 @@ int sceCdReadClock(uint8_t *c)
 }
 
 void sceScfGetLocalTimefromRTC(void *c) { (void)c; }
+
+#ifdef VERSION_MHG
+/* G's McCardOperation op 0xB (main 0x2306C0, carry-over of an MH1 hunter): the PC has no MH1 save to look for,
+ * so the check finishes at once with "none found" (done = 2, the same answer the game gives for an empty card);
+ * Edit_task then takes the new-hunter path. */
+void func_002306C0(void *w) { *(int32_t *)((uint8_t *)w + 0x38) = 2; }
+#endif

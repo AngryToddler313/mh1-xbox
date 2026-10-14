@@ -399,7 +399,9 @@ u8 n;
 
 #if OMAKE_PART == 0
 #ifdef VERSION_MHG
-extern u8 D_546E80[], D_548AC0[], D_0035ED0C[], D_0032CEA5[];
+void Edit_task();
+void Cont_task();
+extern u8 D_0035ED0C[], D_0032CEA5[];
 extern u8 D_0035F2D8[];
 int sub_main_func_004C9390();
 void se_req();
@@ -454,7 +456,7 @@ int push;
         case 0:
             if (Fade_busy_ck() != 1) {
                 Tsk_Exit(tsk);
-                Tsk_Execute(D_546E80, 4);
+                Tsk_Execute(Edit_task, 4);
             }
             return;
         case 1:
@@ -463,8 +465,8 @@ int push;
             }
             tsk->sub++;
             D_0035ED0C[0] = 0;
-            Tsk_Sleep();
-            Tsk_Execute(D_548AC0, 4);
+            Tsk_Sleep(1);
+            Tsk_Execute(Cont_task, 4);
             return;
         }
     case 2:
@@ -663,8 +665,9 @@ int push;
 
 #if OMAKE_PART == 0 || OMAKE_PART == 2
 #ifdef VERSION_MHG
-extern u8 D_0035F013[], D_0035F015[], D_543DB0[];
-extern u8 sub_main_func_004A9960[];
+extern u8 D_0035F013[], D_0035F015[];
+void Demo_task();
+void sub_main_func_004A9960();
 OSTATIC void mode_sel_end(tsk)
 SELT *tsk;
 {
@@ -719,7 +722,7 @@ SELT *tsk;
     default:
         Tsk_Exit();
         system_w.x04 = 1;
-        Tsk_Execute(D_543DB0, 3);
+        Tsk_Execute(Demo_task, 3);
         return;
     }
 }
@@ -741,7 +744,7 @@ SELT *tsk;
         all_reset();
         Tsk_Exit(tsk);
         system_w.x04 = 1;
-        Tsk_Execute(D_543DB0, 3);
+        Tsk_Execute(Demo_task, 3);
         break;
     }
 }
