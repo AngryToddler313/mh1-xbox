@@ -56,7 +56,11 @@ void game11(void) {
     Info_Initialization();
     Quest_start();
     Start_item_init();
+#ifdef VERSION_MHG
+    Disp_load_start(GW16(0x2C), 0);     /* G: the request; the loads draw it (disp1_nm.c) */
+#else
     Disp_load_start(GW16(0x2C));
+#endif
     EvDemoInitialize();
     stage_init();
     stage_load();

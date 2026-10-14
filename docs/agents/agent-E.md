@@ -1042,3 +1042,11 @@ tools/text_map.py: items 19% -> 99%, weapons 72% -> 99%, armour 67% -> 100%, MH1
   every MH1 overlay function was read 16 words off. Fixed (the matched-function percentages for overlays need a re-run).
 - rt_text_quest_g added (G quest header table at the offset in word 0x60), not hooked up, not run.
 - Not done: the US memory-card / yes-no dialogs (line-split, needs group alignment), online text (no US twin), G-only text.
+
+## G in English on the PC (14 Oct 2026)
+G PC build needs `asm/mhg` in the worktree (tools/mhg_pcmeta.py reads it; without it pc_ptrs.txt loses 3000 words and
+em_cmd_init crashes): copy it from the main checkout, then `git checkout config/mhg/pc_ptrs.txt` after the build.
+Quest hook in viewer.c afs_entry; memory-card messages via tools/text_map.py `linesplit_pairs` (per-slot `0xADDR[0]` lines).
+Tried and dropped: a "between two neighbours with different shifts" placement for unlocated tables (lb_menu_msg,
+option_list_str, mc_msg_30/32/34/35/45): the profile check accepted wrong shifts, wrong English is worse than none.
+Open: lb_menu_msg & co (lobby), option_list_str / option_val_str, window titles, monsters (61%), the 100 rebalanced quests.

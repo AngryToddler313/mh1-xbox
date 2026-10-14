@@ -283,14 +283,25 @@ void rt_lt_end(int z)
     lcount[z]++;
 }
 
+/* called after each disc read / decompression / texture decode: the PS2's load_bin waits a vsync at a time and
+ * G draws its loading screen on each (viewer.c load_wait) */
+static void (*load_wait_fn)(void);
+void rt_set_load_wait(void (*fn)(void)) { load_wait_fn = fn; }
+
 static void fmt_hook(int zone, int begin, long bytes)
 {
     static const int map[3] = { RTL_READ, RTL_MELT, RTL_TEXDEC };
+    static int busy;
     if (begin)
         rt_lt_begin(map[zone]);
     else {
         lbytes[map[zone]] += bytes;
         rt_lt_end(map[zone]);
+        if (load_wait_fn && !busy) {
+            busy = 1;
+            load_wait_fn();
+            busy = 0;
+        }
     }
 }
 

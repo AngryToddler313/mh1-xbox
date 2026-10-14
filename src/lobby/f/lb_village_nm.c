@@ -542,8 +542,8 @@ void vs_square_init_pre(void) {
  * the village stage (0x57 offline) and its NPCs */
 #ifdef VERSION_MHG
 /* G (lobby 0x59E720): substeps advance lb_sys.x04 (MH1: x03 at the end of case 0), 10 hunters, cw layout of G, the
- * pending-gold call (lobby_func_0055A140, nothing pending on the PC) and G's Disp_NowLoading replacement
- * (func_0012D6F0) are left out */
+ * pending-gold call (lobby_func_0055A140, nothing pending on the PC) is left out; G's Disp_NowLoading replacement
+ * (main 0x12D6F0, the loading-screen request) is Disp_NowLoading on the PC (disp1_nm.c) */
 extern char *net_etc_mes_tbl[];
 extern u8 *mission_area;
 void CameraMove();
@@ -567,6 +567,7 @@ void vs_square_init_init(void) {
         fade_reset();
         M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         InitRenderState(0);
+        Disp_NowLoading();
         if (Online_ck() == 0) {
             *(s8 *)0x3F34C3 = 1;
             Lb_set_player(0, net_etc_mes_tbl[1], D_3C6FC8);
@@ -824,7 +825,8 @@ void vs_square_init_se(void) {
 /* step 3 (0x5D9050): a stage change inside the village (house, farm ...) */
 #ifdef VERSION_MHG
 /* G (lobby 0x59EF00): two substeps. 0: stage load, BGM, npcs, fade out 10; 1: wait lb_sys.x05 frames, then on to the
- * walking loop. lb_sys.x00 is G's "offline" flag (set by init_init). func_0012D6F0 (main, a flag) is left out. */
+ * walking loop. lb_sys.x00 is G's "offline" flag (set by init_init). Main 0x12D6F0 (the loading-screen request)
+ * is Disp_NowLoading on the PC (disp1_nm.c). */
 void CameraMove();
 void vs_square_init(void) {
     u8 *pl;
@@ -835,6 +837,7 @@ void vs_square_init(void) {
         M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
         *(u8 *)0x3F36C5 = 1;
         M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
+        Disp_NowLoading();
         Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A), 1);
         if (Online_ck() == 0 && M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) == 0) {
             str_pause(0, 0);
