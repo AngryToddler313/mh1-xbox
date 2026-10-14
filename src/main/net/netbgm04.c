@@ -81,6 +81,7 @@ int Ncm_spr_kill_all_ex_BG();
 
 
 
+#if !defined(G_PART)
 int ms_network_bb_edit_mmbbid(void) {
     int ret = 0;
     int sw;
@@ -213,7 +214,9 @@ int ms_network_bb_edit_mmbbid(void) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int ms_network_bb_regulation(void) {
     int ret = 0;
     int sw;
@@ -309,3 +312,4 @@ int ms_network_bb_regulation(void) {
     }
     return ret;
 }
+#endif

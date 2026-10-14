@@ -26,6 +26,7 @@ void flmatInit33(f32 *);
 void flmatCopy33();
 void flmatTranspose33(f32 *);
 /* Saves every joint's position and matrix of the monster's skin (sys_old_pos / sys_old_mat, used for riding). */
+#if !defined(G_PART) || G_PART == 1
 void old_pos_save(u8 *em) {
     s16 n;
     s16 i;
@@ -43,11 +44,13 @@ void old_pos_save(u8 *em) {
         flmatCopy(sys_old_mat[i], (f32 *)skin);
     }
 }
+#endif
 
 /* The per-kind special joints of a monster, applied to the local joint matrices before the skeleton is posed:
    the neck/head turn (kinds 1, 7, 0xB: four joints from the kind's joint table), the throat / wing joints that
    follow ex+4 (kind 6), a copied head rotation (kind 0xF), the tail spin from the frame counter (kind 0x21), and
    for kinds 8, 0x15, 0x22 four joints scaled 1.0 and turned by angles kept in the per-monster work. */
+#if !defined(G_PART)
 static void mlCalcTransEM(EMW *em, u8 *bone, f32 *unused) {
     f32 m2[16];
     f32 m1[16];
@@ -130,9 +133,11 @@ static void mlCalcTransEM(EMW *em, u8 *bone, f32 *unused) {
     flmatRotY33((f32 *)(bone + 0x1940), flConvertStoR(*(u16 *)(x + 0x60)));
     }
 }
+#endif
 
 /* Builds the monster's world matrix (scale, rotation, translation) into mat[], poses the per-kind special joints
    (mlCalcTransEM) and hands the skeleton to flCalcTransSI. */
+#if !defined(G_PART)
 void enemy_mk(EMW *em) {
     f32 m[16];
     f32 scale[16];
@@ -151,7 +156,9 @@ void enemy_mk(EMW *em) {
     }
     flCalcTransSI(md->bone, m);
 }
+#endif
 /* Position of the monster relative to saved old matrix #n (for riding), written to out as a vector. */
+#if !defined(G_PART) || G_PART == 2
 void ride_ofs_calc(EMW *em, int unused, s16 n, f32 *out) {
     f32 tr[4];
     f32 inv[16];
@@ -164,3 +171,4 @@ void ride_ofs_calc(EMW *em, int unused, s16 n, f32 *out) {
     d[2] = em->pos[2] - tr[2];
     flvecApplyMat33(out, d, inv);
 }
+#endif

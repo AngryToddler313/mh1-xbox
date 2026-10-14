@@ -42,6 +42,7 @@ VRC *flPS2SearchVramList(TEXH *);
 int flPS2AddVramList(VRC *, TEXH *);
 VRC *flPS2SearchVramSpace(u32, int);
 
+#if !defined(G_PART)
 void flPS2VramInit(void) {
     int i;
 
@@ -56,7 +57,9 @@ void flPS2VramInit(void) {
         flMemset(&flVramControl[i], 0, 0x1C);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 VRC *flPS2PullVramWork() {
     int i;
 
@@ -68,7 +71,9 @@ VRC *flPS2PullVramWork() {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2PushVramWork(VRC *w) {
     VRC *prev = w->prev;
     VRC *next = w->next;
@@ -90,7 +95,9 @@ void flPS2PushVramWork(VRC *w) {
     flMemset(w, 0, 0x1C);
     flVramNum--;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2ChainVramWork(VRC *after, VRC *w) {
     VRC *old = 0;
 
@@ -111,7 +118,9 @@ void flPS2ChainVramWork(VRC *after, VRC *w) {
         old->prev = w;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 VRC *flPS2SearchVramList(TEXH *owner) {
     VRC *p = flVramList;
 
@@ -123,7 +132,9 @@ VRC *flPS2SearchVramList(TEXH *owner) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flPS2AddVramList(VRC *after, TEXH *t) {
     VRC *w;
     s16 page;
@@ -154,7 +165,9 @@ int flPS2AddVramList(VRC *after, TEXH *t) {
     w->align = t->align;
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flPS2RewriteVramList(VRC *at, TEXH *t) {
     if (at == 0) {
         if ((at = flPS2PullVramWork(flVramControl, 0x200)) == 0) {
@@ -185,14 +198,18 @@ int flPS2RewriteVramList(VRC *at, TEXH *t) {
     at->align = t->align;
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flPS2DeleteAllVramList(void) {
     while (flVramList != 0) {
         flPS2PushVramWork(flVramList);
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flPS2DeleteVramList(TEXH *owner) {
     VRC *p = flPS2SearchVramList(owner);
 
@@ -201,12 +218,14 @@ int flPS2DeleteVramList(TEXH *owner) {
     }
     return 1;
 }
+#endif
 
 extern TEXH flTexture[];
 extern TEXH flPalette[];
 
 /* For each packed (palette << 16 | texture) handle of the list, makes sure the resident
  * texture/palette has VRAM space; returns 0 if some placement failed. */
+#if !defined(G_PART) || G_PART == 1
 int flPS2GetVramFreeArea(u32 *list, int n) {
     u32 e;
     int i;
@@ -242,7 +261,9 @@ int flPS2GetVramFreeArea(u32 *list, int n) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 VRC *flPS2SearchVramSpace(u32 len, int align) {
     VRC *p = flVramList;
     VRC *next;
@@ -283,6 +304,7 @@ pre:
     mask = ~align;
     goto loop;
 }
+#endif
 
 /* Looks for resident entries that can be pushed out to make room for t: a run of entries starting on an
  * aligned page, none of them used by the handles of the list (and, on the first pass, only entries of
@@ -291,10 +313,12 @@ pre:
 /* near-match (register choice in the second scan: 38 lines, structure equal), original bytes linked; the C is the
  * reading copy */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int flPS2SearchVramChange(TEXH *t, u32 *list, int n)
 {
 #include "flPS2SearchVramChange.inc"
 }
+#endif
 #else
 int flPS2SearchVramChange(TEXH *t, u32 *list, int n) {
     VRC *w;

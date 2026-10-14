@@ -188,6 +188,7 @@ void Ncm_spr_kill2(int m);
 
 
 
+#if !defined(G_PART)
 int ms_network_yn_file(void) {
     int ret = 0;
 
@@ -239,7 +240,9 @@ int ms_network_yn_file(void) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int ms_network_bb_connect_driver(void) {
     int ret = 0;
 
@@ -301,7 +304,9 @@ int ms_network_bb_connect_driver(void) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s8 ms_network_connect_last_setting(void) {
     int v = ((s8 *)CNFile)[0xC80];
 
@@ -311,11 +316,15 @@ s8 ms_network_connect_last_setting(void) {
     net_common_w.x10 = 1;
     return v;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int ms_network_matching(void) {
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int ms_network_end(void) {
     int ret = 0;
 
@@ -344,7 +353,10 @@ int ms_network_end(void) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int ms_net_end_wait(void) {
     return 1;
 }
+#endif

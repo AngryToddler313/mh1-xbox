@@ -44,22 +44,29 @@ void PADDeviceDestroy(void);
 void ps2PADWorkClear(void);
 void flpad_ram_clear(s32 *, int);
 
+#if !defined(G_PART) || G_PART == 1
 void tarPADDestroy(void) {
     ps2PADWorkClear();
     PADDeviceDestroy();
 }
+#endif
 
+#if !defined(G_PART)
 void tarPADFixedAnalogSelectSwitch(s8 v) {
     flPadFixedAnalogSelectSwitch[0] = v;
     flPadFixedAnalogSelectSwitch[1] = v;
 }
+#endif
 
+#if !defined(G_PART)
 void flPADConfigSetACRtoXX(int port, s16 a, s16 b, s16 c) {
     ps2pad_config[port].x0 = a;
     ps2pad_config[port].lx = b;
     ps2pad_config[port].ly = c;
 }
+#endif
 
+#if !defined(G_PART)
 void tarPADRead(void) {
     int i;
     TARPAD *t;
@@ -95,10 +102,13 @@ void tarPADRead(void) {
         fa++;
     } while (i < 2);
 }
+#endif
 
+#if !defined(G_PART)
 void ps2PADWorkClear(void) {
     flpad_ram_clear((s32 *)tarpad_root, 0x68);
     flpad_ram_clear((s32 *)ps2pad_state, 0x40);
     flpad_ram_clear((s32 *)ps2pad_backup, 0x40);
     flpad_ram_clear((s32 *)ps2pad_clear, 0x20);
 }
+#endif

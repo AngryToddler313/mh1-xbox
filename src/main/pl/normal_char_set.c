@@ -10,6 +10,7 @@ void pl_chr_set();   /* called without a prototype: args are promoted */
 int Pl_master_ck(PLW *);
 void net_send_pl(PLW *, int, int);
 
+#if !defined(G_PART) || G_PART == 1
 void normal_char_set(PLW *pl, int a, int b) {
     u16 c0, c1;
 
@@ -42,8 +43,10 @@ void normal_char_set(PLW *pl, int a, int b) {
     pl_chr_set(pl, c0, a, b, 0);
     pl_chr_set(pl, c1, a, b, 1);
 }
+#endif
 
 /* 0x14F1E0 */
+#if !defined(G_PART)
 void to_normal(PLW *pl, int blend, int tm) {
     if (pl->flag604 != 0) {
         pl->char0 = 0x18;
@@ -81,3 +84,4 @@ void to_normal(PLW *pl, int blend, int tm) {
         net_send_pl(pl, 1, 0);
     }
 }
+#endif

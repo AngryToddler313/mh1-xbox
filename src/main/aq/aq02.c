@@ -187,6 +187,7 @@ typedef struct AQPKT {
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void init_AQWork(int n) {
     AQU *p;
 
@@ -209,7 +210,9 @@ void init_AQWork(int n) {
         p->x24 = p->x14 + recv_buf_one[n];
     }
 }
+#endif
 
+#if !defined(G_PART)
 void AQ_exec(void) {
     AQW *w;
     u8 *p;
@@ -271,7 +274,9 @@ void AQ_exec(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void AQ_exec_load(void) {
     AQW *w;
     u8 *p;
@@ -317,12 +322,16 @@ void AQ_exec_load(void) {
         AQ_send();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void AQSession_init_online(void) {
     CngNetAQSessionInit_online(cng_netAQ);
     aq_work.mode++;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int AQSession_wait(void) {
     int r = 0;
     AQW *w = &aq_work;
@@ -337,7 +346,10 @@ int AQSession_wait(void) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *ck_exec_aq() {
     return CngNetAQcommandExec();
 }
+#endif

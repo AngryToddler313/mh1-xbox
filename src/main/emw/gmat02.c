@@ -53,6 +53,7 @@ extern u8 *diffuse_tbl_add[];
 extern GAREA *shagami_tbl_add[];
 f32 flvecCalcDistance(f32 *, f32 *);
 
+#if !defined(G_PART)
 void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
     u8 *out = &w->shagami;
     GKIND *k;
@@ -72,19 +73,26 @@ void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void GetPlayerMaterialData(PWK *w) {
     GetGroundCameraData(w->gkind, &w->cam, w);
     GetPlayerDiffuseData(w->gkind, w->pos, w);
     GetPlayerShagamiData(w->gkind, w->pos, w);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void GetEmMaterialData(PWK *w) {
     if (w->kind == 9 || w->kind == 0x17) {
         GetPlayerDiffuseData(w->gkind, w->pos, w);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 GetWaterData(PWK *w) {
     return ground_tbl_add[w->stg][w->gkind].water;
 }
+#endif

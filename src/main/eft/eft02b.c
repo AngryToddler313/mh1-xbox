@@ -47,6 +47,7 @@ void eft_vec_linear(f32, f32 *, f32 *);
 
 void eft02_move(EFTW *ew);
 
+#if !defined(G_PART) || G_PART == 1
 void eft02_set(PLW *pl, int arg, f32 *pos) {
     EFTW *ew;
 
@@ -65,7 +66,9 @@ void eft02_set(PLW *pl, int arg, f32 *pos) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Eft02_set2(u16 a, u16 b, int arg, f32 *pos) {
     EFTW *ew;
 
@@ -82,7 +85,9 @@ void Eft02_set2(u16 a, u16 b, int arg, f32 *pos) {
         ew->u0A.joint = ran_suu(1);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
     EFTW *ew;
 
@@ -108,7 +113,9 @@ void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Eft02_set4(u16 a, int ang, int arg, f32 *pos, f32 scale) {
     EFTW *ew = pull_eft_work(0);
 
@@ -125,7 +132,9 @@ void Eft02_set4(u16 a, int ang, int arg, f32 *pos, f32 scale) {
         ew->u0A.joint = ang;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft02_set5(EMW *em, s16 kind, int arg, int joint, f32 *pos, f32 scale) {
     EFTW *ew;
 
@@ -164,7 +173,9 @@ void Eft02_set5(EMW *em, s16 kind, int arg, int joint, f32 *pos, f32 scale) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Eft02_set6(EMW *em, int arg, int joint, f32 scale) {
     EFTW *ew;
 
@@ -182,7 +193,9 @@ void Eft02_set6(EMW *em, int arg, int joint, f32 scale) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Eft02_set_pos(f32 *pos, int arg, int ang) {
     EFTW *ew = pull_eft_work(0);
 
@@ -198,7 +211,9 @@ void Eft02_set_pos(f32 *pos, int arg, int ang) {
         ew->u0A.joint = ang;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Eft02_set_pos2(int ang, int arg, int joint, f32 *pos, f32 scale) {
     EFTW *ew = pull_eft_work(0);
 
@@ -217,3 +232,4 @@ void Eft02_set_pos2(int ang, int arg, int joint, f32 *pos, f32 scale) {
         ew->x1E = 0;
     }
 }
+#endif

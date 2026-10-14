@@ -2,6 +2,7 @@
  * error and "bonus movie added" screens, reward screen init. */
 #include "reward.h"
 
+#if !defined(G_PART)
 void result_disp(GAME_W *t)
 {
     char buf[0x70];
@@ -90,7 +91,9 @@ void result_disp(GAME_W *t)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void error_disp(void)
 {
     font_set_palette(0);
@@ -106,7 +109,9 @@ void error_disp(void)
     flfntLocate(0xB0, 0xBB);
     font_print_sp(lit_662_00386990);
 }
+#endif
 
+#if !defined(G_PART)
 void add_disp(GAME_W *t)
 {
     char buf[0x70];
@@ -125,7 +130,9 @@ void add_disp(GAME_W *t)
     flfntLocate(CENTER_X(buf), 0xA9);
     font_print_sp(lit_467_00386620, buf);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void reward_init(void)
 {
     *(s32 *)&reward_w = 0;
@@ -137,3 +144,4 @@ void reward_init(void)
     PitMenu.x10 = 0;
     reward_key_repeat(0, 0);
 }
+#endif

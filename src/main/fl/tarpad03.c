@@ -15,6 +15,7 @@ typedef struct STICK {
 double atan2(double, double);
 double sqrt(double);
 
+#if !defined(G_PART) || G_PART == 1
 void update_pad_stick_dir(STICK *s, s16 dz) {
     f32 ang;
     int x;
@@ -44,9 +45,11 @@ void update_pad_stick_dir(STICK *s, s16 dz) {
         s->mag = 0;
     }
 }
+#endif
 
 extern u8 ps2lever_analog_to_digital_604[];
 
+#if !defined(G_PART) || G_PART == 1
 u8 lever_analog_to_digital(STICK *s) {
     u32 i;
 
@@ -56,6 +59,7 @@ u8 lever_analog_to_digital(STICK *s) {
     i = s->deg / 22.5f;
     return ps2lever_analog_to_digital_604[i];
 }
+#endif
 
 typedef struct PADSLOT {
     u8 open;            /* 0x00 */
@@ -86,6 +90,7 @@ void scePad2DeleteSocket(int);
 void scePad2End();
 void sceDbcEnd();
 
+#if !defined(G_PART) || G_PART == 1
 int PADDeviceInit(void) {
     if (sceDbcInit() != 1) {
         return 0;
@@ -95,7 +100,9 @@ int PADDeviceInit(void) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void PADPortOpen(int port, int slot, PADSLOT *p) {
     PADSOCK sk;
     int id;
@@ -113,7 +120,9 @@ void PADPortOpen(int port, int slot, PADSLOT *p) {
         p->slot = slot;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void PADDeviceDestroy(void) {
     int i;
     PADSLOT *p;
@@ -130,3 +139,4 @@ void PADDeviceDestroy(void) {
     scePad2End();
     sceDbcEnd();
 }
+#endif

@@ -18,6 +18,7 @@ extern NCQ net_common_w;
 
 
 
+#if !defined(G_PART)
 void Ncm_mssage_disp_req(u8 id) {
     switch (id) {
     case 1:
@@ -155,7 +156,9 @@ void Ncm_mssage_disp_req(u8 id) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Ncm_mssage_disp_option_req(u8 id) {
     switch (id) {
     case 1:
@@ -285,7 +288,9 @@ void Ncm_mssage_disp_option_req(u8 id) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Ncm_err_mssage_disp_req(u8 id) {
     switch (id) {
     case 1:
@@ -310,7 +315,9 @@ void Ncm_err_mssage_disp_req(u8 id) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Ncm_menu_disp_req(u8 id) {
     switch (id) {
     case 0:
@@ -339,7 +346,9 @@ void Ncm_menu_disp_req(u8 id) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Net_disp_net_name_req(u8 id) {
     switch (id) {
     case 0:
@@ -366,3 +375,4 @@ void Net_disp_net_name_req(u8 id) {
         break;
     }
 }
+#endif

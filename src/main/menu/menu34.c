@@ -307,6 +307,7 @@ int Pl_shell_set(PLW *, u16, int);
 
 
 /* 0x134280 */
+#if !defined(G_PART) || G_PART == 1
 void Pit_effect_move(void) {
     PEF *e;
     u32 k;
@@ -336,8 +337,10 @@ void Pit_effect_move(void) {
     }
     lpPit->x84 = 0;
 }
+#endif
 
 /* Draws the six pit effects (pit_efct) as two rotated triangles each. */
+#if !defined(G_PART)
 void Pit_disp_pit_effect(void) {
     PFLP12 q;
     f32 s, c;
@@ -376,3 +379,4 @@ void Pit_disp_pit_effect(void) {
         } while (--k != 0);
     }
 }
+#endif

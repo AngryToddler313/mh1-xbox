@@ -470,18 +470,23 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
+#if !defined(G_PART)
 int FAskRom_Open(void)
 {
     gAskRom.rest = 0x97C00;
     gAskRom.cur = ask_load_adrs;
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int FAskRom_Close(void)
 {
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int FAskRom_Read(fd, buf, n)
 int fd;
 void *buf;
@@ -498,7 +503,9 @@ int n;
     gAskRom.cur = gAskRom.cur + len;
     return len;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int FAskRom_Write(fd, buf, n)
 int fd;
 void *buf;
@@ -515,7 +522,9 @@ int n;
     gAskRom.cur = gAskRom.cur + len;
     return len;
 }
+#endif
 
+#if !defined(G_PART)
 int FAskRom_Seek(fd, off, whence)
 int fd;
 s64 off;
@@ -550,7 +559,9 @@ int whence;
     r = gAskRom.cur - ask_load_adrs;
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 u16 to_zenkaku(c)
 u16 c;
 {
@@ -563,7 +574,9 @@ u16 c;
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 u16 to_zenkaku_spec(int c)
 {
     u8 *k;
@@ -585,12 +598,16 @@ u16 to_zenkaku_spec(int c)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int ext_jis(int c, u16 hi)
 {
     return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
 }
+#endif
 
+#if !defined(G_PART)
 int to_hankaku(out, code)
 u8 *out;
 int code;
@@ -631,7 +648,9 @@ int code;
         return 1;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int can_daku(int c)
 {
     u8 buf[4];
@@ -644,7 +663,9 @@ int can_daku(int c)
     }
     return (rmtype[buf[0]] & 0xF) == 0xA;
 }
+#endif
 
+#if !defined(G_PART)
 int can_handaku(int c)
 {
     u8 buf[4];
@@ -657,7 +678,9 @@ int can_handaku(int c)
     }
     return (rmtype[buf[0]] & 0xF) == 0xB;
 }
+#endif
 
+#if !defined(G_PART)
 int srch_ucode(int code)
 {
     u8 *p;
@@ -672,12 +695,16 @@ int srch_ucode(int code)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static int getbit(s16 n)
 {
     return bitpool[n >> 3] & power[n & 7];
 }
+#endif
 
+#if !defined(G_PART)
 static int g2jodo(int c)
 {
     c = c & 0xFF;
@@ -686,7 +713,9 @@ static int g2jodo(int c)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int goku_connect(int a, int b, int c)
 {
     s16 om;
@@ -715,3 +744,4 @@ int goku_connect(int a, int b, int c)
     }
     return getbit(cn->b + (s16)om + (b & 0xFF) - 1);
 }
+#endif

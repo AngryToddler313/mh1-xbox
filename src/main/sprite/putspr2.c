@@ -28,6 +28,7 @@ extern SP2 mega_tbl[4];
 void Put_2TF(PUT_2TF *);
 void Draw_square(int, int, int, int, u32);
 
+#if !defined(G_PART)
 void Put_megaphone(s16 x, s16 y, s8 level) {
     PUT_2TF q;
 
@@ -48,11 +49,13 @@ void Put_megaphone(s16 x, s16 y, s8 level) {
         Draw_square((s16)(x + 0x1E), (s16)(y + 5), 2, 0xE, 0xFF00FF00);
     }
 }
+#endif
 
 void *Stage_data_get(u8);
 void flSetRenderState(int, u32);
 extern u32 *stage_fog_tbl[];
 
+#if !defined(G_PART) || G_PART == 1
 void stage_w_init(void) {
     stage_work.x07 = 0;
     stage_work.x06 = 0;
@@ -71,8 +74,10 @@ void stage_w_init(void) {
     stage_work.x02 = game_w.stage;
     stage_work.x48 = (s32)Stage_data_get(stage_work.x02);
 }
+#endif
 
 /* Fog from stage_fog_tbl[n]: +0 near, +4 far, +8 colour (bytes r,g,b,a). */
+#if !defined(G_PART)
 void stage_fog_set(u8 n) {
     u8 *f = (u8 *)stage_fog_tbl[n];
 
@@ -80,3 +85,4 @@ void stage_fog_set(u8 n) {
     flSetRenderState(0x10, *(u32 *)f);
     flSetRenderState(0x11, *(u32 *)(f + 4));
 }
+#endif

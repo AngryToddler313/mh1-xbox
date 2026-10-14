@@ -470,6 +470,7 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
+#if !defined(G_PART) || G_PART == 1
 int syn_2to3(int n)
 {
     n = n - 1;
@@ -478,13 +479,17 @@ int syn_2to3(int n)
     }
     return tab_2to3[n];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int apis_dicname(int *a)
 {
     strcpy(dic_name, a[0]);
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int api_khlong(int *a)
 {
     u8 *p;
@@ -506,7 +511,9 @@ int api_khlong(int *a)
     get_kouhostr(p, q);
     return kh_count(hchar[cur_pos].kh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int api_khshort(int *a)
 {
     u8 *p;
@@ -528,7 +535,9 @@ int api_khshort(int *a)
     get_kouhostr(p, q);
     return kh_count(hchar[cur_pos].kh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int api_backbunsetu(int *a)
 {
     u8 *p;
@@ -560,7 +569,9 @@ int api_backbunsetu(int *a)
     get_kouhostr(p, q);
     return kh_count(hchar[cur_pos].kh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int api_nextbunsetu(int *a)
 {
     u8 *p;
@@ -581,7 +592,9 @@ int api_nextbunsetu(int *a)
     get_kouhostr(p, q);
     return kh_count(hchar[cur_pos].kh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int api_khhenkan(int *a)
 {
     int mode;
@@ -618,8 +631,11 @@ int api_khhenkan(int *a)
     get_kouhostr(p, q);
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int api_none(void)
 {
     return -1;
 }
+#endif

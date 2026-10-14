@@ -102,6 +102,7 @@ void com_motion_load();
 
 
 #ifdef VERSION_MHG
+#if !defined(G_PART) || G_PART == 1
 void game_init(void) {
     memset(&game_w, 0, 0x240);
     all_model_free();
@@ -116,6 +117,7 @@ void game_init(void) {
     GWS8(0x17) = SELB(0xDC);
     CameraWorkInit();
 }
+#endif
 #else
 void game_init(void) {
     memset(&game_w, 0, 0x224);
@@ -133,12 +135,15 @@ void game_init(void) {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 1
 void stage_init(void) {
     Pit_init();
     func_63B020();
     Q_camera_init();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void stage_load(void) {
     int i;
 
@@ -164,7 +169,9 @@ void stage_load(void) {
     debug_model_load();
     all_initmotion_free();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void player_all_load(int n) {
     PLW *pl = &player_work[n];
 
@@ -172,7 +179,9 @@ void player_all_load(int n) {
     pl_create_model(n);
     player_init0(pl);
 }
+#endif
 
+#if !defined(G_PART)
 void load_eft(void) {
     s32 m;
 
@@ -191,3 +200,4 @@ void load_eft(void) {
         }
     }
 }
+#endif

@@ -82,6 +82,7 @@ s32 Game_clear_ck(s32);
 void cam_plEX_fishing(CAMW *, CAMS *, CAMFISH *);
 void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
+#if !defined(G_PART) || G_PART == 1
 void WyvernFindPlayer(PLW *pl) {
     CAMW *cw = &CameraWork;
 
@@ -89,7 +90,9 @@ void WyvernFindPlayer(PLW *pl) {
         cw->reset = (s32)pl;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void BBQcamera_set(PLW *pl) {
     CAMW *cw = &CameraWork;
 
@@ -99,7 +102,9 @@ void BBQcamera_set(PLW *pl) {
         cw->zoom = 2;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 manual_cam_chk(CAMW *cw, PLW *pl) {
     if (Cockpit_menu_chk() == 1) {
         return 0;
@@ -121,7 +126,9 @@ s32 manual_cam_chk(CAMW *cw, PLW *pl) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void std_cam_sw_set_sub(CAMW *cw, CAMD_STD *d) {
     PLW *pl;
 
@@ -145,7 +152,9 @@ void std_cam_sw_set_sub(CAMW *cw, CAMD_STD *d) {
     d->trg = 0;
     d->on = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void set_to_std_cam(s32 no) {
     CAMS *cs = &CameraWork.sl[0];
 
@@ -158,8 +167,11 @@ void set_to_std_cam(s32 no) {
     }
     cs->req = -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void cam_init_sub_stg(CAMW *cw, CAMS *cs) {
     cs->roll = 0.0f;
     cs->fov = 0.9599311f;
 }
+#endif

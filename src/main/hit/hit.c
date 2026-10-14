@@ -77,6 +77,12 @@ void dm_vec_calc(HSHL *sh, HCHR *c, f32 *a, f32 *b);
 void hit_data_on_shl_sub(HSHL *sh, HCHR *pl);
 void hit_shell_minus(HSHL *sh);
 
+#ifdef G_PART
+#define HIT_STATIC          /* split into parts for G: hit_check (part 1) calls shell_hit_ck (part 2) */
+#else
+#define HIT_STATIC static
+#endif
+#if !defined(G_PART) || G_PART == 1
 static void hit_chk_init_sub(HCHR *c) {
     s16 i;
 
@@ -86,7 +92,9 @@ static void hit_chk_init_sub(HCHR *c) {
     }
     c->hit_id_no = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void hit_chk_init(void) {
     HCHR *c;
     int i;
@@ -99,9 +107,11 @@ void hit_chk_init(void) {
         hit_chk_init_sub(c);
     }
 }
+#endif
 
-static void shell_hit_ck(void);
+HIT_STATIC void shell_hit_ck(void);
 
+#if !defined(G_PART) || G_PART == 1
 void hit_check(void) {
     HCHR *c;
     int i;
@@ -131,6 +141,9 @@ void hit_check(void) {
         c->x7CE = 0;
         c->x7C6 = 0;
         c->x7BC = 0;
+#ifdef VERSION_MHG
+        c->x3EB = 0;
+#endif
     }
     for (k = 0, e = (HCHR *)em_work; k < 20; k++, e = (HCHR *)((u8 *)e + EMW_STRIDE)) {
         e->dm_flag = 0;
@@ -155,10 +168,15 @@ void hit_check(void) {
         e->x7CE = 0;
         e->x7C6 = 0;
         e->x7BC = 0;
+#ifdef VERSION_MHG
+        e->x3EB = 0;
+#endif
     }
     shell_hit_ck();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void body_ptr_ck2(HCHR *c, HBODY **pb) {
     HBODY *b = *pb;
 
@@ -168,7 +186,9 @@ void body_ptr_ck2(HCHR *c, HBODY **pb) {
         *pb = &b[1];
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void body_ptr_ck(HSHL *sh, HBODY **pb) {
     HBODY *b;
 
@@ -183,7 +203,9 @@ void body_ptr_ck(HSHL *sh, HBODY **pb) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void dm_value_add(HCHR *c, HSHL *sh) {
     if (sh->ailment & 1) {
         c->x7B4 += sh->ailment_val;
@@ -198,7 +220,9 @@ void dm_value_add(HCHR *c, HSHL *sh) {
         c->x7CE += sh->ailment_val;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void hit_mark_set_new(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
     if (sh->mark == 0 || sh->stg != game_w.stage) {
     } else {
@@ -363,7 +387,9 @@ void hit_mark_set_new(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
     }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void hit_timer_calc(HCHR *c) {
     if (pl_flag_ck(c, 0x800) != 0) {
         c->x412 = 1;
@@ -405,9 +431,11 @@ void hit_timer_calc(HCHR *c) {
         break;
     }
 }
+#endif
 
 #define CHR_OF(sh) ((sh)->own_em == 0 ? (HCHR *)&player_work[(sh)->no] : (HCHR *)&em_work[(sh)->no])
 
+#if !defined(G_PART) || G_PART == 2
 static void hit_shl_shl_ck(HSHL *sh) {
     HBODY *sb;
     HBODY *ob;
@@ -522,10 +550,12 @@ static void hit_shl_shl_ck(HSHL *sh) {
     next:;
     }
 }
+#endif
 
 static void hit_chk_sub_shl(HSHL *sh, HCHR *pl, HCHR *c);
 
-static void shell_hit_ck(void) {
+#if !defined(G_PART) || G_PART == 2
+HIT_STATIC void shell_hit_ck(void) {
     HSHL *sh = shell_w_top;
     HCHR *own;
     HCHR *c;
@@ -595,9 +625,11 @@ static void shell_hit_ck(void) {
         sh = sh->next;
     } while (sh != 0);
 }
+#endif
 
 void hit_calc_shl(HSHL *sh, HCHR *pl, HCHR *c);
 
+#if !defined(G_PART) || G_PART == 2
 static void hit_chk_sub_shl(HSHL *sh, HCHR *pl, HCHR *c) {
     if (c->be_flag == 0) {
         return;
@@ -613,7 +645,9 @@ static void hit_chk_sub_shl(HSHL *sh, HCHR *pl, HCHR *c) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 dm_skip_ck(HCHR *c) {
     if (softdip_ck(0x2A) != 0) {
         return 0;
@@ -623,6 +657,7 @@ u8 dm_skip_ck(HCHR *c) {
     }
     return 0;
 }
+#endif
 
 void hit_data_on_shl_sub(HSHL *sh, HCHR *pl);
 void hit_shell_minus(HSHL *sh);

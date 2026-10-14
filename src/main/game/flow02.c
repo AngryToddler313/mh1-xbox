@@ -104,6 +104,7 @@ void com_motion_load();
 
 
 /* Clears the eight player works and sets up the joined hunters (id, stage, weapon, name or saved data). */
+#if !defined(G_PART)
 void init_pl_work(void) {
     s16 i;
     PLW *pl;
@@ -173,16 +174,22 @@ next:
         g8 += 8;
     } while (i < 8);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void init_view_work(void) {
     view_reset();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void init_light_work(void) {
     memset(light_work, 0, 0x290);
     light_init(game_w.stage);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void swset_w_init(void) {
     memset(swset_w, 0, 0x20);
     Plsw_buff[0] = 0;
@@ -202,7 +209,9 @@ void swset_w_init(void) {
     Plan_pow[2] = 0;
     Plan_pow[3] = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void st_model_load(stage)
 u8 stage;
 {
@@ -224,18 +233,25 @@ u8 stage;
         LoadCameraData(game_w.stage);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void com_motion_load(void) {
     load_plcom_motion();
     create_plcom_motion();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void pl_motion_load(int n) {
     load_pl_motion();
     create_pl_motion(n);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_motion_load(int a, int b) {
     load_em_motion();
     create_em_motion(a, b);
 }
+#endif

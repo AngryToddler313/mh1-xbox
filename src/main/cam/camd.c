@@ -86,6 +86,7 @@ s32 Game_clear_ck(s32);
 void cam_plEX_fishing(CAMW *, CAMS *, CAMFISH *);
 void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
+#if !defined(G_PART)
 void NPCZoomInCameraRequest(PLW *npc) {
     CAMZOOM *z = &CameraWork.sl[3].d.ex.zoom;
 
@@ -93,15 +94,21 @@ void NPCZoomInCameraRequest(PLW *npc) {
     z->npc = npc;
     flvecCopy(z->pos, npc->pos);
 }
+#endif
 
+#if !defined(G_PART)
 void NPCZoomInCameraCancel(void) {
     CameraWork.sl[3].d.ex.zoom.req = 0;
 }
+#endif
 
+#if !defined(G_PART)
 s32 NPCZoomInCameraCheck(void) {
     return CameraWork.sl[3].d.ex.zoom.req != 0;
 }
+#endif
 
+#if !defined(G_PART)
 void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
     PLW *pl;
     PLW *npc;
@@ -153,7 +160,9 @@ void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
     cs->roll = src->roll;
     cs->act = 1;
 }
+#endif
 
+#if !defined(G_PART)
 void cam_init_sub_demo(CAMW *cw, CAMS *cs) {
     cs->roll = 0.0f;
     cs->fov = 0.9599311f;
@@ -161,7 +170,9 @@ void cam_init_sub_demo(CAMW *cw, CAMS *cs) {
     cs->d.demo.state = 0;
     cs->d.demo.arg = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void cam_sub_demo(CAMW *cw, CAMS *cs) {
     CAMD_DEMO *d;
     s32 r;
@@ -196,12 +207,16 @@ void cam_sub_demo(CAMW *cw, CAMS *cs) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void DemoCameraRequest(s8 no, s32 arg) {
     CameraWork.demo_req = no;
     CameraWork.demo_arg = arg;
 }
+#endif
 
+#if !defined(G_PART)
 void DemoCameraCancel(void) {
     CAMS *cs = &CameraWork.sl[4];
 
@@ -211,11 +226,15 @@ void DemoCameraCancel(void) {
     cs->d.demo.arg = 0;
     CameraWork.demo_req = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s8 DemoCameraCheck(void) {
     return CameraWork.sl[4].d.demo.state;
 }
+#endif
 
+#if !defined(G_PART)
 s32 point_camera(CAMW *cw, CAMS *cs) {
     CAMD_DEMO *d;
     s32 r;
@@ -243,7 +262,9 @@ s32 point_camera(CAMW *cw, CAMS *cs) {
     /* r is not set on other steps (as in the original) */
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 static f32 *get_em_local(CAMD_DEMO *d) {
     u8 *em = *(u8 **)((u8 *)d + 0x50);
 
@@ -253,7 +274,9 @@ static f32 *get_em_local(CAMD_DEMO *d) {
     d->stop = 1;
     return NULL;
 }
+#endif
 
+#if !defined(G_PART)
 void cmd_set_pos(f32 *out, CAMD_DEMO *d, s32 *cmd) {
     PLW *pl;
     f32 *r;
@@ -285,7 +308,9 @@ void cmd_set_pos(f32 *out, CAMD_DEMO *d, s32 *cmd) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void cmd_set_tar(f32 *out, CAMD_DEMO *d, s32 *cmd) {
     PLW *pl;
     f32 *r;
@@ -314,7 +339,9 @@ void cmd_set_tar(f32 *out, CAMD_DEMO *d, s32 *cmd) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void cmd_copy(CAMD_DEMO *d, s32 n) {
     switch (n) {
     case 0:
@@ -331,7 +358,9 @@ void cmd_copy(CAMD_DEMO *d, s32 n) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void get_angle(s16 *a, CAMS *cs) {
     if (cs->cnt_max > 0) {
         a[0] = cs->ax - cs->ax0;
@@ -343,7 +372,9 @@ void get_angle(s16 *a, CAMS *cs) {
         a[1] = cs->ay;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void cmd_cam_move(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
     s16 ang[2];
     FLMAT m;
@@ -424,7 +455,10 @@ void cmd_cam_move(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
     cs->roll = d->roll * t + d->roll_o * u;
     cs->fov = d->fov * t + d->fov_o * u;
 }
+#endif
 
+#if !defined(G_PART)
 s32 point_cam_hit(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
     return 0;
 }
+#endif

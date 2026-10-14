@@ -4,6 +4,7 @@
 void flPS2SinCosFast();
 void flmatInit33();
 
+#if !defined(G_PART)
 asm void flmatNormalize33(void)
 {
     addiu a1, a0, 0x10
@@ -35,7 +36,9 @@ asm void flmatNormalize33(void)
     jr ra
     nop
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatRotX33(void)
 {
     addiu sp, sp, -0x20
@@ -76,7 +79,9 @@ asm void flmatRotX33(void)
     jr ra
     addiu sp, sp, 0x20
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatRotY33(void)
 {
     addiu sp, sp, -0x20
@@ -117,7 +122,9 @@ asm void flmatRotY33(void)
     jr ra
     addiu sp, sp, 0x20
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatRotZ33(void)
 {
     addiu sp, sp, -0x20
@@ -157,7 +164,9 @@ asm void flmatRotZ33(void)
     jr ra
     addiu sp, sp, 0x20
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatSetXYZ33(void)
 {
     addiu sp, sp, -0x60
@@ -274,7 +283,9 @@ asm void flmatSetXYZ33(void)
     jr ra
     addiu sp, sp, 0x60
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatSetZYX33(void)
 {
     addiu sp, sp, -0x60
@@ -391,7 +402,9 @@ asm void flmatSetZYX33(void)
     jr ra
     addiu sp, sp, 0x60
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatRotXYZ33(void)
 {
     addiu sp, sp, -0x40
@@ -495,7 +508,9 @@ asm void flmatRotXYZ33(void)
     jr ra
     addiu sp, sp, 0x40
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatRotZXY33(void)
 {
     addiu sp, sp, -0x40
@@ -601,5 +616,6 @@ asm void flmatRotZXY33(void)
     jr ra
     addiu sp, sp, 0x40
 }
+#endif
 
 #endif

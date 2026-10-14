@@ -18,6 +18,7 @@ extern u8 PppStatusv[0x14];
 extern u8 ConnWork[0x2C];
 extern s32 *CurDevice;
 
+#if !defined(G_PART) || G_PART == 1
 int SlashToBackslash(char *s) {
     while (*s != 0) {
         if (*s == '/') {
@@ -27,11 +28,15 @@ int SlashToBackslash(char *s) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void InetDbgPrint(char *fmt, int a, int b, int c, ...) {
     /* debug output removed */
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void InetConnectInitialize(void) {
     memset(InetSys, 0, 0x10);
     memset(InetGame, 0, 0x14);
@@ -40,7 +45,9 @@ void InetConnectInitialize(void) {
     memset(ConnWork, 0, 0x2C);
     *(s32 *)(ConnWork + 4) = -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void LobbyToMcsInitSocket(s32 sock) {
     s32 opt[2];
 
@@ -50,7 +57,9 @@ void LobbyToMcsInitSocket(s32 sock) {
     opt[1] = 0;
     CpInetTcpSetOption(*(s32 *)(ConnWork + 4), opt);
 }
+#endif
 
+#if !defined(G_PART)
 void LobbyToMcsInit(s8 a, s8 b, char *name) {
     *(s32 *)(PppStatusv + 8) = 0x1863C;
     switch (*CurDevice) {
@@ -75,3 +84,4 @@ void LobbyToMcsInit(s8 a, s8 b, char *name) {
     *(s16 *)(InetGame + 18) = *(s32 *)(PppStatusv + 8) / 100;
     atoi(name + 5);
 }
+#endif

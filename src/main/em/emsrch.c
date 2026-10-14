@@ -20,6 +20,7 @@ void flmatGetTrans(f32 *, u8 *);
    vertically and inside a cone of +-ang around the monster's facing; stores it in x3B0 / x617 / x3AC (distance)
    and horm_ang (angle to it); returns the player number or -1. The angle test needs the temp t (an inline
    helper in the original source, perhaps), the tie test is if / else if with the shared `best = i` after it. */
+#if !defined(G_PART) || G_PART == 1
 s8 em_search_set(EMW *em, f32 dist_xz, f32 dist_y, u16 ang) {
     int i;
     int best;
@@ -74,8 +75,10 @@ next:
     }
     return (u8)best;
 }
+#endif
 
 /* Sets up the nine durability slots (EMW+0x304, 8 bytes each: on, no, 0, 0, hp s16, 0) from em_dur_tbl[type]. */
+#if !defined(G_PART)
 void em_dur_init(EMW *em) {
     int i;
     s16 *t;
@@ -101,35 +104,50 @@ void em_dur_init(EMW *em) {
     } while (i < 9);
     em->x953 = *t;
 }
+#endif
 
 /* original bytes kept (2 instructions off as C, see emsrch_nm.c): build/raw/em_dur_set.inc, config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
+#if !defined(G_PART)
 asm void em_dur_set(EMW *em, u32 n)
 {
 #include "em_dur_set.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void get_joint_pos(EMW *em, s16 joint, f32 *out) {
     flmatGetTrans(out, em->mdl->bone + joint * 0x190);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void get_joint_pos_em(EMW *em, s16 joint, f32 *out) {
     get_joint_pos(em, joint, out);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *get_joint_wmat(EMW *em, s16 joint) {
     return em->mdl->bone + joint * 0x190;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *get_joint_wmat_em(EMW *em, s16 joint) {
     return get_joint_wmat(em, joint);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *get_joint_mat(EMW *em, s16 joint) {
     return em->mdl->bone + joint * 0x190 + 0x40;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *get_joint_mat_em(EMW *em, s16 joint) {
     return get_joint_mat(em, joint);
 }
+#endif

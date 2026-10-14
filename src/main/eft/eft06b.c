@@ -81,6 +81,7 @@ void eft06_t(PRIM *pr);
 void eft06_se_req(EFTW *ew, f32 *pos);
 void Eft06_set(void *chr, s16 arg, int x05, int joint, f32 scale);
 
+#if !defined(G_PART) || G_PART == 1
 void eft06_d(EFTW *ew) {
     EFT06_PIECE *p = ew->work;
     s16 n;
@@ -104,12 +105,16 @@ void eft06_d(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void eft06_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
 
+#if !defined(G_PART)
 void eft06_t(PRIM *pr) {
     u32 col;
     u32 a;
@@ -264,7 +269,9 @@ void eft06_t(PRIM *pr) {
         flSetRenderState(0x6C, 1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft06_se_req(EFTW *ew, f32 *pos) {
     switch (ew->arg) {
     case 0:
@@ -292,7 +299,9 @@ void eft06_se_req(EFTW *ew, f32 *pos) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 EFTW *eft06_set_com(void *chr, s16 arg, int x05) {
     EFTW *ew;
 
@@ -310,7 +319,9 @@ EFTW *eft06_set_com(void *chr, s16 arg, int x05) {
     ew->mode2 = x05;
     return ew;
 }
+#endif
 
+#if !defined(G_PART)
 void Eft06_set(void *chr, s16 arg, int x05, int joint, f32 scale) {
     EFTW *ew;
 
@@ -328,7 +339,9 @@ void Eft06_set(void *chr, s16 arg, int x05, int joint, f32 scale) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft06_set2(f32 scale, void *chr, s16 arg, int joint, f32 *pos) {
     EFTW *ew = eft06_set_com(chr, arg, 0);
 
@@ -338,7 +351,9 @@ void Eft06_set2(f32 scale, void *chr, s16 arg, int joint, f32 *pos) {
         flvecCopy(ew->pos, pos);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft06_set_hit(EMW *em, s16 arg, int x05) {
     EFTW *ew;
 
@@ -367,3 +382,4 @@ void Eft06_set_hit(EMW *em, s16 arg, int x05) {
         }
     }
 }
+#endif

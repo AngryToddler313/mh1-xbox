@@ -130,6 +130,7 @@ void func_6140B0(EMX *);
 void func_6147D0(EMX *);
 
 
+#if !defined(G_PART)
 void em_die(EMX *w) {
     pl_timer_calc(w);
     hit_stop_calc(w);
@@ -163,13 +164,17 @@ void em_die(EMX *w) {
     }
     GetEmMaterialData(w);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_erase(EMX *w) {
     Quest_enemy_die(w);
     Em_hagi_point_clr(w);
     push_em_work(w);
 }
+#endif
 
+#if !defined(G_PART)
 int enemy_mv(EMX *w) {
     switch (w->state) {
     case 0:
@@ -212,3 +217,4 @@ int enemy_mv(EMX *w) {
     World_calc(w);
     return 0;
 }
+#endif

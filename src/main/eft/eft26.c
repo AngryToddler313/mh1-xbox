@@ -48,6 +48,7 @@ static void eft26_d(EFTW *ew);
 static void eft26_e(EFTW *ew);
 static void eft26_t(PRIM *pr);
 
+#if !defined(G_PART)
 void Eft26_set(PLW *pl) {
     EFTW *ew;
 
@@ -62,7 +63,9 @@ void Eft26_set(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft26_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -79,7 +82,9 @@ static void eft26_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft26_i(EFTW *ew) {
     ew->mode++;
     ew->mode2 = 0;
@@ -97,7 +102,9 @@ static void eft26_i(EFTW *ew) {
         eft26_e(ew);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft26_m(EFTW *ew) {
     PLW *pl = (PLW *)ew->owner;
     EFT26_TGT *tgt;
@@ -122,18 +129,24 @@ static void eft26_m(EFTW *ew) {
         add_prim(ot0, ew->prim, 0x40, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft26_d(EFTW *ew) {
     ew->mode++;
     if (ew->prim != 0) {
         release_prim(ew->prim_no);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft26_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART)
 static void eft26_t(PRIM *pr) {
     FLMAT m;
     EFTW *ew = pr->owner;
@@ -162,3 +175,4 @@ static void eft26_t(PRIM *pr) {
         eft_trans_sub_opa(cl, &m, mats);
     }
 }
+#endif

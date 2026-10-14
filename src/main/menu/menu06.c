@@ -67,6 +67,7 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART) || G_PART == 1
 int mix_item_chk(u8 no, int id) {
     if (no == 0xFF) {
         return 0;
@@ -76,7 +77,9 @@ int mix_item_chk(u8 no, int id) {
     }
     return Item_preparation_one_ck((s16)id) != 0 ? 1 : 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int mix_item_2_chk(u8 a, u8 b) {
     PLW *pl = lpPit->pl;
 
@@ -97,7 +100,9 @@ int mix_item_2_chk(u8 a, u8 b) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void menu_mix_clear(void) {
     lpPit->x7A = 0;
     lpPit->x49 = 0;
@@ -109,7 +114,9 @@ void menu_mix_clear(void) {
     lpPit->x68 = 0;
     lpPit->x84 = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Menu_mix_i(void) {
     if (Item_ok_chk(lpPit->pl) == 0) {
         return -1;
@@ -124,3 +131,4 @@ int Menu_mix_i(void) {
     PitMenu.x12 = 0;
     return 0;
 }
+#endif

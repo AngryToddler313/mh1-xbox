@@ -50,6 +50,7 @@ static void set21_d(SETW *sw);
 static void set21_e(SETW *sw);
 static void set21_trans(PRIM *pr);
 
+#if !defined(G_PART)
 void Set21_set(EMW *em, int arg) {
     SETW *sw = pull_set_work(1);
 
@@ -60,7 +61,9 @@ void Set21_set(EMW *em, int arg) {
         sw->arg = arg;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set21_pos_get(SETW *sw, EMW *em) {
     f32 a[3];
     f32 b[3];
@@ -72,7 +75,9 @@ static void set21_pos_get(SETW *sw, EMW *em) {
     sw->pos[2] = (a[2] + b[2]) / 2.0f;
     sw->cnt = em->ang[1];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void set21_st_pos_get(f32 *pos, s16 n) {
     f32 *p;
 
@@ -95,7 +100,9 @@ static void set21_st_pos_get(f32 *pos, s16 n) {
     }
     flvecCopy(pos, p);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void set21_st_ang_get(s16 *ang, s16 n) {
     switch (game_w.stage) {
     case 0x51:
@@ -115,7 +122,9 @@ static void set21_st_ang_get(s16 *ang, s16 n) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set21_rate_init(SETW *sw, SET21_RATE *r) {
     f32 pos[3];
     s16 ang;
@@ -127,7 +136,9 @@ static void set21_rate_init(SETW *sw, SET21_RATE *r) {
     r->v[2] = (pos[2] - sw->pos[2]) / 10.0f;
     r->ang = (f32)(sw->cnt - ang) / 10.0f;
 }
+#endif
 
+#if !defined(G_PART)
 static void set21_rate_add(SETW *sw, SET21_RATE *r) {
     sw->pos[0] += r->v[0];
     sw->pos[1] += r->v[1];
@@ -135,7 +146,9 @@ static void set21_rate_add(SETW *sw, SET21_RATE *r) {
     r->v[1] += -2.0f;
     sw->cnt += r->ang;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void set21_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -152,7 +165,9 @@ static void set21_move(SETW *sw) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void set21_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
@@ -171,7 +186,9 @@ static void set21_i(SETW *sw) {
         push_set_work(sw);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set21_m(SETW *sw) {
     SET21_RATE *r = sw->u.work;
     EMW *em = (EMW *)sw->x34;
@@ -211,17 +228,23 @@ static void set21_m(SETW *sw) {
     sw->prim->pos[2] = sw->pos[2];
     add_prim(ot1, sw->prim, 0x20, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void set21_d(SETW *sw) {
     sw->mode++;
     sw->be_flag = 0;
     release_prim(sw->prim_no);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void set21_e(SETW *sw) {
     push_set_work(sw);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void set21_trans(PRIM *pr) {
     FLMAT m;
     SET_MDLW *mw = set_mdlw;
@@ -240,3 +263,4 @@ static void set21_trans(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif

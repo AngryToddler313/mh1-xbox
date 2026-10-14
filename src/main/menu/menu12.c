@@ -67,10 +67,13 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART) || G_PART == 1
 void MapSignRequest(int no) {
     (&lpPit->x34)[no] = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Menu_chatcnfg_i(void) {
     if (Online_ck() == 0) {
         return -1;
@@ -83,11 +86,13 @@ int Menu_chatcnfg_i(void) {
     PitMenu.x1B = 0;
     return 0;
 }
+#endif
 
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
 /* 0x12B060: chat settings: row 0 toggles between the two pages, row 1 runs the page; returns the pad bits left. */
+#if !defined(G_PART)
 u16 Menu_chatcnfg_mv(int sw) {
     u16 r;
     u16 t;
@@ -126,3 +131,4 @@ u16 Menu_chatcnfg_mv(int sw) {
     }
     return r;
 }
+#endif

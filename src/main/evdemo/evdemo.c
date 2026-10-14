@@ -80,6 +80,7 @@ void demo_bgm_set();
 void stage_bgm_set();
 void func_63AFA0();
 
+#if !defined(G_PART)
 void EvDemoInitialize(void)
 {
     EVENT_DEMO *e = &event_demo;
@@ -133,7 +134,9 @@ void EvDemoInitialize(void)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int evdemo_init_sub(s, d)
 EVSLOT *s;
 EVD *d;
@@ -147,7 +150,9 @@ EVD *d;
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void EvDemoMove(void)
 {
     int i;
@@ -181,7 +186,9 @@ void EvDemoMove(void)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int check000(s)
 EVSLOT *s;
 {
@@ -191,7 +198,9 @@ EVSLOT *s;
     }
     return game_w.stage == s->data->x0;
 }
+#endif
 
+#if !defined(G_PART)
 int event000(s)
 EVSLOT *s;
 {
@@ -262,7 +271,9 @@ EVSLOT *s;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void evdemo_camera_request(cam, id)
 u8 cam;
 u8 id;
@@ -283,3 +294,4 @@ u8 id;
         e++;
     }
 }
+#endif

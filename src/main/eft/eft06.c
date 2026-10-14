@@ -60,6 +60,7 @@ void eft06_t(PRIM *pr);
 void eft06_se_req(EFTW *ew, f32 *pos);
 void Eft06_set(void *chr, s16 arg, int x05, int joint, f32 scale);
 
+#if !defined(G_PART) || G_PART == 1
 void eft06_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -76,7 +77,9 @@ void eft06_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void eft06_i(EFTW *ew) {
     EFT06_PIECE *w = ew->work;
     EMW *own = ew->owner;
@@ -256,7 +259,9 @@ void eft06_i(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void eft06_type2_init_sub(EFTW *ew, EFT06_PIECE *p, s16 k) {
     FLMAT m;
 
@@ -281,7 +286,9 @@ void eft06_type2_init_sub(EFTW *ew, EFT06_PIECE *p, s16 k) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft06_type3_init_sub(EFTW *ew, EFT06_PIECE *p, s16 k) {
     FLMAT m;
 
@@ -301,7 +308,9 @@ void eft06_type3_init_sub(EFTW *ew, EFT06_PIECE *p, s16 k) {
         eft06_se_req(ew, p->pos);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft06_type4_init_sub(EFTW *ew, EFT06_PIECE *w, s16 k) {
     FLMAT m;
 
@@ -322,7 +331,9 @@ void eft06_type4_init_sub(EFTW *ew, EFT06_PIECE *w, s16 k) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft06_type6_init_sub(EFTW *ew, EFT06_PIECE *p) {
     p->rot[2] = ran_suu(1);
     p->x36 = ew->x07;
@@ -344,28 +355,36 @@ void eft06_type6_init_sub(EFTW *ew, EFT06_PIECE *p) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft06_type9_init_sub(EFTW *ew, EFT06_PIECE *p) {
     p->lag = 0;
     p->rot[0] = ran_suu(1);
     p->rot[1] = ran_suu(1);
     p->rot[2] = ran_suu(1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int pw_die_ck(EMW *em) {
     if (em->be_flag == 0 || em->x04 == 3) {
         return 1;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void eft06_continue(EFT06_PIECE *p, s16 *t, s16 n, s16 *c) {
     *t += n;
     if (p->x34 != 0) {
         (*c)++;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int eft06_type_ck(EFT06_PIECE *p, s16 n) {
     s16 i;
 
@@ -376,4 +395,5 @@ int eft06_type_ck(EFT06_PIECE *p, s16 n) {
     }
     return 1;
 }
+#endif
 

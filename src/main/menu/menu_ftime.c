@@ -69,6 +69,7 @@ extern u8 item_cmd_item_num[], D_6EAC80[];
 extern u8 frame_matA[], frame_matB[], frame_mix_cmd[], frame_mixed_item[];
 
 /* The other hunters' names above their heads (online: the room member id). */
+#if !defined(G_PART)
 void disp_name(void) {
     PLW *pl;
     f32 pos[3];
@@ -105,8 +106,10 @@ void disp_name(void) {
         }
     }
 }
+#endif
 
 /* The quest page of the pit menu: frame, title and the clear conditions, reward, time and map. */
+#if !defined(G_PART)
 void Pit_disp_quest(void) {
 #ifdef __MWERKS__
     char buf[40];
@@ -171,7 +174,9 @@ void Pit_disp_quest(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void font_print_quest_time(int n) {
     char buf[8];
     u16 out[12];
@@ -198,3 +203,4 @@ void font_print_quest_time(int n) {
     *o = 0;
     font_print_uf(out);
 }
+#endif

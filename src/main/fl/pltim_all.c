@@ -33,6 +33,7 @@ static u8 *GetTim2PictureData(u8 *p, int a, int mip);
 static u8 *GetTim2ClutData(u8 *p, int mip);
 static int CheckTIM2FileHeader(u8 *p);
 
+#if !defined(G_PART)
 int plTIM2GetMipmapTextureNum(u8 *p) {
     u8 *h;
 
@@ -42,7 +43,9 @@ int plTIM2GetMipmapTextureNum(u8 *p) {
     h = GetTim2PictureHead(p, 0);
     return (h[0x11] - 1) & 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 int plTIM2SetContextFromImage(PLCTX *c, u8 *img) {
     u8 *h;
     int i;
@@ -158,7 +161,9 @@ int plTIM2SetContextFromImage(PLCTX *c, u8 *img) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int plTIM2SetPaletteContextFromImage(PLCTX *c, u8 *img) {
     u8 *h;
 
@@ -246,14 +251,19 @@ int plTIM2SetPaletteContextFromImage(PLCTX *c, u8 *img) {
     c->stride = c->bpp * c->w;
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 u8 *plTIM2GetPixelAddressFromImage(u8 *p, int mip) {
     return GetTim2PictureData(p, 0, mip);
 }
+#endif
 
+#if !defined(G_PART)
 u8 *plTIM2GetPaletteAddressFromImage(u8 *p) {
     return GetTim2ClutData(p, 0);
 }
+#endif
 
 
 
@@ -262,10 +272,12 @@ u8 *plTIM2GetPaletteAddressFromImage(u8 *p) {
 
 /* original bytes: build/raw/CheckTIM2FileHeader.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 static asm int CheckTIM2FileHeader(u8 *p)
 {
 #include "CheckTIM2FileHeader.inc"
 }
+#endif
 #else
 static int CheckTIM2FileHeader(u8 *p) {
     if (p[0] != 0x54 || p[1] != 0x49 || p[2] != 0x4D || p[3] != 0x32) {
@@ -293,6 +305,7 @@ static int CheckTIM2FileHeader(u8 *p) {
 }
 #endif
 
+#if !defined(G_PART)
 static u32 InputTim2AlignRegulation(u8 *p, u32 size) {
     u32 a = p[5] == 0 ? 0x10 : 0x80;
 
@@ -301,7 +314,9 @@ static u32 InputTim2AlignRegulation(u8 *p, u32 size) {
     }
     return size;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 *GetTim2PictureHead(u8 *q, int n) {
     int i;
     u8 *p = q;
@@ -319,13 +334,16 @@ static u8 *GetTim2PictureHead(u8 *q, int n) {
     }
     return r;
 }
+#endif
 
 /* original bytes: build/raw/GetTim2PictureData.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 static asm u8 * GetTim2PictureData(u8 *p, int a, int mip)
 {
 #include "GetTim2PictureData.inc"
 }
+#endif
 #else
 static u8 *GetTim2PictureData(u8 *p, int a, int mip) {
     u8 *q;
@@ -361,10 +379,12 @@ static u8 *GetTim2PictureData(u8 *p, int a, int mip) {
 
 /* original bytes: build/raw/GetTim2ClutData.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 static asm u8 * GetTim2ClutData(u8 *p, int mip)
 {
 #include "GetTim2ClutData.inc"
 }
+#endif
 #else
 static u8 *GetTim2ClutData(u8 *p, int mip) {
     u8 *q = GetTim2PictureHead(p, 0);
@@ -383,6 +403,7 @@ static u8 *GetTim2ClutData(u8 *p, int mip) {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 1
 int plReport(char *fmt, ...) {
     va_list ap;
 
@@ -390,8 +411,10 @@ int plReport(char *fmt, ...) {
     vsprintf(plReportMessage, fmt, ap);
     return 1;
 }
+#endif
 
 
+#if !defined(G_PART) || G_PART == 1
 void plMemset(s8 *d, s8 v, int n) {
     int i;
 
@@ -399,13 +422,16 @@ void plMemset(s8 *d, s8 v, int n) {
         *d++ = v;
     }
 }
+#endif
 
 /* original bytes: build/raw/plMemmove.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 1
 asm void plMemmove(s8 *dst, s8 *src, int n)
 {
 #include "plMemmove.inc"
 }
+#endif
 #else
 void plMemmove(s8 *dst, s8 *src, int n) {
     int i;
@@ -426,6 +452,7 @@ void plMemmove(s8 *dst, s8 *src, int n) {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 1
 int plCalcAddress(int x, int y, PLCTX *c) {
     int a;
 
@@ -443,7 +470,9 @@ int plCalcAddress(int x, int y, PLCTX *c) {
     a = c->base + c->stride * y;
     return a + x * c->bpp;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plDrawPixel(PLCTX *c, PLPIX *p) {
     u8 *a;
     u32 col;
@@ -508,7 +537,9 @@ int plDrawPixel(PLCTX *c, PLPIX *p) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plDrawPixel_3(PLCTX *c, int x, int y, u32 color) {
     PLPIX pix;
 
@@ -517,7 +548,9 @@ int plDrawPixel_3(PLCTX *c, int x, int y, u32 color) {
     pix.color = color;
     return plDrawPixel(c, &pix);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u32 plGetColor(int x, int y, PLCTX *c) {
     u32 r;
     u8 *a;
@@ -590,7 +623,9 @@ u32 plGetColor(int x, int y, PLCTX *c) {
     }
     return b | ((g << 8) | ((al << 24) | (r << 16)));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plConvertContext(PLCTX *dst, PLCTX *src) {
     int x;
     int y;
@@ -602,3 +637,4 @@ int plConvertContext(PLCTX *dst, PLCTX *src) {
     }
     return 1;
 }
+#endif
