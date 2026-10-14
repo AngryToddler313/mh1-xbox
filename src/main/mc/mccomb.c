@@ -2465,6 +2465,14 @@ u8 McCardOperation(void)
         add_prim2(ot8, card_prim, 0, 1);
         break;
     case 11:
+#ifndef __MWERKS__
+        /* PC (agent B): the carry-over screens (func_002306C0, func_00230390, func_00231440) are not ported
+         * yet (stand-ins that never finish the op): answer "no MH1 hunter on the card" (2), so G's Edit_task
+         * makes a new hunter as before these ops existed. */
+        { void rt_log_standin(const char *); rt_log_standin("G McCardOperation op 0xB (MH1 hunter carry-over check): no MH1 hunter"); }
+        w->done = 2;
+        break;
+#endif
         func_002306C0(w);
         w->frame[0] = 2;
         add_prim2(ot8, card_prim, 0, 1);

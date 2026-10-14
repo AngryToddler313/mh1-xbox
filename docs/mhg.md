@@ -268,3 +268,11 @@ mhg_datamap.py (all standard library, about 30 s):
   scan pointer words inside a data_map object are kept even where MH1's layout has none (G may have changed it);
   pointer words 33802 -> 35466. Hand-list entries the tool confirms are dropped (yn_tbl; docs/REVIEW.md).
 - Not fed into config/mhg/symbols (the PS2 G rebuild), only into the PC symbol view.
+After merging main (13 Oct 2026, evening) the G new game had regressed on the PC; fixed on the PC side only
+(`#ifndef __MWERKS__`, the PS2 G build is unchanged, 7 OK):
+- omake.c G mode_sel: `Tsk_Execute(D_546E80)` crashed at tick 708: gen_rt_auto.py reads a D_ name's hex part
+  as an MH1 address. On the PC the G block uses MH1's D_5367F0 / D_5375F0 (mapped to G's Edit_task /
+  Cont_task). Rule for G C that the PC links: never a G address in a D_ name; use the symbol name or MH1's D_.
+- mccomb.c G McCardOperation op 0xB: func_002306C0 (carry-over check) is a PC stand-in that never finishes, so
+  Edit_task waited forever at step 0; the PC answers "no MH1 hunter" (2) and logs a stand-in.
+With both: title -> NEW GAME -> character creation -> save -> Game_task -> stop in Local_main (village), as before.

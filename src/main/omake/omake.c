@@ -400,6 +400,17 @@ u8 n;
 #if OMAKE_PART == 0
 #ifdef VERSION_MHG
 extern u8 D_546E80[], D_548AC0[], D_0035ED0C[], D_0032CEA5[];
+#ifdef __MWERKS__
+#define G_EDIT_TASK D_546E80
+#define G_CONT_TASK D_548AC0
+#else
+/* PC (agent B): a D_ name's hex part is an MH1 address to the PC's generated aliases (gen_rt_auto.py), so G's
+ * 0x546E80 / 0x548AC0 resolved to something else and the G new game jumped into data (crash at tick 708).
+ * MH1's names of the same two tasks (Edit_task / Cont_task) are mapped to G's by the PC build. */
+extern u8 D_5367F0[], D_5375F0[];
+#define G_EDIT_TASK D_5367F0
+#define G_CONT_TASK D_5375F0
+#endif
 extern u8 D_0035F2D8[];
 int sub_main_func_004C9390();
 void se_req();
@@ -454,7 +465,7 @@ int push;
         case 0:
             if (Fade_busy_ck() != 1) {
                 Tsk_Exit(tsk);
-                Tsk_Execute(D_546E80, 4);
+                Tsk_Execute(G_EDIT_TASK, 4);
             }
             return;
         case 1:
@@ -464,7 +475,7 @@ int push;
             tsk->sub++;
             D_0035ED0C[0] = 0;
             Tsk_Sleep();
-            Tsk_Execute(D_548AC0, 4);
+            Tsk_Execute(G_CONT_TASK, 4);
             return;
         }
     case 2:
