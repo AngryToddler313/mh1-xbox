@@ -6,6 +6,7 @@
  * (mode dispatch), em33_act_set (distance/time for the chosen action),
  * em33_to_normal, em33_char_set and the sound/effect script (ef_move_sub_00617E60).
  * Written from em03; every function matches. Field meanings are guesses. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -179,7 +180,7 @@ void em33_main(EMW *em) {
         break;
     case 10:
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         em33_act_set(em, 4, 2, 2);
         break;
     case 12:
@@ -354,7 +355,7 @@ static void em_act09_00615210(EMW *em, EM33W *w) {
     case 0:
         em->x05++;
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         em_char_set(em, 64, 0, 0);
         break;
     case 1:

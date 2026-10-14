@@ -71,6 +71,11 @@ static void set10_i(SETW *sw) {
     if (sw->prim != 0) {
         sw->prim->owner = sw;
         sw->prim->trans = set10_trans;
+#ifdef VERSION_MHG
+        set10_m(sw);
+    } else {
+        push_set_work(sw);
+#endif
     }
 }
 

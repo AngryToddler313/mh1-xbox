@@ -45,6 +45,8 @@ segments:
       - [0x00286C, asm, text/em_ikari_add]
       - [0x002870, c, game/em/em_core_e]
       - [0x002BA0, asm, text/Em_Hate_Add]
+      - [0x0064E0, c, game/em/em_master_b]
+      - [0x007640, asm, text/em_hagitori_lv_up]
       - [0x007830, c, game/em/em_master_c]
       - [0x0079DC, asm, text/game_func_00549FE0]
       - [0x021380, asm, text/f_eft17]

@@ -4,6 +4,7 @@
  * shells, damage reactions, death and revival), em09_main (damage system), em09_main_sub
  * (mode dispatch) and the per-animation sound/effect script ef_move_sub. Names of the steps
  * follow the split; field meanings are guesses. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "pl.h"
@@ -373,7 +374,7 @@ static void em_act13_005A8F00(EMW *em) {
     case 0:
         em->x05++;
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         em_char_set(em, 0x3F, 0, 0);
         break;
     case 1:
@@ -1284,7 +1285,7 @@ void em09_main(EMW *em) {
         break;
     case 10:
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         em09_act_set(em, 4, 1, 0);
         break;
     case 12:

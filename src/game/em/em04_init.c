@@ -34,6 +34,13 @@ void em_act_set(EMW *, int, u16);
 s16 em_hp_vital_set(EMW *, s16);
 void em_dur_init(EMW *);
 
+/* G: original bytes (build/mhg/raw/em04_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em04_init(EMW *em)
+{
+#include "em04_init.inc"
+}
+#else
 void em04_init(EMW *em) {
     EM_INITW *w = (EM_INITW *)em->ex;
 
@@ -71,3 +78,4 @@ void em04_init(EMW *em) {
     em_dur_init(em);
     em->x734 = 3;
 }
+#endif

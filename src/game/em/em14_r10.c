@@ -1,4 +1,5 @@
 /* em14_r10 - monster 14 AI 0x005BA140-0x005BBC64: em_dmg08_005BA140, em_dmg09_005BA2A0, em_dmg10_005BA400, em_dmg11_005BA490, em_dmg13_005BA560, em_dmg14_005BA660, em_dmg15_005BA800, em_dmg16_005BA880, em_dmg17_005BA9A0, em_dmg18_005BAA90, em_demo00_005BAB80, em_die00_005BAEF0, em_die01_005BB090, em_die02_005BB290, em_move00_005BB460, em_move01_005BB690, em_move02_005BB760, em_move03_005BB900, em_move04_005BBA60, em_move05_005BBBC0, em_move06_005BBC30. Whole file in em14_nm.c. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -654,7 +655,7 @@ static void em_dmg18_005BAA90(EMW *em, EM14W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

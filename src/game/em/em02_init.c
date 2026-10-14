@@ -41,6 +41,13 @@ extern s16 em02_runaway_timer_tbl[];
 
 void em02_act_set(EMW *em, int kind, u16 no, u16 arg);
 
+/* G: original bytes (build/mhg/raw/em02_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em02_init(EMW *em)
+{
+#include "em02_init.inc"
+}
+#else
 void em02_init(EMW *em) {
     EM_INITW *w = (EM_INITW *)em->ex;
 
@@ -84,3 +91,4 @@ void em02_init(EMW *em) {
     em->x388 = 0;
     em02_act_set(em, 0, 1, 0);
 }
+#endif

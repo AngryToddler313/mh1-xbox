@@ -1,4 +1,5 @@
 /* em15_r02 - monster 15 AI 0x005C2E90-0x005C4BC4: act_dist_select_005C2E90, em15_to_normal, em15_to_tenjo, em15_to_fly, em15_frame_reset, em_act00_005C3090, em_act01_005C3140, em_act02_005C31D0, em_act03_005C3280, em_act04_005C3330, em_act05_005C33B0, em_act06_005C3480, em_act07_005C3500, em_act08_005C35A0, em_act10_005C3630, em_act13_005C3730, em_act14_005C3840, em_act17_005C3BB0, em_act19_005C3C30, em_act40_005C3DB0, em_act18_005C3E70, em_act20_005C3FC0, em_act21_005C40D0, em_act22_005C4220, em_act23_005C42B0, em_act24_005C4380, em_act25_005C4450, em_act26_005C44D0, em_act27_005C4610, em_act28_005C4720, em_act29_005C47F0, em_act31_005C4930, em_mv00_005C4A70. Whole file in em15_nm.c. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -997,7 +998,7 @@ void em_act24_005C4380(EMW *em, EM15W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -1116,7 +1117,7 @@ void em_act28_005C4720(EMW *em, EM15W *w) {
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

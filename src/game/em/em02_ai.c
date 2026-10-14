@@ -271,6 +271,13 @@ void flmatGetTrans(f32 *, void *);
         ty[i] = 0xFF; \
     } while (0)
 
+/* G: original bytes (build/mhg/raw/em02_hagi_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em02_hagi_set(EMW *em)
+{
+#include "em02_hagi_set.inc"
+}
+#else
 void em02_hagi_set(EMW *em) {
     EM02W *w = (EM02W *)em->ex;
     STIEM s;
@@ -294,6 +301,7 @@ void em02_hagi_set(EMW *em) {
         w->hagi[i] = Ext_pick_point_set(&s, pos);
     }
 }
+#endif
 
 void em02_hagi_move(EMW *em) {
     EM02W *w = (EM02W *)em->ex;
@@ -347,6 +355,13 @@ void em02_to_fly(EMW *em, int mode) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em02_main.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em02_main(EMW *em)
+{
+#include "em02_main.inc"
+}
+#else
 void em02_main(EMW *em) {
     EM02W *w = (EM02W *)em->ex;
     u8 dmg[4];
@@ -488,6 +503,7 @@ void em02_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 
 void em_act00_0057FA50(EMW *em, EM02W *w) {
     switch (em->x05) {
@@ -595,6 +611,13 @@ void em_act04_0057FCD0(EMW *em, EM02W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act05_0057FDF0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act05_0057FDF0(EMW *em, EM02W *w)
+{
+#include "em_act05_0057FDF0.inc"
+}
+#else
 void em_act05_0057FDF0(EMW *em, EM02W *w) {
     switch (em->x05) {
     case 0:
@@ -619,7 +642,15 @@ void em_act05_0057FDF0(EMW *em, EM02W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_act06_0057FEC0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act06_0057FEC0(EMW *em, EM02W *w)
+{
+#include "em_act06_0057FEC0.inc"
+}
+#else
 void em_act06_0057FEC0(EMW *em, EM02W *w) {
     switch (em->x05) {
     case 0:
@@ -643,6 +674,7 @@ void em_act06_0057FEC0(EMW *em, EM02W *w) {
         break;
     }
 }
+#endif
 
 void em_mv00_0057FF80(EMW *em, EM02W *w) {
     f32 v[4];

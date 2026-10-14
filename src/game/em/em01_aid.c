@@ -323,6 +323,13 @@ void em_mv07_00569EC0(EMW *em, EM01W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_fly00_0056A000.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly00_0056A000(EMW *em, EM01W *w)
+{
+#include "em_fly00_0056A000.inc"
+}
+#else
 void em_fly00_0056A000(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -348,6 +355,7 @@ void em_fly00_0056A000(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
 void em_fly01_0056A100(EMW *em, EM01W *w) {
     switch (em->x05) {
@@ -436,6 +444,13 @@ void em_fly02_0056A340(EMW *em, EM01W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_fly03_0056A450.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly03_0056A450(EMW *em, EM01W *w)
+{
+#include "em_fly03_0056A450.inc"
+}
+#else
 void em_fly03_0056A450(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -495,6 +510,7 @@ void em_fly03_0056A450(EMW *em, EM01W *w) {
         em->pos[1] = em->x5AC;
     }
 }
+#endif
 
 void em_fly04_0056A6E0(EMW *em, EM01W *w) {
     int done = 0;

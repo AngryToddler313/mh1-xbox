@@ -1,5 +1,6 @@
 /* em01 AI, run 2: em_act00_00567280 .. em_mv02_005695D0 (game.bin 0x00567280-0x005695DC). Matching functions of em01_ai_nm.c (that file holds the
  * whole AI including the near-matches). See em01_ai_nm.c for the description. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -731,6 +732,13 @@ void em_act17_00568480(EMW *em, EM01W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act18_00568500.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act18_00568500(EMW *em, EM01W *w)
+{
+#include "em_act18_00568500.inc"
+}
+#else
 void em_act18_00568500(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -772,7 +780,15 @@ void em_act18_00568500(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_act19_005686B0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act19_005686B0(EMW *em, EM01W *w)
+{
+#include "em_act19_005686B0.inc"
+}
+#else
 void em_act19_005686B0(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -813,6 +829,7 @@ void em_act19_005686B0(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
 void em_act40_00568830(EMW *em, EM01W *w) {
     switch (em->x05) {
@@ -868,6 +885,13 @@ void em_act20_005688F0(EMW *em, EM01W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act21_00568A00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act21_00568A00(EMW *em, EM01W *w)
+{
+#include "em_act21_00568A00.inc"
+}
+#else
 void em_act21_00568A00(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -909,6 +933,7 @@ void em_act21_00568A00(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
 void em_act22_00568BB0(EMW *em, EM01W *w) {
     switch (em->x05) {
@@ -927,6 +952,13 @@ void em_act22_00568BB0(EMW *em, EM01W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act23_00568C30.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act23_00568C30(EMW *em, EM01W *w)
+{
+#include "em_act23_00568C30.inc"
+}
+#else
 void em_act23_00568C30(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -950,6 +982,7 @@ void em_act23_00568C30(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
 void em_act24_00568D00(EMW *em, EM01W *w) {
     switch (em->x05) {
@@ -959,7 +992,7 @@ void em_act24_00568D00(EMW *em, EM01W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -1062,7 +1095,7 @@ void em_act28_005690A0(EMW *em, EM01W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

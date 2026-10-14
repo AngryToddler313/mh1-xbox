@@ -1,5 +1,6 @@
 /* em01 AI, run 6: em_atk12_0056E6F0 .. em01_main_sub (game.bin 0x0056E6F0-0x00574AC8). Matching functions of em01_ai_nm.c (that file holds the
  * whole AI including the near-matches). See em01_ai_nm.c for the description. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -1383,7 +1384,7 @@ void em_dmg18_00571550(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -1414,7 +1415,7 @@ void em_dmg19_00571650(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

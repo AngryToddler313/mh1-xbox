@@ -529,6 +529,13 @@ void em_fly15_0056BB80(EMW *em, EM01W *w) {
     FLY_FLOOR(em);
 }
 
+/* G: original bytes (build/mhg/raw/em_fly16_0056BC40.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly16_0056BC40(EMW *em, EM01W *w)
+{
+#include "em_fly16_0056BC40.inc"
+}
+#else
 void em_fly16_0056BC40(EMW *em, EM01W *w) {
     int t;
 
@@ -555,6 +562,7 @@ void em_fly16_0056BC40(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 
 void em_fly17_0056BD50(EMW *em, EM01W *w) {
     switch (em->x05) {
@@ -1062,6 +1070,13 @@ void em_atk06_0056D0F0(EMW *em, EM01W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_atk07_0056D1E0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk07_0056D1E0(EMW *em, EM01W *w)
+{
+#include "em_atk07_0056D1E0.inc"
+}
+#else
 void em_atk07_0056D1E0(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -1094,6 +1109,7 @@ void em_atk07_0056D1E0(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
 /* kyusyu attack: the monster follows a player in the air (guess: "kyusyu" = suck/drain). */
 void em_atk08_0056D300(EMW *em, EM01W *w) {
@@ -1326,6 +1342,13 @@ void em_atk08_0056D300(EMW *em, EM01W *w) {
     FLY_FLOOR(em);
 }
 
+/* G: original bytes (build/mhg/raw/em_atk09_0056DD30.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk09_0056DD30(EMW *em, EM01W *w)
+{
+#include "em_atk09_0056DD30.inc"
+}
+#else
 void em_atk09_0056DD30(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -1368,7 +1391,15 @@ void em_atk09_0056DD30(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk10_0056DF20.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk10_0056DF20(EMW *em, EM01W *w)
+{
+#include "em_atk10_0056DF20.inc"
+}
+#else
 void em_atk10_0056DF20(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -1419,3 +1450,4 @@ void em_atk10_0056DF20(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif

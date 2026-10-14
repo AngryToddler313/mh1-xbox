@@ -1,5 +1,6 @@
 /* em08_ai, run 3: em_act00_0059A7B0 .. em_mv01_0059C310 (game.bin 0x0059A7B0-0x0059C47C). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -486,7 +487,7 @@ void em_act06_0059AF80(EMW *em, EM08W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -566,7 +567,7 @@ void em_act09_0059B210(EMW *em, EM08W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -635,7 +636,7 @@ void em_act11_0059B440(EMW *em, EM08W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -704,7 +705,7 @@ void em_act13_0059B640(EMW *em, EM08W *w) {
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -790,7 +791,7 @@ void em_act15_0059B920(EMW *em, EM08W *w) {
         em_char_set(em, 0x7C, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -876,7 +877,7 @@ void em_act17_0059BC00(EMW *em, EM08W *w) {
         em_char_set(em, 0x7C, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

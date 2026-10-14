@@ -80,6 +80,11 @@ static void set16_i(SETW *sw) {
     if (sw->prim != 0) {
         sw->prim->owner = sw;
         sw->prim->trans = set16_trans;
+#ifdef VERSION_MHG
+        set16_m(sw);
+    } else {
+        push_set_work(sw);
+#endif
     }
 }
 

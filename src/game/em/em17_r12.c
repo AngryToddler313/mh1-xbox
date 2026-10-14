@@ -1,4 +1,5 @@
 /* em17_r12 - monster 17 AI 0x005DE9E0-0x005DFDE8: em_atk08_005DE9E0, em_atk09_005DEAA0, em_dmg00_005DEB30, em_dmg01_005DEBD0, em_dmg02_005DEC60, em_dmg03_005DECF0, em_dmg04_005DED80, em_dmg05_005DEF50, em_dmg06_005DEFF0, em_dmg07_005DF090, em_dmg08_005DF180, em_dmg09_005DF2A0, em_dmg10_005DF3D0, em_dmg11_005DF460, em_dmg12_005DF540, em_dmg13_005DF670, em_dmg14_005DF7A0, em_dmg15_005DF8C0, em_dmg16_005DF950, em_dmg17_005DFA40, em_dmg18_005DFAC0, em_dmg19_005DFBF0, em_dmg20_005DFCF0. Whole file in em17_nm.c. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -941,7 +942,7 @@ void em_dmg19_005DFBF0(EMW *em, EM17W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -975,7 +976,7 @@ void em_dmg20_005DFCF0(EMW *em, EM17W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
