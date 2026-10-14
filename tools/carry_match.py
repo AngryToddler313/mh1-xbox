@@ -18,7 +18,7 @@ def m(w):
 SEC2MOD = {'main':'main','game.bin':'game','lobby.bin':'lobby','select.bin':'select','yn.bin':'yn'}
 mh1 = {'main': (open(R+'disc/mh1/split/main.bin','rb').read(), 0x100000)}
 for k in ('game.bin','lobby.bin','select.bin','yn.bin'):
-    mh1[k] = (open(R+'disc/mh1/split/'+k,'rb').read()[0x40:], 0x533980)
+    mh1[k] = (open(R+'disc/mh1/split/'+k,'rb').read(), 0x533980)   # whole file: the MWo3 header is part of the load, code VA = base + file offset
 TGT = sys.argv[1] if len(sys.argv) > 1 else 'mhg'
 if TGT == 'us':
     ge = open(R+'disc/mh1_us/SLUS_208.96','rb').read(); G = {'main': ge[0x180:0x180+2724224]}; OVD = R+'build/us_ovl/*.bin'

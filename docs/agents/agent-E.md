@@ -1029,3 +1029,16 @@ List, method and findings: docs/agents/targets.md. Short version of what is wort
    sample (`port 6 code 0x40: no sample`): the PC keeps the quest's em packs on port 6 in the village, while the PS2's
    village loads its packs with flSndPackLoadBG2 (a no-op on the PC). Which pack the PS2 village has on port 6 was not
    checked.
+
+## Text coverage round 2 (13 Oct 2026)
+
+tools/text_map.py: items 19% -> 99%, weapons 72% -> 99%, armour 67% -> 100%, MH1 JP total 60% -> 75% (6183 / 8148), G 29% -> 37%
+(4943 / 13263), G quests tied to MH1 quests 71 -> 128 of 245. Details and causes in docs/english.md section 7 "Result".
+- Lessons: an order-based row alignment cannot follow reordered ids (use identical-record matching first); a prose-length
+  check must not be applied to tables tied by their own record numbers; two file-local symbols with one name share a table key
+  (now suffixed with the address); `refine` (shift by colour codes) must ignore cells without a code or a wrong shift will
+  be "found" for tables like lb_menu_msg (a first version did, 16 wrong labels: check pairs of small tables by eye).
+- tools/carry_match.py: overlays were read as file[0x40:] against the load address; the MWo3 header is part of the load, so
+  every MH1 overlay function was read 16 words off. Fixed (the matched-function percentages for overlays need a re-run).
+- rt_text_quest_g added (G quest header table at the offset in word 0x60), not hooked up, not run.
+- Not done: the US memory-card / yes-no dialogs (line-split, needs group alignment), online text (no US twin), G-only text.
