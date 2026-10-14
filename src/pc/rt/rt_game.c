@@ -36,7 +36,11 @@ _Static_assert(sizeof(CLAY) == 0x8C, "CLAY size");
 
 /* ------------------------------------------------------------ work areas */
 GAME_W game_w;                       /* 0x3F33F0 */
+#ifdef VERSION_MHG
+PLW player_work[10];                 /* G 0x34D450: 10 entries (G's player_mk loops 10) */
+#else
 PLW player_work[8];                  /* 0x3E4BF0, 0x5000 bytes */
+#endif
 
 typedef struct {                     /* model work (MDLW, get_mdlw_ptr; SET_MDLW in set*.c) */
     u8 flag;                         /* 0x00 loaded */

@@ -226,13 +226,20 @@ Stage_mv_data_get per map (agent C's hunks + 0x4A1970, qstb02/05.c); Tutorial_qu
 (11 levels, 52 kinds); em command interpreter: G's new commands 0x2C (species select), 0x69, 0x70 (the
 old 0x2C), 0x71, 0x99 and their lengths (em_cmd_nm.c); fish_type_set (eft23.c). include/quest.h: G's
 QUEST_W tail (0x290) and QEM+0x30; include/flow.h: select_w quest number at +0xD0.
-G tables for the PC: config/mhg/pc_data.txt (names, G addresses and sizes; G-only D_ tables; kind tables
+G tables for the PC: config/mhg/pc_data.txt (names, G addresses and sizes; G-only tables under descriptive names, never D_ with a G address; kind tables
 grown from 35 to 52 kinds; sun_pos_tbl = 0x5243E0, G's stage_set_set copies it into stage_work+0xC8).
 tools/mhg_pcmeta.py also takes pointer words from the G split (`.word SYMBOL`) and its labels as targets;
 a word pointing into another module must hit a label start (em20's byte code had been rewritten).
-Still open on the quest path: G's EMW field 0x9FC (em command 0x71) has no writer on the PC; the HUD
-draws white boxes (G's HUD textures/slots, see the mem_tex note below); armour tables (Armor_*_Data:
-G 0x519E20 / 0x51B9A0 by vote, row size not checked) and the other missing tables are not imported.
+Full hunt checked (scripted, hidden): G quest 10 (Rathian, stage 40) with RT_QUEST_STAGE=1 RT_EM_HP=30
+RT_DMG_MUL=40: kill at tick 154 -> clear (x06 4) -> carve wait -> game3 -> game5 -> reward list (204, 205,
+278 x2) -> reward screen (build/A/g/q10_end*.png). Also on this path: em_cmd 0x56/0x57 take u16 quest
+numbers in G; hit zones per monster state (em_meat_tbl, G 0x509410); carve tables per quest rank
+(em_hagi_type_tbl, G 0x6D5D50); G's move() has no item_check/move_item (no item work in G);
+player_work has 10 entries in G (rt_game.c); EMW keeps MH1's 0xA10 stride on the PC (em.h, emw01/02.c:
+G's 0xA00 only for MWCC). G next_cmd_search checked opcode by opcode against an emulation of G's asm.
+Still open: EMW bytes G 0x9FB/0x9FC (monster state for hit zones, em command 0x71) have no writer on the
+PC; em_cmd_flag_set/clear/ck: G adds kinds 0x32 and 0x2D (subspecies) to the kind 7/0xF cases (not
+done); the reward screen draws its frame but no item list/text; armour tables not imported.
 Main (agent C), blocking CONTINUE: Select_task's menu family is edited in G (csub00 0x1EE8B0, init_mode_sel
 0x1EEAD0, mode_sel 0x1EEC50, mode_sel_end 0x1EF060, mode_sel_exit 0x1EF270, disp_mode_menu 0x1EF420; G's menu
 is NEW GAME / CONTINUE / GALLERY / OPTIONS). NEW GAME happens to work with MH1's C; CONTINUE (with a save on

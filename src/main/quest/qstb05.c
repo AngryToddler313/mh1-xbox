@@ -6,6 +6,9 @@
 #ifdef VERSION_MHG
 /* G: with a quest loaded the stage number goes through sub_main_func_004A1970 (game_w.x2E, n) first;
  * 0xFFFF = no such stage here. */
+#ifdef __MWERKS__
+int sub_main_func_004A1970(int, int);   /* asm in G's stage file (sub_main 0x4A1970) */
+#else
 extern u16 map_stage_num[];        /* stages per map */
 extern u16 *map_stage_tbl[];       /* each map's stage numbers */
 
@@ -27,6 +30,7 @@ int sub_main_func_004A1970(int map, int st)
     }
     return 0xFFFF;
 }
+#endif
 
 void *Stage_mv_data_get(int n)
 {

@@ -2732,11 +2732,20 @@ u8 *em_cmd_quest_no_ck(EMW *em, u8 *p) {
     var_a1 = p;
     switch (*var_a1++) {
     case 0:
+#ifdef VERSION_MHG      /* G (game.bin 0x58B6C0): u16 quest number, big-endian */
+        if (*(u16 *)0x3C7448 != (u16)(var_a1[0] << 8 | var_a1[1])) {
+            var_a1 += 2;
+            CMD_SKIP(em, var_a1, 0x56);
+        } else {
+            var_a1 += 2;
+        }
+#else
         v = *var_a1;
         var_a1 += 1;
         if (*(s16 *)0x3C7448 != v) {
             CMD_SKIP(em, var_a1, 0x56);
         }
+#endif
         break;
     case 1:
         var_a1 = else_ck(em, var_a1, 0x56);
@@ -2747,7 +2756,72 @@ u8 *em_cmd_quest_no_ck(EMW *em, u8 *p) {
     return var_a1;
 }
 
+#ifdef VERSION_MHG
+/* G (game.bin 0x58B7F0): quest numbers are u16 (big-endian in the program), entries 2 bytes */
+#define CMD_SEL_FUNC_BE16(name, code, vtype, ctype, cur)                                      \
+u8 *name(EMW *em, u8 *p) {                                                     \
+    u8 *r;                                                                     \
+    u8 n;                                                                      \
+    vtype v;                                                                   \
+    ctype c;                                                                   \
+    s32 i;                                                                     \
+    u16 more;                                                                  \
+                                                                               \
+    switch (*p++) {                                                            \
+    case 0:                                                                    \
+        n = *p;                                                                \
+        p += 3;                                                                \
+        for (i = 0; i < n; i++) {                                              \
+            v = (u16)(p[0] << 8 | p[1]);                                       \
+            c = (cur);                                                         \
+            p += 2;                                                            \
+            if (c == v) {                                                      \
+                break;                                                         \
+            }                                                                  \
+            if (v < c) {                                                       \
+                r = cmd_end_search(em, p, code, 3);                            \
+                p = r;                                                         \
+                if (r[1] == 2 || r[1] == 3) {                                  \
+                    p = p + 2;                                                 \
+                    break;                                                     \
+                }                                                              \
+                p = p + 2;                                                     \
+            } else {                                                           \
+                more = 1;                                                      \
+                do {                                                           \
+                    p = cmd_end_search(em, p, code, 3);                        \
+                    if ((p[0] == (code) && p[1] == 2) ||                       \
+                        (p[0] == (code) && p[1] == 3)) {                       \
+                        more = 0;                                              \
+                    }                                                          \
+                    p = next_cmd_search(em, p);                                \
+                } while (more);                                                \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+        break;                                                                 \
+    case 1:                                                                    \
+        p += 2;                                                                \
+    case 2:                                                                    \
+        more = 1;                                                              \
+        do {                                                                   \
+            p = cmd_end_search(em, p, code, 3);                                \
+            if (p[0] == (code) && p[1] == 3) {                                 \
+                more = 0;                                                      \
+            }                                                                  \
+            p = next_cmd_search(em, p);                                        \
+        } while (more);                                                        \
+        break;                                                                 \
+    case 3:                                                                    \
+        break;                                                                 \
+    }                                                                          \
+    return p;                                                                  \
+}
+
+CMD_SEL_FUNC_BE16(em_cmd_quest_no_sel, 0x57, u16, u16, *(u16 *)0x3C7448)
+#else
 CMD_SEL_FUNC(em_cmd_quest_no_sel, 0x57, s16, s16, *(s16 *)0x3C7448)
+#endif
 
 u8 *em_cmd_boss_pl_target_set(EMW *em, u8 *p) {
     EMW *b = em->boss;
@@ -3862,6 +3936,32 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
     case 0x99:
         var_a1 += 2;
         break;
+    case 0x56:          /* G: 2-byte quest number */
+        var_a1 += 1;
+        switch (*var_a1) {
+        case 0:
+            var_a1 += 3;
+            break;
+        case 1:
+        case 2:
+            var_a1 += 1;
+            break;
+        }
+        break;
+    case 0x57:          /* G: 2-byte quest numbers */
+        var_a1 += 1;
+        switch (*var_a1) {
+        case 0:
+            var_a1 += 3;
+        case 1:
+            var_a1 += 3;
+            break;
+        case 2:
+        case 3:
+            var_a1 += 1;
+            break;
+        }
+        break;
 #endif
     case 0x1:
         var_a1 += 2;
@@ -4323,6 +4423,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
     case 0x55:
         var_a1 += 2;
         break;
+#ifndef VERSION_MHG
     case 0x56:
         var_a1 += 1;
         temp_v1_29 = *var_a1;
@@ -4336,6 +4437,8 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
             break;
         }
         break;
+#endif
+#ifndef VERSION_MHG
     case 0x57:
         var_a1 += 1;
         temp_v1_30 = *var_a1;
@@ -4351,6 +4454,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
             break;
         }
         break;
+#endif
     case 0x58:
         var_a1 += 1;
         break;
