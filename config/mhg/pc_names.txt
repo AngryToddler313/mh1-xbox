@@ -1,0 +1,7 @@
+# G addresses of MH1 data names that tools/mhg_map.py did not find, found by hand for the PC
+# build (tools/mhg_pcmeta.py adds them to build/mhg/pc/symbols). Without one the PC build turns
+# the name into a function stand-in and the game C reads code bytes as data.
+# module  name  G address   # how it was found
+main yn_tbl 0x2EC178        # G mc_yn_ck (0x22BB70) loads its two strings from here where MH1's reads yn_tbl
+main mc_sel_tbl 0x2B0780     # G mc_sel_ck (0x22BD40) prints from the table that the pointer at 0x2B0B5C (one of a list of message tables at 0x2B0B40) names
+lobby client_work 0x6DEC10  # G lobby_func_0059A270 (G's Clear_lobby_ram, 0x59A270) sets cw to this address, as MH1's Clear_lobby_ram sets cw = client_work
