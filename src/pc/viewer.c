@@ -36,6 +36,7 @@
 #include <string.h>
 #ifdef XBOX
 #include <nxdk/mount.h>
+#include "xbox/xbox_title.h"
 void xbox_log_start(void);
 void xbox_log_note(const char *msg);
 void xbox_log_frame(int frame, unsigned ms);
@@ -1988,7 +1989,7 @@ int main(int argc, char **argv)
 #endif
         else if (argv[i][0] != '-') disc = argv[i];
     }
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && !defined(XBOX)
     /* G (docs/mhg.md section 5) is a work in progress run by agents: every run is hidden (no window, no real
      * controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run */
     if (!getenv("MH1_SHOW") && !shot) {
@@ -2001,23 +2002,40 @@ int main(int argc, char **argv)
      * power-on with the player's own disc files next to the XBE (D:\data)
      * or on the hard disk (E:\Games\MH1\data, docs/xbox.md). */
     if (!disc) {
-        static const char *dirs[] = { "D:\\data", "E:\\Games\\MH1\\data" };
+        /* the version's disc files (xbox_title.h): MH1 in E:\Games\MH1\data, G in E:\Games\MHG\data. D:\data
+         * (next to the XBE: xemu's data ISO, or the network loader's E:\Games\MH1) only when it holds this
+         * version's program file, so a G build started by the MH1 loader does not take MH1's files. */
+        static const char *dirs[] = { "D:\\data", XBOX_GAME_DIR "\\data" };
+#ifdef VERSION_MHG
+        static const struct { const char *n; long sz; } need[] = {      /* SLPM-65869 */
+            { "AFS_DATA.AFS", 150759424L }, { "AFS00.AFS", 926939136L },
+            { "AFS01.AFS", 25186304L }, { "SLPM_658.69", 2029336L } };
+        static const char disc_name[] = "Monster Hunter G";
+#else
+        static const struct { const char *n; long sz; } need[] = {
+            { "AFS_DATA.AFS", 121866240L }, { "AFS00.AFS", 775729152L },
+            { "AFS01.AFS", 20463616L }, { "SLPM_654.95", 5648908L } };
+        static const char disc_name[] = "Monster Hunter";
+#endif
         FILE *t;
         int d;
         for (d = 0; d < 2 && !disc; d++) {
-            snprintf(path, sizeof path, "%s\\AFS_DATA.AFS", dirs[d]);
+            snprintf(path, sizeof path, "%s\\%s", dirs[d], need[3].n);
             if ((t = fopen(path, "rb")) != NULL) {
                 fclose(t);
                 disc = dirs[d];
             }
         }
         xbox_log_start();
-        xbox_log_note(disc ? disc : "no AFS_DATA.AFS in D:\\data or E:\\Games\\MH1\\data");
+        {
+            char m[160];
+            snprintf(m, sizeof m, "%s", disc ? disc : "");
+            if (!disc)
+                snprintf(m, sizeof m, "no %s in D:\\data or %s\\data", need[3].n, XBOX_GAME_DIR);
+            xbox_log_note(m);
+        }
         {   /* the player's disc files must be complete: a missing or cut-short copy (FTP stopped early) gets a
              * plain message instead of a crash later (sizes of the Japanese disc's files, docs/PLAYING.md) */
-            static const struct { const char *n; long sz; } need[] = {
-                { "AFS_DATA.AFS", 121866240L }, { "AFS00.AFS", 775729152L },
-                { "AFS01.AFS", 20463616L }, { "SLPM_654.95", 5648908L } };
             int k, bad = 0;
             for (k = 0; k < 4 && disc; k++) {
                 long sz = -1;
@@ -2036,9 +2054,12 @@ int main(int argc, char **argv)
                 }
             }
             if (!disc || bad) {
-                xbox_log_note("The game needs the files of YOUR Japanese Monster Hunter PS2 disc in");
-                xbox_log_note("E:\\Games\\MH1\\data : AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95");
-                xbox_log_note("(about 925 MB, see docs/PLAYING.md). Copy them with FTP, then start again.");
+                char m[160];
+                snprintf(m, sizeof m, "The game needs the files of YOUR Japanese %s PS2 disc in", disc_name);
+                xbox_log_note(m);
+                snprintf(m, sizeof m, "%s\\data : %s %s %s %s", XBOX_GAME_DIR, need[0].n, need[1].n, need[2].n, need[3].n);
+                xbox_log_note(m);
+                xbox_log_note("(see docs/PLAYING.md). Copy them with FTP, then start again.");
                 exit(1);
             }
         }
@@ -2050,7 +2071,10 @@ int main(int argc, char **argv)
         if (disc) {
             xbox_env_note();
             snprintf(path, sizeof path, "%s\\input.txt", disc);
-            if ((script = script_file_read(path)) != NULL)
+            script = script_file_read(path);
+            if (!script && strcmp(disc, "D:\\data"))      /* the loader's test script (E:\Games\MH1\data) */
+                script = script_file_read("D:\\data\\input.txt");
+            if (script)
                 xbox_log_note("input.txt: scripted pad input");
         }
     }

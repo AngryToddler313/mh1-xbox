@@ -1355,3 +1355,64 @@ login), start Monster Hunter from Evolution X a few times, and note the last lin
 hangs again (no ping, before or after "Writing it"). If it still hangs before "Got N bytes", the
 NIC-reset idea above is next. Building: never `make clean` in src/pc/xbox/loader (it deletes the
 shared nxdk libraries; happened once on 13 Oct, rebuilt the same day).
+
+## Monster Hunter G on the Xbox (agent B, 14 Oct 2026)
+
+**Build.** `tools/build_pc_mhg.sh` (G's PC build in build/mhg/pctree), then
+`python3 tools/build_xbox.py --version mhg --gfx nv2a` (or `--gfx null`): the same steps as MH1 run inside
+build/mhg/pctree (its build/pc holds G's objects and recorded commands), the front end gets -DVERSION_MHG,
+output build/mhg/xbox[/nv2a]/default.xbe + mhg.iso. 803 objects, links with no undefined symbols (first try).
+`./mh1 xbox DISC` with the G disc does all of it and makes dist/xbox/MHG (XBE + data/: AFS_DATA.AFS,
+AFS00.AFS, AFS01.AFS, SLPM_658.69, ~1.1 GB); tools/disc_files.py knows G's files (sizes + CRC32, checked
+on the folder and on the .iso; `disc_files.py game DISC` prints mh1 / mhg); `./mh1 linux|windows` refuse a
+G disc for now. tools/xbox_install.sh sends a folder holding SLPM_658.69 to E:\Games\MHG.
+xemu: `tools/run_xemu.sh --version mhg --gfx nv2a --data disc/mhg ...` (or VERSION=mhg).
+
+**Identity, so MH1 and G install side by side** (src/pc/xbox/xbox_title.h, VERSION_MHG block): title id
+4D480002 "Monster Hunter G" (MH1: 4D480001), saves in E:\UDATA\4D480002\4D48000200000001 holding G's PS2
+save folder BISLPM-65869MHG (78032-byte save, checked in xemu after a new game), game folder E:\Games\MHG
+(data in E:\Games\MHG\data). The XBE looks for its disc files in D:\data first, but only when that folder
+holds its own program file (SLPM_654.95 / SLPM_658.69), so a G XBE started by the MH1 network loader
+(D: = E:\Games\MH1, MH1's files) skips to E:\Games\MHG\data. The log is mh1log.txt in the folder of the
+running XBE when that is on E: (XeImageFileName; the loader starts E:\Games\MH1\mh1.xbe and sends that
+file), else in the game folder; the loader's test script/env (E:\Games\MH1\data\input.txt, env.txt) are
+read from D:\data as before, also by G.
+
+**How far G gets in xemu** (hidden, nv2a, scripted; build/mhg/xb/x3 and x4):
+- power-on -> ACCESS / logos -> title -> NEW GAME -> character creation (name TEST) -> save to E: ->
+  village intro (stage 87 -> house 86) -> out to Kokoto village (87), walking (tools/pc_scripts/newgame.txt
+  + `@village1,idle*1500,down*100,idle*10,square*3,...`, env RT_NOMOVIE=1 RT_NAME=TEST). Pictures match
+  the G PC build.
+- A quest from the village is not possible yet on G (the quest counter's Lb_make_quest_tbl_local is a G
+  stand-in, agent D). With the test aid `RT_ARGS=--quest 10` (+ RT_QUEST_STAGE=1 RT_EM_HP=30 RT_DMG_MUL=40
+  RT_PL_GOD=1 RT_PL_WARP_EM=90-9000 RT_PL_TARGET=0:0): Rathian nest -> kill -> CLEAR (t2062) -> reward screen
+  (t2406) -> village (t2916) -> house: the same ticks as the G PC build.
+
+**Memory (free physical KB, "alive" / "stage a -> b" lines).** First G run: village 7.2 MB free, 3.4 MB at
+the village's first load. Two G-only costs found and fixed (shared code, MH1 unchanged or better):
+- fmt_mwo_unpack (melt.c) kept its worst-case output buffer (8x the packed size): G's overlays are packed
+  (MH1's are not), and game.bin / sub_main.bin stay loaded, so ~6.5 MB were never used. Shrunk to the
+  unpacked size (realloc).
+- rt_bss_shadow: a pointer into .bss with no sized symbol got a block for the whole .bss of its image.
+  G's symbols are generated and leave many small .sbss objects unnamed, so G made the whole main .bss
+  (1.7 MB) plus sub_main / game.bin blocks (~2.2 MB in all). Now a block covers only the gap between the
+  named symbols around the address (14 gaps, a few KB to 27 KB), unless a whole block already exists.
+- G collision areas back to MH1's 96 / 192 KB (G's largest lwg parts are the same files: 81204 / 164352).
+After: title ~19.8 MB, character screen/save 14-16 MB, first village load low point 10.6 MB, village
+15.5-16.5 MB, quest 10 (Rathian nest) 20.8 MB, village after the quest 17.7 MB. (MH1 in the same xemu,
+quest 10: 22.9 MB; MH1's village 16.5 MB, docs above.) PC tracked heap in the village: G 17.7 MB, MH1 17.6 MB.
+Still G-only: rt_meta.c's 1.5 MB of .rdata (G's 31,500 symbols with names for the data import 1.0 MB,
+MH1->G address maps 0.35 MB, pointer words 0.15 MB); the loaded image is 9.3 MB (MH1 7.9 MB). Only data
+symbols and the names the import asks for are needed at run time: the next trim if G runs short.
+
+**Frame time.** xemu (software GL on this loaded laptop, not a measure of the Xbox): quest 10 Rathian
+nest G 8.1 fps, logic 22-25 ms/tick, draw ~115 ms/frame; MH1 in the same scene and session 7.6 fps, logic
+24-28 ms, draw 115-157 ms: G costs the same as MH1 there. G village 24 fps in xemu.
+
+**For the owner on hardware.** Copy G's disc files to E:\Games\MHG\data (FTP, ~1.1 GB; `./mh1 xbox` with
+the G disc + tools/xbox_install.sh, or any FTP program). Then either install dist/xbox/MHG as its own game
+(shows as "Monster Hunter G"), or serve the G XBE through the existing loader
+(`tools/xbox_serve.py --xbe build/mhg/xbox/nv2a/default.xbe`): it runs from E:\Games\MH1, finds G's files
+in E:\Games\MHG\data and its log reaches the server as usual. Check: boot to the title, NEW GAME, character
+creation, save (E:\UDATA\4D480002 next to MH1's 4D480001), the village; the free-memory numbers in the
+log ("alive" lines); frame rate in the village. Not testable yet: a quest from the village (G quest counter).

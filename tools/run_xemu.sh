@@ -12,6 +12,8 @@
 # usage: tools/run_xemu.sh [--gfx null|nv2a] [--data DISCDIR] [--input FILE|SCRIPT] [--env FILE]
 #                          [--shot out.png] [--after SECONDS] [--xemu PATH]
 #   --gfx     which build to boot: build/xbox/ (null graphics, default) or build/xbox/nv2a/
+#   --version mhg: Monster Hunter G (build/mhg/xbox/..., tools/build_xbox.py --version mhg); --data is then
+#             G's files (AFS_DATA.AFS, AFS00.AFS, AFS01.AFS, SLPM_658.69). Default mh1 (VERSION=mhg works too).
 #   --data    DISCDIR = the owner's game files (AFS_DATA.AFS, AFS00.AFS, AFS01.AFS, SLPM_654.95):
 #             builds build/xbox/mh1_data.iso holding the XBE plus them as D:\data (about 925 MB,
 #             local only), which the XBE finds at start-up. Without it the ISO holds only the XBE
@@ -43,10 +45,11 @@ set -e
 cd "$(dirname "$0")/.."
 XF=$(realpath -m "${XBOX_FILES:-xbox_files}")
 XEMU=${XEMU:-$HOME/xboxdev/xemu/xemu-0.8.136-x86_64.AppImage}
-GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=
+VER=${VERSION:-mh1}; GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=
 while [ $# -gt 0 ]; do
     case "$1" in
     --gfx) GFX=$2; shift 2 ;;
+    --version) VER=$2; shift 2 ;;
     --data) DATA=$2; shift 2 ;;
     --input) INPUT=$2; shift 2 ;;
     --env) ENVF=$2; shift 2 ;;
@@ -69,10 +72,15 @@ if [ -n "$miss" ]; then
     exit 1
 fi
 [ -z "$INPUT$ENVF" ] || [ -n "$DATA" ] || { echo "--input / --env need --data"; exit 2; }
-case "$GFX" in null) B=build/xbox ;; nv2a) B=build/xbox/nv2a ;; *) echo "--gfx null|nv2a"; exit 2 ;; esac
-[ -f $B/default.xbe ] || { echo "no $B/default.xbe: run  . ~/xboxdev/env.sh; python3 tools/build_xbox.py $( [ $GFX = nv2a ] && echo --gfx nv2a )"; exit 1; }
+case "$VER" in
+mh1) XB=build/xbox; VFLAG=; NAME=mh1; FILES="AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95" ;;
+mhg) XB=build/mhg/xbox; VFLAG="--version mhg "; NAME=mhg; FILES="AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_658.69" ;;
+*) echo "--version mh1|mhg"; exit 2 ;;
+esac
+case "$GFX" in null) B=$XB ;; nv2a) B=$XB/nv2a ;; *) echo "--gfx null|nv2a"; exit 2 ;; esac
+[ -f $B/default.xbe ] || { echo "no $B/default.xbe: run  . ~/xboxdev/env.sh; python3 tools/build_xbox.py $VFLAG$( [ $GFX = nv2a ] && echo --gfx nv2a )"; exit 1; }
 
-ISO=$B/mh1.iso
+ISO=$B/$NAME.iso
 if [ -n "$XBE" ]; then          # another program: an ISO holding only it
     [ -f "$XBE" ] || { echo "no $XBE"; exit 1; }
     D=build/xbox/iso_other; rm -rf $D; mkdir -p $D
@@ -80,13 +88,13 @@ if [ -n "$XBE" ]; then          # another program: an ISO holding only it
     ISO=build/xbox/other.iso; rm -f $ISO
     ~/xboxdev/nxdk/tools/extract-xiso/build/extract-xiso -c $D $ISO >/dev/null
 elif [ -n "$DATA" ]; then
-    for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95; do [ -f "$DATA/$f" ] || { echo "$DATA/$f missing"; exit 1; }; done
+    for f in $FILES; do [ -f "$DATA/$f" ] || { echo "$DATA/$f missing"; exit 1; }; done
     D=$B/iso_data; rm -rf $D; mkdir -p $D/data
     cp $B/default.xbe $D/default.xbe
-    for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95; do ln -s "$(cd "$DATA" && pwd)/$f" $D/data/$f 2>/dev/null || cp "$DATA/$f" $D/data/; done
+    for f in $FILES; do ln -s "$(cd "$DATA" && pwd)/$f" $D/data/$f 2>/dev/null || cp "$DATA/$f" $D/data/; done
     if [ -f "$INPUT" ]; then cp "$INPUT" $D/data/input.txt; elif [ -n "$INPUT" ]; then printf '%s\n' "$INPUT" > $D/data/input.txt; fi
     [ -z "$ENVF" ] || cp "$ENVF" $D/data/env.txt
-    ISO=$B/mh1_data.iso; rm -f $ISO
+    ISO=$B/${NAME}_data.iso; rm -f $ISO
     ~/xboxdev/nxdk/tools/extract-xiso/build/extract-xiso -c $D $ISO >/dev/null
 fi
 

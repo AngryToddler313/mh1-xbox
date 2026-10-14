@@ -306,3 +306,7 @@ em_vital_tbl x em_lv_rate_tbl (em_hp_vital_tbl is MH1-only), attack/defence rate
 (0xE00 bytes), G blade-hit sharpness, G reward list. tools/pc_g_exclude.txt keeps matched MH1 files whose functions
 G edited (emu01/emu02/ems01, f_ud) out of the G PC build. pc_data `list:N`: a G {stage, value} list's own length.
 Quest 10 fails by time-out (quest-failed screen); quests on map 6 (89, 129) hang in an em program (open).
+G on the Xbox (14 Oct 2026, agent B): `python3 tools/build_xbox.py --version mhg --gfx nv2a` after
+tools/build_pc_mhg.sh; own title id / save / folder (E:\Games\MHG); in xemu new game -> save -> village and
+`RT_ARGS=--quest 10` -> reward -> village. Memory and what to test on hardware: docs/xbox.md "Monster Hunter G
+on the Xbox".
