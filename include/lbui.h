@@ -1,6 +1,7 @@
 #ifndef LBUI_H
 #define LBUI_H
 /* lobby plaza UI / dialogs / menus (0x590D40-0x59DB40): shared declarations. Field meanings are guesses. */
+#include "lbsys_g.h"
 #include "lobby.h"
 #include "game.h"
 

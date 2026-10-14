@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em_atk07_00604DC0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk07_00604DC0(EMW *em, EM21W *w)
+{
+#include "em_atk07_00604DC0.inc"
+}
+#else
 void em_atk07_00604DC0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -348,6 +355,7 @@ void em_atk07_00604DC0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
 void em_dmg00_00604E40(EMW *em, EM21W *w) {
     u8 temp_a3;
@@ -436,6 +444,13 @@ void em_dmg03_00605040(EMW *em, EM21W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_dmg04_006050D0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg04_006050D0(EMW *em, EM21W *w)
+{
+#include "em_dmg04_006050D0.inc"
+}
+#else
 void em_dmg04_006050D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -469,7 +484,15 @@ void em_dmg04_006050D0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_dmg05_006051D0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg05_006051D0(EMW *em, EM21W *w)
+{
+#include "em_dmg05_006051D0.inc"
+}
+#else
 void em_dmg05_006051D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -513,7 +536,15 @@ void em_dmg05_006051D0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_dmg06_00605370.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg06_00605370(EMW *em, EM21W *w)
+{
+#include "em_dmg06_00605370.inc"
+}
+#else
 void em_dmg06_00605370(EMW *em, EM21W *w) {
     u8 temp_a1;
     u8 var_v1;
@@ -558,7 +589,15 @@ void em_dmg06_00605370(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_dmg07_006054D0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg07_006054D0(EMW *em, EM21W *w)
+{
+#include "em_dmg07_006054D0.inc"
+}
+#else
 void em_dmg07_006054D0(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a2;
@@ -603,6 +642,7 @@ void em_dmg07_006054D0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
 void em_dmg08_00605630(EMW *em, EM21W *w) {
     s8 temp_v0;
@@ -640,6 +680,13 @@ void em_dmg08_00605630(EMW *em, EM21W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_dmg09_00605770.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg09_00605770(EMW *em, EM21W *w)
+{
+#include "em_dmg09_00605770.inc"
+}
+#else
 void em_dmg09_00605770(EMW *em, EM21W *w) {
     u8 temp_a1;
     u8 var_v1;
@@ -685,6 +732,7 @@ void em_dmg09_00605770(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
 void em_dmg10_006058E0(EMW *em, EM21W *w) {
     u8 temp_a1;
@@ -707,6 +755,13 @@ void em_dmg10_006058E0(EMW *em, EM21W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_dmg11_00605970.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg11_00605970(EMW *em, EM21W *w)
+{
+#include "em_dmg11_00605970.inc"
+}
+#else
 void em_dmg11_00605970(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_v1;
@@ -737,6 +792,7 @@ void em_dmg11_00605970(EMW *em, EM21W *w) {
     }
     em_mahi_eff_set(em, 2);
 }
+#endif
 
 void em_dmg12_00605A50(EMW *em, EM21W *w) {
     u8 temp_a1;
@@ -809,6 +865,13 @@ void em_dmg13_00605B70(EMW *em, EM21W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_dmg14_00605CA0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg14_00605CA0(EMW *em, EM21W *w)
+{
+#include "em_dmg14_00605CA0.inc"
+}
+#else
 void em_dmg14_00605CA0(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_v1;
@@ -846,3 +909,4 @@ void em_dmg14_00605CA0(EMW *em, EM21W *w) {
     }
     em_mahi_eff_set(em, 2);
 }
+#endif

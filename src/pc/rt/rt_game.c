@@ -30,7 +30,9 @@
 _Static_assert(sizeof(void *) == 4, "build the port runtime and game C with -m32");
 _Static_assert(sizeof(GAME_W) == 0x224, "GAME_W size");
 _Static_assert(sizeof(PLW) == 0xA00, "PLW size");
+#ifndef VERSION_MHG
 _Static_assert(offsetof(SETW, move) == 0x20 && offsetof(SETW, prim) == 0x38, "SETW layout");
+#endif
 _Static_assert(offsetof(PRIM, trans) == 0x14 && offsetof(PRIM, owner) == 0x18, "PRIM layout");
 _Static_assert(sizeof(CLAY) == 0x8C, "CLAY size");
 

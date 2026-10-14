@@ -197,6 +197,13 @@ void cmd_target_kind_set(EMW *em, f32 *pos);
 void target_kind_set(EMW *em, f32 *pos);
 void em_act_set(EMW *em, int kind, u16 no);
 
+/* G: original bytes (build/mhg/raw/em_type_act_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_type_act_set(EMW *em, int kind, u16 no, u16 arg)
+{
+#include "em_type_act_set.inc"
+}
+#else
 void em_type_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         cmd_target_kind_set(em, em->tgt_pos);
@@ -278,6 +285,7 @@ void em_type_act_set(EMW *em, int kind, u16 no, u16 arg) {
         break;
     }
 }
+#endif
 
 void em_act_set_sub(EMW *em, int kind, u16 no) {
     act_set(em, kind, no);

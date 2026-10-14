@@ -1,4 +1,5 @@
 /* lb_b01 - lobby quest money / guild end 0x005C5D50-0x005C5F30: Lb_check_money, get_quest_info, Lb_get_quest_str, Lb_get_quest_str2, Lb_back_money, lb_guild_end. Whole file in lb_b.c. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 #define USER_GOLD (*(s32 *)0x3C6FE0)
 
@@ -59,9 +60,9 @@ void Lb_back_money(void) {
 
 void lb_guild_end(void) {
     CW8(0x2C08) = 1;
-    ((u8 *)&lb_sys)[0x87] = 0x14;
+    ((u8 *)&lb_sys)[LBSYS_OFS(0x87)] = 0x14;
     lb_sys.x6C = 0;
-    ((u8 *)&lb_sys)[6] = 0;
+    ((u8 *)&lb_sys)[LBSYS_OFS(6)] = 0;
     lb_sys.x68 = 0;
     Lbc_init_network_work(1);
     NPCZoomInCameraCancel();

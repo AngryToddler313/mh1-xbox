@@ -260,6 +260,13 @@ void net_send_em(EMW *, int, int);
 extern s32 (*em_hate_add_tbl[])[2];
 int Pl_silencer_ck(PLW *);
 
+/* G: original bytes (build/mhg/raw/em_eye_search_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm s8 em_eye_search_set(EMW *em)
+{
+#include "em_eye_search_set.inc"
+}
+#else
 s8 em_eye_search_set(EMW *em) {
     int near = -1;
     int i;
@@ -400,7 +407,15 @@ s8 em_eye_search_set(EMW *em) {
     }
     return (u8)near;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/senko_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void senko_ck(EMW *em, int pl, EM_EYE *e)
+{
+#include "senko_ck.inc"
+}
+#else
 void senko_ck(EMW *em, int pl, EM_EYE *e) {
     int i;
     int t;
@@ -431,3 +446,4 @@ void senko_ck(EMW *em, int pl, EM_EYE *e) {
         }
     }
 }
+#endif

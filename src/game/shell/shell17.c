@@ -103,6 +103,13 @@ static void shell17_move(SHLW *sh) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/shell17_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell17_i(SHLW *sh)
+{
+#include "shell17_i.inc"
+}
+#else
 static void shell17_i(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];
     s32 a;
@@ -133,6 +140,7 @@ static void shell17_i(SHLW *sh) {
         push_senko(sk);
     }
 }
+#endif
 
 static void shell17_m(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];

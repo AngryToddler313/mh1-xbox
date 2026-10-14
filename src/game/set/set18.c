@@ -3,6 +3,12 @@
  * models (per-stage position tables) on stages 18, 22, 23 and 70. Each
  * one is culled against the view before drawing. */
 #include "set.h"
+#include "version.h"
+#ifdef VERSION_MHG
+#define SET18_TEX 0x154
+#else
+#define SET18_TEX 0x12D
+#endif
 #include "game.h"
 #include "prim.h"
 #include "clay.h"
@@ -84,9 +90,16 @@ static void set18_i(SETW *sw) {
     if (sw->prim != 0) {
         sw->prim->owner = sw;
         sw->prim->trans = set18_trans;
+#ifdef VERSION_MHG
+        set18_m(sw);
+    } else {
+        push_set_work(sw);
+    }
+#else
         return;
     }
     push_set_work(sw);
+#endif
 }
 
 static void set18_m(SETW *sw) {
@@ -132,7 +145,7 @@ static void set18_trans(PRIM *pr) {
             Create_FOV(1450.0f, 0);
             sp.r = 720.0f;
             sp.y = 0.0f;
-            reload_tex(0x10, 0x12D);
+            reload_tex(0x10, SET18_TEX);
             x = uv_pos09[(sw->timer & 0x1E) >> 1][0];
             v = uv_pos09[(sw->timer & 0x1E) >> 1][1];
             x0 = 7500.0f;
@@ -148,7 +161,7 @@ static void set18_trans(PRIM *pr) {
             Create_FOV(1450.0f, 0);
             sp.r = 720.0f;
             sp.y = 0.0f;
-            reload_tex(0x10, 0x12D);
+            reload_tex(0x10, SET18_TEX);
             x = 0.0f;
             v = 1.0f - (f32)(sw->timer & 0x3F) / 64.0f;
             break;

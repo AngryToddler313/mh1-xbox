@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em_mv02_00601870.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_mv02_00601870(EMW *em, EM21W *w)
+{
+#include "em_mv02_00601870.inc"
+}
+#else
 void em_mv02_00601870(EMW *em, EM21W *w) {
     s32 temp_t0;
     u16 temp_a2;
@@ -391,3 +398,4 @@ void em_mv02_00601870(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif

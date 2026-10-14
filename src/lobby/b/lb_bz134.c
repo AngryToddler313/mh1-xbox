@@ -1,4 +1,5 @@
 /* lb_bz134 - lobby UI/client 0x005B1CE0-0x005B1E00: lb_join_talk, Lb_join_trans (first drafted by tools/lbauto.py). */
+#include "lbsys_g.h"
 #include "lobby_a.h"
 extern char lb_pit[];
 extern s32 joinQuest;
@@ -24,11 +25,11 @@ void Lb_join_trans(ARG_Lb_join_trans_arg0 *arg0) {
         get_quest_info();
     }
     font_set_stack_no(arg0->x0018);
-    switch (F(s8, &lb_sys, 6)) {          /* irregular */
+    switch (F(s8, &lb_sys, LBSYS_OFS(6))) {          /* irregular */
     case 3:
-        lb_select_tag(F(s8, &lb_sys, 6));
+        lb_select_tag(F(s8, &lb_sys, LBSYS_OFS(6)));
         return;
     case 6:
-        lb_select_trans(F(s8, &lb_sys, 6));
+        lb_select_trans(F(s8, &lb_sys, LBSYS_OFS(6)));
     }
 }

@@ -68,6 +68,13 @@ extern u8 shell08_tbl[4];
 extern f32 (*shell08_type8_thunder_pos[])[2];
 
 
+/* G: original bytes (build/mhg/raw/shell08_h.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_h(SHLW *sh)
+{
+#include "shell08_h.inc"
+}
+#else
 void shell08_h(SHLW *sh) {
     f32 v[3];
 
@@ -94,7 +101,15 @@ void shell08_h(SHLW *sh) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell08_d.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_d(SHLW *sh)
+{
+#include "shell08_d.inc"
+}
+#else
 void shell08_d(SHLW *sh) {
     SH08W *w = SH08_W(sh);
 
@@ -108,6 +123,7 @@ void shell08_d(SHLW *sh) {
     sh->mode = 6;
     sh->be_flag = 0;
 }
+#endif
 
 void shell08_e(SHLW *sh) {
     push_shell_work(sh);

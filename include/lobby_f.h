@@ -15,6 +15,10 @@ extern LBCOMMER lbCommer[8];
 typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x24 - 0x14]; s8 x24; u8 _pad25[0x38 - 0x25]; } LBPLAYER; /* lb_player 0x38 x8 */
 extern LBPLAYER lb_player[8];
 
+#include "lbsys_g.h"
+#ifdef VERSION_MHG
+typedef LBSYS_G LBSYS;
+#else
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 _pad00[3];
     s8 x03;                    /* 0x03 mode (4 = send positions) */
@@ -47,6 +51,7 @@ typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 x8E;                    /* 0x8E frame counter */
     u8 _pad8F;
 } LBSYS;
+#endif
 extern u8 lbSendInterval;
 extern LBSYS lb_sys;
 

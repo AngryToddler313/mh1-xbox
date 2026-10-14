@@ -53,6 +53,13 @@ void set20_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set20_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set20_i(SETW *sw)
+{
+#include "set20_i.inc"
+}
+#else
 static void set20_i(SETW *sw) {
     s16 i;
     EMW *em;
@@ -88,6 +95,7 @@ static void set20_i(SETW *sw) {
         push_set_work(sw);
     }
 }
+#endif
 
 static void set20_m(SETW *sw) {
     EMW *em = em_work;

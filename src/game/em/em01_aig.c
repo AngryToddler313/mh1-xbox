@@ -362,6 +362,13 @@ void move_default_00574E90(EMW *em) {
 
 /* Sound and effect script per animation (sound_call(em, frame, se, joint) plays a sound at the joint once the
  * animation reaches the frame). Generated from the asm and checked with check.py. */
+/* G: original bytes (build/mhg/raw/ef_move_sub_00574EE0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void ef_move_sub_00574EE0(EMW *em, EM01W *w)
+{
+#include "ef_move_sub_00574EE0.inc"
+}
+#else
 void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
     f32 va[4];
     f32 vb[4];
@@ -1722,6 +1729,7 @@ void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 
 void em01_effect_move(EMW *em) {
     EM01W *w = (EM01W *)em->ex;

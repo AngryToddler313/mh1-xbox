@@ -336,6 +336,13 @@ extern u8 *em14_act_add[3];
 
 
 
+/* G: original bytes (build/mhg/raw/em14_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em14_init(EMW *em)
+{
+#include "em14_init.inc"
+}
+#else
 void em14_init(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
     s16 hp;
@@ -411,3 +418,4 @@ void em14_init(EMW *em) {
         }
     }
 }
+#endif

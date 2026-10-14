@@ -1,6 +1,13 @@
 /* em_cmd_r98 - monster command interpreter 0x00565DC0-0x00565E98: em_cdm_act_flag_ck. Whole file in em_cmd_nm.c. */
 #include "em_cmd.h"
 
+/* G: original bytes (build/mhg/raw/em_cdm_act_flag_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_cdm_act_flag_ck(EMW *em)
+{
+#include "em_cdm_act_flag_ck.inc"
+}
+#else
 void em_cdm_act_flag_ck(EMW *em) {
     s32 i;
     s32 cnt;
@@ -37,3 +44,4 @@ void em_cdm_act_flag_ck(EMW *em) {
         break;
     }
 }
+#endif

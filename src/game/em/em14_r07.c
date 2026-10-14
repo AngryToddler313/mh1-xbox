@@ -345,6 +345,13 @@ void em_atk03_005B8FA0(EMW *em, EM14W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_atk06_005B9020.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk06_005B9020(EMW *em, EM14W *w)
+{
+#include "em_atk06_005B9020.inc"
+}
+#else
 void em_atk06_005B9020(EMW *em, EM14W *w) {
     u8 temp_a2;
 
@@ -373,3 +380,4 @@ void em_atk06_005B9020(EMW *em, EM14W *w) {
         break;
     }
 }
+#endif

@@ -583,6 +583,13 @@ void em_act11_005DB2D0(EMW *em, EM17W *w) {
     sound_call_parts_005E2090(em, 0x68, 0x1F, 0x23, 1);
 }
 
+/* G: original bytes (build/mhg/raw/em_act12_005DB3A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act12_005DB3A0(EMW *em, EM17W *w)
+{
+#include "em_act12_005DB3A0.inc"
+}
+#else
 void em_act12_005DB3A0(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -604,6 +611,7 @@ void em_act12_005DB3A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act13_005DB440(EMW *em, EM17W *w) {
     u8 temp_v1;

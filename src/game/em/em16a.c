@@ -2,6 +2,7 @@
  * em16_init2, em16_to_normal, action steps em_act00-12, move states, attacks em_atk00-12, damage reactions,
  * death (em_die00-09), demo, revival, em16_main and em16_main_sub. The whole file is in em16_nm.c.
  * Field meanings are guesses. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -395,7 +396,7 @@ static void em_act08_005D1070(EMW *em, EM16W *w) {
         em->x05++;
         em_char_set(em, 0x27, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

@@ -486,6 +486,13 @@ void kyusyu_senkai_ret_005FCBA0(EMW *em) {
     em20_to_fly(em, 1);
 }
 
+/* G: original bytes (build/mhg/raw/em20_material_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_material_sub(EMW *em, int type, u8 *tbl)
+{
+#include "em20_material_sub.inc"
+}
+#else
 void em20_material_sub(EMW *em, int type, u8 *tbl) {
     u8 *base = *(u8 **)((u8 *)em->mdl + 0x10);
     int i = 0;
@@ -552,3 +559,4 @@ void em20_material_sub(EMW *em, int type, u8 *tbl) {
         } while (i < *num);
     }
 }
+#endif

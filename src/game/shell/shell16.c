@@ -101,6 +101,13 @@ static void shell16_i(SHLW *sh) {
     sh->prim = 0;
 }
 
+/* G: original bytes (build/mhg/raw/shell16_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell16_m(SHLW *sh)
+{
+#include "shell16_m.inc"
+}
+#else
 static void shell16_m(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];
 
@@ -122,6 +129,7 @@ static void shell16_m(SHLW *sh) {
         add_prim(ot1, sh->prim, 0x20, 0);
     }
 }
+#endif
 
 static void shell16_d(SHLW *sh) {
     sh->xB = 0;

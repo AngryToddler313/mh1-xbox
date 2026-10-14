@@ -30,14 +30,22 @@ typedef struct SETW {
     u8 heap_pos;        /* 0x1C work heap block (pull_set_work) */
     u8 heap_n;          /* 0x1D blocks of 512 bytes, 0 = none */
     u8 x1E;             /* 0x1E set05: player who last turned it */
+#ifdef VERSION_MHG
+    u8 flag3E;          /* 0x1F (MH1: 0x3E) */
+    f32 pos[3];         /* 0x20 (MH1: 0x24) */
+    void (*move)(struct SETW *);  /* 0x2C (MH1: 0x20) */
+#else
     u8 pad1F;
     void (*move)(struct SETW *);  /* 0x20 */
     f32 pos[3];         /* 0x24 */
+#endif
     f32 speed;          /* 0x30 set01 banner slide speed */
     s32 x34;            /* 0x34 cleared by Set20_set */
     struct PRIM *prim;  /* 0x38 */
     s16 prim_no;        /* 0x3C */
+#ifndef VERSION_MHG
     u8 flag3E;          /* 0x3E */
+#endif
 } SETW;
 
 SETW *pull_set_work(int);

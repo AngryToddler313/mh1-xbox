@@ -1,4 +1,5 @@
 /* lb_npc - one translation unit 0x0059DB40-0x005A2A1C (lbtu3). */
+#include "lbsys_g.h"
 #include "lbnpc_proto.h"
 void Lb_npc_move_sub();
 void npcMvFOOTWORK();
@@ -1471,7 +1472,7 @@ EMW *em;
         if (t <= 0) {
             em->x05++;
             ex->x26 = 1;
-            *(s16 *)((u8 *)&lb_sys + 0x76) = 1;
+            *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 1;
             stage = game_w.stage;
             if (stage == 0x56) {
                 r = waiter_tbl[1];
@@ -1549,9 +1550,9 @@ EMW *em;
                 em->work08 = 3;
                 return;
             }
-            if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+            if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
                 ex->x26 = 0;
-                *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+                *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
                 Lb_act_set(em, 0, 0);
                 return;
             }
@@ -1565,9 +1566,9 @@ EMW *em;
         }
         break;
     case 6:
-        if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+        if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
             ex->x26 = 0;
-            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+            *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
             ex->idx = 0;
             em->x05 += 2;
             return;
@@ -1592,9 +1593,9 @@ EMW *em;
         }
         break;
     case 7:
-        if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+        if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
             ex->x26 = 0;
-            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+            *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
             ex->idx = 0;
             em->x05++;
             return;
@@ -1638,7 +1639,7 @@ EMW *em;
                 return;
             }
             ex->x26 = 0;
-            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+            *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
             Lb_act_set(em, 0, 0);
         }
         break;

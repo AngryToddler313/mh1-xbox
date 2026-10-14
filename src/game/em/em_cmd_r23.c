@@ -172,6 +172,13 @@ u8 *cmd_end_search(EMW *em, u8 *p, int a2, int a3) {
     return p;
 }
 
+/* G: original bytes (build/mhg/raw/next_cmd_search.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 * next_cmd_search(EMW *em, u8 *p)
+{
+#include "next_cmd_search.inc"
+}
+#else
 u8 *next_cmd_search(EMW *em, u8 *p) {
     u8 *temp_v1_10;
     u8 *temp_v1_16;
@@ -866,3 +873,4 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
     }
     return var_a1;
 }
+#endif

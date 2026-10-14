@@ -93,6 +93,13 @@ void shell08_type6_init(SHLW *sh, SH08P *p) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/shell08_type8_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_type8_init(SHLW *sh, SH08W *w, SH08P *p)
+{
+#include "shell08_type8_init.inc"
+}
+#else
 void shell08_type8_init(SHLW *sh, SH08W *w, SH08P *p) {
     f32 v[3];
     f32 top[3];
@@ -135,7 +142,16 @@ void shell08_type8_init(SHLW *sh, SH08W *w, SH08P *p) {
     w->x00--;
     w->x01++;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell08_type8_pos_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_type8_pos_set(SHLW *sh, SH08W *w)
+{
+#include "shell08_type8_pos_set.inc"
+}
+#else
 void shell08_type8_pos_set(SHLW *sh, SH08W *w) {
     flvecCopy(&w->x14, &sh->pos2);
 }
+#endif

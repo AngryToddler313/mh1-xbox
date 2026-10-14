@@ -70,6 +70,13 @@ static void shell11_move(SHLW *sh) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/shell11_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell11_i(SHLW *sh)
+{
+#include "shell11_i.inc"
+}
+#else
 static void shell11_i(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];
     s32 a;
@@ -92,6 +99,7 @@ static void shell11_i(SHLW *sh) {
     }
     sh->prim = 0;
 }
+#endif
 
 static void shell11_m(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];

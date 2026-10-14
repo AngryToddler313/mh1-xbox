@@ -274,6 +274,13 @@ void toride_eff_set(EMW *);
         ty[i] = 0xFF;     \
     } while (0)
 
+/* G: original bytes (build/mhg/raw/em08_main_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em08_main_sub(EMW *em, EM08W *w)
+{
+#include "em08_main_sub.inc"
+}
+#else
 void em08_main_sub(EMW *em, EM08W *w) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -307,3 +314,4 @@ void em08_main_sub(EMW *em, EM08W *w) {
         em_dur_set(em, 0);
     }
 }
+#endif

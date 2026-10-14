@@ -931,3 +931,12 @@ main 0x0012A6D0 0x0012A7FC mhg/main/sprite/putspr_a
 main 0x0012A990 0x0012AA20 mhg/main/sprite/putspr_b
 main 0x001DDA10 0x001DDC48 mhg/main/cam/camg_b
 main 0x001DDE10 0x001DDEB0 mhg/main/cam/camg_c
+game 0x00548AE0 0x00549C40 game/em/em_master_b
+game 0x006516B0 0x00651F50 game/set/set08
+game 0x00655100 0x006561DC game/set/set15
+game:rodata 0x006DAB60 0x006DAB78 game/set/set15
+game 0x006561E0 0x0065670C game/set/set16
+game 0x00656710 0x00656928 game/set/set17
+game 0x00656CA0 0x006574B0 game/set/set18
+game 0x00658C60 0x0065955C game/set/set22
+game:rodata 0x006DAB80 0x006DAB98 game/set/set22

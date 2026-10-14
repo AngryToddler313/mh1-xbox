@@ -303,6 +303,13 @@ void em07_main_sub(EMW *em);
 
 
 
+/* G: original bytes (build/mhg/raw/em07_main.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em07_main(EMW *em)
+{
+#include "em07_main.inc"
+}
+#else
 void em07_main(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
     f32 p[3];
@@ -454,3 +461,4 @@ cmd:
         em->x6FF = 0;
     }
 }
+#endif

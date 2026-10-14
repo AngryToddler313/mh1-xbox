@@ -752,6 +752,13 @@ void em_atk01_005919F0(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_atk02_00591B80.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk02_00591B80(EMW *em)
+{
+#include "em_atk02_00591B80.inc"
+}
+#else
 void em_atk02_00591B80(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
 
@@ -782,6 +789,7 @@ void em_atk02_00591B80(EMW *em) {
         break;
     }
 }
+#endif
 
 void em_atk03_00591C90(EMW *em) {
     switch (em->x05) {
@@ -811,6 +819,13 @@ void em_atk03_00591C90(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_atk04_00591E10.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk04_00591E10(EMW *em)
+{
+#include "em_atk04_00591E10.inc"
+}
+#else
 void em_atk04_00591E10(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -830,7 +845,15 @@ void em_atk04_00591E10(EMW *em) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk05_00591EC0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk05_00591EC0(EMW *em)
+{
+#include "em_atk05_00591EC0.inc"
+}
+#else
 void em_atk05_00591EC0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -851,6 +874,7 @@ void em_atk05_00591EC0(EMW *em) {
         break;
     }
 }
+#endif
 
 void em_move03_00591F80(EMW *em) {
     switch (em->x15) {
@@ -1171,6 +1195,13 @@ void em_move05_00592900(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_demo00_00592950.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_demo00_00592950(EMW *em)
+{
+#include "em_demo00_00592950.inc"
+}
+#else
 void em_demo00_00592950(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
     f32 v[4];
@@ -1247,6 +1278,7 @@ void em_demo00_00592950(EMW *em) {
         break;
     }
 }
+#endif
 
 void em_demo01_00592BE0(EMW *em) {
     EM07W *w = (EM07W *)em->ex;

@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em_atk06_00604AE0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk06_00604AE0(EMW *em, EM21W *w)
+{
+#include "em_atk06_00604AE0.inc"
+}
+#else
 void em_atk06_00604AE0(EMW *em, EM21W *w) {
     f32 temp_f1;
     f32 temp_f0;
@@ -415,3 +422,4 @@ void em_atk06_00604AE0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif

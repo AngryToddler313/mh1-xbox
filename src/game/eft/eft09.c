@@ -65,6 +65,13 @@ static void eft09_move(EFTW *ew) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/eft09_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft09_i(EFTW *ew)
+{
+#include "eft09_i.inc"
+}
+#else
 static void eft09_i(EFTW *ew) {
     EMW *em = ew->owner;
 
@@ -97,6 +104,7 @@ static void eft09_i(EFTW *ew) {
         push_eft_work(ew);
     }
 }
+#endif
 
 void tail_off(EFTW *ew) {
     EMW *em = ew->owner;
@@ -119,6 +127,13 @@ void tail_off(EFTW *ew) {
     ew->u0A.ang = calc_mat_angY(bone + 0x4330);
 }
 
+/* G: original bytes (build/mhg/raw/eft09_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft09_m(EFTW *ew)
+{
+#include "eft09_m.inc"
+}
+#else
 static void eft09_m(EFTW *ew) {
     EMW *em = ew->owner;
 
@@ -176,6 +191,7 @@ static void eft09_m(EFTW *ew) {
         add_prim(ot1, ew->prim, 0x20, 1);
     }
 }
+#endif
 
 static void eft09_d(EFTW *ew) {
     ew->mode++;
@@ -190,6 +206,13 @@ static void eft09_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+/* G: original bytes (build/mhg/raw/eft09_t.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft09_t(PRIM *pr)
+{
+#include "eft09_t.inc"
+}
+#else
 static void eft09_t(PRIM *pr) {
     FLMAT mat;
     FLMAT sc;
@@ -228,7 +251,15 @@ static void eft09_t(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/eft09_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft09_set(EMW *em)
+{
+#include "eft09_set.inc"
+}
+#else
 void eft09_set(EMW *em) {
     EFTW *ew = pull_eft_work(0);
 
@@ -239,3 +270,4 @@ void eft09_set(EMW *em) {
         em->tail = ew;
     }
 }
+#endif

@@ -3,6 +3,7 @@
  * no-floor and battle-area checks, hit points by quest and online mode,
  * attack/defence multipliers). Second matching run of the em_master file
  * (see em_master_nm.c). Meanings are guesses. */
+#include "version.h"
 #include "em_sys.h"
 #include "game.h"
 #include "pl.h"
@@ -50,7 +51,7 @@ void Em_Sleep_Start(EMW *em) {
         Em_Mahi_End(em);
     }
     if (em->taisei & 1) {
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
     }
     for (i = 0; i < game_w.pl_num; i++) {
         em->x918[i] = 0;
@@ -76,7 +77,7 @@ void Em_Sleep2_Start(EMW *em) {
         Em_Mahi_End(em);
     }
     if (em->taisei & 2) {
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
     }
     for (i = 0; i < game_w.pl_num; i++) {
         em->x918[i] = 0;
@@ -94,6 +95,40 @@ void Em_Sleep2_Start(EMW *em) {
     Em_Mode_Chg(em, 0, 0, t);
 }
 
+#ifdef VERSION_MHG
+/* G: the map's Em_Sleep2_End (0x548C80) is the first-sleep end (checks x7D2, limit 4), Em_Sleep_End (0x548D00) the second. */
+void Em_Sleep2_End(EMW *em) {
+    EM_TAISEI_DATA *d = em_sleep_data_tbl[em->kind];
+
+    em->x762 = 0;
+    em->taisei &= 0xFC;
+    em->x8BD = 0;
+    em->x9E8 = 0;
+    em->x88B = 1;
+    if (em->x7D2 & 2) {
+        if (em->x7EF < 4) {
+            em->x7EF++;
+            em->sleep_tol += d->add;
+        }
+    }
+    em->x7D2 = 0;
+}
+
+void Em_Sleep_End(EMW *em) {
+    EM_TAISEI_DATA *d = em_sleep2_data_tbl[em->kind];
+
+    em->x762 = 0;
+    em->taisei &= 0xFC;
+    em->x7D2 = 0;
+    em->x8BD = 0;
+    em->x9E8 = 0;
+    em->x88B = 1;
+    if (em->x7F2 < 4) {
+        em->x7F2++;
+        em->sleep2_tol += d->add;
+    }
+}
+#else
 void Em_Sleep_End(EMW *em) {
     EM_TAISEI_DATA *d = em_sleep_data_tbl[em->kind];
 
@@ -124,6 +159,8 @@ void Em_Sleep2_End(EMW *em) {
     }
 }
 
+#endif
+
 void Em_Mahi_Start(EMW *em) {
     em->x762 = 4;
     em->x7D2 = 4;
@@ -140,7 +177,7 @@ void Em_Mahi_End(EMW *em) {
     em->x7D2 = 0;
     em->x8BD = 0;
     em->x762 = 0;
-    if (em->x7F1 < 3) {
+    if (em->x7F1 < MAHI_MAX) {
         em->x7F1++;
         em->mahi_tol += d->add;
     }
@@ -148,10 +185,10 @@ void Em_Mahi_End(EMW *em) {
 
 void Em_Sleep_Flag_Ck(EMW *em) {
     if (em->x7D2 == 1) {
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
     }
     if (em->x7D2 == 2) {
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
     }
     if (em->taisei & 8) {
         Em_Mahi_End(em);
@@ -160,10 +197,10 @@ void Em_Sleep_Flag_Ck(EMW *em) {
 
 void Em_Sleep_Flag_Ck2(EMW *em) {
     if (em->x7D2 == 1) {
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
     }
     if (em->x7D2 == 2) {
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
     }
 }
 
@@ -172,7 +209,7 @@ typedef f32 (*EM_POSP)[3];
 EM_STG_POS *gp_ck(EMW *em, EM_STG_POS *p, s16 stg) {
     s16 i;
 
-    for (i = 0; i < 88; i++, p++) {
+    for (i = 0; i < STG_POS_N; i++, p++) {
         if (p->stg == -1 || p->stg == stg) {
             return p;
         }
@@ -183,7 +220,7 @@ EM_STG_POS *gp_ck(EMW *em, EM_STG_POS *p, s16 stg) {
 EM_POSP gp_ptr_ck(EMW *em, EM_STG_POS *p) {
     s16 i;
 
-    for (i = 0; i < 88; i++, p++) {
+    for (i = 0; i < STG_POS_N; i++, p++) {
         if (p->stg == -1 || p->stg == em->stg) {
             return p->pos;
         }
@@ -233,6 +270,13 @@ void Eft06_set2(EMW *, int, u8, int);
 void Eft06_set(f32, EMW *, int, int, u8);
 int em_cancel_act_ck(EMW *, int);
 
+/* G: original bytes (build/mhg/raw/em_boss_work_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_boss_work_set(EMW *em)
+{
+#include "em_boss_work_set.inc"
+}
+#else
 void em_boss_work_set(EMW *em) {
     s8 i;
     EMW *e = em_work;
@@ -251,6 +295,7 @@ void em_boss_work_set(EMW *em) {
         break;
     }
 }
+#endif
 
 void smell_dmg_set(EMW *em, EM_SMELL *s) {
     switch (s->type) {
@@ -358,6 +403,13 @@ void em_mahi_eff_set(EMW *em, int a) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/st_mv_ptr_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm s32 st_mv_ptr_ck(EMW *em)
+{
+#include "st_mv_ptr_ck.inc"
+}
+#else
 s32 st_mv_ptr_ck(EMW *em) {
     EM_MVOK *p = em_stage_move_ok_data[em->kind][game_w.x2E];
     EM_MVOK2 *q;
@@ -376,6 +428,7 @@ s32 st_mv_ptr_ck(EMW *em) {
     }
     return 0;
 }
+#endif
 
 void em_hungry_add(EMW *em, s32 n) {
     em->hungry += n;
@@ -440,6 +493,13 @@ void em_no_floor_ck2(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_no_battle_area_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_no_battle_area_ck(EMW *em, u16 mode, u16 sub)
+{
+#include "em_no_battle_area_ck.inc"
+}
+#else
 void em_no_battle_area_ck(EMW *em, u16 mode, u16 sub) {
     s8 i;
     PLW *pl;
@@ -460,6 +520,7 @@ void em_no_battle_area_ck(EMW *em, u16 mode, u16 sub) {
         em->pos[2] = em->x5A0[2];
     }
 }
+#endif
 
 /* hagitori_eft_tbl: effect when a breakable part levels up. */
 typedef struct EM_HAGI_EFT {
@@ -532,6 +593,13 @@ int em_target_pl_samestage_ck(EMW *em) {
     return 1;
 }
 
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+/* G rewrote the HP/vital scaling: em_hp_vital_set/set2 are one 0x74-byte function (kept as original bytes) */
+asm void game_func_005499A0()
+{
+#include "game_func_005499A0.inc"
+}
+#elif !defined(VERSION_MHG)
 s16 em_hp_vital_set(EMW *em, s16 v) {
     s16 hp = v;
 
@@ -635,7 +703,15 @@ s16 em_hp_vital_set2(EMW *em, s16 a, s16 b) {
     }
     return hp;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_def_attack_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm f32 em_def_attack_set(EMW *em)
+{
+#include "em_def_attack_set.inc"
+}
+#else
 f32 em_def_attack_set(EMW *em) {
     f32 f = 1.0f;
 
@@ -702,7 +778,15 @@ f32 em_def_attack_set(EMW *em) {
     }
     return f;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_def_defence_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm f32 em_def_defence_set(EMW *em)
+{
+#include "em_def_defence_set.inc"
+}
+#else
 f32 em_def_defence_set(EMW *em) {
     f32 f = 1.0f;
 
@@ -759,6 +843,7 @@ f32 em_def_defence_set(EMW *em) {
     }
     return f;
 }
+#endif
 
 void em_ana_loop_cnt_set(EMW *em) {
     if (em->x8C3 == 0) {
@@ -773,6 +858,13 @@ int em_hokaku_ck(EMW *em, f32 rate) {
     return (s16)(em->x792 * rate) >= em->x302;
 }
 
+/* G: original bytes (build/mhg/raw/Bdora_hp_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm int Bdora_hp_ck(void)
+{
+#include "Bdora_hp_ck.inc"
+}
+#else
 int Bdora_hp_ck(void) {
     EMW *e = em_work;
     s8 i;
@@ -786,6 +878,7 @@ int Bdora_hp_ck(void) {
     }
     return 0;
 }
+#endif
 
 int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step) {
     if (step != 0 && *(u16 *)&game_w.x1E % step != 0) {

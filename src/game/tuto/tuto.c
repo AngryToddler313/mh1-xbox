@@ -96,6 +96,13 @@ static void tuto_msg_flag_set(u8 no, s8 *flag);
 void print_tuto_message(char *str);
 void tuto_read_flag_set(u8 no, u8 sel);
 
+/* G: original bytes (build/mhg/raw/SonchoInit.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void SonchoInit(void)
+{
+#include "SonchoInit.inc"
+}
+#else
 void SonchoInit(void) {
     soncho = &soncho_w;
     *(u32 *)&soncho->mode = 0;
@@ -110,7 +117,15 @@ void SonchoInit(void) {
     soncho->num = tuto_message_num(soncho->no);
     soncho->alpha = 0;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/SonchoMove.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 SonchoMove(u16 pad)
+{
+#include "SonchoMove.inc"
+}
+#else
 u8 SonchoMove(u16 pad) {
     switch (soncho->mode) {
     case 0:
@@ -190,7 +205,15 @@ u8 SonchoMove(u16 pad) {
     }
     return soncho->mode;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/DispTutorial.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void DispTutorial(void)
+{
+#include "DispTutorial.inc"
+}
+#else
 void DispTutorial(void) {
     SPR spr;
     s16 y;
@@ -307,6 +330,7 @@ void DispTutorial(void) {
         break;
     }
 }
+#endif
 
 static u8 tuto_unread_chk(u8 no) {
     TUTO_FLAG *t = &tuto_flag_tbl[no];

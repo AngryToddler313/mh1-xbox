@@ -26,6 +26,13 @@ u8 Pl_piyo_ck(PLW *pl) {
     return pl->x7AA >= 0x32;
 }
 
+/* G: original bytes (build/mhg/raw/Pl_poison_add.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Pl_poison_add(PLW *pl, s16 add)
+{
+#include "Pl_poison_add.inc"
+}
+#else
 void Pl_poison_add(PLW *pl, s16 add) {
     if (Pl_Skill_ck(pl, 0xE) == 1) {
         pl->x7BA = 0;
@@ -40,6 +47,7 @@ void Pl_poison_add(PLW *pl, s16 add) {
         pl->work7BE = 0x1E;
     }
 }
+#endif
 
 int mahi_dm_ck(PLW *pl) {
     if (act_ck(pl, 2, 0x16) != 0 || act_ck(pl, 2, 0x18) != 0) {

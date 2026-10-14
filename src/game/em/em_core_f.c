@@ -217,6 +217,13 @@ void Em_Hate_Add(EMW *em, s32 add, s32 max, u8 pl) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/Em_Hate_Ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Em_Hate_Ck(EMW *em)
+{
+#include "Em_Hate_Ck.inc"
+}
+#else
 void Em_Hate_Ck(EMW *em) {
     int i;
     PLW *pl;
@@ -272,6 +279,7 @@ void Em_Hate_Ck(EMW *em) {
         }
     }
 }
+#endif
 
 u8 pl_status_ret(int n) {
     u8 ret = 0;
@@ -308,6 +316,13 @@ extern s32 *em_max_kehai_hate_tbl[];
 int Pl_Skill_ck(PLW *, int);
 int em_cancel_act_ck(EMW *, u8);
 
+/* G: original bytes (build/mhg/raw/Em_Kehai_Hate_Add.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Em_Kehai_Hate_Add(EMW *em, int pl0, u8 kind, s8 lv)
+{
+#include "Em_Kehai_Hate_Add.inc"
+}
+#else
 void Em_Kehai_Hate_Add(EMW *em, int pl0, u8 kind, s8 lv) {
     u8 pl = pl0;
     PLW *p = &player_work[pl];
@@ -352,6 +367,7 @@ void Em_Kehai_Hate_Add(EMW *em, int pl0, u8 kind, s8 lv) {
         }
     }
 }
+#endif
 
 extern f32 (*em_range_data_tbl[])[2];
 extern u16 (*em_range_ang_data_tbl[])[2];

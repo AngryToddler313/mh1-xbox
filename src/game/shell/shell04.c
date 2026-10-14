@@ -130,6 +130,13 @@ static void shell04_i(SHLW *sh) {
     sh->prim = 0;
 }
 
+/* G: original bytes (build/mhg/raw/shell04_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell04_m(SHLW *sh)
+{
+#include "shell04_m.inc"
+}
+#else
 static void shell04_m(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];
 
@@ -149,6 +156,7 @@ static void shell04_m(SHLW *sh) {
         add_prim(ot1, sh->prim, 0x20, 0);
     }
 }
+#endif
 
 static void shell04_d(SHLW *sh) {
     sh->xB = 0;

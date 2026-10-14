@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em_fly17_00603720.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly17_00603720(EMW *em, EM21W *w)
+{
+#include "em_fly17_00603720.inc"
+}
+#else
 void em_fly17_00603720(EMW *em, EM21W *w) {
     PLW *temp_s0;
     s32 temp_v1;
@@ -367,7 +374,15 @@ void em_fly17_00603720(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_fly18_006038C0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly18_006038C0(EMW *em, EM21W *w)
+{
+#include "em_fly18_006038C0.inc"
+}
+#else
 void em_fly18_006038C0(EMW *em, EM21W *w) {
     f32 ofs[3];
     f32 out[3];
@@ -435,6 +450,7 @@ void em_fly18_006038C0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
 void em_fly19_00603B90(EMW *em, EM21W *w) {
     f32 v[3];
@@ -608,6 +624,13 @@ void em_fly20_00603E40(EMW *em, EM21W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_fly21_00604110.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly21_00604110(EMW *em, EM21W *w)
+{
+#include "em_fly21_00604110.inc"
+}
+#else
 void em_fly21_00604110(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -628,3 +651,4 @@ void em_fly21_00604110(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif

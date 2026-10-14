@@ -85,6 +85,13 @@ void em20_act_act_set(EMW *em, u16 no, u16 arg) {
     em_act_set2(em, 0, no, arg);
 }
 
+/* G: original bytes (build/mhg/raw/em20_move_act_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_move_act_set(EMW *em, u16 no, u16 arg)
+{
+#include "em20_move_act_set.inc"
+}
+#else
 void em20_move_act_set(EMW *em, u16 no, u16 arg) {
     EM20W *w = (EM20W *)em->ex;
 
@@ -196,7 +203,15 @@ void em20_move_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 1, no, arg);
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em20_fly_act_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_fly_act_set(EMW *em, u16 no, u16 arg)
+{
+#include "em20_fly_act_set.inc"
+}
+#else
 void em20_fly_act_set(EMW *em, u16 no, u16 arg) {
     EM20W *w = (EM20W *)em->ex;
 
@@ -297,6 +312,7 @@ void em20_fly_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 2, no, arg);
 }
+#endif
 
 void em20_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM20W *w = (EM20W *)em->ex;

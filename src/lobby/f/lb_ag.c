@@ -1,4 +1,5 @@
 /* Lobby: 2D draw helpers (buttons, icons, job icon, 2TF sprite, square outline), hand-written from m2c drafts. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern u8 lb_button_tbl[];
@@ -189,8 +190,8 @@ void lb_put_sprite(void) {
     int r;
     a3 = 0x1E;
     pl = &player_work[game_w.master];
-    if (*((u8 *)&lb_sys + 0xA) != 0 || lb_sys.x68 == 8) {
-        if (*((u8 *)&lb_sys + 0x28) != 0) {
+    if (*((u8 *)&lb_sys + LBSYS_OFS(0xA)) != 0 || lb_sys.x68 == 8) {
+        if (*((u8 *)&lb_sys + LBSYS_OFS(0x28)) != 0) {
             a3 = (s16)0x3C;
         }
         Sel_csr_disp(0x14, 0x1C, 0x1F4, a3);
@@ -210,13 +211,13 @@ void lb_put_sprite(void) {
             switch (t) {
             case 18:
                 Lb_put_button(0x14, 0x1E, 3);
-                Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + 0xA) * 0xA + 0x50), 0x1E, 0xD, -1);
+                Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + LBSYS_OFS(0xA)) * 0xA + 0x50), 0x1E, 0xD, -1);
                 return;
             case 19:
                 r = Lb_check_hotel(0x52);
                 switch (r) {
                 case 2:
-                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + 0xA) * 0xA + 0x50), 0x1E, 0xD, -1);
+                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + LBSYS_OFS(0xA)) * 0xA + 0x50), 0x1E, 0xD, -1);
                 case 1:
                 case 3:
                     Lb_put_button(0x14, 0x1E, 3);
@@ -225,7 +226,7 @@ void lb_put_sprite(void) {
                 r = Lb_check_hotel(0x53);
                 switch (r) {
                 case 2:
-                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + 0x28) * 0xA + 0x50), 0x38, 0xD, -1);
+                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + LBSYS_OFS(0x28)) * 0xA + 0x50), 0x38, 0xD, -1);
                 case 1:
                 case 3:
                     Lb_put_button(0x14, 0x38, 1);
@@ -236,7 +237,7 @@ void lb_put_sprite(void) {
                 r = Lb_check_hotel(0x54);
                 switch (r) {
                 case 2:
-                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + 0xA) * 0xA + 0x50), 0x1E, 0xD, -1);
+                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + LBSYS_OFS(0xA)) * 0xA + 0x50), 0x1E, 0xD, -1);
                 case 1:
                 case 3:
                     Lb_put_button(0x14, 0x1E, 3);
@@ -245,7 +246,7 @@ void lb_put_sprite(void) {
                 r = Lb_check_hotel(0x55);
                 switch (r) {
                 case 2:
-                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + 0x28) * 0xA + 0x50), 0x38, 0xD, -1);
+                    Lb_put_icon((s16)((s16)strlen((char *)&lb_sys + LBSYS_OFS(0x28)) * 0xA + 0x50), 0x38, 0xD, -1);
                 case 1:
                 case 3:
                     Lb_put_button(0x14, 0x38, 1);

@@ -336,6 +336,13 @@ extern u8 *em14_act_add[3];
 
 
 
+/* G: original bytes (build/mhg/raw/em_dmg07_005B9ED0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_dmg07_005B9ED0(EMW *em, EM14W *w)
+{
+#include "em_dmg07_005B9ED0.inc"
+}
+#else
 void em_dmg07_005B9ED0(EMW *em, EM14W *w) {
     FLMAT m50;
     f32 v2[3];
@@ -406,3 +413,4 @@ block_8:
         break;
     }
 }
+#endif

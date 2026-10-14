@@ -282,6 +282,13 @@ void atk_shell_set(EMW *em, int no) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em08_vib_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em08_vib_set(EMW *em)
+{
+#include "em08_vib_set.inc"
+}
+#else
 void em08_vib_set(EMW *em) {
     PLW *pl;
     s8 i;
@@ -299,6 +306,7 @@ void em08_vib_set(EMW *em) {
         } while (i < *(u8 *)0x3F34C3);
     }
 }
+#endif
 
 /* A file static in the original; data tables point at it. */
 void dummy_em_prog_005A7370(void) {

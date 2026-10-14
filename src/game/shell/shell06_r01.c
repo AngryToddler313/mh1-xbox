@@ -65,6 +65,13 @@ u32 ran_suu(int);
 
 
 
+/* G: original bytes (build/mhg/raw/shell06_move_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell06_move_sub(SHLW *sh)
+{
+#include "shell06_move_sub.inc"
+}
+#else
 void shell06_move_sub(SHLW *sh) {
     f32 wb[3];
     f32 t1[3];
@@ -320,3 +327,4 @@ eft:
         }
     }
 }
+#endif

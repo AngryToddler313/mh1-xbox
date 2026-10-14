@@ -77,9 +77,16 @@ static void set22_i(SETW *sw) {
         sw->prim = get_prim_ptr(sw->prim_no);
         sw->prim->owner = sw;
         sw->prim->trans = set22_trans;
+#ifdef VERSION_MHG
+        set22_m(sw);
+    } else {
+        push_set_work(sw);
+    }
+#else
         return;
     }
     push_set_work(sw);
+#endif
 }
 
 static void set22_m(SETW *sw) {

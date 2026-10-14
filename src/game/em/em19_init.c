@@ -43,6 +43,13 @@ void flvecNormalize(f32 *);
 void PointToPoint(f32 *, f32 *, f32 *);
 void em_rate_clear(EMW *);
 
+/* G: original bytes (build/mhg/raw/em19_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em19_init(EMW *em)
+{
+#include "em19_init.inc"
+}
+#else
 void em19_init(EMW *em) {
     EM_INITW *w = (EM_INITW *)em->ex;
 
@@ -79,6 +86,7 @@ void em19_init(EMW *em) {
     em->x8C3 = 0;
     em->x734 = 3;
 }
+#endif
 
 void em19_act_set(EMW *em, int kind, u16 no) {
     EM_INITW *w = (EM_INITW *)em->ex;

@@ -105,6 +105,13 @@ void eft04_pos_calc(f32 *pos, EMW *em, f32 *ofs, int joint) {
     pos[2] = m[3][2] + v[2];
 }
 
+/* G: original bytes (build/mhg/raw/eft04_type0_0_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft04_type0_0_init(EFTW *ew, EFT04_PIECE *p)
+{
+#include "eft04_type0_0_init.inc"
+}
+#else
 void eft04_type0_0_init(EFTW *ew, EFT04_PIECE *p) {
     s16 sel[4];
     s16 used[4];
@@ -139,6 +146,7 @@ void eft04_type0_0_init(EFTW *ew, EFT04_PIECE *p) {
         eft04_pos_calc(p->pos, ew->owner, jp->ofs, jp->joint);
     }
 }
+#endif
 
 void eft04_type3_init(EFTW *ew, EFT04_PIECE *p) {
     switch (p->no) {
@@ -225,6 +233,13 @@ void Eft04_set_pos(f32 *pos, int arg, int kind, f32 scale) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/Eft04_set_time.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Eft04_set_time(EMW *em, int arg, int time, f32 scale)
+{
+#include "Eft04_set_time.inc"
+}
+#else
 void Eft04_set_time(EMW *em, int arg, int time, f32 scale) {
     EFTW *ew;
 
@@ -242,3 +257,4 @@ void Eft04_set_time(EMW *em, int arg, int time, f32 scale) {
         }
     }
 }
+#endif

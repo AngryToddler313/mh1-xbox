@@ -333,6 +333,13 @@ void act_dist_select_005B5650(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em14_to_normal.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em14_to_normal(EMW *em, s16 a, s16 b)
+{
+#include "em14_to_normal.inc"
+}
+#else
 void em14_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x734 != 0) {
         act_dist_select_005B5650(em);
@@ -359,6 +366,7 @@ void em14_to_normal(EMW *em, s16 a, s16 b) {
     em->x3F4 = 0;
     em14_act_set(em, 0, 1, 0);
 }
+#endif
 
 void em14_to_swim(EMW *em) {
     em->act_spd = 1.0f;

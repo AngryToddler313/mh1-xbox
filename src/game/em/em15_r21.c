@@ -350,6 +350,13 @@ void em_cmd_ck(EMW *);
 
 
 
+/* G: original bytes (build/mhg/raw/em15_main.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em15_main(EMW *em)
+{
+#include "em15_main.inc"
+}
+#else
 void em15_main(EMW *em) {
     EM15W *w = (EM15W *)em->ex;
     u8 dmg[4];
@@ -563,3 +570,4 @@ void em15_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif

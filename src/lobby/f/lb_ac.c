@@ -1,4 +1,5 @@
 /* Lobby: target selection (lock-on list), unique-action lookup, receive dispatcher, hand-written from m2c drafts. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern u8 sw_flag_1260;
@@ -132,7 +133,7 @@ void Lb_check_target(void) {
                 if (em[0] != 0) {
                     st = game_w.stage;
                     if (st >= 0x51 && st < 0x56 && em[2] == 3) {
-                        if (*((u8 *)&lb_sys + st + 0x37) == 0) {
+                        if (*((u8 *)&lb_sys + st + LBSYS_OFS(0x37)) == 0) {
                             lb_check_target(range, pl, em, &list, 0x2AAB, 0);
                         }
                     } else {
@@ -187,7 +188,7 @@ b4:
                 }
             } else {
 b8:
-                *((u8 *)&lb_sys + 0x86) = 1;
+                *((u8 *)&lb_sys + LBSYS_OFS(0x86)) = 1;
             }
         }
     }

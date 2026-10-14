@@ -421,6 +421,13 @@ void move_default_005BCCF0(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
+/* G: original bytes (build/mhg/raw/ef_move_sub_005BCD40.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void ef_move_sub_005BCD40(EMW *em, EM14W *w)
+{
+#include "ef_move_sub_005BCD40.inc"
+}
+#else
 void ef_move_sub_005BCD40(EMW *em, EM14W *w) {
     f32 sp50[3];
     FLMAT m50;
@@ -1493,6 +1500,7 @@ block_432:
         break;
     }
 }
+#endif
 
 void em14_effect_move(EMW *em) {
     EM14W *w = (EM14W *)em->ex;

@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em21_main_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em21_main_sub(EMW *em, EM21W *w)
+{
+#include "em21_main_sub.inc"
+}
+#else
 void em21_main_sub(EMW *em, EM21W *w) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -362,3 +369,4 @@ void em21_main_sub(EMW *em, EM21W *w) {
         em_dur_set(em, 0);
     }
 }
+#endif
