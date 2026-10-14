@@ -207,6 +207,11 @@ gun loads from the new pouch as pl_init does. Shot used (hidden):
 `RT_WEAPON=g2 RT_PL_ITEMS="1:5,20:3,31:2,60:1,61:30,44:5,47:20" build/pc/mhview disc/mh1 --quest 10 --play --hud gunner
 --no-ini --size 960x720 --shot build/show/gunhud/q10.png --time 25`.
 
+G (checked 14 Oct with build/mhg/pc/mhview_g, same code): the player fields it reads are the same, cockpit2 is
+filedef_sys[3] there too (AFS_DATA 12), and the shot types keep their numbers (crag 9-11), but G renumbered the items:
+its ammo are ids 73-103 (73 = normal LV1 ... 82-84 crag), so the G shot used
+`RT_PL_ITEMS="7:5,20:3,26:2,73:1,74:30,82:5,79:20"`. Bows (G) are not handled specially (no charge gauge).
+
 ## Build
 
 Players: `./mh1 linux|windows|xbox DISC` does everything below (disc check, tool check, build, data copy); see
