@@ -193,6 +193,22 @@ typedef struct NEMV {
     s8     xA00;              /* 0xA00 */
 } NEMV;
 
+#ifdef VERSION_MHG
+/* G layout (offsets found from netsyn05 / sub_main diffs; other fields not mapped yet) */
+typedef struct NGW {
+    u8     mode;              /* 0x000 */
+    u8     step;              /* 0x001 */
+    u8  x002_[0x3A - 0x2];
+    u8     master;            /* 0x03A */
+    u8  x03B_[0x100 - 0x3B];
+    NITEM  item[32];          /* 0x100 */
+    s32    x1A8[2];           /* 0x180 */
+    u8  x188_[0x1EA - 0x188];
+    u16    x1E2;              /* 0x1EA */
+    u16    x1E4;              /* 0x1EC */
+    u8     x21B;              /* 0x1EE */
+} NGW;
+#else
 typedef struct NGW {
     u8     mode;              /* 0x000 */
     u8     step;              /* 0x001 */
@@ -230,6 +246,7 @@ typedef struct NGW {
     s8     x21D;              /* 0x21D */
     u8     x21E;              /* 0x21E */
 } NGW;
+#endif
 
 int Online_ck();
 int Now_Game_ck(void);

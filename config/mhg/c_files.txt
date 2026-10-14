@@ -904,3 +904,13 @@ main 0x0014B660 0x0014C1A4 main/fl/tx03
 main 0x0011D420 0x0011D580 main/menu/menu25
 main 0x001285A0 0x001285E8 main/pl/shell_work2
 main 0x00128560 0x00128598 main/pl/taru01
+main 0x00238D30 0x00238F30 main/aq/aq04
+main:rodata 0x002EAA20 0x002EAA44 main/aq/aq04
+main 0x001DE100 0x001DE21C main/cam/camarea05
+main 0x0012D200 0x0012D270 main/font/dsp01
+main:rodata 0x002B19F0 0x002B1A08 main/font/dsp01
+main 0x0011A060 0x0011A0B4 main/menu/menu04
+main 0x00212E90 0x00213084 main/net/ms03
+main:rodata 0x002C0AA0 0x002C0AC0 main/net/ms03
+sub_main 0x004F8040 0x004F85BC main/reward/f_reward4
+sub_main 0x004FBA40 0x004FBD10 main/net/netsyn05

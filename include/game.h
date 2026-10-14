@@ -75,7 +75,9 @@ typedef struct GAME_W {
     u8 shl10_num;       /* 0x0FC (MH1 0x210) */
     u8 meat_num;        /* 0x0FD (MH1 0x211) */
     u8 trap_num;        /* 0x0FE (MH1 0x212) */
-    u8 _pad0FF[0x128 - 0xFF];
+    u8 _pad0FF[0x100 - 0xFF];
+    PL_ITEM reward_item[32]; /* 0x100 (MH1 0x128) */
+    u8 _pad180[0x1A8 - 0x180];
 #else
     u8 master;          /* 0x0D1 player number of the session master */
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
@@ -84,7 +86,9 @@ typedef struct GAME_W {
     u8 x0D5;            /* 0x0D5 result screen: 7/8 = special end (result_prog); stage/session state switch in sit_com_ck (4..8) */
     u8 _pad0D6[0x128 - 0xD6];
 #endif
+#ifndef VERSION_MHG
     PL_ITEM reward_item[32]; /* 0x128 reward item list: 32 entries (remuneration_item_set), the screen pages through 16 (reward_mv) */
+#endif
     s32 x1A8;           /* 0x1A8 cleared by remuneration_item_set */
     s32 x1AC;           /* 0x1AC */
     u8 _pad1B0[0x1B2 - 0x1B0];

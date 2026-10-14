@@ -1,5 +1,10 @@
 /* camarea05 - f_camarea 0x00223070-0x0022318C: SetAreaData. Whole file in camarea_nm.c. */
 #include "types.h"
+#ifdef VERSION_MHG
+#define GW_MASTER 0x3A /* G moved master from 0xD1 */
+#else
+#define GW_MASTER 0xD1
+#endif
 #include "cam.h"
 #include "game.h"
 
@@ -42,7 +47,7 @@ s32 CameraAreaCheck(CAMAREA *a, PLW *pl, s32 mask);
 /* 0x00223070: the area the camera's player is in. -1 no camera data,
  * 0 none found (area = first block), 1 found (area set). */
 s32 SetAreaData(CAMW *cw) {
-    PLW *pl = &player_work[EB(&game_w, 0xD1)];
+    PLW *pl = &player_work[EB(&game_w, GW_MASTER)];
     u8 *d = cw->data;
     u8 *cell;
     CAMAREA **l;
