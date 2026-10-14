@@ -47,6 +47,8 @@ segments:
       - [0x002BA0, asm, text/Em_Hate_Add]
       - [0x007830, c, game/em/em_master_c]
       - [0x0079DC, asm, text/game_func_00549FE0]
+      - [0x011150, c, main/pl/plx12]
+      - [0x01121C, asm, text/pl_mv061]
       - [0x021380, asm, text/f_eft17]
       - [0x025970, asm, text/f_eft04]
       - [0x029530, asm, text/f_eft05]

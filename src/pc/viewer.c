@@ -10,6 +10,7 @@
  * extracted to disk. Controls: WASD move, mouse look, Space/C up/down,
  * Shift fast, Esc quit. Docs: docs/pc.md.
  */
+#include "../../include/gwx.h"
 #include "fl/fl.h"
 #include "rt/rt.h"
 #include "pad/pad.h"
@@ -1366,7 +1367,7 @@ static void sim_tick(void)
     if (ticks >= 2 && !(getenv("RT_BODY_HIT") && getenv("RT_BODY_HIT")[0] == '0')) {
         extern unsigned char game_w[];
         void body_hit(void);
-        if (game_w[0x21F] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
+        if (game_w[GWX(0x21F)] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
             body_hit();
     }
     if (quest_no && pl.game && play && ticks >= 2) {
@@ -1843,7 +1844,7 @@ static void village_step(void)
             q = rt_online_tick();
             {   /* the local hunter is the town's player_work[game_w.master] (the lobby member list's order) */
                 extern uint8_t game_w[];
-                lp = game_w[0xD1] < 8 ? game_w[0xD1] : 0;
+                lp = game_w[GWX(0xD1)] < 8 ? game_w[GWX(0xD1)] : 0;
             }
             if (q > 0) {        /* a matched room: its quest as a co-op session (rt_np.c), the leader hosting */
                 int q2 = rt_np_setup(q);

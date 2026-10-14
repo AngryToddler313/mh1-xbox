@@ -28,7 +28,11 @@
 
 /* The game C stores pointers in u32 fields: only a 32-bit build works. */
 _Static_assert(sizeof(void *) == 4, "build the port runtime and game C with -m32");
+#ifdef VERSION_MHG
+_Static_assert(sizeof(GAME_W) == 0x240, "GAME_W size");
+#else
 _Static_assert(sizeof(GAME_W) == 0x224, "GAME_W size");
+#endif
 _Static_assert(sizeof(PLW) == 0xA00, "PLW size");
 _Static_assert(offsetof(SETW, move) == 0x20 && offsetof(SETW, prim) == 0x38, "SETW layout");
 _Static_assert(offsetof(PRIM, trans) == 0x14 && offsetof(PRIM, owner) == 0x18, "PRIM layout");

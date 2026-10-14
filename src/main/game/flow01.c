@@ -101,6 +101,22 @@ void com_motion_load();
 
 
 
+#ifdef VERSION_MHG
+void game_init(void) {
+    memset(&game_w, 0, 0x240);
+    all_model_free();
+    all_sprite_free();
+    flCompact();
+    GWS16(0x1E) = 0;
+    GWS8(0xD1) = 0;
+    SELH(0xD0) = 1;     /* G select_w: selected quest at 0xD0 (MH1 0xAC) */
+    GWS8(0x21) = 1;
+    GWS8(0x20) = 0;
+    GWS8(0x1DC) = 0;
+    GWS8(0x17) = SELB(0xDC);
+    CameraWorkInit();
+}
+#else
 void game_init(void) {
     memset(&game_w, 0, 0x224);
     all_model_free();
@@ -115,6 +131,7 @@ void game_init(void) {
     GWS8(0x17) = SELB(0xB6);
     CameraWorkInit();
 }
+#endif
 
 void stage_init(void) {
     Pit_init();

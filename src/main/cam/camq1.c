@@ -1,5 +1,6 @@
 /* camq1 - 0x00225F50-0x00225FBC: Fish Wyvern (monster state 0x15) and Legend
  * Sword demo camera requests. */
+#include "version.h"
 #include "types.h"
 
 void DemoCameraRequest(int, s32);
@@ -15,7 +16,7 @@ void FishWyvernCameraRequest(void) {
             return;
         }
         i--;
-        e += 0xA10;
+        e += EMW_STRIDE;
     } while (i != 0);
 }
 

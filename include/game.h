@@ -15,6 +15,92 @@ typedef struct PL_ITEM {
 } PL_ITEM;
 #endif
 
+#ifdef VERSION_MHG
+/* G game_w (0x35ED20, 0x240 bytes): G reordered the fields (offsets found with tools/mhg_fields.py and check.py;
+ * the MH1 offset of each field is in the comment). Fields not seen in G code yet stay at their MH1 offset. */
+typedef struct GAME_W {
+    u8 mode;            /* 0x000 */
+    u8 step;            /* 0x001 */
+    u8 sub;             /* 0x002 */
+    u8 x03;             /* 0x003 */
+    s16 x04;            /* 0x004 */
+    s16 x06;            /* 0x006 */
+    s16 x08;            /* 0x008 */
+    s16 x0A;            /* 0x00A */
+    u8 _pad00C[0xD - 0xC];
+    u8 pad_on;          /* 0x00D */
+    u8 _pad00E[0xF - 0xE];
+    u8 x0F;             /* 0x00F */
+    u8 x10;             /* 0x010 */
+    u8 x11;             /* 0x011 */
+    u8 x12;             /* 0x012 */
+    u8 _pad013[0x14 - 0x13];
+    u8 stage;           /* 0x014 */
+    u8 x15;             /* 0x015 */
+    u8 _pad016[0x1E - 0x16];
+    u8 x1E;             /* 0x01E */
+    u8 _pad01F[0x20 - 0x1F];
+    u8 port[2];         /* 0x020 */
+    u8 _pad022[0x24 - 0x22];
+    u8 sw_mask;         /* 0x024 */
+    u8 _pad025[0x28 - 0x25];
+    u8 x28[4];          /* 0x028 */
+    u16 quest;          /* 0x02C */
+    u8 x2E;             /* 0x02E */
+    u8 x2F;             /* 0x02F */
+    u8 x30[4];          /* 0x030 */
+    u8 _pad034[0x3A - 0x34];
+    u8 master;          /* 0x03A (MH1 0x0D1) */
+    u8 x0D2;            /* 0x03B (MH1 0x0D2) */
+    u8 pl_num;          /* 0x03C (MH1 0x0D3) */
+    u8 hit_id;          /* 0x03D (MH1 0x0D4, Get_hit_id counter) */
+    u8 x0D5;            /* 0x03E (MH1 0x0D5) */
+    u8 x1DC;            /* 0x03F (MH1 0x1DC) */
+    V3S x40[4];         /* 0x040 */
+    u8 _pad058[0x70 - 0x58];
+    u8 x70[4];          /* 0x070 */
+    u8 _pad074[0x78 - 0x74];
+    s8 x78[4];          /* 0x078 */
+    u8 _pad07C[0x80 - 0x7C];
+    u8 x80[4];          /* 0x080 */
+    u8 _pad084[0xB0 - 0x84];
+    struct EFT_MDLW *area_mdlw[9]; /* 0x0B0 (MH1 0x0A8) */
+    u8 _pad0D4[0xEC - 0xD4];
+    s16 xCC;            /* 0x0EC (MH1 0x0CC) */
+    s16 xCE;            /* 0x0EE (MH1 0x0CE) */
+    u8 x0D0;            /* 0x0F0 (MH1 0x0D0) */
+    u8 x1DD;            /* 0x0F1 (MH1 0x1DD) */
+    u8 info_seq;        /* 0x0F2 (MH1 0x1DE) */
+    u8 info_now;        /* 0x0F3 (MH1 0x1DF) */
+    u8 _pad0F4[0xF8 - 0xF4];
+    s16 x216;           /* 0x0F8 (MH1 0x216) */
+    s16 x218;           /* 0x0FA (MH1 0x218) */
+    u8 shl10_num;       /* 0x0FC (MH1 0x210) */
+    u8 meat_num;        /* 0x0FD (MH1 0x211) */
+    u8 trap_num;        /* 0x0FE (MH1 0x212) */
+    s8 x21D;            /* 0x0FF (MH1 0x21D) */
+    PL_ITEM reward_item[32]; /* 0x100 (MH1 0x128) */
+    s32 x1A8;           /* 0x180 (MH1 0x1A8) */
+    s32 x1AC;           /* 0x184 (MH1 0x1AC) */
+    u8 x1B2;            /* 0x188 (MH1 0x1B2) */
+    u8 flag1B3;         /* 0x189 (MH1 0x1B3) */
+    u8 gate_open;       /* 0x18A (MH1 0x1E6) */
+    u8 x1E7;            /* 0x18B (MH1 0x1E7) */
+    u8 _pad18C[0x1A4 - 0x18C];
+    u8 pl_state[8];     /* 0x1A4 (MH1 0x208) */
+    u8 _pad1AC[0x1EE - 0x1AC];
+    u8 x21B;            /* 0x1EE (MH1 0x21B) */
+    u8 _pad1EF;
+    u8 x21A;            /* 0x1F0 (MH1 0x21A) */
+    u8 _pad1F1;
+    s8 x213;            /* 0x1F2 (MH1 0x213) */
+    s8 x214;            /* 0x1F3 (MH1 0x214) */
+    s8 x215;            /* 0x1F4 (MH1 0x215) */
+    u8 info_stop;       /* 0x1F5 (MH1 0x21F) */
+    u8 x1E8[4][8];      /* 0x1F6 (MH1 0x1E8) */
+    u8 _pad216[0x240 - 0x216];
+} GAME_W;
+#else
 typedef struct GAME_W {
     u8 mode;            /* 0x000 game mode (Game_task jumps on it) */
     u8 step;            /* 0x001 step inside the mode */
@@ -124,7 +210,12 @@ typedef struct GAME_W {
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;
+#endif
 
 extern GAME_W game_w;
+
+/* raw access to game_w by MH1 byte offset: GWX maps the offsets G moved (flow.h GW8.., plf.h GWU8) */
+#include "gwx.h"
+
 
 #endif

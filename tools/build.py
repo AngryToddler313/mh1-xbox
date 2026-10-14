@@ -346,7 +346,7 @@ def link_and_check(module):
                "-T", "%s/%s_undefined_funcs_auto.txt" % (CONF, module)]
               + (["-T", "%s/%s_aliases.txt" % (CONF, module)]
                  if os.path.exists(os.path.join(ROOT, CONF, "%s_aliases.txt" % module)) else [])
-              + (["-T", "config/mhg/g_names.txt"] if VERSION == "mhg" else [])
+              + (["-T", "config/mhg/g_names.txt", "-T", "config/mhg/g_funcnames.txt"] if VERSION == "mhg" else [])
               + (["-T", "build/raw/labels_%s.ld" % module]
                  if VERSION == "mh1" and os.path.exists(os.path.join(ROOT, "build/raw/labels_%s.ld" % module)) else [])
               + ["-o", elf])

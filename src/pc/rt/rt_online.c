@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "gwx.h"
 #include "rt.h"
 #include "rt_log.h"
 #include "types.h"
@@ -182,7 +183,7 @@ void rt_online_enter(void)
         clr_set_work();
         prim_init();
     }
-    game_w[0x1DC] = 1;              /* the lobby overlay is loaded (Game_task step 0 online) */
+    game_w[GWX(0x1DC)] = 1;              /* the lobby overlay is loaded (Game_task step 0 online) */
     active = 1;
     phase = O_CONNECT;
     ticks = 0;
@@ -231,7 +232,7 @@ static void chat_send(const char *t)
     char b[0x40];
     snprintf(b, sizeof b, "%s", t);
     say("say \"%s\"%.0d", b, 0);
-    Lb_send_chat(game_w[0xD1], b, 0);
+    Lb_send_chat(game_w[GWX(0xD1)], b, 0);
 }
 static void town_chat(void)
 {
@@ -246,7 +247,7 @@ static void town_chat(void)
     }
     if ((e = getenv("RT_LB_WARP")) != NULL) {     /* test aid "tick,x,z[,ang];...": the hunter there at that town tick */
         extern u8 player_work[];
-        u8 *p = player_work + 0xA00 * (game_w[0xD1] & 7);
+        u8 *p = player_work + 0xA00 * (game_w[GWX(0xD1)] & 7);
         while (e && *e) {
             int t = 0, a = -1;
             float x, z;
@@ -443,7 +444,7 @@ int rt_online_tick(void)
                 u8 *p = player_work + 0xA00 * i;
                 if (p[0])
                     fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f%s\n", ticks, i,
-                            i == game_w[0xD1] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
+                            i == game_w[GWX(0xD1)] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
                             *(float *)(p + 0xB0), *(float *)(p + 0xB4), rt_online_visible(i) ? " shown" : "");
             }
         }
@@ -644,7 +645,7 @@ int rt_online_visible(int slot)
     extern u8 player_work[];
     int Lb_Pl_stg_ck(void *pl);
     u8 *p = player_work + 0xA00 * (slot & 7);
-    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && Lb_Pl_stg_ck(p);
+    return active && phase == O_LOBBY && slot != game_w[GWX(0xD1)] && p[0] && Lb_Pl_stg_ck(p);
 }
 
 /* ------------------------------------------------------------ the net file (friends, mail)
