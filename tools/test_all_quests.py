@@ -10,11 +10,19 @@ condition program, the monsters per stage and the start stage's spots. The plan 
   - hunt goals (op 2 kind/count): RT_PL_GOTO walks the area exits to the stage with most monsters of that kind,
     RT_PL_TARGET=kN + RT_PL_WARP_EM + RT_DMG_MUL + RT_PL_GOD fight and carve, a repeating pad script attacks.
 PASS = quest clear (D5 3), reward list printed, money counted, village (game mode 6) entered afterwards, no crash.
+G mode (G=1, tools/test_all_quests_g.sh; build/mhg/pc/mhview_g on disc/mhg, always hidden): the G offline quests
+(village 00001-00050 = 1-50, training 10001-10048), PASS = the monster(s) spawn, quest clear (D5 3) with the same aids, reward
+screen with its list, no crash; then a second run with RT_QUEST_TIME (the quest's time left) idles in the camp: the quest
+must fail on time-out (x06 6), no crash. The village after the reward screen and the money are not checked for G
+(G's village is not ported yet: docs/mhg.md section 5).
 usage: test_all_quests.py [quest ...]   (default: all)"""
 import os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXE = os.path.join(ROOT, os.environ.get('BIN', 'build/pc/mhview')); RUN = os.environ.get('RUN', '').split(); DISC = os.path.join(ROOT, 'disc/mh1')
-OUT = os.path.join(ROOT, 'build/show/allq'); os.makedirs(OUT, exist_ok=True)
+G = os.environ.get('G') == '1'
+EXE = os.path.join(ROOT, os.environ.get('BIN', 'build/mhg/pc/mhview_g' if G else 'build/pc/mhview')); RUN = os.environ.get('RUN', '').split()
+DISC = os.path.join(ROOT, 'disc/mhg' if G else 'disc/mh1')
+OUT = os.path.join(ROOT, 'build/show/allq_g' if G else 'build/show/allq'); os.makedirs(OUT, exist_ok=True)
+G_QUESTS = list(range(1, 51)) + list(range(10001, 10049))     # G offline: village 00xxx, training 10xxx (quest_file_tbl groups 0, 4)
 # quest_local_tbl rows (main 0x387D18.., 0x357758..): 1 star .. 5 stars (hex numbers)
 LEVELS = {1: [0x83, 0x84, 0x85, 0x86, 0x87], 2: [0x88, 0x8D, 0x8E, 0x8F, 0x8A],
           3: [0x89, 0x94, 0x91, 0x92, 0x93, 0x90, 0x95, 0x98],
@@ -26,9 +34,15 @@ EGGS = {145: (40, 11400, 12100, None),      # item -> (stage, x, z) of the nest 
         146: (49, 9500, 11000, -109)}         # pick id 36 on stage 49 (RT_SPOT_TRACE lists the items each pick id gives)
 SKIP = {}
 KNOWN = {}
+if G:
+    EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests
+    SKIP = {}
+    KNOWN = {}
 
 def run(q, env, inp, secs, tag):
     e = dict(os.environ, RT_NOMOVIE='1', RT_QUEST_TRACE='1', **env)
+    if G:
+        e.setdefault('MH1_SAVE_DIR', os.path.join(OUT, 'card'))     # never the owner's ~/.local/share/mhgpc
     log = os.path.join(OUT, '%s.log' % tag)
     t0 = time.time()
     try:
@@ -144,6 +158,8 @@ def test(q):
         inp = 'idle*60' + (',circle*2,idle*58' * (t_hunt // 60) if rest else '') + cyc * n
     rc, d, dt = run(q, env, inp, secs, 'q%d' % q)
     clear = re.search(r'D5 3', d) is not None
+    if G:
+        return g_result(q, p, rc, d, dt, clear, note, secs)
     rew = re.search(r'tick \d+ mode 5 step', d)     # the reward screen (its item list may be empty, e.g. 150)
     gold = re.findall(r'money \+\d+ -> (\d+)', d)
     vill = 'rt_village: tick' in d and d.find('rt_village: tick') > d.find(' mode 5 step') > 0
@@ -158,8 +174,26 @@ def test(q):
     elif not vill: why.append('reward ok, village not entered')
     return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s, %.0fs' % ('; '.join(note), dt), p
 
+def g_result(q, p, rc, d, dt, clear, note, secs):
+    """G: spawn + clear + reward screen, then a time-out run that must fail the quest."""
+    why = []
+    crash = rc not in (0, None) or 'Segmentation' in d or 'Assertion' in d
+    spawned = max([int(n) for n in re.findall(r'^rt_flow: tick \d+ .* monsters (\d+)', d, re.M)] or [0])
+    if crash: why.append('crash/exit %s' % rc)
+    if not spawned and p['hunts']: why.append('no monster spawned')
+    if not clear:
+        last = [l for l in d.splitlines() if l.startswith('rt_flow: tick')]
+        why.append('no quest clear in %ds (last: %s)' % (secs, last[-1][9:90] if last else '-'))
+    elif not re.search(r'tick \d+ mode 5 step', d): why.append('clear but no reward screen')
+    elif 'rt_flow: rewards:' not in d: why.append('reward screen without a reward list')
+    # time-out: the quest's time set to 20 s, the hunter idles in the camp
+    rc2, d2, _ = run(q, {'RT_QUEST_TIME': '600'}, 'idle*2400', 60, 'q%d_to' % q)
+    if rc2 not in (0, None) or 'Segmentation' in d2: why.append('time-out run: crash/exit %s' % rc2)
+    elif not re.search(r'x06 6', d2): why.append('no quest failure on time-out')
+    return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s (%d monsters), %.0fs' % ('; '.join(note), spawned, dt), p
+
 if __name__ == '__main__':
-    qs = [int(a) for a in sys.argv[1:]] or [q for lv in sorted(LEVELS) for q in LEVELS[lv]]
+    qs = [int(a) for a in sys.argv[1:]] or (G_QUESTS if G else [q for lv in sorted(LEVELS) for q in LEVELS[lv]])
     star = {q: lv for lv in LEVELS for q in LEVELS[lv]}
     bad = 0
     for q in qs:

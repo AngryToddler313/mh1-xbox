@@ -54,6 +54,7 @@ int rt_flow_tick(void)
 {
     static u32 last = 0xFFFFFFFF;
     static int tick;
+    static int rewards_said;
     int m = game_w[0];
     u32 st = game_w[0] | game_w[1] << 8 | game_w[GWX(0xD5)] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24 ^ (u32)*(s16 *)(quest_w + 0x30) * 0x9E3779B1u ^ (u32)*(s16 *)(quest_w + 0x32) * 0x85EBCA6Bu;
     tick++;
@@ -85,9 +86,13 @@ int rt_flow_tick(void)
             fprintf(stderr, "rt_quest: tick %d money %+d -> %d\n", tick, g - old_gold, g);
         old_gold = g;
     }
-    if (getenv("RT_QUEST_TRACE") && game_w[0] == 5 && game_w[1] == 1 && st != last) {   /* the reward list (game_w+0x128) */
+    if (game_w[0] != 5)
+        rewards_said = 0;
+    if (getenv("RT_QUEST_TRACE") && game_w[0] == 5 && game_w[1] >= 1 && !rewards_said) {   /* the reward list (game_w+0x128), once
+                                                                                             * (step 1 can pass within one tick) */
         s16 *r = (s16 *)(game_w + GWX(0x128));
         int i;
+        rewards_said = 1;
         fprintf(stderr, "rt_flow: rewards:");
         for (i = 0; i < 32; i++)
             if (r[2 * i])

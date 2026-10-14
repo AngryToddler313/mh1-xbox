@@ -78,11 +78,23 @@ void func_63ACA0(void) { Tutorial_prog(); }
 void func_535D20(EMW *em, int kind, int no) { em_act_set(em, kind, (u16)no); }
 #ifdef VERSION_MHG
 /* G's quest start (f_quest.c, VERSION_MHG): Tutorial_quest_ck by its game.bin address; main
- * 0x12D1B0 (a G work byte at 0x35F014 != 0: unknown, 0 here); sub_main 0x4F3B00 (written
+ * 0x12D170 / 0x12D1B0 (below); sub_main 0x4F3B00 (written
  * from the asm: a training quest listed in quest_size_flag_tbl {event flag, ?, quest} allows random
  * monster sizes only once its event flag is set; any other quest allows them). */
 int func_66E180(void) { return Tutorial_quest_ck(); }
-int func_0012D1B0(void) { return 0; }
+/* main 0x12D170 / 0x12D1B0 (G-only, written from the asm): game_w bytes (G layout) 0x2F3 && 0x2C0, and 0x2F4.
+ * Only the GAME MENU's mode_sel_end (main 0x1EF060) writes them: by the choice at its work+0x15, 0 -> 0x2C0 = 1,
+ * 0x2F3 = 0; 1 -> both 0; 2.. -> 0x2C0 = 0, 0x2F3 = 1; its fourth entry (task sub_main 0x4A9960) sets 0x2F4 and
+ * clears both. So 0x12D170 is 0 in every path of the shipped game (callers: game0, game10, quest judging,
+ * the reward list, Get_equip_value, Pl_item_charge, player_init0, result_prog). */
+int func_0012D170(void)
+{
+    return PU8(&game_w, 0x2F3) != 0 && PU8(&game_w, 0x2C0) != 0;
+}
+int func_0012D1B0(void)
+{
+    return PU8(&game_w, 0x2F4) != 0;
+}
 int Event_flag_ck(int);
 extern s16 quest_size_flag_tbl[];
 int sub_main_func_004F3B00(int no)

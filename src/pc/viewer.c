@@ -34,6 +34,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#define EM_KINDS 64     /* monster kinds the host model cache holds (MH1 35, G 52) */
 #ifdef XBOX
 #include <nxdk/mount.h>
 void xbox_log_start(void);
@@ -121,7 +122,7 @@ static void pick_owner(int kind, int a, int b, const void *skel)
  * materials alike, monsters_sync), not applied per draw here. */
 static void em_mat_trace(int kind, int part, int drawn, uint32_t hidden)
 {
-    static uint32_t seen[40][16][8];
+    static uint32_t seen[EM_KINDS][16][8];
     uint32_t key = drawn ? hidden | 0x80000000u : 0x40000000u;
     int k;
     if (part >= 16)
@@ -1418,13 +1419,13 @@ static void quest_back(void)
 /* Monster models (the game's em_create_model -> em_model_load): the model of kind `kind` (cached by
  * kind) and the motions of model slot `slot` (create_em_motion from em<kind>_tbl.bin, as the PS2 loads
  * them with the model). Every monster in em_work is posed, drawn and given joints by monsters_sync. */
-static monster em_mdl[40];
-static int em_have[40];
+static monster em_mdl[EM_KINDS];
+static int em_have[EM_KINDS];
 static monster *em_kind_model(int kind)
 {
     char a[32], t[32], b[32];
     monster *e;
-    if (kind <= 0 || kind >= 40)
+    if (kind <= 0 || kind >= EM_KINDS)
         return NULL;
     e = &em_mdl[kind];
     if (!em_have[kind]) {
@@ -1480,7 +1481,7 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
     flmat w;
     float s[3], r[3], t[3];
     int kind = em[2];
-    if (!em[0] || em[0x1E] || kind <= 0 || kind >= 40 || !em_have[kind])
+    if (!em[0] || em[0x1E] || kind <= 0 || kind >= EM_KINDS || !em_have[kind])
         return;
     if (em[0x736] != (uint8_t)rt_game_stage())
         return;
@@ -1541,7 +1542,7 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
         if (light_col) {            /* the diffuse override scales the directional lights (em_model_col) */
             int l, c;
             if (getenv("RT_EM_MAT_TRACE")) {
-                static char said[40];
+                static char said[EM_KINDS];
                 if (!said[kind]++)
                     fprintf(stderr, "em-mat: kind %d light colour %.3f %.3f %.3f\n", kind, f[0], f[1], f[2]);
             }
@@ -1612,7 +1613,7 @@ static void host_models_gc(void)
 {
     extern uint8_t em_work[];
     int k, i;
-    for (k = 1; k < 40; k++) {
+    for (k = 1; k < EM_KINDS; k++) {
         monster *e = &em_mdl[k];
         if (!em_have[k])
             continue;

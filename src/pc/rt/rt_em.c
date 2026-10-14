@@ -520,7 +520,7 @@ int rt_quest_load(int no)
     if (getenv("RT_QEM_DUMP")) {    /* test aid: every stage's monster list of this quest */
         int st;
         int var;
-        for (var = 0; var < 4 && (var == 0 || quest_w.x74[var] != 0); var++)       /* wave variants: program op 32 (0x20) sets quest_w.x3A, the list used from then on */
+        for (var = 0; var < 4 && (var == 0 || (quest_w.x74[var] > 0 && quest_w.x74[var] < 0x40000)); var++)       /* wave variants: program op 32 (0x20) sets quest_w.x3A, the list used from then on */
         for (st = 1; st < 0x58; st++) {
             QEM *l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, (s8)var);
             if (l == NULL || l == (QEM *)-1)
@@ -556,6 +556,8 @@ int rt_quest_load(int no)
     game_w.mode = 2;
     game_w.step = 0;
     Quest_timer_reset();
+    if (getenv("RT_QUEST_TIME"))    /* test aid: the quest's time left (ticks), for time-out tests (online: rt_np.c) */
+        quest_w.x10 = atoi(getenv("RT_QUEST_TIME"));
     return quest_w.no == no && quest_w.x94 ? 0 : -1;
 }
 
