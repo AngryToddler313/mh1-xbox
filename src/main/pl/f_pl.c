@@ -362,6 +362,7 @@ static void pl_horm_sub(PLW *pl);
 
 
 
+#if !defined(G_PART)
 static void Pl_item_charge(PLW *pl) {
     s16 i;
     s16 *p;
@@ -382,6 +383,7 @@ static void Pl_item_charge(PLW *pl) {
         n = *p;
     }
 }
+#endif
 
 /* plx09 - SLPM_654.95 0x00134A40-0x00134C1C: player_init0 (start of a hunter: resets the action state and, for a preset hunter look
  * (work616 != 0), fills the six equipment part ids from equip_set, a random part where the table says -1, and the hair colour; then
@@ -391,6 +393,7 @@ static void Pl_item_charge(PLW *pl) {
 
 
 
+#if !defined(G_PART)
 void player_init0(PLW *pl) {
     u32 i;
     s8 *eq;
@@ -424,12 +427,14 @@ void player_init0(PLW *pl) {
     armor_create_model(pl);
     yure_init(pl);
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00134C20-0x00134E68): clr_pl_work, player_mv, pl_init. */
 
 
 
 
+#if !defined(G_PART)
 void clr_pl_work(void) {
     int i;
     PLW *p = player_work;
@@ -439,7 +444,9 @@ void clr_pl_work(void) {
     }
     memset(pl_cnt_w, 0, 0x10);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 38
 void player_mv(void) {
     switch (pl_cnt_w[0]) {
     case 0:
@@ -451,7 +458,9 @@ void player_mv(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void pl_init(int mode) {
     int i;
     PLW *pl;
@@ -490,7 +499,9 @@ clr:
     }
     hit_chk_init();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 39
 static void pl_work_clr(pl, no, prog)
 PLW *pl;
 int no;
@@ -508,12 +519,14 @@ PLPROG *prog;
     pl->prog->init(pl);
     pl->prog->init2(pl);
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00134F30-0x00135078): Pl_ofs_set, skill_hp_calc_00134FF0. */
 
 
 
 
+#if !defined(G_PART) || G_PART == 39
 void Pl_ofs_set(PLW *pl, f32 *pos, int ang) {
     s32 rot[3];
     f32 ofs[4];
@@ -530,19 +543,23 @@ void Pl_ofs_set(PLW *pl, f32 *pos, int ang) {
     pos[0] += out[0];
     pos[2] += out[2];
 }
+#endif
 
+#if !defined(G_PART)
 static int skill_hp_calc_00134FF0(PLW *pl) {
     if (Pl_Skill_ck(pl, 0x22) == 1) return 10;
     if (Pl_Skill_ck(pl, 0x23) == 1) return 20;
     if (Pl_Skill_ck(pl, 0x24) == 1) return 30;
     return 0;
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00135080-0x001359C0): pl_init_sub. */
 
 
 
 
+#if !defined(G_PART)
 void pl_init_sub(PLW *pl) {
     s32 temp_a2;
     u16 temp_a1;
@@ -845,12 +862,14 @@ void pl_init_sub(PLW *pl) {
     Pl_light_init(pl);
     World_calc(pl);
 }
+#endif
 
 /* Player code (SLPM_654.95 0x001359C0-0x00135B00): blend_set, blend_calc. */
 
 
 
 
+#if !defined(G_PART) || G_PART == 1
 static void blend_set(PLW *pl, u16 a, u16 b) {
     if (pl->work8C9 == 0) {
         pl->work720[0] = 0;
@@ -883,20 +902,25 @@ static void blend_set(PLW *pl, u16 a, u16 b) {
     if (pl->work72C[0] > 0x64) pl->work72C[0] = 0x64;
     if (pl->work72C[1] > 0x64) pl->work72C[1] = 0x64;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void blend_calc(PLW *pl, s8 d) {
     pl->work8C9 += d;
     if (pl->work8C9 >= 100) pl->work8C9 = 100;
     if (pl->work8C9 < -99) pl->work8C9 = -100;
 }
+#endif
 
 /* timer_calc_sub_pl: original bytes kept (near-match C in src/main/pl/pl_nm.c, linked weak by the PC build): build/raw/timer_calc_sub_pl.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void timer_calc_sub_pl(PLW *pl)
 {
 #include "timer_calc_sub_pl.inc"
 }
+#endif
 #endif
 
 /* Player code (SLPM_654.95 0x001361B0-0x00136378): timer_calc_sub_em, pl_timer_calc. */
@@ -904,6 +928,7 @@ asm void timer_calc_sub_pl(PLW *pl)
 
 
 
+#if !defined(G_PART) || G_PART == 40
 static void timer_calc_sub_em(PLW *pl) {
     s16 temp_v1;
     u8 temp_a1;
@@ -917,7 +942,9 @@ static void timer_calc_sub_em(PLW *pl) {
         pl->work56A = 0U;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 40
 void pl_timer_calc(PLW *pl) {
     s16 temp_v0_3;
     s16 temp_v0_5;
@@ -973,6 +1000,7 @@ void pl_timer_calc(PLW *pl) {
     }
     pl_flag_clr(pl, 0x2000);
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00136380-0x001365F0): pl_dm_value_sub, per-frame damage-over-time of a player: poison
    counter (x7BA / work7BE), the near-monster flash effect and the stage environment damage (stage env 1 = hot/cold). */
@@ -981,6 +1009,7 @@ void pl_timer_calc(PLW *pl) {
 
 
 
+#if !defined(G_PART)
 static void pl_dm_value_sub(PLW *pl) {
     f32 pos[3];
     s16 e, t;
@@ -1040,12 +1069,14 @@ static void pl_dm_value_sub(PLW *pl) {
         }
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x001365F0-0x00136D38): item_sel_sub, item_blank_ck, pl_item_sel, shell_chg_ck, pl_shell_sel, pl_status_ck, hit_stop_calc, stick_dir_set. */
 
 
 
 
+#if !defined(G_PART) || G_PART == 41
 u16 item_sel_sub(PLW *pl, u16 sel, int dir) {
     s16 n;
     s16 i;
@@ -1083,7 +1114,9 @@ u16 item_sel_sub(PLW *pl, u16 sel, int dir) {
     if (found == 0) sel = 0;
     return sel;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static int item_blank_ck(PLW *pl) {
     s16 i;
     for (i = 0; i < 20; i++) {
@@ -1091,7 +1124,9 @@ static int item_blank_ck(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void pl_item_sel(PLW *pl) {
     u16 t;
     if (Pl_master_ck(pl) == 0) return;
@@ -1119,7 +1154,9 @@ static void pl_item_sel(PLW *pl) {
     }
     pl->work88C = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static int shell_chg_ck(PLW *pl) {
     u8 k = pl->kind;
     if (k != 1 && k != 5 && pl->work88E == 0xFF) return 0;
@@ -1127,7 +1164,9 @@ static int shell_chg_ck(PLW *pl) {
     if (pl->x56E == 0 && pl->work56D != pl->ammo_type && pl->flag12 != 0) return 1;
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static int pl_shell_sel(PLW *pl) {
     u16 t;
     u8 k;
@@ -1181,13 +1220,17 @@ static int pl_shell_sel(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static int pl_status_ck(PLW *pl) {
     if (pl->x7B2 > 0) return 1;
     if (pl->x7C4 > 0) return 2;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 40
 void hit_stop_calc(PLW *pl) {
     u8 a = pl->work409;
     if (a != 0) {
@@ -1197,10 +1240,13 @@ void hit_stop_calc(PLW *pl) {
     }
     if (pl->x40A != 0) pl->x40A--;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static int stick_dir_set(PLW *pl, int no) {
     return (pl->sw.ang[no] + (Get_view_dir() & 0xFFFF)) & 0xFFFF;
 }
+#endif
 
 /* plx04 - stick_pow_get (SLPM_654.95 0x00136D40-0x00136E6C): strength class of the stick (0 none, 1 half, 3 full, 5 = pressed with a
    button; guess from use) for a player. Returns u8 with a masked test `(r & 0xFF)` (the original masks only the test). plf.h declares it
@@ -1211,6 +1257,7 @@ static int stick_dir_set(PLW *pl, int no) {
 
 
 
+#if !defined(G_PART)
 static u8 stick_pow_get(PLW *pl, int arg1) { /* arg1 unused, callers pass 0 */
     u8 r = 0;
     u16 p;
@@ -1236,8 +1283,10 @@ static u8 stick_pow_get(PLW *pl, int arg1) { /* arg1 unused, callers pass 0 */
         return r;
     }
 }
+#endif
 
 /* em_ninshiki_ck: written from the asm (agent B): marks the monsters on the hunter's stage that noticed him (x88F has his bit) as seen (x7EE), aims at the last one. */
+#if !defined(G_PART) || G_PART == 4
 static void em_ninshiki_ck(PLW *pl) {
     s16 i;
     u8 bit;
@@ -1260,12 +1309,14 @@ static void em_ninshiki_ck(PLW *pl) {
         }
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00136FB0-0x001371B0): em_ninshiki_ck2, pl_ride_ck, ex_kabe_ck. */
 
 
 
 
+#if !defined(G_PART) || G_PART == 4
 static int em_ninshiki_ck2(PLW *pl) {
     u8 a = pl->work81E;
     if (a != 0) {
@@ -1277,7 +1328,9 @@ static int em_ninshiki_ck2(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static int pl_ride_ck(PLW *pl) {
     f32 d, lim;
     u8 k;
@@ -1293,7 +1346,9 @@ static int pl_ride_ck(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static int ex_kabe_ck(PLW *pl) {
     u16 a = pl->sw.an_now;
     if (a & 0x2000) {
@@ -1310,7 +1365,9 @@ static int ex_kabe_ck(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void unique_act_set(PLW *pl) {
     f32 sp90[3];
     u16 sp9C;
@@ -1371,7 +1428,9 @@ static void unique_act_set(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void job_special_com_ck(PLW *pl, u8 mode) {
     u8 t;
 
@@ -1424,7 +1483,9 @@ static void job_special_com_ck(PLW *pl, u8 mode) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void search_act_set(PLW *pl, u8 mode) {
     u16 sp3E;
     f32 sp30[3];
@@ -1512,7 +1573,9 @@ block_24:
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static s32 sit_com_ck(PLW *pl) {
     u8 temp_v1;
 
@@ -1600,7 +1663,9 @@ block_31:
         return 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void ex_atk_ck(PLW *pl, s32 arg1) {
     s32 temp_a0;
     s32 temp_v0;
@@ -1735,7 +1800,9 @@ static void ex_atk_ck(PLW *pl, s32 arg1) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void basic_atack_ck(PLW *pl) {
     s32 temp_v0;
     s32 temp_v0_2;
@@ -1863,7 +1930,9 @@ block_57:
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void guard_atk_ck(PLW *pl) {
     u8 temp_a0;
 
@@ -1899,8 +1968,10 @@ static void guard_atk_ck(PLW *pl) {
         }
     }
 }
+#endif
 
 /* near-match: one commutated addu (original: (base+id*252)+off, ours off+(base+id*252)) */
+#if !defined(G_PART) || G_PART == 5
 static s32 wall_act_ck(PLW *pl, s16 mode) {
     s16 i;
     int off;
@@ -1940,7 +2011,9 @@ static s32 wall_act_ck(PLW *pl, s16 mode) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static s32 wall_vec_set(PLW *pl, s16 mode) {
     s16 i;
     int off;
@@ -1974,7 +2047,9 @@ static s32 wall_vec_set(PLW *pl, s16 mode) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static u8 basic_kabe_ck(PLW *pl) {
     int sp3C;
     u8 r;
@@ -2003,7 +2078,9 @@ static u8 basic_kabe_ck(PLW *pl) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 static void item_action_set(PLW *pl, u8 mode) {
     u8 sp3F;
     u16 sp3C;
@@ -2229,7 +2306,9 @@ static void item_action_set(PLW *pl, u8 mode) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static s32 trade_get_ck_00139680(PLW *pl) {
     s16 i;
     PLW *p;
@@ -2281,8 +2360,10 @@ ret0:
     }
     return 0;
 }
+#endif
 
 /* basic_com_ck: `case 0: default:` on the kind switch, the game-mode 5/6 and 7/8 tests are ifs (`== 6 || == 5`), the stick switch lists case 0 .. 4 in order, `> 0x4000` gives slti at, and the flag is a u8. */
+#if !defined(G_PART)
 static void basic_com_ck(PLW *pl) {
     EMW *var_s0;
     s32 temp_s0;
@@ -2514,10 +2595,12 @@ static void basic_com_ck(PLW *pl) {
         }
     }
 }
+#endif
 
 /* gun_adj_sub matches with `#pragma opt_propagation off` (the original negates the constant v at run time instead of
    folding it), blend_calc's s8 parameter, the angle read as u16 (lhu), `v = (s8)v` after the second negation (the original sign-extends v again at the join), an int `pw`. */
 #pragma opt_propagation off
+#if !defined(G_PART)
 static void gun_adj_sub(PLW *pl) {
     s8 v;
     u16 step;
@@ -2616,6 +2699,7 @@ static void gun_adj_sub(PLW *pl) {
         }
     }
 }
+#endif
 #pragma opt_propagation reset
 
 /* Player code (SLPM_654.95 0x0013A5D0-0x0013A620): scope_add, clamp the pachinger/scope yaw offset (x8EE) to +-0x2000. */
@@ -2623,6 +2707,7 @@ static void gun_adj_sub(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 6
 static void scope_add(PLW *pl, int arg1) {
     pl->x8EE = pl->x8EE + arg1;
     if ((s16)arg1 >= 0) {
@@ -2633,10 +2718,12 @@ static void scope_add(PLW *pl, int arg1) {
         pl->x8EE = -0x2000;
     }
 }
+#endif
 
 /* sougun_adj_sub matches with `#pragma opt_propagation off` (the original negates the constant v at run time instead of
    folding it), blend_calc's s8 parameter, the angle read as u16 (lhu), `v = (s8)v` after the second negation, an int `pw`, the angle difference d as u32 with unsigned compares. */
 #pragma opt_propagation off
+#if !defined(G_PART) || G_PART == 6
 static void sougun_adj_sub(PLW *pl, u16 id) {
     s8 v;
     u16 step;
@@ -2739,6 +2826,7 @@ static void sougun_adj_sub(PLW *pl, u16 id) {
         }
     }
 }
+#endif
 #pragma opt_propagation reset
 
 /* Player code (SLPM_654.95 0x0013A9F0-0x0013B8CC): player action handlers (pl_mv*), called through the PLPROG
@@ -2748,6 +2836,7 @@ static void sougun_adj_sub(PLW *pl, u16 id) {
 
 
 
+#if !defined(G_PART) || G_PART == 6
 static void pl_mv000(PLW *pl, s32 unused_arg) {
     u16 c;
 
@@ -2787,7 +2876,9 @@ static void pl_mv000(PLW *pl, s32 unused_arg) {
     gun_adj_sub(pl);
     basic_com_ck(pl);
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv001(PLW *pl, u32 arg1) {
     u8 p;
     u8 t;
@@ -2922,7 +3013,9 @@ go:
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void pl_mv004(PLW *pl, u32 arg1) {
     u8 s;
     u8 t;
@@ -2990,7 +3083,9 @@ static void pl_mv004(PLW *pl, u32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void pl_mv006(PLW *pl, s32 arg1) {
     int sp4C;
     f32 sp40[3];
@@ -3104,8 +3199,10 @@ static void pl_mv006(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
 /* pl_mv021: `case 0: default:` on the arg1 switch. */
+#if !defined(G_PART) || G_PART == 7
 static void pl_mv021(PLW *pl, s32 arg1) {
     int sp4C;
     f32 sp40[3];
@@ -3207,12 +3304,14 @@ static void pl_mv021(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013BCB0-0x0013BF20): pl_mv008 (sit down / stand up), pl_mv013. */
 
 
 
 
+#if !defined(G_PART) || G_PART == 7
 static void pl_mv008(PLW *pl, int arg1) {
     u8 s;
     u8 t;
@@ -3262,7 +3361,9 @@ static void pl_mv008(PLW *pl, int arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv013(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3293,12 +3394,14 @@ static void pl_mv013(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013BF20-0x0013C868): pl_mv014 (use an item: apply it, then stage start/return), pl_mv017, pl_mv022, pl_mv024, pl_mv025 (action handlers) */
 
 
 
 
+#if !defined(G_PART)
 static void pl_mv014(PLW *pl, s32 arg1) {
     int a2;
     f32 f;
@@ -3396,7 +3499,9 @@ static void pl_mv014(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv017(PLW *pl, s32 arg1) {
     f32 spCC;
     s32 spC0[3];
@@ -3458,7 +3563,9 @@ static void pl_mv017(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv022(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3481,7 +3588,9 @@ static void pl_mv022(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv024(PLW *pl, s32 arg1) {
     u8 s;
     s32 w;
@@ -3529,7 +3638,9 @@ static void pl_mv024(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv025(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3556,12 +3667,14 @@ static void pl_mv025(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013C870-0x0013D5E4): pl_mv028 (kick/dodge), pl_mv030, pl_mv031/032 (run and dash with stamina drain), pl_mv033 (action handlers) */
 
 
 
 
+#if !defined(G_PART)
 static void pl_mv028(PLW *pl, s32 arg1) {
     u8 s;
     u8 t;
@@ -3642,7 +3755,9 @@ static void pl_mv028(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 9
 static void pl_mv030(PLW *pl, s32 unused_arg) {
     f32 sp7C;
     s32 sp70[3];
@@ -3682,7 +3797,9 @@ static void pl_mv030(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv031(PLW *pl, s32 arg1) {
     f32 sp40[3];
     f32 sp30[3];
@@ -3770,7 +3887,9 @@ static void pl_mv031(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv032(PLW *pl, s32 arg1) {
     f32 sp50[3];
     f32 sp40[3];
@@ -3857,7 +3976,9 @@ b25:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv033(PLW *pl, s32 arg1) {
     u8 s;
     s32 w;
@@ -3901,12 +4022,14 @@ static void pl_mv033(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013D5F0-0x0013DB40): pl_mv037, 038, 039, 040, 041, 042 (wall/ladder-type action handlers) */
 
 
 
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv037(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3924,7 +4047,9 @@ static void pl_mv037(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv038(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3945,14 +4070,18 @@ static void pl_mv038(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv039(PLW *pl, s32 unused_arg) {
     pl->work40E = 2;
     Pl_basic_flagset(pl, 0x8002, 0, 0);
     kabe_hosei(pl, 1);
     ex_kabe_ck(pl);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv040(PLW *pl, s32 unused_arg) {
     int sp2C;
     u16 c;
@@ -3985,7 +4114,9 @@ static void pl_mv040(PLW *pl, s32 unused_arg) {
     }
     kabe_hosei(pl, 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv041(PLW *pl, s32 unused_arg) {
     u16 c;
 
@@ -4016,7 +4147,9 @@ static void pl_mv041(PLW *pl, s32 unused_arg) {
     }
     kabe_hosei(pl, 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv042(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4037,12 +4170,14 @@ static void pl_mv042(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013DB40-0x0013E408): pl_mv043, 044, 046, 047, 049, 051, 052, 053 (action handlers: ladder/hole/gather states) */
 
 
 
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv043(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4064,7 +4199,9 @@ static void pl_mv043(PLW *pl, s32 unused_arg) {
     }
     kabe_hosei(pl, 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv044(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4083,7 +4220,9 @@ static void pl_mv044(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv046(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4116,7 +4255,9 @@ static void pl_mv046(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv047(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4143,7 +4284,9 @@ static void pl_mv047(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv049(PLW *pl, s32 arg1) {
     u8 s;
     u8 t;
@@ -4201,7 +4344,9 @@ static void pl_mv049(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv051(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4222,7 +4367,9 @@ static void pl_mv051(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv052(PLW *pl, s32 unused_arg) {
     f32 sp20[3];
     u8 s;
@@ -4272,7 +4419,9 @@ static void pl_mv052(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv053(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4295,7 +4444,9 @@ static void pl_mv053(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv054(PLW *pl, s32 unused_arg) {
     f32 sp20[3];
     u16 sp2C;
@@ -4348,7 +4499,9 @@ static void pl_mv054(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv072(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4374,7 +4527,9 @@ static void pl_mv072(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv055(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4403,7 +4558,9 @@ static void pl_mv055(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv057(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4423,7 +4580,9 @@ static void pl_mv057(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv058(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4444,7 +4603,9 @@ static void pl_mv058(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv059(PLW *pl, s32 unused_arg) {
     u8 s;
     s32 w;
@@ -4476,6 +4637,7 @@ static void pl_mv059(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* plx12 - SLPM_654.95 0x0013EA40-0x0013EB0C: pl_mv060 (a short held pose of the hunter: sets the action flags and the motion 8 (12 for the
  * character 0x25), waits 12 frames, then returns to the normal action 0x1D). Field names are guesses. */
@@ -4484,6 +4646,7 @@ static void pl_mv059(PLW *pl, s32 unused_arg) {
 
 
 
+#if !defined(G_PART)
 static void pl_mv060(PLW *pl, s32 unused_arg) {
     s16 v;
     u8 s;
@@ -4510,12 +4673,14 @@ static void pl_mv060(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013EB10-0x0013ED48): pl_mv061, 062, 063 (action handlers) */
 
 
 
 
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv061(PLW *pl, s32 unused_arg) {
     u8 s;
     s32 w;
@@ -4546,7 +4711,9 @@ static void pl_mv061(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv062(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4565,7 +4732,9 @@ static void pl_mv062(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv063(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4587,12 +4756,14 @@ static void pl_mv063(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013ED50-0x0013F1B0): kabe_hosei (push along the wall), kabe_com_ck (wall-hug command), pl_mv064, pl_mv065 */
 
 
 
 
+#if !defined(G_PART) || G_PART == 13
 static void kabe_hosei(PLW *pl, int arg1) {
     f32 sp90[3];
     f32 sp80[3];
@@ -4613,7 +4784,9 @@ static void kabe_hosei(PLW *pl, int arg1) {
     pl->pos[0] = pl->pos[0] + sp80[0];
     pl->pos[2] = pl->pos[2] + sp80[2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 static void kabe_com_ck(PLW *pl) {
     s32 p;
     s32 d;
@@ -4654,7 +4827,9 @@ go:
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv064(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -4679,7 +4854,9 @@ static void pl_mv064(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv065(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -4703,12 +4880,14 @@ static void pl_mv065(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013F1B0-0x0013F568): pl_mv068 (jump over an obstacle), pick_set_sub (pick up an item/point: stock request and pouch selection) */
 
 
 
 
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv068(PLW *pl, s32 unused_arg) {
     f32 sp30[3];
     f32 sp20[3];
@@ -4770,7 +4949,9 @@ static void pl_mv068(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pick_set_sub(PLW *pl, u16 arg1) {
     s32 r;
     s16 q;
@@ -4810,12 +4991,14 @@ static void pick_set_sub(PLW *pl, u16 arg1) {
         }
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013F570-0x0013F968): pl_mv071 (pick up / pull out an item or egg) */
 
 
 
 
+#if !defined(G_PART)
 static void pl_mv071(PLW *pl, u32 arg1) {
     u16 n;
     u16 r;
@@ -4920,12 +5103,14 @@ static void pl_mv071(PLW *pl, u32 arg1) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0013F970-0x00140100): pl_mv093 (pick up/gather), pl_mv076, pl_mv077, fish_com_ck (fishing commands), pl_mv078, pl_mv079 (fishing handlers) */
 
 
 
 
+#if !defined(G_PART)
 static void pl_mv093(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -4982,7 +5167,9 @@ static void pl_mv093(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv076(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5007,7 +5194,9 @@ static void pl_mv076(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv077(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5030,7 +5219,9 @@ static void pl_mv077(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void fish_com_ck(PLW *pl) {
     if (Pl_master_ck(pl) != 0) {
         if (pl->flag14 != 0) {
@@ -5075,7 +5266,9 @@ static void fish_com_ck(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 15
 static void pl_mv078(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5105,7 +5298,9 @@ static void pl_mv078(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv079(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5138,6 +5333,7 @@ static void pl_mv079(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00140100-0x001414B4): pl_mv083..pl_mv101: fishing/BBQ/flute/pitfall and other item-use action handlers */
 
@@ -5145,6 +5341,7 @@ static void pl_mv079(PLW *pl, s32 unused_arg) {
 
 
 
+#if !defined(G_PART)
 static void pl_mv083(PLW *pl, s32 unused_arg) {
     EMW *e;
     s16 i;
@@ -5229,7 +5426,9 @@ static void pl_mv083(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 static void pl_mv084(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5260,7 +5459,9 @@ static void pl_mv084(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv085(PLW *pl, s32 unused_arg) {
     u8 s;
     u16 r;
@@ -5350,7 +5551,9 @@ go:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void pl_mv086(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5368,7 +5571,9 @@ static void pl_mv086(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void pl_mv087(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5395,7 +5600,9 @@ static void pl_mv087(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void pl_mv088(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5426,7 +5633,9 @@ static void pl_mv088(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void pl_mv113(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5448,7 +5657,9 @@ static void pl_mv113(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void pl_mv089(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5475,7 +5686,9 @@ static void pl_mv089(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void pl_mv091(PLW *pl, s32 unused_arg) {
     u8 s;
     u8 v;
@@ -5508,7 +5721,9 @@ static void pl_mv091(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv094(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5548,7 +5763,9 @@ static void pl_mv094(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv095(PLW *pl, s32 arg1) {
     u16 n;
     s32 h;
@@ -5599,7 +5816,9 @@ static void pl_mv095(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv097(PLW *pl, s32 unused_arg) {
     s32 n;
     s32 t;
@@ -5645,7 +5864,9 @@ static void pl_mv097(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void pl_mv101(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5687,6 +5908,7 @@ go:
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x001414C0-0x00141BA0): pl_mv103..pl_mv112 (kneel/pitfall/barrel/misc action handlers) */
 
@@ -5694,6 +5916,7 @@ go:
 
 
 
+#if !defined(G_PART) || G_PART == 18
 static void pl_mv103(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5715,7 +5938,9 @@ static void pl_mv103(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void pl_mv104(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -5748,7 +5973,9 @@ static void pl_mv104(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void pl_mv105(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5770,7 +5997,9 @@ static void pl_mv105(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void pl_mv106(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5792,7 +6021,9 @@ static void pl_mv106(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_mv107(PLW *pl, s32 arg1) {
     f32 sp40[3];
     f32 sp30[3];
@@ -5838,7 +6069,9 @@ static void pl_mv107(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_mv111(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5865,7 +6098,9 @@ static void pl_mv111(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_mv112(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5890,7 +6125,9 @@ static void pl_mv112(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_normal(PLW *pl) {
     switch (pl->flag15) {
     case 0x0:
@@ -6237,6 +6474,7 @@ static void pl_normal(PLW *pl) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00142300-0x00143420): pl_at000, pl_at001, pl_at004, pl_at006: weapon attack handlers (sword-type chains: arg1 selects the swing, x05/x06/x07 are step/sub-step/hit flag) */
 
@@ -6244,6 +6482,7 @@ static void pl_normal(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_at000(PLW *pl, s32 arg1) {
     u8 s;
     u8 t;
@@ -6359,7 +6598,9 @@ static void pl_at000(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_at001(PLW *pl, s32 arg1) {
     f32 sp50[3];
     f32 sp40[3];
@@ -6485,7 +6726,9 @@ static void pl_at001(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_at004(PLW *pl, u32 arg1) {
     f32 sp50[3];
     f32 sp40[3];
@@ -6640,7 +6883,9 @@ static void pl_at004(PLW *pl, u32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 19
 static void pl_at006(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6683,8 +6928,10 @@ static void pl_at006(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* pl_at008: matches with blend_set taking u16 (agent B); the table reads are at008_tbl[arg1].field. */
+#if !defined(G_PART)
 static void pl_at008(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -6722,7 +6969,9 @@ static void pl_at008(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_at009(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6763,9 +7012,11 @@ static void pl_at009(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* near-match (not built): pl_at012 - calls blend_set (same IPA effect as gun_adj_sub: the original keeps a0 live across blend_set, which
    MWCC only does for a static callee defined earlier in the same TU). Same cause for pl_at008/pl_at009's delay-slot differences. */
+#if !defined(G_PART)
 static void pl_at012(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6784,6 +7035,7 @@ static void pl_at012(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00143790-0x00144538): pl_at014..pl_at026: weapon attack handlers (bow, lance, hammer, hunting horn?: charge/release: tame_pow_ck, tame_release, tame_com_ck) */
 
@@ -6791,6 +7043,7 @@ static void pl_at012(PLW *pl, s32 unused_arg) {
 
 
 
+#if !defined(G_PART) || G_PART == 20
 static void pl_at014(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6809,7 +7062,9 @@ static void pl_at014(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static void pl_at020(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6828,7 +7083,9 @@ static void pl_at020(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static void pl_at021(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6848,7 +7105,9 @@ static void pl_at021(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static s32 we02_hit_sub(PLW *pl) {
     u8 s;
     u8 t;
@@ -6887,7 +7146,9 @@ static s32 we02_hit_sub(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static void pl_at022(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -6918,7 +7179,9 @@ static void pl_at022(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static void pl_at023(PLW *pl, s32 arg1) {
     u8 s;
     u8 t;
@@ -6986,11 +7249,15 @@ static void pl_at023(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static s32 tame_pow_ck(PLW *pl) {
     return (pl->work87C / 30) & 0xFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 20
 static void tame_release(PLW *pl) {
     s32 p;
 
@@ -7021,7 +7288,9 @@ static void tame_release(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void tame_com_ck(PLW *pl) {
     if (Pl_master_ck(pl) != 0) {
         if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
@@ -7047,7 +7316,9 @@ static void tame_com_ck(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_at024(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7106,7 +7377,9 @@ c3:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 21
 static void pl_at025(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7124,7 +7397,9 @@ static void pl_at025(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 21
 static void pl_at026(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7148,6 +7423,7 @@ static void pl_at026(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00144540-0x00145330): pl_at028..pl_at035, lance_kan_ck: weapon attack handlers (long sword/lance/gun-lance family) */
 
@@ -7155,6 +7431,7 @@ static void pl_at026(PLW *pl, s32 unused_arg) {
 
 
 
+#if !defined(G_PART) || G_PART == 21
 static void pl_at028(PLW *pl, s32 unused_arg) {
     u16 v;
     u32 c;
@@ -7257,7 +7534,9 @@ static void pl_at028(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_at029(PLW *pl, s32 arg1) {
     f32 sp40[3];
     f32 sp30[3];
@@ -7323,7 +7602,9 @@ go:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at030(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7354,7 +7635,9 @@ static void pl_at030(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at031(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7380,7 +7663,9 @@ static void pl_at031(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at032(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7420,7 +7705,9 @@ static void pl_at032(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at034(PLW *pl, s32 arg1) {
     u16 v;
     u8 s;
@@ -7495,7 +7782,9 @@ static void pl_at034(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at035(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7520,7 +7809,9 @@ static void pl_at035(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static s32 lance_kan_ck(PLW *pl) {
     if ((pl->work019 != 0) && (pl->work018 == 1)) {
         Pl_set_quake_sub(pl, 0);
@@ -7531,6 +7822,7 @@ static s32 lance_kan_ck(PLW *pl) {
     }
     return 0;
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00145330-0x00145DD0): pl_at036..pl_at045, we04_hit_sub: weapon attack handlers */
 
@@ -7538,6 +7830,7 @@ static s32 lance_kan_ck(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at036(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7608,7 +7901,9 @@ static void pl_at036(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at037(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7639,7 +7934,9 @@ static void pl_at037(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at040(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7662,7 +7959,9 @@ static void pl_at040(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at041(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7701,7 +8000,9 @@ static void pl_at041(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at042(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7720,7 +8021,9 @@ static void pl_at042(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at043(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -7738,7 +8041,9 @@ static void pl_at043(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at045(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7791,7 +8096,9 @@ static void pl_at045(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static s32 we04_hit_sub(PLW *pl) {
     if ((pl->work019 != 0) && (pl->x07 == 0)) {
         pl->x07 = 1;
@@ -7812,6 +8119,7 @@ static s32 we04_hit_sub(PLW *pl) {
     }
     return 0;
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00145DD0-0x00146F9C): pl_at048..pl_at078: weapon attack handlers */
 
@@ -7819,6 +8127,7 @@ static s32 we04_hit_sub(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at048(PLW *pl, s32 arg1) {
     f32 a;
     f32 b;
@@ -7925,7 +8234,9 @@ static void pl_at048(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 22
 static void pl_at049(PLW *pl, s32 arg1) {
     s32 t;
     u8 s;
@@ -7984,7 +8295,9 @@ static void pl_at049(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_at050(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8010,7 +8323,9 @@ static void pl_at050(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at051(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8034,7 +8349,9 @@ static void pl_at051(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at052(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8056,7 +8373,9 @@ static void pl_at052(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at061(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8075,7 +8394,9 @@ static void pl_at061(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at065(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8101,7 +8422,9 @@ static void pl_at065(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at070(PLW *pl, s32 arg1) {
     s32 t;
     u8 s;
@@ -8152,7 +8475,9 @@ static void pl_at070(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at074(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8177,7 +8502,9 @@ static void pl_at074(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at077(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -8205,7 +8532,9 @@ static void pl_at077(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 23
 static void pl_at078(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -8251,7 +8580,9 @@ static void pl_at078(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_attack(PLW *pl) {
     pl->work350 = 0;
     switch (pl->flag15) {
@@ -8506,6 +8837,7 @@ static void pl_attack(PLW *pl) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00147520-0x00147E0C): pl_dm000..pl_dm002: damage reaction handlers (flinch, blow-back with joint position) */
 
@@ -8513,6 +8845,7 @@ static void pl_attack(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 24
 static void pl_dm000(PLW *pl) {
     u8 s;
     u16 r;
@@ -8543,7 +8876,9 @@ static void pl_dm000(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_dm001(PLW *pl, s32 arg1) {
     f32 sp30[3];
     f32 sp20[3];
@@ -8624,7 +8959,9 @@ static void pl_dm001(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_dm002(PLW *pl) {
     f32 sp90[3];
     f32 sp80[3];
@@ -8708,8 +9045,10 @@ static void pl_dm002(PLW *pl) {
         break;
     }
 }
+#endif
 
 /* pl_dm003: `case 0: default:` on both kind switches; `work39C > 0x12` gives the original slti at. */
+#if !defined(G_PART) || G_PART == 25
 static void pl_dm003(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -8778,6 +9117,7 @@ b:
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00148050-0x00148488): pl_dm005, pl_dm006: damage reaction handlers */
 
@@ -8785,6 +9125,7 @@ b:
 
 
 
+#if !defined(G_PART)
 static void pl_dm005(PLW *pl) {
     f32 sp90[3];
     f32 sp80[3];
@@ -8867,7 +9208,9 @@ static void pl_dm005(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 26
 static void pl_dm006(PLW *pl) {
     u8 s;
     u16 r;
@@ -8898,6 +9241,7 @@ static void pl_dm006(PLW *pl) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00148490-0x00148780): pl_dm007: damage reaction handler (knock-back jump) */
 
@@ -8905,6 +9249,7 @@ static void pl_dm006(PLW *pl) {
 
 
 
+#if !defined(G_PART)
 static void pl_dm007(PLW *pl, s32 arg1) {
     f32 spA0[3];
     f32 sp90[3];
@@ -8992,8 +9337,10 @@ go:
         break;
     }
 }
+#endif
 
 /* pl_dm008: the kind switch's default needs `case 0: default:` (a lone default reuses a0). */
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm008(PLW *pl) {
     u8 s;
 
@@ -9021,6 +9368,7 @@ static void pl_dm008(PLW *pl) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00148870-0x00148AE0): pl_dm009, pl_dm011: damage reaction handlers */
 
@@ -9028,6 +9376,7 @@ static void pl_dm008(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm009(PLW *pl, s32 arg1) {
     f32 sp80[3];
     s32 sp70[3];
@@ -9074,7 +9423,9 @@ static void pl_dm009(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm011(PLW *pl) {
     u8 s;
 
@@ -9096,6 +9447,7 @@ static void pl_dm011(PLW *pl) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x00148AE0-0x00149698): pl_dm015..pl_dm021, piyo_reset (static: MWCC then knows it leaves a0 alone, which pl_dm019/021 rely on) */
 
@@ -9103,6 +9455,7 @@ static void pl_dm011(PLW *pl) {
 
 
 
+#if !defined(G_PART)
 static void pl_dm015(PLW *pl, s32 unused_arg) {
     f32 sp30[3];
     f32 sp20[3];
@@ -9135,7 +9488,9 @@ static void pl_dm015(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm016(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -9170,7 +9525,9 @@ static void pl_dm016(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm017(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9193,13 +9550,17 @@ static void pl_dm017(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void piyo_reset(PLW *pl) {
     pl->x7AC = 0;
     pl->x7AA = 0;
     pl->work886 = 0x1E;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm019(PLW *pl, s32 unused_arg) {
     s8 n;
     u8 s;
@@ -9248,7 +9609,9 @@ static void pl_dm019(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm020(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9268,7 +9631,9 @@ static void pl_dm020(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm021(PLW *pl, s32 unused_arg) {
     f32 sp20[3];
     s32 w;
@@ -9327,7 +9692,9 @@ static void pl_dm021(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm022(PLW *pl, s32 arg1) {
     s16 v;
     u16 r;
@@ -9402,7 +9769,9 @@ static void pl_dm022(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 28
 static void pl_dm023(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9422,7 +9791,9 @@ static void pl_dm023(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_damage(PLW *pl) {
     u8 a;
     u8 b;
@@ -9520,7 +9891,9 @@ static void pl_damage(PLW *pl) {
         pl_to_normal(pl, 0, 4, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_die000(PLW *pl, s32 arg1) {
     int c;
     u8 v;
@@ -9623,7 +9996,9 @@ static void pl_die000(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 29
 static void pl_die(PLW *pl) {
     pl->work8C2 = 0;
     pl->x8C6 = 0;
@@ -9641,7 +10016,9 @@ static void pl_die(PLW *pl) {
         pl_to_normal(pl, 0, 4, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 29
 static void pl_demo000(PLW *pl, s32 unused_arg) {
     EMW *e;
     u8 *q;
@@ -9707,6 +10084,7 @@ static void pl_demo000(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0014A050-0x0014A548): pl_demo001..005: demo (cutscene) player states */
 
@@ -9714,6 +10092,7 @@ static void pl_demo000(PLW *pl, s32 unused_arg) {
 
 
 
+#if !defined(G_PART) || G_PART == 29
 static void pl_demo001(PLW *pl, s32 unused_arg) {
     f32 f;
     u8 s;
@@ -9754,7 +10133,9 @@ static void pl_demo001(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 29
 static void pl_demo002(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9775,7 +10156,9 @@ static void pl_demo002(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 29
 static void pl_demo003(PLW *pl, s32 unused_arg) {
     u8 s;
     u8 v;
@@ -9801,7 +10184,9 @@ static void pl_demo003(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 29
 static void pl_demo004(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9837,7 +10222,9 @@ static void pl_demo004(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_demo005(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 v;
@@ -9884,7 +10271,9 @@ static void pl_demo005(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 30
 static void pl_demo(PLW *pl) {
     pl->work8C2 = 0;
     pl->x8C6 = 0;
@@ -9911,6 +10300,7 @@ static void pl_demo(PLW *pl) {
         pl_to_normal(pl, 0, 4, 0);
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0014A610-0x0014A6A8): egg_set (egg carrying: item bits in work56B) */
 
@@ -9918,6 +10308,7 @@ static void pl_demo(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 30
 static void egg_set(PLW *pl) {
     s32 id;
 
@@ -9931,7 +10322,9 @@ static void egg_set(PLW *pl) {
     }
     pl->work56B = (pl->work56B & 0xF0) | 4;
 }
+#endif
 
+#if !defined(G_PART)
 static void egg_com_ck(PLW *pl, int arg1) {
     u8 sp3F;
     u16 sp3C;
@@ -10019,6 +10412,7 @@ go:
         }
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0014AA50-0x0014AD78): pl_egg00, pl_egg01, pl_egg02: egg-carrying action states */
 
@@ -10026,6 +10420,7 @@ go:
 
 
 
+#if !defined(G_PART) || G_PART == 31
 static void pl_egg00(PLW *pl, s32 arg1) {
     s32 w;
     u8 s;
@@ -10054,7 +10449,9 @@ static void pl_egg00(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_egg01(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10080,7 +10477,9 @@ static void pl_egg01(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_egg02(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10120,7 +10519,9 @@ static void pl_egg02(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 32
 static void pl_egg03(PLW *pl, s32 arg1) {
     s32 v;
     s32 id;
@@ -10164,8 +10565,10 @@ static void pl_egg03(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
 /* pl_egg05: the arg1 test is a switch with default first (agent B; an if/else gives the same code minus the original's nop after the compare's delay slot). */
+#if !defined(G_PART)
 static void pl_egg05(PLW *pl, s32 arg1) {
     f32 sp40[3];
     f32 sp30[3];
@@ -10247,6 +10650,7 @@ static void pl_egg05(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0014B200-0x0014B2DC): pl_egg07: egg-carrying action state */
 
@@ -10254,6 +10658,7 @@ static void pl_egg05(PLW *pl, s32 arg1) {
 
 
 
+#if !defined(G_PART) || G_PART == 33
 static void pl_egg07(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -10277,7 +10682,9 @@ static void pl_egg07(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 33
 static void pl_egg(PLW *pl) {
     pl->flag12 = 0;
     switch (pl->flag15) {
@@ -10318,6 +10725,7 @@ static void pl_egg(PLW *pl) {
         pl_to_normal(pl, 0, 4, 0);
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0014B3F0-0x0014C1E0): pl_chat00..pl_chat16 (except dispatcher): chat/emote action states */
 
@@ -10325,6 +10733,7 @@ static void pl_egg(PLW *pl) {
 
 
 
+#if !defined(G_PART) || G_PART == 33
 static void pl_chat00(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10349,7 +10758,9 @@ static void pl_chat00(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 33
 static void pl_chat01(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10369,7 +10780,9 @@ static void pl_chat01(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 33
 static void pl_chat02(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10400,7 +10813,9 @@ static void pl_chat02(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 33
 static void pl_chat03(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10425,7 +10840,9 @@ static void pl_chat03(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_chat04(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10450,7 +10867,9 @@ static void pl_chat04(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat05(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10475,7 +10894,9 @@ static void pl_chat05(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void pl_chat06(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10500,7 +10921,9 @@ static void pl_chat06(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat07(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10531,7 +10954,9 @@ static void pl_chat07(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat08(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10562,7 +10987,9 @@ static void pl_chat08(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat09(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -10581,7 +11008,9 @@ static void pl_chat09(PLW *pl, s32 arg1) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat10(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10612,7 +11041,9 @@ static void pl_chat10(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat11(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10643,7 +11074,9 @@ static void pl_chat11(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat12(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10674,7 +11107,9 @@ static void pl_chat12(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat16(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10705,7 +11140,9 @@ static void pl_chat16(PLW *pl, s32 unused_arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 35
 static void pl_chat(PLW *pl) {
     Pl_view_reset(pl);
     switch (pl->flag15) {
@@ -10764,6 +11201,7 @@ static void pl_chat(PLW *pl) {
         pl_to_normal(pl, 0, 4, 0);
     }
 }
+#endif
 
 /* Player code (SLPM_654.95 0x0014C3E0-0x0014C4F4): pl_move (loop over the 8 players), pl_move_sub_sub (state group dispatcher: flag14 selects normal/attack/damage/die/demo/egg/chat) */
 
@@ -10771,6 +11209,7 @@ static void pl_chat(PLW *pl) {
 
 
 
+#if !defined(G_PART)
 void pl_move(void) {
     s32 i;
     PLW *p;
@@ -10785,7 +11224,9 @@ void pl_move(void) {
     } while (i < 8);
     hit_timer_calc_shl();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 36
 static void pl_move_sub_sub(PLW *pl) {
     pl->work8F0 = 0;
     pl->work4D4 = 1;
@@ -10812,17 +11253,21 @@ static void pl_move_sub_sub(PLW *pl) {
         pl_chat(pl);
     }
 }
+#endif
 
 /* pl_move_sub: original bytes kept (near-match C in src/main/pl/pl_nm.c, linked weak by the PC build): build/raw/pl_move_sub.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void pl_move_sub(PLW *pl)
 {
 #include "pl_move_sub.inc"
 }
 #endif
+#endif
 
 /* pl_turn_sub: written from the asm (agent B). The rotation step r is a u16 used with -= / +=, the stick angle b is read as u16. */
+#if !defined(G_PART) || G_PART == 37
 static void pl_turn_sub(PLW *pl) {
     u8 k;
     int t;
@@ -10897,9 +11342,11 @@ other:
         }
     }
 }
+#endif
 
 /* pl_horm_sub: written from the asm (agent B). work81A is read and written as u16 (lhu), the -= / += forms reload it. */
 #define W81A (*(u16 *)&pl->work81A)
+#if !defined(G_PART) || G_PART == 37
 static void pl_horm_sub(PLW *pl) {
     f32 dmin;
     f32 d;
@@ -10976,4 +11423,5 @@ static void pl_horm_sub(PLW *pl) {
         }
     }
 }
+#endif
 #undef W81A

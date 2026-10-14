@@ -17,6 +17,12 @@ build/mhg/src/main/pl/plx06.c.o .rodata .data
 build/mhg/src/main/pl/pl72.c.o .rodata .data
 build/mhg/src/main/eft/eft13e.c.o .rodata .data
 build/mhg/src/main/net/netsyn01.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p19.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p21.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p30.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p33.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p35.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p36.c.o .rodata .data
 build/mhg/src/game/eft/eft08.c.o .rodata .data
 build/mhg/src/game/eft/eft18.c.o .rodata .data
 build/mhg/src/game/em/em_cmd_r21.c.o .rodata .data
