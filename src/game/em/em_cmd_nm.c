@@ -1619,15 +1619,14 @@ u8 *game_func_0058A020(EMW *em, u8 *p) {
     return p;
 }
 
-/* 0x71 (game 0x58DF20): condition: the operand is not above EMW byte G 0x9FC (a G field, MH1
- * layout 0xA04; nothing on the PC writes it yet) */
+/* 0x71 (game 0x58DF20): condition: the operand is not above the monster's level (EMW lv, G 0x9FC) */
 u8 *game_func_0058DF20(EMW *em, u8 *p) {
     u8 v;
 
     switch (*p++) {
     case 0:
         v = *p++;
-        if (EM_FIELD(em, s8 *, 0xA04) < v) {
+        if (em->lv < v) {
             CMD_SKIP(em, p, 0x71);
         }
         break;
