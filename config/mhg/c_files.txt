@@ -1307,3 +1307,6 @@ game:rodata 0x006D6AC0 0x006D6AF8 mhg/main/pl/f_pl_p7
 sub_main 0x004F0900 0x004F0940 mhg/main/pl/pl_guard_g
 sub_main:rodata 0x0052C320 0x0052C340 mhg/main/hit/hit_1
 sub_main 0x004E0A00 0x004E0F80 main/hit/hitd
+main 0x0022B0D0 0x0022B178 mhg/main/mc/mccomb_g_p1
+main 0x0022B8C0 0x0022B910 mhg/main/mc/mccomb_g_p2
+main 0x0022BA20 0x0022BB4C mhg/main/mc/mccomb_g_p3
