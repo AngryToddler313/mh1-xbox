@@ -17,8 +17,31 @@ Agents: when you trip over something curious, add a short entry here in the same
   heard one was). [checked: files and sizes in docs/survey/mh1_AFS_DATA.list.txt;
   the textures' content not looked at yet; the Xbox link is [guess]]
   Fun fact: our Xbox port could actually use them for an authentic Xbox HUD.
-- **cockpit2.apx** (24620 bytes; in MH1 JP and G AFS_DATA, several copies): the owner flags it
-  as unique. [owner; what makes it unique: to fill in after a look]
+- **cockpit2.apx: an early HUD mock-up that is listed but never loaded.** (AFS_DATA entry 10,
+  24620 bytes packed; in MH1 JP and in G.) Decoded, it is a 256x256 texture like the real HUD
+  atlases, but instead of a sheet of small icons it holds what look like **finished pieces of a
+  different, earlier HUD design**: [checked: decoded with tools/clay_dump.py; PNGs in
+  build/show/cockpit2/, not committed]
+  - a large **sword-shaped sharpness gauge** with a metallic green-to-purple blade and a gold hilt
+    (the final game uses small blade icons in cpit1ps instead);
+  - an **item name box with the Japanese text baked into the picture** (a meat item and an ammo
+    type), where the final game draws item names with the font;
+  - a **radial item/ammo wheel**: five round slots around a centre (coloured item icons) with a
+    "4 / 12" counter, like loaded / total shots. The shipped MH1 HUD has no wheel; it uses a
+    horizontal item bar;
+  - a long grey bar with a dark end cap at the bottom (a gauge frame, maybe health or stamina).
+  Baked-in text and finished-looking art suggest a **design mock-up or an early in-game HUD**
+  from before the final cockpit was built [guess].
+  **Functionality:** the game's file table `filedef_sys` (main 0x2EF2D0, a list of 16-bit AFS
+  entry numbers) has it in **slot 3**, right between the two real HUD atlases (slot 2 = 8
+  cpit1ps, slot 5 = 24 cpit2ps). But no code ever asks for slot 3: every `mkTexture` call in
+  MH1 is in matched C and uses slots 0, 2, 4, 5, 6, 7 and 8 only (src/main/menu/pit01.c,
+  src/main/font/gfs01.c, src/main/plsel/plsel00.c). So its loader was removed or never written,
+  and the table entry is a leftover [checked for the main module's mkTexture callers; a load by
+  a computed slot number elsewhere is not ruled out]. The Xbox `xb` files, by contrast, are not
+  even in the table.
+  Next look (owner's idea): point slot 2 or 5 at entry 10 in the PC build for a quick look at it
+  on screen, and compare with G and the US disc (G still ships the file).
 
 ## Leftover developer features
 
