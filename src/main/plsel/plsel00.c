@@ -51,6 +51,7 @@ void player_wait(u8 *t);
 void em_select(u8 *t);
 /* Task entry of the select screen: reloads the select texture, runs the step (0 init, 1 player select, 2 wait, 3 monster
    select), sends a keep-alive (net_send_sys 8) every 60 frames and draws. */
+#if !defined(G_PART)
 void Plsel_task(u8 *t) {
     s16 n;
 
@@ -79,6 +80,8 @@ void Plsel_task(u8 *t) {
     }
     trans();
 }
+#endif
+#if !defined(G_PART)
 void init_plsel(u8 *t) {
     all_reset();
     clr_pl_work();
@@ -90,11 +93,14 @@ void init_plsel(u8 *t) {
     t[0x14] = 0;
     t[8]++;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void disp_str(int x, int y, int s, int pal) {
     flfntSetSize(0x14, 0x14);
     flfntLocate(x, y);
     font_set_palette(pal & 0xFF);
     font_print(lit_596_0035B158, s);
 }
+#endif
 typedef struct SELEM { u8 _p00[2]; u8 cur; u8 _p03[0x9C - 3]; u16 kind[4]; u16 cnt[4]; } SELEM;
 #define PSW16(o) (*(u16 *)(Psw + (o)))

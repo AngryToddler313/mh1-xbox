@@ -930,7 +930,11 @@ def main():
         for n, c in v.items():
             by_name[n][k] += c
     n_edit = 0
+    dbg = set(os.environ.get("MHG_DEBUG_EDIT", "").split(","))
     for nm_, cnt in by_name.items():
+        if nm_ in dbg:
+            print("EDITVOTE", nm_, "taken" if nm_ in taken else "",
+                  [(m, hex(a), c, (m, a) in gaddr_taken) for (m, a), c in cnt.most_common(4)], file=sys.stderr)
         if nm_ in taken:
             continue
         (best, c1), *rest = cnt.most_common()
@@ -1095,6 +1099,13 @@ def main():
                 aliases[gm][name] = a
             else:
                 out[gm][a] = (name, 0, False)
+    # hand fixes: names the votes put at the wrong address (found from G code with tools/check.py)
+    for nm_, (gm, a) in {"sysmemblock": ("main", 0x0038FE10)}.items():   # mflInit uses 0x38FE10 (sysmemmgr 0x3BFE10 - 0x30000)
+        for aa in [k for k, v in out[gm].items() if v[0] == nm_]:
+            del out[gm][aa]
+        for d_ in aliases.values():
+            d_.pop(nm_, None)
+        out[gm][a] = (nm_, 0, False)
     for g in gonly:
         if g.addr not in out[g.mod]:
             out[g.mod][g.addr] = ("func_%08X" % g.addr if g.mod == "main" else

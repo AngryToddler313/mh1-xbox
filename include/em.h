@@ -415,8 +415,11 @@ typedef struct EMW {
     s8 x9F1;            /* 0x9F1 */
     u8 _pad9F2[0x9F3 - 0x9F2];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && defined(__MWERKS__)
     u8 _pad9F4[0xA00 - 0x9EC]; /* G: EMW is 0xA00 bytes (Sansai_talk_ck stride) */
+#elif defined(VERSION_MHG)
+    u8 _pad9F4[0xA10 - 0x9EC]; /* G on the PC: keep MH1's 0xA10 stride, which the local EMX/EWK copies in
+                                * src/main/emw (EMW_SIZE) and em_work's host array use (agent A) */
 #else
     u8 _pad9F4[0xA10 - 0x9F4];
 #endif

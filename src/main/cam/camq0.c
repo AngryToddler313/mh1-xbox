@@ -10,6 +10,7 @@ extern u8 quest_clear_camera_tbl[];
 
 void DemoCameraRequest();
 
+#if !defined(G_PART)
 void QuestClearCameraRequest(void) {
     u8 *e;
     int cam;
@@ -57,11 +58,15 @@ void QuestClearCameraRequest(void) {
     }
     DemoCameraRequest(cam, e, game_w.stage);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void RedDragonEscapeCamera(void *e) {
     DemoCameraRequest(0x1C, e);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void F_DragonEscapeCamera(u8 *e) {
     int cam;
 
@@ -72,15 +77,21 @@ void F_DragonEscapeCamera(u8 *e) {
     }
     DemoCameraRequest(cam, e);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void PlayerDieCameraRequest(void) {
     DemoCameraRequest(0x1A, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void PlComebackCameraRequest(void) {
     DemoCameraRequest(2, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void PilebunkerCameraRequest(void) {
     int cam;
 
@@ -96,3 +107,4 @@ void PilebunkerCameraRequest(void) {
     }
     DemoCameraRequest(cam, 0);
 }
+#endif

@@ -1739,3 +1739,39 @@ UseItemChk (menu-local Item_data extern with [16]), Pl_act_set/Pl_act_set2, Came
 - Seven files with G-only gaps registered as parts (G_PART guards inside the shared source, wrappers in src/mhg/main/*_a/_b/_c.c):
   camg (a, b, c; quake_sub differs in G: flSin call, left asm), cp01, flpad02, flvu05, fm02 (mflInit left asm: sysmemblock is a different
   object in G, mhg_map says 0x39FAA0, G uses 0x38FE10), pl67 (Pl_item_cnt_up left asm: G's game_w field is at +0xD0, not +0x80), putspr.
+
+### G round 4 (main/sub_main lane, 13 Oct 2026)
+Result: main C-matched in G 10.4% -> 14.0%, sub_main 5.2% -> 11.4% (bytes, docs/survey/mhg_map.csv vs config/mhg/c_files.txt);
+486 more functions registered (about 45 edited by hand, the rest were already identical and are registered as parts), 6 G-only
+functions written. G 7 OK, MH1 5 OK, PC builds (both), test_quest_loop OK, hidden G new game ends where it did (Local_main, lane D).
+New tools:
+- tools/mhg_fields.py SYMBOL...: where the fields of an MH1 global went in G (aligns every MH1/G twin pair, follows lui/gp addressing).
+  SIM=0.5 python3 tools/mhg_fields.py game_w select_w. tools/mhg_offdiff.py NAME...: same for pointer-passed structs (offset votes).
+- tools/mhg_funcnames.py -> config/mhg/g_funcnames.txt: the shared C calls unnamed MH1 functions as func_00544C90 (MH1 address);
+  in G those names now point at the G twin (build.py links the file, check.py reads it). This alone fixed ~60 "calls X" mismatches.
+- tools/mhg_parts.py FILE...: for a file where only some functions match G, guards each function with `#if !defined(G_PART) ||
+  G_PART == k`, writes src/mhg/<dir>/<name>_pK.c wrappers and registers one G range per contiguous run. `--redo` undoes an earlier
+  run first (use it after fixing more functions). tools/mhg_dropparts.py --sections / --cdiff removes parts that carry a table or
+  break the link (relocation addends check.py cannot see) and records their functions in config/mhg/c_skip_funcs.txt.
+  tools/mhg_guard.py NAME... guards named functions by hand (G dropped them).
+  Workflow: edit -> `VERSION=mhg tools/rebuild.sh main sub_main game` -> `python3 tools/mhg_cdiff.py main sub_main game |
+  python3 tools/mhg_dropparts.py --cdiff` -> rebuild -> commit.
+G facts (all byte-verified):
+- game_w is 0x240 bytes at 0x35ED20 and reordered: master/x0D2/pl_num/hit_id/x0D5/x1DC at 0x3A..0x3F, x80[4] at 0xD0, xCC 0xEC, x1DD
+  0xF1, info_seq/now 0xF2/0xF3, shl10/meat/trap 0xFC.., reward_item 0x100, x1A8 0x180, pl_state 0x1A4, x1E8 0x1F6, info_stop 0x1F5
+  (include/game.h G block; raw-offset code uses GWX(o) from include/gwx.h, also in src/pc). select_w is 0xF0: ready 0xAC, xAC 0xD0,
+  0xDC. option_w fields 5..7 are +2. CameraWork is 0x600 (CAMS d-union starts 0x10 lower: not mapped yet). EMW_STRIDE (version.h).
+- Recipes (Item_preparation_tbl_00 at 0x254220, mix_manual_tbl 0x254B58, item_pre_rate_tbl 0x2EAB88 in config/mhg/g_names.txt) are 8
+  bytes (bit at +6, flags at +7), 108 pairs, known-recipe bits at User_data+0xC80; func_0010DD20 (G-only) checks the hunter (skill
+  0xA8 or item 6) for flag-1 recipes; rate_0 adds a skill adjustment (sub_main_func_004F0020(pl, 0x25)).
+- Armor rows 0x20 bytes, Ken/Gun rows 0x18 (plequip.h); Get_weapon_job2 has no type-5 case; Pl_act_set/Pl_act_set2 refuse every action but 4 while
+  x738 is set on the master; hit_check also clears HCHR+0x3EB; mem_tex slots from 0x118 on are +0x27 in G (connect01/02 MEMTEX).
+- mc (mccomb.c, NOT done): G inserts one step in CardOptsv (new state 7 = func_0022CF90) and CardCmsv (new state 5 = func_0022D8E0), both
+  "show message 0x28, wait for PatchLoadinDNAS_Main, then go to the next state": every mc_r_no_set target n becomes n (n<=7) or n+1
+  (Optsv), n (n<=5) or n+1 (Cmsv); card image 0x9860 words (MH1 0x8A20), hunter slot stride 0xE00 (MH1 0x480).
+- sound ids: G's BGM numbers >= 73 are +3 (bgm01/02/03/04 literals), fight_bgm_set/lobby_bgm_set have new tables; not done (PC sound
+  would need the same mapping).
+- mem_tex slot numbers in load_eft/st_model_load etc. (305/333/273 vs 266/294/234) are left asm on purpose: the PC loads with MH1's numbers.
+- SETW (set objects) is a different layout in G (flag at 0x1F, move at 0x2C): setwork2.c and the set*.c files in game need a G SETW.
+Not done, worth doing next: mccomb (see above), Pl_status_set/Pl_atck_adj_calc/Pl_def_adj_calc/Skill_set_PL/Pl_reg_calc (skill ids moved),
+camera (CAMS layout), pl_snd01 (two 20 KB functions), trans_stage, hit_mark_set_new, sound ids, SETW.

@@ -33,6 +33,7 @@ void p_point_line2(f32 *p0, f32 *p1, f32 *dir, f32 *pt, f32 *out, f32 len);
 u8 hit_sphr_sphr(f32 *a, f32 *b, f32 ra, f32 rb);
 
 
+#if !defined(G_PART) || G_PART == 1
 static u8 hit_point_sphr(f32 *p, f32 *c, f32 r) {
     f32 dx = c[0] - p[0];
     f32 dy = c[1] - p[1];
@@ -40,7 +41,9 @@ static u8 hit_point_sphr(f32 *p, f32 *c, f32 r) {
 
     return dx * dx + dy * dy + dz * dz <= r * r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 hit_sphr_sphr(f32 *a, f32 *b, f32 ra, f32 rb) {
     f32 dx = a[0] - b[0];
     f32 dy = a[1] - b[1];
@@ -49,15 +52,19 @@ u8 hit_sphr_sphr(f32 *a, f32 *b, f32 ra, f32 rb) {
 
     return dx * dx + dy * dy + dz * dz <= r * r;
 }
+#endif
 
 /* original bytes kept (does not match as C yet): build/raw/hit_sphr_sphr2.inc, see config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
+#if !defined(G_PART)
 asm u8 hit_sphr_sphr2(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb)
 {
 #include "hit_sphr_sphr2.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb) {
     f32 d = flvecCalcDistance(a, b);
     f32 r = ra + rb;
@@ -84,15 +91,19 @@ u8 hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb) {
     }
     return 0;
 }
+#endif
 
 /* original bytes kept (does not match as C yet): build/raw/hit_cap_cap2_m.inc, see config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
+#if !defined(G_PART)
 asm u8 hit_cap_cap2_m(HPK *k1, HPK *k2, f32 *out)
 {
 #include "hit_cap_cap2_m.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void hit_cap_cap2_sub(f32 *a, f32 *v, f32 *out, f32 len, f32 r) {
     if (len < 0.001f) {
         flvecCopy(out, a);
@@ -106,7 +117,9 @@ void hit_cap_cap2_sub(f32 *a, f32 *v, f32 *out, f32 len, f32 r) {
     out[1] = a[1] + v[1];
     out[2] = a[2] + v[2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 u8 hit_sphr_cap_m(f32 *c, HPK *k, f32 *out, f32 r) {
     f32 dir[3];
     f32 v[3];
@@ -211,7 +224,9 @@ u8 hit_sphr_cap_m(f32 *c, HPK *k, f32 *out, f32 r) {
     out[2] = p[2] + v[2];
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 u8 hit_cap_sphr_m(HPK *k, f32 *c, f32 *out, f32 r) {
     f32 dir[3];
     f32 v[3];
@@ -293,7 +308,9 @@ u8 hit_cap_sphr_m(HPK *k, f32 *c, f32 *out, f32 r) {
     out[2] = len * m[2];
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 u8 hit_cap_sphr2_m(HPK *k, f32 *c, f32 *out, f32 r) {
     f32 dir[3];
     f32 v[3];
@@ -375,15 +392,19 @@ u8 hit_cap_sphr2_m(HPK *k, f32 *c, f32 *out, f32 r) {
     out[2] += c[2];
     return 1;
 }
+#endif
 
 /* original bytes kept (does not match as C yet): build/raw/hit_cap_cap3_m.inc, see config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
+#if !defined(G_PART)
 asm u8 hit_cap_cap3_m(HPK *k1, HPK *k2, f32 *out)
 {
 #include "hit_cap_cap3_m.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void hit_cap_cap3_sub(f32 *v, f32 *out, f32 r, f32 d) {
     f32 t;
 
@@ -398,7 +419,9 @@ void hit_cap_cap3_sub(f32 *v, f32 *out, f32 r, f32 d) {
         out[2] = t * v[2];
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 u8 hit_sphr_pln(f32 *c, f32 *p, f32 *n, f32 *out, f32 r) {
     f32 v[3];
     f32 nn[3];
@@ -419,7 +442,9 @@ u8 hit_sphr_pln(f32 *c, f32 *p, f32 *n, f32 *out, f32 r) {
     out[2] = d * nn[2];
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 u8 hit_line_sphr2(HLINE *l, f32 *c, f32 r) {
     f32 d[3];
     f32 v[3];
@@ -452,7 +477,9 @@ u8 hit_line_sphr2(HLINE *l, f32 *c, f32 r) {
     }
     return v[0] * v[0] + v[1] * v[1] + v[2] * v[2] - t * t <= r * r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void p_point_line2(f32 *p0, f32 *p1, f32 *dir, f32 *pt, f32 *out, f32 len) {
     f32 v[3];
     f32 t;
@@ -474,3 +501,4 @@ void p_point_line2(f32 *p0, f32 *p1, f32 *dir, f32 *pt, f32 *out, f32 len) {
         out[2] = p0[2] + v[2];
     }
 }
+#endif

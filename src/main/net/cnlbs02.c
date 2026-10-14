@@ -32,6 +32,7 @@ typedef struct CBRES { s8 val; s8 id; u8 pad[6]; } CBRES;
 
 
 
+#if !defined(G_PART)
 u16 __cnet_SendReq_FileDownloadHeader(void)
 {
     u16 r = func_5ADEE0(D_6EA740, 0xCF);
@@ -40,7 +41,9 @@ u16 __cnet_SendReq_FileDownloadHeader(void)
     func_5AE300(D_6EA740);
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_Read_FileDownloadData(int a, int b, int c, void *cb)
 {
     int h = func_5AD280(1, 0, cb);
@@ -51,3 +54,4 @@ int cnLBS_Read_FileDownloadData(int a, int b, int c, void *cb)
     }
     return -1;
 }
+#endif

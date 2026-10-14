@@ -5,9 +5,9 @@
 #define S16(p, o)  (*(s16 *)((u8 *)(p) + (o)))
 #define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
 #define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && defined(__MWERKS__)
 #define EMW_SIZE   0xA00
-#else
+#else   /* MH1, and G on the PC (keeps MH1's EMW stride, include/em.h) */
 #define EMW_SIZE   0xA10
 #endif
 

@@ -13,7 +13,11 @@ extern s8 COM_RET;
 extern u8 MMBB_LOGIN;
 extern s16 Vs_Cnt_0;
 extern u8 game_w[];
+#ifdef VERSION_MHG
+typedef struct { u8 pad[0x5D0]; s32 x534; } MEMTEX;   /* G: mem_tex slots from 0x118 on moved up by 0x27 (slot 0x14D -> 0x174) */
+#else
 typedef struct { u8 pad[0x534]; s32 x534; } MEMTEX;
+#endif
 extern MEMTEX mem_tex;
 typedef struct { u8 pad[0x2C]; s32 x2C; } NETCW;
 extern NETCW net_common_w;

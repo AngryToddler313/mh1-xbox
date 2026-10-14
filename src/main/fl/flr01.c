@@ -7,9 +7,13 @@ extern u8 flPs2State[];
 f32 floorf(f32);
 f32 powf(f32, f32);
 void flQuatSetRot(f32 *, f32);
+#if !defined(G_PART) || G_PART == 1
 f32 flFloor(f32 x) {
     return floorf(x);
 }
+#endif
+#if !defined(G_PART)
 f32 flPow(f32 x, f32 y) {
     return powf(x, y);
 }
+#endif

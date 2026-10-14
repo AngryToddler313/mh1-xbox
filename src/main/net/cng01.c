@@ -204,6 +204,7 @@ typedef struct CNGPKT {
 
 
 
+#if !defined(G_PART) || G_PART == 1
 int CpInetTcpSelect2(int sock, int kind) {
     TCPST st;
     int r;
@@ -236,15 +237,22 @@ int CpInetTcpSelect2(int sock, int kind) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void CpInetSetLocalIpAddr(int a) {
     _local_ip_address = a;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void CnInetNetworkAveTcpEnvSet(s8 v) {
     ave_env[0] = v;
 }
+#endif
 
+#if !defined(G_PART)
 void CnInetNetworkAveTcpConfigSet(F11 *c) {
     ave_cnf = *c;
 }
+#endif

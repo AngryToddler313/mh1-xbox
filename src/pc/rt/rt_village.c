@@ -16,6 +16,7 @@
  * the HUD are drawn by the host as in a quest.
  */
 #include "lbsys_g.h"
+#include "gwx.h"
 #include "rt.h"
 #include "types.h"
 
@@ -73,7 +74,7 @@ void rt_village_enter(void)
                                          * cw, pNet set-up), which G's Game_task (main 0x239750) calls when Online_ck().
                                          * MH1's on G's memory writes MH1 offsets (and lbSendInterval has no G address):
                                          * skipped until the village code has G copies (docs/mhg.md section 5) */
-    game_w[0x1DC] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
+    game_w[GWX(0x1DC)] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
     if (getenv("RT_VILLAGE_SKIP_INTRO")) {  /* test aid (no save data): the first-visit event seen */
         void Event_flag_set(int);
         Event_flag_set(2);
@@ -287,7 +288,7 @@ int rt_village_tick(void)
     if (r == 1 || r == -1) {
         void com_motion_load(int n);
         active = 0;
-        game_w[0x1DC] = 0;
+        game_w[GWX(0x1DC)] = 0;
         rt_motion_em_release();         /* the NPCs' motions go with the village */
         com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
         return r == 1 ? *(s16 *)(select_w + 0xAC) : -1;

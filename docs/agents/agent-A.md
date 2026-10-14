@@ -706,3 +706,24 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
   so followers never notice the host leaving (hostleave scenario fails; docs/server.md 11). Agent B's file, not changed.
 - Lesson: the lobby key is mmbbc_encode(8 digits, seq of the 6101 request); non-digits are skipped, so an account id
   on the wire is 8 digits.
+
+## G round 2: the G quest path on the PC (14 Oct 2026)
+
+- Goal: a G quest from `--quest N` (tools/build_pc_mhg.sh). Reached: quest 1 loads, base camp + hunter +
+  HUD (build/A/g/q1.png). docs/mhg.md section 5 "Quest path" lists what was done and what is open.
+- Approach: G's versions as `#ifdef VERSION_MHG` blocks in the shared files, written against the header
+  field names (so they follow C's G struct layouts when those land). Not byte-checked: G's Quest_start
+  writes game_w fields G moved (x0D0 -> 0xF0, x1E7 -> 0x18B, x0D5 -> 0x3E) that only C's G GAME_W has.
+- Found: G's quest_w keeps MH1's layout up to 0x150, then adds its own (random bytes 0x155, seed
+  0x16A, two s16[52] arrays) and moves MH1's 0x180 block to 0x280. G mission header bytes 0x40 (base
+  size %), 0x42 (fish set), 0x43 (start-area set), 0x44 (size class), 0x45-0x47.
+- Found: G quests use a per-quest generator (seed from 15 random bytes; online the host sends them), so
+  start areas, monster sizes and the reward bonus agree on every machine.
+- Found: G's game_w.x2E is the map (11 values): em_cmd tables, and the mission's stage tables are per
+  map (sub_main 0x4A1970 maps a stage to the map's index).
+- Lesson: the G pointer scan rewrote words inside em byte code (0x00280100 looked like a pointer into
+  main's data): pointers into another module now must hit a label start; the G split's own `.word
+  SYMBOL` words are taken as pointers. A hang in next_cmd_search/cmd_end_search on the PC = a corrupt or
+  unknown em command.
+- Tool kept in scratch (not committed): an aligned lui/lo resolver for MH1 table names over edited G
+  twins (votes in the commit message of pc_data entries "by vote").

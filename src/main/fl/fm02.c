@@ -67,7 +67,7 @@ void flSetFPS(int fps) {
 }
 
 #endif
-#if !defined(G_PART)  /* G: sysmemblock is a different object there (not mapped yet) */
+#if !defined(G_PART) || G_PART == 3
 void mflInit(int base, int size, int align) {
     plmemInit(&sysmemmgr, sysmemblock, 0x3000, base, size, align, 1);
 }

@@ -311,6 +311,7 @@ int Pl_shell_set(PLW *, u16, int);
 /* 0x12BCA0 */
 
 /* The bowgun ammo display: one icon per shot in the clip (loaded / empty), the loading messages. */
+#if !defined(G_PART)
 void disp_cannon(void) {
     PFLPS2 q;
     PLW *pl;
@@ -359,8 +360,10 @@ void disp_cannon(void) {
         }
     }
 }
+#endif
 
 /* The bowgun's "loading" message (row n of gun_load_mess), blinking with the system timer. */
+#if !defined(G_PART) || G_PART == 1
 void disp_gun_load_mess(int n) {
     PFLPS2 q;
     s16 *m = gun_load_mess[n];
@@ -385,8 +388,10 @@ void disp_gun_load_mess(int n) {
     q.uv[3] = m[6];
     flps0008(&q);
 }
+#endif
 
 /* The pit menu frame: page title (n of the five-item pages), the arrow blinking while the menu has the pad. */
+#if !defined(G_PART)
 void disp_menu(int sw, PIT_W *p) {
 #ifdef __MWERKS__
     char buf[32];
@@ -433,3 +438,4 @@ void disp_menu(int sw, PIT_W *p) {
         Disp_name_or_id(0xD1);
     }
 }
+#endif

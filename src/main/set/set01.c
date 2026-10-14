@@ -71,6 +71,7 @@ static void set01_d(SETW *sw);
 static void set01_e(SETW *sw);
 static void set01_trans(PRIM *pr);
 
+#if !defined(G_PART)
 void Info_Initialization(void) {
     game_w.info_now = 0xFF;
     set01_stack_suu = 0;
@@ -79,7 +80,9 @@ void Info_Initialization(void) {
     game_w.info_seq = 0;
     memset(set01_stack, 0, sizeof(set01_stack));
 }
+#endif
 
+#if !defined(G_PART)
 int Info_stack_ck(u8 seq) {
     s16 i;
 
@@ -93,7 +96,9 @@ int Info_stack_ck(u8 seq) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Info_control(void) {
     SET01_STACK *st;
 
@@ -117,7 +122,9 @@ void Info_control(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set01_set_sub(int type, int msg, s16 arg, u8 seq) {
     SETW *sw = pull_set_work(1);
 
@@ -130,7 +137,9 @@ static void set01_set_sub(int type, int msg, s16 arg, u8 seq) {
         game_w.info_now = seq;
     }
 }
+#endif
 
+#if !defined(G_PART)
 u8 set01_set(int type, int msg, s16 arg) {
     s8 i;
 
@@ -146,7 +155,9 @@ u8 set01_set(int type, int msg, s16 arg) {
     set01_stack_suu++;
     return game_w.info_seq;
 }
+#endif
 
+#if !defined(G_PART)
 static void set01_set2_sub(char *str, u8 seq) {
     SETW *sw = pull_set_work(1);
 
@@ -158,7 +169,9 @@ static void set01_set2_sub(char *str, u8 seq) {
         game_w.info_now = seq;
     }
 }
+#endif
 
+#if !defined(G_PART)
 u8 set01_set2(char *str) {
     s8 i;
 
@@ -173,7 +186,9 @@ u8 set01_set2(char *str) {
     set01_stack_suu++;
     return game_w.info_seq;
 }
+#endif
 
+#if !defined(G_PART)
 u8 set01_set2_use_mem(char *str) {
     s8 i;
     int j;
@@ -200,7 +215,9 @@ u8 set01_set2_use_mem(char *str) {
     set01_stack_suu++;
     return game_w.info_seq;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void set01_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -217,7 +234,9 @@ static void set01_move(SETW *sw) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set01_i(SETW *sw) {
     char **str = sw->u.str;
     s16 len;
@@ -267,7 +286,9 @@ static void set01_i(SETW *sw) {
     }
     set01_m(sw);
 }
+#endif
 
+#if !defined(G_PART)
 static void set01_m(SETW *sw) {
     switch (sw->mode2) {
     case 0:
@@ -294,17 +315,23 @@ static void set01_m(SETW *sw) {
     }
     add_prim(ot2, sw->prim, 0x10, 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void set01_d(SETW *sw) {
     sw->mode++;
     sw->be_flag = 0;
     release_prim2(sw->prim_no);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void set01_e(SETW *sw) {
     push_set_work(sw);
 }
+#endif
 
+#if !defined(G_PART)
 static void set01_trans(PRIM *pr) {
     SETW *sw = pr->owner;
     char **str = sw->u.str;
@@ -362,3 +389,4 @@ static void set01_trans(PRIM *pr) {
     }
     flSetRenderState(0x60, 0x80);
 }
+#endif

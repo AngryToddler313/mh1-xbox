@@ -16,6 +16,7 @@ int PatchExecCS();
 int PatchInitCS();
 int func_A2FD30();
 
+#if !defined(G_PART) || G_PART == 1
 void PatchLoadinDNAS_Init()
 {
     DR_NO_0 = 0;
@@ -23,7 +24,9 @@ void PatchLoadinDNAS_Init()
     DP_cnt = 0;
     DP_end = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int PatchLoadinDNAS_Main()
 {
     int r;
@@ -69,3 +72,4 @@ int PatchLoadinDNAS_Main()
     }
     return DP_end;
 }
+#endif

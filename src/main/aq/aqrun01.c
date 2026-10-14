@@ -1,5 +1,6 @@
 /* SLPM_654.95 0x0022DEA0-0x0022DF28: host_change (quest network: leaves the host role when the host slot is found). See aq_nm.c. */
 #include "types.h"
+#include "gwx.h"
 
 void *memset(void *, int, int);
 void *memcpy(void *, const void *, int);
@@ -194,13 +195,13 @@ void host_change(void) {
     u8 *base;
 
     i = 0;
-    if (0 < game_w[0xD3]) {
+    if (0 < game_w[GWX(0xD3)]) {
         p = game_w;
         do {
-            if (p[0x208] == 1) {
-                game_w[0x21B] = i;
+            if (p[GWX(0x208)] == 1) {
+                game_w[GWX(0x21B)] = i;
                 base = player_work + 0x91F;
-                pl = base + game_w[0xD1] * 0xA00;
+                pl = base + game_w[GWX(0xD1)] * 0xA00;
                 if (*pl != 0) {
                     *pl = 0;
                 }
@@ -208,6 +209,6 @@ void host_change(void) {
             }
             i++;
             p++;
-        } while (i < game_w[0xD3]);
+        } while (i < game_w[GWX(0xD3)]);
     }
 }

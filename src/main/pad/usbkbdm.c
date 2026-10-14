@@ -51,15 +51,20 @@ int sceUsbKbRead(int, USBKBDATA *);
 void *memcpy(void *, const void *, int);
 int usbKbConnectChk(int port);
 
+#if !defined(G_PART)
 int usbkbdm_init(void) {
     return usbkbdm_init_tbl[localTaskNum](&localTaskNum);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int usbkbdm_irxLoad(s8 *t) {
     (*t)++;
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int usbkbdm_Init(s8 *t) {
     int r;
 
@@ -80,7 +85,9 @@ int usbkbdm_Init(s8 *t) {
     *t = 0;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int usbkbdm_getInfo(s8 *t) {
     int r;
 
@@ -99,7 +106,9 @@ int usbkbdm_getInfo(s8 *t) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int usbkbdm_setting(s8 *t) {
     int a;
     int b;
@@ -121,7 +130,9 @@ int usbkbdm_setting(s8 *t) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int usbkbdm_setLEDMD(s8 *t) {
     int r;
 
@@ -134,13 +145,17 @@ int usbkbdm_setLEDMD(s8 *t) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int usbkbdm_end(s8 *t) {
     *t = 0;
     is_usbkb = 1;
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 u8 *getPS2KbData(void) {
     int r;
 
@@ -170,7 +185,9 @@ u8 *getPS2KbData(void) {
     pds_kdt.key[6] = kdat.keycode[6];
     return (u8 *)&pds_kdt;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int usbKbConnectChk(int port) {
     int r;
 
@@ -183,3 +200,4 @@ int usbKbConnectChk(int port) {
     }
     return info.status[port] == 0 ? -1 : 0;
 }
+#endif

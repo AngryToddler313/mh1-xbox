@@ -66,6 +66,7 @@ int mcsls_app_que_recv_rot();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void mcsls_r0_wait_start(void) {
     switch (mcsls_w.x07) {
     case 0:
@@ -80,27 +81,39 @@ void mcsls_r0_wait_start(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void mcsls_r0_start_init(void) {
     mcsls_w.x151 = 0;
     mcsls_set_status(5);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void mcsls_r0_game_move(void) {
     if (!(mcsls_w.t_que < 0.06666667f) && mcsls_app_que_send() != 0) {
         mcsls_w.t_que = 0.0f;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void mcsls_r0_user_drop(void) {
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void mcsls_r0_error(void) {
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void mcsls_r0_close(void) {
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int mcsls_app_push_is_ready(int n) {
     if (mcsls_w.state == 5 && CCnNetMsg_CnGetMsgSize(&app_send_que) > 0xC8) {
         return 0;
@@ -110,7 +123,9 @@ int mcsls_app_push_is_ready(int n) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void mcsls_app_push(int data, int n) {
     if (CCnNetMsg_CnGetBuffSizeLeft(&app_send_que) <= n + 2) {
         MCSLS_ERR_SYNC();
@@ -120,7 +135,9 @@ void mcsls_app_push(int data, int n) {
     CCnNetMsg_CnWrite(&app_send_que, data, n);
     mcsls_w.napp++;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int mcsls_app_que_send(void) {
     CNMSG sp50;
     s16 sp6E;
@@ -187,7 +204,9 @@ int mcsls_app_que_send(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int mcsls_app_que_recv_is_stock(void) {
     int i;
 
@@ -198,7 +217,9 @@ int mcsls_app_que_recv_is_stock(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int mcsls_calc_master_id(void) {
     int i;
 
@@ -210,7 +231,9 @@ int mcsls_calc_master_id(void) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int mcsls_app_que_recv_rot(void) {
     int i;
     int j;
@@ -309,7 +332,9 @@ int mcsls_app_que_recv_rot(void) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int mcsls_app_pull(s32 *data, s32 *tag) {
     int h;
     int n;
@@ -324,11 +349,15 @@ int mcsls_app_pull(s32 *data, s32 *tag) {
     CCnNetMsg_CnReadSeek(&app_recv_que, n);
     return n;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void mcsls_app_purge(void) {
     CCnNetMsg_CnPurgeData(&app_recv_que, -1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void mcsls_send(void) {
     int n;
     int r;
@@ -367,3 +396,4 @@ void mcsls_send(void) {
         }
     }
 }
+#endif

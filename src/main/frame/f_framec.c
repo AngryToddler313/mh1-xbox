@@ -123,7 +123,9 @@ void move(void) {
         }
     }
     if (game_w.info_stop == 0) {
+#ifndef VERSION_MHG     /* G has no item work and no item_check (main move 0x1172E0 calls body_hit only) */
         item_check();
+#endif
         body_hit();
     }
     bgm_server();
@@ -144,7 +146,9 @@ void move(void) {
     move_eft();
     move_shell();
     move_set();
+#ifndef VERSION_MHG     /* G: no item work, no move_item */
     move_item();
+#endif
     move_senko();
     move_smoke();
     move_stage();

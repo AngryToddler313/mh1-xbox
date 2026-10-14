@@ -67,6 +67,7 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART) || G_PART == 1
 int ItemPickingDeclaration(int arg, s16 *code) {
     u16 c;
 
@@ -89,7 +90,9 @@ int ItemPickingDeclaration(int arg, s16 *code) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART)
 int ItemStockRequest(PLW *pl, int id, int code, int flags) {
     int r;
     int t;
@@ -137,3 +140,4 @@ int ItemStockRequest(PLW *pl, int id, int code, int flags) {
     }
     return (s16)r;
 }
+#endif

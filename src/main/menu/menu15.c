@@ -137,12 +137,15 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART) || G_PART == 1
 void wyvern_area(f32 *x, f32 *y, f32 *z, int no) {
     *x = wyvern_area_tbl[no][0];
     *y = wyvern_area_tbl[no][1];
     *z = wyvern_area_tbl[no][2];
 }
+#endif
 
+#if !defined(G_PART)
 void DispWholeMap(void) {
     PFLPS q;
 
@@ -159,3 +162,4 @@ void DispWholeMap(void) {
     flps0008(&q);
     disp_whole_map(0x40, 160.0f, 1.0f);
 }
+#endif

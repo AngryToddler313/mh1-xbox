@@ -1,5 +1,7 @@
 /* SLPM_654.95 0x0011CDF0-0x0011D328: init_item_work .. Item_preparation_adrs. See item_nm.c. */
+#include "gwx.h"
 #include "types.h"
+#include "itemprep.h"
 #include "pl.h"
 
 typedef struct ITEMW {
@@ -19,13 +21,6 @@ typedef struct ITEMW {
     u8 pad43[0x54 - 0x43];
 } ITEMW;
 
-/* one recipe: ingredient b (a is the table index), result item, list bit */
-typedef struct IPREP {
-    s16 a;                  /* 0x00 other ingredient */
-    s16 res;                /* 0x02 result item */
-    s8 x04;                 /* 0x04 rate table index */
-    s8 bit;                 /* 0x05 bit of the known-recipe list */
-} IPREP;
 
 extern ITEMW item_work[64];
 extern ITEMW *item_w_top;
@@ -81,6 +76,7 @@ int Item_preparation_list_chk_0(IPREP *);
 
 
 
+#if !defined(G_PART)
 void init_item_work(void) {
     int i;
     ITEMW *p;
@@ -94,7 +90,9 @@ void init_item_work(void) {
     }
     item_ctr = 0x40;
 }
+#endif
 
+#if !defined(G_PART)
 void clr_item_work(void) {
     ITEMW *p;
     ITEMW *q;
@@ -111,7 +109,9 @@ void clr_item_work(void) {
         } while (p != 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void push_item_work(ITEMW *it) {
     if (it->prev == 0) {
         item_w_top = it->next;
@@ -125,7 +125,9 @@ void push_item_work(ITEMW *it) {
     *--item_sp = it;
     memset(it, 0, 8);
 }
+#endif
 
+#if !defined(G_PART)
 void move_item(void) {
     ITEMW *p;
 
@@ -139,7 +141,9 @@ void move_item(void) {
         } while (p != 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void item_check(void) {
     ITEMW *it;
     PLW *pl;
@@ -182,7 +186,82 @@ void item_check(void) {
         } while (it != 0);
     }
 }
+#endif
 
+#ifdef VERSION_MHG
+int func_0010DD20(PLW *, IPREP *);
+
+/* G: a recipe only counts when the master hunter may use it (func_0010DD20) */
+int Item_preparation_one_ck(s16 a) {
+    IPREP *p;
+    int i;
+    int n;
+
+    n = *(u8 *)((u8 *)Item_preparation_tbl + (a + a));
+    if (n != 0) {
+        p = &Item_preparation_tbl_00[*(u8 *)((u8 *)Item_preparation_tbl + (a + a) + 1)];
+        if (n > 0) {
+            do {
+                if (func_0010DD20(&player_work[game_w[GWX(0xD1)]], p) == 1) {
+                    return 1;
+                }
+                n--;
+                p++;
+            } while (n > 0);
+        }
+    }
+    for (i = 0; i < a; i++) {
+        n = *(u8 *)((u8 *)Item_preparation_tbl + (i + i));
+        if (n != 0) {
+            p = &Item_preparation_tbl_00[*(u8 *)((u8 *)Item_preparation_tbl + (i + i) + 1)];
+            if (n > 0) {
+                do {
+                    if (p->a == a) {
+                        if (func_0010DD20(&player_work[game_w[GWX(0xD1)]], p) == 1) {
+                            return 1;
+                        }
+                    }
+                    n--;
+                    p++;
+                } while (n > 0);
+            }
+        }
+    }
+    return 0;
+}
+IPREP *Item_preparation_adrs(a, b)
+s16 a;
+s16 b;
+{
+    IPREP *p;
+    int n;
+
+    if (a > b) {
+        s16 t = b;
+
+        b = a;
+        a = t;
+    }
+    n = *(u8 *)((u8 *)Item_preparation_tbl + (a + a));
+    if (n == 0) {
+        return 0;
+    }
+    p = &Item_preparation_tbl_00[*(u8 *)((u8 *)Item_preparation_tbl + (a + a) + 1)];
+    if (n != 0) {
+        do {
+            if (p->a == b) {
+                if (func_0010DD20(&player_work[game_w[GWX(0xD1)]], p) == 1) {
+                    return p;
+                }
+                break;
+            }
+            n--;
+            p++;
+        } while (n != 0);
+    }
+    return 0;
+}
+#else
 int Item_preparation_one_ck(s16 a) {
     IPREP *p;
     int i;
@@ -237,3 +316,4 @@ s16 b;
     }
     return 0;
 }
+#endif

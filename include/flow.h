@@ -14,12 +14,12 @@
 #define FLD32(base, o)  (*(s32 *)((u8 *)&(base) + (o)))
 #define FLDF(base, o)   (*(f32 *)((u8 *)&(base) + (o)))
 
-/* game_w, raw access by offset */
-#define GW8(o)   FLD8(game_w, o)
-#define GWS8(o)  FLDS8(game_w, o)
-#define GW16(o)  FLD16(game_w, o)
-#define GWS16(o) FLDS16(game_w, o)
-#define GW32(o)  FLD32(game_w, o)
+/* game_w, raw access by offset (MH1 offsets; in G GWX maps the ones G moved, see GAME_W in game.h) */
+#define GW8(o)   FLD8(game_w, GWX(o))
+#define GWS8(o)  FLDS8(game_w, GWX(o))
+#define GW16(o)  FLD16(game_w, GWX(o))
+#define GWS16(o) FLDS16(game_w, GWX(o))
+#define GW32(o)  FLD32(game_w, GWX(o))
 
 typedef struct SYSTEM_W { u8 _pad00[0x32]; u8 x32; u8 x33; u8 _pad34; u8 x35; u8 _pad36[9]; u8 x3F; s16 x40; /* 0x35 set while loading */ } SYSTEM_W;
 typedef struct OPTION_W { u8 _pad00[3]; s8 x03; /* vibration off */ s8 x04; u8 _pad05[2]; s8 x07; u8 _pad08[0x18]; } OPTION_W;
@@ -34,12 +34,24 @@ typedef struct SELECT_W {
     u8 x54[4];
     u8 _pad58[0x5C - 0x58];
     V3S x5C[4];
+#ifdef VERSION_MHG
+    /* G select_w is 0xF0 bytes (0x35EC30): ready moved 0x8C -> 0xAC, xAC 0xAC -> 0xD0 (tools/mhg_fields.py);
+     * the other fields keep their MH1 offset until G code that uses them is seen */
+    u8 _pad74[0x94 - 0x74];
+    s8 x94[4];
+    u8 _pad98[0xAC - 0x98];
+    s8 ready[4];        /* 0xAC per player ready flag (MH1 0x8C) */
+    u8 _padB0[0xD0 - 0xB0];
+    u16 xAC;            /* 0xD0 selected quest number (MH1 0xAC) */
+    u8 _padD2[0xF0 - 0xD2];
+#else
     u8 _pad74[0x8C - 0x74];
     s8 ready[4];        /* 0x8C per player ready flag (game3/game4) */
     u8 _pad90[0x94 - 0x90];
     s8 x94[4];
     u8 _pad98[0xAC - 0x98];
     u16 xAC;            /* 0xAC selected quest number (Quest_start) */
+#endif
 } SELECT_W;
 extern SELECT_W select_w;
 struct STG_MDLS;

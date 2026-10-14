@@ -5,6 +5,12 @@
  * matching else (mode 1) / end (mode 2) marker with CMD_SKIP / else_ck.
  * Whole file; matching runs are built as em_cmd*.c. Meanings of fields are guesses. */
 #include "em_cmd.h"
+#ifdef VERSION_MHG
+u8 *game_func_005885E0(EMW *em, u8 *p);
+u8 *game_func_0058A020(EMW *em, u8 *p);
+u8 *game_func_0058DF20(EMW *em, u8 *p);
+u8 *game_func_0058DD00(EMW *em, u8 *p);
+#endif
 
 void em_cmd_init(EMW *em) {
     em->cmd_idx = 0;
@@ -13,6 +19,17 @@ void em_cmd_init(EMW *em) {
     EM_FIELD(em, s8 *, 0x826) = 0;
     em->x84E = 0;
     em->x844 = -1;
+#ifdef VERSION_MHG
+    {   /* G (game.bin 0x584580): ten difficulty levels (game_w.x2E 0-10; 0 and 1 share), three below
+         * MH1's; tables of 52 kinds. Written for the PC (agent A), not byte-checked. */
+        extern u8 ***em_cmdg0_tbl[], ***em_cmdg1_tbl[], ***em_cmdg2_tbl[];
+        static u8 ****const tbl[11] = { em_cmdg0_tbl, em_cmdg0_tbl, em_cmdg1_tbl, em_cmdg2_tbl, em_cmd0_tbl,
+                                      em_cmd1_tbl, em_cmd2_tbl, em_cmd3_tbl, em_cmd4_tbl, em_cmd5_tbl, em_cmd6_tbl };
+        if (game_w.x2E < 11)
+            em->cmd_tbl = tbl[game_w.x2E][em->kind];
+    }
+    if (0)
+#endif
     switch (*(u8 *)0x3F341E) {
     case 0:
     case 1:
@@ -220,7 +237,11 @@ void em_cmd_ck(EMW *em) {
                     p = em_cmd_flag_ck(em, p + 1);
                     break;
                 case 0x2C:
+#ifdef VERSION_MHG
+                    p = game_func_005885E0(em, p + 1);  /* G: select by species; the kind select moved to 0x70 */
+#else
                     p = em_cmd_myemtype_sel(em, p + 1);
+#endif
                     break;
                 case 0x2D:
                     p = em_cmd_smell_set(em, p + 1);
@@ -426,6 +447,20 @@ void em_cmd_ck(EMW *em) {
                 case 0x94:
                     p = em_cmd_em_atk_bit(em, p + 1);
                     break;
+#ifdef VERSION_MHG      /* G's new commands (game.bin em_cmd_ck 0x584780) */
+                case 0x69:
+                    p = game_func_0058A020(em, p + 1);
+                    break;
+                case 0x70:
+                    p = em_cmd_myemtype_sel(em, p + 1);
+                    break;
+                case 0x71:
+                    p = game_func_0058DF20(em, p + 1);
+                    break;
+                case 0x99:
+                    p = game_func_0058DD00(em, p + 1);
+                    break;
+#endif
                 default:
                     em_cmd_reset(em);
                     run = 0;
@@ -1494,7 +1529,123 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
     return q;
 }
 
+#ifdef VERSION_MHG
+/* G moved the kind select to command 0x70 (game.bin 0x588740) */
+CMD_SEL_FUNC(em_cmd_myemtype_sel, 0x70, u8, u8, em->kind)
+
+/* G-only command handlers, written from game.bin for the PC (agent A, 14 Oct 2026; not byte-checked) */
+extern u8 *em_species_tbl[];        /* per monster kind: its data; byte 0 = species */
+/* sub_main 0x4C8910 / game 0x54A190: two kinds are the same species */
+static int game_func_0054A190(int a, int b)
+{
+    return *em_species_tbl[(u8)a] == *em_species_tbl[(u8)b];
+}
+
+/* 0x2C (game 0x5885E0): select command like em_cmd_myemtype_sel, but an entry matches a monster
+ * of the same species as its kind byte, and entries are not ordered */
+u8 *game_func_005885E0(EMW *em, u8 *p) {
+    u8 n;
+    s32 i;
+    u16 more;
+
+    switch (*p++) {
+    case 0:
+        n = *p;
+        p += 3;
+        for (i = 0; i < n; i++) {
+            u8 v = *p++;
+            if (game_func_0054A190(em->kind, v)) {
+                break;
+            }
+            p = cmd_end_search(em, p, 0x2C, 3);
+            if (p[1] == 2 || p[1] == 3) {
+                p += 2;
+                break;
+            }
+            p += 2;
+        }
+        break;
+    case 1:
+        p += 1;
+    case 2:
+        more = 1;
+        do {
+            p = cmd_end_search(em, p, 0x2C, 3);
+            if (p[0] == 0x2C && p[1] == 3) {
+                more = 0;
+            }
+            p = next_cmd_search(em, p);
+        } while (more);
+        break;
+    }
+    return p;
+}
+
+/* 0x69 (game 0x58A020): condition on the angle to the target: deg = the operand (degrees);
+ * "inside" when the turn to tgt_pos is under deg and deg is under 90; inside skips to the
+ * else part, outside runs the then part */
+u8 *game_func_0058A020(EMW *em, u8 *p) {
+    u16 half, d;
+    int in = 0;
+
+    switch (*p++) {
+    case 0:
+        half = (u16)(int)((f32)(s8)*p * 65536.0f / 360.0f + 0.5f);
+        p++;
+        d = (u16)(Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+        if (d >= 0x8001) {
+            d = (u16)(0x10000 - d);
+        }
+        if (d < half && half < 0x4000) {
+            in = 1;
+        }
+        if (!in) {
+            if (p[0] == 0x69 && p[1] == 1) {
+                p = next_cmd_search(em, p);
+                if (p[0] == 0x69 && p[1] == 2) {
+                    p = next_cmd_search(em, p);
+                } else {
+                    p = next_cmd_search(em, cmd_end_search(em, p, 0x69, 2));
+                }
+            }
+            break;
+        }
+        CMD_SKIP(em, p, 0x69);
+        break;
+    case 1:
+        p = else_ck(em, p, 0x69);
+        break;
+    }
+    return p;
+}
+
+/* 0x71 (game 0x58DF20): condition: the operand is not above EMW byte G 0x9FC (a G field, MH1
+ * layout 0xA04; nothing on the PC writes it yet) */
+u8 *game_func_0058DF20(EMW *em, u8 *p) {
+    u8 v;
+
+    switch (*p++) {
+    case 0:
+        v = *p++;
+        if (EM_FIELD(em, s8 *, 0xA04) < v) {
+            CMD_SKIP(em, p, 0x71);
+        }
+        break;
+    case 1:
+        p = else_ck(em, p, 0x71);
+        break;
+    }
+    return p;
+}
+
+/* 0x99 (game 0x58DD00): face the operand (x 256 = angle) */
+u8 *game_func_0058DD00(EMW *em, u8 *p) {
+    em->ang[1] = *p << 8;
+    return p + 1;
+}
+#else
 CMD_SEL_FUNC(em_cmd_myemtype_sel, 0x2C, u8, u8, em->kind)
+#endif
 
 u8 *em_cmd_smell_set(EMW *em, u8 *p) {
     EM_FIELD(em, s8 *, 0x827) = 7;
@@ -2581,11 +2732,20 @@ u8 *em_cmd_quest_no_ck(EMW *em, u8 *p) {
     var_a1 = p;
     switch (*var_a1++) {
     case 0:
+#ifdef VERSION_MHG      /* G (game.bin 0x58B6C0): u16 quest number, big-endian */
+        if (*(u16 *)0x3C7448 != (u16)(var_a1[0] << 8 | var_a1[1])) {
+            var_a1 += 2;
+            CMD_SKIP(em, var_a1, 0x56);
+        } else {
+            var_a1 += 2;
+        }
+#else
         v = *var_a1;
         var_a1 += 1;
         if (*(s16 *)0x3C7448 != v) {
             CMD_SKIP(em, var_a1, 0x56);
         }
+#endif
         break;
     case 1:
         var_a1 = else_ck(em, var_a1, 0x56);
@@ -2596,7 +2756,72 @@ u8 *em_cmd_quest_no_ck(EMW *em, u8 *p) {
     return var_a1;
 }
 
+#ifdef VERSION_MHG
+/* G (game.bin 0x58B7F0): quest numbers are u16 (big-endian in the program), entries 2 bytes */
+#define CMD_SEL_FUNC_BE16(name, code, vtype, ctype, cur)                                      \
+u8 *name(EMW *em, u8 *p) {                                                     \
+    u8 *r;                                                                     \
+    u8 n;                                                                      \
+    vtype v;                                                                   \
+    ctype c;                                                                   \
+    s32 i;                                                                     \
+    u16 more;                                                                  \
+                                                                               \
+    switch (*p++) {                                                            \
+    case 0:                                                                    \
+        n = *p;                                                                \
+        p += 3;                                                                \
+        for (i = 0; i < n; i++) {                                              \
+            v = (u16)(p[0] << 8 | p[1]);                                       \
+            c = (cur);                                                         \
+            p += 2;                                                            \
+            if (c == v) {                                                      \
+                break;                                                         \
+            }                                                                  \
+            if (v < c) {                                                       \
+                r = cmd_end_search(em, p, code, 3);                            \
+                p = r;                                                         \
+                if (r[1] == 2 || r[1] == 3) {                                  \
+                    p = p + 2;                                                 \
+                    break;                                                     \
+                }                                                              \
+                p = p + 2;                                                     \
+            } else {                                                           \
+                more = 1;                                                      \
+                do {                                                           \
+                    p = cmd_end_search(em, p, code, 3);                        \
+                    if ((p[0] == (code) && p[1] == 2) ||                       \
+                        (p[0] == (code) && p[1] == 3)) {                       \
+                        more = 0;                                              \
+                    }                                                          \
+                    p = next_cmd_search(em, p);                                \
+                } while (more);                                                \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+        break;                                                                 \
+    case 1:                                                                    \
+        p += 2;                                                                \
+    case 2:                                                                    \
+        more = 1;                                                              \
+        do {                                                                   \
+            p = cmd_end_search(em, p, code, 3);                                \
+            if (p[0] == (code) && p[1] == 3) {                                 \
+                more = 0;                                                      \
+            }                                                                  \
+            p = next_cmd_search(em, p);                                        \
+        } while (more);                                                        \
+        break;                                                                 \
+    case 3:                                                                    \
+        break;                                                                 \
+    }                                                                          \
+    return p;                                                                  \
+}
+
+CMD_SEL_FUNC_BE16(em_cmd_quest_no_sel, 0x57, u16, u16, *(u16 *)0x3C7448)
+#else
 CMD_SEL_FUNC(em_cmd_quest_no_sel, 0x57, s16, s16, *(s16 *)0x3C7448)
+#endif
 
 u8 *em_cmd_boss_pl_target_set(EMW *em, u8 *p) {
     EMW *b = em->boss;
@@ -3684,6 +3909,60 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
     var_a1 = p;
     temp_v0 = *var_a1;
     switch (temp_v0) {
+#ifdef VERSION_MHG      /* G (game.bin 0x58E170): lengths of the new commands */
+    case 0x69:
+    case 0x71:
+        var_a1 += 1;
+        switch (*var_a1) {
+        case 0:
+            var_a1 += 2;
+            break;
+        case 1:
+        case 2:
+            var_a1 += 1;
+            break;
+        }
+        break;
+    case 0x70:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
+            var_a1 += 3;
+        case 1:
+            var_a1 += 1;
+            break;
+        }
+        break;
+    case 0x99:
+        var_a1 += 2;
+        break;
+    case 0x56:          /* G: 2-byte quest number */
+        var_a1 += 1;
+        switch (*var_a1) {
+        case 0:
+            var_a1 += 3;
+            break;
+        case 1:
+        case 2:
+            var_a1 += 1;
+            break;
+        }
+        break;
+    case 0x57:          /* G: 2-byte quest numbers */
+        var_a1 += 1;
+        switch (*var_a1) {
+        case 0:
+            var_a1 += 3;
+        case 1:
+            var_a1 += 3;
+            break;
+        case 2:
+        case 3:
+            var_a1 += 1;
+            break;
+        }
+        break;
+#endif
     case 0x1:
         var_a1 += 2;
         break;
@@ -4144,6 +4423,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
     case 0x55:
         var_a1 += 2;
         break;
+#ifndef VERSION_MHG
     case 0x56:
         var_a1 += 1;
         temp_v1_29 = *var_a1;
@@ -4157,6 +4437,8 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
             break;
         }
         break;
+#endif
+#ifndef VERSION_MHG
     case 0x57:
         var_a1 += 1;
         temp_v1_30 = *var_a1;
@@ -4172,6 +4454,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
             break;
         }
         break;
+#endif
     case 0x58:
         var_a1 += 1;
         break;

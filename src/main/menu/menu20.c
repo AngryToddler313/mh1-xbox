@@ -306,6 +306,7 @@ int Pl_shell_set(PLW *, u16, int);
 
 
 /* 0x12BCA0 */
+#if !defined(G_PART) || G_PART == 1
 void font_print_quest_money(int n) {
     u16 out[32];
     char buf[16];
@@ -321,8 +322,10 @@ void font_print_quest_money(int n) {
     o[1] = 0;
     font_print_uf(out);
 }
+#endif
 
 /* 0x12BD10 */
+#if !defined(G_PART) || G_PART == 1
 void font_print_quest_lv(int n) {
     u16 out[12];
     u16 *o = out;
@@ -334,8 +337,10 @@ void font_print_quest_lv(int n) {
     *o = 0;
     font_print_uf(out);
 }
+#endif
 
 /* 0x12BD60 */
+#if !defined(G_PART)
 void font_print_quest_target(int a, int b) {
     char buf[8];
     u16 out[12];
@@ -356,8 +361,10 @@ void font_print_quest_target(int a, int b) {
     *o = 0;
     font_print_uf(out);
 }
+#endif
 
 /* 0x12BE00 */
+#if !defined(G_PART)
 void font_print_Bdragon(void) {
     char buf[8];
     u16 out[12];
@@ -372,8 +379,10 @@ void font_print_Bdragon(void) {
     *o = 0;
     font_print(lit_2242, out);
 }
+#endif
 
 /* 0x12BE90 */
+#if !defined(G_PART)
 void font_print_BBQquest(void *pl, int y) {
     char buf[8];
     u16 out[12];
@@ -391,3 +400,4 @@ void font_print_BBQquest(void *pl, int y) {
     *o = 0;
     font_print(lit_2265, out);
 }
+#endif

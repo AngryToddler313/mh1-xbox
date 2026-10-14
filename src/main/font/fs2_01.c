@@ -33,6 +33,7 @@ void font_print_sp(int);
 
 
 
+#if !defined(G_PART)
 void font_set(void) {
     int i;
     u32 *p;
@@ -55,7 +56,9 @@ void font_set(void) {
         p += 4;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void font_set2(void) {
     int i;
     u32 *p;
@@ -71,12 +74,16 @@ void font_set2(void) {
         p += 4;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void font_stack_reset(void) {
     flfntStackReset();
     font_reset_flag = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void font_draw(void) {
     s16 i;
 
@@ -85,7 +92,10 @@ void font_draw(void) {
     }
     font_reset_flag = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void font_draw_stack_no(int n) {
     flfntDraw(n);
 }
+#endif

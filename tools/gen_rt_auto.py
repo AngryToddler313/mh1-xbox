@@ -112,6 +112,8 @@ def main():
     lb_s = load(SYMDIR + "/lobby.txt")
     sel_s = load(SYMDIR + "/select.txt")
     tr = MH1toG() if G else None
+    game_s = load(SYMDIR + "/game.txt") if G else {}
+    m1_main_data = {k: v[2] for k, v in load("config/symbols/main.txt").items() if v[1] != "func"} if G else {}
     gmiss = []
 
     def hexva(n, h):
@@ -196,6 +198,10 @@ def main():
                     data.append(("zero", n, 0, 0x100))
                     continue
                 ent = ("main" if va < OVL else "lb", va, "data", 0)
+        if G and ent is None and n in game_s and game_s[n][1] != "func" and n in m1_main_data:
+            # G moved this MH1 main object into game.bin (event_demo: MH1 0x531910 -> G 0x6E0560): data
+            # all the same, read from the game image (rt_addr knows the overlay)
+            ent = ("main", game_s[n][0], "data", game_s[n][2] or m1_main_data[n])
         if ent is None or ent[2] == "func":
             funcs.append(n)
             continue

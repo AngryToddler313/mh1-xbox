@@ -4,6 +4,7 @@
 
 void set12_move(SETW *sw);
 
+#if !defined(G_PART)
 void set12_set(int se0, int se1, int arg, f32 *pos, s16 timer) {
     SETW *sw;
 
@@ -21,12 +22,14 @@ void set12_set(int se0, int se1, int arg, f32 *pos, s16 timer) {
         sw->timer = timer;
     }
 }
+#endif
 
 void set12_i(SETW *sw);
 void set12_m(SETW *sw);
 void set12_d(SETW *sw);
 void set12_e(SETW *sw);
 
+#if !defined(G_PART)
 void set12_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -43,14 +46,18 @@ void set12_move(SETW *sw) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void set12_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
     sw->work14 = 0;
     sw->cnt = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void set12_m(SETW *sw) {
     if ((u16)sw->timer != 0xFFFF) {
         if (--sw->timer <= 0) {
@@ -63,12 +70,17 @@ void set12_m(SETW *sw) {
         se_req2(sw->se0, sw->se1, 0, sw->pos, sw->arg, 1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void set12_d(SETW *sw) {
     sw->mode++;
     sw->be_flag = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void set12_e(SETW *sw) {
     push_set_work(sw);
 }
+#endif

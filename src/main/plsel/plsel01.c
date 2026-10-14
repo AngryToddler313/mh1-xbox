@@ -53,6 +53,7 @@ typedef struct SELEM { u8 _p00[2]; u8 cur; u8 _p03[0x9C - 3]; u16 kind[4]; u16 c
 
 
 
+#if !defined(G_PART)
 void player_sel(u8 *t) {
     s16 i;
     u8 *g;
@@ -89,7 +90,9 @@ void player_sel(u8 *t) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void player_wait(u8 *t) {
     s16 c;
     u8 *sw = select_w;
@@ -111,3 +114,4 @@ void player_wait(u8 *t) {
         break;
     }
 }
+#endif

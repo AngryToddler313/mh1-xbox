@@ -48,7 +48,8 @@ typedef struct HCHR {
     u8 x3D1;              /* 0x3D1 */
     u8 _pad3D2[0x3E3 - 0x3D2];
     u8 x3E3;              /* 0x3E3 */
-    u8 _pad3E4[0x3EC - 0x3E4];
+    u8 _pad3E4[0x3EB - 0x3E4];
+    u8 x3EB;              /* 0x3EB cleared by hit_check in G */
     u16 dm_ang;           /* 0x3EC */
     s16 dm_pow;           /* 0x3EE */
     s16 dm_type;          /* 0x3F0 */

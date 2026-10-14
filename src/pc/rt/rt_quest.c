@@ -76,6 +76,24 @@ void em_act_set(EMW *em, int kind, u16 no);
 int func_63AF40(void) { return Tutorial_quest_ck(); }
 void func_63ACA0(void) { Tutorial_prog(); }
 void func_535D20(EMW *em, int kind, int no) { em_act_set(em, kind, (u16)no); }
+#ifdef VERSION_MHG
+/* G's quest start (f_quest.c, VERSION_MHG): Tutorial_quest_ck by its game.bin address; main
+ * 0x12D1B0 (a G work byte at 0x35F014 != 0: unknown, 0 here); sub_main 0x4F3B00 (written
+ * from the asm: a training quest listed in quest_size_flag_tbl {event flag, ?, quest} allows random
+ * monster sizes only once its event flag is set; any other quest allows them). */
+int func_66E180(void) { return Tutorial_quest_ck(); }
+int func_0012D1B0(void) { return 0; }
+int Event_flag_ck(int);
+extern s16 quest_size_flag_tbl[];
+int sub_main_func_004F3B00(int no)
+{
+    s16 *p;
+    for (p = quest_size_flag_tbl; p[0] != -1; p += 3)
+        if (p[2] == no)
+            return Event_flag_ck(p[0]) == 1;
+    return 1;
+}
+#endif
 /* Bdora_hp_ck (0x53B5C0, em_master: Fatalis' hit points), Fish_set
  * (0x5589F0: a stage's fish, eft23) and Em09_item_sub (0x5A8170) */
 int Bdora_hp_ck(void);

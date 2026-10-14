@@ -28,7 +28,11 @@
 
 /* The game C stores pointers in u32 fields: only a 32-bit build works. */
 _Static_assert(sizeof(void *) == 4, "build the port runtime and game C with -m32");
+#ifdef VERSION_MHG
+_Static_assert(sizeof(GAME_W) == 0x240, "GAME_W size");
+#else
 _Static_assert(sizeof(GAME_W) == 0x224, "GAME_W size");
+#endif
 _Static_assert(sizeof(PLW) == 0xA00, "PLW size");
 #ifndef VERSION_MHG
 _Static_assert(offsetof(SETW, move) == 0x20 && offsetof(SETW, prim) == 0x38, "SETW layout");
@@ -38,7 +42,11 @@ _Static_assert(sizeof(CLAY) == 0x8C, "CLAY size");
 
 /* ------------------------------------------------------------ work areas */
 GAME_W game_w;                       /* 0x3F33F0 */
+#ifdef VERSION_MHG
+PLW player_work[10];                 /* G 0x34D450: 10 entries (G's player_mk loops 10) */
+#else
 PLW player_work[8];                  /* 0x3E4BF0, 0x5000 bytes */
+#endif
 
 typedef struct {                     /* model work (MDLW, get_mdlw_ptr; SET_MDLW in set*.c) */
     u8 flag;                         /* 0x00 loaded */

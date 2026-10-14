@@ -54,6 +54,7 @@ void flmatInit(FLMAT *);
 void flmatRotXYZ33(FLMAT *, f32, f32, f32);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
 
+#if !defined(G_PART)
 void cam_init_sub_pchngr(CAMW *cw, CAMS *cs) {
     CAMD_PCH *d = &cs->d.pch;
 
@@ -64,7 +65,9 @@ void cam_init_sub_pchngr(CAMW *cw, CAMS *cs) {
     d->range = d->max - d->min;
     d->fov0 = d->fov1 = cs->fov;
 }
+#endif
 
+#if !defined(G_PART)
 void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
     CAMD_PCH *d;
     PLW *pl;
@@ -182,7 +185,9 @@ void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
         return;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s32 pch_lock_chk(PLW *pl) {
     switch (pl->char0) {
     case 0x3EA:
@@ -195,3 +200,4 @@ s32 pch_lock_chk(PLW *pl) {
     }
     return 0;
 }
+#endif

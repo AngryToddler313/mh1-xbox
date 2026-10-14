@@ -37,10 +37,13 @@ void mcsls_critical_error(int);
 void tmplCCnNetMsg_CnClear(NM *, void *, int);
 void CCnNetMsg_CnClear(NM *);
 void CCnNetMsg_CnShareMSGDAT(void *, void *);
+#if !defined(G_PART) || G_PART == 1
 int InetConnectStart(void) {
     return 1;
 }
+#endif
 /* Receives up to 0x384 bytes (and no more than the free space) into the message buffer; returns the byte count. */
+#if !defined(G_PART) || G_PART == 1
 int CnInetStreamRecv(int sock, NM *m) {
     int n = m->cap - m->size;
     int r;
@@ -54,11 +57,14 @@ int CnInetStreamRecv(int sock, NM *m) {
     }
     return r;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 int CnInetMcsInitialize(int sock) {
     _mcs_sock = sock;
     tmplCCnNetMsg_CnClear(&mcs_recv_buff, _mcs_recv_buff, 0x400);
     return 0;
 }
+#endif
 int CpInetTcpSelect2();
 int CCnNetMsg_CnGetReadSize(NM *);
 int CCnNetMsg_CnRead();
@@ -67,6 +73,7 @@ void CCnNetMsg_CnPurgeData(NM *, int);
 /* Pulls whole packets from the mcs socket into out (at most max bytes): type-1 packets (>= 12 bytes) get a 2 byte
    header (length, 0x60) in front, type-2 packets (>= 2 bytes) are copied as they are. Returns the byte count,
    -0x10 for a corrupt packet or a negative socket error. */
+#if !defined(G_PART) || G_PART == 1
 int CnInetMcsReceive(s8 *out, s16 max) {
     int ok;
     int r;
@@ -121,8 +128,10 @@ int CnInetMcsReceive(s8 *out, s16 max) {
     }
     return r;
 }
+#endif
 /* Looks at the first packet in the receive queue: returns 0 = incomplete, -1 = bad, 1 = whole 0x28 packet,
    2 = whole packet; *len gets the packet size. */
+#if !defined(G_PART) || G_PART == 1
 int CnInetCheckMcsPacket2(void *msg, s32 *len) {
     NM tmp;
     int t;
@@ -152,10 +161,12 @@ int CnInetCheckMcsPacket2(void *msg, s32 *len) {
     *len = (CCnNetMsgBob_CnReadU16(&tmp) & 0xFFFF) + 0xC;
     return n >= *len;
 }
+#endif
 extern u8 m_bTimerInitialized;
 extern s32 old_time;
 extern f32 total_time;
 /* Network time in seconds from the EE timer 0 (started on first use): adds the elapsed ticks scaled to seconds. */
+#if !defined(G_PART)
 f32 CngNetTimeGet(void) {
     s32 now;
     s32 d;
@@ -174,67 +185,107 @@ f32 CngNetTimeGet(void) {
     }
     return total_time;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsg_Construct(void *a, void *b) {
     CCnNetMsg_CnShareMSGDAT(a, b);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsg_CnShareMSGDAT(void *a, void *b) {
     memcpy(a, b, 0x14);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnGetReadSize(NM *m) {
     return m->size - m->rd;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnGetMsgSize(NM *m) {
     return m->size;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnGetBuffSizeLeft(NM *m) {
     return m->cap - m->size;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 u8 *CCnNetMsg_CnGetReadTopPtr(NM *m) {
     return m->buf + m->rd;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsgBob_Construct(void *a, void *b) {
     memcpy(a, b, 0x14);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsgBob_CnGetReadSize(NM *m) {
     return m->size - m->rd;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void tmplCCnNetMsg_CnClear(NM *m, void *buf, int size) {
     CngNet_MSG_Init(m, buf, size);
     CngNet_MSG_Clear(m);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsg_CnReadTop(NM *m) {
     CngNet_MSG_ReadTop(m);
     m->x14 = 0;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsg_CnClear(NM *m) {
     CngNet_MSG_Clear(m);
     m->x14 = 0;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnWrite(int a, int b, int c, int d) {
     return CngNet_MSG_Write(a, b, c, d);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnRead(int a, int b, int c, int d) {
     return CngNet_MSG_Read(a, b, c, d);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnWriteU16(int a, int b) {
     return CngNet_MSG_WriteU16(a, b);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnWriteU8(int a, int b) {
     return CngNet_MSG_WriteU8(a, b);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsg_CnWriteNetTime(NM *m, f32 t) {
     CngNet_MSG_WriteFloat32(m, t);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnReadU16(void *a) {
     return CngNet_MSG_ReadU16(a);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int CCnNetMsg_CnReadU8(void *a) {
     return CngNet_MSG_ReadU8(a);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 f32 CCnNetMsg_CnReadNetTime(NM *m) {
     return CngNet_MSG_ReadFloat32(m);
 }
+#endif
 /* Drops the first n bytes (the read position if n <= 0) and moves the rest to the front. */
+#if !defined(G_PART) || G_PART == 2
 void CCnNetMsg_CnPurgeData(NM *m, int n) {
     int k;
 
@@ -250,4 +301,5 @@ void CCnNetMsg_CnPurgeData(NM *m, int n) {
         m->rd = 0;
     }
 }
+#endif
 int CCnNetMsgBob_CnGetReadSize(NM *);

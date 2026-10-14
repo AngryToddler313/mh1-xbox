@@ -204,10 +204,13 @@ typedef struct CNGPKT {
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void CngNetPS2ModuleBootInitialize(void) {
     DeviceModuleInitialize_blocking();
 }
+#endif
 
+#if !defined(G_PART)
 void InetSramInitialize(void) {
     CurDevice = 0;
     memset(DeviceWork, 0xFF, 0x3D4);
@@ -236,7 +239,9 @@ void InetSramInitialize(void) {
     MySnapPerformance = 0;
     memset(MySnapRegWeb, 0, 0x100);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void CngNetMcsP2PInit(CNGP2P *p) {
     mcsls_preinit();
     CngNet_MSG_Init(&p->rxm, aRecvBuff, 0x2000);
@@ -247,3 +252,4 @@ void CngNetMcsP2PInit(CNGP2P *p) {
     p->ip[0] = 0;
     p->x17C = 0;
 }
+#endif

@@ -18,6 +18,7 @@ void set13_d(SETW *sw);
 void set13_e(SETW *sw);
 void set13_trans(PRIM *pr);
 
+#if !defined(G_PART)
 void Set13_set(int arg) {
     SETW *sw = pull_set_work(0);
 
@@ -27,7 +28,9 @@ void Set13_set(int arg) {
         sw->move = set13_move;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Set13_set2(int arg, f32 *pos, int n) {
     SETW *sw;
 
@@ -39,7 +42,9 @@ void Set13_set2(int arg, f32 *pos, int n) {
         sw->move = set13_move;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void set13_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -56,7 +61,9 @@ void set13_move(SETW *sw) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void set13_i(SETW *sw) {
     PLW *pl = &player_work[game_w.master];
 
@@ -161,3 +168,4 @@ void set13_i(SETW *sw) {
         push_set_work(sw);
     }
 }
+#endif

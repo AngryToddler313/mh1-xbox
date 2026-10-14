@@ -1,4 +1,5 @@
 /* AQ session layer (0x0022CD60-0x0022D2E8): init_AQWork, AQ_exec, AQ_exec_load, session init/wait, ck_exec_aq. See aq_nm.c. */
+#include "gwx.h"
 #include "types.h"
 
 void *memset(void *, int, int);
@@ -186,6 +187,7 @@ typedef struct AQPKT {
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void init_AQWork(int n) {
     AQU *p;
 
@@ -208,7 +210,9 @@ void init_AQWork(int n) {
         p->x24 = p->x14 + recv_buf_one[n];
     }
 }
+#endif
 
+#if !defined(G_PART)
 void AQ_exec(void) {
     AQW *w;
     u8 *p;
@@ -217,7 +221,7 @@ void AQ_exec(void) {
 
     if (system_w.x35 == 0) {
         w = &aq_work;
-        game_w[0x21C] = game_w[0x21B];
+        game_w[GWX(0x21C)] = game_w[GWX(0x21B)];
         switch (aq_work.mode) {
         case 0:
             break;
@@ -238,7 +242,7 @@ void AQ_exec(void) {
                 if (aq_work.session == 0) {
                     w->mode++;
                     q = game_w + 0x208;
-                    p = q + game_w[0xD1];
+                    p = q + game_w[GWX(0xD1)];
                     v = *p;
                     if (v != 0xFF) {
                         *p = 0xFF;
@@ -270,7 +274,9 @@ void AQ_exec(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void AQ_exec_load(void) {
     AQW *w;
     u8 *p;
@@ -279,7 +285,7 @@ void AQ_exec_load(void) {
 
     if (Online_ck() != 0 && system_w.x34 != 0) {
         w = &aq_work;
-        game_w[0x21C] = game_w[0x21B];
+        game_w[GWX(0x21C)] = game_w[GWX(0x21B)];
         switch (aq_work.mode) {
         case 0:
             break;
@@ -300,7 +306,7 @@ void AQ_exec_load(void) {
                 if (aq_work.session == 0) {
                     w->mode++;
                     q = game_w + 0x208;
-                    p = q + game_w[0xD1];
+                    p = q + game_w[GWX(0xD1)];
                     v = *p;
                     if (v != 0xFF) {
                         *p = 0xFF;
@@ -316,12 +322,16 @@ void AQ_exec_load(void) {
         AQ_send();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void AQSession_init_online(void) {
     CngNetAQSessionInit_online(cng_netAQ);
     aq_work.mode++;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int AQSession_wait(void) {
     int r = 0;
     AQW *w = &aq_work;
@@ -332,11 +342,14 @@ int AQSession_wait(void) {
         w->id = CngNetAQConnectIdGet(cng_netAQ);
         w->host = CngNetAQIsHost(cng_netAQ);
         r = 1;
-        game_w[0xD1] = w->id;
+        game_w[GWX(0xD1)] = w->id;
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *ck_exec_aq() {
     return CngNetAQcommandExec();
 }
+#endif
