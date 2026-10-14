@@ -12,3 +12,4 @@ main D_002A5FE0 0x2A5FE0     # G DispSoftkeyboard (0x20B020): s8[12] glyph index
 main D_002BE8B0 0x2BE8B0     # G DispSoftkeyboard: format string for those 12 prints
 main fight_bgm_tbl 0x002895D8  # G fight_bgm_set (0x1D8130) reads it by game_w+0x2E (11 bytes: 51 51 52..57 57 57 52), stage_bgm_etc_tbl follows at 0x2895E8
 lobby item_box 0x653330     # G Lb_ItemBox_init (lobby 0x552470, called from main 0x118F60 / 0x11917C) stores this address in ib (gp-12564)
+lobby netDialogMessage 0x636F20  # G SetDialogData (lobby 0x59F430) reads {u16 kind, pad, char *msg} entries (8 bytes) from D_00636F20/24; data_map.txt has it at low confidence

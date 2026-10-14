@@ -605,8 +605,7 @@ void lobby_client_login() {
 }
 
 #ifdef VERSION_MHG
-/* G (lobby 0x57A0A0): four prims, pNet+0/4/8/0xC point at lb_prim[0..3] (0x20 bytes apart); the fourth callback is not
- * used by the village (the MH1-style callers pass three) */
+/* G (lobby 0x57A0A0): the prims are lb_prim[0..] 0x20 apart (MH1's D_3EBC90.. have no G address); pNet is MH1's layout here */
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
     F(s32, F(int, pNet, PNET_OFS(0x14)), 0x14) = arg0;
@@ -614,8 +613,6 @@ void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(s32, F(int, pNet, PNET_OFS(0x18)), 0x14) = arg1;
     F(int, pNet, PNET_OFS(0x1C)) = (int)&lb_prim + 0x40;
     F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x14) = arg2;
-    F(int, pNet, PNET_OFS(0x20)) = (int)&lb_prim + 0x60;
-    F(s32, F(int, pNet, PNET_OFS(0x20)), 0x14) = 0;
 }
 #else
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
@@ -635,23 +632,6 @@ asm int lbc_login_init()
 }
 #endif
 
-#ifdef VERSION_MHG
-/* G (lobby 0x57A120): no argument; pNet is a pointer and its first five words are the prims (G moved them from +0x14.. to +0..):
- * ot5, ot6, ot7, ot2 (entry 0 of 16) and a fifth on an ordering table G added (the PC has no draw for it yet) */
-void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0) {
-    int i;
-    (void)arg0;
-    for (i = 0; i < 4; i++) {
-        int p = F(int, pNet, i * 4);
-        if (p != 0 && F(s32, p, 0x14) != 0) {
-            if (i == 0) add_prim2(&ot5, p, 0, 1);
-            else if (i == 1) add_prim2(&ot6, p, 0, 1);
-            else if (i == 2) add_prim2(&ot7, p, 0, 1);
-            else add_prim2(&ot2, p, 0, 0x10);
-        }
-    }
-}
-#else
 void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0) {
     int temp_a1;
     int temp_a1_2;
@@ -676,7 +656,6 @@ void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0) {
     }
 }
 
-#endif
 
 void text_lobby_trans_ot0(ARG_text_lobby_trans_ot0_arg0 *arg0) {
     u8 temp_a0;
@@ -2039,22 +2018,18 @@ void lbc_in_plaza_00() {
 }
 
 #ifdef VERSION_MHG
-/* G (lobby 0x57EE00): pNet is 0x38 bytes with five prim pointers at +0..+0x10 (lb_prim, 0x20 apart) */
+/* G (lobby 0x57EE00) keeps five prims (the fifth carries the text, ot3); the PC runs MH1's four: the text prim is the fourth */
 void Lbc_init_network_work() {
-    static const s32 ids[5] = { 0, 1, 2, 3, 5 };
-    int k;
-
-    memset(pNet, 0, 0x38);
-    for (k = 0; k < 5; k++) {
-        F(int, pNet, 4 * k) = (int)&lb_prim + 0x20 * k;
-    }
-    F(int, F(int, pNet, 0x10), 0x14) = (int)&text_lobby_trans_ot3_o;
-    for (k = 0; k < 5; k++) {
-        F(s32, F(int, pNet, 4 * k), 0x18) = ids[k];
-    }
-    if (F(u8, (u8 *)cw, CW_OFS(0x35D5)) == 0 && Online_ck() == 1) {
-        F(u8, pNet, 0x28) = 0x10;
-    }
+    memset(pNet, 0, 0x2C);
+    F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
+    F(int, pNet, PNET_OFS(0x18)) = (int)&lb_prim + 0x20;
+    F(int, pNet, PNET_OFS(0x1C)) = (int)&lb_prim + 0x40;
+    F(int, pNet, PNET_OFS(0x20)) = (int)&lb_prim + 0x60;
+    F(int, F(int, pNet, PNET_OFS(0x20)), 0x14) = (int)&text_lobby_trans_ot3_o;
+    F(s32, F(int, pNet, PNET_OFS(0x14)), 0x18) = 0;
+    F(s32, F(int, pNet, PNET_OFS(0x18)), 0x18) = 1;
+    F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x18) = 2;
+    F(s32, F(int, pNet, PNET_OFS(0x20)), 0x18) = 3;
 }
 #else
 void Lbc_init_network_work() {

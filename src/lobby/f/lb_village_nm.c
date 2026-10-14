@@ -5688,19 +5688,6 @@ void Lbc_set_prim(void *a, void *b, void *c) {
  * (entry 0 of 16) */
 extern u8 ot2[], ot5[], ot6[], ot7[];
 int add_prim2();
-#ifdef VERSION_MHG
-void lbc_text_lobby_trans(u8 *net) {
-    u8 *p;
-    p = M2C_FIELD(pNet, u8 **, 0);
-    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot5, p, 0, 1);
-    p = M2C_FIELD(pNet, u8 **, 4);
-    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot6, p, 0, 1);
-    p = M2C_FIELD(pNet, u8 **, 8);
-    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot7, p, 0, 1);
-    p = M2C_FIELD(pNet, u8 **, 0xC);
-    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot2, p, 0, 0x10);
-}
-#else
 void lbc_text_lobby_trans(u8 *net) {
     u8 *p;
 
@@ -5721,4 +5708,3 @@ void lbc_text_lobby_trans(u8 *net) {
         add_prim2(ot2, p, 0, 0x10);
     }
 }
-#endif

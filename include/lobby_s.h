@@ -18,6 +18,9 @@ typedef struct LB_PIT {
 } LB_PIT;
 extern LB_PIT lb_pit;
 
+#ifdef VERSION_MHG
+#include "lbshop_g.h"
+#else
 typedef struct LB_SHOP {
     s16 pos[5][2];      /* 0x00 tag positions (x, y) */
     s8 step;            /* 0x14 main step (Lb_mix / Lb_shop switch) */
@@ -64,6 +67,7 @@ typedef struct LB_SHOP {
     s8 x8E;             /* 0x8E */
     s8 x8F;             /* 0x8F */
 } LB_SHOP;
+#endif
 
 typedef struct LB_SHOPITEM {
     s32 price;          /* 0x00 */

@@ -418,7 +418,7 @@ s8 kind;
     if (dialogData.id != id || dialogData.html != kind) {
         dialogData.id = id;
         lines = 0;
-        dialogData.msg = netDialogMessage[id];
+        dialogData.msg = NETDLG_MSG(id);
         dialogData.html = kind;
         dialogData.x04 = 0;
         dialogData.x06 = 0;

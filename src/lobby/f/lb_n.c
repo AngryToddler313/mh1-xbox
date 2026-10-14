@@ -204,7 +204,11 @@ void Clear_lobby_ram(void) {
     }
     init_set_work();
     cw = client_work;
-    pNet = network_work;
+    {   /* MH1's C writes pNet by MH1 offsets: a host buffer in that layout instead of G's network_work (lbsys_g.h) */
+        static u8 pnet_host[0x400];
+        memset(pnet_host, 0, sizeof pnet_host);
+        pNet = pnet_host;
+    }
     Lbc_init_network_work();
     if (*((u8 *)player_work + game_w.master * 0xA00) != 0) {
         Lb_set_mini_data(my_user_mini_data);

@@ -71,6 +71,9 @@ typedef struct LB_NPCW {
 
 /* lbShop (0x006EABF0, size 0x90): shop / forge / armor-shop menu state shared
  * by lb_mix, lb_shop, lb_process, lb_armor (all field names are guesses) */
+#ifdef VERSION_MHG
+#include "lbshop_g.h"
+#else
 typedef struct LB_SHOP {
     s16 pos[5][2];      /* 0x00 tag positions (x, y) */
     s8 step;            /* 0x14 main step (Lb_mix / Lb_shop switch) */
@@ -117,6 +120,7 @@ typedef struct LB_SHOP {
     s8 x8E;             /* 0x8E */
     s8 x8F;             /* 0x8F */
 } LB_SHOP;
+#endif
 
 /* shopList entry (0x28 bytes) */
 typedef struct LB_SHOPITEM {

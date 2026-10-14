@@ -13,8 +13,9 @@
 
 /* pNet (the net window state, network_work) and cw (client work): MH1 offset -> G offset, from tools/mhg_addrmap.py
  * --ptr pNet / --ptr cw (votes) and G's code; unknown offsets stay as they are. */
-#define PNET_OFS(o) ((o) < 0x6 ? (o) + 0x20 : (o) <= 0x10 ? (o) + 0x21 : (o) < 0x14 ? (o) + 0x20 : (o) < 0x24 ? (o) - 0x14 : \
-    (o) < 0x30 ? (o) - 8 : (o))
+/* PC: pNet points at a host buffer in MH1's layout (Clear_lobby_ram, lb_n.c), so MH1's C (raw pNet[0xC] ... offsets) runs
+ * unchanged and PNET_OFS is the identity. G's own layout (prims at +0..0x10, the flags at +0x2D / +0x31) is not used. */
+#define PNET_OFS(o) (o)
 #define CW_OFS(o) ((o) < 0x2BFE ? (o) : (o) < 0x2C06 ? (o) - 0x2BFE + 0xB64 : (o) < 0x2C2F ? (o) - 0x2C06 + 0xB6E : \
     (o) < 0x2C3C ? (o) - 0x2C2F + 0xB97 : (o) < 0x2C43 ? (o) - 0x2C3C + 0xBA4 : (o) < 0x2C46 ? (o) - 0x2C43 + 0xBA7 : \
     (o) < 0x2C4C ? (o) - 0x2C46 + 0xBB0 : (o) < 0x2C70 ? (o) - 0x2C4C + 0xBB4 : \

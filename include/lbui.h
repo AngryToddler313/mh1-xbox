@@ -78,6 +78,11 @@ extern LB_SCOND SearchCondition;
 extern u8 *SearchResult;
 extern LB_DIALOG dialogData;
 extern char *netDialogMessage[];
+#ifdef VERSION_MHG
+#include "lbdlg_g.h"    /* G's message table: 8-byte entries, other numbers (NETDLG_MSG maps MH1's id) */
+#else
+#define NETDLG_MSG(id) (netDialogMessage[id])
+#endif
 extern LB_NETW *pNet;
 /* chat / plaza work (pointer cw in main .sbss) */
 typedef struct LB_CW {
