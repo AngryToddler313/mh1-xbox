@@ -420,6 +420,10 @@ void *rt_pull_enemy_work(void)
             em->mdl = mdl;
             PU8(em, 0x8C3) = PU8(&game_w, 0xD1);
             PF(em, 0x798) = 1.0f;
+#ifdef VERSION_MHG
+            em->size = 100;     /* G: every spawner sets the size (round_init 100, Em_direct_set the
+                                 * quest's); 100 here covers the PC's own spawns (free play) */
+#endif
             return em;
         }
     }
@@ -776,6 +780,10 @@ int rt_monster_tick(int no)
                 em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888),
                 PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8), PS16(em, 0x56A), PU8(em, 0x9EA), PU8(em, 0x959),
                 (unsigned)PS32(em, 0x74C), PU16(em, 0x7EA));
+#ifdef VERSION_MHG
+    if (getenv("RT_EM_TRACE"))      /* G's monster state: size %, level, hit-zone table, scale */
+        printf("em%d: G size %d lv %d meat %d scale %.2f\n", no, em->size, em->lv, em->meat_no, em->scale[0]);
+#endif
     {
         /* the world matrix at EMW+0x60, as enemy_mk (0x10AEB0) builds it in trans():
          * the host poses the skeleton itself, but game code reads this matrix

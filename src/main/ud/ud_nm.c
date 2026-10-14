@@ -5,18 +5,25 @@
 #include "game.h"
 #include "pl.h"
 #include "ud.h"
+#ifdef VERSION_MHG
+#define ARMOR_SZ 0x20   /* G's armour and gun records (include/plequip.h) */
+#define GUN_SZ 0x18
+#else
+#define ARMOR_SZ 0x14
+#define GUN_SZ 0x14
+#endif
 
 extern u8 Item_data[327][16];
 extern u8 h_rank_tbl[];
-typedef struct { s16 v; u8 _p[0x12]; } GE;
+typedef struct { s16 v; u8 _p[GUN_SZ - 2]; } GE;
 typedef struct { s16 v; u8 _p[0x16]; } KE;
 extern u8 Ken_data[][0x18];
-extern u8 Gun_data[][0x14];
-extern u8 Armor_Head_Data[][0x14];
-extern u8 Armor_Body_Data[][0x14];
-extern u8 Armor_Waist_Data[][0x14];
-extern u8 Armor_Arm_Data[][0x14];
-extern u8 Armor_Leg_Data[][0x14];
+extern u8 Gun_data[][GUN_SZ];
+extern u8 Armor_Head_Data[][ARMOR_SZ];
+extern u8 Armor_Body_Data[][ARMOR_SZ];
+extern u8 Armor_Waist_Data[][ARMOR_SZ];
+extern u8 Armor_Arm_Data[][ARMOR_SZ];
+extern u8 Armor_Leg_Data[][ARMOR_SZ];
 extern u8 *Gun_Grow_Up_DATA[];
 extern s16 Silencer_Grow_Up_Tbl[];
 extern s16 LBarrel_Grow_Up_Tbl[];
@@ -423,44 +430,44 @@ s16 Get_equip_value(u8 kind) {
         }
         break;
     case 1:
-        r += *(&Armor_Head_Data[0][8] + u->armor[1] * 0x14);
-        r += *(&Armor_Body_Data[0][8] + u->armor[2] * 0x14);
-        r += *(&Armor_Arm_Data[0][8] + u->armor[3] * 0x14);
-        r += *(&Armor_Waist_Data[0][8] + u->armor[4] * 0x14);
-        r += *(&Armor_Leg_Data[0][8] + u->armor[0] * 0x14);
+        r += *(&Armor_Head_Data[0][8] + u->armor[1] * ARMOR_SZ);
+        r += *(&Armor_Body_Data[0][8] + u->armor[2] * ARMOR_SZ);
+        r += *(&Armor_Arm_Data[0][8] + u->armor[3] * ARMOR_SZ);
+        r += *(&Armor_Waist_Data[0][8] + u->armor[4] * ARMOR_SZ);
+        r += *(&Armor_Leg_Data[0][8] + u->armor[0] * ARMOR_SZ);
         if (u->wkind == 7) {
-            r += *(&Gun_data[0][0xA] + u->wid * 0x14);
+            r += *(&Gun_data[0][0xA] + u->wid * GUN_SZ);
         } else {
             r += *(&Ken_data[0][0xA] + u->wid * 0x18);
         }
         break;
     case 2:
-        r += (s8)*(&Armor_Head_Data[0][9] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][9] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][9] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][9] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][9] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][9] + u->armor[1] * ARMOR_SZ);
+        r += (s8)*(&Armor_Body_Data[0][9] + u->armor[2] * ARMOR_SZ);
+        r += (s8)*(&Armor_Arm_Data[0][9] + u->armor[3] * ARMOR_SZ);
+        r += (s8)*(&Armor_Waist_Data[0][9] + u->armor[4] * ARMOR_SZ);
+        r += (s8)*(&Armor_Leg_Data[0][9] + u->armor[0] * ARMOR_SZ);
         break;
     case 3:
-        r += (s8)*(&Armor_Head_Data[0][0xA] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][0xA] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][0xA] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][0xA] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][0xA] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][0xA] + u->armor[1] * ARMOR_SZ);
+        r += (s8)*(&Armor_Body_Data[0][0xA] + u->armor[2] * ARMOR_SZ);
+        r += (s8)*(&Armor_Arm_Data[0][0xA] + u->armor[3] * ARMOR_SZ);
+        r += (s8)*(&Armor_Waist_Data[0][0xA] + u->armor[4] * ARMOR_SZ);
+        r += (s8)*(&Armor_Leg_Data[0][0xA] + u->armor[0] * ARMOR_SZ);
         break;
     case 4:
-        r += (s8)*(&Armor_Head_Data[0][0xB] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][0xB] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][0xB] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][0xB] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][0xB] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][0xB] + u->armor[1] * ARMOR_SZ);
+        r += (s8)*(&Armor_Body_Data[0][0xB] + u->armor[2] * ARMOR_SZ);
+        r += (s8)*(&Armor_Arm_Data[0][0xB] + u->armor[3] * ARMOR_SZ);
+        r += (s8)*(&Armor_Waist_Data[0][0xB] + u->armor[4] * ARMOR_SZ);
+        r += (s8)*(&Armor_Leg_Data[0][0xB] + u->armor[0] * ARMOR_SZ);
         break;
     case 5:
-        r += (s8)*(&Armor_Head_Data[0][0xC] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][0xC] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][0xC] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][0xC] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][0xC] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][0xC] + u->armor[1] * ARMOR_SZ);
+        r += (s8)*(&Armor_Body_Data[0][0xC] + u->armor[2] * ARMOR_SZ);
+        r += (s8)*(&Armor_Arm_Data[0][0xC] + u->armor[3] * ARMOR_SZ);
+        r += (s8)*(&Armor_Waist_Data[0][0xC] + u->armor[4] * ARMOR_SZ);
+        r += (s8)*(&Armor_Leg_Data[0][0xC] + u->armor[0] * ARMOR_SZ);
         break;
     case 6: if (u->wkind == 6) { r = *(&Ken_data[0][0xB] + u->wid * 0x18); } break;
     case 7: if (u->wkind == 6) { r = *(&Ken_data[0][0xC] + u->wid * 0x18); } break;
@@ -484,7 +491,7 @@ s16 Get_bowgun_atk(u8 *w) {
     }
     id = *(u16 *)(w + 2);
     o = *(u16 *)(w + 4);
-    off = id * 0x14;
+    off = id * GUN_SZ;
     r = *(s16 *)(&Gun_data[0][8] + off) + *(s16 *)(Gun_Grow_Up_DATA[*(&Gun_data[0][2] + off)] + (o & 0xF) * 0x18);
     if (o & 0x10) { r += Silencer_Grow_Up_Tbl[0]; }
     if (o & 0x20) { r += LBarrel_Grow_Up_Tbl[0]; }
@@ -541,11 +548,11 @@ static void Equip_idx_renew(UDW *u) {
     u8 m = 0;
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
     if (u->wkind == 7) { m |= 8; } else { m |= 4; }
-    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * 0x14))) { u->widx[2] = 0xFF; }
-    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * 0x14))) { u->widx[3] = 0xFF; }
-    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * 0x14))) { u->widx[5] = 0xFF; }
-    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * 0x14))) { u->widx[4] = 0xFF; }
-    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * 0x14))) { u->widx[1] = 0xFF; }
+    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * ARMOR_SZ))) { u->widx[2] = 0xFF; }
+    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * ARMOR_SZ))) { u->widx[3] = 0xFF; }
+    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * ARMOR_SZ))) { u->widx[5] = 0xFF; }
+    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * ARMOR_SZ))) { u->widx[4] = 0xFF; }
+    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * ARMOR_SZ))) { u->widx[1] = 0xFF; }
 }
 
 int Warehouse_equip(UDW *u, u8 idx) {
@@ -863,7 +870,7 @@ void Gunner_wasure_ck(UDW *u) {
         for (; i < 20; i++, p += 4) {
             u16 id = *(u16 *)(p + 0x37C);
             if (id != 0 && *(s16 *)(p + 0x37E) > 0 && Item_data[id][1] == 2) {
-                if (!(*(u32 *)(Gun_data[u->wid] + 0x10) & (1 << *(s16 *)(Item_data[id] + 8)))) {
+                if (!(*(u32 *)(Gun_data[u->wid] + GUN_SZ - 4) & (1 << *(s16 *)(Item_data[id] + 8)))) {
                     continue;
                 }
                 return;

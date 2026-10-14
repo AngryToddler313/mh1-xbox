@@ -641,7 +641,21 @@ typedef struct EM_HAGI_EFT {
 } EM_HAGI_EFT;
 
 extern s16 em_hp_vital_tbl[];
+#ifdef VERSION_MHG
+/* G: 14 entries of 0x14 bytes; byte 3 = the monster state the break leads to (1: EMW meat_no 1) */
+typedef struct EM_HAGI_EFT_G {
+    u8 kind;            /* 0x0 */
+    u8 part;            /* 0x1 */
+    u8 lv;              /* 0x2 */
+    u8 state;           /* 0x3 */
+    s32 joint;          /* 0x4 (read as s16) */
+    f32 ofs[3];         /* 0x8 */
+} EM_HAGI_EFT_G;
+extern EM_HAGI_EFT_G hagitori_eft_tbl[14];
+extern u8 *em_species_tbl[];
+#else
 extern EM_HAGI_EFT hagitori_eft_tbl[15];
+#endif
 
 int Online_ck();
 void Em_Mode_Chg();
@@ -972,6 +986,44 @@ int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step) {
     return 0;
 }
 
+#ifdef VERSION_MHG
+/* G (game 0x549C40): kinds compare by species (game 0x54A190, so subspecies share the entries),
+ * and an entry with state 1 switches the monster to its second hit-zone table */
+void em_hagitori_lv_up(EMW *em, u8 bits) {
+    s16 i;
+    s16 j;
+    u8 m = 1;
+    FLMAT mat;
+    f32 p[3];
+    f32 v[3];
+    EM_HAGI_EFT_G *h;
+
+    if ((u8)Em_stg_ck(em)) {
+        for (i = 0; i < 8; m <<= 1, i++) {
+            if (!(bits & m)) {
+                continue;
+            }
+            for (j = 0; j < 14; j++) {
+                h = &hagitori_eft_tbl[j];
+                if (*em_species_tbl[em->kind] == *em_species_tbl[h->kind] && i == h->part &&
+                    em->hagi[i].cnt == h->lv) {
+                    flmatCopy(&mat, get_joint_wmat_em(em, (s16)h->joint));
+                    flvecCopy(v, h->ofs);
+                    flvecApplyMat33_2(v, &mat);
+                    p[0] = mat[3][0] + v[0];
+                    p[1] = mat[3][1] + v[1];
+                    p[2] = mat[3][2] + v[2];
+                    Eft02_set3(1.0f, em, 0, 10, 0, p);
+                    if (h->state == 1) {
+                        em->meat_no = 1;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+#else
 void em_hagitori_lv_up(EMW *em, u8 bits) {
     s16 i;
     s16 j;
@@ -1003,6 +1055,8 @@ void em_hagitori_lv_up(EMW *em, u8 bits) {
         }
     }
 }
+
+#endif
 
 void em_tail_off_sub(EMW *em) {
     struct EFTW *t = em->tail;

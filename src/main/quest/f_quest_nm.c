@@ -1,6 +1,7 @@
 /* f_quest_nm - near-match C of the 13 functions of the quest file (src/main/quest/f_quest.c, 0x226C30-0x22C66C)
  * that are kept as original bytes on the PS2 (config/c_rawfuncs.txt). The PC build links this file weak, the
  * matched functions come from f_quest.c. Meanings are guesses. */
+#include "gwx.h"
 #include "quest.h"
 #include "plf.h"
 
@@ -183,6 +184,9 @@ typedef struct REMI {
 
 
 
+#ifdef VERSION_MHG
+void em_size_scale_set(EMW *em);
+#endif
 EMW *Em_direct_set(QEM *q)
 {
     EMW *em;
@@ -212,8 +216,14 @@ EMW *Em_direct_set(QEM *q)
         em->pos[1] = q->pos[1];
         em->pos[2] = q->pos[2];
         em->ang[1] = q->x1C;
+#ifdef VERSION_MHG
+        em->size = q->x30;      /* G 0x4B5790: the quest's size for this monster */
+#endif
         enemy_mv(em);
         q->x0A = em->id;
+#ifdef VERSION_MHG
+        em_size_scale_set(em);
+#endif
         if (q->x08 == -1) {
             q->x08 = em->x302;
             if (q->x05 != 0) {
@@ -991,7 +1001,8 @@ void remuneration_item_set(void)
     game_w.x1A8 = 0;
     game_w.x1AC = 0;
     pl = &player_work[game_w.master];
-    g = (u8 *)&game_w;
+    g = (u8 *)&game_w + GWX(0x128) - 0x128;     /* G clears its list at 0x100 (sub_main 0x4B9108): the supply
+                                                 * box's items (Start_item_init) must not stay in the reward */
     for (i = 0; i < 0x20; i += 8) {
         *(s16 *)(g + 0x128) = 0;
         *(s16 *)(g + 0x12A) = 0;

@@ -12,6 +12,15 @@ obvious workarounds.
 
 ## Open
 
+### G on the PC: EMW in MH1's layout, stage-timer lists expanded (14 Oct 2026, agent A)
+- **Dropped:** the G -8 shift of EMW's tail (include/em.h `_pad960`) and of EM_FIELD (em_cmd.h) in the PC
+  build (kept for MWCC); the raw 0xA03/0xA04 reads (hit_nm.c, em_cmd 0x71); pc_data's per-stage imports of
+  em01/em15/em21 runaway and em14 stay timers.
+- **Now:** EMW named fields size/meat_no/lv; the timers as G's {stage, value} lists expanded by
+  rt_data.c g_stage_lists; gen_rt_tables lets pc_data win over tables.txt MH1-address lines.
+- **Why:** the PC's C mixes fields and raw MH1 offsets; the old imports read lists as arrays. Revert: this
+  commit (git log --grep "G hunts: monster state").
+
 ### Loading screens: the game's own instead of stand-ins (13 Oct 2026, agent F)
 - **Dropped:** the empty stand-ins flFlip, Disp_load_start, Disp_NowLoading2 (rt_flow.c) and
   Disp_NowLoading (rt_village.c, "the PC loads at once, nothing to show").

@@ -81,15 +81,15 @@ def main():
         if not line:
             continue
         name, work = line[0], len(line) > 1 and line[1] == "work"
+        if G and name in gdata:     # G's own address and size (host array at G's size); config/mhg/pc_data.txt
+            entries.append((name, gdata[name][0], gdata[name][1], work, gdata[name][1]))     # wins over an MH1 address too
+            continue
         if len(line) == 3 and line[1].startswith("0x"):     # NAME 0xADDR 0xSIZE: not in the symbol files
             if G:       # an MH1 address: a zeroed array in G (not mapped)
                 missing.append(name)
                 entries.append((name, 0, int(line[2], 16), True))
                 continue
             entries.append((name, int(line[1], 16), int(line[2], 16), False))
-            continue
-        if G and name in gdata:     # G's own address and size (host array at G's size)
-            entries.append((name, gdata[name][0], gdata[name][1], work, gdata[name][1]))
             continue
         if name not in syms:
             sys.exit("gen_rt_tables: %s not in %s" % (name, " / ".join(SYMFILES)))

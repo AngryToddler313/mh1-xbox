@@ -299,6 +299,18 @@ void em02_main(EMW *em) {
             em->x8B4 = 0x708;
         }
     }
+#ifdef VERSION_MHG
+    /* G (game 0x5AA460): kind 0x24 uses its second hit-zone table between 20% and 50% of its hit points */
+    if (em->kind == 0x24) {
+        if (em->x302 <= (s16)(0.2f * (f32)em->x792)) {
+            em->meat_no = 0;
+        } else if (em->x302 <= (s16)(0.5f * (f32)em->x792)) {
+            em->meat_no = 1;
+        } else {
+            em->meat_no = 0;
+        }
+    }
+#endif
     switch (Em_Dmg_Sys(em, dmg)) {
     case 0:
     case 14:

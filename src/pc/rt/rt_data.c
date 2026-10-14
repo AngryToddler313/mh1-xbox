@@ -216,6 +216,32 @@ static int import_list(const struct rt_table *t)
     return missing;
 }
 
+#ifdef VERSION_MHG
+/* G keeps the monsters' per-stage stay / run-away timers as lists of {stage, value} s16 pairs ending in
+ * {-1, default} (read by game 0x54A1D0 / 0x54A230 into EMW+0x94A / +0x94C); MH1's C indexes an array by
+ * stage. The imported list (config/mhg/pc_data.txt, 0x100 bytes from the list's address) is expanded in
+ * place into a 128-stage array. */
+static void g_stage_lists(void)
+{
+    const struct rt_table *t;
+    for (t = rt_auto_tables; t->name; t++) {
+        int16_t *l = (int16_t *)t->dst, out[128];
+        int k, n = 0, dflt;
+        if (t->size != sizeof out || (!strstr(t->name, "_stay_timer_tbl") && !strstr(t->name, "_runaway_timer_tbl")))
+            continue;
+        while (n < 63 && l[2 * n] != -1)
+            n++;
+        dflt = l[2 * n + 1];
+        for (k = 0; k < 128; k++)
+            out[k] = (int16_t)dflt;
+        for (k = n - 1; k >= 0; k--)        /* the first match wins, as in G's search */
+            if (l[2 * k] >= 0 && l[2 * k] < 128)
+                out[l[2 * k]] = l[2 * k + 1];
+        memcpy(t->dst, out, sizeof out);
+    }
+}
+#endif
+
 int rt_import_data(void)
 {
     size_t i;
@@ -273,6 +299,9 @@ int rt_import_data(void)
     } else {
         fprintf(stderr, "rt: no relocations in the ELF: pointers in data tables stay PS2 addresses\n");
     }
+#ifdef VERSION_MHG
+    g_stage_lists();
+#endif
     return missing;
 }
 

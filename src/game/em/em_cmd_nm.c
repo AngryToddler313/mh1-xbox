@@ -646,6 +646,16 @@ u8 *em_cmd_mode_ck(EMW *em, u8 *p) {
     return var_a1;
 }
 
+#ifdef VERSION_MHG
+/* G (game 0x585F20, 0x586070, 0x588360): the flags of kinds 7 and 0xF also belong to their G
+ * subspecies 0x32 and 0x2D */
+#define EM_KIND_7(k) ((k) == 7 || (k) == 0x32)
+#define EM_KIND_F(k) ((k) == 0xF || (k) == 0x2D)
+#else
+#define EM_KIND_7(k) ((k) == 7)
+#define EM_KIND_F(k) ((k) == 0xF)
+#endif
+
 u8 *em_cmd_flag_set(EMW *em, u8 *p) {
     u8 kind;
     u8 val;
@@ -678,17 +688,17 @@ u8 *em_cmd_flag_set(EMW *em, u8 *p) {
                 em->x83A = val;
                 break;
             case 5:
-                if (em->kind == 7 && em->x8C3 == 0) {
+                if (EM_KIND_7(em->kind) && em->x8C3 == 0) {
                     EM_FIELD(em, u8 *, 0x45C) = val;
                 }
                 break;
             case 6:
-                if (em->kind == 0xF && em->x8C3 == 0) {
+                if (EM_KIND_F(em->kind) && em->x8C3 == 0) {
                     ex[0x44] = val;
                 }
                 break;
             case 7:
-                if (em->kind == 0xF && em->x8C3 == 0) {
+                if (EM_KIND_F(em->kind) && em->x8C3 == 0) {
                     ex[0x45] = val;
                 }
                 break;
@@ -727,17 +737,17 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
             em->x83A = 0;
             break;
         case 5:
-            if (em->kind == 7 && em->x8C3 == 0) {
+            if (EM_KIND_7(em->kind) && em->x8C3 == 0) {
                 EM_FIELD(em, u8 *, 0x45C) = 0;
             }
             break;
         case 6:
-            if (em->kind == 0xF && em->x8C3 == 0) {
+            if (EM_KIND_F(em->kind) && em->x8C3 == 0) {
                 ex[0x44] = 0;
             }
             break;
         case 7:
-            if (em->kind == 0xF && em->x8C3 == 0) {
+            if (EM_KIND_F(em->kind) && em->x8C3 == 0) {
                 ex[0x45] = 0;
             }
             break;
@@ -1491,7 +1501,7 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
             }
             break;
         case 5:
-            if (em->kind == 7) {
+            if (EM_KIND_7(em->kind)) {
                 if (EM_FIELD(em, u8 *, 0x45C) == val) {
                 ok = 0;
             } else {
@@ -1500,7 +1510,7 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
             }
             break;
         case 6:
-            if (em->kind == 0xF) {
+            if (EM_KIND_F(em->kind)) {
                 if (EM_FIELD(em, u8 *, 0x488) == val) {
                 ok = 0;
             } else {
@@ -1509,7 +1519,7 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
             }
             break;
         case 7:
-            if (em->kind == 0xF) {
+            if (EM_KIND_F(em->kind)) {
                 if (EM_FIELD(em, u8 *, 0x489) == val) {
                 ok = 0;
             } else {
