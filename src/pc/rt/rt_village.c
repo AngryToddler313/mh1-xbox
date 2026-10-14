@@ -215,8 +215,13 @@ int rt_village_tick(void)
                         e[0x452], e[0x14], e[0x15], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
         }
     }
-    if (getenv("RT_VILLAGE_TRACE") && tick % 30 == 0) {
+    if (getenv("RT_VILLAGE_TRACE") && (tick % 30 == 0 || (getenv("RT_VT_FINE") && tick >= atoi(getenv("RT_VT_FINE")) && tick < atoi(getenv("RT_VT_FINE")) + 40))) {
+        extern u8 CameraWork[];     /* the demo camera slot (sl[4]): mode, step, no, state */
+        u8 *dc = CameraWork + 0x80 + 4 * 0x100;
+        fprintf(stderr, "rt_village: tick %d hint0 '%.20s' hint1 '%.20s'\n", tick, (char *)lb_sys + LBSYS_OFS(0xA), (char *)lb_sys + LBSYS_OFS(0x28));
+        fprintf(stderr, "rt_village: tick %d demo cam mode %d step %d no %d state %d req %d\n", tick, dc[0x78], dc[0x7C], dc[0x90 + 0x4E], (s8)dc[0x90 + 0x4F], CameraWork[0x5F4]);
         float *p = (float *)(player_work + 0xAC), e[3], t[3], roll, fov;
+        fprintf(stderr, "rt_village: tick %d pl x05 %d stat %d chr %d frame %.1f spd %.2f loopfr %.1f end %.1f loop %d\n", tick, player_work[5], *(s32 *)(player_work + 0x194), *(s32 *)(player_work + 0x198), *(float *)(player_work + 0x19C), *(float *)(player_work + 0x1A0), *(float *)(player_work + 0x1A4), *(float *)(player_work + 0x1A8), *(s32 *)(player_work + 0x1AC));
         rt_cam_view(e, t, &roll, &fov);
         fprintf(stderr, "rt_village: stage_work %d %d mdls %p\n", stage_work[0], stage_work[1], *(void **)(stage_work + 0x3C));
         fprintf(stderr, "rt_village: tick %d pl %.0f %.0f %.0f ang %04X act %d/%d char %d | cam %.0f %.0f %.0f -> %.0f %.0f %.0f fov %.2f roll %.2f\n",

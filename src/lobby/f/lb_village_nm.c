@@ -20,6 +20,11 @@ char *getenv(const char *);
 #define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
 typedef double f64;
 #define NULL ((void *)0)
+#ifdef VERSION_MHG
+#define PL_MAX 10
+#else
+#define PL_MAX 8
+#endif
 
 int CameraInit();
 int DemoCameraCheck();
@@ -86,6 +91,8 @@ int Lb_pl_timer_calc();
 int Lb_pl_to_chair();
 int Lb_pl_to_normal();
 int Lb_player_load();
+void CameraMove();
+int player_mk();
 int Lb_process_shop();
 int Lb_put_chat();
 int Lb_put_gold();
@@ -439,7 +446,9 @@ void vs_square(void) {
 }
 #endif
 #ifdef VERSION_MHG
-/* G (lobby 0x59E480): pNet fields moved (+0xC -> +0x2D, +0x11 -> +0x31), the exit codes are 0x22 (quest) and 0x27 (title) */
+/* G (lobby 0x59E480): pNet fields moved (+0xC -> +0x2D, +0x11 -> +0x31). G numbers the talk modes (lb_sys x68) one higher
+ * from 3 and two higher from 17 (new modes 3 and 18); the PC runs MH1's C everywhere else, so it keeps MH1's numbering
+ * for x68 and this copy uses the MH1 equivalents of G's exit codes 0x22 (quest) and 0x27 (title): 0x20 and 0x25 */
 s32 Local_main(void) {
     M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 0;
     M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) = 0;
@@ -449,12 +458,12 @@ s32 Local_main(void) {
         lbc_text_lobby_trans(network_work);
     }
     switch (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))) {
-    case 0x22:
+    case 0x20:
         *(s8 *)0x3F35CC = 0;                 /* G game_w+0x3F via config/mhg/pc_addr.txt */
         Pit_reset();
         Lbc_set_prim(0, 0, 0);
         return 1;
-    case 0x27:
+    case 0x25:
         Pit_reset();
         Lbc_set_prim(0, 0, 0);
         return -1;
@@ -1027,7 +1036,7 @@ void vs_square_exit(void) {
  * stage 0x56 then back) */
 #ifdef VERSION_MHG
 #define EV_SE 0x44      /* G (lobby 0x59E280): sound and talk-mode numbers moved */
-#define EV_X68 0x23
+#define EV_X68 0x21      /* G 0x23: x68 keeps MH1's numbering on the PC */
 #else
 #define EV_SE 0x41
 #define EV_X68 0x21
@@ -1129,11 +1138,19 @@ static void lb_put_unique(u8 *pl, int st, int k)
  * 0x56 ...): stage files (st_model_load), camera, the players' work, light,
  * fog, set objects; then put the master player at the stage's start
  * (lb_sys+LBSYS_OFS(0x71) = -1: arriving, else the entrance index from St_unique_tbl) */
+#ifdef VERSION_MHG
+void Lb_stage_load(s32 st, s32 arg) {
+    u8 *pl;
+    int k;
+
+    st &= 0xFF;
+#else
 void Lb_stage_load(s32 st) {
     u8 *pl;
     int k;
 
     st &= 0xFF;
+#endif
 
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
     if (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x70)) == 0) {
@@ -1150,8 +1167,12 @@ void Lb_stage_load(s32 st) {
     fade_reset();
     st_model_load(st);
     Lbc_connect();
+#ifdef VERSION_MHG
+    Lb_pl_init(arg);
+#else
     CameraInit();
     Lb_pl_init();
+#endif
     light_init(st);
     *(s8 *)0x3F36BF = 0xFF;
     stage_fog_set(st);
@@ -1194,8 +1215,13 @@ void Lb_stage_load(s32 st) {
             }
             break;
         case 0x4C:
+#ifdef VERSION_MHG
+            k = (ran_suu(1) & 0xFFFF) % 5;
+            lb_put_at(pl, lb_start_pos + 0x30 + k * 0x10);
+#else
             k = M2C_FIELD(cw, u8 *, CW_OFS(0x35D1)) & 7;
             lb_put_at(pl, lb_start_pos + k * 0x10);
+#endif
             break;
         default:
             lb_put_start(pl, st);
@@ -1207,7 +1233,11 @@ void Lb_stage_load(s32 st) {
             if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) == 0) {
                 lb_put_at(pl, lb_start_pos + 0x80);
             } else {
+#ifdef VERSION_MHG
+                k = (ran_suu(1) & 0xFFFF) & 3;
+#else
                 k = M2C_FIELD(cw, u8 *, CW_OFS(0x35D1)) & 3;
+#endif
                 lb_put_at(pl, lb_return_pos + k * 0x10);
             }
             break;
@@ -1249,10 +1279,12 @@ void Lb_stage_load(s32 st) {
         Lb_send_stage();
     }
     Lb_send_pl_warp(pl);
+#ifndef VERSION_MHG
     Lb_send_pl_status(pl);
+#endif
     if (*(u8 *)0x3F3404 == 0x4C || *(u8 *)0x3F3404 == 0x4D) {
         int i;
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < PL_MAX; i++) {
             u8 *p = player_work + 0xA00 * i;
             if (*p != 0 && M2C_FIELD(cw + i, s8 *, CW_OFS(0x2BFE)) == 0) {
                 M2C_FIELD(cw + i, s8 *, CW_OFS(0x2BFE)) = 1;
@@ -1261,6 +1293,12 @@ void Lb_stage_load(s32 st) {
             }
         }
     }
+#ifdef VERSION_MHG
+    CameraInit();
+    M2C_FIELD(player_work + (*(u8 *)0x3F34C1 * 0xA00), u8 *, 1) = 1;
+    player_mk();
+    CameraMove();
+#endif
 }
 
 /* Lb_npc_set (0x5D7790): take npc_dialog_table[0x174 + st] em_work slots
@@ -5470,6 +5508,19 @@ void Lbc_set_prim(void *a, void *b, void *c) {
  * (entry 0 of 16) */
 extern u8 ot2[], ot5[], ot6[], ot7[];
 int add_prim2();
+#ifdef VERSION_MHG
+void lbc_text_lobby_trans(u8 *net) {
+    u8 *p;
+    p = M2C_FIELD(pNet, u8 **, 0);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot5, p, 0, 1);
+    p = M2C_FIELD(pNet, u8 **, 4);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot6, p, 0, 1);
+    p = M2C_FIELD(pNet, u8 **, 8);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot7, p, 0, 1);
+    p = M2C_FIELD(pNet, u8 **, 0xC);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) add_prim2(ot2, p, 0, 0x10);
+}
+#else
 void lbc_text_lobby_trans(u8 *net) {
     u8 *p;
 
@@ -5490,3 +5541,4 @@ void lbc_text_lobby_trans(u8 *net) {
         add_prim2(ot2, p, 0, 0x10);
     }
 }
+#endif

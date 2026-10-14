@@ -36,6 +36,124 @@ void lb_target_angle(PLW *pl, u8 *tgt, u32 dir, u32 rng, u8 mode) {
     }
     *(s16 *)(tgt + 0x302) = res;
 }
+#ifdef VERSION_MHG
+/* G (lobby 0x567FB0): case 1 asks lobby_func_00595530 (flag14 == 0 and flag15 one of 14 actions) instead of MH1's
+ * ladder, puts the second hint line from a new lb_sys byte (+0x95), cw offsets through CW_OFS; case 23 asks G's event-flag
+ * check with 46 (the function the map calls get_questLevelNum) where MH1 has Event_flag_ck(1): the PC keeps MH1's
+ * flag numbers. Talk modes keep MH1's numbers (the PC runs MH1's x68 numbering). */
+static int lb_hint_act_ck(int f14, int f15)
+{
+    if ((u8)f14 != 0) {
+        return 0;
+    }
+    switch ((u8)f15) {
+    case 0x56: case 0x61: case 0x2B: case 0x29: case 0x2A: case 0x4E: case 0x60: case 0x5E: case 0x5D:
+    case 0x5C: case 0x5A: case 0x59: case 0x54: case 0x4C:
+        return 1;
+    }
+    return 0;
+}
+void Lb_put_unique_act_hint(PLW *pl, int a)
+{
+    u8 s;
+    if (lb_sys.x68 == 0x21 || game_w.master != pl->id) {
+        return;
+    }
+    switch (a) {
+    case 1:
+        if (lb_hint_act_ck(pl->flag14, pl->flag15) != 1) {
+            Lb_put_hint(0, 0);
+            Lb_put_hint(1, 0x63);
+            return;
+        }
+        if (game_w.stage == 0x4D || lb_sys.x66 == 0x10) {
+            Lb_put_hint(0, 1);
+            if (lb_sys.x66 == 0x10) {
+                return;
+            }
+            Lb_put_hint(1, (*((u8 *)&lb_sys + 0x95) == 1) ? 2 : 3);
+            return;
+        }
+        if (cw[CW_OFS(0x35D6)] != 0) {
+            Lb_put_hint(0, 1);
+        }
+        return;
+    case 26:
+        if (lb_sys.x68 != 0x11) {
+            Lb_put_hint(0, cw[CW_OFS(0x35D6)] == 0 ? 0x13 : 0x63);
+        }
+        return;
+    case 5:
+        if (Online_ck() == 0) {
+            Lb_put_hint(0, 0x15);
+        } else {
+            Lb_put_hint(0, game_w.stage < 0x51 ? 2 : 0x11);
+        }
+        return;
+    case 6:
+        s = game_w.stage;
+        if (s == 0x4D || s == 0x57) {
+            if (cw[CW_OFS(0x35D3)] != 0) {
+                Lb_put_hint(0, cw[CW_OFS(0x32C5)] != 0 ? 3 : 0x12);
+            } else {
+                Lb_put_hint(0, 0x63);
+            }
+        } else {
+            Lb_put_hint(0, s < 0x51 ? 2 : 0x11);
+        }
+        return;
+    case 7:
+        if (lb_sys.x68 != 1) {
+            Lb_put_hint(0, 4);
+        }
+        return;
+    case 8:
+        Lb_put_hint(0, 5);
+        return;
+    case 11:
+        Lb_put_hint(0, 7);
+        return;
+    case 12:
+        Lb_put_hint(0, Online_ck() == 1 ? 8 : 0x14);
+        return;
+    case 9:
+    case 10:
+        Lb_put_hint(0, 6);
+        return;
+    case 13:
+        Lb_put_hint(0, 9);
+        return;
+    case 14:
+        Lb_put_hint(0, 0xA);
+        return;
+    case 15:
+        Lb_put_hint(0, 0xB);
+        return;
+    case 18:
+        Lb_put_hint(0, 0xC);
+        Lb_put_hint(1, 0x63);
+        return;
+    case 19:
+        Lb_put_hint(0, 0xD);
+        Lb_put_hint(1, 0);
+        return;
+    case 20:
+        Lb_put_hint(0, 0xE);
+        Lb_put_hint(1, 1);
+        return;
+    case 22:
+        Lb_put_hint(0, 0xF);
+        return;
+    case 23:
+        Lb_put_hint(0, Event_flag_ck(1) == 0 ? 0x10 : 0x63);
+        return;
+    case -1:
+        Lb_put_hint(0, 0x63);
+        Lb_put_hint(1, 0x63);
+        return;
+    }
+}
+#else
 void Lb_put_unique_act_hint(pl, a)
 PLW *pl;
 int a;
@@ -174,3 +292,5 @@ b43:
     } else {
     }
 }
+
+#endif
