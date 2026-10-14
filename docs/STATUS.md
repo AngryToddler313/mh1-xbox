@@ -941,3 +941,11 @@ G registrations proven from a clean build (docs/agents/BRIEF.md).
 Open for the owner: agent F's Xbox audio fix (silent after a warm relaunch) is unmerged on
 agent-F and needs a hardware test (docs/agents/COORDINATOR.md); bed "quit game? yes" drops to
 the Forest camp.
+Overnight 14 Oct (merged, clean rebuild 5+7 OK, MH1 PC + quest loop, G PC build): G 15.5%.
+A: G monster level / hit-zone state / size set as G does; subspecies kinds 0x24/0x2D/0x32; reward
+list without supply-box items (stray "1:0" first entry left); armour tables at G sizes; 21 timer
+tables. Choice for owner review (docs/REVIEW.md): the PC keeps MH1's monster-work (EMW) layout,
+G's shifted layout only on the PS2 build. G quest 10 without test aids: Rathian behaves, 1-5
+damage per hit, not won by the script in 900 s. Still zero in G: Shell_data, St_data, Equip_Bonus,
+em_hp_vital_tbl, monster_data. C: f_pl registered (40 of 41 parts; pl_mv004 jump-table order).
+Next: G camera layout (C's notes), those zero tables, quest failure and a G-only monster quest.
