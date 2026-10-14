@@ -21,6 +21,7 @@
 #else
 #include <time.h>
 #endif
+#include "gwx.h"
 #include "rt.h"
 #include "types.h"
 #include "game.h"
@@ -907,7 +908,7 @@ void rt_np_tick(void)
                 PLW *p = &player_work[s];
                 fprintf(stderr, "np-pos: tick %d me %d slot %d stg %d pos %.0f %.0f %.0f ang %04X/%04X act %d/%d box %08X pouch %d:%d\n", k,
                         game_w.master, s, p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF, p->ang_y & 0xFFFF, p->flag14,
-                        p->flag15, *(u32 *)((u8 *)&game_w + 0x1A8), PF(p, s16, 0x828), PF(p, s16, 0x82A));
+                        p->flag15, *(u32 *)((u8 *)&game_w + GWX(0x1A8)), PF(p, s16, 0x828), PF(p, s16, 0x82A));
             }
     }
 }

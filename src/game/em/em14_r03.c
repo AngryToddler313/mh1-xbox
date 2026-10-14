@@ -1,4 +1,5 @@
 /* em14_r03 - monster 14 AI 0x005B5AB0-0x005B71CC: em_act02_005B5AB0, em_act03_005B5B80, em_act04_005B5C10, em_act05_005B5CB0, em_act06_005B5DA0, em_act07_005B5E70, em_act08_005B5F10, em_act09_005B5F20, em_act10_005B5FC0, em_act11_005B60D0, em_act12_005B61A0, em_act13_005B61B0, em_act14_005B6280, em_act15_005B6290, em_act16_005B63C0, em_act17_005B64F0, em_act18_005B6570, em_act19_005B66D0, em_act20_005B66E0, em_act21_005B67F0, em_act22_005B6950, em_act23_005B69D0, em_act24_005B6AA0, em_act25_005B6B70, em_act26_005B6BF0, em_act27_005B6C00, em_act28_005B6D10, em_act29_005B6DE0, em_act33_005B6FD0, em_mv00_005B7060, em_mv01_005B71C0. Whole file in em14_nm.c. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -737,6 +738,13 @@ void em_act19_005B66D0(EMW *em, EM14W *w) {
 
 }
 
+/* G: original bytes (build/mhg/raw/em_act20_005B66E0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act20_005B66E0(EMW *em, EM14W *w)
+{
+#include "em_act20_005B66E0.inc"
+}
+#else
 void em_act20_005B66E0(EMW *em, EM14W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -774,6 +782,7 @@ void em_act20_005B66E0(EMW *em, EM14W *w) {
         break;
     }
 }
+#endif
 
 void em_act21_005B67F0(EMW *em, EM14W *w) {
     s16 temp_a1_2;
@@ -881,7 +890,7 @@ void em_act24_005B6AA0(EMW *em, EM14W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -969,7 +978,7 @@ void em_act28_005B6D10(EMW *em, EM14W *w) {
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

@@ -470,12 +470,15 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
+#if !defined(G_PART)
 void Overlay_reset(void)
 {
     overlay_no[0] = 0;
     overlay_no[1] = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Load_overlay(int arg0, int arg1)
 {
     int len;
@@ -495,7 +498,9 @@ int Load_overlay(int arg0, int arg1)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int disp_select(void)
 {
     u16 *p;
@@ -524,7 +529,9 @@ int disp_select(void)
     }
     return total;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int current_makedisp(pos, len, buf)
 int pos;
 int len;
@@ -539,7 +546,9 @@ u16 *buf;
     }
     return kouho_makedisp(pos, len, kh, buf);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int first_makedisp(pos, len, buf)
 int pos;
 int len;
@@ -547,7 +556,9 @@ u16 *buf;
 {
     return kouho_makedisp(pos, len, hchar[pos].kh, buf);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void unify_khmem(int pos, int flag)
 {
     KH **pk;
@@ -575,13 +586,17 @@ void unify_khmem(int pos, int flag)
         free_khmemlist(kh_skip(k));
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *select_tostr(void)
 {
     meantosjis(meanbuf, outbuf, disp_select());
     return outbuf;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *select_subtostr(int arg0, int n)
 {
     int k;
@@ -605,3 +620,4 @@ u8 *select_subtostr(int arg0, int n)
     meantosjis(meanbuf, outbuf, p - meanbuf);
     return outbuf;
 }
+#endif

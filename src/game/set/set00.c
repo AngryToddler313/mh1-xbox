@@ -81,6 +81,13 @@ static void set00_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set00_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set00_i(SETW *sw)
+{
+#include "set00_i.inc"
+}
+#else
 static void set00_i(SETW *sw) {
     PRIM *pr;
     s16 n, i;
@@ -132,6 +139,7 @@ static void set00_i(SETW *sw) {
         }
     }
 }
+#endif
 
 static void set00_m(SETW *sw) {
     SET00_WORK *w = sw->u.work;

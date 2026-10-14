@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em_fly15_006033A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly15_006033A0(EMW *em, EM21W *w)
+{
+#include "em_fly15_006033A0.inc"
+}
+#else
 void em_fly15_006033A0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -351,3 +358,4 @@ void em_fly15_006033A0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif

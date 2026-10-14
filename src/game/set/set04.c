@@ -58,6 +58,13 @@ static void set04_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set04_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set04_i(SETW *sw)
+{
+#include "set04_i.inc"
+}
+#else
 static void set04_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
@@ -86,7 +93,15 @@ static void set04_i(SETW *sw) {
     }
     push_set_work(sw);
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/set04_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set04_m(SETW *sw)
+{
+#include "set04_m.inc"
+}
+#else
 static void set04_m(SETW *sw) {
     s16 first, last;
 
@@ -115,6 +130,7 @@ static void set04_m(SETW *sw) {
     sw->prim->pos[2] = sw->pos[2];
     add_prim(ot1, sw->prim, 0x20, 0);
 }
+#endif
 
 static void set04_d(SETW *sw) {
     sw->mode++;
@@ -125,6 +141,13 @@ static void set04_e(SETW *sw) {
     push_set_work(sw);
 }
 
+/* G: original bytes (build/mhg/raw/set04_trans.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set04_trans(PRIM *pr)
+{
+#include "set04_trans.inc"
+}
+#else
 static void set04_trans(PRIM *pr) {
     FLMAT mat;
     SET_MDLW *mw = set_mdlw;
@@ -152,3 +175,4 @@ static void set04_trans(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif

@@ -175,6 +175,13 @@ static void eft17_t(PRIM *pr) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/eft17_i00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft17_i00(EFTW *ew)
+{
+#include "eft17_i00.inc"
+}
+#else
 static void eft17_i00(EFTW *ew) {
     FLMAT m;
     f32 v[3];
@@ -456,6 +463,7 @@ static void eft17_i00(EFTW *ew) {
     }
     eft17_m(ew);
 }
+#endif
 
 static void eft17_m00(EFTW *ew) {
     s16 step;
@@ -761,6 +769,13 @@ static void eft17_m00(EFTW *ew) {
     }                                           \
     mats = mw->mat;
 
+/* G: original bytes (build/mhg/raw/eft17_t00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft17_t00(PRIM *pr)
+{
+#include "eft17_t00.inc"
+}
+#else
 static void eft17_t00(PRIM *pr) {
     FLMAT m;
     FLMAT uv;
@@ -1043,6 +1058,7 @@ static void eft17_t00(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
 static void eft17_i08(EFTW *ew) {
     f32 h;

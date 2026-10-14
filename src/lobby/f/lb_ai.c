@@ -1,4 +1,5 @@
 /* Lobby: player name tags (lb_disp_name) and the help/price bar (Lb_put_help), hand-written from m2c drafts. */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern u8 lb_quest_color_tbl[];
@@ -154,7 +155,7 @@ void Lb_put_help(u8 *arg0) {
     flfntSetSize(0x14, 0x14);
     if ((s8)SoftKeyboard_alive_check() == 0) {
         flfntSetSize(0x14, 0x14);
-        if (*((u8 *)&lb_sys + 0xA) == 0) {
+        if (*((u8 *)&lb_sys + LBSYS_OFS(0xA)) == 0) {
             if (lb_sys.x68 == 8) {
                 goto b11;
             }
@@ -170,34 +171,34 @@ b11:
                     v = Lb_check_hotel(0x52);
                     switch (v) {
                     case 0:
-                        *((u8 *)&lb_sys + 0xA) = 0;
+                        *((u8 *)&lb_sys + LBSYS_OFS(0xA)) = 0;
                         break;
                     case 3:
                     case 1:
                         flfntSetSize(0x14, 0x14);
-                        flfntLocate((s16)(strlen((char *)&lb_sys + 0xA) * 0xA + 0x50), 0x1F);
+                        flfntLocate((s16)(strlen((char *)&lb_sys + LBSYS_OFS(0xA)) * 0xA + 0x50), 0x1F);
                         font_print(lit_427_00664C20, *(void **)(room_price + 4));
                     case 2:
                         flfntSetSize(0x14, 0x14);
                         flfntLocate(0x30, 0x1F);
-                        font_print(lit_428_00664C30, (char *)&lb_sys + 0xA);
+                        font_print(lit_428_00664C30, (char *)&lb_sys + LBSYS_OFS(0xA));
                         Lb_put_gold();
                         break;
                     }
                     v = Lb_check_hotel(0x53);
                     switch (v) {
                     case 0:
-                        *((u8 *)&lb_sys + 0x28) = 0;
+                        *((u8 *)&lb_sys + LBSYS_OFS(0x28)) = 0;
                         break;
                     case 3:
                     case 1:
                         flfntSetSize(0x14, 0x14);
-                        flfntLocate((s16)(strlen((char *)&lb_sys + 0x28) * 0xA + 0x50), 0x39);
+                        flfntLocate((s16)(strlen((char *)&lb_sys + LBSYS_OFS(0x28)) * 0xA + 0x50), 0x39);
                         font_print(lit_427_00664C20, *(void **)(room_price + 8));
                     case 2:
                         flfntSetSize(0x14, 0x14);
                         flfntLocate(0x30, 0x39);
-                        font_print(lit_428_00664C30, (char *)&lb_sys + 0x28);
+                        font_print(lit_428_00664C30, (char *)&lb_sys + LBSYS_OFS(0x28));
                         break;
                     }
                     goto b83;
@@ -208,34 +209,34 @@ b11:
                     v = Lb_check_hotel(0x54);
                     switch (v) {
                     case 0:
-                        *((u8 *)&lb_sys + 0xA) = 0;
+                        *((u8 *)&lb_sys + LBSYS_OFS(0xA)) = 0;
                         break;
                     case 3:
                     case 1:
-                        flfntLocate((s16)(strlen((char *)&lb_sys + 0xA) * 0xA + 0x50), 0x1F);
+                        flfntLocate((s16)(strlen((char *)&lb_sys + LBSYS_OFS(0xA)) * 0xA + 0x50), 0x1F);
                         flfntSetSize(0x14, 0x14);
                         font_print(lit_427_00664C20, *(void **)(room_price + 0xC));
                     case 2:
                         flfntLocate(0x30, 0x1F);
                         flfntSetSize(0x14, 0x14);
-                        font_print(lit_428_00664C30, (char *)&lb_sys + 0xA);
+                        font_print(lit_428_00664C30, (char *)&lb_sys + LBSYS_OFS(0xA));
                         Lb_put_gold();
                         break;
                     }
                     v = Lb_check_hotel(0x55);
                     switch (v) {
                     case 0:
-                        *((u8 *)&lb_sys + 0x28) = 0;
+                        *((u8 *)&lb_sys + LBSYS_OFS(0x28)) = 0;
                         break;
                     case 3:
                     case 1:
-                        flfntLocate((s16)(strlen((char *)&lb_sys + 0x28) * 0xA + 0x50), 0x39);
+                        flfntLocate((s16)(strlen((char *)&lb_sys + LBSYS_OFS(0x28)) * 0xA + 0x50), 0x39);
                         flfntSetSize(0x14, 0x14);
                         font_print(lit_427_00664C20, *(void **)(room_price + 0x10));
                     case 2:
                         flfntLocate(0x30, 0x39);
                         flfntSetSize(0x14, 0x14);
-                        font_print(lit_428_00664C30, (char *)&lb_sys + 0x28);
+                        font_print(lit_428_00664C30, (char *)&lb_sys + LBSYS_OFS(0x28));
                         break;
                     }
                     goto b83;
@@ -244,7 +245,7 @@ b11:
             case 18:
                 if (pl->flag14 != 1) {
                     if (Lb_check_hotel(0x51) == 0) {
-                        *((u8 *)&lb_sys + 0x28) = 0;
+                        *((u8 *)&lb_sys + LBSYS_OFS(0x28)) = 0;
                         return;
                     }
                     flfntSetSize(0x14, 0x14);
@@ -255,7 +256,7 @@ b11:
                             goto b69;
                         }
                         if (pl->flag14 != 1) {
-                            font_print(lit_428_00664C30, (char *)&lb_sys + 0xA);
+                            font_print(lit_428_00664C30, (char *)&lb_sys + LBSYS_OFS(0xA));
                             goto b79;
                         }
                     } else {
@@ -273,7 +274,7 @@ b72:
                             font_set_palette(6);
                             font_print(lit_429_00664C38, lb_rule_msg_etc[0x1C / 4]);
 b79:
-                            sprintf((char *)&lb_sys + 0x28, lit_430_00664C40);
+                            sprintf((char *)&lb_sys + LBSYS_OFS(0x28), lit_430_00664C40);
                             goto b83;
                         }
                     }

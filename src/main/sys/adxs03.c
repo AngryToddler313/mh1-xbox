@@ -77,6 +77,7 @@ void str_play_sub(int ch, int file, int vol, int pause);
 void str_fadein_vol(int ch, int frames, int vol);
 void str_master_vol(int update);
 void str_init(void);
+#if !defined(G_PART)
 void str_init(void) {
     int i;
     STRW *w;
@@ -87,16 +88,24 @@ void str_init(void) {
         memset(w, 0, 0x14);
     }
 }
+#endif
+#if !defined(G_PART)
 void str_play(int ch, int file) {
     str_play_sub(ch, file, str_w[ch].vol_max, 0);
 }
+#endif
+#if !defined(G_PART)
 void str_play_vol(int ch, int file, int vol) {
     str_play_sub(ch, file, vol, 0);
 }
+#endif
+#if !defined(G_PART)
 void str_play_f_vol(int ch, int file, int frames, int vol) {
     str_play_sub(ch, file, 0, 0);
     str_fadein_vol(ch, frames, vol);
 }
+#endif
+#if !defined(G_PART)
 void str_play_sub(int ch, int file, int vol, int pause) {
     str_pause(ch, pause);
     str_volume(ch, vol);
@@ -109,16 +118,24 @@ void str_play_sub(int ch, int file, int vol, int pause) {
         }
     }
 }
+#endif
+#if !defined(G_PART)
 void str_pause(int ch, int on) {
     ADXT_Pause(adxt[ch], on);
 }
+#endif
+#if !defined(G_PART)
 void str_stop(int ch) {
     ADXT_Stop(adxt[ch]);
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void str_stop_all(void) {
     str_init();
     str_master_vol(0);
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void str_master_vol(int update) {
     int i;
     STRW *w;
@@ -134,6 +151,8 @@ void str_master_vol(int update) {
         }
     }
 }
+#endif
+#if !defined(G_PART)
 void str_volume(int ch, int vol) {
     STRW *w = &str_w[ch];
     int v;
@@ -148,13 +167,19 @@ void str_volume(int ch, int vol) {
     }
     ADXT_SetOutVol(adxt[ch], v);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void str_outmode(int mode) {
     ADXT_SetOutputMono(mode ^ 1);
     flSndOutputMode(mode);
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 int str_getstat(int ch) {
     return str_w[ch].stat;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void str_fadeout(int ch, int frames) {
     STRW *w = &str_w[ch];
 
@@ -163,6 +188,8 @@ void str_fadeout(int ch, int frames) {
     w->fade_cnt = frames;
     w->fade_len = frames;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void str_fadein(int ch, int frames) {
     STRW *w = &str_w[ch];
 
@@ -171,6 +198,8 @@ void str_fadein(int ch, int frames) {
     w->fade_cnt = frames;
     w->fade_len = frames;
 }
+#endif
+#if !defined(G_PART) || G_PART == 2
 void str_fadein_vol(int ch, int frames, int vol) {
     STRW *w = &str_w[ch];
 
@@ -179,6 +208,8 @@ void str_fadein_vol(int ch, int frames, int vol) {
     w->fade_cnt = frames;
     w->fade_len = frames;
 }
+#endif
+#if !defined(G_PART)
 void str_server(void) {
     int i;
     STRW *w;
@@ -192,6 +223,7 @@ void str_server(void) {
         w->stat = ADXT_GetStat(*a);
     }
 }
+#endif
 /* ===== 0x00100E20-0x00101E38: card work reset, effect work pool (eft_work: 0x80 entries of 0x40 bytes) ===== */
 extern u8 card_w[];
 extern u8 card_w2[];

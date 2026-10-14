@@ -57,6 +57,13 @@ extern s16 em_eye_dmg_timer_tbl[];
 /* A monster's reaction when its eyes are hit: per kind, starts the action
  * (mode 4) that plays the eye-damage animation and a flash effect, unless
  * a protected state is active. */
+/* G: original bytes (build/mhg/raw/em_eye_dmg_act_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_eye_dmg_act_set(EMW *em)
+{
+#include "em_eye_dmg_act_set.inc"
+}
+#else
 void em_eye_dmg_act_set(EMW *em) {
     switch (em->kind) {
     case 1:
@@ -250,8 +257,16 @@ void em_eye_dmg_act_set(EMW *em) {
         break;
     }
 }
+#endif
 
 
+/* G: original bytes (build/mhg/raw/em_eye_dmg_reset_act_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_eye_dmg_reset_act_set(EMW *em)
+{
+#include "em_eye_dmg_reset_act_set.inc"
+}
+#else
 void em_eye_dmg_reset_act_set(EMW *em) {
     switch (em->kind) {
     case 1:
@@ -300,8 +315,16 @@ void em_eye_dmg_reset_act_set(EMW *em) {
         break;
     }
 }
+#endif
 
 void Eft06_set2(f32, EMW *, int, int, f32 *);
+/* G: original bytes (build/mhg/raw/Em_Taisei_Ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Em_Taisei_Ck(EMW *em)
+{
+#include "Em_Taisei_Ck.inc"
+}
+#else
 void Em_Taisei_Ck(EMW *em) {
     EM_TAISEI_DATA *po;
     EM_TAISEI_DATA *ma;
@@ -498,6 +521,7 @@ void Em_Taisei_Ck(EMW *em) {
         }
     }
 }
+#endif
 
 /* em_special_dmg_tbl[kind]: a weak spot that, hit in a given state, keeps
  * its damage in em->x776. */
@@ -512,6 +536,13 @@ extern EM_SPDMG *em_special_dmg_tbl[];
 
 void em_ikari_add(EMW *, s16);
 
+/* G: original bytes (build/mhg/raw/poison_stock_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void poison_stock_set(EMW *em, int n)
+{
+#include "poison_stock_set.inc"
+}
+#else
 void poison_stock_set(EMW *em, int n) {
     EM_TAISEI_DATA *d = em_poison_data_tbl[em->kind];
 
@@ -525,6 +556,7 @@ void poison_stock_set(EMW *em, int n) {
         }
     }
 }
+#endif
 
 void mahi_stock_set(EMW *em, int n) {
     EM_TAISEI_DATA *d = em_mahi_data_tbl[em->kind];
@@ -645,6 +677,13 @@ extern s16 em_atk_mode_timer_tbl[];
 /* Per-frame damage handling of a monster: returns what happened this frame
  * (2 dead without a hit, 1 killed, 0 nothing, 3/4 hagitori states, 5-8 status
  * effects, 9 eye damage, 0xA-0x10 reaction to a hit). *flag receives x888. */
+/* G: original bytes (build/mhg/raw/Em_Dmg_Sys.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 Em_Dmg_Sys(EMW *em, u8 *flag)
+{
+#include "Em_Dmg_Sys.inc"
+}
+#else
 u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
     s16 stock = 0;
     s16 heal = 0;
@@ -854,3 +893,4 @@ fin:
     em_hinshi_end2(em);
     return r;
 }
+#endif

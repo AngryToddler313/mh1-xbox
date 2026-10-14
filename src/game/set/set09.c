@@ -228,6 +228,13 @@ static void set09_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set09_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set09_i(SETW *sw)
+{
+#include "set09_i.inc"
+}
+#else
 static void set09_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
@@ -282,6 +289,7 @@ static void set09_i(SETW *sw) {
         }
     }
 }
+#endif
 
 static void set09_m(SETW *sw) {
     switch (sw->arg) {
@@ -407,6 +415,13 @@ static void set09_t_sub(CLAY *cl, FLMAT *m) {
 }
 
 
+/* G: original bytes (build/mhg/raw/set09_i00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set09_i00(SETW *sw)
+{
+#include "set09_i00.inc"
+}
+#else
 static void set09_i00(SETW *sw) {
     SET09W *w = sw->u.work;
     s16 i;
@@ -455,6 +470,7 @@ static void set09_i00(SETW *sw) {
         break;
     }
 }
+#endif
 
 
 static void set09_m00(SETW *sw) {
@@ -1151,6 +1167,13 @@ static void set09_i05(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set09_m05.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set09_m05(SETW *sw)
+{
+#include "set09_m05.inc"
+}
+#else
 static void set09_m05(SETW *sw) {
     SET09W5 *w = sw->u.work;
     f32 v[3];
@@ -1298,6 +1321,7 @@ static void set09_m05(SETW *sw) {
         add_prim(ot1, w->prim[i], 0x20, 0);
     }
 }
+#endif
 
 static void set09_t05(PRIM *pr) {
     FLMAT m;
@@ -1369,6 +1393,13 @@ static void set09_t06(PRIM *pr) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set09_i07.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set09_i07(SETW *sw)
+{
+#include "set09_i07.inc"
+}
+#else
 static void set09_i07(SETW *sw) {
     SET09W1 *w = sw->u.work;
     f32 r;
@@ -1441,6 +1472,7 @@ static void set09_i07(SETW *sw) {
         sw->se1 = 1;
     }
 }
+#endif
 
 static void set09_m07(SETW *sw) {
     SET09W1 *w = sw->u.work;

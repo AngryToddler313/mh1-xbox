@@ -6,13 +6,16 @@ extern u8 Equip_Bonus[0x630];
 s16 Get_equip_value(u8 kind);
 s16 Pl_item_num_ck(PLW *, int);
 
+#if !defined(G_PART) || G_PART == 1
 s32 Pl_bari_ck(PLW *pl) {
     if (act_ck(pl, 0, 0x36) != 0 || act_ck(pl, 0, 0x48) != 0) {
         return 1;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Pl_status_set(PLW *pl) {
     u8 f = 0;
     int t;
@@ -44,7 +47,9 @@ void Pl_status_set(PLW *pl) {
         pl->work4D5 = f;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Pl_atck_adj_calc(PLW *pl) {
     int v = 0;
     if (Pl_master_ck(pl) == 1) {
@@ -69,7 +74,9 @@ void Pl_atck_adj_calc(PLW *pl) {
     }
     pl->atk_rate = (u32)pl->work6AC / 100.0f;
 }
+#endif
 
+#if !defined(G_PART)
 void Pl_def_adj_calc(PLW *pl) {
     int v = 1;
     v += Get_equip_value(1);
@@ -92,7 +99,9 @@ void Pl_def_adj_calc(PLW *pl) {
     pl->work6AE = v & 0xFF;
     pl->work7DC = (u32)pl->work6AE;
 }
+#endif
 
+#if !defined(G_PART)
 void Skill_set_PL(PLW *pl) {
     u8 *e = Equip_Bonus;
     s16 i;
@@ -117,7 +126,9 @@ void Skill_set_PL(PLW *pl) {
     pl->skill[3] = 0;
     pl->skill[4] = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 Pl_Skill_ck(PLW *pl, int id) {
     s16 i;
     for (i = 0; i < 5; i++) {
@@ -127,7 +138,9 @@ s32 Pl_Skill_ck(PLW *pl, int id) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Pl_reg_calc(PLW *pl) {
     pl->work920 = (f32) Get_equip_value(2);
     pl->work924 = (f32) Get_equip_value(3);
@@ -182,3 +195,4 @@ void Pl_reg_calc(PLW *pl) {
         pl->work92C = 100.0f;
     }
 }
+#endif

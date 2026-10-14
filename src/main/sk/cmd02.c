@@ -86,6 +86,7 @@ typedef struct { s8 b[0x11]; } ZK;
 extern ZK lit_913_0034E410;
 
 
+#if !defined(G_PART)
 void cmd_muhenkan(void) {
     if (SKS8(0x36) == 0) {
         if (SKS32(0x150) > 1) {
@@ -102,7 +103,9 @@ void cmd_muhenkan(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void sk_henkan_sub(void) {
     if (sk_yn_check() == 1 && SKS8(0x36) == 0) {
         sk_speaking();
@@ -113,7 +116,9 @@ void sk_henkan_sub(void) {
     Set_KouhoTable();
     se_req(7, 0x16, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void kbd_yn_kigou_kakutei(void) {
     int r;
 
@@ -126,7 +131,9 @@ void kbd_yn_kigou_kakutei(void) {
         SKS16(0x2C) = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void kouhogun_table_set(int n) {
     int o = n << 8;
     int w = n * 0x101;
@@ -140,7 +147,9 @@ void kouhogun_table_set(int n) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void yn_kouho_work_set(int a, int b) {
     s8 *p;
     int v;
@@ -150,13 +159,17 @@ void yn_kouho_work_set(int a, int b) {
     *p = v;
     strcpy((char *)p + 1, *(char **)(yn_kigou_tbl + v * 4));
 }
+#endif
 
+#if !defined(G_PART)
 void yn_kigou_inbuf_set(void) {
     memset(lpSKey + 0x458, 0, 0x100);
     strcpy((char *)lpSKey + 0x458, (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
     strcpy((char *)lpSKey + 0x158, (char *)lpSKey + 0x458);
 }
+#endif
 
+#if !defined(G_PART)
 void Set_KouhoTableSub(int start, int rev) {
     char b320[0x100];
     char b64[0x100];
@@ -212,3 +225,4 @@ void Set_KouhoTableSub(int start, int rev) {
         }
     }
 }
+#endif

@@ -29,6 +29,7 @@ void flps1600(void *);
 void trans_spr_sub(u8 *);
 void trans_sprite_sort(void);
 
+#if !defined(G_PART)
 void trans_sprite(void) {
     u8 m[64];
     int i;
@@ -49,8 +50,10 @@ void trans_sprite(void) {
     }
     InitRenderState(1);
 }
+#endif
 
 /* Inserts sprite idx (depth z) into the sort_no order. */
+#if !defined(G_PART)
 static void sort_sub(f32 z, int idx) {
     int i;
     int n;
@@ -76,7 +79,9 @@ static void sort_sub(f32 z, int idx) {
     sort_no[i] = idx;
     spr_sort_num++;
 }
+#endif
 
+#if !defined(G_PART)
 void trans_sprite_sort(void) {
     u8 m[64];
     u8 *spr;
@@ -106,7 +111,9 @@ void trans_sprite_sort(void) {
     }
     InitRenderState(1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void trans_spr_sub(u8 *s) {
     u16 tex;
 
@@ -145,3 +152,4 @@ void trans_spr_sub(u8 *s) {
         break;
     }
 }
+#endif

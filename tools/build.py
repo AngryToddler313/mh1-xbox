@@ -48,9 +48,34 @@ else:
     BDIR, CONF, SPLIT = "build", "config", "disc/mh1/split"
 
 
-def gen_raw():
-    if VERSION != "mh1":
+def gen_raw_mhg():
+    """VERSION=mhg: config/mhg/c_rawfuncs.txt 'MODULE VRAM SIZE NAME': the original G bytes (from the
+    split module image) as build/mhg/raw/NAME.inc, for `asm` stand-ins of functions not matched yet."""
+    import re
+    path = os.path.join(ROOT, "config/mhg/c_rawfuncs.txt")
+    if not os.path.exists(path):
         return
+    os.makedirs(os.path.join(ROOT, "build/mhg/raw"), exist_ok=True)
+    bases = {}
+    for line in open(path):
+        f = line.split("#", 1)[0].split()
+        if not f:
+            continue
+        mod, vram, size, name = f[0], int(f[1], 16), int(f[2], 16), f[3]
+        if mod not in bases:
+            bases[mod] = int(re.search(r"vram:\s*(0x[0-9A-Fa-f]+|\d+)", open(os.path.join(ROOT, "config/mhg/%s.yaml" % mod)).read()).group(1), 0)
+            bases[mod] = (bases[mod], open(os.path.join(ROOT, SPLIT, "%s.bin" % mod), "rb").read())
+        base, data = bases[mod]
+        words = [int.from_bytes(data[vram - base + i:vram - base + i + 4], "little") for i in range(0, size, 4)]
+        out = os.path.join(ROOT, "build/mhg/raw", name + ".inc")
+        text = "".join("    .word 0x%08X;\n" % w for w in words)
+        if not os.path.exists(out) or open(out).read() != text:
+            open(out, "w").write(text)
+
+
+def gen_raw():
+    if VERSION == "mhg":
+        return gen_raw_mhg()
     """config/c_rawfuncs.txt: 'MODULE VRAM SIZE NAME'. Writes build/raw/NAME.inc
     (.word lines of the ORIGINAL bytes, taken from disc/) for use as the body of an
     `asm` function inside a C file. This is the INCLUDE_ASM equivalent: it lets a
@@ -190,7 +215,7 @@ def compile_c(src):
         return None
     os.makedirs(os.path.join(ROOT, os.path.dirname(obj)), exist_ok=True)
     # Relative paths: wibo hands them to a Windows program.
-    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude", "-Ibuild/raw", rel, "-o", obj])
+    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude"] + (["-Ibuild/mhg/raw", "-Ibuild/raw"] if VERSION == "mhg" else ["-Ibuild/raw"]) + [rel, "-o", obj])
     if err:
         return err
     for old, new in RENAMES.get(obj, []):
@@ -346,7 +371,7 @@ def link_and_check(module):
                "-T", "%s/%s_undefined_funcs_auto.txt" % (CONF, module)]
               + (["-T", "%s/%s_aliases.txt" % (CONF, module)]
                  if os.path.exists(os.path.join(ROOT, CONF, "%s_aliases.txt" % module)) else [])
-              + (["-T", "config/mhg/g_names.txt"] if VERSION == "mhg" else [])
+              + (["-T", "config/mhg/g_names.txt", "-T", "config/mhg/g_funcnames.txt"] if VERSION == "mhg" else [])
               + (["-T", "build/raw/labels_%s.ld" % module]
                  if VERSION == "mh1" and os.path.exists(os.path.join(ROOT, "build/raw/labels_%s.ld" % module)) else [])
               + ["-o", elf])

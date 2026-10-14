@@ -1,5 +1,6 @@
 /* SLPM_654.95 0x0011D560-0x0011D59C: Item_preparation_rate .. Item_preparation_rate. See item_nm.c. */
 #include "types.h"
+#include "itemprep.h"
 #include "pl.h"
 
 typedef struct ITEMW {
@@ -19,13 +20,6 @@ typedef struct ITEMW {
     u8 pad43[0x54 - 0x43];
 } ITEMW;
 
-/* one recipe: ingredient b (a is the table index), result item, list bit */
-typedef struct IPREP {
-    s16 a;                  /* 0x00 other ingredient */
-    s16 res;                /* 0x02 result item */
-    s8 x04;                 /* 0x04 rate table index */
-    s8 bit;                 /* 0x05 bit of the known-recipe list */
-} IPREP;
 
 extern ITEMW item_work[64];
 extern ITEMW *item_w_top;

@@ -11,6 +11,7 @@ void flfntPrintf(char *, ...);
 char *strstr(const char *, const char *);
 
 /* Prints str twice (a shadow 3/2 pixels down-right in palette pal1, then the text in pal2). */
+#if !defined(G_PART) || G_PART == 1
 void font_print_double(s16 x, s16 y, int pal1, int pal2, char *str) {
     if (font_reset_flag == 0) {
         flfntLocate(x + 3, y + 2);
@@ -21,8 +22,10 @@ void font_print_double(s16 x, s16 y, int pal1, int pal2, char *str) {
         flfntPrintf(lit_377_0035BB08, str);
     }
 }
+#endif
 
 /* Same with a 2/2 shadow offset. */
+#if !defined(G_PART) || G_PART == 1
 void font_print_double2(s16 x, s16 y, int pal1, int pal2, char *str) {
     if (font_reset_flag == 0) {
         flfntLocate(x + 2, y + 2);
@@ -33,14 +36,18 @@ void font_print_double2(s16 x, s16 y, int pal1, int pal2, char *str) {
         flfntPrintf(lit_377_0035BB08, str);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void font_print_uf(char *str) {
     if (font_reset_flag == 0) {
         flfntPrintf(lit_377_0035BB08, str);
     }
 }
+#endif
 
 /* Length of a string in characters, escape codes ("~..") counted by their displayed width. */
+#if !defined(G_PART)
 int strlen_sp(char *s) {
     int len = strlen(s);
     s16 w = 0;
@@ -55,4 +62,5 @@ int strlen_sp(char *s) {
     }
     return len;
 }
+#endif
 

@@ -12,7 +12,11 @@
  *   the quest counter (Lb_guild 0x5C5F30, lb_select_quest*, quest pages)
  *   and the menu drawing helpers they call.
  * Struct fields are raw offsets (M2C_FIELD) as in the drafts. */
+#include "lbsys_g.h"
 #include "types.h"
+#ifdef VERSION_MHG
+char *getenv(const char *);
+#endif
 #define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
 typedef double f64;
 #define NULL ((void *)0)
@@ -422,19 +426,52 @@ s32 Lb_put_button();
 void Lb_draw_square();
 void Lb_put_2TF();
 
-/* Local_main (0x5D8680): one tick of the village. lb_sys+3 is the step:
+/* Local_main (0x5D8680): one tick of the village. lb_sys+LBSYS_OFS(3) is the step:
  * vs_square_func_213[step] = init_pre, init_init, init_se, init,
- * Lb_move_common (the walking loop), exit, event. lb_sys+0x68 = 32: a quest
+ * Lb_move_common (the walking loop), exit, event. lb_sys+LBSYS_OFS(0x68) = 32: a quest
  * was accepted (return 1), 37: leave (return -1). */
+#ifdef VERSION_MHG
+void rt_log_standin(const char *name);
+#define G_STANDIN(n) do { static int o_; if (!o_++) rt_log_standin(n); } while (0)
+extern void (*vs_square_func_227[])();
+void vs_square(void) {
+    vs_square_func_227[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();    /* G's own copy; lb_gaf01.c (MH1 layout) is not linked */
+}
+#endif
+#ifdef VERSION_MHG
+/* G (lobby 0x59E480): pNet fields moved (+0xC -> +0x2D, +0x11 -> +0x31), the exit codes are 0x22 (quest) and 0x27 (title) */
 s32 Local_main(void) {
-    M2C_FIELD(pNet, s8 *, 0xC) = 0;
-    M2C_FIELD(pNet, u8 *, 0x11) = 0;
+    M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 0;
+    M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) = 0;
     font_set_stack_no(0);
-    ((void (**)(void))vs_square_func_213)[M2C_FIELD(lb_sys, s8 *, 3)]();
-    if (M2C_FIELD(pNet, u8 *, 0x11) == 0) {
+    ((void (**)(void))vs_square_func_213)[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();
+    if (M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) == 0) {
         lbc_text_lobby_trans(network_work);
     }
-    switch (M2C_FIELD(lb_sys, s32 *, 0x68)) {
+    switch (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))) {
+    case 0x22:
+        *(s8 *)0x3F35CC = 0;                 /* G game_w+0x3F via config/mhg/pc_addr.txt */
+        Pit_reset();
+        Lbc_set_prim(0, 0, 0);
+        return 1;
+    case 0x27:
+        Pit_reset();
+        Lbc_set_prim(0, 0, 0);
+        return -1;
+    default:
+        return 0;
+    }
+}
+#else
+s32 Local_main(void) {
+    M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 0;
+    M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) = 0;
+    font_set_stack_no(0);
+    ((void (**)(void))vs_square_func_213)[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();
+    if (M2C_FIELD(pNet, u8 *, PNET_OFS(0x11)) == 0) {
+        lbc_text_lobby_trans(network_work);
+    }
+    switch (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))) {
     case 32:
         *(s8 *)0x3F35CC = 0;
         Pit_reset();
@@ -448,37 +485,45 @@ s32 Local_main(void) {
         return 0;
     }
 }
+#endif
 
 /* step 0 (0x5D8790): offline: all_reset, the hunter's save data into
  * player_work (Set_userdata), fade out */
 void vs_square_init_pre(void) {
     if (Online_ck() == 0) {
-        M2C_FIELD(pNet, s8 *, 0x11) = 1;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 1;
     }
-    switch (M2C_FIELD(lb_sys, s8 *, 4)) {
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
         if (Online_ck() == 0) {
             all_reset();
             Set_userdata(player_work);
+#ifdef VERSION_MHG
+            Lb_set_mini_data(cw + (*(u8 *)0x3F34C1 * 0x5C) + 0x3A8);    /* G: 0x5C-byte member records */
+#else
             Lb_set_mini_data(cw + (*(u8 *)0x3F34C1 * 0x2FC) + 0x1346);
+#endif
             Lb_set_mini_data(lbCommer + (*(u8 *)0x3F34C1 * 0x5C) + 0x1C);
             *(s8 *)0x3F3603 = 0;
             *(s8 *)0x3F3604 = 0;
             *(s8 *)0x3F3605 = 0;
             *(s16 *)0x3F3606 = 0;
+#ifdef VERSION_MHG
+            M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) = 0;
+#endif
         }
         fade_set(0xA);
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         return;
     case 1:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         }
         return;
     case 2:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            M2C_FIELD(lb_sys, s8 *, 4) = 0;
-            M2C_FIELD(lb_sys, s8 *, 3) = (s8)(M2C_FIELD(lb_sys, s8 *, 3) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 1);
         }
         break;
     }
@@ -486,6 +531,14 @@ void vs_square_init_pre(void) {
 
 /* step 1 (0x5D8920): quest table, camera, the master player, HUD, effects,
  * the village stage (0x57 offline) and its NPCs */
+#ifdef VERSION_MHG
+/* G (lobby 0x59E720): substeps advance lb_sys.x04 (MH1: x03 at the end of case 0), 10 hunters, cw layout of G, the
+ * pending-gold call (lobby_func_0055A140, nothing pending on the PC) and G's Disp_NowLoading replacement
+ * (func_0012D6F0) are left out */
+extern char *net_etc_mes_tbl[];
+extern u8 *mission_area;
+void CameraMove();
+int Quest_clear_bit_ck();
 void vs_square_init_init(void) {
     u8 *pl;
     u16 st;
@@ -493,17 +546,95 @@ void vs_square_init_init(void) {
 
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
     if (Online_ck() == 0) {
-        M2C_FIELD(pNet, s8 *, 0x11) = 1;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 1;
     }
-    switch (M2C_FIELD(lb_sys, s8 *, 4)) {
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
+    case 0:
+        if (Online_ck() == 0) {
+            G_STANDIN("G village: Lb_make_quest_tbl_local (G rebuilt the quest tables; MH1's crashes on them)");
+            Q_camera_init();
+        }
+        M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
+        fade_reset();
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
+        InitRenderState(0);
+        if (Online_ck() == 0) {
+            *(s8 *)0x3F34C3 = 1;
+            Lb_set_player(0, net_etc_mes_tbl[1], D_3C6FC8);
+            memcpy(my_user_handle, D_3C6FC8, 0x11);
+            memcpy(my_user_id, lit_278_00665D98, 8);
+            memcpy(lbCommer + (*(u8 *)0x3F34C1 * 0x5C) + 8, my_user_handle, 0x10);
+            memcpy(lbCommer + (*(u8 *)0x3F34C1 * 0x5C), my_user_id, 8);
+        } else {
+            if (Quest_clear_bit_ck(3003) == 1) {
+                Event_flag_set(43);
+            }
+            memset(mission_area, 0, 0x8000);
+        }
+        Lb_load_player_all();
+        Lbc_connect();
+        load_pit();
+        load_eft();
+        Lbc_connect();
+        load_shadow();
+        Lbc_connect();
+        Quest_init();
+        *(s8 *)0x3F33FE = 0;
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0;
+        SoftKeyboard_exit();
+        Pit_init();
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = -1;
+        if (Online_ck() == 1) {
+            st = 0x4C;
+            if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) != 0) {
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
+                st = 0x4D;
+            }
+        } else {
+            st = 0x57;
+        }
+        M2C_FIELD(pl, u16 *, 0x73A) = st;
+        Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A), 0);
+        M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) = 0;
+        Lbc_connect();
+        Lb_npc_set(M2C_FIELD(pl, u16 *, 0x73A));
+        for (i = 0; i < 10; i++)
+            eft01_set(player_work + 0xA00 * i, 1);
+        fade_set(0xA);
+        if (Online_ck() == 0) {
+            M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) = 1;
+        }
+        return;
+    case 1:
+        if ((Fade_busy_ck() & 0xFF) != 1) {
+            Lb_send_statusReq();
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 1);
+            M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) = 0;
+            CameraMove();
+        }
+        return;
+    }
+}
+#else
+void vs_square_init_init(void) {
+    u8 *pl;
+    u16 st;
+    int i;
+
+    pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
+    if (Online_ck() == 0) {
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 1;
+    }
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
         if (Online_ck() == 0) {
             Lb_make_quest_tbl_local();
             Q_camera_init();
         }
-        M2C_FIELD(cw, s8 *, 0x2C08) = 0;
+        M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
         fade_reset();
-        M2C_FIELD(lb_sys, s8 *, 3) = (s8)(M2C_FIELD(lb_sys, s8 *, 3) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 1);
         InitRenderState(0);
         Disp_NowLoading();
         if (Online_ck() == 0) {
@@ -524,11 +655,11 @@ void vs_square_init_init(void) {
         Lbc_connect();
         Quest_init();
         Pit_init();
-        M2C_FIELD(lb_sys, s8 *, 0x71) = -1;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = -1;
         if (Online_ck() == 1) {
             st = 0x4C;
-            if (M2C_FIELD(cw, u8 *, 0x35D2) != 0) {
-                M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+            if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) != 0) {
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                 st = 0x4D;
             }
         } else {
@@ -536,7 +667,7 @@ void vs_square_init_init(void) {
         }
         M2C_FIELD(pl, u16 *, 0x73A) = st;
         Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A));
-        M2C_FIELD(cw, u8 *, 0x35D2) = 0;
+        M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) = 0;
         Lbc_connect();
         Lb_npc_set(M2C_FIELD(pl, u16 *, 0x73A));
         for (i = 0; i < 8; i++)
@@ -545,13 +676,15 @@ void vs_square_init_init(void) {
         return;
     case 1:
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            M2C_FIELD(lb_sys, s8 *, 4) = 0;
-            M2C_FIELD(lb_sys, s8 *, 3) = (s8)(M2C_FIELD(lb_sys, s8 *, 3) + 1);
-            M2C_FIELD(cw, u8 *, 0x35D2) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 1);
+            M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) = 0;
         }
         return;
     }
 }
+
+#endif
 
 /* step 2 (0x5D8C10): sound packs (stage SE 0x4761B0, 0x10004, the
  * village's), then either the first-visit event (step 6) or a memory card
@@ -562,53 +695,57 @@ void vs_square_init_se(void) {
 
     *(s8 *)0x3F36C5 = 1;
     if (Online_ck() == 0) {
-        M2C_FIELD(pNet, s8 *, 0x11) = 1;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 1;
     }
-    st = M2C_FIELD(lb_sys, s8 *, 4);
+    st = M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4));
     switch (st) {
     case 0:
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(st + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(st + 1);
         flSndPortStop(1);
         FlushCache(0);
         load_bin_req(*(s16 *)0x4761B0 | 0x10000, area);
         return;
     case 1:
         if (load_busy_ck() == 0) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
             flSndPackLoadBG(area, 1);
         }
         return;
     case 2:
         if (flSndPackLoadStatus() == 0) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         }
         return;
     case 3:
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(st + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(st + 1);
         flSndPortStop(6);
         FlushCache(0);
         load_bin_req(0x10004, area);
         return;
     case 4:
         if (load_busy_ck() == 0) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
             flSndPackLoadBG(area, 6);
         }
         return;
     case 5:
         if (flSndPackLoadStatus() == 0) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         }
         return;
     case 6:
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(st + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(st + 1);
         flSndPortStop(7);
         FlushCache(0);
+        #ifdef VERSION_MHG
+        load_bin_req((*(s16 *)0x32D650 + 8) | 0x10000, area);
+#else
         load_bin_req((*(s16 *)0x32D650 + 7) | 0x10000, area);
+#endif
         return;
     case 7:
         if (load_busy_ck() == 0) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
             flSndPackLoadBG(area, 7);
         }
         return;
@@ -616,17 +753,20 @@ void vs_square_init_se(void) {
         if (flSndPackLoadStatus() == 0) {
             if ((Online_ck() == 1) || (*(u8 *)0x3F36CF == 0)) {
                 if ((Event_flag_ck(2) == 1) || (Online_ck() == 1)) {
-                    M2C_FIELD(lb_sys, s8 *, 4) = 0xB;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0xB;
                 } else {
-                    M2C_FIELD(cw, s8 *, 0x2C08) = 1;
+#ifdef VERSION_MHG
+                    *(u8 *)0x3F36C5 = 0;
+#endif
+                    M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 1;
                     fade_set(2);
-                    M2C_FIELD(lb_sys, s8 *, 4) = 0;
-                    M2C_FIELD(lb_sys, s8 *, 3) = 6;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 6;
                 }
             } else {
-                M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
                 str_fadeout(0, 0xF);
-                M2C_FIELD(cw, s32 *, 0x2C4C) = 0xF;
+                M2C_FIELD(cw, s32 *, CW_OFS(0x2C4C)) = 0xF;
                 McOperationSet(9);
                 Lbc_set_prim(put_back, 0, 0);
             }
@@ -634,19 +774,19 @@ void vs_square_init_se(void) {
         }
         return;
     case 9:
-        if (M2C_FIELD(cw, s32 *, 0x2C4C) != 0) {
-            M2C_FIELD(cw, s32 *, 0x2C4C) -= 1;
+        if (M2C_FIELD(cw, s32 *, CW_OFS(0x2C4C)) != 0) {
+            M2C_FIELD(cw, s32 *, CW_OFS(0x2C4C)) -= 1;
             return;
         }
         str_pause(0, 1);
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         fade_set(2);
-        M2C_FIELD(pNet, s8 *, 0x11) = 0;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 0;
         return;
     case 10:
-        M2C_FIELD(pNet, s8 *, 0x11) = 0;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 0;
         if (McCardOperation() & 0xFF) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
             fade_set(0xA);
             str_pause(0, 0);
             str_volume(0, 0);
@@ -654,13 +794,16 @@ void vs_square_init_se(void) {
         }
         return;
     case 11:
-        M2C_FIELD(pNet, s8 *, 0x11) = 0;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0x11)) = 0;
         if ((Fade_busy_ck() & 0xFF) != 1) {
-            M2C_FIELD(cw, s8 *, 0x2C08) = 1;
+#ifdef VERSION_MHG
+            *(u8 *)0x3F36C5 = 0;
+#endif
+            M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 1;
             fade_set(2);
             lobby_bgm_set(*(u8 *)0x3F3404);
-            M2C_FIELD(lb_sys, s8 *, 4) = 0;
-            M2C_FIELD(lb_sys, s8 *, 3) = (s8)(M2C_FIELD(lb_sys, s8 *, 3) + 2);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 2);
             Lb_send_commer();
         }
         return;
@@ -670,13 +813,67 @@ void vs_square_init_se(void) {
 }
 
 /* step 3 (0x5D9050): a stage change inside the village (house, farm ...) */
+#ifdef VERSION_MHG
+/* G (lobby 0x59EF00): two substeps. 0: stage load, BGM, npcs, fade out 10; 1: wait lb_sys.x05 frames, then on to the
+ * walking loop. lb_sys.x00 is G's "offline" flag (set by init_init). func_0012D6F0 (main, a flag) is left out. */
+void CameraMove();
+void vs_square_init(void) {
+    u8 *pl;
+
+    pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
+    case 0:
+        M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
+        *(u8 *)0x3F36C5 = 1;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
+        Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A), 1);
+        if (Online_ck() == 0 && M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) == 0) {
+            str_pause(0, 0);
+            str_volume(0, 0);
+            str_fadein_vol(0, 0xF, *(D_32D471 + (*(u8 *)0x3F3404 * 2)));
+        } else if (*(u8 *)0x3F3404 == 0x4E && M2C_FIELD(cw, u32 *, 0x11AB0) >= 4U) {
+            lobby_bgm_set2(0x13);
+        } else {
+            lobby_bgm_set();
+        }
+        if (Online_ck() == 1 || M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) == 0) {
+            Lb_npc_set(M2C_FIELD(pl, u16 *, 0x73A));
+        }
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x87)) = 0x14;
+        Lb_check_newCommer();
+        if (Online_ck() == 0) {
+            M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) = 1;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) = 0xF;
+        } else {
+            Lb_send_statusReq();
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) = 1;
+        }
+        fade_set(0xA);
+        *(u8 *)0x3F36C5 = 0;
+        return;
+    case 1:
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) - 1);
+        if (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) > 0) {
+            return;
+        }
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) = 0;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 1);
+        fade_set(2);
+        M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 1;
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+        CameraMove();
+        return;
+    }
+}
+#else
 void vs_square_init(void) {
     u8 *pl;
     u8 st;
 
-    M2C_FIELD(cw, s8 *, 0x2C08) = 0;
+    M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
-    M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
     Disp_NowLoading();
     Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A));
     if (Online_ck() == 0) {
@@ -685,7 +882,7 @@ void vs_square_init(void) {
         str_fadein_vol(0, 0xF, *(D_32D471 + (*(u8 *)0x3F3404 * 2)));
     } else {
         st = *(u8 *)0x3F3404;
-        if ((st == 0x4E) && (M2C_FIELD(cw, u32 *, 0xBF3C) >= 4U)) {
+        if ((st == 0x4E) && (M2C_FIELD(cw, u32 *, CW_OFS(0xBF3C)) >= 4U)) {
             lobby_bgm_set2(0x11);
         } else {
             lobby_bgm_set(st);
@@ -693,45 +890,113 @@ void vs_square_init(void) {
     }
     Lb_npc_set(M2C_FIELD(pl, u16 *, 0x73A));
     fade_set(2);
-    M2C_FIELD(lb_sys, s8 *, 4) = 0;
-    M2C_FIELD(lb_sys, s8 *, 0x87) = 0x14;
-    M2C_FIELD(lb_sys, s8 *, 3) = (s8)(M2C_FIELD(lb_sys, s8 *, 3) + 1);
+    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x87)) = 0x14;
+    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) + 1);
     Lb_check_newCommer();
-    M2C_FIELD(cw, s8 *, 0x2C08) = 1;
+    M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 1;
 }
+
+#endif
 
 /* step 5 (0x5D91A0): leaving a village stage: fade, then step 3 loads the
  * next one (player+0x73A) */
+#ifdef VERSION_MHG
+/* G (lobby 0x59F140): leaving the stage: case 0 does what the MH1 walk loop did on entering (fade, stand the hunter) */
 void vs_square_exit(void) {
     u8 *pl;
     u8 st;
     s32 r;
 
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
-    switch (M2C_FIELD(lb_sys, s8 *, 4)) {
+    if (Online_ck() == 1) {
+        M2C_FIELD(pNet, s8 *, 0xC) = 1;
+    }
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
+        if (Online_ck() == 1) {
+            SetDialogData(108);
+        } else {
+            fade_set(10);
+        }
+        M2C_FIELD(pl, u8 *, 0x8EC) = 0;
+        Lb_Pl_basic_flagset(pl, 0, 0, 0);
+        Lb_act_set(pl, 0, 0);
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
         st = *(u8 *)0x3F3404;
         if (st == 0x4F || st == 0x50) {
-            if ((M2C_FIELD(lb_sys, u8 *, 0x78) != 0) && (M2C_FIELD(pl, u16 *, 0x73A) == 0x4C)) {
+            if ((M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x78)) != 0) && (M2C_FIELD(pl, u16 *, 0x73A) == 0x4C)) {
                 Lbc_SendMiniData();
             }
         }
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
+        /* fallthrough */
+    case 1:
+        str_fadeout(0, 0x10);
+        if (M2C_FIELD(pl, u16 *, 0x73A) == 0x4E) {
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
+            return;
+        }
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 2);
+        return;
+    case 2:
+        r = Lbc_getDate();
+        if (r == 1 || r == 0) {
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
+        }
+        return;
+    case 3:
+        if ((Fade_busy_ck() & 0xFF) != 1) {
+            if (Online_ck() == 0) {
+                str_pause(0, 1);
+            } else {
+                str_stop_all(0);
+            }
+            Lb_reset();
+            if (M2C_FIELD(pl, u16 *, 0x73A) == 0x63) {
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 3;
+                return;
+            }
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 3;
+            return;
+        }
+        return;
+    }
+}
+#else
+void vs_square_exit(void) {
+    u8 *pl;
+    u8 st;
+    s32 r;
+
+    pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
+    case 0:
+        st = *(u8 *)0x3F3404;
+        if (st == 0x4F || st == 0x50) {
+            if ((M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x78)) != 0) && (M2C_FIELD(pl, u16 *, 0x73A) == 0x4C)) {
+                Lbc_SendMiniData();
+            }
+        }
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         /* fallthrough */
     case 1:
         fade_set(1);
         str_fadeout(0, 0x10);
         Lb_move_common();
         if (M2C_FIELD(pl, u16 *, 0x73A) == 0x4E) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
             return;
         }
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 2);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 2);
         return;
     case 2:
         r = Lbc_getDate();
         if (r == 1 || r == 0) {
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         }
         Lb_move_common();
         return;
@@ -744,11 +1009,11 @@ void vs_square_exit(void) {
             }
             Lb_reset();
             if (M2C_FIELD(pl, u16 *, 0x73A) == 0x63) {
-                M2C_FIELD(lb_sys, s8 *, 3) = 3;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 3;
                 return;
             }
-            M2C_FIELD(lb_sys, s8 *, 5) = 0;
-            M2C_FIELD(lb_sys, s8 *, 3) = 3;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(5)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 3;
             return;
         }
         Lb_move_common();
@@ -756,21 +1021,30 @@ void vs_square_exit(void) {
     }
 }
 
+#endif
+
 /* step 6 (0x5D8470): the first visit's event (demo cameras 0xB / 0xC,
  * stage 0x56 then back) */
+#ifdef VERSION_MHG
+#define EV_SE 0x44      /* G (lobby 0x59E280): sound and talk-mode numbers moved */
+#define EV_X68 0x23
+#else
+#define EV_SE 0x41
+#define EV_X68 0x21
+#endif
 void vs_square_event(void) {
     u8 *pl;
     s32 r;
 
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
     Lb_move_common();
-    switch (M2C_FIELD(lb_sys, s8 *, 4)) {
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
         DemoCameraRequest(0xB, 0);
-        adx_se_set(pl, 0x41);
-        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-        M2C_FIELD(lb_sys, s32 *, 0x68) = 0x21;
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+        adx_se_set(pl, EV_SE);
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = EV_X68;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         return;
     case 1:
         M2C_FIELD(pl, s8 *, 1) = 0;
@@ -778,23 +1052,29 @@ void vs_square_event(void) {
         if ((r != -1) && (r != 0)) {
             return;
         }
-        M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
         M2C_FIELD(pl, u16 *, 0x73A) = 0x56;
-        M2C_FIELD(lb_sys, s8 *, 0x71) = -1;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = -1;
         fade_set(0xA);
         return;
     case 2:
         M2C_FIELD(pl, s8 *, 1) = 0;
         if ((Fade_busy_ck() & 0xFF) != 1) {
+#ifndef VERSION_MHG
             Disp_NowLoading();
+#endif
             str_stop_all();
             Lb_reset();
+            #ifdef VERSION_MHG
+            Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A), 1);
+#else
             Lb_stage_load(M2C_FIELD(pl, u16 *, 0x73A));
-            M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-            M2C_FIELD(lb_sys, s32 *, 0x68) = 0x21;
+#endif
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = EV_X68;
             Lb_npc_set(M2C_FIELD(pl, u16 *, 0x73A));
             fade_set(2);
-            M2C_FIELD(lb_sys, s8 *, 4) = (s8)(M2C_FIELD(lb_sys, s8 *, 4) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = (s8)(M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) + 1);
             lobby_bgm_set(*(u8 *)0x3F3404);
             DemoCameraRequest(0xC, 0);
         }
@@ -805,9 +1085,9 @@ void vs_square_event(void) {
         if ((r != -1) && (r != 0)) {
             return;
         }
-        M2C_FIELD(lb_sys, s8 *, 4) = 0;
-        M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-        M2C_FIELD(lb_sys, s8 *, 3) = 4;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4)) = 0;
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 4;
         Event_flag_set(2);
         break;
     }
@@ -848,7 +1128,7 @@ static void lb_put_unique(u8 *pl, int st, int k)
 /* Lb_stage_load (0x5D7050): load village stage st (0x57 Kokoto village,
  * 0x56 ...): stage files (st_model_load), camera, the players' work, light,
  * fog, set objects; then put the master player at the stage's start
- * (lb_sys+0x71 = -1: arriving, else the entrance index from St_unique_tbl) */
+ * (lb_sys+LBSYS_OFS(0x71) = -1: arriving, else the entrance index from St_unique_tbl) */
 void Lb_stage_load(s32 st) {
     u8 *pl;
     int k;
@@ -856,13 +1136,13 @@ void Lb_stage_load(s32 st) {
     st &= 0xFF;
 
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
-    if (M2C_FIELD(lb_sys, u8 *, 0x70) == 0) {
+    if (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x70)) == 0) {
         Lb_load_player_all();
     }
     flCompact();
     *(u8 *)0x3F3404 = st;
     M2C_FIELD(pl, u8 *, 0x736) = st;
-    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
     stage_w_init();
     *(s8 *)0x3D8231 = 1;
     set_viewproj(0);
@@ -876,8 +1156,8 @@ void Lb_stage_load(s32 st) {
     *(s8 *)0x3F36BF = 0xFF;
     stage_fog_set(st);
     stage_set_set(st);
-    if (M2C_FIELD(lb_sys, s32 *, 0x68) != 0x21) {
-        M2C_FIELD(lb_sys, s32 *, 0x68) = 0;
+    if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0x21) {
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0;
     }
     M2C_FIELD(pl, s8 *, 0x8EC) = 0;
     M2C_FIELD(pl, s8 *, 0x90F) = 0;
@@ -885,7 +1165,7 @@ void Lb_stage_load(s32 st) {
     M2C_FIELD(pl, s8 *, 0x936) = 0;
     M2C_FIELD(pl, s8 *, 0x7ED) = 0;
     if (*(u8 *)0x3F3404 == 0x4E) {
-        switch (M2C_FIELD(cw, s32 *, 0xBF3C) & 3) {
+        switch (M2C_FIELD(cw, s32 *, CW_OFS(0xBF3C)) & 3) {
         case 1:
             Set06_set(2);
             break;
@@ -899,13 +1179,13 @@ void Lb_stage_load(s32 st) {
     } else if ((*(u8 *)0x3F3404 == 0x57) && (Event_flag_ck(1) == 0)) {
         Set06_set(0);
     }
-    if (M2C_FIELD(lb_sys, s8 *, 0x71) == -1) {
+    if (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) == -1) {
         switch (*(u8 *)0x3F3404) {
         case 0x57:
             lb_put_at(pl, lb_start_pos + 0xD0);
             break;
         case 0x56:
-            if (M2C_FIELD(lb_sys, s32 *, 0x68) == 0x21) {
+            if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 0x21) {
                 lb_put_at(pl, lb_start_pos + 0xE0);
                 Lb_act_set(pl, 0, 0x4F);
                 Lb_pl_chr_set(pl, 0x1AB, 0, 0);
@@ -914,20 +1194,20 @@ void Lb_stage_load(s32 st) {
             }
             break;
         case 0x4C:
-            k = M2C_FIELD(cw, u8 *, 0x35D1) & 7;
+            k = M2C_FIELD(cw, u8 *, CW_OFS(0x35D1)) & 7;
             lb_put_at(pl, lb_start_pos + k * 0x10);
             break;
         default:
             lb_put_start(pl, st);
             break;
         }
-    } else if (M2C_FIELD(lb_sys, s8 *, 0x71) == 0) {
+    } else if (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) == 0) {
         switch (st) {
         case 0x4D:
-            if (M2C_FIELD(cw, u8 *, 0x35D2) == 0) {
+            if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D2)) == 0) {
                 lb_put_at(pl, lb_start_pos + 0x80);
             } else {
-                k = M2C_FIELD(cw, u8 *, 0x35D1) & 3;
+                k = M2C_FIELD(cw, u8 *, CW_OFS(0x35D1)) & 3;
                 lb_put_at(pl, lb_return_pos + k * 0x10);
             }
             break;
@@ -950,14 +1230,14 @@ void Lb_stage_load(s32 st) {
             lb_put_at(pl, lb_start_pos + 0xF0);
             break;
         default:
-            lb_put_unique(pl, st, M2C_FIELD(lb_sys, s8 *, 0x71));
+            lb_put_unique(pl, st, M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)));
             break;
         }
     } else {
-        lb_put_unique(pl, st, M2C_FIELD(lb_sys, s8 *, 0x71));
+        lb_put_unique(pl, st, M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)));
     }
     M2C_FIELD(pl, s32 *, 0x3B0) = 0;
-    if (M2C_FIELD(lb_sys, s32 *, 0x68) != 0x21) {
+    if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0x21) {
         if (M2C_FIELD(pl, u8 *, 0x11) == 1) {
             Lb_pl_to_normal(pl, 0, 0, 0);
             Lb_pl_chr_set(pl, 0x3F, 0, 0x6A);
@@ -974,9 +1254,9 @@ void Lb_stage_load(s32 st) {
         int i;
         for (i = 0; i < 8; i++) {
             u8 *p = player_work + 0xA00 * i;
-            if (*p != 0 && M2C_FIELD(cw + i, s8 *, 0x2BFE) == 0) {
-                M2C_FIELD(cw + i, s8 *, 0x2BFE) = 1;
-                Lb_player_load(p, cw + i + 0x2BFE);
+            if (*p != 0 && M2C_FIELD(cw + i, s8 *, CW_OFS(0x2BFE)) == 0) {
+                M2C_FIELD(cw + i, s8 *, CW_OFS(0x2BFE)) = 1;
+                Lb_player_load(p, cw + i + CW_OFS(0x2BFE));
                 Lbc_connect();
             }
         }
@@ -1006,11 +1286,15 @@ void Lb_npc_set(s32 st) {
         if (k < 0 || k >= 0x56) {
             k = 0;
         }
-        if (lb_sys[0x88 + k] == 1) {
+        if (lb_sys[LBSYS_OFS(0x88) + k] == 1) {
             n -= 1;
         }
         break;
     }
+#ifdef VERSION_MHG
+    if (getenv("RT_NO_NPC"))     /* test aid: no village NPCs (their em command tables are still G-incomplete) */
+        n = 0;
+#endif
     for (i = 0; i < n; i++) {
         em = (u8 *)pull_enemy_work();
         if (em != NULL) {
@@ -1024,19 +1308,19 @@ void Lb_npc_set(s32 st) {
 }
 
 /* Lb_load_player_all (0x5CCF60 region): common motions, every player's
- * model, the four NPC model sets (once per lobby visit, lb_sys+0x70) */
+ * model, the four NPC model sets (once per lobby visit, lb_sys+LBSYS_OFS(0x70)) */
 void Lb_load_player_all(void) {
     u32 i;
 
-    if (M2C_FIELD(lb_sys, u8 *, 0x70) == 0) {
-        if (M2C_FIELD(cw, s8 *, 0x2C06) == 0) {
-            M2C_FIELD(cw, s8 *, 0x2C06) = 1;
+    if (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x70)) == 0) {
+        if (M2C_FIELD(cw, s8 *, CW_OFS(0x2C06)) == 0) {
+            M2C_FIELD(cw, s8 *, CW_OFS(0x2C06)) = 1;
             com_motion_load(1);
         }
         for (i = 0; i < 8; i++) {
             u8 *p = player_work + 0xA00 * i;
-            if (*p != 0 && M2C_FIELD(cw + i, s8 *, 0x2BFE) == 0) {
-                M2C_FIELD(cw + i, s8 *, 0x2BFE) = 1;
+            if (*p != 0 && M2C_FIELD(cw + i, s8 *, CW_OFS(0x2BFE)) == 0) {
+                M2C_FIELD(cw + i, s8 *, CW_OFS(0x2BFE)) = 1;
                 Lb_player_load(p);
                 Lbc_connect();
             }
@@ -1049,7 +1333,7 @@ void Lb_load_player_all(void) {
         Lbc_connect();
         npc_create_model(3);
         Lbc_connect();
-        M2C_FIELD(lb_sys, u8 *, 0x70) = 1;
+        M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x70)) = 1;
     }
 }
 
@@ -1498,7 +1782,7 @@ void Lb_check_newCommer(void) {
     u8 temp_a0_4;
     u8 temp_a2;
 
-    if (M2C_FIELD(cw, s8 *, 0x2C08) != 0) {
+    if (M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) != 0) {
         if (lb_member_outCheck() == 1) {
             temp_a0 = *(u8 *)0x3F3404;
             if (temp_a0 != 0x4C) {
@@ -1508,9 +1792,9 @@ void Lb_check_newCommer(void) {
             } else {
 block_5:
                 flCompact(temp_a0);
-                M2C_FIELD(lb_sys, u8 *, 0x8D) = 3U;
+                M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x8D)) = 3U;
             }
-            M2C_FIELD(lb_sys, s16 *, 0x64) = 0;
+            M2C_FIELD(lb_sys, s16 *, LBSYS_OFS(0x64)) = 0;
             temp_a2 = *(u8 *)0x3F34C1;
             temp_a1 = temp_a2 * 0xA00;
             temp_a0_2 = *(D_3E4C05 + temp_a1);
@@ -1521,7 +1805,7 @@ block_5:
             }
             return;
         }
-        if (M2C_FIELD(lb_sys, u8 *, 0x8D) == 0) {
+        if (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x8D)) == 0) {
             if (lb_member_changeCheck() == 1) {
                 temp_a0_3 = *(u8 *)0x3F3404;
                 if (temp_a0_3 != 0x4C) {
@@ -1531,11 +1815,11 @@ block_5:
                 } else {
 block_27:
                     flCompact(temp_a0_3);
-                    M2C_FIELD(lb_sys, u8 *, 0x8D) = 3U;
+                    M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x8D)) = 3U;
                 }
                 return;
             }
-            if (M2C_FIELD(lb_sys, u8 *, 0x8D) == 0) {
+            if (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x8D)) == 0) {
                 lb_member_inCheck();
                 temp_a0_4 = *(u8 *)0x3F3404;
                 if (temp_a0_4 != 0x4D) {
@@ -1637,7 +1921,7 @@ void lb_basic_master(u8 *arg0) {
         Lb_Pl_chat_act_set(arg0);
     }
     if (M2C_FIELD(arg0, u16 *, 0xC) == *(u8 *)0x3F34C1) {
-        if ((M2C_FIELD(arg0, u16 *, 0x368) & 0x20) && (M2C_FIELD(lb_sys, s32 *, 0x68) == 0)) {
+        if ((M2C_FIELD(arg0, u16 *, 0x368) & 0x20) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 0)) {
             if (trade_get_ck_005D0750(arg0) != 1) {
                 goto block_30;
             }
@@ -1645,15 +1929,15 @@ void lb_basic_master(u8 *arg0) {
 block_30:
             temp_s1 = M2C_FIELD(arg0, u8 **, 0x3B0);
             if ((temp_s1 != NULL) && (M2C_FIELD(arg0, u16 *, 0x368) & 0x20)) {
-                if ((M2C_FIELD(temp_s1, u8 *, 0x1E) == 0) && (M2C_FIELD(lb_sys, s32 *, 0x68) == 0)) {
-                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                    M2C_FIELD(lb_sys, s32 *, 0x68) = 4;
+                if ((M2C_FIELD(temp_s1, u8 *, 0x1E) == 0) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 0)) {
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 4;
                     Lb_pl_status_i();
                     goto block_119;
                 }
-                if (M2C_FIELD(lb_sys, s32 *, 0x68) == 0) {
+                if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 0) {
                     temp_s0 = temp_s1 + 0x444;
-                    if ((M2C_FIELD(temp_s1, s8 *, 0x471) == 1) || (M2C_FIELD(lb_sys, u8 *, 0x87) != 0)) {
+                    if ((M2C_FIELD(temp_s1, s8 *, 0x471) == 1) || (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x87)) != 0)) {
                         return;
                     }
                     M2C_FIELD(temp_s1, u8 **, 0x7A0) = arg0;
@@ -1675,7 +1959,7 @@ block_30:
 block_48:
                             var_a1 = 0;
                         }
-                        if ((M2C_FIELD(temp_s1, u8 *, 0x15) != 0x8C) && (*(lb_sys + 0x88 + (((s16)(var_a1)))) == 0)) {
+                        if ((M2C_FIELD(temp_s1, u8 *, 0x15) != 0x8C) && (*(lb_sys + LBSYS_OFS(0x88) + (((s16)(var_a1)))) == 0)) {
                             Lb_act_set(temp_s1, 0, 0x64);
                         }
                     } else {
@@ -1691,84 +1975,84 @@ block_48:
                     case 0x4:                       /* switch 2 */
                     case 0x48:                      /* switch 2 */
                     case 0x4B:                      /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                         temp_v1_2 = M2C_FIELD(temp_s1, u8 *, 0x15);
                         if (temp_v1_2 != 0x79) {
                             if (temp_v1_2 == 0x7A) {
                                 goto block_79;
                             }
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 5;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
                         } else {
 block_79:
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 6;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 6;
                             Lb_act_set(temp_s1, 0, 0x64);
                         }
                         NPCZoomInCameraRequest(temp_s1);
                         goto block_119;
                     case 0x0:                       /* switch 2 */
                     case 0x47:                      /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 2;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 2;
                         if (M2C_FIELD(temp_s0, u8 *, 0xE) == 0) {
                             Lb_act_set(temp_s1, 0, 0x65);
                         }
-                        M2C_FIELD(lb_sys, s8 *, 6) = 0;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x2D:                      /* switch 2 */
                     case 0x1:                       /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 3;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 3;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x38:                      /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0x22;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x22;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x3:                       /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 9;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 9;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x4C:                      /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0xA;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0xA;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x49:                      /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0xB;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0xB;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x5:                       /* switch 2 */
                         if ((Event_flag_ck(0x51) == 0) && (Event_flag_ck(0x33) == 1)) {
-                            M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 0x2B;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x2B;
                             NPCZoomInCameraRequest(temp_s1);
                         } else {
-                            M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 0xC;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0xC;
                             Lb_shop_init();
                             NPCZoomInCameraRequest(temp_s1);
                         }
                         return;
                     case 0x2E:                      /* switch 2 */
                     case 0x2:                       /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0xD;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0xD;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         return;
                     case 0x3A:                      /* switch 2 */
                     case 0x4A:                      /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0xE;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0xE;
                         Lb_shop_init();
                         NPCZoomInCameraRequest(temp_s1);
                         goto block_119;
@@ -1782,20 +2066,20 @@ block_79:
 block_109:
                             var_v1 = 0;
                         }
-                        if (*(lb_sys + 0x88 + (((s16)(var_v1)))) == 0) {
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 0x12;
-                            M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                        if (*(lb_sys + LBSYS_OFS(0x88) + (((s16)(var_v1)))) == 0) {
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x12;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                             NPCZoomInCameraRequest(M2C_FIELD(arg0, u8 **, 0x3B0));
                         }
                         return;
                     default:                        /* switch 2 */
-                        M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                         temp_a0_5 = M2C_FIELD(temp_s1, u8 *, 0x15);
                         if ((temp_a0_5 == 0x79) || (temp_a0_5 == 0x7A)) {
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 6;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 6;
                             Lb_act_set(temp_s1, 0, 0x64);
                         } else {
-                            M2C_FIELD(lb_sys, s32 *, 0x68) = 5;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
                         }
                         return;
                     }
@@ -1805,8 +2089,8 @@ block_109:
             } else {
 block_119:
                 temp_a3 = M2C_FIELD(arg0, u8 **, 0x878);
-                if ((temp_a3 != NULL) && ((temp_v1_3 = M2C_FIELD(arg0, u16 *, 0x368), temp_a1_2 = temp_v1_3 & 0x200, (temp_a1_2 != 0)) || (temp_v1_3 & 0x40)) && ((M2C_FIELD(lb_sys, s32 *, 0x68) == 0) || (M2C_FIELD(lb_sys, s32 *, 0x68) == 8))) {
-                    if (((temp_a1_2 != 0) || (temp_a1_3 = M2C_FIELD(temp_a3, u16 *, 2), (temp_a1_3 == 0x13)) || (temp_a1_3 == 0x14)) && (M2C_FIELD(lb_sys, u8 *, 0x87) == 0) && ((M2C_FIELD(lb_sys, s32 *, 0x68) != 8) || (M2C_FIELD(temp_a3, u16 *, 2) == 6))) {
+                if ((temp_a3 != NULL) && ((temp_v1_3 = M2C_FIELD(arg0, u16 *, 0x368), temp_a1_2 = temp_v1_3 & 0x200, (temp_a1_2 != 0)) || (temp_v1_3 & 0x40)) && ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 0) || (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 8))) {
+                    if (((temp_a1_2 != 0) || (temp_a1_3 = M2C_FIELD(temp_a3, u16 *, 2), (temp_a1_3 == 0x13)) || (temp_a1_3 == 0x14)) && (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x87)) == 0) && ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 8) || (M2C_FIELD(temp_a3, u16 *, 2) == 6))) {
                         sp120[0] = M2C_FIELD(temp_a3, f32 *, 4);
                         sp120[1] = M2C_FIELD(M2C_FIELD(arg0, u8 **, 0x878), f32 *, 8);
                         sp120[2] = M2C_FIELD(M2C_FIELD(arg0, u8 **, 0x878), f32 *, 0xC);
@@ -1824,32 +2108,32 @@ block_119:
                                 } else {
 block_136:
                                     temp_a1_4 = M2C_FIELD(temp_a3_2, u16 *, 0);
-                                    if (!(M2C_FIELD(lb_sys, u16 *, 0x64) & (1 << temp_a1_4))) {
+                                    if (!(M2C_FIELD(lb_sys, u16 *, LBSYS_OFS(0x64)) & (1 << temp_a1_4))) {
                                         if (*(u8 *)0x3F3404 == 0x4D) {
                                             temp_v0 = cw;
-                                            M2C_FIELD(lb_sys, u16 *, 0x66) = temp_a1_4;
+                                            M2C_FIELD(lb_sys, u16 *, LBSYS_OFS(0x66)) = temp_a1_4;
                                             if (memcmp(temp_v0 + 3, temp_v0 + 0x440, 8) == 0) {
-                                                M2C_FIELD(lb_sys, s16 *, 0x74) = 0x96;
-                                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x18;
-                                                M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                                                M2C_FIELD(lb_sys, s16 *, LBSYS_OFS(0x74)) = 0x96;
+                                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x18;
+                                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                                                 Lb_send_data_to_myself(2, 4, M2C_FIELD(arg0, u8 **, 0x878));
                                             } else {
-                                                M2C_FIELD(lb_sys, s16 *, 0x74) = 0x96;
-                                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x18;
-                                                M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                                                M2C_FIELD(lb_sys, s16 *, LBSYS_OFS(0x74)) = 0x96;
+                                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x18;
+                                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                                                 Lb_send_chair_req(arg0);
                                             }
                                         } else {
-                                            M2C_FIELD(lb_sys, u16 *, 0x66) = temp_a1_4;
+                                            M2C_FIELD(lb_sys, u16 *, LBSYS_OFS(0x66)) = temp_a1_4;
                                             Lb_pl_to_chair();
                                         }
                                     }
                                 }
                                 return;
                             case 26:                /* switch 3 */
-                                if (M2C_FIELD(cw, u8 *, 0x35D6) == 0) {
-                                    M2C_FIELD(lb_sys, u16 *, 0x66) = (u16) M2C_FIELD(temp_a3_2, u16 *, 0);
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x11;
+                                if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D6)) == 0) {
+                                    M2C_FIELD(lb_sys, u16 *, LBSYS_OFS(0x66)) = (u16) M2C_FIELD(temp_a3_2, u16 *, 0);
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x11;
                                     Lb_pl_to_chair();
                                 }
                                 return;
@@ -1857,59 +2141,59 @@ block_136:
                                 temp_v1_4 = *(u8 *)0x3F3404;
                                 switch (temp_v1_4) { /* switch 4 */
                                 case 0x4D:          /* switch 4 */
-                                    if (M2C_FIELD(cw, u8 *, 0x35D3) == 1) {
+                                    if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D3)) == 1) {
                                         Lb_put_set01(1);
                                     } else {
                                         M2C_FIELD(arg0, s16 *, 0x73A) = 0x4C;
-                                        M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
-                                        M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+                                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
+                                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                                     }
                                     return;
                                 case 0x4E:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x4C;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 1;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 1;
                                 default:            /* switch 4 */
                                     return;
                                 case 0x4F:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x4C;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 3;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 3;
                                     break;
                                 case 0x50:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x4C;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 4;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 4;
                                     break;
                                 case 0x51:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x50;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 1;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 1;
                                     break;
                                 case 0x52:          /* switch 4 */
                                 case 0x53:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x50;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 2;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 2;
                                     break;
                                 case 0x54:          /* switch 4 */
                                 case 0x55:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x50;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 3;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 3;
                                     break;
                                 case 0x56:          /* switch 4 */
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x57;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                                     break;
                                 }
                                 break;
@@ -1921,30 +2205,30 @@ block_136:
                                     if (M2C_FIELD(temp_a1_6, u8 *, 0x35D3) != 0) {
                                         temp_a1_7 = M2C_FIELD(temp_a1_6, u8 *, 0x32C5);
                                         if (temp_a1_7 == 1) {
-                                            if ((M2C_FIELD(lb_sys, s32 *, 0x68) != 7) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 8)) {
-                                                if ((M2C_FIELD(cw, u16 *, 0x32C6) + 1) >= (s32) M2C_FIELD(Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), temp_a1_7), u16 *, 2)) {
+                                            if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 7) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 8)) {
+                                                if ((M2C_FIELD(cw, u16 *, CW_OFS(0x32C6)) + 1) >= (s32) M2C_FIELD(Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), temp_a1_7), u16 *, 2)) {
                                                     SetDialogData(0x36, 2);
                                                     SetDialogYesNo(0);
                                                     *(s8 *)0x3F36AB = 0;
-                                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x30;
-                                                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x30;
+                                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                                                 } else {
                                                     SetDialogData(0x34, 2);
                                                     SetDialogYesNo(1);
                                                     *(u8 *)0x3F36AB = 0;
-                                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x1D;
-                                                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x1D;
+                                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
                                                 }
                                             }
-                                        } else if (M2C_FIELD(lb_sys, s32 *, 0x68) == 8) {
-                                            M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                                            M2C_FIELD(lb_sys, s32 *, 0x68) = 0x28;
-                                            M2C_FIELD(lb_sys, s8 *, 6) = 0;
+                                        } else if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 8) {
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x28;
+                                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
                                             *(u8 *)0x3F36AB = 0;
                                             SetDialogData(0x35, 2);
                                             SetDialogYesNo(1);
                                         } else {
-                                            M2C_FIELD(lb_sys, s32 *, 0x68) = 0x1A;
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x1A;
                                             temp_a1_8 = *(u8 *)0x3F34C1;
                                             temp_a0_9 = D_3E5506 + (temp_a1_8 * 0xA00);
                                             *temp_a0_9 |= 0x20;
@@ -1957,25 +2241,25 @@ block_136:
                                     }
                                     return;
                                 case 0x57:          /* switch 5 */
-                                    if (M2C_FIELD(cw, u8 *, 0x35D3) != 0) {
-                                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0x1E;
+                                    if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D3)) != 0) {
+                                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x1E;
                                         fade_set(1, temp_a1_5);
                                     }
                                     return;
                                 case 0x4E:          /* switch 5 */
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x4C;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 2;
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 2;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     break;
                                 }
                                 break;
                             case 18:                /* switch 3 */
                                 if (Event_flag_ck(4) == 1) {
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     M2C_FIELD(arg0, s16 *, 0x73A) = 0x51;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                                     temp_v1_5 = *(u8 *)0x3C73A8;
                                     if ((s32) temp_v1_5 < 0x96) {
                                         *(u8 *)0x3C73A8 = (u8) (temp_v1_5 + 1);
@@ -2001,28 +2285,28 @@ block_136:
                                 }
                                 return;
                             case 7:                 /* switch 3 */
-                                M2C_FIELD(lb_sys, s8 *, 0x73) = 0;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x73)) = 0;
                                 M2C_FIELD(lb_pit, s8 *, 8) = 0;
-                                M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 1;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 1;
                                 return;
                             case 8:                 /* switch 3 */
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                 M2C_FIELD(arg0, s16 *, 0x73A) = 0x4D;
-                                M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                                 goto block_233;
                             case 11:                /* switch 3 */
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                 M2C_FIELD(arg0, s16 *, 0x73A) = 0x4F;
-                                M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                                 goto block_233;
                             case 12:                /* switch 3 */
-                                if ((Online_ck(temp_a0_7) == 0) && (M2C_FIELD(cw, u8 *, 0x35D3) == 1)) {
+                                if ((Online_ck(temp_a0_7) == 0) && (M2C_FIELD(cw, u8 *, CW_OFS(0x35D3)) == 1)) {
                                     Lb_put_set01(1);
                                 } else {
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                     var_v1_2 = 0x50;
                                     if (*(u8 *)0x3F3404 == 0x4C) {
 
@@ -2030,24 +2314,24 @@ block_136:
                                         var_v1_2 = 0x56;
                                     }
                                     M2C_FIELD(arg0, s16 *, 0x73A) = var_v1_2;
-                                    M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
-                                    M2C_FIELD(lb_sys, s8 *, 3) = 5;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
                                 }
                                 goto block_233;
                             case 9:                 /* switch 3 */
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                 M2C_FIELD(arg0, s16 *, 0x73A) = 0x4E;
-                                M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                M2C_FIELD(lb_sys, s8 *, 0x71) = 0;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 0;
                                 goto block_233;
                             case 10:                /* switch 3 */
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x14;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x14;
                                 M2C_FIELD(arg0, s16 *, 0x73A) = 0x4E;
-                                M2C_FIELD(lb_sys, s8 *, 3) = 5;
-                                M2C_FIELD(lb_sys, s8 *, 0x71) = 1;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3)) = 5;
+                                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x71)) = 1;
                                 goto block_233;
                             case 13:                /* switch 3 */
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x10;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x10;
                                 fade_set(0xA);
                                 goto block_233;
                             case 14:                /* switch 3 */
@@ -2066,7 +2350,7 @@ block_136:
                                 Lb_Pl_act_set(arg0, 0, 0x33, 0);
                                 pl_flag_set(arg0, 0x20000);
                                 *(u8 *)0x3F36AB = 0;
-                                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x13;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x13;
                                 goto block_233;
                             case 23:                /* switch 3 */
                                 if (Event_flag_ck(1) == 0) {
@@ -2092,29 +2376,29 @@ block_136:
                                             Event_flag_set(1);
                                             Warehouse_equip_stack(User_data, 6, 0xBE, 0);
                                             Lb_reset_talk_count();
-                                            M2C_FIELD(lb_sys, s32 *, 0x68) = 0x26;
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x26;
                                         }
                                     } else {
                                         Lb_Pl_act_set(arg0, 0, 0x51, 0);
                                         pl_flag_set(arg0, 0x20000);
-                                        M2C_FIELD(lb_sys, s32 *, 0x68) = 0x26;
+                                        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x26;
                                     }
                                 }
                                 goto block_233;
                             case 15:                /* switch 3 */
                                 if (Lb_ItemBox_open(temp_a0_7) == 1) {
-                                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x1B;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x1B;
                                     Lbc_set_prim(0, 0, 0);
                                 } else {
                                     cnWrap_SoundRequest(7);
                                 }
                                 goto block_233;
                             case 22:                /* switch 3 */
-                                if (M2C_FIELD(lb_sys, u8 *, 0x87) == 0) {
-                                    M2C_FIELD(lb_sys, s8 *, 6) = 0;
-                                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-                                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x27;
+                                if (M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x87)) == 0) {
+                                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x27;
                                 }
                                 goto block_233;
                             }
@@ -2272,11 +2556,11 @@ void lb_pl_mv052(u8 *arg0) {
         Lb_act_set(arg0, 0, 0);
         return;
     }
-    if ((M2C_FIELD(lb_sys, s32 *, 0x68) != 0x25) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 0x24) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 0x23)) {
+    if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0x25) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0x24) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0x23)) {
         temp_v1 = M2C_FIELD(arg0, u8 *, 5);
         switch (temp_v1) {                          /* switch 1 */
         case 0:                                     /* switch 1 */
-            M2C_FIELD(cw, s8 *, 0x2C08) = 0;
+            M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
             M2C_FIELD(arg0, u8 *, 5) = (u8) (M2C_FIELD(arg0, u8 *, 5) + 1);
             Lb_Pl_basic_flagset(arg0, 0, 0, 0);
             M2C_FIELD(arg0, s32 *, 0x39C) = 0;
@@ -2293,7 +2577,7 @@ void lb_pl_mv052(u8 *arg0) {
             str_fadeout(0, M2C_FIELD(arg0, s32 *, 8));
             return;
         case 1:                                     /* switch 1 */
-            M2C_FIELD(pNet, s8 *, 0xC) = 1;
+            M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 1;
             temp_v0 = Lb_select();
             switch (temp_v0) {                      /* switch 2; irregular */
             case 0:                                 /* switch 2 */
@@ -2319,7 +2603,7 @@ void lb_pl_mv052(u8 *arg0) {
                         lb_exit_save(arg0);
                     } else {
                         M2C_FIELD(arg0, u8 *, 5) = (u8) (M2C_FIELD(arg0, u8 *, 5) + 1);
-                        M2C_FIELD(cw, s8 *, 0x2C08) = 1;
+                        M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 1;
                         SetDialogData(0x37, 2);
                         SetDialogYesNo(1);
                     }
@@ -2346,14 +2630,14 @@ void lb_pl_mv052(u8 *arg0) {
             pl_sleeping(arg0);
             return;
         case 3:                                     /* switch 1 */
-            M2C_FIELD(pNet, s8 *, 0xC) = 1;
+            M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 1;
             temp_v0_3 = Lb_select();
             switch (temp_v0_3) {                    /* switch 4; irregular */
             case 0:                                 /* switch 4 */
                 if (Online_ck() == 1) {
                     Lbs_LogOutRequest(1);
                 } else {
-                    M2C_FIELD(lb_sys, s32 *, 0x68) = 0x23;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x23;
                     fade_set(1);
                 }
             default:                                /* switch 4 */
@@ -2365,7 +2649,7 @@ void lb_pl_mv052(u8 *arg0) {
             }
             break;
         case 4:                                     /* switch 1 */
-            M2C_FIELD(pNet, s8 *, 0xC) = 1;
+            M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 1;
             temp_v0_4 = Lb_select();
             switch (temp_v0_4) {                    /* switch 5; irregular */
             case 0:                                 /* switch 5 */
@@ -2384,7 +2668,7 @@ void lb_pl_mv052(u8 *arg0) {
             }
             break;
         case 5:                                     /* switch 1 */
-            M2C_FIELD(pNet, s8 *, 0xC) = 1;
+            M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 1;
             temp_v0_5 = Lb_select();
             switch (temp_v0_5) {                    /* switch 6; irregular */
             case 0:                                 /* switch 6 */
@@ -2398,7 +2682,7 @@ void lb_pl_mv052(u8 *arg0) {
                 McOperationSet(6);
                 return;
             case 3:                                 /* switch 6 */
-                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x23;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x23;
                 fade_set(1);
             default:                                /* switch 1 */
                 return;
@@ -2480,8 +2764,8 @@ void lb_pl_mv088(u8 *arg0) {
             temp_a0_4 = M2C_FIELD(arg0, u8 *, 0x8D0);
             if (temp_a0_4 != 2) {
                 NPCZoomInCameraCancel(temp_a0_4);
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                M2C_FIELD(lb_sys, s32 *, 0x68) = 0;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0;
             }
         }
         break;
@@ -2736,7 +3020,7 @@ void lb_npc_init(u8 *arg0) {
                 if ((var_v0_2 < 0) || (var_v0_2 >= 0x56)) {
                     var_v0_2 = 0;
                 }
-                if (*(lb_sys + 0x88 + (((s16)(var_v0_2)))) == 2) {
+                if (*(lb_sys + LBSYS_OFS(0x88) + (((s16)(var_v0_2)))) == 2) {
                     Lb_act_set(arg0, 0, 0x8C);
                     var_a1_3 = 0x3E9;
                 } else {
@@ -3040,9 +3324,9 @@ void Lb_check_target(void) {
     if (M2C_FIELD(pl, u8 *, 0x15) == 0x58) {
         return;
     }
-    if (M2C_FIELD(lb_sys, s32 *, 0x6C) == 1 || M2C_FIELD(lb_sys, s32 *, 0x68) != 0) {
-        if ((*(u8 *)0x3F33FE != 0) || (SoftKeyboard_alive_check() != 0) || (M2C_FIELD(lb_sys, s32 *, 0x68) != 0)) {
-            M2C_FIELD(lb_sys, s8 *, 0x86) = 1;
+    if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) == 1 || M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0) {
+        if ((*(u8 *)0x3F33FE != 0) || (SoftKeyboard_alive_check() != 0) || (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0)) {
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x86)) = 1;
         }
         return;
     }
@@ -3297,28 +3581,28 @@ void lb_check_status(void) {
 
     temp_a1 = *(u8 *)0x3F34C1;
     temp_s1 = Get_sw2(0) & 0xFFFF;
-    temp_a2 = M2C_FIELD(lb_sys, u32 *, 0x68);
+    temp_a2 = M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68));
     var_a0 = temp_a1 * 0xA00;
     temp_s0 = player_work + var_a0;
     {
         switch (temp_a2) {      /* jump table jtbl_561_00665C70: 8 and 32 do nothing, 0x32+ like 0 */
         case 25:                                    /* switch 1 */
             if (SoftKeyboard_alive_check() == 0) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
             }
             break;
         case 21:                                    /* switch 1 */
-            M2C_FIELD(lb_sys, u32 *, 0x68) = 0x16U;
-            M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
-            M2C_FIELD(cw, s8 *, 0x2C35) = 0;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0;
+            M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x16U;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+            M2C_FIELD(cw, s8 *, CW_OFS(0x2C35)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
             break;
         case 22:                                    /* switch 1 */
             if (Lbs_RoomExit() == 1) {
                 M2C_FIELD(temp_s0, s8 *, 0x915) = 0;
                 M2C_FIELD(temp_s0, u8 *, 0x916) = 0U;
                 Lbc_SendMiniData();
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x17U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x17U;
             }
             break;
         case 23:                                    /* switch 1 */
@@ -3326,29 +3610,29 @@ void lb_check_status(void) {
             M2C_FIELD(temp_a0, u8 *, 0xC) = 1U;
             if (temp_s1 & 0xFFFF & 0x20) {
                 *(s8 *)0x3F36AB = 1;
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
                 NPCZoomInCameraCancel();
             }
             break;
         case 30:                                    /* switch 1 */
-            M2C_FIELD(lb_sys, u32 *, 0x68) = 0x1FU;
+            M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x1FU;
             str_fadeout(0, 0xF);
             break;
         case 31:                                    /* switch 1 */
             if ((Fade_busy_ck() & 0xFF) != 1) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x20U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x20U;
                 Lbc_set_prim(0, 0, 0);
                 Pit_reset();
             }
             break;
         case 35:                                    /* switch 1 */
-            M2C_FIELD(lb_sys, u32 *, 0x68) = 0x24U;
+            M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x24U;
             str_fadeout(0, 0xF);
             break;
         case 36:                                    /* switch 1 */
             if ((Fade_busy_ck() & 0xFF) != 1) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x25U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x25U;
                 Lbc_set_prim(0, 0, 0);
                 Pit_reset();
             }
@@ -3356,31 +3640,31 @@ void lb_check_status(void) {
         case 15:                                    /* switch 1 */
             if (Lb_menu_move() == 1) {
                 *(u8 *)0x3F33FE = 0;
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
                 Lbc_init_network_work();
             }
             break;
         case 29:                                    /* switch 1 */
             temp_a0_2 = M2C_FIELD(mhRule, s8 *, 0) + 1;
-            if ((temp_a0_2 >= 2) && ((M2C_FIELD(cw, u16 *, 0x32C6) + 1) == temp_a0_2)) {
-                M2C_FIELD(pNet, u8 *, 0xC) = 0U;
+            if ((temp_a0_2 >= 2) && ((M2C_FIELD(cw, u16 *, CW_OFS(0x32C6)) + 1) == temp_a0_2)) {
+                M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) = 0U;
                 *(u8 *)0x3F36AB = 1;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
             } else {
-                M2C_FIELD(pNet, u8 *, 0xC) = 1U;
+                M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) = 1U;
                 temp_v0 = Lb_select(temp_a0_2, temp_a1, temp_a2);
                 switch (temp_v0) {                  /* switch 2; irregular */
                 case 0:                             /* switch 2 */
-                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
                     *(u8 *)0x3F36AB = 1;
-                    M2C_FIELD(lb_sys, u32 *, 0x68) = 7U;
+                    M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 7U;
                     M2C_FIELD(temp_s0, u8 *, 0x916) = (u8) (M2C_FIELD(temp_s0, u8 *, 0x916) | 0x20);
                     Lbc_SendMiniData();
                     break;
                 case 3:                             /* switch 2 */
-                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                    M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                    M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
                     *(u8 *)0x3F36AB = 1;
                     break;
                 }
@@ -3388,36 +3672,36 @@ void lb_check_status(void) {
             break;
         case 48:                                    /* switch 1 */
             temp_v0_2 = (u8 *)Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), (u8 *)temp_a1, temp_a2);
-            if (((M2C_FIELD(mhRule, s8 *, 0) + 1) >= 2) && ((M2C_FIELD(cw, u16 *, 0x32C6) + 1) < (s32) M2C_FIELD(temp_v0_2, u16 *, 2))) {
-                M2C_FIELD(pNet, u8 *, 0xC) = 0U;
+            if (((M2C_FIELD(mhRule, s8 *, 0) + 1) >= 2) && ((M2C_FIELD(cw, u16 *, CW_OFS(0x32C6)) + 1) < (s32) M2C_FIELD(temp_v0_2, u16 *, 2))) {
+                M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) = 0U;
                 *(u8 *)0x3F36AB = 1;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
             } else {
-                M2C_FIELD(pNet, u8 *, 0xC) = 1U;
+                M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) = 1U;
                 temp_v0_3 = Lb_select();
                 switch (temp_v0_3) {                /* switch 3; irregular */
                 case 0:                             /* switch 3 */
-                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
                     *(u8 *)0x3F36AB = 1;
-                    M2C_FIELD(lb_sys, u32 *, 0x68) = 7U;
+                    M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 7U;
                     M2C_FIELD(temp_s0, u8 *, 0x916) = (u8) (M2C_FIELD(temp_s0, u8 *, 0x916) | 0x20);
                     Lbc_SendMiniData();
                     break;
                 case 3:                             /* switch 3 */
-                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                    M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                    M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
                     *(u8 *)0x3F36AB = 1;
                     break;
                 }
             }
             break;
         case 24:                                    /* switch 1 */
-            temp_v1 = M2C_FIELD(lb_sys, s16 *, 0x74) - 1;
-            M2C_FIELD(lb_sys, s16 *, 0x74) = temp_v1;
+            temp_v1 = M2C_FIELD(lb_sys, s16 *, LBSYS_OFS(0x74)) - 1;
+            M2C_FIELD(lb_sys, s16 *, LBSYS_OFS(0x74)) = temp_v1;
             if ((((s16)((s32) temp_v1))) <= 0) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
             }
             break;
         case 3:                                     /* switch 1 */
@@ -3464,10 +3748,10 @@ void lb_check_status(void) {
             temp_v0_4 = Lbs_MatchEntry();
             switch (temp_v0_4) {                    /* switch 4; irregular */
             case 0:                                 /* switch 4 */
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 8U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 8U;
                 break;
             case 1:                                 /* switch 4 */
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x17U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x17U;
                 SetDialogData_HTML(cw + 0x32D1);
                 break;
             }
@@ -3476,33 +3760,33 @@ void lb_check_status(void) {
             temp_v0_5 = Lbs_MatchEntry();
             switch (temp_v0_5) {                    /* switch 5; irregular */
             case 0:                                 /* switch 5 */
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 8U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 8U;
                 Lb_Matching();
                 break;
             case 1:                                 /* switch 5 */
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x17U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x17U;
                 SetDialogData_HTML(cw + 0x32D1);
                 break;
             }
             break;
         case 40:                                    /* switch 1 */
-            M2C_FIELD(pNet, u8 *, 0xC) = 1U;
-            switch (M2C_FIELD(lb_sys, s8 *, 6)) {  /* switch 6; irregular */
+            M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) = 1U;
+            switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6))) {  /* switch 6; irregular */
             case 0:                                 /* switch 6 */
-                M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
                 break;
             case 1:                                 /* switch 6 */
                 temp_v0_6 = Lb_select(1, temp_a1, temp_a2);
                 switch (temp_v0_6) {                /* switch 7; irregular */
                 case 0:                             /* switch 7 */
-                    M2C_FIELD(lb_sys, s8 *, 6) = 0;
-                    M2C_FIELD(lb_sys, u32 *, 0x68) = 0x29U;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+                    M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x29U;
                     break;
                 case 3:                             /* switch 7 */
-                    M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-                    M2C_FIELD(lb_sys, s8 *, 6) = 0;
+                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
                     *(u8 *)0x3F36AB = 1;
-                    M2C_FIELD(lb_sys, u32 *, 0x68) = 8U;
+                    M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 8U;
                     break;
                 }
                 break;
@@ -3513,29 +3797,29 @@ void lb_check_status(void) {
             switch (temp_v0_7) {                    /* switch 8; irregular */
             case 0:                                 /* switch 8 */
                 *(u8 *)0x3F36AB = 1;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
                 M2C_FIELD(temp_s0, u8 *, 0x916) = (u8) (M2C_FIELD(temp_s0, u8 *, 0x916) & ~0x20);
                 M2C_FIELD(temp_s0, u8 *, 0x916) = (u8) (M2C_FIELD(temp_s0, u8 *, 0x916) | 0x10);
                 Lbc_SendMiniData();
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
                 break;
             case 1:                                 /* switch 8 */
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x2AU;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x2AU;
                 break;
             }
             break;
         case 42:                                    /* switch 1 */
-            M2C_FIELD(pNet, u8 *, 0xC) = 1U;
+            M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) = 1U;
             if (temp_s1 & 0xFFFF & 0x20) {
                 *(u8 *)0x3F36AB = 1;
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 8U;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 8U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
             }
             break;
         case 4:                                     /* switch 1 */
             if (Lb_pl_status_m(temp_s1, temp_a1, temp_a2) == 1) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
                 Lbc_set_prim(0, 0, 0);
             }
             break;
@@ -3547,8 +3831,8 @@ void lb_check_status(void) {
             } else {
                 M2C_FIELD(temp_s0, s8 *, 0x90F) = 0;
                 Lb_send_pl_chidori_off(temp_s0);
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
-                M2C_FIELD(lb_sys, s8 *, 0x87) = 0x14;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x87)) = 0x14;
                 NPCZoomInCameraCancel();
                 cnWrap_SoundRequest(3);
             }
@@ -3557,24 +3841,24 @@ void lb_check_status(void) {
             Lb_eat();
             break;
         case 27:                                    /* switch 1 */
-            M2C_FIELD(lb_sys, u32 *, 0x68) = 0x1CU;
+            M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x1CU;
             break;
         case 28:                                    /* switch 1 */
             if (Lb_ItemBox_mv(temp_s1, temp_a1, temp_a2) == 0) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 1;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
             }
             break;
         case 39:                                    /* switch 1 */
             if (Lb_gh_board() == 1) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0U;
-                M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
             }
             break;
         case 16:                                    /* switch 1 */
             temp_a0_3 = Fade_busy_ck() & 0xFF;
             if ((temp_a0_3 != 1) && (Lbs_LobbyExit(temp_a0_3) == 1)) {
-                M2C_FIELD(cw, s8 *, 0x35D5) = 0;
+                M2C_FIELD(cw, s8 *, CW_OFS(0x35D5)) = 0;
                 SoftKeyboard_exit();
                 Lbc_set_prim(0, 0, 0);
                 To_EnterPlaza2Lobby();
@@ -3593,14 +3877,14 @@ void lb_check_status(void) {
     case 38:                                        /* switch 1 */
         if (temp_a2 == 0) {
             if (SoftKeyboard_alive_check() != 0) {
-                M2C_FIELD(lb_sys, u32 *, 0x68) = 0x19U;
+                M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0x19U;
             } else if ((temp_s1 & 0xFFFF & 0x8000) && (*(u8 *)0x3F33FE == 0)) {
                 Lb_ck_menu();
             }
         }
         }
     }
-    if (M2C_FIELD(pNet, u8 *, 0xC) != 0) {
+    if (M2C_FIELD(pNet, u8 *, PNET_OFS(0xC)) != 0) {
         if (SoftKeyboard_alive_check() != 0) {
             SoftKeyboard_exit();
         }
@@ -3614,7 +3898,7 @@ s32 Lb_shop_sw(s32 arg0) {
     s32 var_s0;
 
     var_s0 = 0;
-    if ((s32) M2C_FIELD(lb_sys, u8 *, 0x8E) < 3) {
+    if ((s32) M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x8E)) < 3) {
         return 0;
     }
     if (SoftKeyboard_alive_check() == 0) {
@@ -3622,7 +3906,7 @@ s32 Lb_shop_sw(s32 arg0) {
         var_s0 = ((*(u16 *)(D_3F3728 + temp_a0) & 0x3C00) | *(u16 *)(D_3F3714 + temp_a0)) & 0xFFFF;
     }
     if (var_s0 & 0xFFFF) {
-        M2C_FIELD(lb_sys, u8 *, 0x8E) = 0U;
+        M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0x8E)) = 0U;
     }
     return var_s0;
 }
@@ -3630,9 +3914,9 @@ s32 Lb_shop_sw(s32 arg0) {
 void Lb_ck_menu(void) {
     s32 temp_a0;
 
-    temp_a0 = M2C_FIELD(lb_sys, s32 *, 0x68);
+    temp_a0 = M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68));
     if (temp_a0 != 0xF) {
-        M2C_FIELD(lb_sys, s32 *, 0x68) = 0xF;
+        M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0xF;
         *(s8 *)0x3F33FE = 1;
         Lbc_init_network_work(temp_a0);
         Lbc_set_prim(0, 0, 0);
@@ -3697,7 +3981,7 @@ void Lb_guild(void) {
     temp_s1 = *(u8 * *)(D_3E4FA0 + (temp_a0 * 0xA00)) + 0x444;
     temp_s0 = (u8 *)get_quest_info(temp_a0);
     Get_sw2(0);
-    switch (M2C_FIELD(lb_sys, s8 *, 6)) {          /* switch 1 */
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6))) {          /* switch 1 */
     case 0:                                         /* switch 1 */
         M2C_FIELD(lb_rule_exp, s8 *, 4) = 0;
         M2C_FIELD(lb_rule_exp, s8 *, 0x68) = 0;
@@ -3706,20 +3990,20 @@ void Lb_guild(void) {
         M2C_FIELD(lb_rule_exp, s8 *, 0x194) = 0;
         temp_a0_2 = M2C_FIELD(temp_s1, u8 *, 0xE) * 4;
         M2C_FIELD(lb_pit, s32 *, 4) = *(s32 *)(npc_dialog_table + temp_a0_2);
-        if (M2C_FIELD(cw, s8 *, 0x2C2F) != 0) {
+        if (M2C_FIELD(cw, s8 *, CW_OFS(0x2C2F)) != 0) {
             M2C_FIELD(lb_quest_info, u8 *, 0x23) = (u8) M2C_FIELD(temp_s0, u8 *, 0x1D);
         }
-        M2C_FIELD(lb_sys, s8 *, 7) = 0;
-        M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) = 0;
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
         if (Online_ck(temp_a0_2) == 0) {
             if ((Quest_clear_bit_ck(0xAA) == 1) && (Event_flag_ck(0x52) == 0)) {
-                M2C_FIELD(lb_sys, s8 *, 6) = 0;
-                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x31;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x31;
                 return;
             }
             if ((Quest_clear_bit_ck(0xAB) == 1) && (Event_flag_ck(0x4D) == 0)) {
-                M2C_FIELD(lb_sys, s8 *, 6) = 0;
-                M2C_FIELD(lb_sys, s32 *, 0x68) = 0x2E;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x2E;
                 return;
             }
             if (key_quest == 0xAA) {
@@ -3728,12 +4012,12 @@ void Lb_guild(void) {
             goto block_17;
         }
         if (Event_flag_ck(4) == 0) {
-            M2C_FIELD(lb_sys, s8 *, 6) = 0;
-            M2C_FIELD(lb_sys, s32 *, 0x68) = 5;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
             return;
         }
 block_17:
-        M2C_FIELD(cw, s8 *, 0x2C08) = 0;
+        M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;
     default:                                        /* switch 1 */
 block_137:
         lb_guild_talk();
@@ -3744,25 +4028,25 @@ block_137:
         Lbc_set_prim(0, Lb_guild_trans, 0);
         if (Online_ck() == 0) {
             if (Lbs_InRoomCheck() == 0) {
-                M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             } else {
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
                 M2C_FIELD(lb_pit, s8 *, 8) = 8;
                 M2C_FIELD(lb_pit, s8 *, 9) = 1;
-                M2C_FIELD(lb_sys, s8 *, 6) = 0xF;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xF;
                 M2C_FIELD(mhRule, s32 *, 0x54) = (s32) *(u16 *)0x3F341C;
                 lb_set_questpage_info();
             }
         } else if (Lbs_InRoomCheck() == 0) {
             M2C_FIELD(lb_pit, s8 *, 8) = 0;
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             flMemset(mhRule, 0, 0x68);
         } else {
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
             M2C_FIELD(lb_pit, s8 *, 8) = 0xA;
             M2C_FIELD(lb_pit, s8 *, 9) = 1;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0xF;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xF;
             M2C_FIELD(mhRule, s32 *, 0x54) = (s32) *(u8 *)0x3F341C;
             lb_set_questpage_info();
         }
@@ -3785,17 +4069,17 @@ block_137:
 block_36:
             cnWrap_SoundRequest(9);
             if (key_quest_num == 0) {
-                M2C_FIELD(pNet, s8 *, 8) = lb_get_quest_level(0);
+                M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = lb_get_quest_level(0);
             } else if (Online_ck(0) == 1) {
-                M2C_FIELD(pNet, s8 *, 8) = 6;
+                M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 6;
             } else {
-                M2C_FIELD(pNet, s8 *, 8) = 5;
+                M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 5;
             }
             temp_v0 = pNet;
             if (M2C_FIELD(temp_v0, s8 *, 8) < 0) {
                 M2C_FIELD(temp_v0, s8 *, 8) = 5;
             }
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             Gunner_wasure_ck(User_data);
             goto block_137;
         }
@@ -3806,18 +4090,18 @@ block_36:
         case 0:                                     /* switch 2 */
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
             M2C_FIELD(lb_pit, s8 *, 8) = 1;
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             break;
         case 3:                                     /* switch 2 */
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
             M2C_FIELD(lb_pit, s8 *, 8) = 6;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0xD;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xD;
             break;
         }
         goto block_137;
     case 4:                                         /* switch 1 */
         if ((((s8)(Lb_talk_check_default(2)))) != 0) {
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             lb_set_questpage_info();
             cnWrap_SoundRequest(9);
         }
@@ -3833,11 +4117,11 @@ block_36:
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
                 M2C_FIELD(lb_pit, s8 *, 8) = 9;
             }
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             break;
         case 3:                                     /* switch 3 */
-            M2C_FIELD(lb_sys, s8 *, 6) = 3;
-            M2C_FIELD(pNet, s8 *, 7) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 3;
+            M2C_FIELD(pNet, s8 *, PNET_OFS(7)) = 0;
             temp_v1 = pNet;
             M2C_FIELD(temp_v1, s8 *, 8) = (s8) M2C_FIELD(temp_v1, u8 *, 0x13);
             break;
@@ -3848,13 +4132,13 @@ block_36:
             if (M2C_FIELD(lb_pit, s8 *, 9) == 0) {
                 if (Lb_check_money(M2C_FIELD(mhRule, s32 *, 0x54)) == 0) {
                     if (Online_ck() == 0) {
-                        M2C_FIELD(cw, s8 *, 0x35D3) = 1;
-                        M2C_FIELD(cw, u8 *, 0x32C5) = 1U;
-                        *(u8 *)0x3F360A = M2C_FIELD(cw, u8 *, 0x32C5);
+                        M2C_FIELD(cw, s8 *, CW_OFS(0x35D3)) = 1;
+                        M2C_FIELD(cw, u8 *, CW_OFS(0x32C5)) = 1U;
+                        *(u8 *)0x3F360A = M2C_FIELD(cw, u8 *, CW_OFS(0x32C5));
                         Lb_menu_quest_info(*(u8 **)(lb_quest_all + (M2C_FIELD(mhRule, s32 *, 0x54) * 4)));
                         M2C_FIELD(lb_pit, s32 *, 0) = 0;
                         M2C_FIELD(lb_pit, s8 *, 8) = 4;
-                        M2C_FIELD(lb_sys, s8 *, 6) = 0xA;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xA;
                         *(s16 *)0x3F33DC = (s16) M2C_FIELD(mhRule, s32 *, 0x54);
                         temp_s0_2 = *(u8 * *)(lb_quest_all + (M2C_FIELD(mhRule, s32 *, 0x54) * 4));
                         quest_price = (s32) M2C_FIELD(temp_s0_2, s32 *, 4);
@@ -3868,18 +4152,18 @@ block_36:
                     } else {
                         M2C_FIELD(lb_pit, s32 *, 0) = 0;
                         M2C_FIELD(lb_pit, s8 *, 8) = 3;
-                        M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
                     }
                 } else {
                     M2C_FIELD(lb_pit, s32 *, 0) = 0;
-                    M2C_FIELD(lb_sys, s8 *, 6) = 0xB;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xB;
                     M2C_FIELD(lb_pit, s8 *, 8) = 7;
                     cnWrap_SoundRequest(7);
                 }
             } else {
                 M2C_FIELD(lb_pit, s8 *, 9) = 0;
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
-                M2C_FIELD(lb_sys, s8 *, 6) = 0xC;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xC;
                 M2C_FIELD(lb_pit, s8 *, 8) = 5;
                 cnWrap_SoundRequest(3);
             }
@@ -3888,18 +4172,18 @@ block_36:
     case 7:                                         /* switch 1 */
         if ((((s8)(Lb_talk_check_default(2)))) != 0) {
             if (M2C_FIELD(lb_pit, s8 *, 9) == 0) {
-                M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
                 cnWrap_SoundRequest(9);
             } else {
-                M2C_FIELD(lb_sys, s8 *, 6) = 9;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 9;
                 cnWrap_SoundRequest(3);
             }
         }
         goto block_137;
     case 8:                                         /* switch 1 */
         if (lb_rule_seet_set() == 1) {
-            M2C_FIELD(lb_sys, s8 *, 7) = 0;
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
         }
         goto block_137;
     case 9:                                         /* switch 1 */
@@ -3926,7 +4210,7 @@ block_36:
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
                 M2C_FIELD(lb_pit, s8 *, 8) = 4;
             }
-            M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             *(s16 *)0x3F33DC = (s16) M2C_FIELD(mhRule, s32 *, 0x54);
             *(u16 *)0x3F341C = (u16) M2C_FIELD(mhRule, s32 *, 0x54);
             quest_price = (s32) M2C_FIELD(var_v0, s32 *, 4);
@@ -3934,7 +4218,7 @@ block_36:
         case 1:                                     /* switch 4 */
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
             M2C_FIELD(lb_pit, s8 *, 8) = 6;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0xD;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xD;
             break;
         }
         goto block_137;
@@ -3956,8 +4240,8 @@ block_36:
                 if (Online_ck() == 0) {
                     M2C_FIELD(lb_pit, s32 *, 0) = 0;
                     M2C_FIELD(lb_pit, s8 *, 8) = 3;
-                    M2C_FIELD(cw, s8 *, 0x35D3) = 0;
-                    M2C_FIELD(lb_sys, s8 *, 6) = 0xD;
+                    M2C_FIELD(cw, s8 *, CW_OFS(0x35D3)) = 0;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xD;
                     temp_a1_3 = *(u8 *)0x3F34C1;
                     temp_s0_4 = *(u8 * *)(lb_quest_all + (M2C_FIELD(mhRule, s32 *, 0x54) * 4));
                     *(D_3E5506 + (temp_a1_3 * 0xA00)) = 0;
@@ -3973,20 +4257,20 @@ block_36:
                     }
                     goto block_111;
                 }
-                if (M2C_FIELD(cw, u8 *, 0x32C5) == 1) {
+                if (M2C_FIELD(cw, u8 *, CW_OFS(0x32C5)) == 1) {
                     M2C_FIELD(lb_pit, s8 *, 9) = 1;
                     M2C_FIELD(lb_pit, s8 *, 8) = 0xB;
                     M2C_FIELD(lb_pit, s32 *, 0) = 0;
-                    M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
                     cnWrap_SoundRequest(0);
                 } else {
-                    M2C_FIELD(lb_sys, s8 *, 6) = 0x11;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0x11;
                     cnWrap_SoundRequest(0);
                 }
             } else {
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
                 M2C_FIELD(lb_pit, s8 *, 8) = 6;
-                M2C_FIELD(lb_sys, s8 *, 6) = 0xD;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xD;
             }
         } else {
 block_111:
@@ -3995,9 +4279,9 @@ block_111:
                 temp_v0_5 = (u8) M2C_FIELD(temp_v1_2, s8 *, 8) + 1;
                 M2C_FIELD(temp_v1_2, s8 *, 8) = temp_v0_5;
                 if ((temp_v0_5 & 0xFF) >= 3) {
-                    M2C_FIELD(pNet, s8 *, 8) = 0;
+                    M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 0;
                 }
-                Lb_num_to_str((u8) M2C_FIELD(pNet, s8 *, 8) + 1, lb_quest_exp + 0xCC);
+                Lb_num_to_str((u8) M2C_FIELD(pNet, s8 *, PNET_OFS(8)) + 1, lb_quest_exp + 0xCC);
                 cnWrap_SoundRequest(6);
             }
         }
@@ -4008,24 +4292,24 @@ block_111:
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
                 M2C_FIELD(lb_pit, s8 *, 8) = 0xB;
                 M2C_FIELD(lb_pit, s8 *, 9) = 1;
-                M2C_FIELD(lb_sys, s8 *, 6) = (s8) (M2C_FIELD(lb_sys, s8 *, 6) + 1);
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             } else {
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
                 M2C_FIELD(lb_pit, s8 *, 8) = 6;
-                M2C_FIELD(lb_sys, s8 *, 6) = 0xD;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xD;
             }
         }
         goto block_137;
     case 17:                                        /* switch 1 */
         if (Lbs_RoomExit() == 1) {
-            if (M2C_FIELD(cw, u8 *, 0x32C5) == 1) {
+            if (M2C_FIELD(cw, u8 *, CW_OFS(0x32C5)) == 1) {
                 Lb_back_money();
                 quest_price = 0;
-                M2C_FIELD(cw, u8 *, 0x32C5) = 0U;
+                M2C_FIELD(cw, u8 *, CW_OFS(0x32C5)) = 0U;
             }
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
             M2C_FIELD(lb_pit, s8 *, 8) = 0xC;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0x12;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0x12;
         }
         goto block_137;
     case 18:                                        /* switch 1 */
@@ -4037,34 +4321,34 @@ block_111:
             Lbc_SendMiniData(temp_a0_4, temp_a1_4);
             Lb_set_mini_data(cw + (*(u8 *)0x3F34C1 * 0x2FC) + 0x1346);
             Lb_set_mini_data(lbCommer + (*(u8 *)0x3F34C1 * 0x5C) + 0x1C);
-            M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-            M2C_FIELD(lb_sys, s8 *, 0x87) = 0x14;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0;
-            M2C_FIELD(lb_sys, s32 *, 0x68) = 0;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x87)) = 0x14;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
 block_136:
-            M2C_FIELD(cw, s8 *, 0x2C08) = 1;
+            M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 1;
         }
         goto block_137;
     case 11:                                        /* switch 1 */
         if ((((s8)(Lb_talk_check_default(0)))) != 0) {
             M2C_FIELD(lb_pit, s32 *, 0) = 0;
             M2C_FIELD(lb_pit, s8 *, 8) = 5;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0xC;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xC;
             M2C_FIELD(lb_pit, s8 *, 9) = 0;
         }
         goto block_137;
     case 12:                                        /* switch 1 */
         if ((((s8)(Lb_talk_check_default(2)))) != 0) {
             if (M2C_FIELD(lb_pit, s8 *, 9) == 0) {
-                M2C_FIELD(lb_sys, s8 *, 6) = 5;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 5;
                 cnWrap_SoundRequest(9);
                 Lbc_set_prim(0, Lb_guild_trans, 0);
                 cnWrap_SoundRequest(9);
             } else {
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
-                M2C_FIELD(lb_sys, s8 *, 6) = 0xD;
+                M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0xD;
                 M2C_FIELD(lb_pit, s8 *, 8) = 6;
                 cnWrap_SoundRequest(3);
             }
@@ -4072,10 +4356,10 @@ block_136:
         goto block_137;
     case 13:                                        /* switch 1 */
         if ((((s8)(Lb_talk_check_default(0)))) != 0) {
-            M2C_FIELD(lb_sys, s32 *, 0x6C) = 0;
-            M2C_FIELD(lb_sys, s8 *, 0x87) = 0x14;
-            M2C_FIELD(lb_sys, s8 *, 6) = 0;
-            M2C_FIELD(lb_sys, s32 *, 0x68) = 0;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x87)) = 0x14;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
             goto block_136;
@@ -4088,10 +4372,10 @@ void lb_guild_talk(void) {
     u8 *temp_v0;
     u8 *temp_s0;
 
-    if (M2C_FIELD(lb_sys, s8 *, 6) >= 2) {
+    if (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) >= 2) {
         temp_s0 = M2C_FIELD(lb_pit, u8 **, 4) + (M2C_FIELD(lb_pit, s8 *, 8) * 8);
         font_set_palette(0);
-        switch (M2C_FIELD(lb_sys, s8 *, 6)) {      /* irregular */
+        switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6))) {      /* irregular */
         case 6:
             strcpy(guildStr, M2C_FIELD(temp_s0, int **, 4));
             temp_v0 = (u8 *)strrchr(guildStr, 0x24);
@@ -4124,9 +4408,9 @@ s32 lb_guild_startMsg(void) {
 
     temp_a1 = M2C_FIELD(lb_pit, s8 *, 8) * 8;
     temp_s0 = M2C_FIELD(lb_pit, u8 **, 4) + temp_a1;
-    switch (M2C_FIELD(lb_sys, s8 *, 7)) {          /* irregular */
+    switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7))) {          /* irregular */
     case 0:
-        M2C_FIELD(lb_sys, s8 *, 7) = (s8) (M2C_FIELD(lb_sys, s8 *, 7) + 1);
+        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) + 1);
         if (Online_ck(M2C_FIELD(lb_pit, s32 *, 4), temp_a1) == 0) {
             if (Event_flag_ck(1) == 1) {
                 M2C_FIELD(lb_pit, s32 *, 0) = 0;
@@ -4161,7 +4445,7 @@ block_32:
         if (Online_ck(M2C_FIELD(lb_pit, s32 *, 4), temp_a1) == 0) {
             if ((Event_flag_ck(1) == 0) && (Quest_clear_bit_ck(0x8B) == 1)) {
                 if (Lb_put_npc_default() == 0) {
-                    M2C_FIELD(lb_sys, s8 *, 7) = 0;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) = 0;
                     return 1;
                 }
                 return 0;
@@ -4171,7 +4455,7 @@ block_32:
                     Gold_add(0x5DC);
                     cnWrap_SoundRequest(8);
                     Lb_put_set01(2);
-                    M2C_FIELD(lb_sys, s8 *, 7) = 0;
+                    M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) = 0;
                     return 1;
                 }
                 return 0;
@@ -4181,7 +4465,7 @@ block_32:
 block_30:
         M2C_FIELD(lb_pit, s8 *, 0xB) = NPC_Message(M2C_FIELD(temp_s0, s32 *, 4), M2C_FIELD(lb_pit, s32 *, 0), M2C_FIELD(temp_s0, u16 *, 0), M2C_FIELD(lb_pit, s8 *, 9));
         if ((((s8)(Lb_talk_check_default(2)))) != 0) {
-            M2C_FIELD(lb_sys, s8 *, 7) = 0;
+            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(7)) = 0;
             return 1;
         }
         goto block_32;
@@ -4217,7 +4501,7 @@ s32 lb_select_quest(void) {
     if (temp_s1 == ((((s8)(get_questLevelNum()))) + 1)) {
         var_v0 = (u8 *)get_quest_info();
     } else {
-        var_v0 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, 7) + (lb_quest_info + ((temp_s1 & 0xFF) * 5))) * 4));
+        var_v0 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, PNET_OFS(7)) + (lb_quest_info + ((temp_s1 & 0xFF) * 5))) * 4));
     }
     temp_a0 = pNet;
     temp_v1 = M2C_FIELD(temp_a0, u8 *, 2);
@@ -4226,7 +4510,7 @@ s32 lb_select_quest(void) {
     case 0:
         M2C_FIELD(temp_a0, u8 *, 2) = (u8) (temp_v1 + 1);
         lb_set_questpage_info(temp_a0, temp_a1);
-        M2C_FIELD(pNet, u8 *, 8) = 0U;
+        M2C_FIELD(pNet, u8 *, PNET_OFS(8)) = 0U;
         Lbc_set_prim(0, Lb_guild_trans, 0);
 block_43:
     default:
@@ -4250,7 +4534,7 @@ block_43:
                 temp_v0 = M2C_FIELD(temp_v1_3, u8 *, 7) + 1;
                 M2C_FIELD(temp_v1_3, u8 *, 7) = temp_v0;
                 if ((temp_v0 & 0xFF) >= 5) {
-                    M2C_FIELD(pNet, u8 *, 7) = 0U;
+                    M2C_FIELD(pNet, u8 *, PNET_OFS(7)) = 0U;
                 }
                 lb_set_questpage_info();
                 M2C_FIELD(mhRule, s32 *, 0x54) = (s32) M2C_FIELD(var_v0, u8 *, 0x1D);
@@ -4262,7 +4546,7 @@ block_43:
                     temp_v0_2 = M2C_FIELD(temp_v1_4, u8 *, 7) + 1;
                     M2C_FIELD(temp_v1_4, u8 *, 7) = temp_v0_2;
                     if ((temp_v0_2 & 0xFF) >= key_quest_num) {
-                        M2C_FIELD(pNet, u8 *, 7) = 0U;
+                        M2C_FIELD(pNet, u8 *, PNET_OFS(7)) = 0U;
                     }
                     lb_set_questpage_info();
                     M2C_FIELD(mhRule, s32 *, 0x54) = (s32) M2C_FIELD(var_v0, u8 *, 0x1D);
@@ -4303,9 +4587,9 @@ block_43:
             temp_v0_7 = M2C_FIELD(temp_a0, u8 *, 8) + 1;
             M2C_FIELD(temp_a0, u8 *, 8) = temp_v0_7;
             if ((temp_v0_7 & 0xFF) >= 3) {
-                M2C_FIELD(pNet, u8 *, 8) = 0U;
+                M2C_FIELD(pNet, u8 *, PNET_OFS(8)) = 0U;
             }
-            Lb_num_to_str(M2C_FIELD(pNet, u8 *, 8) + 1, lb_quest_exp + 0xCC);
+            Lb_num_to_str(M2C_FIELD(pNet, u8 *, PNET_OFS(8)) + 1, lb_quest_exp + 0xCC);
             cnWrap_SoundRequest(6);
         }
         goto block_43;
@@ -4320,13 +4604,13 @@ s32 lb_select_quest_level(void) {
 
     temp_s0 = Get_sw2(0) & 0xFFFF;
     temp_a1 = temp_s0 & 0xFFFF;
-    M2C_FIELD(pNet, s8 *, 0x12) = lb_get_quest_level(0);
+    M2C_FIELD(pNet, s8 *, PNET_OFS(0x12)) = lb_get_quest_level(0);
     if (temp_a1 & 0x20) {
-        if ((((s8)(check_questLevelSelect(M2C_FIELD(pNet, s8 *, 8), temp_a1)))) == 0) {
+        if ((((s8)(check_questLevelSelect(M2C_FIELD(pNet, s8 *, PNET_OFS(8)), temp_a1)))) == 0) {
             temp_v1 = pNet;
             M2C_FIELD(mhRule, u8 *, 0x58) = (u8) M2C_FIELD(temp_v1, s8 *, 8);
             M2C_FIELD(temp_v1, u8 *, 0x13) = (u8) M2C_FIELD(temp_v1, s8 *, 8);
-            M2C_FIELD(pNet, s8 *, 8) = 0;
+            M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 0;
             cnWrap_SoundRequest(0);
             return 0;
         }
@@ -4338,11 +4622,11 @@ s32 lb_select_quest_level(void) {
         return 3;
     }
     if (Online_ck(3, temp_a1) == 1) {
-        var_v0 = Lb_cursorUD((u8) M2C_FIELD(pNet, s8 *, 8), (((s8)(get_questLevelNum()))) + 2);
+        var_v0 = Lb_cursorUD((u8) M2C_FIELD(pNet, s8 *, PNET_OFS(8)), (((s8)(get_questLevelNum()))) + 2);
     } else {
-        var_v0 = Lb_cursorUD((u8) M2C_FIELD(pNet, s8 *, 8), (((s8)(get_questLevelNum()))) + 1);
+        var_v0 = Lb_cursorUD((u8) M2C_FIELD(pNet, s8 *, PNET_OFS(8)), (((s8)(get_questLevelNum()))) + 1);
     }
-    M2C_FIELD(pNet, s8 *, 8) = var_v0;
+    M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = var_v0;
 block_11:
     return 2;
 }
@@ -4374,7 +4658,7 @@ s32 check_questLevelSelect(s32 arg0) {
         }
         goto block_22;
     }
-    if ((Online_ck() == 1) && (M2C_FIELD(cw, s8 *, 0x2C2F) != 0) && (temp_s0 == 7)) {
+    if ((Online_ck() == 1) && (M2C_FIELD(cw, s8 *, CW_OFS(0x2C2F)) != 0) && (temp_s0 == 7)) {
         return 0;
     }
 block_22:
@@ -4451,7 +4735,7 @@ void lb_set_questpage_info(void) {
     u8 *temp_s0_2;
     u8 *var_s1;
 
-    if (M2C_FIELD(cw, u8 *, 0x35D3) != 0) {
+    if (M2C_FIELD(cw, u8 *, CW_OFS(0x35D3)) != 0) {
         if ((s32) M2C_FIELD(mhRule, u8 *, 0x54) >= 0xC8) {
             var_s1 = (u8 *)get_quest_info();
         } else {
@@ -4462,7 +4746,7 @@ void lb_set_questpage_info(void) {
         if (temp_s0 == ((((s8)(get_questLevelNum()))) + 1)) {
             var_s1 = (u8 *)get_quest_info();
         } else {
-            var_s1 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, 7) + (lb_quest_info + ((temp_s0 & 0xFF) * 5))) * 4));
+            var_s1 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, PNET_OFS(7)) + (lb_quest_info + ((temp_s0 & 0xFF) * 5))) * 4));
         }
     }
     temp_v0 = Lb_get_quest_type(var_s1);
@@ -4484,8 +4768,8 @@ void lb_set_questpage_info(void) {
         strcpy(lb_quest_exp + 0x68, M2C_FIELD(temp_s0_2, s32 *, 0));
         strcpy(quest_title, M2C_FIELD(temp_s0_2, s32 *, 0));
     }
-    Lb_num_to_str(M2C_FIELD(pNet, u8 *, 8) + 1, lb_quest_exp + 0xCC);
-    Lb_num_to_str(M2C_FIELD(pNet, u8 *, 7) + 1, lb_quest_exp + 0x130);
+    Lb_num_to_str(M2C_FIELD(pNet, u8 *, PNET_OFS(8)) + 1, lb_quest_exp + 0xCC);
+    Lb_num_to_str(M2C_FIELD(pNet, u8 *, PNET_OFS(7)) + 1, lb_quest_exp + 0x130);
     temp_s2_2 = M2C_FIELD(mhRule, u8 *, 0x58);
     if (temp_s2_2 != (((s8)(get_questLevelNum())))) {
         if ((Online_ck() == 1) && (temp_s2_3 = M2C_FIELD(mhRule, u8 *, 0x58), (temp_s2_3 == ((((s8)(get_questLevelNum()))) + 1)))) {
@@ -4567,7 +4851,7 @@ void lb_questpage_trans(u8 *arg0) {
         if (temp_s4 == ((((s8)(get_questLevelNum()))) + 1)) {
             var_s4 = (u8 *)get_quest_info();
         } else {
-            var_s4 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, 7) + (lb_quest_info + ((temp_s4 & 0xFF) * 5))) * 4));
+            var_s4 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, PNET_OFS(7)) + (lb_quest_info + ((temp_s4 & 0xFF) * 5))) * 4));
         }
     } else if ((u32) M2C_FIELD(mhRule, u32 *, 0x54) >= 0xC8U) {
         var_s4 = (u8 *)get_quest_info();
@@ -4614,7 +4898,7 @@ block_20:
         var_s4_3 += 1;
         var_s5_2 += 8;
     } while (var_s4_3 < 2);
-    temp_a0 = M2C_FIELD(pNet, u8 *, 8);
+    temp_a0 = M2C_FIELD(pNet, u8 *, PNET_OFS(8));
     switch (temp_a0) {                              /* irregular */
     case 0:
         var_s1 = 2;
@@ -4692,16 +4976,16 @@ void lb_select_quest_level_trans(void) {
     done = lb_quest_clear;
     n = (s8)get_questLevelNum();
     for (i = 0; i < n; i++) {
-        sel = M2C_FIELD(pNet, u8 *, 8);
+        sel = M2C_FIELD(pNet, u8 *, PNET_OFS(8));
         dx = (i == (u8)sel) ? -0xC : 0;
-        if ((M2C_FIELD(pNet, s8 *, 0x12) >= i) && ((i != 0) || (Online_ck() != 0) || (key_quest != 0x83))) {
+        if ((M2C_FIELD(pNet, s8 *, PNET_OFS(0x12)) >= i) && ((i != 0) || (Online_ck() != 0) || (key_quest != 0x83))) {
             col = 5;
         } else {
             col = 9;
         }
         TFX += dx;
         Put_2TF(tf);
-        if (i == M2C_FIELD(pNet, u8 *, 8)) {
+        if (i == M2C_FIELD(pNet, u8 *, PNET_OFS(8))) {
             Lb_put_icon((s16)(TFX - 0xA), (s16)(TFY + 0xC), 1, 0xFF00FF00);
         }
         TFY += 0x30;
@@ -4731,10 +5015,10 @@ void lb_select_quest_level_trans(void) {
     } else {
         col = 9;
     }
-    dx = (M2C_FIELD(pNet, u8 *, 8) == (s8)get_questLevelNum()) ? -0xC : 0;
+    dx = (M2C_FIELD(pNet, u8 *, PNET_OFS(8)) == (s8)get_questLevelNum()) ? -0xC : 0;
     TFX += dx;
     Put_2TF(tf);
-    if (M2C_FIELD(pNet, u8 *, 8) == (s8)get_questLevelNum()) {
+    if (M2C_FIELD(pNet, u8 *, PNET_OFS(8)) == (s8)get_questLevelNum()) {
         Lb_put_icon((s16)(TFX - 0xA), (s16)(TFY + 0xA), 1, 0xFF00FF00);
     }
     if (Online_ck() == 0) {
@@ -4745,11 +5029,11 @@ void lb_select_quest_level_trans(void) {
     TFX -= dx;
     TFY += 0x30;
     {
-        s8 extra = M2C_FIELD(cw, s8 *, 0x2C2F);
-        dx = (M2C_FIELD(pNet, u8 *, 8) == (s8)get_questLevelNum() + 1) ? -0xC : 0;
+        s8 extra = M2C_FIELD(cw, s8 *, CW_OFS(0x2C2F));
+        dx = (M2C_FIELD(pNet, u8 *, PNET_OFS(8)) == (s8)get_questLevelNum() + 1) ? -0xC : 0;
         TFX += dx;
         Put_2TF(tf);
-        if (M2C_FIELD(pNet, u8 *, 8) == (s8)get_questLevelNum() + 1) {
+        if (M2C_FIELD(pNet, u8 *, PNET_OFS(8)) == (s8)get_questLevelNum() + 1) {
             Lb_put_icon((s16)(TFX - 0xA), (s16)(TFY + 0xA), 1, 0xFF00FF00);
         }
         font_print_double((s16)(M2C_FIELD(lb_quest_level_str, s16 *, 0x70) + (s16)dx), M2C_FIELD(lb_quest_level_str, s16 *, 0x72), 1,
@@ -4787,9 +5071,9 @@ block_4:
         var_s2 += 0x14;
     } while (var_s1 <= 3);
     Lb_put_button(0x1E6, 0x134, 3);
-    if ((M2C_FIELD(lb_sys, s32 *, 0x68) == 2) && (M2C_FIELD(lb_sys, s8 *, 6) < 0xA)) {
+    if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 2) && (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) < 0xA)) {
         temp_s1 = M2C_FIELD(mhRule, u8 *, 0x58);
-        if ((s32) temp_s1 >= (((s8)(get_questLevelNum(M2C_FIELD(lb_sys, s32 *, 0x68)))))) {
+        if ((s32) temp_s1 >= (((s8)(get_questLevelNum(M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68))))))) {
             if (key_quest_num > 1) {
                 goto block_11;
             }
@@ -4827,7 +5111,7 @@ void lb_disp_name(u8 *arg0) {
     u8 *temp_v1;
 
     spA0 = lb_player;
-    if ((M2C_FIELD(lb_sys, s32 *, 0x68) != 8) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 0xF) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 0)) {
+    if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 8) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0xF) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0)) {
         return;
     }
     font_set_stack_no(M2C_FIELD(arg0, s32 *, 0x18));
@@ -4930,10 +5214,10 @@ void Lb_put_help(u8 *arg0) {
     temp_a3 = *(u8 *)0x3F34C1;
     temp_a2 = temp_a3 * 0xA00;
     temp_s0 = player_work + temp_a2;
-    if ((M2C_FIELD(lb_sys, s32 *, 0x68) != 8) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 7) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 0x27) && (M2C_FIELD(lb_sys, s32 *, 0x68) != 0)) {
+    if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 8) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 7) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0x27) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 0)) {
         return;
     }
-    if (Online_ck(M2C_FIELD(lb_sys, s32 *, 0x68), player_work, temp_a2, temp_a3) == 1) {
+    if (Online_ck(M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)), player_work, temp_a2, temp_a3) == 1) {
         Lb_put_new_mail(0x1A2, 0x1C);
     }
     font_set_stack_no(M2C_FIELD(arg0, s32 *, 0x18));
@@ -4941,8 +5225,8 @@ void Lb_put_help(u8 *arg0) {
     flfntSetSize(0x14, 0x14);
     if ((((s8)(SoftKeyboard_alive_check()))) == 0) {
         flfntSetSize(0x14, 0x14);
-        if (M2C_FIELD(lb_sys, s8 *, 0xA) == 0) {
-            if (M2C_FIELD(lb_sys, s32 *, 0x68) == 8) {
+        if (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0xA)) == 0) {
+            if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 8) {
                 goto block_11;
             }
             goto block_83;
@@ -4957,36 +5241,36 @@ block_11:
                     temp_v0 = Lb_check_hotel(0x52);
                     switch (temp_v0) {              /* switch 2; irregular */
                     case 0:                         /* switch 2 */
-                        M2C_FIELD(lb_sys, s8 *, 0xA) = 0;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0xA)) = 0;
                         break;
                     case 3:                         /* switch 2 */
                     case 1:                         /* switch 2 */
                         flfntSetSize(0x14, 0x14);
-                        flfntLocate(((s16)(((strlen(lb_sys + 0xA) * 0xA) + 0x50))), 0x1F);
+                        flfntLocate(((s16)(((strlen(lb_sys + LBSYS_OFS(0xA)) * 0xA) + 0x50))), 0x1F);
                         font_print(lit_427_00664C20, M2C_FIELD(room_price, u8 **, 4));
                         /* fallthrough */
                     case 2:                         /* switch 2 */
                         flfntSetSize(0x14, 0x14);
                         flfntLocate(0x30, 0x1F);
-                        font_print(lit_428_00664C30, lb_sys + 0xA);
+                        font_print(lit_428_00664C30, lb_sys + LBSYS_OFS(0xA));
                         Lb_put_gold();
                         break;
                     }
                     temp_v0_2 = Lb_check_hotel(0x53);
                     switch (temp_v0_2) {            /* switch 3; irregular */
                     case 0:                         /* switch 3 */
-                        M2C_FIELD(lb_sys, s8 *, 0x28) = 0;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x28)) = 0;
                         break;
                     case 3:                         /* switch 3 */
                     case 1:                         /* switch 3 */
                         flfntSetSize(0x14, 0x14);
-                        flfntLocate(((s16)(((strlen(lb_sys + 0x28) * 0xA) + 0x50))), 0x39);
+                        flfntLocate(((s16)(((strlen(lb_sys + LBSYS_OFS(0x28)) * 0xA) + 0x50))), 0x39);
                         font_print(lit_427_00664C20, M2C_FIELD(room_price, u8 **, 8));
                         /* fallthrough */
                     case 2:                         /* switch 3 */
                         flfntSetSize(0x14, 0x14);
                         flfntLocate(0x30, 0x39);
-                        font_print(lit_428_00664C30, lb_sys + 0x28);
+                        font_print(lit_428_00664C30, lb_sys + LBSYS_OFS(0x28));
                         break;
                     }
                     goto block_83;
@@ -4997,36 +5281,36 @@ block_11:
                     temp_v0_3 = Lb_check_hotel(0x54);
                     switch (temp_v0_3) {            /* switch 4; irregular */
                     case 0:                         /* switch 4 */
-                        M2C_FIELD(lb_sys, s8 *, 0xA) = 0;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0xA)) = 0;
                         break;
                     case 3:                         /* switch 4 */
                     case 1:                         /* switch 4 */
-                        flfntLocate(((s16)(((strlen(lb_sys + 0xA) * 0xA) + 0x50))), 0x1F);
+                        flfntLocate(((s16)(((strlen(lb_sys + LBSYS_OFS(0xA)) * 0xA) + 0x50))), 0x1F);
                         flfntSetSize(0x14, 0x14);
                         font_print(lit_427_00664C20, M2C_FIELD(room_price, u8 **, 0xC));
                         /* fallthrough */
                     case 2:                         /* switch 4 */
                         flfntLocate(0x30, 0x1F);
                         flfntSetSize(0x14, 0x14);
-                        font_print(lit_428_00664C30, lb_sys + 0xA);
+                        font_print(lit_428_00664C30, lb_sys + LBSYS_OFS(0xA));
                         Lb_put_gold();
                         break;
                     }
                     temp_v0_4 = Lb_check_hotel(0x55);
                     switch (temp_v0_4) {            /* switch 5; irregular */
                     case 0:                         /* switch 5 */
-                        M2C_FIELD(lb_sys, s8 *, 0x28) = 0;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x28)) = 0;
                         break;
                     case 3:                         /* switch 5 */
                     case 1:                         /* switch 5 */
-                        flfntLocate(((s16)(((strlen(lb_sys + 0x28) * 0xA) + 0x50))), 0x39);
+                        flfntLocate(((s16)(((strlen(lb_sys + LBSYS_OFS(0x28)) * 0xA) + 0x50))), 0x39);
                         flfntSetSize(0x14, 0x14);
                         font_print(lit_427_00664C20, M2C_FIELD(room_price, u8 **, 0x10));
                         /* fallthrough */
                     case 2:                         /* switch 5 */
                         flfntLocate(0x30, 0x39);
                         flfntSetSize(0x14, 0x14);
-                        font_print(lit_428_00664C30, lb_sys + 0x28);
+                        font_print(lit_428_00664C30, lb_sys + LBSYS_OFS(0x28));
                         break;
                     }
                     goto block_83;
@@ -5035,24 +5319,24 @@ block_11:
             case 18:                                /* switch 1 */
                 if (M2C_FIELD(temp_s0, u8 *, 0x14) != 1) {
                     if (Lb_check_hotel(0x51) == 0) {
-                        M2C_FIELD(lb_sys, s8 *, 0x28) = 0;
+                        M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x28)) = 0;
                         return;
                     }
                     flfntSetSize(0x14, 0x14);
                 default:                            /* switch 1 */
                     flfntLocate(0x30, 0x1F);
-                    if (M2C_FIELD(lb_sys, s32 *, 0x68) != 8) {
-                        if (M2C_FIELD(lb_sys, s32 *, 0x68) == 0x28) {
+                    if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 8) {
+                        if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 0x28) {
                             goto block_69;
                         }
                         if (M2C_FIELD(temp_s0, u8 *, 0x14) != 1) {
-                            font_print(lit_428_00664C30, lb_sys + 0xA);
+                            font_print(lit_428_00664C30, lb_sys + LBSYS_OFS(0xA));
                             goto block_79;
                         }
                     } else {
 block_69:
                         if (M2C_FIELD(M2C_FIELD(temp_s0, u8 **, 0x878), u16 *, 2) == 6) {
-                            if (M2C_FIELD(cw, u8 *, 0x32C5) != 0) {
+                            if (M2C_FIELD(cw, u8 *, CW_OFS(0x32C5)) != 0) {
                                 goto block_72;
                             }
                             font_set_palette(0);
@@ -5064,7 +5348,7 @@ block_72:
                             font_set_palette(6);
                             font_print(lit_429_00664C38, M2C_FIELD(lb_rule_msg_etc, u8 **, 0x1C));
 block_79:
-                            sprintf(lb_sys + 0x28, lit_430_00664C40);
+                            sprintf(lb_sys + LBSYS_OFS(0x28), lit_430_00664C40);
                             goto block_83;
                         }
                     }
@@ -5072,7 +5356,7 @@ block_79:
                 break;
             }
         } else {
-            if (M2C_FIELD(lb_sys, s32 *, 0x68) == 8) {
+            if (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) == 8) {
                 flfntLocate(0x30, 0x1F);
                 font_set_palette(6);
                 font_print(lit_429_00664C38, M2C_FIELD(lb_rule_msg_etc, u8 **, 0x1C));
@@ -5166,12 +5450,12 @@ void lb_npc_ef_move(u8 *em) {
  * point at them */
 extern u8 lb_prim[];
 void Lbc_set_prim(void *a, void *b, void *c) {
-    M2C_FIELD(pNet, u8 **, 0x14) = lb_prim;
-    M2C_FIELD(M2C_FIELD(pNet, u8 **, 0x14), void **, 0x14) = a;
-    M2C_FIELD(pNet, u8 **, 0x18) = lb_prim + 0x20;
-    M2C_FIELD(M2C_FIELD(pNet, u8 **, 0x18), void **, 0x14) = b;
-    M2C_FIELD(pNet, u8 **, 0x1C) = lb_prim + 0x40;
-    M2C_FIELD(M2C_FIELD(pNet, u8 **, 0x1C), void **, 0x14) = c;
+    M2C_FIELD(pNet, u8 **, PNET_OFS(0x14)) = lb_prim;
+    M2C_FIELD(M2C_FIELD(pNet, u8 **, PNET_OFS(0x14)), void **, 0x14) = a;
+    M2C_FIELD(pNet, u8 **, PNET_OFS(0x18)) = lb_prim + 0x20;
+    M2C_FIELD(M2C_FIELD(pNet, u8 **, PNET_OFS(0x18)), void **, 0x14) = b;
+    M2C_FIELD(pNet, u8 **, PNET_OFS(0x1C)) = lb_prim + 0x40;
+    M2C_FIELD(M2C_FIELD(pNet, u8 **, PNET_OFS(0x1C)), void **, 0x14) = c;
     /* +0x18: the font stack the draw function prints to (Lb_guild_trans:
      * font_set_stack_no(prim+0x18)); ot5/ot6/ot7 are drawn before stacks
      * 0/1/2 (trans()), so prim i -> stack i [guess: no store to these words

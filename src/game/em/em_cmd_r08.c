@@ -139,6 +139,13 @@
 
 
 
+/* G: original bytes (build/mhg/raw/em_cmd_emtype_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 * em_cmd_emtype_ck(EMW *em, u8 *p)
+{
+#include "em_cmd_emtype_ck.inc"
+}
+#else
 u8 *em_cmd_emtype_ck(EMW *em, u8 *p) {
     u8 *q;
     s8 found;
@@ -178,6 +185,7 @@ u8 *em_cmd_emtype_ck(EMW *em, u8 *p) {
     }
     return q;
 }
+#endif
 
 u8 *em_cmd_repeat_cnt_set(EMW *em, u8 *p) {
     u8 *q;

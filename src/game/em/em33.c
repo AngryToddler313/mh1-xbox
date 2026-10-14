@@ -6,6 +6,7 @@
  * (mode dispatch), em33_act_set (distance/time for the chosen action),
  * em33_to_normal, em33_char_set and the sound/effect script (ef_move_sub_00617E60).
  * Written from em03; every function matches. Field meanings are guesses. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -93,6 +94,13 @@ void Quest_enemy_escape(EMW *);
 void em33_init(EMW *);
 void em_mahi_eff_set(EMW *, int);
 
+/* G: original bytes (build/mhg/raw/em33_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em33_init(EMW *em)
+{
+#include "em33_init.inc"
+}
+#else
 void em33_init(EMW *em) {
     if (quest_w.x08 == 0) {
         switch (game_w.stage) {
@@ -135,9 +143,17 @@ void em33_init(EMW *em) {
     em_dur_init(em);
     em_act_set(em, 0, 1);
 }
+#endif
 
 #define EM33_HAGI0(em) ((em)->hagi[0].hp)
 
+/* G: original bytes (build/mhg/raw/em33_main.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em33_main(EMW *em)
+{
+#include "em33_main.inc"
+}
+#else
 void em33_main(EMW *em) {
     u8 dmg[4];
     s8 pn;
@@ -179,7 +195,7 @@ void em33_main(EMW *em) {
         break;
     case 10:
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         em33_act_set(em, 4, 2, 2);
         break;
     case 12:
@@ -208,6 +224,7 @@ void em33_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 static void em_act00_00614D90(EMW *em, EM33W *w) {
 }
 
@@ -354,7 +371,7 @@ static void em_act09_00615210(EMW *em, EM33W *w) {
     case 0:
         em->x05++;
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         em_char_set(em, 64, 0, 0);
         break;
     case 1:
@@ -901,6 +918,13 @@ static void em_atk02_006166B0(EMW *em, EM33W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_atk03_00616760.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_atk03_00616760(EMW *em, EM33W *w, int flag)
+{
+#include "em_atk03_00616760.inc"
+}
+#else
 static void em_atk03_00616760(EMW *em, EM33W *w, int flag) {
     switch (em->x05) {
     case 0:
@@ -923,7 +947,15 @@ static void em_atk03_00616760(EMW *em, EM33W *w, int flag) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk04_006168A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_atk04_006168A0(EMW *em, EM33W *w, int flag)
+{
+#include "em_atk04_006168A0.inc"
+}
+#else
 static void em_atk04_006168A0(EMW *em, EM33W *w, int flag) {
     switch (em->x05) {
     case 0:
@@ -946,7 +978,15 @@ static void em_atk04_006168A0(EMW *em, EM33W *w, int flag) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk05_006169E0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_atk05_006169E0(EMW *em, EM33W *w, int flag)
+{
+#include "em_atk05_006169E0.inc"
+}
+#else
 static void em_atk05_006169E0(EMW *em, EM33W *w, int flag) {
     switch (em->x05) {
     case 0:
@@ -969,7 +1009,15 @@ static void em_atk05_006169E0(EMW *em, EM33W *w, int flag) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk06_00616B20.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_atk06_00616B20(EMW *em, EM33W *w, int flag)
+{
+#include "em_atk06_00616B20.inc"
+}
+#else
 static void em_atk06_00616B20(EMW *em, EM33W *w, int flag) {
     switch (em->x05) {
     case 0:
@@ -992,7 +1040,15 @@ static void em_atk06_00616B20(EMW *em, EM33W *w, int flag) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk07_00616C60.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_atk07_00616C60(EMW *em, EM33W *w, int flag)
+{
+#include "em_atk07_00616C60.inc"
+}
+#else
 static void em_atk07_00616C60(EMW *em, EM33W *w, int flag) {
     switch (em->x05) {
     case 0:
@@ -1015,7 +1071,15 @@ static void em_atk07_00616C60(EMW *em, EM33W *w, int flag) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_atk08_00616DA0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_atk08_00616DA0(EMW *em, EM33W *w, int flag)
+{
+#include "em_atk08_00616DA0.inc"
+}
+#else
 static void em_atk08_00616DA0(EMW *em, EM33W *w, int flag) {
     switch (em->x05) {
     case 0:
@@ -1038,7 +1102,15 @@ static void em_atk08_00616DA0(EMW *em, EM33W *w, int flag) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_move03_00616EE0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_move03_00616EE0(EMW *em, EM33W *w)
+{
+#include "em_move03_00616EE0.inc"
+}
+#else
 static void em_move03_00616EE0(EMW *em, EM33W *w) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -1060,6 +1132,7 @@ static void em_move03_00616EE0(EMW *em, EM33W *w) {
     case 14: em_atk08_00616DA0(em, w, 1); break;
     }
 }
+#endif
 
 static void em_dmg00_00617020(EMW *em) {
     switch (em->x05) {
@@ -1093,6 +1166,13 @@ static void em_dmg01_006170A0(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_dmg02_00617120.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_dmg02_00617120(EMW *em, EM33W *w)
+{
+#include "em_dmg02_00617120.inc"
+}
+#else
 static void em_dmg02_00617120(EMW *em, EM33W *w) {
     switch (em->x05) {
     case 0:
@@ -1136,6 +1216,7 @@ static void em_dmg02_00617120(EMW *em, EM33W *w) {
         break;
     }
 }
+#endif
 
 static void em_dmg03_006172C0(EMW *em) {
     switch (em->x05) {
@@ -1183,6 +1264,13 @@ static void em_dmg04_006173A0(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_move04_00617460.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_move04_00617460(EMW *em, EM33W *w)
+{
+#include "em_move04_00617460.inc"
+}
+#else
 static void em_move04_00617460(EMW *em, EM33W *w) {
     switch (em->x15) {
     case 0: em_dmg00_00617020(em); break;
@@ -1192,6 +1280,7 @@ static void em_move04_00617460(EMW *em, EM33W *w) {
     case 4: em_dmg04_006173A0(em); break;
     }
 }
+#endif
 
 static void em_die00_00617500(EMW *em, EM33W *w) {
     em->x40C = 10;
@@ -1430,6 +1519,13 @@ static void move_default_00617E50(EMW *em) {
 /* Sound and effect script per animation (sound_call_00617DF0(em, frame, se, joint)
  * plays a sound at the joint's position once the animation reaches the
  * frame; Eft13_set_em_scl and shell02_set spawn effects). */
+/* G: original bytes (build/mhg/raw/ef_move_sub_00617E60.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void ef_move_sub_00617E60(EMW *em, EM33W *w)
+{
+#include "ef_move_sub_00617E60.inc"
+}
+#else
 static void ef_move_sub_00617E60(EMW *em, EM33W *w) {
     f32 v[3];
 
@@ -1653,6 +1749,7 @@ static void ef_move_sub_00617E60(EMW *em, EM33W *w) {
         break;
     }
 }
+#endif
 
 void em33_effect_move(EMW *em) {
     EM33W *w = (EM33W *)em->ex;

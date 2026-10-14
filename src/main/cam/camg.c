@@ -57,7 +57,6 @@ void cam_sw_set_sub(CAMW *);
 s8 Get_cam_grid_XZ(s16 *, s16 *, f32 *, u8 *);
 s32 SetAreaData(CAMW *);
 s32 CameraAreaCheck(CAMAREA *, PLW *, s32);
-#if !defined(G_PART) || G_PART == 1
 void cam2view(CAMW *);
 void View_move(void);
 s32 Cockpit_menu_chk(void);
@@ -83,6 +82,7 @@ s32 Game_clear_ck(s32);
 void cam_plEX_fishing(CAMW *, CAMS *, CAMFISH *);
 void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
+#if !defined(G_PART) || G_PART == 1
 void cam2view(CAMW *cw) {
     CAMQUAKE *q;
     s32 i;
@@ -206,7 +206,7 @@ void Pachinger_set_quake_sub(PLW *pl, s32 type) {
 }
 
 #endif
-#if !defined(G_PART)  /* G differs here (not matched yet) */
+#if !defined(G_PART) || G_PART == 4
 void quake_sub(CAMQUAKE *q) {
     s32 t;
     f32 a;

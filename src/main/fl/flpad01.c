@@ -15,6 +15,7 @@ int tarPADInit(void);
 void tarPADDestroy(void);
 void flPADConfigSetACRtoXX(int, s16, s16, s16);
 
+#if !defined(G_PART) || G_PART == 1
 void flpad_ram_clear(s32 *p, int n) {
     int i;
     int r;
@@ -34,10 +35,12 @@ void flpad_ram_clear(s32 *p, int n) {
         }
     }
 }
+#endif
 
 void flPADWorkClear(void);
 void flPADConfigSet(PADPAIR *, int);
 
+#if !defined(G_PART)
 int flPADInitialize(void) {
     int i;
     int r;
@@ -51,12 +54,17 @@ int flPADInitialize(void) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void flPADDestroy(void) {
     tarPADDestroy();
 }
+#endif
 
+#if !defined(G_PART)
 void flPADWorkClear(void) {
     flpad_ram_clear((s32 *)flpad_root, 0x110);
     flpad_ram_clear((s32 *)flpad_conf, 0x110);
 }
+#endif

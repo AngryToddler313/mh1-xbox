@@ -24,6 +24,7 @@ void mcsls_syssend_command_drop2(int a, int b);
 
 
 
+#if !defined(G_PART)
 int mcsls_check_syncflag(int flag) {
     int i;
     int cnt;
@@ -49,7 +50,9 @@ int mcsls_check_syncflag(int flag) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void mcsls_send_command_syncfrag(int flag) {
     int k;
 
@@ -62,7 +65,9 @@ void mcsls_send_command_syncfrag(int flag) {
         mcsls_w.pl[mcsls_w.me].sync |= 2;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void mcsls_send_command_ping(int id) {
     CCnNetMsg_CnWriteU8(&tcp_send_buff, 7);
     CCnNetMsg_CnWriteU8(&tcp_send_buff, ((mcsls_w.me & 0xF) | 0x20) & 0xFF);
@@ -70,3 +75,4 @@ void mcsls_send_command_ping(int id) {
     CCnNetMsg_CnWriteNetTime(&tcp_send_buff, mcsls_w.time);
     mcsls_w.pl[mcsls_w.me].ping_id = id;
 }
+#endif

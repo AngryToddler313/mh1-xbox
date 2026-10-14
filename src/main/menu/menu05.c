@@ -154,6 +154,7 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART) || G_PART == 1
 int juchu_chk(void) {
     if (game_w.x1DC == 1 && func_5BD520() == 0) {
         lpPit->x46 = 0;
@@ -162,7 +163,9 @@ int juchu_chk(void) {
     lpPit->x46 = 1;
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void Menu_quest_i(void) {
     if (FLDS16(quest_w, 0x24) == 0x63) {
         lpPit->x47 = 4;
@@ -179,7 +182,9 @@ void Menu_quest_i(void) {
     lpPit->x43 = 0;
     PitMenu.x10 = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Menu_quest_mv(int sw) {
     PitMenu.x10 = 0;
     if (juchu_chk() == 1) {
@@ -187,17 +192,23 @@ int Menu_quest_mv(int sw) {
     }
     return sw;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s16 get_pl_item_type(u8 no) {
     return ((s16 *)((u8 *)lpPit->pl + 0x828))[no * 2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void menu_item_back_sub(void) {
     lpPit->x48--;
     se_req(7, 0x14, 0);
     PitMenu.x12 = get_pl_item_type(lpPit->x49) + 0x18;
 }
+#endif
 
+#if !defined(G_PART)
 int item_present_chk(void) {
     if (Online_ck() == 0) {
         return 0;
@@ -213,7 +224,9 @@ int item_present_chk(void) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void Menu_item_i(void) {
     lpPit->x48 = 0;
     lpPit->x49 = 0;
@@ -225,8 +238,10 @@ void Menu_item_i(void) {
     PitMenu.x11 = 1;
     PitMenu.x12 = get_pl_item_type(lpPit->x49) + 0x18;
 }
+#endif
 
 /* Item list in the pit menu: step x48 0 pick slot, 1 pick action, 2 details. */
+#if !defined(G_PART)
 int Menu_item_mv(int sw) {
     PLW *pl = lpPit->pl;
     int ok;
@@ -448,3 +463,4 @@ int Menu_item_mv(int sw) {
     }
     return sw;
 }
+#endif

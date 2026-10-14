@@ -20,10 +20,13 @@ extern u16 Plan_pow[2][2];
 
 static void sw_set_sub(int no);
 
+#if !defined(G_PART) || G_PART == 1
 static void pl_to_normal_clr_etc(PLW *pl) {
     pl->work4E0 = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void pl_to_normal_clr(PLW *pl) {
     pl->work04 = 0;
     pl->work2F4 = 0;
@@ -52,7 +55,9 @@ void pl_to_normal_clr(PLW *pl) {
     pl->chr_spd0 = 2.0f;
     pl->chr_spd1 = 2.0f;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void pl_to_normal_clr2(PLW *pl) {
     pl->vel[0] = 0.0f;
     pl->vel[1] = 0.0f;
@@ -62,7 +67,9 @@ void pl_to_normal_clr2(PLW *pl) {
     pl->acc[2] = 0.0f;
     pl->act_flag &= 0x104;
 }
+#endif
 
+#if !defined(G_PART)
 void pl_to_normal(PLW *pl, int st, int blend, int tm) {
     pl_to_normal_clr(pl);
     pl_to_normal_clr_etc(pl);
@@ -97,7 +104,9 @@ void pl_to_normal(PLW *pl, int st, int blend, int tm) {
     }
     action_timer_calc(pl, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void pl_to_normal_b(PLW *pl, int st, int blend, int tm) {
     pl_to_normal_clr(pl);
     pl_to_normal_clr_etc(pl);
@@ -119,7 +128,9 @@ void pl_to_normal_b(PLW *pl, int st, int blend, int tm) {
     }
     action_timer_calc(pl, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void pl_sw_set(void) {
     if (Online_ck() == 0) {
         sw_set_sub(0);
@@ -127,7 +138,9 @@ void pl_sw_set(void) {
     }
     sw_set_sub(game_w.master);
 }
+#endif
 
+#if !defined(G_PART)
 static void sw_set_sub(int no) {
     PLW *pl = &player_work[no];
     PLSW *sw = &pl->sw;
@@ -188,3 +201,4 @@ static void sw_set_sub(int no) {
     sw->pad08[3] = 0;
     sw->chg = 0;
 }
+#endif

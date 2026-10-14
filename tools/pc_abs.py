@@ -18,6 +18,7 @@ Other addresses are left alone.
 Standard library only.
 """
 import bisect
+import os
 import re
 import sys
 
@@ -25,8 +26,62 @@ LINE = re.compile(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?\s*(?:si
 CAST = re.compile(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*0x([0-9A-Fa-f]{6,8})\b")
 
 
+def main_mhg(src):
+    """VERSION=mhg: the literal is an MH1 address. config/mhg/pc_addr.txt (tools/mhg_addrmap.py --emit) gives its G
+    address (the nearest earlier entry's delta for neighbours); the G symbol below it (config/mhg/symbols) is the host view."""
+    tr = {}
+    for fn in ("config/mhg/pc_addr.txt", "config/mhg/pc_addr_hand.txt"):
+        for l in open(fn):
+            f = l.split()
+            if len(f) >= 2 and not l.startswith("#"):
+                tr[int(f[0], 16)] = int(f[1], 16)
+    tk = sorted(tr)
+    syms = []
+    for fn in ("main", "lobby"):
+        for line in open("config/mhg/symbols/%s.txt" % fn):
+            m = re.match(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?)?", line)
+            if m and m.group(3) != "func":
+                va = int(m.group(2), 16)
+                if (fn == "main" and 0x100000 <= va < 0x4A0C80) or (fn == "lobby" and va >= 0x542600):
+                    syms.append((va, m.group(1), fn))
+    syms.sort()
+    starts = [x[0] for x in syms]
+    used = {}
+
+    def fix(m):
+        a = int(m.group(2), 16)
+        g = tr.get(a)
+        if g is None:
+            i = bisect.bisect_right(tk, a) - 1
+            if i < 0 or a - tk[i] > 0x40:
+                return m.group(0)
+            g = tr[tk[i]] + (a - tk[i])
+        i = bisect.bisect_right(starts, g) - 1
+        if i < 0 or g - syms[i][0] > 0x2000:
+            return m.group(0)
+        va, name, fn = syms[i]
+        if fn == "lobby":
+            used["rt_lb_mem"] = 1
+            return "(%s)(rt_lb_mem + 0x%X)" % (m.group(1), g - 0x542600)
+        used[name] = 1
+        return "(%s)(rt_abs_%s + 0x%X)" % (m.group(1), name, g - va)
+
+    return CAST.sub(fix, src), used
+
+
 def main():
     src = open(sys.argv[1]).read()
+    if os.environ.get("VERSION") == "mhg":
+        out, used = main_mhg(src)
+        if not used:
+            sys.exit(1)
+        head = ('#define RTAB_S_(x) #x\n#define RTAB_S(x) RTAB_S_(x)\n'
+                '#define RTAB_P RTAB_S(__USER_LABEL_PREFIX__)\n')
+        head += "".join('extern unsigned char rt_abs_%s[] __asm__(RTAB_P "%s");\n' % (n, n) for n in sorted(used) if n != "rt_lb_mem")
+        if "rt_lb_mem" in used:
+            head += "extern unsigned char rt_lb_mem[];\n"
+        open(sys.argv[2], "w").write(head + out)
+        return
     syms = []
     for line in open("config/symbols/main.txt"):
         m = LINE.match(line)

@@ -339,6 +339,13 @@ extern u8 *em17_act_add[3];
 
 
 
+/* G: original bytes (build/mhg/raw/em_die00_005E07A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_die00_005E07A0(EMW *em, EM17W *w)
+{
+#include "em_die00_005E07A0.inc"
+}
+#else
 void em_die00_005E07A0(EMW *em, EM17W *w) {
     u8 temp_a0;
 
@@ -369,7 +376,15 @@ void em_die00_005E07A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_die01_005E08A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_die01_005E08A0(EMW *em, EM17W *w)
+{
+#include "em_die01_005E08A0.inc"
+}
+#else
 void em_die01_005E08A0(EMW *em, EM17W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -409,7 +424,15 @@ void em_die01_005E08A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_die02_005E09C0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_die02_005E09C0(EMW *em, EM17W *w)
+{
+#include "em_die02_005E09C0.inc"
+}
+#else
 void em_die02_005E09C0(EMW *em, EM17W *w) {
     u8 temp_a0;
 
@@ -461,7 +484,15 @@ void em_die02_005E09C0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_die03_005E0B90.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_die03_005E0B90(EMW *em, EM17W *w)
+{
+#include "em_die03_005E0B90.inc"
+}
+#else
 void em_die03_005E0B90(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -502,3 +533,4 @@ void em_die03_005E0B90(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif

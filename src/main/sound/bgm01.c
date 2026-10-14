@@ -38,6 +38,7 @@ int str_volume();
 
 
 
+#if !defined(G_PART)
 void bgm_server(void) {
     if (*(u16 *)(game_w + 0x26) > 0) {
         *(u16 *)(game_w + 0x26) = *(u16 *)(game_w + 0x26) - 1;
@@ -158,7 +159,9 @@ void bgm_server(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void adx_se_set(int a0, int id) {
     if (Pl_master_ck() == 1) {
         str_play(1, id);
@@ -169,7 +172,9 @@ void adx_se_set(int a0, int id) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void adx_se_stop(void) {
     if (Pl_master_ck() == 1) {
         if (*(u16 *)(game_w + 0x1E0) == 0xA) {
@@ -185,8 +190,11 @@ void adx_se_stop(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void die_bgm_set(void) {
     game_w[0x11] = 6;
     str_play_f_vol(0, 0x4A, 0xF, 0x7F);
 }
+#endif

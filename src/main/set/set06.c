@@ -28,6 +28,7 @@ static void set06_d(SETW *sw);
 static void set06_e(SETW *sw);
 static void set06_trans(PRIM *pr);
 
+#if !defined(G_PART)
 void Set06_set(int arg) {
     SETW *sw = pull_set_work(0);
 
@@ -37,7 +38,9 @@ void Set06_set(int arg) {
         sw->move = set06_move;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void set06_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -54,7 +57,9 @@ static void set06_move(SETW *sw) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set06_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
@@ -83,7 +88,9 @@ static void set06_i(SETW *sw) {
         push_set_work(sw);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void set06_m(SETW *sw) {
     u8 no = game_w.master;
     PLW *pl = &player_work[no];
@@ -102,16 +109,22 @@ static void set06_m(SETW *sw) {
     }
     add_prim(ot1, sw->prim, 0x20, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void set06_d(SETW *sw) {
     sw->mode++;
     sw->be_flag = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void set06_e(SETW *sw) {
     push_set_work(sw);
 }
+#endif
 
+#if !defined(G_PART)
 static void set06_trans(PRIM *pr) {
     FLMAT mat;
     SETW *sw = pr->owner;
@@ -152,3 +165,4 @@ static void set06_trans(PRIM *pr) {
         }
     }
 }
+#endif

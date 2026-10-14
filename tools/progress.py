@@ -82,7 +82,14 @@ def main_mhg():
             if m:
                 funcs.append((int(m.group(1), 16), int(m.group(2), 16)))
         b = sum(s for _, s in funcs)
-        done = [(a, s) for a, s in funcs if any(m == mod and lo <= a < hi for m, lo, hi in ranges)]
+        raw = set()
+        rp = os.path.join(ROOT, "config/mhg/c_rawfuncs.txt")
+        if os.path.exists(rp):
+            for l in open(rp):
+                f = l.split("#", 1)[0].split()
+                if len(f) >= 4 and f[0] == mod:
+                    raw.add(int(f[1], 16))
+        done = [(a, s) for a, s in funcs if a not in raw and any(m == mod and lo <= a < hi for m, lo, hi in ranges)]
         d = sum(s for _, s in done)
         print("%-8s %10d %10d %8d %6.3f%%" % (mod, len(funcs), b, d, 100.0 * d / b if b else 0))
         tot = [tot[0] + len(funcs), tot[1] + b, tot[2] + d, tot[3] + len(done)]

@@ -71,9 +71,21 @@ static void set10_i(SETW *sw) {
     if (sw->prim != 0) {
         sw->prim->owner = sw;
         sw->prim->trans = set10_trans;
+#ifdef VERSION_MHG
+        set10_m(sw);
+    } else {
+        push_set_work(sw);
+#endif
     }
 }
 
+/* G: original bytes (build/mhg/raw/set10_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set10_m(SETW *sw)
+{
+#include "set10_m.inc"
+}
+#else
 static void set10_m(SETW *sw) {
     EMW *em = em_work;
     PLW *pl = &player_work[game_w.master];
@@ -122,6 +134,7 @@ static void set10_m(SETW *sw) {
         break;
     }
 }
+#endif
 
 static void set10_d(SETW *sw) {
     sw->mode++;

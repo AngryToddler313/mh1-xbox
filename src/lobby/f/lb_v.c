@@ -1,4 +1,5 @@
 /* Lobby: guild helpers (quest level, select), hand-written from m2c drafts (SLPM_654.95 lobby overlay). */
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern s8 key_quest_num;
 extern u8 key_quest;
@@ -394,7 +395,7 @@ void lb_rule_seet_trans(int a, int b, int c) {
     s1 = lb_rule_message;
     s0 = lb_rule_exp;
     font_set_stack_no(*(s32 *)(a + 0x18), b, c);
-    if (*(s8 *)((u8 *)&lb_sys + 8) == 1) {
+    if (*(s8 *)((u8 *)&lb_sys + LBSYS_OFS(8)) == 1) {
         font_set_palette(0);
         flfntSetSize(0x12, 0x12);
         i = 0;

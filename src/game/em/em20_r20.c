@@ -480,12 +480,20 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
+/* G: original bytes (build/mhg/raw/sound_call_sub_005F75F0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void sound_call_sub_005F75F0(EMW *em, int se, int joint)
+{
+#include "sound_call_sub_005F75F0.inc"
+}
+#else
 void sound_call_sub_005F75F0(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
+#endif
 
 static void sound_call_005F7660(EMW *em, int frame, int se, int joint) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
@@ -493,6 +501,13 @@ static void sound_call_005F7660(EMW *em, int frame, int se, int joint) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/sound_call_parts_005F76C0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer)
+{
+#include "sound_call_parts_005F76C0.inc"
+}
+#else
 void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
@@ -501,6 +516,7 @@ void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer) 
         Em_se_req2(em, se, 0, pos, 3, 0);
     }
 }
+#endif
 
 static void quake_call_005F7760(EMW *em, int frame, int arg) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
@@ -527,6 +543,13 @@ static void move_default_005F77B0(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
+/* G: original bytes (build/mhg/raw/ef_move_sub_005F7800.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void ef_move_sub_005F7800(EMW *em, EM20W *w)
+{
+#include "ef_move_sub_005F7800.inc"
+}
+#else
 void ef_move_sub_005F7800(EMW *em, EM20W *w) {
     f32 v[3];
     f32 v2[3];
@@ -1758,6 +1781,7 @@ block_416:
         break;
     }
 }
+#endif
 
 void em20_effect_move(EMW *em) {
     EM20W *w = (EM20W *)em->ex;

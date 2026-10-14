@@ -325,13 +325,28 @@ void toride_eff_set(EMW *);
         ty[i] = 0xFF;     \
     } while (0)
 
+/* G: original bytes (build/mhg/raw/sound_call_sub_005A3CA0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void sound_call_sub_005A3CA0(EMW *em, int se, int joint)
+{
+#include "sound_call_sub_005A3CA0.inc"
+}
+#else
 void sound_call_sub_005A3CA0(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, (u8 *)em->mdl->bone + joint * 400);
     Em_se_req2(em, se, 0, pos, 7, 0);
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/sound_call_005A3D10.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void sound_call_005A3D10(EMW *em, int frame, int se, int joint)
+{
+#include "sound_call_005A3D10.inc"
+}
+#else
 static void sound_call_005A3D10(EMW *em, int frame, int se, int joint) {
     f32 pos[3];
 
@@ -340,6 +355,7 @@ static void sound_call_005A3D10(EMW *em, int frame, int se, int joint) {
         Em_se_req2(em, se, 0, pos, 7, 0);
     }
 }
+#endif
 
 static void quake_call_005A3DB0(EMW *em, int frame, int v) {
     if (em_frame_check(em, (f32)frame, 0)) {
@@ -370,6 +386,13 @@ static void move_default_005A3E00(EMW *em) {
     ty[3] = 0xFF;
 }
 
+/* G: original bytes (build/mhg/raw/ef_move_sub_005A3E50.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void ef_move_sub_005A3E50(EMW *em, EM08W *w)
+{
+#include "ef_move_sub_005A3E50.inc"
+}
+#else
 static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
     f32 va[4];
     f32 vb[4];
@@ -1042,6 +1065,7 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
 extern HIRE_E *hire_normal_add_tbl_00659250[4];
 extern HIRE_E *hire_down_add_tbl_00659300[4];

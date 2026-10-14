@@ -288,6 +288,13 @@ void ground_land_eff_set_005A7050(EMW *em) {
     Eft20_set(1.0f, em, 0xB, 0);
 }
 
+/* G: original bytes (build/mhg/raw/swim_eff_set_005A7070.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void swim_eff_set_005A7070(f32 scale, EMW *em)
+{
+#include "swim_eff_set_005A7070.inc"
+}
+#else
 void swim_eff_set_005A7070(f32 scale, EMW *em) {
     f32 v[3];
 
@@ -297,7 +304,15 @@ void swim_eff_set_005A7070(f32 scale, EMW *em) {
         Eft08_set(v, 2, 2, scale * EMF(em, f32, 0xB8));
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/swim_eff_set2_005A7120.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void swim_eff_set2_005A7120(f32 scale, EMW *em)
+{
+#include "swim_eff_set2_005A7120.inc"
+}
+#else
 void swim_eff_set2_005A7120(f32 scale, EMW *em) {
     f32 v[3];
 
@@ -307,3 +322,4 @@ void swim_eff_set2_005A7120(f32 scale, EMW *em) {
         sound_call_sub_005A3CA0(em, 0x1A, 6);
     }
 }
+#endif

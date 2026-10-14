@@ -141,6 +141,8 @@ extern const struct rt_table rt_gen_main_tables[];
 #define NTABLES (sizeof tables / sizeof tables[0])
 /* this version's address of each tables[] entry (they name MH1 addresses; RTVA) */
 static uint32_t tva[NTABLES];
+static void rt_nop_fn(void) {}
+static uint32_t rd32c(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24; }
 /* PS2 address -> host pointer (see the header comment) */
 static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
 static void *map_ptr(uint32_t v)
@@ -171,6 +173,11 @@ static void *map_ptr(uint32_t v)
         snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
         if ((h = rt_host_sym(sfx)) != NULL)
             return (uint8_t *)h + off;
+    }
+    if (func && off == 0) {     /* an unnamed `jr ra; nop` function (G's dummy NPC/em programs): a host no-op */
+        const uint8_t *c = rt_addr(v, 8);
+        if (c && rd32c(c) == 0x03E00008 && rd32c(c + 4) == 0)
+            return (void *)rt_nop_fn;
     }
     if (func) {         /* code that is not ported: leave no MIPS address behind */
         if (map_tables && getenv("RT_TRACE"))
@@ -313,6 +320,11 @@ static void *map_lb(uint32_t v)
             snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
             if ((h = rt_host_sym(sfx)) != NULL)
                 return (uint8_t *)h + off;
+        }
+        if (off == 0) {     /* an unnamed `jr ra; nop` function (G's dummy NPC programs): a host no-op */
+            const uint8_t *c = rt_lb_addr(v, 8);
+            if (c && rd32c(c) == 0x03E00008 && rd32c(c + 4) == 0)
+                return (void *)rt_nop_fn;
         }
         if (getenv("RT_TRACE"))
             fprintf(stderr, "rt: lobby pointer to unported function %s+0x%X\n", name, (unsigned)off);

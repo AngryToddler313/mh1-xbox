@@ -79,6 +79,13 @@ static void set11_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set11_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set11_i(SETW *sw)
+{
+#include "set11_i.inc"
+}
+#else
 static void set11_i(SETW *sw) {
     SET11_PART *p = sw->u.work;
     s16 i;
@@ -112,7 +119,15 @@ static void set11_i(SETW *sw) {
         }
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/set11_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set11_m(SETW *sw)
+{
+#include "set11_m.inc"
+}
+#else
 static void set11_m(SETW *sw) {
     SET11_PART *p = sw->u.work;
     EMW *em = em_work;
@@ -168,6 +183,7 @@ static void set11_m(SETW *sw) {
         }
     }
 }
+#endif
 
 static void set11_d(SETW *sw) {
     SET11_PART *p = sw->u.work;

@@ -79,6 +79,7 @@ int flfntSjis2Index(u32 c);
 void flfntPaletteTrans();
 void flnecCheckFont(int idx);
 
+#if !defined(G_PART)
 void flfntCreate(u8 *mem) {
     np = (FNP *)mem;
     memset(mem, 0, 0xD0000);
@@ -94,11 +95,15 @@ void flfntCreate(u8 *mem) {
     np->h = 0x16;
     np->tex = flfntMakeHandle();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flfntGetSystemMemorySize(void) {
     return 0xD0000;
 }
+#endif
 
+#if !defined(G_PART)
 void flfntStackReset(void) {
     np->cnt[0] = 0;
     np->cnt[1] = 0;
@@ -115,12 +120,16 @@ void flfntStackReset(void) {
     np->halftype = 1;
     np->x60 = np->x5C;
 }
+#endif
 
+#if !defined(G_PART)
 void flfntInit(void) {
     flfntStackReset();
     flfntCacheFlush();
 }
+#endif
 
+#if !defined(G_PART)
 void flfntCacheFlush(void) {
     int i;
 
@@ -131,3 +140,4 @@ void flfntCacheFlush(void) {
     np->x5C = 0;
     np->x60 = 0;
 }
+#endif

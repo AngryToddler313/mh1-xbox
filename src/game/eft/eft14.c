@@ -293,6 +293,13 @@ static void eft14_m(EFTW *ew) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/eft14_m00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft14_m00(EFTW *ew)
+{
+#include "eft14_m00.inc"
+}
+#else
 static void eft14_m00(EFTW *ew) {
     f32 v[3];
     EFT14_PIECE *p = ew->work;
@@ -569,6 +576,7 @@ static void eft14_m00(EFTW *ew) {
         p++;
     }
 }
+#endif
 
 static void eft14_m01(EFTW *ew) {
     ew->timer += (s16)(((u16)ran_suu(1) & 1) + 1);

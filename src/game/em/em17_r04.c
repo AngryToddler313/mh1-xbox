@@ -1,4 +1,5 @@
 /* em17_r04 - monster 17 AI 0x005DB5D0-0x005DC550: em_act15_005DB5D0, em_act16_005DB720, em_act17_005DB850, em_act19_005DB8D0, em_act18_005DB9A0, em_act20_005DBB00, em_act21_005DBC10, em_act22_005DBD70, em_act23_005DBDF0, em_act24_005DBEC0, em_act25_005DBF90, em_act26_005DC010, em_act27_005DC0C0, em_act28_005DC1D0, em_act29_005DC2A0, em_act31_005DC3E0, em_act33_005DC4C0. Whole file in em17_nm.c. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -465,6 +466,13 @@ void em_act19_005DB8D0(EMW *em, EM17W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act18_005DB9A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act18_005DB9A0(EMW *em, EM17W *w)
+{
+#include "em_act18_005DB9A0.inc"
+}
+#else
 void em_act18_005DB9A0(EMW *em, EM17W *w) {
     s16 temp_a1_2;
     s32 temp_v1;
@@ -512,6 +520,7 @@ void em_act18_005DB9A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act20_005DBB00(EMW *em, EM17W *w) {
     s32 temp_v1;
@@ -620,6 +629,13 @@ void em_act22_005DBD70(EMW *em, EM17W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act23_005DBDF0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act23_005DBDF0(EMW *em, EM17W *w)
+{
+#include "em_act23_005DBDF0.inc"
+}
+#else
 void em_act23_005DBDF0(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -646,6 +662,7 @@ void em_act23_005DBDF0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act24_005DBEC0(EMW *em, EM17W *w) {
     u8 temp_a1;
@@ -658,7 +675,7 @@ void em_act24_005DBEC0(EMW *em, EM17W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -693,6 +710,13 @@ void em_act25_005DBF90(EMW *em, EM17W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act26_005DC010.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act26_005DC010(EMW *em, EM17W *w)
+{
+#include "em_act26_005DC010.inc"
+}
+#else
 void em_act26_005DC010(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -714,6 +738,7 @@ void em_act26_005DC010(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act27_005DC0C0(EMW *em, EM17W *w) {
     s32 temp_v1;
@@ -764,7 +789,7 @@ void em_act28_005DC1D0(EMW *em, EM17W *w) {
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

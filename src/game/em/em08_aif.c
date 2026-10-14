@@ -1,5 +1,6 @@
 /* em08_ai, run 6: em_fly10_0059D720 .. em_atk08_0059F910 (game.bin 0x0059D720-0x0059FAA4). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -948,7 +949,7 @@ void em_fly24_0059EFD0(EMW *em, EM08W *w) {
         em->x388 = 4;
         em_char_set(em, 0x83, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -968,7 +969,7 @@ void em_fly25_0059F070(EMW *em, EM08W *w) {
         em->x388 = 4;
         em_char_set(em, 0x83, 0, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

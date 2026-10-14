@@ -69,6 +69,13 @@ static void shell03_d(SHLW *sh);
 static void shell03_e(SHLW *sh);
 static void shell03_trans(PRIM *pr);
 
+/* G: original bytes (build/mhg/raw/shell03_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell03_set(PLW *pl, int arg, int x07)
+{
+#include "shell03_set.inc"
+}
+#else
 void shell03_set(PLW *pl, int arg, int x07) {
     SHLW *sh;
 
@@ -102,6 +109,7 @@ void shell03_set(PLW *pl, int arg, int x07) {
         }
     }
 }
+#endif
 
 static void shell03_move(SHLW *sh) {
     switch (sh->mode) {
@@ -132,6 +140,13 @@ static void shell03_move(SHLW *sh) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/shell03_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_i(SHLW *sh)
+{
+#include "shell03_i.inc"
+}
+#else
 static void shell03_i(SHLW *sh) {
     sh->mode++;
     sh->be_flag = 1;
@@ -163,7 +178,15 @@ static void shell03_i(SHLW *sh) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell03_i00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_i00(SHLW *sh)
+{
+#include "shell03_i00.inc"
+}
+#else
 static void shell03_i00(SHLW *sh) {
     PLW *pl = sh->owner;
     f32 (*tbl)[2];
@@ -194,7 +217,15 @@ static void shell03_i00(SHLW *sh) {
     sh->rate[1] = 2.0f * tbl[sh->x07][1];
     sh->rate_g[1] = -0.8f;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell03_i01.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_i01(SHLW *sh)
+{
+#include "shell03_i01.inc"
+}
+#else
 static void shell03_i01(SHLW *sh) {
     PLW *pl = sh->owner;
     f32 v[3];
@@ -212,7 +243,15 @@ static void shell03_i01(SHLW *sh) {
         Eft16_set_ex3(v, 0xD, 0x4B, 0xA, 1.0f);
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell03_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_m(SHLW *sh)
+{
+#include "shell03_m.inc"
+}
+#else
 static void shell03_m(SHLW *sh) {
     switch (sh->arg) {
     case 4:
@@ -227,7 +266,15 @@ static void shell03_m(SHLW *sh) {
         add_prim(ot1, sh->prim, 0x20, 0);
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell03_m00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_m00(SHLW *sh)
+{
+#include "shell03_m00.inc"
+}
+#else
 static void shell03_m00(SHLW *sh) {
     PLW *pl = sh->owner;
     f32 h;
@@ -277,7 +324,15 @@ static void shell03_m00(SHLW *sh) {
         sh->mode++;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell03_m01.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_m01(SHLW *sh)
+{
+#include "shell03_m01.inc"
+}
+#else
 static void shell03_m01(SHLW *sh) {
     if (++sh->char0 >= 75) {
         if (sh->stg == game_w.stage) {
@@ -316,7 +371,15 @@ static void shell03_m01(SHLW *sh) {
         }
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell03_d.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_d(SHLW *sh)
+{
+#include "shell03_d.inc"
+}
+#else
 static void shell03_d(SHLW *sh) {
     sh->xB = 0;
     sh->mode = 6;
@@ -329,11 +392,19 @@ static void shell03_d(SHLW *sh) {
         }
     }
 }
+#endif
 
 static void shell03_e(SHLW *sh) {
     push_shell_work(sh);
 }
 
+/* G: original bytes (build/mhg/raw/shell03_trans.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void shell03_trans(PRIM *pr)
+{
+#include "shell03_trans.inc"
+}
+#else
 static void shell03_trans(PRIM *pr) {
     FLMAT mat;
     SHLW *sh = pr->owner;
@@ -365,3 +436,4 @@ static void shell03_trans(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif

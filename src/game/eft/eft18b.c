@@ -117,6 +117,13 @@ void eft18_z_adj(FLMAT *m, f32 *pos);
 void eft18_se_req(EFTW *ew, f32 *pos);
 EFTW *eft18_set_com(s16 arg);
 
+/* G: original bytes (build/mhg/raw/eft18_t00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft18_t00(PRIM *pr)
+{
+#include "eft18_t00.inc"
+}
+#else
 void eft18_t00(PRIM *pr) {
     f32 rot[3];
     f32 sc[3];
@@ -315,6 +322,7 @@ void eft18_t00(PRIM *pr) {
         flSetRenderState(0x6C, 1);
     }
 }
+#endif
 
 void eft18_i01(EFTW *ew) {
     ew->u0A.ang = ran_suu(1);

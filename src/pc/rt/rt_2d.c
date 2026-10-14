@@ -18,6 +18,7 @@
  * a table here) stored in mem_tex[] like the PS2 handle; the game's
  * SetTextureStage(n) passes mem_tex[n] to flSetRenderState(4, ...).
  */
+#include "gwx.h"
 #include "rt.h"
 #include "types.h"
 #include "../fmt/fmt.h"
@@ -176,7 +177,7 @@ void load_pit(void)
         mkTexture(6, 0x156, 0);
     }
     load_texlist(PIT_TEX[1], 0x118, 0);
-    if (game_w[0x1DC] == 0) {
+    if (game_w[GWX(0x1DC)] == 0) {
         mkmapTexture(game_w[0x2E], *(u16 *)(game_w + 0x2C), 0x119, 0);
         mkTexture(2, 0x11A, 0);
     } else {

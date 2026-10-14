@@ -2,6 +2,7 @@
  * em27_to_normal, action steps em_act00-11, move states (turning/walking, fly), attacks em_atk00-13
  * (shells and jumps), damage reactions em_dmg00-06, death (em_die00-04), demo, revival, em27_main (damage
  * system) and em27_main_sub (mode dispatch). The whole file is in em27_nm.c. Field meanings are guesses. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -340,7 +341,7 @@ static void em_act08_0060DD70(EMW *em, EM27W *w) {
         em->x388 = 0;
         em_char_set(em, 0x27, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

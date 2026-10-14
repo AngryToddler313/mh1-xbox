@@ -67,6 +67,13 @@ void eft05_move(EFTW *ew) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/eft05_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft05_i(EFTW *ew)
+{
+#include "eft05_i.inc"
+}
+#else
 static void eft05_i(EFTW *ew) {
     f32 v[3];
     FLMAT m;
@@ -103,7 +110,15 @@ static void eft05_i(EFTW *ew) {
     }
     eft05_m(ew);
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/eft05_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft05_m(EFTW *ew)
+{
+#include "eft05_m.inc"
+}
+#else
 static void eft05_m(EFTW *ew) {
     f32 v[3];
     FLMAT m;
@@ -139,13 +154,22 @@ static void eft05_m(EFTW *ew) {
         add_prim(ot0, ew->prim, 0x40, 0);
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/eft05_d.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft05_d(EFTW *ew)
+{
+#include "eft05_d.inc"
+}
+#else
 static void eft05_d(EFTW *ew) {
     ew->mode++;
     if (ew->prim != 0) {
         release_prim(ew->prim_no);
     }
 }
+#endif
 
 static void eft05_e(EFTW *ew) {
     push_eft_work(ew);

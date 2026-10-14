@@ -250,6 +250,13 @@ void em07_item_pos_set(EMW *em, f32 *o) {
     o[2] = p[2] + q[2];
 }
 
+/* G: original bytes (build/mhg/raw/em07_item_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em07_item_set(EMW *em)
+{
+#include "em07_item_set.inc"
+}
+#else
 void em07_item_set(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
     STIEM s;
@@ -272,7 +279,15 @@ void em07_item_set(EMW *em) {
     em07_item_pos_set(em, pos);
     w->item_pt = Ext_pick_point_set(&s, pos);
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em07_hagi_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em07_hagi_set(EMW *em)
+{
+#include "em07_hagi_set.inc"
+}
+#else
 void em07_hagi_set(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
     STIEM s;
@@ -296,6 +311,7 @@ void em07_hagi_set(EMW *em) {
         w->hagi[i] = Ext_pick_point_set(&s, pos);
     }
 }
+#endif
 
 void em07_hagi_move(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
@@ -327,6 +343,13 @@ void em07_hagi_clr(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em07_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em07_init(EMW *em)
+{
+#include "em07_init.inc"
+}
+#else
 void em07_init(EMW *em) {
     EM07W *w = (EM07W *)em->ex;
 
@@ -399,6 +422,7 @@ void em07_init(EMW *em) {
     w->x09 = 3;
     em07_item_set(em);
 }
+#endif
 
 void em07_to_normal(EMW *em) {
     em->act_spd = 1.0f;

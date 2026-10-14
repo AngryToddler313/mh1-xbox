@@ -139,6 +139,13 @@
 
 
 
+/* G: original bytes (build/mhg/raw/em_cmd_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_cmd_init(EMW *em)
+{
+#include "em_cmd_init.inc"
+}
+#else
 void em_cmd_init(EMW *em) {
     em->cmd_idx = 0;
     em->x822 = 0;
@@ -198,7 +205,15 @@ void em_cmd_init(EMW *em) {
     em->x882 = 0;
     em->x883 = 0;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_cmd_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_cmd_ck(EMW *em)
+{
+#include "em_cmd_ck.inc"
+}
+#else
 void em_cmd_ck(EMW *em) {
     u16 run = 1;
     u8 *p;
@@ -579,7 +594,15 @@ void em_cmd_ck(EMW *em) {
         em->cmd_ofs = em->cmd_pc - em->cmd_top;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_cmd_kehai_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 * em_cmd_kehai_ck(EMW *em, u8 *p)
+{
+#include "em_cmd_kehai_ck.inc"
+}
+#else
 u8 *em_cmd_kehai_ck(EMW *em, u8 *p) {
     u8 *q;
     int i;
@@ -611,6 +634,7 @@ u8 *em_cmd_kehai_ck(EMW *em, u8 *p) {
     }
     return q;
 }
+#endif
 
 u8 *em_cmd_ninshiki_ck(EMW *em, u8 *p) {
     u8 *q;

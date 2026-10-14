@@ -156,6 +156,7 @@ void menu_data_mix_sub(int);
 void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
+#if !defined(G_PART) || G_PART == 1
 void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
     PFLPS q;
     f32 w;
@@ -171,8 +172,10 @@ void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
     q.s[3] = w;
     flps0008(&q);
 }
+#endif
 
 /* The camp icon at map position (x, y). */
+#if !defined(G_PART)
 void camp_disp_sub(f32 x, f32 y) {
     PFLPS q;
     f32 w, h;
@@ -191,8 +194,10 @@ void camp_disp_sub(f32 x, f32 y) {
     q.c = 0xFF002F;
     flps0008(&q);
 }
+#endif
 
 /* A monster on the map: a coloured dot for small ones (icon table bit 0x80), else its icon turned to its facing. */
+#if !defined(G_PART)
 void enemy_on_map(EMW *em, f32 x, f32 y, f32 scale) {
     u8 c;
     f32 r;
@@ -263,3 +268,4 @@ void enemy_on_map(EMW *em, f32 x, f32 y, f32 scale) {
     q.uv[1] = 0x100;
     flps000C(&q);
 }
+#endif

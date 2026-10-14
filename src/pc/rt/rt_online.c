@@ -22,10 +22,12 @@
  *   online_password = LOCALTEST0000000  its password (16 characters)
  * RT_NET_HOST / RT_NET_PORT / RT_NET_ID / RT_NET_PASS override the file (tests).
  */
+#include "lbsys_g.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "gwx.h"
 #include "rt.h"
 #include "rt_log.h"
 #include "types.h"
@@ -182,7 +184,7 @@ void rt_online_enter(void)
         clr_set_work();
         prim_init();
     }
-    game_w[0x1DC] = 1;              /* the lobby overlay is loaded (Game_task step 0 online) */
+    game_w[GWX(0x1DC)] = 1;              /* the lobby overlay is loaded (Game_task step 0 online) */
     active = 1;
     phase = O_CONNECT;
     ticks = 0;
@@ -231,7 +233,7 @@ static void chat_send(const char *t)
     char b[0x40];
     snprintf(b, sizeof b, "%s", t);
     say("say \"%s\"%.0d", b, 0);
-    Lb_send_chat(game_w[0xD1], b, 0);
+    Lb_send_chat(game_w[GWX(0xD1)], b, 0);
 }
 static void town_chat(void)
 {
@@ -246,7 +248,7 @@ static void town_chat(void)
     }
     if ((e = getenv("RT_LB_WARP")) != NULL) {     /* test aid "tick,x,z[,ang];...": the hunter there at that town tick */
         extern u8 player_work[];
-        u8 *p = player_work + 0xA00 * (game_w[0xD1] & 7);
+        u8 *p = player_work + 0xA00 * (game_w[GWX(0xD1)] & 7);
         while (e && *e) {
             int t = 0, a = -1;
             float x, z;
@@ -360,15 +362,15 @@ int rt_online_tick(void)
         }
         return 0;
     case O_LOBBY:
-        if (lb_sys[3] == 4 && cw[0x2C31] == 3)
+        if (lb_sys[LBSYS_OFS(3)] == 4 && cw[0x2C31] == 3)
             rt_game_move();             /* in the town: set objects and effects (as rt_village_tick) */
         r = internet_lobby_act();
-        if (trace && (cw[0x2C31] != last31 || cw[0x2C33] != last33 || cw[0x2C34] != last34 || lb_sys[3] != last3)) {
+        if (trace && (cw[0x2C31] != last31 || cw[0x2C33] != last33 || cw[0x2C34] != last34 || lb_sys[LBSYS_OFS(3)] != last3)) {
             fprintf(stderr, "online: tick %d client %d/%d/%d/%d town step %d stage %d ret %d\n", ticks, cw[0x2C31],
-                    cw[0x2C32], cw[0x2C33], cw[0x2C34], (s8)lb_sys[3], game_w[0x14], r);
-            last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[3];
+                    cw[0x2C32], cw[0x2C33], cw[0x2C34], (s8)lb_sys[LBSYS_OFS(3)], game_w[0x14], r);
+            last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[LBSYS_OFS(3)];
         }
-        if (cw[0x2C31] == 3 && lb_sys[3] == 4) {
+        if (cw[0x2C31] == 3 && lb_sys[LBSYS_OFS(3)] == 4) {
             void rt_np_town_weapon(int slot);
             int k;
             for (k = 0; k < 8; k++)
@@ -387,7 +389,7 @@ int rt_online_tick(void)
                 return 0;
             }
         }
-        if (trace && cw[0x2C31] == 3 && lb_sys[3] == 4) {     /* a new town stage: its unique spots (exits, counters) */
+        if (trace && cw[0x2C31] == 3 && lb_sys[LBSYS_OFS(3)] == 4) {     /* a new town stage: its unique spots (exits, counters) */
             static int spots_stage = -1, npc_at = -1;
             if (ticks == npc_at) {
                 {   /* its NPCs (slot, model kind, type, talk kind, position), as RT_VILLAGE_TRACE prints them */
@@ -412,14 +414,14 @@ int rt_online_tick(void)
                             *(float *)(q + 0x10), *(u16 *)(q + 0x14));
             }
         }
-        if (trace && cw[0x2C31] == 3) {   /* the town's talk / menu state (lb_sys+0x68, +6, +7) and the registration flag */
+        if (trace && cw[0x2C31] == 3) {   /* the town's talk / menu state (lb_sys+LBSYS_OFS(0x68), +6, +7) and the registration flag */
             static int l68 = -1, l6 = -1, l7 = -1, lf = -1;
             int Event_flag_ck(int);
             int f = Event_flag_ck(4);
-            if (*(s32 *)(lb_sys + 0x68) != l68 || (s8)lb_sys[6] != l6 || (s8)lb_sys[7] != l7 || f != lf) {
-                l68 = *(s32 *)(lb_sys + 0x68);
-                l6 = (s8)lb_sys[6];
-                l7 = (s8)lb_sys[7];
+            if (*(s32 *)(lb_sys + LBSYS_OFS(0x68)) != l68 || (s8)lb_sys[LBSYS_OFS(6)] != l6 || (s8)lb_sys[LBSYS_OFS(7)] != l7 || f != lf) {
+                l68 = *(s32 *)(lb_sys + LBSYS_OFS(0x68));
+                l6 = (s8)lb_sys[LBSYS_OFS(6)];
+                l7 = (s8)lb_sys[LBSYS_OFS(7)];
                 lf = f;
                 fprintf(stderr, "online: tick %d town state x68 %d talk %d/%d registered %d room %d/%d\n", ticks, l68, l6, l7, f,
                         cw[0x35D3], cw[0x32C5]);
@@ -443,7 +445,7 @@ int rt_online_tick(void)
                 u8 *p = player_work + 0xA00 * i;
                 if (p[0])
                     fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f%s\n", ticks, i,
-                            i == game_w[0xD1] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
+                            i == game_w[GWX(0xD1)] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
                             *(float *)(p + 0xB0), *(float *)(p + 0xB4), rt_online_visible(i) ? " shown" : "");
             }
         }
@@ -644,7 +646,7 @@ int rt_online_visible(int slot)
     extern u8 player_work[];
     int Lb_Pl_stg_ck(void *pl);
     u8 *p = player_work + 0xA00 * (slot & 7);
-    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && Lb_Pl_stg_ck(p);
+    return active && phase == O_LOBBY && slot != game_w[GWX(0xD1)] && p[0] && Lb_Pl_stg_ck(p);
 }
 
 /* ------------------------------------------------------------ the net file (friends, mail)

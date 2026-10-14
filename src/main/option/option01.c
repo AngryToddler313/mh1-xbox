@@ -97,12 +97,15 @@ int cfg_change_ck();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void option_default_set(void) {
     memcpy(option_w, cfg_default, 0x10);
     system_w_set();
     str_master_vol(1);
 }
+#endif
 
+#if !defined(G_PART)
 void Option_task(OPTTSK *t) {
     int pad = (Psw[2] | Psw[12]) & 0xFFFF;
 
@@ -125,7 +128,9 @@ void Option_task(OPTTSK *t) {
     }
     trans();
 }
+#endif
 
+#if !defined(G_PART)
 void option_init(OPTTSK *t) {
     if ((Fade_busy_ck() & 0xFF) != 1) {
         t->cur = 0;
@@ -136,7 +141,9 @@ void option_init(OPTTSK *t) {
         disp_option_menu(t);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void option_main_menu(t, pad)
 OPTTSK *t;
 u16 pad;
@@ -199,7 +206,9 @@ u16 pad;
     }
     disp_option_menu(t);
 }
+#endif
 
+#if !defined(G_PART)
 void param_change_00126B30(OPTTSK *t, long d) {
     u8 row = t->cur;
 
@@ -230,7 +239,9 @@ void param_change_00126B30(OPTTSK *t, long d) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int cfg_change_ck(void) {
     s16 i;
     s8 *a = option_w;
@@ -243,7 +254,9 @@ int cfg_change_ck(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void option_sub_menu(OPTTSK *t, int pad) {
     s16 chg = 0;
     s8 *w = option_w;
@@ -303,7 +316,9 @@ void option_sub_menu(OPTTSK *t, int pad) {
     }
     disp_option_sub_menu(t, shown);
 }
+#endif
 
+#if !defined(G_PART)
 void option_exit(OPTTSK *t) {
     u8 c;
     u8 st = t->sub;
@@ -345,12 +360,16 @@ void option_exit(OPTTSK *t) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void opt_sub_disp(s16 y, char *s) {
     flfntLocate(0x1B8 - ((u32)(strlen(s) * 9) >> 1), y);
     font_print(lit_295_00358758, s);
 }
+#endif
 
+#if !defined(G_PART)
 void disp_option_menu(OPTTSK *t) {
     int y;
     int i;
@@ -392,7 +411,9 @@ void disp_option_menu(OPTTSK *t) {
         y += 0x28;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void disp_option_sub_menu(OPTTSK *t, u16 keys) {
     SPRQ q;
     s16 i;
@@ -431,3 +452,4 @@ void disp_option_sub_menu(OPTTSK *t, u16 keys) {
     }
     SetFilterMode(1);
 }
+#endif

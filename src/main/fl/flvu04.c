@@ -3,6 +3,7 @@
 #ifdef __MWERKS__
 extern char flPS2INITMATRIX[];
 
+#if !defined(G_PART)
 asm void flmatTranspose(void)
 {
     lqc2 vf8, 0x0(a0)
@@ -32,7 +33,9 @@ asm void flmatTranspose(void)
     jr ra
     sqc2 vf7, 0x30(a0)
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatTranspose33(void)
 {
     lqc2 vf8, 0x0(a0)
@@ -55,7 +58,9 @@ asm void flmatTranspose33(void)
     jr ra
     sqc2 vf6, 0x20(a0)
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatMul(void)
 {
     lqc2 vf4, 0x0(a2)
@@ -89,7 +94,9 @@ asm void flmatMul(void)
     jr ra
     nop
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatMul2(void)
 {
     lqc2 vf4, 0x0(a1)
@@ -123,7 +130,9 @@ asm void flmatMul2(void)
     jr ra
     nop
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatMul33(void)
 {
     lqc2 vf4, 0x0(a2)
@@ -150,7 +159,9 @@ asm void flmatMul33(void)
     jr ra
     nop
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatMul33_2(void)
 {
     lqc2 vf4, 0x0(a1)
@@ -174,7 +185,9 @@ asm void flmatMul33_2(void)
     jr ra
     nop
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 asm void flmatInvert(void)
 {
     la v1, flPS2INITMATRIX
@@ -227,5 +240,6 @@ asm void flmatInvert(void)
     jr ra
     sqc2 vf7, 0x30(a0)
 }
+#endif
 
 #endif

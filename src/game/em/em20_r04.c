@@ -1,4 +1,5 @@
 /* em20_r04 - monster 20 AI 0x005EC910-0x005EEA7C: em_act02_005EC910, em_act03_005EC9A0, em_act04_005ECA20, em_act05_005ECAC0, em_act06_005ECBB0, em_act07_005ECC80, em_act08_005ECD20, em_act09_005ECD30, em_act10_005ECDE0, em_act11_005ECEF0, em_act12_005ECFC0, em_act13_005ED040, em_act14_005ED110, em_act15_005ED4A0, em_act16_005ED5D0, em_act17_005ED700, em_act18_005ED780, em_act19_005ED940, em_act40_005EDAC0, em_act20_005EDB80, em_act21_005EDC90, em_act22_005EDE50, em_act23_005EDED0, em_act24_005EDFA0, em_act25_005EE070, em_act26_005EE0F0, em_act27_005EE230, em_act28_005EE340, em_act29_005EE410, em_act31_005EE550, em_act33_005EE690, em_act34, em_mv00_005EE7A0, em_mv01_005EE900, em_mv02_005EE920. Whole file in em20_ai_nm.c. */
+#include "version.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -851,6 +852,13 @@ void em_act17_005ED700(EMW *em, EM20W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act18_005ED780.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act18_005ED780(EMW *em, EM20W *w)
+{
+#include "em_act18_005ED780.inc"
+}
+#else
 void em_act18_005ED780(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -899,7 +907,15 @@ void em_act18_005ED780(EMW *em, EM20W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_act19_005ED940.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act19_005ED940(EMW *em, EM20W *w)
+{
+#include "em_act19_005ED940.inc"
+}
+#else
 void em_act19_005ED940(EMW *em, EM20W *w) {
     u8 temp_a1;
 
@@ -943,6 +959,7 @@ void em_act19_005ED940(EMW *em, EM20W *w) {
         break;
     }
 }
+#endif
 
 void em_act40_005EDAC0(EMW *em, EM20W *w) {
     u8 temp_a1;
@@ -1008,6 +1025,13 @@ void em_act20_005EDB80(EMW *em, EM20W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act21_005EDC90.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act21_005EDC90(EMW *em, EM20W *w)
+{
+#include "em_act21_005EDC90.inc"
+}
+#else
 void em_act21_005EDC90(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -1055,6 +1079,7 @@ void em_act21_005EDC90(EMW *em, EM20W *w) {
         break;
     }
 }
+#endif
 
 void em_act22_005EDE50(EMW *em, EM20W *w) {
     u8 temp_a1;
@@ -1114,7 +1139,7 @@ void em_act24_005EDFA0(EMW *em, EM20W *w) {
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        EM_SLEEP_END(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -1232,7 +1257,7 @@ void em_act28_005EE340(EMW *em, EM20W *w) {
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
-        Em_Sleep2_End(em);
+        EM_SLEEP2_END(em);
         break;
     case 1:
         if (em->x194 == 0) {

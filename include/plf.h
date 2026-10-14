@@ -14,7 +14,7 @@
 #define PU32(p, o) (*(u32 *)((u8 *)(p) + (o)))
 #define PF32(p, o) (*(f32 *)((u8 *)(p) + (o)))
 #define PPTR(p, o) (*(void **)((u8 *)(p) + (o)))
-#define GWU8(o) (*(u8 *)((u8 *)&game_w + (o)))
+#define GWU8(o) (*(u8 *)((u8 *)&game_w + GWX(o)))
 
 #include "pl.h"
 #include "game.h"

@@ -96,6 +96,13 @@ static void eft15_move(EFTW *ew) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/eft15_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft15_i(EFTW *ew)
+{
+#include "eft15_i.inc"
+}
+#else
 static void eft15_i(EFTW *ew) {
     s16 n;
     s16 i;
@@ -194,7 +201,15 @@ static void eft15_i(EFTW *ew) {
         }
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/eft15_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft15_m(EFTW *ew)
+{
+#include "eft15_m.inc"
+}
+#else
 static void eft15_m(EFTW *ew) {
     f32 a;
     f32 v[3];
@@ -390,6 +405,7 @@ static void eft15_m(EFTW *ew) {
         }
     }
 }
+#endif
 
 static void eft15_d(EFTW *ew) {
     s16 n;
@@ -409,6 +425,13 @@ static void eft15_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+/* G: original bytes (build/mhg/raw/eft15_t.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft15_t(PRIM *pr)
+{
+#include "eft15_t.inc"
+}
+#else
 static void eft15_t(PRIM *pr) {
     f32 sc[3];
     f32 rot[3];
@@ -544,6 +567,7 @@ static void eft15_t(PRIM *pr) {
         eft_trans_sub_col(cl, &m, col, flag, mats);
     }
 }
+#endif
 
 static int eft15_loop_init(EFTW *ew, EFT15_PIECE *p) {
     if (ew->stg >= ew->x07) {
@@ -567,6 +591,13 @@ static int eft15_loop_init(EFTW *ew, EFT15_PIECE *p) {
     return 0;
 }
 
+/* G: original bytes (build/mhg/raw/eft15_se_req.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft15_se_req(EFTW *ew)
+{
+#include "eft15_se_req.inc"
+}
+#else
 static void eft15_se_req(EFTW *ew) {
     switch (ew->arg) {
     case 0:
@@ -581,7 +612,15 @@ static void eft15_se_req(EFTW *ew) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/Eft15_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Eft15_set(f32 *pos, int arg, int ang, PLW *pl, f32 scale)
+{
+#include "Eft15_set.inc"
+}
+#else
 void Eft15_set(f32 *pos, int arg, int ang, PLW *pl, f32 scale) {
     EFTW *ew;
 
@@ -598,6 +637,7 @@ void Eft15_set(f32 *pos, int arg, int ang, PLW *pl, f32 scale) {
         ew->scale = scale;
     }
 }
+#endif
 
 void Eft15_set2(f32 *pos, int arg, int x07, f32 scale) {
     EFTW *ew;

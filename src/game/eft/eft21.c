@@ -243,6 +243,13 @@ static void eft21_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+/* G: original bytes (build/mhg/raw/eft21_t.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft21_t(PRIM *pr)
+{
+#include "eft21_t.inc"
+}
+#else
 static void eft21_t(PRIM *pr) {
     FLMAT m;
     FLMAT sc;
@@ -288,3 +295,4 @@ static void eft21_t(PRIM *pr) {
     }
     clay_attr_reset();
 }
+#endif

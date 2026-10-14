@@ -141,6 +141,13 @@ void em12_main_sub(EMW *em) {
  * plays a sound at the joint once the animation reaches the frame). */
 static void sound_call_005B5150(EMW *em, int frame, int se, int joint);
 
+/* G: original bytes (build/mhg/raw/ef_move_sub_005B4190.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void ef_move_sub_005B4190(EMW *em, EM12W *w)
+{
+#include "ef_move_sub_005B4190.inc"
+}
+#else
 static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
     f32 v[3];
 
@@ -396,6 +403,7 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
         break;
     }
 }
+#endif
 
 
 void em12_effect_move(EMW *em) {

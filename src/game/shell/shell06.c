@@ -61,6 +61,13 @@ void flvecRotY(f32 *, f32);
 void flvecCopy(void *, void *);
 u32 ran_suu(int);
 
+/* G: original bytes (build/mhg/raw/shell06_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell06_set(PLW *pl, int unused, int joint)
+{
+#include "shell06_set.inc"
+}
+#else
 void shell06_set(PLW *pl, int unused, int joint) {
     if (pl->id != game_w.master || PachingerCamChk() == 0) {
         switch (pl->ammo_type) {
@@ -114,6 +121,7 @@ void shell06_set(PLW *pl, int unused, int joint) {
     }
     shell06_set_sub(pl, pl->ammo_type, (s16)joint);
 }
+#endif
 
 void shell06_set_sub(PLW *pl, u8 arg, int joint) {
     SHLW *sh;
@@ -166,6 +174,13 @@ void shell06_set_split(SHLW *sh, SH06SPLIT *sp) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/shell06_init_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell06_init_sub(SHLW *sh)
+{
+#include "shell06_init_sub.inc"
+}
+#else
 void shell06_init_sub(SHLW *sh) {
     f32 v[3];
     FLMAT m;
@@ -278,3 +293,4 @@ void shell06_init_sub(SHLW *sh) {
         shell06_atck_data_calc(sh);
     }
 }
+#endif

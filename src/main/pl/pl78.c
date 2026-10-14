@@ -45,5 +45,7 @@ void clr_move_work(void) {
     clr_set_work();
     clr_eft_work();
     clr_shell_work();
+#ifndef VERSION_MHG       /* G (main 0x127B20) has no item work */
     clr_item_work();
+#endif
 }

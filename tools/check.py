@@ -30,7 +30,7 @@ from mips_dis import dis  # noqa: E402
 
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 MWCC = os.path.join(ROOT, "tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe")
-CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-Iinclude", "-Ibuild/raw", "-pragma", "divbyzerocheck on"]
+CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-Iinclude", "-Ibuild/mhg/raw", "-Ibuild/raw", "-pragma", "divbyzerocheck on"]
 # Capcom built with divide-by-zero checks on (bne/break after every
 # division by a non-constant); see docs/STATUS.md.
 SECTIONS = {"main": "main", "select": "select.bin", "game": "game.bin",
@@ -41,6 +41,12 @@ MHG = os.environ.get("VERSION", "mh1") == "mhg"
 if MHG:
     CFLAGS = CFLAGS + ["-DVERSION_MHG"]
     SECTIONS = dict(SECTIONS, sub_main="sub_main.bin", nethttp="nethttp.bin")
+G_FUNCNAMES = {}        # G address -> func_XXXXXX names (MH1 address names the shared C uses), tools/mhg_funcnames.py
+if MHG and os.path.exists(os.path.join(ROOT, "config/mhg/g_funcnames.txt")):
+    for _l in open(os.path.join(ROOT, "config/mhg/g_funcnames.txt")):
+        _m = re.match(r"PROVIDE\((\w+) = 0x([0-9A-F]+)\)", _l)
+        if _m:
+            G_FUNCNAMES.setdefault(int(_m.group(2), 16), set()).add(_m.group(1))
 MODNAMES = "main|sub_main|select|game|yn|lobby|nethttp" if MHG else "main|select|game|yn|lobby"
 
 
@@ -182,6 +188,7 @@ def compare(mine, masks, orig, base, calls=None, names=None, module=None):
             if MHG:
                 for _m in SECTIONS:
                     want = want | names.get((_m, tgt), set())
+                want = want | G_FUNCNAMES.get(tgt, set())
             if calls[i] not in want and re.sub(r'_[0-9A-F]{8}$', '', calls[i]) not in want:
                 same = False
                 note = "   (calls %s, original calls %s)" % (calls[i], "/".join(sorted(want)) or "?")

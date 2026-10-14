@@ -1317,3 +1317,23 @@ Tricks (each confirmed by a match):
   root-motion movement (body up to 390 ahead, ~295 snap back per loop). Fix: root_lock on em_mdl (viewer.c). Aids:
   RT_EM_DRAW_TRACE, RT_EM_ROOT_FREE; RT_EM_TRACE gained `wall 0x74C/0x7EA`. Test: test_activities.py herbivore_rewind.
   Details and the wall / body_hit notes in docs/pc.md ("F8 report ... rewind moving").
+
+## G round 2 (agent D, Sonnet, 13 Oct 2026): game.bin + lobby, then the village
+Registered/verified: 45 more shared C files (game+lobby), set08/15-18/22, em_master_b (sleep/paralysis: G's map names Em_Sleep_End/Em_Sleep2_End sit
+at swapped call targets, use EM_SLEEP_END/EM_SLEEP2_END from version.h; stage tables 92 not 88; SETW layout swapped pos/move, flag3E at 0x1F).
+Raw stand-ins for G: `python3 tools/mhg_rawwrap.py FILE FUNC...` wraps a function that does not match G as original bytes
+(config/mhg/c_rawfuncs.txt, build/mhg/raw/*.inc) so the rest of the file can be registered. A bulk run over all game files failed to link in
+one go (rodata slot/ordering problems not found yet): the bulk registration list is NOT in the tree; re-add by small batches
+with a real `VERSION=mhg tools/rebuild.sh MODULE` per batch (tools/mhg_rawwrap.py + mhg_addc.py).
+Lobby files with lb_sys/lbShop addends fail G (lbShop field layout moved, lb_by43/45/48/50/53/61/77/90/91/92, lb_j07/j09/j12/n01/c02/z52, lbshpb).
+New tools: mhg_addrmap.py (MH1 data address -> G address votes from twin functions; `--ptr pNet|cw` for pointer structs; `--emit` writes
+config/mhg/pc_addr.txt used by tools/pc_abs.py for literal MH1 addresses in G PC builds), mhg_fdiff.py (side by side of an MH1 function and its G twin with
+symbolised data, `-g` prints G only with branch targets).
+Village (G): lb_sys has G's layout (include/lbsys_g.h: LBSYS_G struct at 0x6548F0; LBSYS_OFS/PNET_OFS/CW_OFS for raw offsets; the G rebuild stays
+byte-identical, which checks the map). G copies in lb_village_nm.c: Local_main (exit codes 0x22/0x27), vs_square + init_pre/init_init/init_se/init/exit/event,
+Clear_lobby_ram (lb_n.c), Lbc_set_prim / Lbc_init_network_work (lb_cli.c, five prims, pNet 0x38). tools/pc_lobby_g_exclude.txt keeps the MH1 lb_gaf* copies out
+of the G PC link. G stand-ins (rt_log_standin): Lb_make_quest_tbl_local (G rebuilt the quest tables, 397 insns), Lb_ItemBox_init/Disp_lb_item_box
+(item_box has no G address), pending-gold lobby_func_0055A140, func_0012D6F0. rt_data.c maps unnamed `jr ra; nop` G functions in pointer tables to a host no-op.
+Result: hidden new-game run reaches the hunter's house with the hunter drawn (RT_NO_NPC=1 skips the NPCs). Open: village NPCs (em_cmd tables of NPC kinds are
+unrelocated: cmd_tbl garbage in em_cmd_init), x68 talk codes are +2 in G from some value on (0x20->0x22, 0x21->0x23: other talk states still MH1's),
+Lb_move_common / lb_basic_master / Lb_stage_load(st, 1) G copies not diffed yet, cw per-member records are 0x5C in G (MH1 0x2FC).

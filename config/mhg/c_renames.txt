@@ -6,10 +6,13 @@ build/mhg/src/main/net/cpinet16.c.o .rodata .data
 build/mhg/src/main/net/cpinet26.c.o .rodata .data
 build/mhg/src/main/ime/imeu.c.o .rodata .data
 build/mhg/src/main/net/ms03.c.o .rodata .data
+build/mhg/src/main/net/connect02.c.o .rodata .data
 build/mhg/src/main/aq/aq07.c.o .rodata .data
 build/mhg/src/main/aq/aq04.c.o .rodata .data
+build/mhg/src/main/pl/pl71.c.o .rodata .data
 build/mhg/src/main/pl/plx06.c.o .rodata .data
 build/mhg/src/main/pl/pl72.c.o .rodata .data
+build/mhg/src/main/eft/eft13e.c.o .rodata .data
 build/mhg/src/main/net/netsyn01.c.o .rodata .data
 build/mhg/src/game/eft/eft08.c.o .rodata .data
 build/mhg/src/game/eft/eft18.c.o .rodata .data
@@ -30,6 +33,8 @@ build/mhg/src/game/em/em19_flyinit.c.o .rodata .data
 build/mhg/src/game/em/em20_atk08.c.o .rodata .data
 build/mhg/src/game/em/em20_atk21.c.o .rodata .data
 build/mhg/src/game/em/em27b.c.o .rodata .data
+build/mhg/src/game/set/set15.c.o .rodata .data
+build/mhg/src/game/set/set22.c.o .rodata .data
 build/mhg/src/game/shell/shell01.c.o .rodata .data
 build/mhg/src/game/shell/shell02.c.o .rodata .data
 build/mhg/src/game/shell/shell05.c.o .rodata .data

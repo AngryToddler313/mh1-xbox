@@ -165,6 +165,13 @@ void shell22_trans(PRIM *pr) {
 end:;
 }
 
+/* G: original bytes (build/mhg/raw/shell22_se_req.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell22_se_req(SHLW *sh, s16 kind)
+{
+#include "shell22_se_req.inc"
+}
+#else
 void shell22_se_req(SHLW *sh, s16 kind) {
     EMW *em = em_work;
     s16 i;
@@ -219,6 +226,7 @@ void shell22_se_req(SHLW *sh, s16 kind) {
         }
     }
 }
+#endif
 
 int shell22_rock_sel(f32 *pos, f32 *out, u16 *dir) {
     s16 n;

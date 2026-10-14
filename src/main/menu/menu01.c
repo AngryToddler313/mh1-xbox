@@ -27,6 +27,7 @@ void func_609750();
 void font_print_uf(char *, int);
 u8 *func_5B4D30(u8);
 
+#if !defined(G_PART)
 void select_yes_no(int unused, u16 mask) {
     u16 k = FLD16(Psw, 4) & mask;
 
@@ -40,7 +41,9 @@ void select_yes_no(int unused, u16 mask) {
         se_req(7, 0x16, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int Cockpit_menu_chk(void) {
     if (GW8(0xE) != 0) {
         return 1;
@@ -50,14 +53,18 @@ int Cockpit_menu_chk(void) {
     }
     return (lpPit->x07 != 0) ? 1 : 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Cockpit_menu_chk_lobby(void) {
     if (Online_ck() == 1 && game_w.x1DC == 1) {
         return *(int *)0x6EAEBC;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int enemy_mark_chk(PLW *pl, EMW *em) {
     u8 c;
 
@@ -79,7 +86,9 @@ int enemy_mark_chk(PLW *pl, EMW *em) {
     }
     return Pl_Skill_ck(pl, 0x29);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void menu_exit(void) {
     lpPit->x05 = 0;
     lpPit->x40 = 0;
@@ -87,8 +96,10 @@ void menu_exit(void) {
     PitMenu.x10 = 0;
     lpPit->x84 = 0;
 }
+#endif
 
 /* Prints a player name, at most 11 characters, ending with a cut mark. */
+#if !defined(G_PART)
 void player_name_print(char *name) {
     char buf[16];
     int n = 11;
@@ -107,7 +118,9 @@ void player_name_print(char *name) {
     buf[10] = 0;
     font_print_uf(buf, n);
 }
+#endif
 
+#if !defined(G_PART)
 void player_name_id_print(PLW *pl) {
     char *name = (char *)pl + 0x8D4;
 
@@ -120,3 +133,4 @@ void player_name_id_print(PLW *pl) {
     }
     player_name_print(name);
 }
+#endif

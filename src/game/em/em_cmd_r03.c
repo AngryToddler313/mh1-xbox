@@ -241,6 +241,13 @@ u8 *em_cmd_route_ck(EMW *em, u8 *p) {
     return p;
 }
 
+/* G: original bytes (build/mhg/raw/em_cmd_kehai_pl_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 * em_cmd_kehai_pl_set(EMW *em, u8 *p)
+{
+#include "em_cmd_kehai_pl_set.inc"
+}
+#else
 u8 *em_cmd_kehai_pl_set(EMW *em, u8 *p) {
     int i;
 
@@ -256,7 +263,15 @@ u8 *em_cmd_kehai_pl_set(EMW *em, u8 *p) {
     em->x828 = 0;
     return p;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_cmd_find_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 * em_cmd_find_ck(EMW *em, u8 *p)
+{
+#include "em_cmd_find_ck.inc"
+}
+#else
 u8 *em_cmd_find_ck(EMW *em, u8 *p) {
     int i;
 
@@ -274,6 +289,7 @@ u8 *em_cmd_find_ck(EMW *em, u8 *p) {
     em->x83B &= 0xEE;
     return p;
 }
+#endif
 
 u8 *em_cmd_pl_target_set(EMW *em, u8 *p) {
     em->x827 = 1;

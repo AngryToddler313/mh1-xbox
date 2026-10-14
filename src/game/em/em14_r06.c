@@ -324,6 +324,13 @@ extern u8 *em14_act_add[3];
 
 
 
+/* G: original bytes (build/mhg/raw/em_fly04_005B8090.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly04_005B8090(EMW *em, EM14W *w)
+{
+#include "em_fly04_005B8090.inc"
+}
+#else
 void em_fly04_005B8090(EMW *em, EM14W *w) {
     f32 sp40[3];
     PLW *temp_s0;
@@ -373,6 +380,7 @@ void em_fly04_005B8090(EMW *em, EM14W *w) {
         break;
     }
 }
+#endif
 
 void em_fly05_005B8260(EMW *em, EM14W *w) {
     int d;

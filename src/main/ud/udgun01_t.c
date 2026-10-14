@@ -94,10 +94,13 @@ int Now_equip_ck(UDW *u, int idx);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 static int gun_check(UDW *u, s16 i) {
     return u->ware[i].kind == 7;
 }
+#endif
 
+#if !defined(G_PART)
 void Gun_level_up(UDW *u, s16 i) {
     if (gun_check(u, i) != 0) {
         u16 o = u->ware[i].opt;
@@ -111,15 +114,19 @@ void Gun_level_up(UDW *u, s16 i) {
         u->ware[i].opt = (o & 0x70) | (v & 0xFFFF);
     }
 }
+#endif
 
 
+#if !defined(G_PART)
 int Get_Gun_level(UDW *u, s16 i) {
     if (gun_check(u, i) == 0) {
         return 0;
     }
     return u->ware[i].opt & 0xF;
 }
+#endif
 
+#if !defined(G_PART)
 int Gun_option_ck(UDW *u, s16 i, int mask) {
     int r;
     if (gun_check(u, i) == 0) {
@@ -129,8 +136,10 @@ int Gun_option_ck(UDW *u, s16 i, int mask) {
     }
     return r;
 }
+#endif
 
 
+#if !defined(G_PART)
 void Gun_barrel_set(UDW *u, s16 i, int off) {
     if (gun_check(u, i) != 0) {
         if (off == 0) {
@@ -141,7 +150,9 @@ void Gun_barrel_set(UDW *u, s16 i, int off) {
         u->ware[i].opt &= 0xFFDF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Gun_Silencer_set(UDW *u, s16 i, int off) {
     if (gun_check(u, i) != 0) {
         if (off == 0) {
@@ -152,7 +163,9 @@ void Gun_Silencer_set(UDW *u, s16 i, int off) {
         u->ware[i].opt &= 0xFFEF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Gun_Scope_set(UDW *u, s16 i, int off) {
     if (gun_check(u, i) != 0) {
         if (off == 0) {
@@ -162,3 +175,4 @@ void Gun_Scope_set(UDW *u, s16 i, int off) {
         u->ware[i].opt &= 0xFFBF;
     }
 }
+#endif

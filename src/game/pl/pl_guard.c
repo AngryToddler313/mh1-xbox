@@ -6,6 +6,13 @@
 int pl_flag_ck(PLW *, int);
 int Guard_dir_ck(u16 ang, u16 dm_ang);
 
+/* G: original bytes (build/mhg/raw/pl_guard_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 pl_guard_ck(PLW *pl)
+{
+#include "pl_guard_ck.inc"
+}
+#else
 u8 pl_guard_ck(PLW *pl) {
     u8 ret = 0;
 
@@ -30,3 +37,4 @@ u8 pl_guard_ck(PLW *pl) {
     }
     return ret;
 }
+#endif

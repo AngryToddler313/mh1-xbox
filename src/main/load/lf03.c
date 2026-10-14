@@ -56,45 +56,58 @@ void *flCreateTextureFromApx_mem(void *, int);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void load_enemy_model(int n) {
     u8 *dst = pl_area_top;
 
     load_file_mdl(data_load_ptr, em_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void load_enemy_sub_model(int n) {
     u8 *dst = pl_area_top;
 
     load_file_mdl(data_load_ptr, em_sub_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void load_npc_model(int n) {
     u8 *dst = pl_area_top;
 
     load_file_mdl(data_load_ptr, npc_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void load_set_model(int n) {
     u8 *dst = stage_model;
 
     load_file_mdl(data_load_ptr, set_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void load_edit_model(int n) {
     u8 *dst = pl_area_top;
 
     load_file_mdl(data_load_ptr, edit_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void debug_model_load(void) {
     /* empty in the retail build */
 }
+#endif
 
+#if !defined(G_PART)
 void reload_tex(int num, int id) {
     if (num != 0) {
         flReloadTexture(num, &mem_tex[id]);
@@ -103,7 +116,9 @@ void reload_tex(int num, int id) {
         reload_tex_total += (s16)num;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void LoadCameraData(int n) {
     u32 id = camera_data_tbl[n];
     void *p = 0;
@@ -114,10 +129,12 @@ void LoadCameraData(int n) {
     }
     SetCameraData(p);
 }
+#endif
 
 /* LZ style decompressor: 16 bit flag words (bit set = copy token), tokens are u16:
  * top 5 bits = length (0 = a separate u16 length follows), low 11 bits = distance back in u16s
  * (0 = fill with zeros). Clear flag = one literal u16. */
+#if !defined(G_PART) || G_PART == 3
 void Meltw(u16 *src, u16 *dst) {
     int flags;
     int bits;
@@ -166,19 +183,27 @@ void Meltw(u16 *src, u16 *dst) {
         bits >>= 1;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int GetLinkFileNum(int *p) {
     return p[0];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void *GetLinkFileAddress(u8 *p, int n) {
     return p + *(int *)(p + n * 8 + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 long GetLinkFileSize(u8 *p, int n) {
     return *(int *)(p + n * 8 + 8);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void amo_ahi_expand(void *link, void *a, void *b) {
     void *src = GetLinkFileAddress(link, 0);
 
@@ -186,3 +211,4 @@ void amo_ahi_expand(void *link, void *a, void *b) {
     src = GetLinkFileAddress(link, 1);
     memcpy(b, src, (s32)GetLinkFileSize(link, 1));
 }
+#endif

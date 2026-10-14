@@ -15,6 +15,8 @@
  * objects and effects, prim queues) + Local_main. The stage, the hunter and
  * the HUD are drawn by the host as in a quest.
  */
+#include "lbsys_g.h"
+#include "gwx.h"
 #include "rt.h"
 #include "types.h"
 
@@ -68,12 +70,11 @@ void rt_village_enter(void)
         if (visits++)                   /* Load_overlay(3): lobby.bin data and .bss as loaded */
             rt_lb_reload();
     }
-    if (!rt_ver_mhg())
-        Clear_lobby_ram();              /* G has no Clear_lobby_ram; its nearest is lobby 0x59A270 (lb_sys, lb_player,
+    Clear_lobby_ram();              /* G has no Clear_lobby_ram; its nearest is lobby 0x59A270 (lb_sys, lb_player,
                                          * cw, pNet set-up), which G's Game_task (main 0x239750) calls when Online_ck().
                                          * MH1's on G's memory writes MH1 offsets (and lbSendInterval has no G address):
                                          * skipped until the village code has G copies (docs/mhg.md section 5) */
-    game_w[0x1DC] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
+    game_w[GWX(0x1DC)] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
     if (getenv("RT_VILLAGE_SKIP_INTRO")) {  /* test aid (no save data): the first-visit event seen */
         void Event_flag_set(int);
         Event_flag_set(2);
@@ -132,8 +133,8 @@ void rt_village_enter(void)
                 }
         }
     }
-    lb_sys[3] = 0;                      /* vs_square_init_pre */
-    lb_sys[4] = 0;
+    lb_sys[LBSYS_OFS(3)] = 0;                      /* vs_square_init_pre */
+    lb_sys[LBSYS_OFS(4)] = 0;
     active = 1;
     tick = 0;
     if (getenv("RT_QUEST_TRACE")) {
@@ -197,7 +198,7 @@ int rt_village_tick(void)
         }
     }
     static int spots_stage = -1;
-    if (getenv("RT_VILLAGE_TRACE") && game_w[0x14] != spots_stage && lb_sys[3] == 4) {     /* the stage's unique spots (exits, chairs ...) */
+    if (getenv("RT_VILLAGE_TRACE") && game_w[0x14] != spots_stage && lb_sys[LBSYS_OFS(3)] == 4) {     /* the stage's unique spots (exits, chairs ...) */
         spots_stage = game_w[0x14];
         void *Stage_unique_data_get(int st);
         u8 *r = Stage_unique_data_get(game_w[0x14]);
@@ -223,22 +224,22 @@ int rt_village_tick(void)
                 tick, p[0], p[1], p[2], *(u16 *)(player_work + 0xE), player_work[0x14], player_work[0x15],
                 *(u16 *)(player_work + 0x2DC), e[0], e[1], e[2], t[0], t[1], t[2], fov, roll);
     }
-    if (getenv("RT_VILLAGE_TRACE") && *(s32 *)(lb_sys + 0x68) != 0 && tick % 10 == 0) {
+    if (getenv("RT_VILLAGE_TRACE") && *(s32 *)(lb_sys + LBSYS_OFS(0x68)) != 0 && tick % 10 == 0) {
         extern u8 lb_pit[];
-        fprintf(stderr, "rt_village: tick %d talk %d/%d pit x0 %d pos %p page %d sel %d done %d\n", tick, (s8)lb_sys[6], (s8)lb_sys[7],
+        fprintf(stderr, "rt_village: tick %d talk %d/%d pit x0 %d pos %p page %d sel %d done %d\n", tick, (s8)lb_sys[LBSYS_OFS(6)], (s8)lb_sys[LBSYS_OFS(7)],
                 *(s32 *)lb_pit, *(void **)(lb_pit + 4), (s8)lb_pit[8], (s8)lb_pit[9], (s8)lb_pit[0xB]);
     }
-    if (getenv("RT_QUEST_TRACE") && *(s32 *)(lb_sys + 0x68) != 0 && lb_sys[6] != last_6) {
+    if (getenv("RT_QUEST_TRACE") && *(s32 *)(lb_sys + LBSYS_OFS(0x68)) != 0 && lb_sys[LBSYS_OFS(6)] != last_6) {
         extern u8 lb_pit[];
-        fprintf(stderr, "rt_village: tick %d talk state %d (x68 %d) page %d sel %d\n", tick, (s8)lb_sys[6],
-                *(s32 *)(lb_sys + 0x68), (s8)lb_pit[8], (s8)lb_pit[9]);
-        last_6 = lb_sys[6];
+        fprintf(stderr, "rt_village: tick %d talk state %d (x68 %d) page %d sel %d\n", tick, (s8)lb_sys[LBSYS_OFS(6)],
+                *(s32 *)(lb_sys + LBSYS_OFS(0x68)), (s8)lb_pit[8], (s8)lb_pit[9]);
+        last_6 = lb_sys[LBSYS_OFS(6)];
     }
-    if (getenv("RT_QUEST_TRACE") && (lb_sys[3] != last_step || *(s32 *)(lb_sys + 0x68) != last_x68)) {
+    if (getenv("RT_QUEST_TRACE") && (lb_sys[LBSYS_OFS(3)] != last_step || *(s32 *)(lb_sys + LBSYS_OFS(0x68)) != last_x68)) {
         float *p = (float *)(player_work + 0xAC);
         extern u8 *cw;
         fprintf(stderr, "rt_village: tick %d step %d sub %d x68 %d stage %d pl %.0f %.0f %.0f act %d/%d quest %d (accepted %d)\n",
-                tick, (s8)lb_sys[3], (s8)lb_sys[4], *(s32 *)(lb_sys + 0x68), game_w[0x14],
+                tick, (s8)lb_sys[LBSYS_OFS(3)], (s8)lb_sys[LBSYS_OFS(4)], *(s32 *)(lb_sys + LBSYS_OFS(0x68)), game_w[0x14],
                 p[0], p[1], p[2], player_work[0x14], player_work[0x15], *(s16 *)(select_w + 0xAC), cw ? cw[0x35D3] : -1);
         if (0) {
             int i;
@@ -249,8 +250,8 @@ int rt_village_tick(void)
                             e[0x452], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
             }
         }
-        last_step = lb_sys[3];
-        last_x68 = *(s32 *)(lb_sys + 0x68);
+        last_step = lb_sys[LBSYS_OFS(3)];
+        last_x68 = *(s32 *)(lb_sys + LBSYS_OFS(0x68));
     }
     if (getenv("RT_QUEST_TRACE")) {     /* the Elder's quest list (Lb_make_quest_tbl_local: 5 levels x 5, urgent at +0x19) */
         extern u8 lb_quest_info[];
@@ -276,13 +277,13 @@ int rt_village_tick(void)
         int v = lbShop[0x14] | lbShop[0x15] << 8 | lbShop[0x19] << 16 | lbShop[0x1B] << 24;
         if (v != last)
             fprintf(stderr, "rt_village: tick %d shop step %d sub %d mode %d x1B %d x68 %d\n", tick, (s8)lbShop[0x14],
-                    (s8)lbShop[0x15], (s8)lbShop[0x19], lbShop[0x1B], *(s32 *)(lb_sys + 0x68));
+                    (s8)lbShop[0x15], (s8)lbShop[0x19], lbShop[0x1B], *(s32 *)(lb_sys + LBSYS_OFS(0x68)));
         last = v;
     }
     if (r == 1 || r == -1) {
         void com_motion_load(int n);
         active = 0;
-        game_w[0x1DC] = 0;
+        game_w[GWX(0x1DC)] = 0;
         rt_motion_em_release();         /* the NPCs' motions go with the village */
         com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
         return r == 1 ? *(s16 *)(select_w + 0xAC) : -1;

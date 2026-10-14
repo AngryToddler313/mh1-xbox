@@ -40,11 +40,14 @@ int flPS2DmaInterrupt(int);
 int IntGsStoreImageHandler();
 
 /* IntGsStoreImageHandler (0x0016E6E0, 172 bytes): original bytes, ends with `ei`. */
+#if !defined(G_PART)
 static asm int IntGsStoreImageHandler()
 {
 #include "IntGsStoreImageHandler.inc"
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2DmaInitControl(DMACTL *c, int size, int handler) {
     int i;
     DMACTL *p;
@@ -65,7 +68,9 @@ void flPS2DmaInitControl(DMACTL *c, int size, int handler) {
     EnableDmac(c->chan);
     flPs2GsHandler = AddIntcHandler(0, IntGsStoreImageHandler, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int flPS2DmaAddQueue(u32 tag, DMACTL *c) {
     int i = PS2S(int, 0x404);
     u32 *q;
@@ -83,13 +88,16 @@ int flPS2DmaAddQueue(u32 tag, DMACTL *c) {
     }
     return -1;
 }
+#endif
 
 /* original bytes: build/raw/flPS2DmaAddQueue2.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int flPS2DmaAddQueue2(int mode, u32 tag, u32 *x, DMACTL *c)
 {
 #include "flPS2DmaAddQueue2.inc"
 }
+#endif
 #else
 int flPS2DmaAddQueue2(int mode, u32 tag, u32 *x, DMACTL *c) {
     int i;
@@ -161,16 +169,21 @@ fail:
 #endif
 
 /* flPS2DmaInterrupt (0x0016EAE0, 796 bytes) and flPS2DmaSend (0x0016EE00, 464 bytes): original bytes. */
+#if !defined(G_PART)
 asm int flPS2DmaInterrupt(int arg)
 {
 #include "flPS2DmaInterrupt.inc"
 }
+#endif
 
+#if !defined(G_PART)
 asm void flPS2DmaSend(void)
 {
 #include "flPS2DmaSend.inc"
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int flPS2DmaWait(void) {
     volatile int *p;
 
@@ -181,7 +194,9 @@ int flPS2DmaWait(void) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 int flPS2DmaTerminate(void) {
     if (flPs2VIF1Control.cnt[0] == 0 && flPs2VIF1Control.cnt[1] == 0) {
         return 0;
@@ -195,7 +210,9 @@ int flPS2DmaTerminate(void) {
     flPS2SystemTmpBuffFlush();
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void flPS2IopModuleLoad(int a, int b, int c, int tries) {
     int i;
 
@@ -215,7 +232,9 @@ void flPS2IopModuleLoad(int a, int b, int c, int tries) {
     }
     printf(lit_213_0035BDC0, a);
 }
+#endif
 
+#if !defined(G_PART)
 void flPS2IopModuleLoadStart(int a, int b, int c, int d, int tries) {
     int i;
 
@@ -235,3 +254,4 @@ void flPS2IopModuleLoadStart(int a, int b, int c, int d, int tries) {
     }
     printf(lit_242_0035BDE0, a);
 }
+#endif
