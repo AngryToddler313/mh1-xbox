@@ -177,3 +177,9 @@ for tools/rebuild.sh, build_pc*.sh, tests). Before claiming a rebuild passes aft
 config/mhg/c_rawfuncs.txt or registrations, prove it from clean
 (`rm -rf build/mhg/raw build/raw build/mhg/src`): stale generated .inc files hid a broken branch once.
 
+## Interesting finds (14 Oct 2026)
+
+docs/FINDS.md is a scrapbook of curiosities (unused content, leftovers, oddities) the owner wants
+kept. When you notice one, add a short entry there (where, how sure: [checked]/[guess]/[unverified]),
+descriptions only, never game bytes or text.
+
