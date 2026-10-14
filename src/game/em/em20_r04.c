@@ -852,6 +852,13 @@ void em_act17_005ED700(EMW *em, EM20W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act18_005ED780.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act18_005ED780(EMW *em, EM20W *w)
+{
+#include "em_act18_005ED780.inc"
+}
+#else
 void em_act18_005ED780(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -900,7 +907,15 @@ void em_act18_005ED780(EMW *em, EM20W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_act19_005ED940.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act19_005ED940(EMW *em, EM20W *w)
+{
+#include "em_act19_005ED940.inc"
+}
+#else
 void em_act19_005ED940(EMW *em, EM20W *w) {
     u8 temp_a1;
 
@@ -944,6 +959,7 @@ void em_act19_005ED940(EMW *em, EM20W *w) {
         break;
     }
 }
+#endif
 
 void em_act40_005EDAC0(EMW *em, EM20W *w) {
     u8 temp_a1;
@@ -1009,6 +1025,13 @@ void em_act20_005EDB80(EMW *em, EM20W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act21_005EDC90.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act21_005EDC90(EMW *em, EM20W *w)
+{
+#include "em_act21_005EDC90.inc"
+}
+#else
 void em_act21_005EDC90(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -1056,6 +1079,7 @@ void em_act21_005EDC90(EMW *em, EM20W *w) {
         break;
     }
 }
+#endif
 
 void em_act22_005EDE50(EMW *em, EM20W *w) {
     u8 temp_a1;

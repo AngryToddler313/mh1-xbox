@@ -24,6 +24,13 @@ void Pl_se_req2(PLW *, int, int, f32 *, int, int);
 int mahi_dm_ck(PLW *pl);
 int pl_guard_ck(PLW *pl);   /* really returns u8; the caller masks */
 
+/* G: original bytes (build/mhg/raw/pl_guard_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm u8 pl_guard_set(PLW *pl)
+{
+#include "pl_guard_set.inc"
+}
+#else
 static u8 pl_guard_set(PLW *pl) {
     int slash = 0;
     u8 ret = 0;
@@ -61,7 +68,15 @@ static u8 pl_guard_set(PLW *pl) {
     }
     return ret;
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/Pl_damage_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Pl_damage_sub(PLW *pl)
+{
+#include "Pl_damage_sub.inc"
+}
+#else
 void Pl_damage_sub(PLW *pl) {
     u16 type;
     u16 d;
@@ -304,3 +319,4 @@ void Pl_damage_sub(PLW *pl) {
 end:
     ;
 }
+#endif

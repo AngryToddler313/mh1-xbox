@@ -430,6 +430,13 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
+/* G: original bytes (build/mhg/raw/item_theft_005EC560.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void item_theft_005EC560(EMW *em, PLW *pl)
+{
+#include "item_theft_005EC560.inc"
+}
+#else
 void item_theft_005EC560(EMW *em, PLW *pl) {
     int list[20];
     int n;
@@ -457,3 +464,4 @@ void item_theft_005EC560(EMW *em, PLW *pl) {
         }
     }
 }
+#endif

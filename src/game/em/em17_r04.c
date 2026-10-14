@@ -466,6 +466,13 @@ void em_act19_005DB8D0(EMW *em, EM17W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act18_005DB9A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act18_005DB9A0(EMW *em, EM17W *w)
+{
+#include "em_act18_005DB9A0.inc"
+}
+#else
 void em_act18_005DB9A0(EMW *em, EM17W *w) {
     s16 temp_a1_2;
     s32 temp_v1;
@@ -513,6 +520,7 @@ void em_act18_005DB9A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act20_005DBB00(EMW *em, EM17W *w) {
     s32 temp_v1;
@@ -621,6 +629,13 @@ void em_act22_005DBD70(EMW *em, EM17W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act23_005DBDF0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act23_005DBDF0(EMW *em, EM17W *w)
+{
+#include "em_act23_005DBDF0.inc"
+}
+#else
 void em_act23_005DBDF0(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -647,6 +662,7 @@ void em_act23_005DBDF0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act24_005DBEC0(EMW *em, EM17W *w) {
     u8 temp_a1;
@@ -694,6 +710,13 @@ void em_act25_005DBF90(EMW *em, EM17W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act26_005DC010.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act26_005DC010(EMW *em, EM17W *w)
+{
+#include "em_act26_005DC010.inc"
+}
+#else
 void em_act26_005DC010(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -715,6 +738,7 @@ void em_act26_005DC010(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 void em_act27_005DC0C0(EMW *em, EM17W *w) {
     s32 temp_v1;

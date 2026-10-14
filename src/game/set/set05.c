@@ -104,6 +104,13 @@ void set05_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set05_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set05_i(SETW *sw)
+{
+#include "set05_i.inc"
+}
+#else
 static void set05_i(SETW *sw) {
     f32 *p;
     u8 kind;
@@ -154,3 +161,4 @@ static void set05_i(SETW *sw) {
         push_set_work(sw);
     }
 }
+#endif

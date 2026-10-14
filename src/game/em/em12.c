@@ -126,6 +126,13 @@ void em_move05_005B2F10(EMW *);
 void em_move06_005B3790(EMW *);
 void em_move07_005B39E0(EMW *);
 
+/* G: original bytes (build/mhg/raw/em12_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em12_init(EMW *em)
+{
+#include "em12_init.inc"
+}
+#else
 void em12_init(EMW *em) {
     EM12W *w = (EM12W *)em->ex;
 
@@ -178,6 +185,7 @@ void em12_init(EMW *em) {
     w->x3C = 0;
     em->x734 = 3;
 }
+#endif
 
 void em12_act_set(EMW *em, int kind, u16 no, int unused) {
     EM12W *w = (EM12W *)em->ex;

@@ -36,6 +36,13 @@ void Em_Sleep_End(EMW *em);
 void Em_Sleep2_End(EMW *em);
 void Em_Mahi_End(EMW *em);
 
+/* G: original bytes (build/mhg/raw/Em_Yobi_Ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm int Em_Yobi_Ck(EMW *em, EM_YOBI *self)
+{
+#include "Em_Yobi_Ck.inc"
+}
+#else
 int Em_Yobi_Ck(EMW *em, EM_YOBI *self) {
     s8 i;
     EM_YOBI *y;
@@ -75,6 +82,7 @@ int Em_Yobi_Ck(EMW *em, EM_YOBI *self) {
     }
     return 0;
 }
+#endif
 
 void Ikari_Data_Set(EMW *em) {
     s16 *p = em_ikari_data_tbl[em->kind];

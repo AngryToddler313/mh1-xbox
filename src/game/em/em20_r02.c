@@ -526,6 +526,13 @@ void em20_to_normal(EMW *em, s16 a, s16 b) {
     em20_act_set(em, 0, 1, 0);
 }
 
+/* G: original bytes (build/mhg/raw/em20_dmg_to_normal.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_dmg_to_normal(EMW *em, s16 a, s16 b)
+{
+#include "em20_dmg_to_normal.inc"
+}
+#else
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x39A % 100 < 0xA) {
         em20_to_normal(em, 0, 0);
@@ -543,6 +550,7 @@ void em20_dmg_to_normal(EMW *em, s16 a, s16 b) {
     }
     em20_to_normal(em, a, b);
 }
+#endif
 
 void em20_to_fly(EMW *em, int flag) {
     if (em->x734 != 3) {

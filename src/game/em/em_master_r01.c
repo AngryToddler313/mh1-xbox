@@ -147,6 +147,13 @@ void em_hp_add(EMW *em, s16 n);
 
 
 
+/* G: original bytes (build/mhg/raw/em_hagitori_lv_up.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_hagitori_lv_up(EMW *em, u8 bits)
+{
+#include "em_hagitori_lv_up.inc"
+}
+#else
 void em_hagitori_lv_up(EMW *em, u8 bits) {
     s16 i;
     s16 j;
@@ -178,3 +185,4 @@ void em_hagitori_lv_up(EMW *em, u8 bits) {
         }
     }
 }
+#endif

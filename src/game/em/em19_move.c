@@ -71,6 +71,13 @@ void em19_rate_add_calc(EMW *em) {
     em->pos[2] += v[2];
 }
 
+/* G: original bytes (build/mhg/raw/em20_local_area_move_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_local_area_move_init(EMW *em)
+{
+#include "em20_local_area_move_init.inc"
+}
+#else
 void em20_local_area_move_init(EMW *em) {
     em->stay_tm = em20_stay_timer_tbl[em->stg];
     if (em->kind == 6) {
@@ -79,3 +86,4 @@ void em20_local_area_move_init(EMW *em) {
         em->runaway_tm = em20_runaway_timer_tbl[em->stg];
     }
 }
+#endif

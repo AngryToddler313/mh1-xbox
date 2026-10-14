@@ -240,6 +240,13 @@ static void eft24_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+/* G: original bytes (build/mhg/raw/eft24_t.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void eft24_t(PRIM *pr)
+{
+#include "eft24_t.inc"
+}
+#else
 static void eft24_t(PRIM *pr) {
     FLMAT m;
     EFT_MDLW *mw = eft_mdlw[0];
@@ -255,3 +262,4 @@ static void eft24_t(PRIM *pr) {
     flSetRenderState(0x67, -1);
     eft_trans_sub_opa(cl, &m, mats);
 }
+#endif

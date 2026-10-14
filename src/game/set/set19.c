@@ -90,6 +90,13 @@ static void set19_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set19_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set19_i(SETW *sw)
+{
+#include "set19_i.inc"
+}
+#else
 static void set19_i(SETW *sw) {
     f32 *p;
 
@@ -153,6 +160,7 @@ static void set19_i(SETW *sw) {
     }
     push_set_work(sw);
 }
+#endif
 
 static void set19_m(SETW *sw) {
     sw->timer++;
@@ -169,6 +177,13 @@ static void set19_e(SETW *sw) {
     push_set_work(sw);
 }
 
+/* G: original bytes (build/mhg/raw/set19_trans.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set19_trans(PRIM *pr)
+{
+#include "set19_trans.inc"
+}
+#else
 static void set19_trans(PRIM *pr) {
     FLMAT mat;
     FLMAT uv;
@@ -344,3 +359,4 @@ static void set19_trans(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif

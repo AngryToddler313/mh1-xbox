@@ -376,6 +376,13 @@ void em15_to_normal(EMW *em) {
     em15_act_set(em, 0, 0x11, 0);
 }
 
+/* G: original bytes (build/mhg/raw/em15_to_tenjo.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em15_to_tenjo(EMW *em)
+{
+#include "em15_to_tenjo.inc"
+}
+#else
 void em15_to_tenjo(EMW *em) {
     em->act_spd = 1.0f;
     em->x388 = 2;
@@ -384,6 +391,7 @@ void em15_to_tenjo(EMW *em) {
     M2C_FIELD(em, u8 *, 0x9EF) = 5;
     em15_act_set(em, 2, 0x19, 0);
 }
+#endif
 
 void em15_to_fly(EMW *em) {
     em->x839 = 1;
@@ -751,6 +759,13 @@ void em_act17_005C3BB0(EMW *em, EM15W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_act19_005C3C30.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act19_005C3C30(EMW *em, EM15W *w)
+{
+#include "em_act19_005C3C30.inc"
+}
+#else
 void em_act19_005C3C30(EMW *em, EM15W *w) {
     u8 temp_a1;
 
@@ -794,6 +809,7 @@ void em_act19_005C3C30(EMW *em, EM15W *w) {
         break;
     }
 }
+#endif
 
 void em_act40_005C3DB0(EMW *em, EM15W *w) {
     u8 temp_a1;

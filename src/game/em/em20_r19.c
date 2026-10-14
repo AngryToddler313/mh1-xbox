@@ -430,6 +430,13 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
+/* G: original bytes (build/mhg/raw/em20_main_sub.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_main_sub(EMW *em, EM20W *w)
+{
+#include "em20_main_sub.inc"
+}
+#else
 void em20_main_sub(EMW *em, EM20W *w) {
     u8 temp_v1;
 
@@ -466,3 +473,4 @@ void em20_main_sub(EMW *em, EM20W *w) {
         em_dur_set(em, 0);
     }
 }
+#endif

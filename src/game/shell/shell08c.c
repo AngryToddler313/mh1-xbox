@@ -68,6 +68,13 @@ extern u8 shell08_tbl[4];
 extern f32 (*shell08_type8_thunder_pos[])[2];
 
 
+/* G: original bytes (build/mhg/raw/shell08_impact_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_impact_set(SHLW *sh, s16 kind, f32 *pos)
+{
+#include "shell08_impact_set.inc"
+}
+#else
 void shell08_impact_set(SHLW *sh, s16 kind, f32 *pos) {
     f32 scale;
     f32 s;
@@ -165,7 +172,15 @@ void shell08_impact_set(SHLW *sh, s16 kind, f32 *pos) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell08_type1_pos_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_type1_pos_set(SHLW *sh, SH08W *w)
+{
+#include "shell08_type1_pos_set.inc"
+}
+#else
 void shell08_type1_pos_set(SHLW *sh, SH08W *w) {
     FLMAT m;
     f32 v[3];
@@ -186,7 +201,15 @@ void shell08_type1_pos_set(SHLW *sh, SH08W *w) {
         sh->ang[0] += w->x01 << 8;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/shell08_type1_impact_pos.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_type1_impact_pos(SHLW *sh, SH08W *w, f32 *out)
+{
+#include "shell08_type1_impact_pos.inc"
+}
+#else
 void shell08_type1_impact_pos(SHLW *sh, SH08W *w, f32 *out) {
     f32 dz;
     f32 t;
@@ -207,6 +230,7 @@ void shell08_type1_impact_pos(SHLW *sh, SH08W *w, f32 *out) {
         out[2] = sh->pos0.z + dz;
     }
 }
+#endif
 
 void shell08_z_adj(FLMAT *m, f32 *pos) {
     f32 a[4];

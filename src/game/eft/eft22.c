@@ -99,6 +99,13 @@ void eft22_move(EFTW *ew) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/eft22_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft22_i(EFTW *ew)
+{
+#include "eft22_i.inc"
+}
+#else
 void eft22_i(EFTW *ew) {
     PLW *pl = (PLW *)ew->owner;
     UKI *w = ew->work;
@@ -162,6 +169,7 @@ void eft22_i(EFTW *ew) {
         push_eft_work(ew);
     }
 }
+#endif
 
 void eft22_rate_add(EFTW *ew, UKI *w) {
     ew->pos[0] += w->vel[0];
@@ -170,6 +178,13 @@ void eft22_rate_add(EFTW *ew, UKI *w) {
     w->vel[1] += w->grav;
 }
 
+/* G: original bytes (build/mhg/raw/eft22_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft22_m(EFTW *ew)
+{
+#include "eft22_m.inc"
+}
+#else
 void eft22_m(EFTW *ew) {
     f32 v[3];
     f32 d[3];
@@ -421,6 +436,7 @@ void eft22_m(EFTW *ew) {
     }
     add_prim(ot1, ew->prim, 0x20, 0);
 }
+#endif
 
 void eft22_d(EFTW *ew) {
     ew->mode++;
@@ -431,6 +447,13 @@ void eft22_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+/* G: original bytes (build/mhg/raw/eft22_t.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft22_t(PRIM *pr)
+{
+#include "eft22_t.inc"
+}
+#else
 void eft22_t(PRIM *pr) {
     EFTW *ew = pr->owner;
     EFT_MDLW *mw = eft_mdlw[0];
@@ -480,6 +503,7 @@ void eft22_t(PRIM *pr) {
     }
     clay_attr_reset();
 }
+#endif
 
 f32 Eft22_suimen_ck(EFTW *ew) {
     return ((UKI *)ew->work)->suimen;

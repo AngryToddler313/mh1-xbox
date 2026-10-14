@@ -329,6 +329,13 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+/* G: original bytes (build/mhg/raw/em_fly12_00602F10.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly12_00602F10(EMW *em, EM21W *w)
+{
+#include "em_fly12_00602F10.inc"
+}
+#else
 void em_fly12_00602F10(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a1;
@@ -360,7 +367,15 @@ void em_fly12_00602F10(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_fly13_00603000.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_fly13_00603000(EMW *em, EM21W *w)
+{
+#include "em_fly13_00603000.inc"
+}
+#else
 void em_fly13_00603000(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a1;
@@ -392,3 +407,4 @@ void em_fly13_00603000(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif

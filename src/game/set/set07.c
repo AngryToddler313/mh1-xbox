@@ -59,6 +59,13 @@ static void set07_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set07_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set07_i(SETW *sw)
+{
+#include "set07_i.inc"
+}
+#else
 static void set07_i(SETW *sw) {
     s16 n;
     s16 i;
@@ -98,6 +105,7 @@ static void set07_i(SETW *sw) {
         }
     }
 }
+#endif
 
 static void set07_m(SETW *sw) {
     SET07_W *w = sw->u.work;

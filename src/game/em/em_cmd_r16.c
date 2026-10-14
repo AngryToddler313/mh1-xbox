@@ -139,6 +139,13 @@
 
 
 
+/* G: original bytes (build/mhg/raw/em_cmd_tenjostage_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm u8 * em_cmd_tenjostage_ck(EMW *em, u8 *p)
+{
+#include "em_cmd_tenjostage_ck.inc"
+}
+#else
 u8 *em_cmd_tenjostage_ck(EMW *em, u8 *p) {
     f32 sp3C;
     f32 sp38;
@@ -159,6 +166,7 @@ u8 *em_cmd_tenjostage_ck(EMW *em, u8 *p) {
     }
     return q;
 }
+#endif
 
 u8 *em_cmd_smell_set_ck(EMW *em, u8 *p) {
     u8 *q;

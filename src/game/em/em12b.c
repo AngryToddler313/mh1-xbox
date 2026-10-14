@@ -432,6 +432,13 @@ void em_move03_005B17E0(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_dm00_005B1880.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_dm00_005B1880(EMW *em)
+{
+#include "em_dm00_005B1880.inc"
+}
+#else
 static void em_dm00_005B1880(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -452,6 +459,7 @@ static void em_dm00_005B1880(EMW *em) {
         break;
     }
 }
+#endif
 
 static void em_dm01_005B1950(EMW *em) {
     f32 v[3];
@@ -877,6 +885,13 @@ void em_move05_005B2F10(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em12_blood_req.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em12_blood_req(EMW *em, int unused, f32 f)
+{
+#include "em12_blood_req.inc"
+}
+#else
 void em12_blood_req(EMW *em, int unused, f32 f) {
     f32 v[3];
     f32 p[3];
@@ -898,6 +913,7 @@ void em12_blood_req(EMW *em, int unused, f32 f) {
     a = (u16)-(u16)(s32)(0.5f + 65536.0f * flArcTan2(v[1], flSqrt(v[0] * v[0] + v[2] * v[2])) / 6.2831855f);
     Eft02_set4(f, a, (u16)(s32)(0.5f + 65536.0f * flArcTan2(v[0], v[2]) / 6.2831855f), 3, p);
 }
+#endif
 
 static void em_demo00_005B3180(EMW *em) {
     em->x40E = 5;
@@ -945,6 +961,13 @@ static void em_demo01_005B3220(EMW *em) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_demo02_005B33B0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_demo02_005B33B0(EMW *em)
+{
+#include "em_demo02_005B33B0.inc"
+}
+#else
 static void em_demo02_005B33B0(EMW *em) {
     EMW *t;
 
@@ -972,7 +995,15 @@ static void em_demo02_005B33B0(EMW *em) {
         break;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/em_demo03_005B34A0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void em_demo03_005B34A0(EMW *em)
+{
+#include "em_demo03_005B34A0.inc"
+}
+#else
 static void em_demo03_005B34A0(EMW *em) {
     EMW *t;
 
@@ -1007,6 +1038,7 @@ static void em_demo03_005B34A0(EMW *em) {
         break;
     }
 }
+#endif
 
 static void em_demo04_005B35D0(EMW *em) {
     switch (em->x05) {

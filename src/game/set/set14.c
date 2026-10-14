@@ -85,6 +85,13 @@ static void set14_move(SETW *sw) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/set14_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set14_i(SETW *sw)
+{
+#include "set14_i.inc"
+}
+#else
 static void set14_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
@@ -162,7 +169,15 @@ static void set14_i(SETW *sw) {
         sw->prim->trans = set14_trans;
     }
 }
+#endif
 
+/* G: original bytes (build/mhg/raw/set14_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set14_m(SETW *sw)
+{
+#include "set14_m.inc"
+}
+#else
 static void set14_m(SETW *sw) {
     PLW *pl = &player_work[game_w.master];
 
@@ -245,6 +260,7 @@ static void set14_m(SETW *sw) {
         add_prim(ot3, sw->prim, 8, 1);
     }
 }
+#endif
 
 static void set14_d(SETW *sw) {
     sw->mode++;
@@ -255,6 +271,13 @@ static void set14_e(SETW *sw) {
     push_set_work(sw);
 }
 
+/* G: original bytes (build/mhg/raw/set14_trans.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+static asm void set14_trans(PRIM *pr)
+{
+#include "set14_trans.inc"
+}
+#else
 static void set14_trans(PRIM *pr) {
     FLMAT m;
     FLMAT uv;
@@ -462,3 +485,4 @@ static void set14_trans(PRIM *pr) {
         flSetRenderState(0x6C, 1);
     }
 }
+#endif

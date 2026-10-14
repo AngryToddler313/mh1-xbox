@@ -24,6 +24,8 @@ build/mhg/src/game/em/em19_flyinit.c.o .rodata .data
 build/mhg/src/game/em/em20_atk08.c.o .rodata .data
 build/mhg/src/game/em/em20_atk21.c.o .rodata .data
 build/mhg/src/game/em/em27b.c.o .rodata .data
+build/mhg/src/game/set/set15.c.o .rodata .data
+build/mhg/src/game/set/set22.c.o .rodata .data
 build/mhg/src/game/shell/shell01.c.o .rodata .data
 build/mhg/src/game/shell/shell02.c.o .rodata .data
 build/mhg/src/game/shell/shell05.c.o .rodata .data

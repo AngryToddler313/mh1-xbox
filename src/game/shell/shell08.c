@@ -164,6 +164,13 @@ void shell08_move(SHLW *sh) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/shell08_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void shell08_i(SHLW *sh)
+{
+#include "shell08_i.inc"
+}
+#else
 void shell08_i(SHLW *sh) {
     FLMAT m;
     f32 v[3];
@@ -426,3 +433,4 @@ void shell08_i(SHLW *sh) {
     }
     shell08_m(sh);
 }
+#endif

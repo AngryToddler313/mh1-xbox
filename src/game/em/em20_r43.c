@@ -438,6 +438,13 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
+/* G: original bytes (build/mhg/raw/em20_init.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em20_init(EMW *em)
+{
+#include "em20_init.inc"
+}
+#else
 void em20_init(EMW *em) {
     EM20W *w = (EM20W *)em->ex;
     s16 hp;
@@ -556,3 +563,4 @@ void em20_init(EMW *em) {
         }
     }
 }
+#endif

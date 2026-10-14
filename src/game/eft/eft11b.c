@@ -114,6 +114,13 @@ void eft11_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+/* G: original bytes (build/mhg/raw/eft11_t0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void eft11_t0(EFTW *ew)
+{
+#include "eft11_t0.inc"
+}
+#else
 void eft11_t0(EFTW *ew) {
     f32 v[3];
     FLMAT m;
@@ -156,6 +163,7 @@ void eft11_t0(EFTW *ew) {
         flSetRenderState(0x6C, 1);
     }
 }
+#endif
 
 void eft11_set(EMW *em, f32 *pos, int arg) {
     EFTW *ew;

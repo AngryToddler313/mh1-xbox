@@ -738,6 +738,13 @@ void em_act19_005B66D0(EMW *em, EM14W *w) {
 
 }
 
+/* G: original bytes (build/mhg/raw/em_act20_005B66E0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act20_005B66E0(EMW *em, EM14W *w)
+{
+#include "em_act20_005B66E0.inc"
+}
+#else
 void em_act20_005B66E0(EMW *em, EM14W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -775,6 +782,7 @@ void em_act20_005B66E0(EMW *em, EM14W *w) {
         break;
     }
 }
+#endif
 
 void em_act21_005B67F0(EMW *em, EM14W *w) {
     s16 temp_a1_2;

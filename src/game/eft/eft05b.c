@@ -44,6 +44,13 @@ void Eft_rendope_set(int);
 
 void eft05_move(EFTW *ew);
 
+/* G: original bytes (build/mhg/raw/Eft05_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void Eft05_set(PLW *pl, int timer, int arg)
+{
+#include "Eft05_set.inc"
+}
+#else
 void Eft05_set(PLW *pl, int timer, int arg) {
     EFTW *ew;
 
@@ -61,3 +68,4 @@ void Eft05_set(PLW *pl, int timer, int arg) {
         }
     }
 }
+#endif

@@ -324,6 +324,13 @@ extern u8 *em14_act_add[3];
 
 
 
+/* G: original bytes (build/mhg/raw/em_act01_005B59C0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_act01_005B59C0(EMW *em, EM14W *w)
+{
+#include "em_act01_005B59C0.inc"
+}
+#else
 void em_act01_005B59C0(EMW *em, EM14W *w) {
     u16 temp_a2;
     u8 temp_a0;
@@ -356,3 +363,4 @@ void em_act01_005B59C0(EMW *em, EM14W *w) {
         break;
     }
 }
+#endif

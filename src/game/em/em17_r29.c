@@ -339,6 +339,13 @@ extern u8 *em17_act_add[3];
 
 
 
+/* G: original bytes (build/mhg/raw/em_atk05_005DE530.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_atk05_005DE530(EMW *em, EM17W *w)
+{
+#include "em_atk05_005DE530.inc"
+}
+#else
 void em_atk05_005DE530(EMW *em, EM17W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -384,3 +391,4 @@ void em_atk05_005DE530(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif

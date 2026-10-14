@@ -417,6 +417,13 @@ static void move_default_00608E20(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
+/* G: original bytes (build/mhg/raw/ef_move_sub_00608E70.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void ef_move_sub_00608E70(EMW *em, EM21W *w)
+{
+#include "ef_move_sub_00608E70.inc"
+}
+#else
 void ef_move_sub_00608E70(EMW *em, EM21W *w) {
     f32 v[3];
     f32 v2[3];
@@ -1117,6 +1124,7 @@ block_284:
         break;
     }
 }
+#endif
 
 
 

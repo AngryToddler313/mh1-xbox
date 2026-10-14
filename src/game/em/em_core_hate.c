@@ -259,6 +259,13 @@ extern s32 (*em_hate_add_tbl[])[2];
 int Pl_silencer_ck(PLW *);
 u8 pl_status_ret(int n);
 
+/* G: original bytes (build/mhg/raw/em_hate_suu_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm s32 * em_hate_suu_set(EMW *em, u8 type, int n)
+{
+#include "em_hate_suu_set.inc"
+}
+#else
 s32 *em_hate_suu_set(EMW *em, u8 type, int n) {
     PLW *pl = &player_work[(u8)n];
     s32 (*t)[2] = em_hate_add_tbl[em->kind];
@@ -284,3 +291,4 @@ s32 *em_hate_suu_set(EMW *em, u8 type, int n) {
     }
     return t[type];
 }
+#endif

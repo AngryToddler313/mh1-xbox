@@ -1161,6 +1161,13 @@ void em_move02_005BB760(EMW *em, EM14W *w) {
     }
 }
 
+/* G: original bytes (build/mhg/raw/em_move03_005BB900.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+asm void em_move03_005BB900(EMW *em, EM14W *w)
+{
+#include "em_move03_005BB900.inc"
+}
+#else
 void em_move03_005BB900(EMW *em, EM14W *w) {
     u8 temp_a2;
 
@@ -1204,6 +1211,7 @@ void em_move03_005BB900(EMW *em, EM14W *w) {
         break;
     }
 }
+#endif
 
 void em_move04_005BBA60(EMW *em, EM14W *w) {
     u8 temp_v1;
