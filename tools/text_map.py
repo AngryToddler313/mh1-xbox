@@ -741,7 +741,7 @@ class Table:
                     if cc == "S":
                         sp2 = om.o.resolve(w[c], xs)
                         cells.append((sp2, w[c]))
-                    elif cc == "Z":
+                    elif cc in ("Z", "P"):      # zero, or a pointer to an empty string / non-text data
                         cells.append(None)
                     else:
                         ok = False
@@ -775,7 +775,7 @@ def text_sim(a, b):
     return difflib.SequenceMatcher(None, a, b, autojunk=False).ratio()
 
 
-def align_rows(keysj, keysx, sim, thresh):
+def align_rows(keysj, keysx, sim, thresh, moved=False):
     """exact matches by SequenceMatcher on the keys, gaps filled 1:1 where sizes agree and every pair is
     similar enough, else by a small global alignment. Returns [(j index, x index)]"""
     sm = difflib.SequenceMatcher(None, keysj, keysx, autojunk=False)
@@ -819,10 +819,52 @@ def align_rows(keysj, keysx, sim, thresh):
                 else:
                     q -= 1
             pairs.extend(reversed(tmp))
+    if moved:
+        pairs.extend(moved_rows(keysj, keysx, pairs, sim, thresh))
+        pairs.sort()
     return pairs
 
 
+def moved_rows(keysj, keysx, pairs, sim, thresh):
+    """Rows the ordered alignment left out because the other build reordered or moved them (the US reordered
+    the item ids and inserted weapon / armour rows): identical keys first (a group only when both sides hold the
+    same number of copies, paired in order), then the most similar unpaired rows, mutually best, at least `thresh`."""
+    pj = {p for p, _ in pairs}
+    px = {q for _, q in pairs}
+    uj = [i for i in range(len(keysj)) if i not in pj]
+    ux = [i for i in range(len(keysx)) if i not in px]
+    out = []
+    gj, gx = collections.defaultdict(list), collections.defaultdict(list)
+    for i in uj:
+        gj[keysj[i]].append(i)
+    for i in ux:
+        gx[keysx[i]].append(i)
+    for k, a in gj.items():
+        b = gx.get(k)
+        if b and len(a) == len(b):
+            out.extend(zip(a, b))
+    dj = {p for p, _ in out}
+    dx = {q for _, q in out}
+    uj = [i for i in uj if i not in dj]
+    ux = [i for i in ux if i not in dx]
+    if len(uj) * len(ux) <= 400000:
+        best_j, best_x = {}, {}
+        for i in uj:
+            for q in ux:
+                s = sim(keysj[i], keysx[q])
+                if s >= thresh:
+                    if s > best_j.get(i, (0, None))[0]:
+                        best_j[i] = (s, q)
+                    if s > best_x.get(q, (0, None))[0]:
+                        best_x[q] = (s, i)
+        for i, (s, q) in best_j.items():
+            if best_x.get(q, (0, None))[1] == i:
+                out.append((i, q))
+    return out
+
+
 SLAVES = {"item_str": "Item_data", "pit_help_item_str": "Item_data"}     # id-indexed arrays: master record table
+SLAVE_OFF = {"pit_help_item_str": 24}      # leading rows (UI prompts) before item id 0 in an id-indexed array
 
 
 def pair_tables(om, cells, mode, jtext, xtext, slaves=SLAVES, masters=None):
@@ -857,9 +899,11 @@ def pair_tables(om, cells, mode, jtext, xtext, slaves=SLAVES, masters=None):
             m = slaves.get(key[1])
             if m and ("main", m) in master_map:
                 pairs = master_map[("main", m)]
-                pairs = [(j, x) for j, x in pairs if j < len(kj) and x < len(kx)]
+                off = SLAVE_OFF.get(key[1], 0)
+                pairs = [(j + off, x + off) for j, x in pairs if j + off < len(kj) and x + off < len(kx)]
+                pairs += [(i, i) for i in range(min(off, len(kj), len(kx)))]
             else:
-                pairs = align_rows(kj, kx, similar, 0.6)
+                pairs = align_rows(kj, kx, similar, 0.6, moved=True)
                 master_map[key] = pairs
         n = 0
         for j, x in pairs:
@@ -973,7 +1017,7 @@ def master_pairs(om, name, rec_words, nmax=400):
         if xo + 4 * rec_words * (i + 1) > len(xbuf):
             break
         X.append(struct.unpack_from("<%dI" % rec_words, xbuf, xo + 4 * rec_words * i))
-    return {key: align_rows(J, X, similar, 0.7)}
+    return {key: align_rows(J, X, similar, 0.7, moved=True)}
 
 
 # ---------------------------------------------------------------- quests
@@ -1582,7 +1626,7 @@ def exp_pairs(om, cells, exp, masters):
         xrows = t.x_rows(xs, starts[i], max(nx, 0))
         kj = [ir for ir, cr in t.rows]
         kx = [ir for ir, cr in xrows]
-        for j, x in align_rows(kj, kx, similar, 0.6):
+        for j, x in align_rows(kj, kx, similar, 0.6, moved=True):
             if jbase + j < len(jr) and xbase + x < len(xr):
                 for lj, lx in zip(jr[jbase + j], xr[xbase + x]):
                     out[lj][lx] += 1
@@ -1590,6 +1634,12 @@ def exp_pairs(om, cells, exp, masters):
         jbase += nj
         xbase += nx
     return out, (key, len(cells[key][1]), n, "runs")
+
+
+# tables whose rows are tied by the number fields of their own records (name + stats): checked by the records,
+# a prose-length correlation says nothing about them (English names are not as long as Japanese ones)
+RECORD_ALIGNED = {"Ken_data", "Gun_data", "Armor_Head_Data", "Armor_Body_Data", "Armor_Arm_Data", "Armor_Waist_Data",
+                  "Armor_Leg_Data", "monster_data"}
 
 
 def length_check(jp, us, cells, out, minmean=14, minpairs=8, rmin=0.3):
@@ -1602,7 +1652,7 @@ def length_check(jp, us, cells, out, minmean=14, minpairs=8, rmin=0.3):
             if jk in out:
                 a.append(len(jp.cstr(*jk)))
                 b.append(len(us.cstr(*out[jk].most_common(1)[0][0])))
-        if len(a) < minpairs or sum(a) / len(a) < minmean or key[1] in EXP_TABLES:
+        if len(a) < minpairs or sum(a) / len(a) < minmean or key[1] in EXP_TABLES or key[1] in RECORD_ALIGNED:
             continue
         n = len(a)
         ma, mb = sum(a) / n, sum(b) / n

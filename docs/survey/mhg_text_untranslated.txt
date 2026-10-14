@@ -911,7 +911,7 @@ lobby:0x5FE590	village NPC lines and talk [G table]	G only
 lobby:0x5FE5E0	village NPC lines and talk [G table]	G only
 lobby:0x5FE650	village NPC lines and talk [G table]	G only
 lobby:0x5FE6D0	village NPC lines and talk [G table]	G only
-lobby:0x5FE6F0	village NPC lines and talk	twin without US English
+lobby:0x5FE6F0	village NPC lines and talk	edited in G
 lobby:0x5FE7B0	village NPC lines and talk [G table]	G only
 lobby:0x5FE7E0	village NPC lines and talk [G table]	G only
 lobby:0x5FE830	village NPC lines and talk [G table]	G only
@@ -1445,9 +1445,7 @@ lobby:0x638050	online, keyboard, word filter	twin without US English
 lobby:0x638110	online, keyboard, word filter	twin without US English
 lobby:0x638240	online, keyboard, word filter	twin without US English
 lobby:0x6382C0	online, keyboard, word filter	twin without US English
-lobby:0x638340	online, keyboard, word filter	twin without US English
-lobby:0x638430	online, keyboard, word filter	twin without US English
-lobby:0x638480	online, keyboard, word filter	twin without US English
+lobby:0x638340	online, keyboard, word filter	edited in G
 lobby:0x638500	online, keyboard, word filter	twin without US English
 lobby:0x638520	online, keyboard, word filter	twin without US English
 lobby:0x6385A0	online, keyboard, word filter	twin without US English
@@ -1492,9 +1490,6 @@ lobby:0x63EB78	online, keyboard, word filter [G table]	G only
 lobby:0x63EB88	online, keyboard, word filter [G table]	G only
 lobby:0x63EB90	online, keyboard, word filter [G table]	G only
 lobby:0x63EBA8	online, keyboard, word filter [G table]	G only
-lobby:0x63EBD8	village / plaza / guild / shop UI	twin without US English
-lobby:0x63EBE0	village / plaza / guild / shop UI	twin without US English
-lobby:0x63EBE8	village / plaza / guild / shop UI	twin without US English
 lobby:0x63EC00	village / plaza / guild / shop UI	twin without US English
 lobby:0x63EC10	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63EC30	village / plaza / guild / shop UI [G table]	G only
@@ -1531,7 +1526,6 @@ lobby:0x63EEB0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63EED0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63EEF0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x63EF10	village / plaza / guild / shop UI [G table]	G only
-lobby:0x63EF28	village / plaza / guild / shop UI	twin without US English
 lobby:0x63EF30	code literals (lobby)	G only
 lobby:0x63EFE0	code literals (lobby)	G only
 lobby:0x63F000	code literals (lobby)	G only
@@ -1655,6 +1649,7 @@ lobby:0x6405F0	village / plaza / guild / shop UI	twin without US English
 lobby:0x640610	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640640	village / plaza / guild / shop UI	edited in G
 lobby:0x640660	village / plaza / guild / shop UI	twin without US English
+lobby:0x6406C0	village / plaza / guild / shop UI	twin without US English
 lobby:0x6406E0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x640720	village / plaza / guild / shop UI	twin without US English
 lobby:0x640740	village / plaza / guild / shop UI	twin without US English
@@ -1742,13 +1737,11 @@ lobby:0x6419D0	quest board / quest text tables [G table]	G only
 lobby:0x641A00	village / plaza / guild / shop UI	edited in G
 lobby:0x641A60	quest board / quest text tables [G table]	G only
 lobby:0x641A80	quest board / quest text tables [G table]	G only
-lobby:0x641B30	village / plaza / guild / shop UI	twin without US English
+lobby:0x641B30	village / plaza / guild / shop UI	edited in G
 lobby:0x641BD0	quest board / quest text tables [G table]	G only
 lobby:0x641C60	quest board / quest text tables [G table]	G only
 lobby:0x641D00	village / plaza / guild / shop UI	twin without US English
-lobby:0x641D30	village / plaza / guild / shop UI	twin without US English
-lobby:0x641D70	village / plaza / guild / shop UI	twin without US English
-lobby:0x641D90	village / plaza / guild / shop UI	twin without US English
+lobby:0x641D90	village / plaza / guild / shop UI	edited in G
 lobby:0x641DE0	quest board / quest text tables [G table]	G only
 lobby:0x641E80	quest board / quest text tables [G table]	G only
 lobby:0x641F20	quest board / quest text tables [G table]	G only
@@ -1772,7 +1765,6 @@ lobby:0x642460	quest board / quest text tables [G table]	G only
 lobby:0x642478	quest board / quest text tables [G table]	G only
 lobby:0x642490	quest board / quest text tables [G table]	G only
 lobby:0x6424A8	quest board / quest text tables [G table]	G only
-lobby:0x6424B0	village / plaza / guild / shop UI	twin without US English
 lobby:0x6424B8	quest board / quest text tables [G table]	G only
 lobby:0x6424C0	quest board / quest text tables [G table]	G only
 lobby:0x6424C8	quest board / quest text tables [G table]	G only
@@ -1786,7 +1778,7 @@ lobby:0x642520	quest board / quest text tables [G table]	G only
 lobby:0x642528	quest board / quest text tables [G table]	G only
 lobby:0x642530	quest board / quest text tables [G table]	G only
 lobby:0x642540	quest board / quest text tables [G table]	G only
-lobby:0x642548	village / plaza / guild / shop UI	twin without US English
+lobby:0x642548	village / plaza / guild / shop UI	edited in G
 lobby:0x642570	village NPC lines and talk [G table]	G only
 lobby:0x6425A0	village NPC lines and talk [G table]	G only
 lobby:0x6425B0	village NPC lines and talk [G table]	G only
@@ -1801,11 +1793,7 @@ lobby:0x642680	village NPC lines and talk [G table]	G only
 lobby:0x6426A0	village NPC lines and talk [G table]	G only
 lobby:0x6426B0	village NPC lines and talk [G table]	G only
 lobby:0x6426C0	village NPC lines and talk [G table]	G only
-lobby:0x6426D0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6426E0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6426F0	village / plaza / guild / shop UI	twin without US English
 lobby:0x642710	village NPC lines and talk [G table]	G only
-lobby:0x642730	village / plaza / guild / shop UI	twin without US English
 lobby:0x642750	village NPC lines and talk [G table]	G only
 lobby:0x642770	village NPC lines and talk [G table]	G only
 lobby:0x642790	village NPC lines and talk [G table]	G only
@@ -1818,7 +1806,6 @@ lobby:0x642818	village NPC lines and talk [G table]	G only
 lobby:0x642830	village NPC lines and talk [G table]	G only
 lobby:0x642850	village NPC lines and talk [G table]	G only
 lobby:0x642870	village NPC lines and talk [G table]	G only
-lobby:0x642888	village / plaza / guild / shop UI	twin without US English
 lobby:0x6428A0	village NPC lines and talk	twin without US English
 lobby:0x6428D0	village NPC lines and talk [G table]	G only
 lobby:0x6428F0	village NPC lines and talk [G table]	G only
@@ -2745,39 +2732,14 @@ main:0x2C4600	memory card and yes/no dialogs [G table]	G only
 main:0x2C4650	memory card and yes/no dialogs [G table]	G only
 main:0x2C46B0	memory card and yes/no dialogs [G table]	G only
 main:0x2C46E0	memory card and yes/no dialogs [G table]	G only
-main:0x2C4710	items (names, help)	twin without US English
-main:0x2C4760	items (names, help)	twin without US English
-main:0x2C47A0	items (names, help)	twin without US English
-main:0x2C47D0	items (names, help)	twin without US English
-main:0x2C4800	items (names, help)	twin without US English
-main:0x2C4830	items (names, help)	twin without US English
+main:0x2C4710	items (names, help)	edited in G
 main:0x2C4850	memory card and yes/no dialogs [G table]	G only
 main:0x2C48A0	memory card and yes/no dialogs [G table]	G only
 main:0x2C48F0	memory card and yes/no dialogs [G table]	G only
 main:0x2C4940	memory card and yes/no dialogs [G table]	G only
-main:0x2C4990	items (names, help)	twin without US English
-main:0x2C49B0	items (names, help)	twin without US English
-main:0x2C4A00	items (names, help)	twin without US English
-main:0x2C4A60	items (names, help)	twin without US English
-main:0x2C4A90	items (names, help)	twin without US English
-main:0x2C4AB0	items (names, help)	twin without US English
-main:0x2C4AF0	items (names, help)	twin without US English
 main:0x2C4B20	memory card and yes/no dialogs [G table]	G only
-main:0x2C4B70	items (names, help)	twin without US English
-main:0x2C4BB0	items (names, help)	twin without US English
-main:0x2C4BD0	items (names, help)	twin without US English
-main:0x2C4C00	items (names, help)	twin without US English
-main:0x2C4C40	items (names, help)	twin without US English
-main:0x2C4C70	items (names, help)	twin without US English
-main:0x2C4CA0	items (names, help)	twin without US English
-main:0x2C4CC0	items (names, help)	twin without US English
-main:0x2C4CE0	items (names, help)	twin without US English
 main:0x2C4D00	memory card and yes/no dialogs [G table]	G only
-main:0x2C4D50	items (names, help)	twin without US English
 main:0x2C4D80	memory card and yes/no dialogs [G table]	G only
-main:0x2C4DD0	items (names, help)	twin without US English
-main:0x2C4DF0	items (names, help)	twin without US English
-main:0x2C4E40	items (names, help)	twin without US English
 main:0x2C4EA0	memory card and yes/no dialogs [G table]	G only
 main:0x2C4EF0	memory card and yes/no dialogs [G table]	G only
 main:0x2C4F30	memory card and yes/no dialogs [G table]	G only
@@ -2799,197 +2761,75 @@ main:0x2C5350	memory card and yes/no dialogs [G table]	G only
 main:0x2C53A0	memory card and yes/no dialogs [G table]	G only
 main:0x2C53E0	memory card and yes/no dialogs [G table]	G only
 main:0x2C5420	memory card and yes/no dialogs [G table]	G only
-main:0x2C5460	items (names, help)	twin without US English
-main:0x2C54B0	items (names, help)	twin without US English
-main:0x2C5500	items (names, help)	twin without US English
-main:0x2C5550	items (names, help)	twin without US English
-main:0x2C55A0	items (names, help)	twin without US English
-main:0x2C55F0	items (names, help)	twin without US English
-main:0x2C5640	items (names, help)	twin without US English
-main:0x2C5690	items (names, help)	twin without US English
-main:0x2C56D0	items (names, help)	twin without US English
-main:0x2C5710	items (names, help)	twin without US English
-main:0x2C5760	items (names, help)	twin without US English
+main:0x2C5460	items (names, help)	edited in G
+main:0x2C5500	items (names, help)	edited in G
+main:0x2C55A0	items (names, help)	edited in G
+main:0x2C5690	items (names, help)	edited in G
 main:0x2C5790	items (names, help)	twin without US English
-main:0x2C57C0	items (names, help)	twin without US English
-main:0x2C57F0	items (names, help)	twin without US English
 main:0x2C5810	memory card and yes/no dialogs [G table]	G only
 main:0x2C5840	memory card and yes/no dialogs [G table]	G only
 main:0x2C5870	memory card and yes/no dialogs [G table]	G only
 main:0x2C5890	memory card and yes/no dialogs [G table]	G only
-main:0x2C58F0	items (names, help)	twin without US English
-main:0x2C5920	items (names, help)	twin without US English
-main:0x2C5950	items (names, help)	twin without US English
-main:0x2C5990	items (names, help)	twin without US English
-main:0x2C59C0	items (names, help)	twin without US English
-main:0x2C59E0	items (names, help)	twin without US English
-main:0x2C5A10	items (names, help)	twin without US English
 main:0x2C5A50	memory card and yes/no dialogs [G table]	G only
-main:0x2C5A90	items (names, help)	twin without US English
-main:0x2C5AE0	items (names, help)	twin without US English
-main:0x2C5B00	items (names, help)	twin without US English
-main:0x2C5B20	items (names, help)	twin without US English
-main:0x2C5B70	items (names, help)	twin without US English
-main:0x2C5BD0	items (names, help)	twin without US English
-main:0x2C5C20	items (names, help)	twin without US English
-main:0x2C5C70	items (names, help)	twin without US English
-main:0x2C5CC0	items (names, help)	twin without US English
-main:0x2C5CE0	items (names, help)	twin without US English
-main:0x2C5D00	items (names, help)	twin without US English
-main:0x2C5D50	items (names, help)	twin without US English
-main:0x2C5D70	items (names, help)	twin without US English
-main:0x2C5D90	items (names, help)	twin without US English
-main:0x2C5DB0	items (names, help)	twin without US English
-main:0x2C5E00	items (names, help)	twin without US English
-main:0x2C5E30	items (names, help)	twin without US English
-main:0x2C5E70	items (names, help)	twin without US English
 main:0x2C5EA0	memory card and yes/no dialogs [G table]	G only
 main:0x2C5EF0	memory card and yes/no dialogs [G table]	G only
-main:0x2C5F40	items (names, help)	twin without US English
-main:0x2C5F60	items (names, help)	twin without US English
-main:0x2C5F80	items (names, help)	twin without US English
-main:0x2C5FA0	items (names, help)	twin without US English
-main:0x2C5FD0	items (names, help)	twin without US English
 main:0x2C6010	memory card and yes/no dialogs [G table]	G only
-main:0x2C6050	items (names, help)	twin without US English
-main:0x2C60A0	items (names, help)	twin without US English
-main:0x2C6100	items (names, help)	twin without US English
-main:0x2C6150	items (names, help)	twin without US English
-main:0x2C6190	items (names, help)	twin without US English
-main:0x2C61C0	items (names, help)	twin without US English
-main:0x2C61E0	items (names, help)	twin without US English
-main:0x2C6210	items (names, help)	twin without US English
-main:0x2C6240	items (names, help)	twin without US English
 main:0x2C6260	memory card and yes/no dialogs [G table]	G only
-main:0x2C62A0	items (names, help)	twin without US English
-main:0x2C62F0	items (names, help)	twin without US English
-main:0x2C6350	items (names, help)	twin without US English
 main:0x2C63A0	memory card and yes/no dialogs [G table]	G only
 main:0x2C6400	memory card and yes/no dialogs [G table]	G only
-main:0x2C6450	items (names, help)	twin without US English
-main:0x2C64A0	items (names, help)	twin without US English
 main:0x2C64F0	memory card and yes/no dialogs [G table]	G only
 main:0x2C6540	memory card and yes/no dialogs [G table]	G only
-main:0x2C6580	items (names, help)	twin without US English
-main:0x2C65D0	items (names, help)	twin without US English
 main:0x2C6620	memory card and yes/no dialogs [G table]	G only
-main:0x2C6670	items (names, help)	twin without US English
 main:0x2C66D0	memory card and yes/no dialogs [G table]	G only
-main:0x2C6700	items (names, help)	twin without US English
-main:0x2C6730	items (names, help)	twin without US English
-main:0x2C6770	items (names, help)	twin without US English
-main:0x2C6790	items (names, help)	twin without US English
-main:0x2C67B0	items (names, help)	twin without US English
-main:0x2C67D0	items (names, help)	twin without US English
-main:0x2C67F0	items (names, help)	twin without US English
-main:0x2C6810	items (names, help)	twin without US English
-main:0x2C6830	items (names, help)	twin without US English
-main:0x2C6870	items (names, help)	twin without US English
-main:0x2C68A0	items (names, help)	twin without US English
+main:0x2C6830	items (names, help)	edited in G
 main:0x2C68B0	memory card and yes/no dialogs [G table]	G only
 main:0x2C6900	memory card and yes/no dialogs [G table]	G only
 main:0x2C6950	memory card and yes/no dialogs [G table]	G only
-main:0x2C69A0	items (names, help)	twin without US English
-main:0x2C69C0	items (names, help)	twin without US English
-main:0x2C6A10	items (names, help)	twin without US English
-main:0x2C6A30	items (names, help)	twin without US English
 main:0x2C6A80	memory card and yes/no dialogs [G table]	G only
 main:0x2C6AD0	memory card and yes/no dialogs [G table]	G only
-main:0x2C6B20	items (names, help)	twin without US English
-main:0x2C6B80	items (names, help)	twin without US English
 main:0x2C6BD0	memory card and yes/no dialogs [G table]	G only
-main:0x2C6C30	items (names, help)	twin without US English
 main:0x2C6C90	memory card and yes/no dialogs [G table]	G only
-main:0x2C6CF0	items (names, help)	twin without US English
 main:0x2C6D50	memory card and yes/no dialogs [G table]	G only
-main:0x2C6DB0	items (names, help)	twin without US English
 main:0x2C6E00	memory card and yes/no dialogs [G table]	G only
-main:0x2C6E60	items (names, help)	twin without US English
 main:0x2C6EC0	memory card and yes/no dialogs [G table]	G only
-main:0x2C6F20	items (names, help)	twin without US English
-main:0x2C6F70	items (names, help)	twin without US English
-main:0x2C6FB0	items (names, help)	twin without US English
-main:0x2C7000	items (names, help)	twin without US English
-main:0x2C7060	items (names, help)	twin without US English
 main:0x2C70C0	memory card and yes/no dialogs [G table]	G only
-main:0x2C7110	items (names, help)	twin without US English
-main:0x2C7140	items (names, help)	twin without US English
-main:0x2C7180	items (names, help)	twin without US English
-main:0x2C71E0	items (names, help)	twin without US English
-main:0x2C7210	items (names, help)	twin without US English
 main:0x2C7260	items (names, help)	twin without US English
-main:0x2C72C0	items (names, help)	twin without US English
-main:0x2C72E0	items (names, help)	twin without US English
-main:0x2C7320	items (names, help)	twin without US English
-main:0x2C7340	items (names, help)	twin without US English
-main:0x2C7370	items (names, help)	twin without US English
-main:0x2C73C0	items (names, help)	twin without US English
-main:0x2C7400	items (names, help)	twin without US English
-main:0x2C7450	items (names, help)	twin without US English
 main:0x2C74B0	memory card and yes/no dialogs [G table]	G only
-main:0x2C7500	items (names, help)	twin without US English
 main:0x2C7550	memory card and yes/no dialogs [G table]	G only
-main:0x2C75A0	items (names, help)	twin without US English
-main:0x2C75F0	items (names, help)	twin without US English
 main:0x2C7640	memory card and yes/no dialogs [G table]	G only
 main:0x2C7690	memory card and yes/no dialogs [G table]	G only
-main:0x2C76E0	items (names, help)	twin without US English
-main:0x2C7740	items (names, help)	twin without US English
 main:0x2C7780	memory card and yes/no dialogs [G table]	G only
-main:0x2C77D0	items (names, help)	twin without US English
 main:0x2C7820	memory card and yes/no dialogs [G table]	G only
-main:0x2C7870	items (names, help)	twin without US English
-main:0x2C78D0	items (names, help)	twin without US English
-main:0x2C7920	items (names, help)	twin without US English
 main:0x2C7980	memory card and yes/no dialogs [G table]	G only
-main:0x2C79D0	items (names, help)	twin without US English
 main:0x2C7A20	memory card and yes/no dialogs [G table]	G only
-main:0x2C7A80	items (names, help)	twin without US English
 main:0x2C7AE0	memory card and yes/no dialogs [G table]	G only
-main:0x2C7B30	items (names, help)	twin without US English
-main:0x2C7B80	items (names, help)	twin without US English
 main:0x2C7BC0	memory card and yes/no dialogs [G table]	G only
-main:0x2C7C10	items (names, help)	twin without US English
 main:0x2C7C60	memory card and yes/no dialogs [G table]	G only
 main:0x2C7CB0	memory card and yes/no dialogs [G table]	G only
-main:0x2C7D00	items (names, help)	twin without US English
 main:0x2C7D30	memory card and yes/no dialogs [G table]	G only
-main:0x2C7D80	items (names, help)	twin without US English
 main:0x2C7DD0	memory card and yes/no dialogs [G table]	G only
 main:0x2C7E20	memory card and yes/no dialogs [G table]	G only
 main:0x2C7E60	memory card and yes/no dialogs [G table]	G only
 main:0x2C7EB0	memory card and yes/no dialogs [G table]	G only
 main:0x2C7F00	memory card and yes/no dialogs [G table]	G only
-main:0x2C7F50	items (names, help)	twin without US English
 main:0x2C7F90	memory card and yes/no dialogs [G table]	G only
 main:0x2C7FE0	memory card and yes/no dialogs [G table]	G only
 main:0x2C8030	memory card and yes/no dialogs [G table]	G only
-main:0x2C8080	items (names, help)	twin without US English
 main:0x2C80D0	memory card and yes/no dialogs [G table]	G only
-main:0x2C8110	items (names, help)	twin without US English
 main:0x2C8160	memory card and yes/no dialogs [G table]	G only
-main:0x2C81B0	items (names, help)	twin without US English
 main:0x2C8200	memory card and yes/no dialogs [G table]	G only
-main:0x2C8250	items (names, help)	twin without US English
 main:0x2C82A0	memory card and yes/no dialogs [G table]	G only
 main:0x2C82F0	memory card and yes/no dialogs [G table]	G only
 main:0x2C8350	memory card and yes/no dialogs [G table]	G only
 main:0x2C83A0	memory card and yes/no dialogs [G table]	G only
-main:0x2C83F0	items (names, help)	twin without US English
 main:0x2C8440	memory card and yes/no dialogs [G table]	G only
-main:0x2C8490	items (names, help)	twin without US English
 main:0x2C84E0	memory card and yes/no dialogs [G table]	G only
 main:0x2C8540	memory card and yes/no dialogs [G table]	G only
 main:0x2C85A0	memory card and yes/no dialogs [G table]	G only
 main:0x2C85F0	memory card and yes/no dialogs [G table]	G only
-main:0x2C8640	items (names, help)	twin without US English
-main:0x2C8690	items (names, help)	twin without US English
 main:0x2C86E0	memory card and yes/no dialogs [G table]	G only
-main:0x2C8730	items (names, help)	twin without US English
 main:0x2C8790	memory card and yes/no dialogs [G table]	G only
-main:0x2C87F0	items (names, help)	twin without US English
 main:0x2C8840	memory card and yes/no dialogs [G table]	G only
-main:0x2C8890	items (names, help)	twin without US English
 main:0x2C88D0	memory card and yes/no dialogs [G table]	G only
 main:0x2C8930	memory card and yes/no dialogs [G table]	G only
 main:0x2C8970	memory card and yes/no dialogs [G table]	G only
@@ -3005,16 +2845,8 @@ main:0x2C8C60	memory card and yes/no dialogs [G table]	G only
 main:0x2C8CC0	memory card and yes/no dialogs [G table]	G only
 main:0x2C8D10	memory card and yes/no dialogs [G table]	G only
 main:0x2C8D60	memory card and yes/no dialogs [G table]	G only
-main:0x2C8DB0	items (names, help)	twin without US English
-main:0x2C8E00	items (names, help)	twin without US English
 main:0x2C8E60	memory card and yes/no dialogs [G table]	G only
-main:0x2C8EB0	items (names, help)	twin without US English
-main:0x2C8F10	items (names, help)	twin without US English
 main:0x2C8F60	memory card and yes/no dialogs [G table]	G only
-main:0x2C8FB0	items (names, help)	twin without US English
-main:0x2C9010	items (names, help)	twin without US English
-main:0x2C9050	items (names, help)	twin without US English
-main:0x2C90A0	items (names, help)	twin without US English
 main:0x2C90F0	memory card and yes/no dialogs [G table]	G only
 main:0x2C9150	memory card and yes/no dialogs [G table]	G only
 main:0x2C91A0	memory card and yes/no dialogs [G table]	G only
@@ -3035,78 +2867,43 @@ main:0x2C9650	memory card and yes/no dialogs [G table]	G only
 main:0x2C96A0	memory card and yes/no dialogs [G table]	G only
 main:0x2C96F0	memory card and yes/no dialogs [G table]	G only
 main:0x2C9740	memory card and yes/no dialogs [G table]	G only
-main:0x2C9790	items (names, help)	twin without US English
 main:0x2C97E0	memory card and yes/no dialogs [G table]	G only
-main:0x2C9830	items (names, help)	twin without US English
 main:0x2C9860	memory card and yes/no dialogs [G table]	G only
-main:0x2C98B0	items (names, help)	twin without US English
 main:0x2C9900	memory card and yes/no dialogs [G table]	G only
 main:0x2C9950	memory card and yes/no dialogs [G table]	G only
-main:0x2C99A0	items (names, help)	twin without US English
+main:0x2C99A0	items (names, help)	edited in G
 main:0x2C99F0	memory card and yes/no dialogs [G table]	G only
-main:0x2C9A40	items (names, help)	twin without US English
 main:0x2C9A80	memory card and yes/no dialogs [G table]	G only
 main:0x2C9AC0	memory card and yes/no dialogs [G table]	G only
-main:0x2C9B10	items (names, help)	twin without US English
-main:0x2C9B60	items (names, help)	twin without US English
 main:0x2C9BB0	memory card and yes/no dialogs [G table]	G only
-main:0x2C9C00	items (names, help)	twin without US English
 main:0x2C9C40	memory card and yes/no dialogs [G table]	G only
-main:0x2C9C80	items (names, help)	twin without US English
 main:0x2C9CD0	memory card and yes/no dialogs [G table]	G only
 main:0x2C9D30	memory card and yes/no dialogs [G table]	G only
 main:0x2C9D80	memory card and yes/no dialogs [G table]	G only
 main:0x2C9DE0	memory card and yes/no dialogs [G table]	G only
 main:0x2C9E30	memory card and yes/no dialogs [G table]	G only
-main:0x2C9E80	items (names, help)	twin without US English
-main:0x2C9ED0	items (names, help)	twin without US English
 main:0x2C9F20	memory card and yes/no dialogs [G table]	G only
-main:0x2C9F80	items (names, help)	twin without US English
 main:0x2C9FD0	memory card and yes/no dialogs [G table]	G only
-main:0x2CA020	items (names, help)	twin without US English
 main:0x2CA080	memory card and yes/no dialogs [G table]	G only
-main:0x2CA0C0	items (names, help)	twin without US English
-main:0x2CA110	items (names, help)	twin without US English
-main:0x2CA170	items (names, help)	twin without US English
 main:0x2CA1C0	memory card and yes/no dialogs [G table]	G only
 main:0x2CA210	memory card and yes/no dialogs [G table]	G only
 main:0x2CA260	memory card and yes/no dialogs [G table]	G only
 main:0x2CA2C0	memory card and yes/no dialogs [G table]	G only
-main:0x2CA310	items (names, help)	twin without US English
 main:0x2CA370	memory card and yes/no dialogs [G table]	G only
 main:0x2CA3D0	memory card and yes/no dialogs [G table]	G only
-main:0x2CA420	items (names, help)	twin without US English
-main:0x2CA460	items (names, help)	twin without US English
 main:0x2CA4B0	memory card and yes/no dialogs [G table]	G only
 main:0x2CA500	memory card and yes/no dialogs [G table]	G only
-main:0x2CA550	items (names, help)	twin without US English
-main:0x2CA5A0	items (names, help)	twin without US English
-main:0x2CA5F0	items (names, help)	twin without US English
-main:0x2CA640	items (names, help)	twin without US English
-main:0x2CA6A0	items (names, help)	twin without US English
 main:0x2CA6F0	memory card and yes/no dialogs [G table]	G only
 main:0x2CA740	memory card and yes/no dialogs [G table]	G only
-main:0x2CA790	items (names, help)	twin without US English
-main:0x2CA7E0	items (names, help)	twin without US English
-main:0x2CA830	items (names, help)	twin without US English
-main:0x2CA880	items (names, help)	twin without US English
 main:0x2CA8C0	memory card and yes/no dialogs [G table]	G only
 main:0x2CA920	memory card and yes/no dialogs [G table]	G only
 main:0x2CA970	memory card and yes/no dialogs [G table]	G only
-main:0x2CA9C0	items (names, help)	twin without US English
-main:0x2CAA00	items (names, help)	twin without US English
-main:0x2CAA50	items (names, help)	twin without US English
 main:0x2CAAB0	memory card and yes/no dialogs [G table]	G only
 main:0x2CAB00	memory card and yes/no dialogs [G table]	G only
 main:0x2CAB50	memory card and yes/no dialogs [G table]	G only
 main:0x2CABA0	memory card and yes/no dialogs [G table]	G only
-main:0x2CABE0	items (names, help)	twin without US English
-main:0x2CAC30	items (names, help)	twin without US English
-main:0x2CAC90	items (names, help)	twin without US English
 main:0x2CACE0	memory card and yes/no dialogs [G table]	G only
-main:0x2CAD30	items (names, help)	twin without US English
 main:0x2CAD80	memory card and yes/no dialogs [G table]	G only
-main:0x2CADD0	items (names, help)	twin without US English
 main:0x2CAE10	memory card and yes/no dialogs [G table]	G only
 main:0x2CAE60	memory card and yes/no dialogs [G table]	G only
 main:0x2CAEC0	memory card and yes/no dialogs [G table]	G only
@@ -3116,22 +2913,16 @@ main:0x2CAFC0	memory card and yes/no dialogs [G table]	G only
 main:0x2CB020	memory card and yes/no dialogs [G table]	G only
 main:0x2CB070	memory card and yes/no dialogs [G table]	G only
 main:0x2CB0D0	memory card and yes/no dialogs [G table]	G only
-main:0x2CB130	items (names, help)	twin without US English
 main:0x2CB180	memory card and yes/no dialogs [G table]	G only
 main:0x2CB1D0	memory card and yes/no dialogs [G table]	G only
-main:0x2CB220	items (names, help)	twin without US English
 main:0x2CB260	memory card and yes/no dialogs [G table]	G only
 main:0x2CB2B0	memory card and yes/no dialogs [G table]	G only
-main:0x2CB2F0	items (names, help)	twin without US English
 main:0x2CB350	memory card and yes/no dialogs [G table]	G only
 main:0x2CB3A0	memory card and yes/no dialogs [G table]	G only
-main:0x2CB3F0	items (names, help)	twin without US English
 main:0x2CB440	memory card and yes/no dialogs [G table]	G only
 main:0x2CB480	memory card and yes/no dialogs [G table]	G only
-main:0x2CB4E0	items (names, help)	twin without US English
 main:0x2CB540	memory card and yes/no dialogs [G table]	G only
 main:0x2CB5A0	memory card and yes/no dialogs [G table]	G only
-main:0x2CB5F0	items (names, help)	twin without US English
 main:0x2CB640	memory card and yes/no dialogs [G table]	G only
 main:0x2CB690	memory card and yes/no dialogs [G table]	G only
 main:0x2CB6E0	memory card and yes/no dialogs [G table]	G only
@@ -3140,17 +2931,9 @@ main:0x2CB780	memory card and yes/no dialogs [G table]	G only
 main:0x2CB7E0	memory card and yes/no dialogs [G table]	G only
 main:0x2CB830	memory card and yes/no dialogs [G table]	G only
 main:0x2CB880	memory card and yes/no dialogs [G table]	G only
-main:0x2CB8D0	items (names, help)	twin without US English
-main:0x2CB930	items (names, help)	twin without US English
-main:0x2CB980	items (names, help)	twin without US English
-main:0x2CB9D0	items (names, help)	twin without US English
-main:0x2CBA00	items (names, help)	twin without US English
-main:0x2CBA30	items (names, help)	twin without US English
 main:0x2CBA80	memory card and yes/no dialogs [G table]	G only
 main:0x2CBAE0	memory card and yes/no dialogs [G table]	G only
 main:0x2CBB40	memory card and yes/no dialogs [G table]	G only
-main:0x2CBBA0	items (names, help)	twin without US English
-main:0x2CBBD0	items (names, help)	twin without US English
 main:0x2CBC20	memory card and yes/no dialogs [G table]	G only
 main:0x2CBC60	memory card and yes/no dialogs [G table]	G only
 main:0x2CBCA0	memory card and yes/no dialogs [G table]	G only
@@ -3158,34 +2941,13 @@ main:0x2CBCE0	memory card and yes/no dialogs [G table]	G only
 main:0x2CBD20	memory card and yes/no dialogs [G table]	G only
 main:0x2CBD60	memory card and yes/no dialogs [G table]	G only
 main:0x2CBD90	memory card and yes/no dialogs [G table]	G only
-main:0x2CBDF0	items (names, help)	twin without US English
 main:0x2CBE40	memory card and yes/no dialogs [G table]	G only
 main:0x2CBEA0	memory card and yes/no dialogs [G table]	G only
-main:0x2CBEC0	items (names, help)	twin without US English
-main:0x2CBF60	items (names, help)	twin without US English
 main:0x2CBFC0	memory card and yes/no dialogs [G table]	G only
 main:0x2CC010	memory card and yes/no dialogs [G table]	G only
 main:0x2CC070	memory card and yes/no dialogs [G table]	G only
-main:0x2CC0D0	items (names, help)	twin without US English
 main:0x2CC130	memory card and yes/no dialogs [G table]	G only
 main:0x2CC190	memory card and yes/no dialogs [G table]	G only
-main:0x2CC1F0	items (names, help)	twin without US English
-main:0x2CC230	items (names, help)	twin without US English
-main:0x2CC260	items (names, help)	twin without US English
-main:0x2CC290	items (names, help)	twin without US English
-main:0x2CC2F0	items (names, help)	twin without US English
-main:0x2CC340	items (names, help)	twin without US English
-main:0x2CC390	items (names, help)	twin without US English
-main:0x2CC3C0	items (names, help)	twin without US English
-main:0x2CC410	items (names, help)	twin without US English
-main:0x2CC420	items (names, help)	twin without US English
-main:0x2CC440	items (names, help)	twin without US English
-main:0x2CC480	items (names, help)	twin without US English
-main:0x2CC4A0	items (names, help)	twin without US English
-main:0x2CC4C0	items (names, help)	twin without US English
-main:0x2CC500	items (names, help)	twin without US English
-main:0x2CC550	items (names, help)	twin without US English
-main:0x2CC5A0	items (names, help)	twin without US English
 main:0x2CCE20	weapons	edited in G
 main:0x2CCE40	weapons [G table]	G only
 main:0x2CD120	weapons	edited in G
@@ -6586,199 +6348,85 @@ sub_main:0x529250	memory card and yes/no dialogs [G table]	G only
 sub_main:0x5292C0	code literals (sub_main)	G only
 sub_main:0x529A70	items (names, help)	twin without US English
 sub_main:0x529AD0	items (names, help) [G table]	G only
-sub_main:0x529B20	items (names, help)	twin without US English
 sub_main:0x529B58	items (names, help) [G table]	G only
 sub_main:0x529B80	items (names, help) [G table]	G only
-sub_main:0x529B90	items (names, help)	twin without US English
-sub_main:0x529BA8	items (names, help)	twin without US English
-sub_main:0x529BB8	items (names, help)	twin without US English
-sub_main:0x529BD0	items (names, help)	twin without US English
 sub_main:0x529BF0	items (names, help) [G table]	G only
-sub_main:0x529C08	items (names, help)	twin without US English
-sub_main:0x529C10	items (names, help)	twin without US English
-sub_main:0x529C18	items (names, help)	twin without US English
-sub_main:0x529C28	items (names, help)	twin without US English
-sub_main:0x529C38	items (names, help)	twin without US English
-sub_main:0x529C48	items (names, help)	twin without US English
-sub_main:0x529C58	items (names, help)	twin without US English
 sub_main:0x529C68	items (names, help) [G table]	G only
-sub_main:0x529C70	items (names, help)	twin without US English
 sub_main:0x529C80	items (names, help) [G table]	G only
 sub_main:0x529CB8	items (names, help) [G table]	G only
-sub_main:0x529CF8	items (names, help)	twin without US English
 sub_main:0x529D08	items (names, help) [G table]	G only
 sub_main:0x529D18	items (names, help) [G table]	G only
 sub_main:0x529D28	items (names, help) [G table]	G only
 sub_main:0x529D38	items (names, help) [G table]	G only
-sub_main:0x529D50	items (names, help)	twin without US English
 sub_main:0x529D68	items (names, help) [G table]	G only
 sub_main:0x529D88	items (names, help) [G table]	G only
 sub_main:0x529DA8	items (names, help)	edited in G
-sub_main:0x529DB8	items (names, help)	twin without US English
-sub_main:0x529DC8	items (names, help)	twin without US English
-sub_main:0x529DF0	items (names, help)	twin without US English
-sub_main:0x529E00	items (names, help)	twin without US English
-sub_main:0x529E10	items (names, help)	twin without US English
-sub_main:0x529E18	items (names, help)	twin without US English
 sub_main:0x529E30	items (names, help) [G table]	G only
 sub_main:0x529E50	items (names, help) [G table]	G only
-sub_main:0x529E70	items (names, help)	twin without US English
-sub_main:0x529E80	items (names, help)	twin without US English
-sub_main:0x529F80	items (names, help)	twin without US English
+sub_main:0x529F80	items (names, help)	edited in G
 sub_main:0x529F88	items (names, help) [G table]	G only
 sub_main:0x529F90	items (names, help) [G table]	G only
-sub_main:0x52A050	items (names, help)	twin without US English
-sub_main:0x52A070	items (names, help)	twin without US English
-sub_main:0x52A080	items (names, help)	twin without US English
 sub_main:0x52A090	items (names, help) [G table]	G only
 sub_main:0x52A0A0	items (names, help) [G table]	G only
 sub_main:0x52A0B0	items (names, help) [G table]	G only
 sub_main:0x52A0C0	items (names, help) [G table]	G only
-sub_main:0x52A0D0	items (names, help)	twin without US English
-sub_main:0x52A0E0	items (names, help)	twin without US English
-sub_main:0x52A0F0	items (names, help)	twin without US English
-sub_main:0x52A108	items (names, help)	twin without US English
-sub_main:0x52A118	items (names, help)	twin without US English
-sub_main:0x52A120	items (names, help)	twin without US English
-sub_main:0x52A130	items (names, help)	twin without US English
 sub_main:0x52A140	items (names, help) [G table]	G only
-sub_main:0x52A158	items (names, help)	twin without US English
-sub_main:0x52A160	items (names, help)	twin without US English
-sub_main:0x52A168	items (names, help)	twin without US English
-sub_main:0x52A178	items (names, help)	twin without US English
-sub_main:0x52A180	items (names, help)	twin without US English
-sub_main:0x52A188	items (names, help)	twin without US English
-sub_main:0x52A190	items (names, help)	twin without US English
-sub_main:0x52A198	items (names, help)	twin without US English
-sub_main:0x52A1A0	items (names, help)	twin without US English
 sub_main:0x52A230	items (names, help) [G table]	G only
 sub_main:0x52A240	items (names, help) [G table]	G only
-sub_main:0x52A250	items (names, help)	twin without US English
-sub_main:0x52A260	items (names, help)	twin without US English
-sub_main:0x52A270	items (names, help)	twin without US English
-sub_main:0x52A2A0	items (names, help)	twin without US English
-sub_main:0x52A328	items (names, help)	twin without US English
-sub_main:0x52A330	items (names, help)	twin without US English
-sub_main:0x52A338	items (names, help)	twin without US English
-sub_main:0x52A340	items (names, help)	twin without US English
-sub_main:0x52A350	items (names, help)	twin without US English
+sub_main:0x52A2A0	items (names, help)	edited in G
 sub_main:0x52A360	items (names, help) [G table]	G only
 sub_main:0x52A380	items (names, help) [G table]	G only
 sub_main:0x52A3A0	items (names, help) [G table]	G only
-sub_main:0x52A3B8	items (names, help)	twin without US English
-sub_main:0x52A3C8	items (names, help)	twin without US English
 sub_main:0x52A3D0	items (names, help) [G table]	G only
-sub_main:0x52A3D8	items (names, help)	twin without US English
-sub_main:0x52A3E0	items (names, help)	twin without US English
-sub_main:0x52A400	items (names, help)	twin without US English
 sub_main:0x52A420	items (names, help) [G table]	G only
-sub_main:0x52A438	items (names, help)	twin without US English
 sub_main:0x52A440	items (names, help) [G table]	G only
-sub_main:0x52A4F0	items (names, help)	twin without US English
 sub_main:0x52A500	items (names, help) [G table]	G only
 sub_main:0x52A510	items (names, help) [G table]	G only
 sub_main:0x52A520	items (names, help) [G table]	G only
-sub_main:0x52A530	items (names, help)	twin without US English
-sub_main:0x52A538	items (names, help)	twin without US English
-sub_main:0x52A540	items (names, help)	twin without US English
-sub_main:0x52A548	items (names, help)	twin without US English
 sub_main:0x52A550	items (names, help) [G table]	G only
 sub_main:0x52A560	items (names, help) [G table]	G only
-sub_main:0x52A570	items (names, help)	twin without US English
-sub_main:0x52A578	items (names, help)	twin without US English
 sub_main:0x52A580	items (names, help) [G table]	G only
-sub_main:0x52A588	items (names, help)	twin without US English
 sub_main:0x52A590	items (names, help) [G table]	G only
-sub_main:0x52A5A0	items (names, help)	twin without US English
 sub_main:0x52A5A8	items (names, help) [G table]	G only
-sub_main:0x52A5B0	items (names, help)	twin without US English
 sub_main:0x52A5B8	items (names, help) [G table]	G only
-sub_main:0x52A5C0	items (names, help)	twin without US English
 sub_main:0x52A5C8	items (names, help) [G table]	G only
-sub_main:0x52A5D0	items (names, help)	twin without US English
-sub_main:0x52A5E0	items (names, help)	twin without US English
-sub_main:0x52A5F0	items (names, help)	twin without US English
-sub_main:0x52A600	items (names, help)	twin without US English
-sub_main:0x52A610	items (names, help)	twin without US English
 sub_main:0x52A620	items (names, help) [G table]	G only
-sub_main:0x52A628	items (names, help)	twin without US English
-sub_main:0x52A638	items (names, help)	twin without US English
-sub_main:0x52A648	items (names, help)	twin without US English
-sub_main:0x52A658	items (names, help)	twin without US English
-sub_main:0x52A668	items (names, help)	twin without US English
 sub_main:0x52A670	items (names, help)	twin without US English
-sub_main:0x52A678	items (names, help)	twin without US English
-sub_main:0x52A688	items (names, help)	twin without US English
-sub_main:0x52A698	items (names, help)	twin without US English
-sub_main:0x52A6A8	items (names, help)	twin without US English
-sub_main:0x52A6B8	items (names, help)	twin without US English
-sub_main:0x52A6C8	items (names, help)	twin without US English
-sub_main:0x52A6D8	items (names, help)	twin without US English
-sub_main:0x52A6E8	items (names, help)	twin without US English
 sub_main:0x52A6F8	items (names, help) [G table]	G only
-sub_main:0x52A708	items (names, help)	twin without US English
 sub_main:0x52A718	items (names, help) [G table]	G only
-sub_main:0x52A730	items (names, help)	twin without US English
-sub_main:0x52A750	items (names, help)	twin without US English
 sub_main:0x52A768	items (names, help) [G table]	G only
 sub_main:0x52A778	items (names, help) [G table]	G only
-sub_main:0x52A790	items (names, help)	twin without US English
-sub_main:0x52A7A8	items (names, help)	twin without US English
 sub_main:0x52A7B8	items (names, help) [G table]	G only
-sub_main:0x52A7C8	items (names, help)	twin without US English
 sub_main:0x52A7D8	items (names, help) [G table]	G only
-sub_main:0x52A7F0	items (names, help)	twin without US English
-sub_main:0x52A808	items (names, help)	twin without US English
-sub_main:0x52A818	items (names, help)	twin without US English
 sub_main:0x52A828	items (names, help) [G table]	G only
-sub_main:0x52A838	items (names, help)	twin without US English
 sub_main:0x52A848	items (names, help) [G table]	G only
-sub_main:0x52A860	items (names, help)	twin without US English
 sub_main:0x52A878	items (names, help) [G table]	G only
-sub_main:0x52A888	items (names, help)	twin without US English
-sub_main:0x52A898	items (names, help)	twin without US English
 sub_main:0x52A8A8	items (names, help) [G table]	G only
-sub_main:0x52A8B8	items (names, help)	twin without US English
 sub_main:0x52A8C8	items (names, help) [G table]	G only
 sub_main:0x52A8D8	items (names, help) [G table]	G only
-sub_main:0x52A8E8	items (names, help)	twin without US English
 sub_main:0x52A8F8	items (names, help) [G table]	G only
-sub_main:0x52A908	items (names, help)	twin without US English
 sub_main:0x52A918	items (names, help) [G table]	G only
 sub_main:0x52A928	items (names, help) [G table]	G only
 sub_main:0x52A938	items (names, help) [G table]	G only
 sub_main:0x52A948	items (names, help) [G table]	G only
 sub_main:0x52A958	items (names, help) [G table]	G only
-sub_main:0x52A968	items (names, help)	twin without US English
 sub_main:0x52A978	items (names, help) [G table]	G only
 sub_main:0x52A988	items (names, help) [G table]	G only
 sub_main:0x52A998	items (names, help) [G table]	G only
-sub_main:0x52A9A8	items (names, help)	twin without US English
-sub_main:0x52A9B8	items (names, help)	twin without US English
-sub_main:0x52A9C8	items (names, help)	twin without US English
 sub_main:0x52A9D8	items (names, help) [G table]	G only
-sub_main:0x52A9E8	items (names, help)	twin without US English
 sub_main:0x52A9F8	items (names, help) [G table]	G only
-sub_main:0x52AA08	items (names, help)	twin without US English
 sub_main:0x52AA18	items (names, help) [G table]	G only
 sub_main:0x52AA28	items (names, help) [G table]	G only
 sub_main:0x52AA38	items (names, help) [G table]	G only
 sub_main:0x52AA48	items (names, help) [G table]	G only
-sub_main:0x52AA58	items (names, help)	twin without US English
 sub_main:0x52AA68	items (names, help) [G table]	G only
-sub_main:0x52AA78	items (names, help)	twin without US English
 sub_main:0x52AA88	items (names, help) [G table]	G only
 sub_main:0x52AA98	items (names, help) [G table]	G only
 sub_main:0x52AAA8	items (names, help) [G table]	G only
 sub_main:0x52AAB8	items (names, help) [G table]	G only
-sub_main:0x52AAC8	items (names, help)	twin without US English
-sub_main:0x52AAD8	items (names, help)	twin without US English
 sub_main:0x52AAE8	items (names, help) [G table]	G only
-sub_main:0x52AAF8	items (names, help)	twin without US English
 sub_main:0x52AB08	items (names, help) [G table]	G only
-sub_main:0x52AB18	items (names, help)	twin without US English
 sub_main:0x52AB28	items (names, help) [G table]	G only
-sub_main:0x52AB38	items (names, help)	twin without US English
 sub_main:0x52AB48	items (names, help) [G table]	G only
 sub_main:0x52AB58	items (names, help) [G table]	G only
 sub_main:0x52AB68	items (names, help) [G table]	G only
@@ -6794,17 +6442,10 @@ sub_main:0x52ABF8	items (names, help) [G table]	G only
 sub_main:0x52AC08	items (names, help) [G table]	G only
 sub_main:0x52AC18	items (names, help) [G table]	G only
 sub_main:0x52AC28	items (names, help) [G table]	G only
-sub_main:0x52AC38	items (names, help)	twin without US English
-sub_main:0x52AC48	items (names, help)	twin without US English
 sub_main:0x52AC58	items (names, help) [G table]	G only
 sub_main:0x52AC68	items (names, help) [G table]	G only
 sub_main:0x52AC78	items (names, help) [G table]	G only
-sub_main:0x52AC88	items (names, help)	twin without US English
 sub_main:0x52AC98	items (names, help) [G table]	G only
-sub_main:0x52ACA8	items (names, help)	twin without US English
-sub_main:0x52ACB8	items (names, help)	twin without US English
-sub_main:0x52ACC8	items (names, help)	twin without US English
-sub_main:0x52ACD8	items (names, help)	twin without US English
 sub_main:0x52ACE8	items (names, help) [G table]	G only
 sub_main:0x52ACF8	items (names, help) [G table]	G only
 sub_main:0x52AD08	items (names, help) [G table]	G only
@@ -6825,82 +6466,43 @@ sub_main:0x52ADE8	items (names, help) [G table]	G only
 sub_main:0x52ADF8	items (names, help) [G table]	G only
 sub_main:0x52AE08	items (names, help) [G table]	G only
 sub_main:0x52AE20	items (names, help) [G table]	G only
-sub_main:0x52AE38	items (names, help)	twin without US English
 sub_main:0x52AE48	items (names, help) [G table]	G only
-sub_main:0x52AE60	items (names, help)	twin without US English
 sub_main:0x52AE80	items (names, help) [G table]	G only
-sub_main:0x52AE98	items (names, help)	twin without US English
 sub_main:0x52AEA8	items (names, help) [G table]	G only
 sub_main:0x52AEB8	items (names, help) [G table]	G only
-sub_main:0x52AEC8	items (names, help)	twin without US English
 sub_main:0x52AED8	items (names, help) [G table]	G only
-sub_main:0x52AEE8	items (names, help)	twin without US English
 sub_main:0x52AEF8	items (names, help) [G table]	G only
 sub_main:0x52AF08	items (names, help) [G table]	G only
-sub_main:0x52AF18	items (names, help)	twin without US English
-sub_main:0x52AF28	items (names, help)	twin without US English
 sub_main:0x52AF38	items (names, help) [G table]	G only
-sub_main:0x52AF48	items (names, help)	twin without US English
 sub_main:0x52AF58	items (names, help) [G table]	G only
-sub_main:0x52AF68	items (names, help)	twin without US English
 sub_main:0x52AF78	items (names, help) [G table]	G only
 sub_main:0x52AF88	items (names, help) [G table]	G only
 sub_main:0x52AF98	items (names, help) [G table]	G only
 sub_main:0x52AFA8	items (names, help) [G table]	G only
 sub_main:0x52AFB8	items (names, help) [G table]	G only
-sub_main:0x52AFC8	items (names, help)	twin without US English
-sub_main:0x52AFE0	items (names, help)	twin without US English
 sub_main:0x52B000	items (names, help) [G table]	G only
-sub_main:0x52B018	items (names, help)	twin without US English
 sub_main:0x52B028	items (names, help) [G table]	G only
-sub_main:0x52B038	items (names, help)	twin without US English
 sub_main:0x52B048	items (names, help) [G table]	G only
-sub_main:0x52B058	items (names, help)	twin without US English
-sub_main:0x52B068	items (names, help)	twin without US English
-sub_main:0x52B078	items (names, help)	twin without US English
 sub_main:0x52B088	items (names, help) [G table]	G only
 sub_main:0x52B098	items (names, help) [G table]	G only
 sub_main:0x52B0A8	items (names, help) [G table]	G only
 sub_main:0x52B0B8	items (names, help) [G table]	G only
-sub_main:0x52B0C8	items (names, help)	twin without US English
-sub_main:0x52B0E0	items (names, help)	twin without US English
 sub_main:0x52B100	items (names, help) [G table]	G only
-sub_main:0x52B118	items (names, help)	twin without US English
-sub_main:0x52B130	items (names, help)	twin without US English
 sub_main:0x52B150	items (names, help) [G table]	G only
-sub_main:0x52B170	items (names, help)	twin without US English
 sub_main:0x52B190	items (names, help) [G table]	G only
-sub_main:0x52B1A8	items (names, help)	twin without US English
-sub_main:0x52B1B8	items (names, help)	twin without US English
-sub_main:0x52B1D0	items (names, help)	twin without US English
 sub_main:0x52B1F0	items (names, help) [G table]	G only
-sub_main:0x52B208	items (names, help)	twin without US English
-sub_main:0x52B218	items (names, help)	twin without US English
 sub_main:0x52B228	items (names, help) [G table]	G only
 sub_main:0x52B238	items (names, help) [G table]	G only
-sub_main:0x52B248	items (names, help)	twin without US English
-sub_main:0x52B258	items (names, help)	twin without US English
-sub_main:0x52B268	items (names, help)	twin without US English
-sub_main:0x52B280	items (names, help)	twin without US English
 sub_main:0x52B298	items (names, help) [G table]	G only
 sub_main:0x52B2A8	items (names, help) [G table]	G only
 sub_main:0x52B2B8	items (names, help) [G table]	G only
-sub_main:0x52B2C8	items (names, help)	twin without US English
-sub_main:0x52B2D8	items (names, help)	twin without US English
-sub_main:0x52B2F0	items (names, help)	twin without US English
 sub_main:0x52B308	items (names, help) [G table]	G only
 sub_main:0x52B318	items (names, help) [G table]	G only
 sub_main:0x52B328	items (names, help) [G table]	G only
 sub_main:0x52B338	items (names, help) [G table]	G only
-sub_main:0x52B348	items (names, help)	twin without US English
-sub_main:0x52B358	items (names, help)	twin without US English
-sub_main:0x52B368	items (names, help)	twin without US English
 sub_main:0x52B378	items (names, help) [G table]	G only
-sub_main:0x52B388	items (names, help)	twin without US English
 sub_main:0x52B398	items (names, help) [G table]	G only
-sub_main:0x52B3A8	items (names, help)	twin without US English
 sub_main:0x52B3B8	items (names, help) [G table]	G only
-sub_main:0x52B3C8	items (names, help)	twin without US English
 sub_main:0x52B3D8	items (names, help) [G table]	G only
 sub_main:0x52B3E8	items (names, help) [G table]	G only
 sub_main:0x52B3F8	items (names, help) [G table]	G only
@@ -6909,22 +6511,16 @@ sub_main:0x52B418	items (names, help) [G table]	G only
 sub_main:0x52B428	items (names, help) [G table]	G only
 sub_main:0x52B438	items (names, help) [G table]	G only
 sub_main:0x52B448	items (names, help) [G table]	G only
-sub_main:0x52B458	items (names, help)	twin without US English
 sub_main:0x52B468	items (names, help) [G table]	G only
 sub_main:0x52B478	items (names, help) [G table]	G only
-sub_main:0x52B488	items (names, help)	twin without US English
 sub_main:0x52B498	items (names, help) [G table]	G only
 sub_main:0x52B4A8	items (names, help) [G table]	G only
-sub_main:0x52B4B8	items (names, help)	twin without US English
 sub_main:0x52B4C8	items (names, help) [G table]	G only
 sub_main:0x52B4D8	items (names, help) [G table]	G only
-sub_main:0x52B4E8	items (names, help)	twin without US English
 sub_main:0x52B4F8	items (names, help) [G table]	G only
 sub_main:0x52B508	items (names, help) [G table]	G only
-sub_main:0x52B518	items (names, help)	twin without US English
 sub_main:0x52B528	items (names, help) [G table]	G only
 sub_main:0x52B538	items (names, help) [G table]	G only
-sub_main:0x52B548	items (names, help)	twin without US English
 sub_main:0x52B558	items (names, help) [G table]	G only
 sub_main:0x52B568	items (names, help) [G table]	G only
 sub_main:0x52B578	items (names, help) [G table]	G only
@@ -6933,7 +6529,7 @@ sub_main:0x52B598	items (names, help) [G table]	G only
 sub_main:0x52B5A8	items (names, help) [G table]	G only
 sub_main:0x52B5B8	items (names, help) [G table]	G only
 sub_main:0x52B5C8	items (names, help) [G table]	G only
-sub_main:0x52B680	items (names, help)	twin without US English
+sub_main:0x52B680	items (names, help)	edited in G
 sub_main:0x52B6C8	items (names, help) [G table]	G only
 sub_main:0x52B6E0	items (names, help) [G table]	G only
 sub_main:0x52B6F8	items (names, help) [G table]	G only
@@ -6944,262 +6540,17 @@ sub_main:0x52B760	items (names, help) [G table]	G only
 sub_main:0x52B798	items (names, help) [G table]	G only
 sub_main:0x52B7A8	items (names, help) [G table]	G only
 sub_main:0x52B7C8	items (names, help) [G table]	G only
-sub_main:0x52B7D8	items (names, help)	twin without US English
 sub_main:0x52B7E8	items (names, help) [G table]	G only
 sub_main:0x52B800	items (names, help) [G table]	G only
 sub_main:0x52B820	items (names, help) [G table]	G only
 sub_main:0x52BAA8	items (names, help) [G table]	G only
 sub_main:0x52BAB8	items (names, help) [G table]	G only
-sub_main:0x52BAC8	items (names, help)	twin without US English
-sub_main:0x52BAD0	items (names, help)	twin without US English
-sub_main:0x52BAD8	items (names, help)	twin without US English
-sub_main:0x52BB08	items (names, help)	twin without US English
-sub_main:0x52BB18	items (names, help)	twin without US English
-sub_main:0x52BB28	items (names, help)	twin without US English
-sub_main:0x52BB38	items (names, help)	twin without US English
-sub_main:0x52BB48	items (names, help)	twin without US English
-sub_main:0x52BB58	items (names, help)	twin without US English
-sub_main:0x52BB68	items (names, help)	twin without US English
-sub_main:0x52BB78	items (names, help)	twin without US English
-sub_main:0x52BB88	items (names, help)	twin without US English
-sub_main:0x52BB98	items (names, help)	twin without US English
+sub_main:0x52BB58	items (names, help)	edited in G
 sub_main:0x52C340	code literals (sub_main)	G only
 sub_main:0x52C360	code literals (sub_main)	G only
 sub_main:0x52C3A0	code literals (sub_main)	G only
 sub_main:0x52C3E0	code literals (sub_main)	G only
 sub_main:0x52C400	code literals (sub_main)	G only
-sub_main:0x52D4F8	weapons	twin without US English
-sub_main:0x52D508	weapons	twin without US English
-sub_main:0x52D520	weapons	twin without US English
-sub_main:0x52D538	weapons	twin without US English
-sub_main:0x52D550	weapons	twin without US English
-sub_main:0x52D570	weapons	twin without US English
-sub_main:0x52D590	weapons	twin without US English
-sub_main:0x52D5B0	weapons	twin without US English
-sub_main:0x52D5D0	weapons	twin without US English
-sub_main:0x52D5F0	weapons	twin without US English
-sub_main:0x52D608	weapons	twin without US English
-sub_main:0x52D610	weapons	twin without US English
-sub_main:0x52D620	weapons	twin without US English
-sub_main:0x52D630	weapons	twin without US English
-sub_main:0x52D640	weapons	twin without US English
-sub_main:0x52D650	weapons	twin without US English
-sub_main:0x52D660	weapons	twin without US English
-sub_main:0x52D670	weapons	twin without US English
-sub_main:0x52D680	weapons	twin without US English
-sub_main:0x52D690	weapons	twin without US English
-sub_main:0x52D6A8	weapons	twin without US English
-sub_main:0x52D6B8	weapons	twin without US English
-sub_main:0x52D6C8	weapons	twin without US English
-sub_main:0x52D6D8	weapons	twin without US English
-sub_main:0x52D6F0	weapons	twin without US English
-sub_main:0x52D710	weapons	twin without US English
-sub_main:0x52D728	weapons	twin without US English
-sub_main:0x52D740	weapons	twin without US English
-sub_main:0x52D758	weapons	twin without US English
-sub_main:0x52D770	weapons	twin without US English
-sub_main:0x52D788	weapons	twin without US English
-sub_main:0x52D790	weapons	twin without US English
-sub_main:0x52D7A0	weapons	twin without US English
-sub_main:0x52D7B0	weapons	twin without US English
-sub_main:0x52D7D0	weapons	twin without US English
-sub_main:0x52D7F0	weapons	twin without US English
-sub_main:0x52D808	weapons	twin without US English
-sub_main:0x52D818	weapons	twin without US English
-sub_main:0x52D830	weapons	twin without US English
-sub_main:0x52D848	weapons	twin without US English
-sub_main:0x52D860	weapons	twin without US English
-sub_main:0x52D878	weapons	twin without US English
-sub_main:0x52D888	weapons	twin without US English
-sub_main:0x52D898	weapons	twin without US English
-sub_main:0x52D8A8	weapons	twin without US English
-sub_main:0x52D8B8	weapons	twin without US English
-sub_main:0x52D8C8	weapons	twin without US English
-sub_main:0x52D8E0	weapons	twin without US English
-sub_main:0x52D900	weapons	twin without US English
-sub_main:0x52D908	weapons	twin without US English
-sub_main:0x52D918	weapons	twin without US English
-sub_main:0x52D928	weapons	twin without US English
-sub_main:0x52D938	weapons	twin without US English
-sub_main:0x52D948	weapons	twin without US English
-sub_main:0x52D960	weapons	twin without US English
-sub_main:0x52D980	weapons	twin without US English
-sub_main:0x52D998	weapons	twin without US English
-sub_main:0x52D9B0	weapons	twin without US English
-sub_main:0x52D9C8	weapons	twin without US English
-sub_main:0x52D9E0	weapons	twin without US English
-sub_main:0x52DA00	weapons	twin without US English
-sub_main:0x52DA20	weapons	twin without US English
-sub_main:0x52DA40	weapons	twin without US English
-sub_main:0x52DA60	weapons	twin without US English
-sub_main:0x52DA80	weapons	twin without US English
-sub_main:0x52DAA0	weapons	twin without US English
-sub_main:0x52DAC0	weapons	twin without US English
-sub_main:0x52DAE0	weapons	twin without US English
-sub_main:0x52DB00	weapons	twin without US English
-sub_main:0x52DB18	weapons	twin without US English
-sub_main:0x52DB28	weapons	twin without US English
-sub_main:0x52DB40	weapons	twin without US English
-sub_main:0x52DB60	weapons	twin without US English
-sub_main:0x52DB80	weapons	twin without US English
-sub_main:0x52DBA0	weapons	twin without US English
-sub_main:0x52DBB8	weapons	twin without US English
-sub_main:0x52DBD0	weapons	twin without US English
-sub_main:0x52DBE8	weapons	twin without US English
-sub_main:0x52DC00	weapons	twin without US English
-sub_main:0x52DC20	weapons	twin without US English
-sub_main:0x52DC40	weapons	twin without US English
-sub_main:0x52DC60	weapons	twin without US English
-sub_main:0x52DC80	weapons	twin without US English
-sub_main:0x52DCA0	weapons	twin without US English
-sub_main:0x52DCB8	weapons	twin without US English
-sub_main:0x52DCC8	weapons	twin without US English
-sub_main:0x52DCD8	weapons	twin without US English
-sub_main:0x52DCF0	weapons	twin without US English
-sub_main:0x52DD08	weapons	twin without US English
-sub_main:0x52DD20	weapons	twin without US English
-sub_main:0x52DD40	weapons	twin without US English
-sub_main:0x52DD60	weapons	twin without US English
-sub_main:0x52DD80	weapons	twin without US English
-sub_main:0x52DDA0	weapons	twin without US English
-sub_main:0x52DDB8	weapons	twin without US English
-sub_main:0x52DDC8	weapons	twin without US English
-sub_main:0x52DDD8	weapons	twin without US English
-sub_main:0x52DDE8	weapons	twin without US English
-sub_main:0x52DDF8	weapons	twin without US English
-sub_main:0x52DE00	weapons	twin without US English
-sub_main:0x52DE10	weapons	twin without US English
-sub_main:0x52DE30	weapons	twin without US English
-sub_main:0x52DE48	weapons	twin without US English
-sub_main:0x52DE60	weapons	twin without US English
-sub_main:0x52DE78	weapons	twin without US English
-sub_main:0x52DE88	weapons	twin without US English
-sub_main:0x52DEA0	weapons	twin without US English
-sub_main:0x52DEC0	weapons	twin without US English
-sub_main:0x52DEE0	weapons	twin without US English
-sub_main:0x52DEF8	weapons	twin without US English
-sub_main:0x52DF08	weapons	twin without US English
-sub_main:0x52DF10	weapons	twin without US English
-sub_main:0x52DF18	weapons	twin without US English
-sub_main:0x52DF28	weapons	twin without US English
-sub_main:0x52DF38	weapons	twin without US English
-sub_main:0x52DF48	weapons	twin without US English
-sub_main:0x52DF60	weapons	twin without US English
-sub_main:0x52DF80	weapons	twin without US English
-sub_main:0x52DF98	weapons	twin without US English
-sub_main:0x52DFB0	weapons	twin without US English
-sub_main:0x52DFD0	weapons	twin without US English
-sub_main:0x52DFE8	weapons	twin without US English
-sub_main:0x52DFF8	weapons	twin without US English
-sub_main:0x52E010	weapons	twin without US English
-sub_main:0x52E030	weapons	twin without US English
-sub_main:0x52E050	weapons	twin without US English
-sub_main:0x52E068	weapons	twin without US English
-sub_main:0x52E078	weapons	twin without US English
-sub_main:0x52E088	weapons	twin without US English
-sub_main:0x52E098	weapons	twin without US English
-sub_main:0x52E0A8	weapons	twin without US English
-sub_main:0x52E0C0	weapons	twin without US English
-sub_main:0x52E0E0	weapons	twin without US English
-sub_main:0x52E100	weapons	twin without US English
-sub_main:0x52E118	weapons	twin without US English
-sub_main:0x52E128	weapons	twin without US English
-sub_main:0x52E138	weapons	twin without US English
-sub_main:0x52E148	weapons	twin without US English
-sub_main:0x52E158	weapons	twin without US English
-sub_main:0x52E168	weapons	twin without US English
-sub_main:0x52E180	weapons	twin without US English
-sub_main:0x52E1A0	weapons	twin without US English
-sub_main:0x52E1C0	weapons	twin without US English
-sub_main:0x52E1D8	weapons	twin without US English
-sub_main:0x52E1F0	weapons	twin without US English
-sub_main:0x52E210	weapons	twin without US English
-sub_main:0x52E228	weapons	twin without US English
-sub_main:0x52E240	weapons	twin without US English
-sub_main:0x52E260	weapons	twin without US English
-sub_main:0x52E278	weapons	twin without US English
-sub_main:0x52E288	weapons	twin without US English
-sub_main:0x52E298	weapons	twin without US English
-sub_main:0x52E2A8	weapons	twin without US English
-sub_main:0x52E2B8	weapons	twin without US English
-sub_main:0x52E2D0	weapons	twin without US English
-sub_main:0x52E2E8	weapons	twin without US English
-sub_main:0x52E300	weapons	twin without US English
-sub_main:0x52E320	weapons	twin without US English
-sub_main:0x52E340	weapons	twin without US English
-sub_main:0x52E360	weapons	twin without US English
-sub_main:0x52E378	weapons	twin without US English
-sub_main:0x52E380	weapons	twin without US English
-sub_main:0x52E388	weapons	twin without US English
-sub_main:0x52E390	weapons	twin without US English
-sub_main:0x52E3A0	weapons	twin without US English
-sub_main:0x52E3C0	weapons	twin without US English
-sub_main:0x52E3E0	weapons	twin without US English
-sub_main:0x52E400	weapons	twin without US English
-sub_main:0x52E418	weapons	twin without US English
-sub_main:0x52E428	weapons	twin without US English
-sub_main:0x52E440	weapons	twin without US English
-sub_main:0x52E460	weapons	twin without US English
-sub_main:0x52E478	weapons	twin without US English
-sub_main:0x52E490	weapons	twin without US English
-sub_main:0x52E4B0	weapons	twin without US English
-sub_main:0x52E4D0	weapons	twin without US English
-sub_main:0x52E4F0	weapons	twin without US English
-sub_main:0x52E508	weapons	twin without US English
-sub_main:0x52E518	weapons	twin without US English
-sub_main:0x52E528	weapons	twin without US English
-sub_main:0x52E538	weapons	twin without US English
-sub_main:0x52E548	weapons	twin without US English
-sub_main:0x52E558	weapons	twin without US English
-sub_main:0x52E570	weapons	twin without US English
-sub_main:0x52E588	weapons	twin without US English
-sub_main:0x52E5A0	weapons	twin without US English
-sub_main:0x52E5C0	weapons	twin without US English
-sub_main:0x52E5E0	weapons	twin without US English
-sub_main:0x52E600	weapons	twin without US English
-sub_main:0x52E620	weapons	twin without US English
-sub_main:0x52E640	weapons	twin without US English
-sub_main:0x52E658	weapons	twin without US English
-sub_main:0x52E670	weapons	twin without US English
-sub_main:0x52E688	weapons	twin without US English
-sub_main:0x52E6A0	weapons	twin without US English
-sub_main:0x52E6C0	weapons	twin without US English
-sub_main:0x52E6D8	weapons	twin without US English
-sub_main:0x52E6E8	weapons	twin without US English
-sub_main:0x52E6F8	weapons	twin without US English
-sub_main:0x52E710	weapons	twin without US English
-sub_main:0x52E728	weapons	twin without US English
-sub_main:0x52E730	weapons	twin without US English
-sub_main:0x52E740	weapons	twin without US English
-sub_main:0x52E760	weapons	twin without US English
-sub_main:0x52E778	weapons	twin without US English
-sub_main:0x52E790	weapons	twin without US English
-sub_main:0x52E7A8	weapons	twin without US English
-sub_main:0x52E7B8	weapons	twin without US English
-sub_main:0x52E7C0	weapons	twin without US English
-sub_main:0x52E7D0	weapons	twin without US English
-sub_main:0x52E7F0	weapons	twin without US English
-sub_main:0x52E808	weapons	twin without US English
-sub_main:0x52E820	weapons	twin without US English
-sub_main:0x52E840	weapons	twin without US English
-sub_main:0x52E858	weapons	twin without US English
-sub_main:0x52E860	weapons	twin without US English
-sub_main:0x52E878	weapons	twin without US English
-sub_main:0x52E890	weapons	twin without US English
-sub_main:0x52E8A8	weapons	twin without US English
-sub_main:0x52E8B0	weapons	twin without US English
-sub_main:0x52E8C0	weapons	twin without US English
-sub_main:0x52E8C8	weapons	twin without US English
-sub_main:0x52E8D0	weapons	twin without US English
-sub_main:0x52E8E0	weapons	twin without US English
-sub_main:0x52E8F0	weapons	twin without US English
-sub_main:0x52E900	weapons	twin without US English
-sub_main:0x52E910	weapons	twin without US English
-sub_main:0x52E928	weapons	twin without US English
-sub_main:0x52E938	weapons	twin without US English
-sub_main:0x52E950	weapons	twin without US English
-sub_main:0x52E970	weapons	twin without US English
-sub_main:0x52E990	weapons	twin without US English
 sub_main:0x52E9A8	weapons	twin without US English
 sub_main:0x52E9B8	weapons [G table]	G only
 sub_main:0x52E9C8	weapons [G table]	G only
@@ -7346,31 +6697,6 @@ sub_main:0x52F628	weapons [G table]	G only
 sub_main:0x52F630	weapons [G table]	G only
 sub_main:0x52F640	weapons [G table]	G only
 sub_main:0x52F650	weapons [G table]	G only
-sub_main:0x52F668	weapons	twin without US English
-sub_main:0x52F680	weapons	twin without US English
-sub_main:0x52F698	weapons	twin without US English
-sub_main:0x52F6B0	weapons	twin without US English
-sub_main:0x52F6D0	weapons	twin without US English
-sub_main:0x52F6F0	weapons	twin without US English
-sub_main:0x52F710	weapons	twin without US English
-sub_main:0x52F730	weapons	twin without US English
-sub_main:0x52F750	weapons	twin without US English
-sub_main:0x52F770	weapons	twin without US English
-sub_main:0x52F790	weapons	twin without US English
-sub_main:0x52F7B0	weapons	twin without US English
-sub_main:0x52F7C8	weapons	twin without US English
-sub_main:0x52F7D8	weapons	twin without US English
-sub_main:0x52F7E8	weapons	twin without US English
-sub_main:0x52F800	weapons	twin without US English
-sub_main:0x52F820	weapons	twin without US English
-sub_main:0x52F838	weapons	twin without US English
-sub_main:0x52F848	weapons	twin without US English
-sub_main:0x52F858	weapons	twin without US English
-sub_main:0x52F868	weapons	twin without US English
-sub_main:0x52F880	weapons	twin without US English
-sub_main:0x52F898	weapons	twin without US English
-sub_main:0x52F8A8	weapons	twin without US English
-sub_main:0x52F8B0	weapons	twin without US English
 sub_main:0x52F8C8	weapons [G table]	G only
 sub_main:0x52F8E0	weapons [G table]	G only
 sub_main:0x52F900	weapons [G table]	G only
@@ -8091,73 +7417,6 @@ sub_main:0x534230	armour [G table]	G only
 sub_main:0x534248	armour [G table]	G only
 sub_main:0x534258	armour [G table]	G only
 sub_main:0x534270	armour [G table]	G only
-sub_main:0x534290	armour	twin without US English
-sub_main:0x5342B0	armour	twin without US English
-sub_main:0x5342D0	armour	twin without US English
-sub_main:0x5342E8	armour	twin without US English
-sub_main:0x534300	armour	twin without US English
-sub_main:0x534318	armour	twin without US English
-sub_main:0x534330	armour	twin without US English
-sub_main:0x534348	armour	twin without US English
-sub_main:0x534360	armour	twin without US English
-sub_main:0x534378	armour	twin without US English
-sub_main:0x534390	armour	twin without US English
-sub_main:0x5343A8	armour	twin without US English
-sub_main:0x5343C0	armour	twin without US English
-sub_main:0x5343D8	armour	twin without US English
-sub_main:0x5343F0	armour	twin without US English
-sub_main:0x534408	armour	twin without US English
-sub_main:0x534420	armour	twin without US English
-sub_main:0x534438	armour	twin without US English
-sub_main:0x534450	armour	twin without US English
-sub_main:0x534468	armour	twin without US English
-sub_main:0x534480	armour	twin without US English
-sub_main:0x534498	armour	twin without US English
-sub_main:0x5344B0	armour	twin without US English
-sub_main:0x5344C8	armour	twin without US English
-sub_main:0x5344E0	armour	twin without US English
-sub_main:0x534500	armour	twin without US English
-sub_main:0x534520	armour	twin without US English
-sub_main:0x534540	armour	twin without US English
-sub_main:0x534558	armour	twin without US English
-sub_main:0x534568	armour	twin without US English
-sub_main:0x534578	armour	twin without US English
-sub_main:0x534588	armour	twin without US English
-sub_main:0x5345A0	armour	twin without US English
-sub_main:0x5345B8	armour	twin without US English
-sub_main:0x5345D0	armour	twin without US English
-sub_main:0x5345F0	armour	twin without US English
-sub_main:0x534610	armour	twin without US English
-sub_main:0x534628	armour	twin without US English
-sub_main:0x534640	armour	twin without US English
-sub_main:0x534658	armour	twin without US English
-sub_main:0x534670	armour	twin without US English
-sub_main:0x534690	armour	twin without US English
-sub_main:0x5346A8	armour	twin without US English
-sub_main:0x5346C0	armour	twin without US English
-sub_main:0x5346D8	armour	twin without US English
-sub_main:0x5346E8	armour	twin without US English
-sub_main:0x534700	armour	twin without US English
-sub_main:0x534718	armour	twin without US English
-sub_main:0x534728	armour	twin without US English
-sub_main:0x534740	armour	twin without US English
-sub_main:0x534758	armour	twin without US English
-sub_main:0x534768	armour	twin without US English
-sub_main:0x534780	armour	twin without US English
-sub_main:0x534798	armour	twin without US English
-sub_main:0x5347B0	armour	twin without US English
-sub_main:0x5347C8	armour	twin without US English
-sub_main:0x5347E0	armour	twin without US English
-sub_main:0x5347F8	armour	twin without US English
-sub_main:0x534810	armour	twin without US English
-sub_main:0x534828	armour	twin without US English
-sub_main:0x534840	armour	twin without US English
-sub_main:0x534858	armour	twin without US English
-sub_main:0x534870	armour	twin without US English
-sub_main:0x534890	armour	twin without US English
-sub_main:0x5348A8	armour	twin without US English
-sub_main:0x5348C0	armour	twin without US English
-sub_main:0x5348D8	armour	twin without US English
 sub_main:0x5348F0	armour [G table]	G only
 sub_main:0x534908	armour [G table]	G only
 sub_main:0x534920	armour [G table]	G only
@@ -8295,71 +7554,6 @@ sub_main:0x535868	armour [G table]	G only
 sub_main:0x535880	armour [G table]	G only
 sub_main:0x5358A0	armour [G table]	G only
 sub_main:0x5358C0	armour [G table]	G only
-sub_main:0x5358E0	armour	twin without US English
-sub_main:0x535900	armour	twin without US English
-sub_main:0x535920	armour	twin without US English
-sub_main:0x535940	armour	twin without US English
-sub_main:0x535960	armour	twin without US English
-sub_main:0x535980	armour	twin without US English
-sub_main:0x5359A0	armour	twin without US English
-sub_main:0x5359C0	armour	twin without US English
-sub_main:0x5359E0	armour	twin without US English
-sub_main:0x535A00	armour	twin without US English
-sub_main:0x535A18	armour	twin without US English
-sub_main:0x535A28	armour	twin without US English
-sub_main:0x535A40	armour	twin without US English
-sub_main:0x535A60	armour	twin without US English
-sub_main:0x535A78	armour	twin without US English
-sub_main:0x535A88	armour	twin without US English
-sub_main:0x535A98	armour	twin without US English
-sub_main:0x535AA8	armour	twin without US English
-sub_main:0x535AC0	armour	twin without US English
-sub_main:0x535AE0	armour	twin without US English
-sub_main:0x535AF8	armour	twin without US English
-sub_main:0x535B08	armour	twin without US English
-sub_main:0x535B20	armour	twin without US English
-sub_main:0x535B40	armour	twin without US English
-sub_main:0x535B60	armour	twin without US English
-sub_main:0x535B80	armour	twin without US English
-sub_main:0x535B98	armour	twin without US English
-sub_main:0x535BA8	armour	twin without US English
-sub_main:0x535BC8	armour	twin without US English
-sub_main:0x535BE0	armour	twin without US English
-sub_main:0x535C00	armour	twin without US English
-sub_main:0x535C20	armour	twin without US English
-sub_main:0x535C40	armour	twin without US English
-sub_main:0x535C60	armour	twin without US English
-sub_main:0x535C80	armour	twin without US English
-sub_main:0x535CA0	armour	twin without US English
-sub_main:0x535CC0	armour	twin without US English
-sub_main:0x535CD8	armour	twin without US English
-sub_main:0x535CE8	armour	twin without US English
-sub_main:0x535D00	armour	twin without US English
-sub_main:0x535D20	armour	twin without US English
-sub_main:0x535D40	armour	twin without US English
-sub_main:0x535D60	armour	twin without US English
-sub_main:0x535D80	armour	twin without US English
-sub_main:0x535DA0	armour	twin without US English
-sub_main:0x535DC0	armour	twin without US English
-sub_main:0x535DD8	armour	twin without US English
-sub_main:0x535DE8	armour	twin without US English
-sub_main:0x535E08	armour	twin without US English
-sub_main:0x535E20	armour	twin without US English
-sub_main:0x535E40	armour	twin without US English
-sub_main:0x535E60	armour	twin without US English
-sub_main:0x535E80	armour	twin without US English
-sub_main:0x535E98	armour	twin without US English
-sub_main:0x535EA8	armour	twin without US English
-sub_main:0x535EB8	armour	twin without US English
-sub_main:0x535EC8	armour	twin without US English
-sub_main:0x535ED8	armour	twin without US English
-sub_main:0x535EE8	armour	twin without US English
-sub_main:0x535F00	armour	twin without US English
-sub_main:0x535F20	armour	twin without US English
-sub_main:0x535F40	armour	twin without US English
-sub_main:0x535F60	armour	twin without US English
-sub_main:0x535F80	armour	twin without US English
-sub_main:0x535FA0	armour	twin without US English
 sub_main:0x535FC0	armour [G table]	G only
 sub_main:0x535FE0	armour [G table]	G only
 sub_main:0x536000	armour [G table]	G only
@@ -8594,18 +7788,7 @@ sub_main:0x538078	menus, options, HUD	twin without US English
 sub_main:0x538088	menus, options, HUD	twin without US English
 sub_main:0x5380A0	menus, options, HUD [G table]	G only
 sub_main:0x5380C0	menus, options, HUD	twin without US English
-sub_main:0x538138	quest board / quest text tables	twin without US English
-sub_main:0x538148	quest board / quest text tables	twin without US English
-sub_main:0x538158	quest board / quest text tables	twin without US English
-sub_main:0x538168	quest board / quest text tables	twin without US English
-sub_main:0x538178	quest board / quest text tables	twin without US English
-sub_main:0x538188	quest board / quest text tables	twin without US English
-sub_main:0x538198	quest board / quest text tables	twin without US English
-sub_main:0x5381A8	quest board / quest text tables	twin without US English
-sub_main:0x5381B8	quest board / quest text tables	twin without US English
-sub_main:0x538258	other tables (mix_list_str)	twin without US English
-sub_main:0x538268	other tables (mix_list_str)	twin without US English
-sub_main:0x538270	other tables (mix_list_str)	twin without US English
+sub_main:0x538188	quest board / quest text tables	edited in G
 sub_main:0x538280	quest board / quest text tables [G table]	G only
 sub_main:0x5382B8	monsters	twin without US English
 sub_main:0x538348	monsters	twin without US English
@@ -8690,10 +7873,6 @@ sub_main:0x538D58	other tables (verify_button_00387D) [G table]	G only
 sub_main:0x538D90	menus, options, HUD [G table]	G only
 sub_main:0x538DB0	menus, options, HUD [G table]	G only
 sub_main:0x538E00	menus, options, HUD	twin without US English
-sub_main:0x538E10	menus, options, HUD	twin without US English
-sub_main:0x538E30	menus, options, HUD	twin without US English
-sub_main:0x538E50	menus, options, HUD	twin without US English
-sub_main:0x538E70	menus, options, HUD	twin without US English
 sub_main:0x538EC8	menus, options, HUD [G table]	G only
 sub_main:0x538ED8	menus, options, HUD [G table]	G only
 sub_main:0x538EF0	menus, options, HUD [G table]	G only
