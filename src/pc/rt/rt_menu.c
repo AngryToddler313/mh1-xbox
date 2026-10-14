@@ -101,19 +101,10 @@ void func_5B4B20(s8 a) { Disp_lb_menu(a); }
 void *func_5B4D30(s32 a) { return Lb_get_player_id(a); }
 int func_5CB310(void) { Lobby_quest_print(); return 0; }
 int func_5D8370(int a) { return Lb_get_pl_stat2(a); }
-#ifdef VERSION_MHG
-/* G's Pit_init has no item box init (G moved the item box into PitMenu; item_box has no G address): skipped */
-void func_609750(void) { static int o; if (!o++) rt_log_standin("G village: Lb_ItemBox_init (item box layout)"); }
-#else
-void func_609750(void) { Lb_ItemBox_init(); }
-#endif
+void func_609750(void) { Lb_ItemBox_init(); }       /* G: lobby 0x552470, main's Pit_init calls it too */
 /* the item box screen (trans_pit_1_lb -> 0x60CE50, lobby f/lb_ib.c) */
 void Disp_lb_item_box(void);
-#ifdef VERSION_MHG
-void func_60CE50(void) { static int o; if (!o++) rt_log_standin("G village: Disp_lb_item_box (item box layout)"); }
-#else
 void func_60CE50(void) { Disp_lb_item_box(); }
-#endif
 
 /* ------------------------------------------------ online / lobby only (no-ops) */
 u8 D_6EAC80[0x400];

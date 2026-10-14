@@ -5238,6 +5238,185 @@ block_37:
     } while (var_s4 < 8);
 }
 
+#ifdef VERSION_MHG
+/* G (lobby 0x591EE0): the hint is printed as "%s%s" with the separator (net_etc_mes_tbl[6], a full-width colon) in front;
+ * the room price is appended with sprintf + strcat; a blink counter at lb_sys+0x91 / +0x92 is new; nothing is drawn while the
+ * hunter's action is one of 14 busy ones (lobby_func_00595530, but 93 itself is drawn); Lb_put_gold gets a position (30).
+ * The two rule-message lines (talk modes 8 / 0x28 in MH1's numbering: guild rule sheet, online) lack G's pulsing frame
+ * (lobby_func_005926C0): not ported. */
+static int lb_busy_act(int f14, int f15)
+{
+    if ((u8)f14 != 0) {
+        return 0;
+    }
+    switch ((u8)f15) {
+    case 0x56: case 0x61: case 0x2B: case 0x29: case 0x2A: case 0x4E: case 0x60: case 0x5E: case 0x5D:
+    case 0x5C: case 0x5A: case 0x59: case 0x54: case 0x4C:
+        return 1;
+    }
+    return 0;
+}
+
+static void lb_help_two(int y, int line_off)
+{
+    flfntLocate(0x30, y);
+    font_print(lit_428_00664C30, net_etc_mes_tbl[6], (char *)lb_sys + line_off);
+}
+
+void Lb_put_help(u8 *arg0) {
+    u8 *pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
+    s32 x68 = M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68));
+    u8 *h0 = lb_sys + LBSYS_OFS(0xA), *h1 = lb_sys + LBSYS_OFS(0x28);
+    u8 *tgt;
+    char tmp[32];
+    int r;
+
+    if (x68 != 8 && x68 != 7 && x68 != 0x27 && x68 != 0) {
+        return;
+    }
+    if (Online_ck() == 1) {
+        Lb_put_new_mail(390, 0x1C);
+    }
+    if (pl[0x15] != 93 && lb_busy_act(pl[0x14], pl[0x15]) == 1) {
+        return;
+    }
+    font_set_stack_no(M2C_FIELD(arg0, s32 *, 0x18));
+    font_set_palette(0);
+    flfntSetSize(0x14, 0x14);
+    if (((s8)SoftKeyboard_alive_check()) != 0) {
+        return;
+    }
+    flfntSetSize(0x14, 0x14);
+    if (h0[0] == 0 && x68 != 8) {
+        lb_sys[0x92] = 1;
+        lb_put_sprite();
+        return;
+    }
+    tgt = M2C_FIELD(pl, u8 **, 0x878);
+    if (tgt == NULL) {
+        if (x68 == 8) {
+            flfntLocate(0x30, 0x1F);
+            font_set_palette(6);
+            font_print(lit_429_00664C38, M2C_FIELD(lb_rule_msg_etc, u8 **, 0x24));
+        }
+        lb_put_sprite();
+        return;
+    }
+    if (lb_sys[0x92] == 1) {
+        lb_sys[0x92] = 0;
+        lb_sys[0x91] = 40;
+    } else if (--lb_sys[0x91] <= 0) {
+        lb_sys[0x91] = 40;
+    }
+    switch (M2C_FIELD(tgt, u16 *, 2)) {
+    case 19:
+        if (pl[0x14] == 1) {
+            return;
+        }
+        r = Lb_check_hotel(0x52);
+        if (r == 0) {
+            h0[0] = 0;
+        } else {
+            if (r == 1 || r == 3) {
+                sprintf(tmp, lit_427_00664C20, M2C_FIELD(room_price, u8 **, 4));
+                strcat((char *)h0, tmp);
+            }
+            flfntSetSize(0x14, 0x14);
+            lb_help_two(0x1F, LBSYS_OFS(0xA));
+            Lb_put_gold(30);
+        }
+        r = Lb_check_hotel(0x53);
+        if (r == 0) {
+            h1[0] = 0;
+        } else {
+            if (r == 1 || r == 3) {
+                sprintf(tmp, lit_427_00664C20, M2C_FIELD(room_price, u8 **, 8));
+                strcat((char *)h1, tmp);
+            }
+            flfntSetSize(0x14, 0x14);
+            lb_help_two(0x39, LBSYS_OFS(0x28));
+        }
+        lb_put_sprite();
+        return;
+    case 20:
+        if (pl[0x14] == 1) {
+            return;
+        }
+        r = Lb_check_hotel(0x54);
+        if (r == 0) {
+            h0[0] = 0;
+        } else {
+            if (r == 1 || r == 3) {
+                sprintf(tmp, lit_427_00664C20, M2C_FIELD(room_price, u8 **, 0xC));
+                strcat((char *)h0, tmp);
+            }
+            flfntLocate(0x30, 0x1F);
+            flfntSetSize(0x14, 0x14);
+            font_print(lit_428_00664C30, net_etc_mes_tbl[6], (char *)h0);
+            Lb_put_gold(30);
+        }
+        r = Lb_check_hotel(0x55);
+        if (r == 0) {
+            h1[0] = 0;
+        } else {
+            if (r == 1 || r == 3) {
+                sprintf(tmp, lit_427_00664C20, M2C_FIELD(room_price, u8 **, 0x10));
+                strcat((char *)h1, tmp);
+            }
+            flfntLocate(0x30, 0x39);
+            flfntSetSize(0x14, 0x14);
+            font_print(lit_428_00664C30, net_etc_mes_tbl[6], (char *)h1);
+        }
+        lb_put_sprite();
+        return;
+    case 1:
+        if (pl[0x14] == 1) {
+            return;
+        }
+        if (x68 != 8 && x68 != 0x28) {
+            lb_help_two(0x1F, LBSYS_OFS(0xA));
+            if (lb_busy_act(pl[0x14], pl[0x15]) == 1 && *(u8 *)0x3F3404 == 0x4D) {
+                lb_help_two(0x39, LBSYS_OFS(0x28));
+            }
+            lb_put_sprite();
+            return;
+        }
+        break;
+    case 18:
+        if (pl[0x14] == 1) {
+            return;
+        }
+        if (Lb_check_hotel(0x51) == 0) {
+            h1[0] = 0;
+            return;
+        }
+        flfntSetSize(0x14, 0x14);
+        break;
+    default:
+        break;
+    }
+    flfntLocate(0x30, 0x1F);
+    if (x68 == 8 || x68 == 0x28) {
+        if (M2C_FIELD(tgt, u16 *, 2) == 6 && M2C_FIELD(cw, u8 *, CW_OFS(0x32C5)) == 0) {
+            font_set_palette(0);
+            font_print(lit_429_00664C38, M2C_FIELD(lb_rule_msg_etc, u8 **, 0x28));
+        } else {
+            if (pl[0x14] == 1) {
+                return;
+            }
+            font_set_palette(6);
+            font_print(lit_429_00664C38, M2C_FIELD(lb_rule_msg_etc, u8 **, 0x24));
+        }
+    } else {
+        if (pl[0x14] == 1) {
+            return;
+        }
+        font_print(lit_428_00664C30, net_etc_mes_tbl[6], (char *)h0);
+    }
+    sprintf((char *)h1, lit_430_00664C40);
+    lb_put_sprite();
+}
+#else
 void Lb_put_help(u8 *arg0) {
     s32 temp_a2;
     s32 temp_v0;
@@ -5404,6 +5583,7 @@ block_83:
         }
     }
 }
+#endif
 
 /* Lb_put_button (0x5CC920): button icon idx of lb_button_tbl ({s16 u0, v0,
  * u1, v1}) at (x*0.8, y), size (u1-u0)*0.8 x (v1-v0) (idx 9: 50 x 32);
