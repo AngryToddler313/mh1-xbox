@@ -33,8 +33,14 @@ echo "copying to $URL"
 # XBOX_TRIES times (default 5); a retry resumes from what arrived (curl -C -, the server's SIZE /
 # APPE) and falls back to a fresh copy if the server can't resume. If a file keeps failing at once
 # (426 on start), the Xbox's FTP server is still holding the broken file: restart the Xbox, rerun.
-remote_size() {   # bytes on the Xbox, empty if unknown (SIZE unsupported or no file)
-	curl -sS "${AUTH[@]}" -I "$URL/$1" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-length"{print $2}'
+remote_size() {   # bytes on the Xbox, empty if unknown. Evolution X does not answer SIZE, so this
+	# reads the directory listing (LIST) and takes the size column of the file's line
+	local dir=${1%/*} name=${1##*/}
+	[ "$dir" = "$1" ] && dir=
+	curl -sS "${AUTH[@]}" "$URL/${dir:+$dir/}" 2>/dev/null | tr -d '\r' |
+		awk -v n="$name" '$NF == n && NF >= 9 && $1 ~ /^-/ { s = $5 }        # unix style: -rw-r--r-- 1 u g SIZE Mon D T name
+		$NF == n && NF == 4 && $3 ~ /^[0-9]+$/ { s = $3 }                  # DOS style: date time SIZE name
+		END { if (s != "") print s }'
 }
 for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
 	want=$(stat -c %s "$SRC/$f")
@@ -46,7 +52,7 @@ for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; 
 		have=$(remote_size "$f")
 		if [ -n "$have" ] && [ "$have" -gt 0 ] && [ "$have" -lt "$want" ]; then
 			echo "   resuming at $((have >> 20)) MB (try $try)"
-			curl -# "${AUTH[@]}" --ftp-create-dirs -C - -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
+			curl -# "${AUTH[@]}" --ftp-create-dirs -C "$have" -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
 		else
 			[ "$try" -gt 1 ] && echo "   starting again (try $try)"
 			curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
