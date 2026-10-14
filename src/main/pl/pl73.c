@@ -5,8 +5,7 @@
 
 #ifdef VERSION_MHG
 /* G: only for gun kind 7 (work35F); ammo_max now comes from a [gun row][ammo type] table. */
-typedef struct GUN_ROW { u8 _00[13]; u8 shell_row; u8 _0E[10]; } GUN_ROW;
-extern GUN_ROW D_00517730[];
+extern u8 D_00517720[][0x18];
 extern u8 D_00514EA0[][32];
 
 void Shell_type_set(PLW *pl, int flag) {
@@ -17,7 +16,7 @@ void Shell_type_set(PLW *pl, int flag) {
         } else {
             pl->work8BC = pl->item[pl->work88E].num;
         }
-        pl->work01D = D_00514EA0[D_00517730[pl->wpn_kind + 1].shell_row][pl->ammo_type];
+        pl->work01D = D_00514EA0[D_00517720[pl->wpn_kind][13]][pl->ammo_type];
         pl->work01C = 0;
     }
 }

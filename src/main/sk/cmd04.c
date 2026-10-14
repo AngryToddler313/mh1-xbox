@@ -86,9 +86,11 @@ typedef struct { s8 b[0x11]; } ZK;
 extern ZK lit_913_0034E410;
 
 
+#ifndef VERSION_MHG
 void comkan_init(void) {
     apiask_28_OpenDic();
 }
+#endif
 
 int sk_letlenB(u8 *p, int max) {
     int w = 0;
@@ -155,6 +157,12 @@ int sk_letlenU(u8 *p, int max) {
     }
     return (r != 0) ? 2 : 1;
 }
+
+#ifdef VERSION_MHG
+void comkan_init(void) {
+    apiask_28_OpenDic();
+}
+#endif
 
 void cmd_dakuten(void) {
     u32 c;

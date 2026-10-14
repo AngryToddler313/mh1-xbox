@@ -1710,3 +1710,23 @@ UseItemChk (menu-local Item_data extern with [16]), Pl_act_set/Pl_act_set2, Came
     mhg/main/pl/pl78_sub
 - Next: bisect the failing files above (script idea: keep k hand entries, rebuild one module), fix link-level causes
   (data slots, addends, missing names), re-register; then Pl_slash_calc near-match, Pl_act_set, CameraInit, FishWyvernCameraRequest.
+
+
+### G round 2 (main/sub_main lane)
+- All round-1 candidates are registered except the ones whose G range has g-only gaps (camg, cp01, flpad02, flvu05, fm02, pl67,
+  putspr: every function matches, but the file cannot be one range; split them with an OMAKE_PART-style wrapper, see
+  src/mhg/main/omake/omake_a.c) and netname01 (needs lobby data). Causes of the earlier link failures: jump-table
+  rodata slots not moved (pl72, plx06), game_w / NGW / PitMenu layout (include/game.h, netsyn.h, menu.h MHG blocks:
+  master 0x3A, x0D5 0x3E, shl10/meat/trap 0xFC.., reward_item 0x100; PitMenu base is 0x2FF290 and G has 7 extra bytes
+  after x1B), quest_w+0x154, CNFile.last 0xC83, D_ names (config/mhg/g_names.txt).
+- Tools: greedy re-adder in the session scratch (rebuild one module per candidate file, keep what builds); a file with
+  jump tables needs the `MODULE:rodata` line (the G table address is in the asm: jtbl_xxx).
+- Main menu (Select_task family): G versions in src/main/omake/omake.c under VERSION_MHG: csub00, init_mode_sel (+ new
+  func_001EE9F0, the 3D menu scene), Select_task, mode_sel_end/exit, Sel_back_disp, Sel_menu_disp match; mode_sel
+  (4 instr, register swap in the sel==1 arm of sub 1) and disp_mode_menu (register allocation) are near-matches with the
+  right logic. The file is built in three parts (src/mhg/main/omake/omake_a/b/c.c define OMAKE_PART).
+  G menu: NEW GAME / CONTINUE / GALLERY(sub_main 0x4A9960) / OPTIONS / EXTRA(omake); sel 0/1 -> Game_task, game_menu_msg
+  is D_528538 (3 strings) and game_menu_msg2 D_528550 (pairs).
+- McCardOperation (mccomb.c, G): ops 0xB-0xD = func_002306C0 / func_00230390 / func_00231440, op 0xE = op 1; matches.
+- DispSoftkeyboard: sk_nm.c (the C the PC uses) now has G's field offsets (-1 on the key-entry counts) and the 12-key
+  glyph table loop (D_002A5FE0, D_002BE8B0 added to config/mhg/pc_names.txt); not byte-exact.

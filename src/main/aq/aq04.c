@@ -46,6 +46,11 @@ typedef struct AQU {
 } AQU;
 
 extern u8 game_w[];
+#ifdef VERSION_MHG
+#define GW_MASTER 0x3A /* G moved master from 0xD1 */
+#else
+#define GW_MASTER 0xD1
+#endif
 extern char err_str[];
 extern f32 session_time;
 int Online_ck();
@@ -257,7 +262,7 @@ int kind;
             break;
         case 1:
             p->pl = 7;
-            p->id = game_w[0xD1] + 1;
+            p->id = game_w[GW_MASTER] + 1;
             p->x0B = 0x80;
             break;
         }

@@ -895,6 +895,13 @@ void font_print(void *, ...);
 void SetFilterMode(int);
 f32 flSin(f32);
 
+#ifdef VERSION_MHG
+extern char D_002BE8B0[];
+extern s8 D_002A5FE0[];
+#define SK_COUNT2(e) ((e)[0x11])
+#else
+#define SK_COUNT2(e) ((e)[0x12])
+#endif
 void DispSoftkeyboard(int scale) {
     struct { s16 p[4]; int col; } q;
     struct { s16 p[4]; int col; s16 uv[4]; } k;
@@ -935,7 +942,11 @@ void DispSoftkeyboard(int scale) {
     flps0004(&q);
     q.col = *(s32 *)(SKP(0x10) + 4);
     e = SKP(0);
+#ifdef VERSION_MHG
+    n = e[0x10]; /* G: one byte earlier */
+#else
     n = e[0x11];
+#endif
     kk = *(u8 **)(e + 4);
     for (; n != 0; n--, kk += 8) {
         q.p[0] = ox + *(f32 *)kk * *(f32 *)(lpSKey + 0x14);
@@ -949,7 +960,7 @@ void DispSoftkeyboard(int scale) {
     e = SKP(0);
     kk = *(u8 **)(e + 4);
     ent = *(u8 **)e;
-    for (i = 0; i < e[0x12]; i++, kk += 8, ent += 4) {
+    for (i = 0; i < SK_COUNT2(e); i++, kk += 8, ent += 4) {
         u8 c;
         int g;
         u8 *m;
@@ -980,11 +991,19 @@ void DispSoftkeyboard(int scale) {
         u8 *p = *(u8 **)(e + 4) + 0x60;
         flfntSetSize(0x14, 0x10);
         font_set_palette(0);
+#ifdef VERSION_MHG
+        for (i = 0; i < 0xC; i++, p += 8) {
+            flfntLocate(*(f32 *)p + ox / *(f32 *)(lpSKey + 0x14), (s16)(y + FS16(p, 4)));
+            font_print(D_002BE8B0, *(u8 **)(SKP(0) + 0xC) + 0x10 * (s8)D_002A5FE0[i]);
+        }
+    }
+#else
         for (i = 0; i < 0xC; i++, p += 8, n += 0x10) {
             flfntLocate(*(f32 *)p + ox / *(f32 *)(lpSKey + 0x14), (s16)(y + FS16(p, 4)));
             font_print(lit_1221_0036E5C8, n);
         }
     }
+#endif
     SetFilterMode(0);
     if (SKB(0x26) != 0) {
         if (hk_cursor_check() == 1) {
