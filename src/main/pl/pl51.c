@@ -48,10 +48,21 @@ void act_set(PLW *pl, u8 a, u8 b) {
 }
 
 void Pl_act_set(PLW *pl, int a, int b, int flags) {
+#ifdef VERSION_MHG
+    int f;
+    int old;
+    u16 r;
+    int nm;
+    if (Pl_master_ck(pl) == 1 && pl->x738 != 0 && (u16)a != 4) {
+        return;
+    }
+    f = (u16)flags;
+#else
     int f = (u16)flags;
     int old;
     u16 r;
     int nm;
+#endif
     pl->work016 = pl->flag14;
     pl->work017 = pl->flag15;
     pl->flag14 = a;
@@ -109,6 +120,16 @@ void Pl_act_set(PLW *pl, int a, int b, int flags) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G: while x738 is set the master hunter only takes action 4 (MH1 takes every action) */
+void Pl_act_set2(PLW *pl, int a, int b, int c) {
+    if (Pl_master_ck(pl) == 1 && pl->x738 != 0 && (u16)a != 4) {
+        return;
+    }
+    Pl_act_set(pl, a, b, c);
+    pl->work6FF = 1;
+}
+#else
 void Pl_act_set2(PLW *pl, int a, int b, int c) {
     if (Pl_master_ck(pl) == 1) {
         if (pl->x738 == 0) {
@@ -120,6 +141,7 @@ set:
         pl->work6FF = 1;
     }
 }
+#endif
 
 s16 act_ck(PLW *pl, int a, int b) {
     if (pl->flag14 == (u8)a && pl->flag15 == (u8)b) {

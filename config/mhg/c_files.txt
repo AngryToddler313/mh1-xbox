@@ -953,3 +953,8 @@ main 0x00111040 0x0011109C mhg/main/cp/cp01_g
 main 0x00151CB0 0x00151CB8 mhg/main/fl/flpad02_g
 main 0x0013E750 0x0013E7CC mhg/main/fl/flvu05_g
 main 0x0012A800 0x0012A984 mhg/main/sprite/putspr_g
+main 0x0010D5F0 0x0010D7CC main/item/item04
+main 0x0010D150 0x0010D3C0 mhg/main/item/item01_a
+main 0x0010D9C0 0x0010DC74 mhg/main/item/item03_a
+main 0x0010DD20 0x0010DD98 mhg/main/item/item_g
+sub_main 0x004EDD90 0x004EE218 main/pl/pl51

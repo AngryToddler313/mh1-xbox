@@ -5,6 +5,7 @@
  * the "known recipes" bit list in User_data+0x3D8 (66 bits). Field names are guesses from use. */
 #include "gwx.h"
 #include "types.h"
+#include "itemprep.h"
 #include "pl.h"
 typedef struct ITEMW {
     u8 used;                /* 0x00 slot in use */
@@ -22,13 +23,6 @@ typedef struct ITEMW {
     u8 x42;                 /* 0x42 */
     u8 pad43[0x54 - 0x43];
 } ITEMW;
-/* one recipe: ingredient b (a is the table index), result item, list bit */
-typedef struct IPREP {
-    s16 a;                  /* 0x00 other ingredient */
-    s16 res;                /* 0x02 result item */
-    s8 x04;                 /* 0x04 rate table index */
-    s8 bit;                 /* 0x05 bit of the known-recipe list */
-} IPREP;
 extern ITEMW item_work[64];
 extern ITEMW *item_w_top;
 extern s32 item_ctr;
@@ -59,6 +53,64 @@ s8 Item_preparation_rate();
 s8 Item_preparation_rate_0();
 IPREP *Item_preparation_adrs();
 int Item_preparation_list_chk_0(IPREP *);
+#ifdef VERSION_MHG
+int func_0010DD20(PLW *, IPREP *);
+u8 sub_main_func_004F0020(PLW *, int);
+
+s8 Item_preparation_rate_0(IPREP *e, int mode) {
+    u8 rate;
+    PLW *pl;
+    u32 i;
+    u16 *p;
+
+    if (mode == 0) {
+        pl = &player_work[game_w[GWX(0xD1)]];
+        rate = item_pre_rate_tbl[e->x04];
+        if (func_0010DD20(pl, e) != 1) {
+            return -1;
+        }
+        switch (sub_main_func_004F0020(pl, 0x25)) {
+        case 0x35:
+            rate += 20;
+            break;
+        case 0x34:
+            rate += 10;
+            break;
+        case 0x62:
+            rate += 5;
+            break;
+        case 0x63:
+            rate -= 5;
+            break;
+        case 0x64:
+            rate -= 10;
+            break;
+        case 0x65:
+            rate -= 15;
+            break;
+        }
+        if (Item_preparation_list_chk_0(e) == 1) {
+            rate += 5;
+        }
+        i = 0;
+        p = mix_manual_tbl;
+        do {
+            if ((s16)Pl_item_num_ck(pl, *p) == 0) {
+                break;
+            }
+            i++;
+            p++;
+        } while (i < 5);
+        rate += pre_manual_rate_tbl[i];
+    } else {
+        return 0x64;
+    }
+    if (rate > 0x64) {
+        rate = 0x64;
+    }
+    return rate;
+}
+#else
 s8 Item_preparation_rate_0(IPREP *e, int mode) {
     u8 rate;
     u32 i;
@@ -89,3 +141,4 @@ s8 Item_preparation_rate_0(IPREP *e, int mode) {
     }
     return rate;
 }
+#endif

@@ -1,5 +1,7 @@
 /* SLPM_654.95 0x0011D840-0x0011DB04: Item_preparation_list_chk_0 .. Item_preparation_get. See item_nm.c. */
+#include "gwx.h"
 #include "types.h"
+#include "itemprep.h"
 #include "pl.h"
 
 typedef struct ITEMW {
@@ -19,13 +21,6 @@ typedef struct ITEMW {
     u8 pad43[0x54 - 0x43];
 } ITEMW;
 
-/* one recipe: ingredient b (a is the table index), result item, list bit */
-typedef struct IPREP {
-    s16 a;                  /* 0x00 other ingredient */
-    s16 res;                /* 0x02 result item */
-    s8 x04;                 /* 0x04 rate table index */
-    s8 bit;                 /* 0x05 bit of the known-recipe list */
-} IPREP;
 
 extern ITEMW item_work[64];
 extern ITEMW *item_w_top;
@@ -81,16 +76,30 @@ int Item_preparation_list_chk_0(IPREP *);
 
 
 
+#ifdef VERSION_MHG
+int func_0010DD20(PLW *, IPREP *);
+
+int Item_preparation_list_chk_0(IPREP *e) {
+    s8 b;
+
+    if (func_0010DD20(&player_work[game_w[GWX(0xD1)]], e) != 1) {
+        return 0;
+    }
+    b = e->bit;
+    return (User_data[IPREP_LIST + (b >> 3)] & (1 << (b & 7))) != 0;
+}
+#else
 int Item_preparation_list_chk_0(IPREP *e) {
     s8 b = e->bit;
 
-    return (User_data[0x3D8 + (b >> 3)] & (1 << (b & 7))) != 0;
+    return (User_data[IPREP_LIST + (b >> 3)] & (1 << (b & 7))) != 0;
 }
+#endif
 
 void Add_to_Item_preparation_list_0(IPREP *e) {
     s8 b = e->bit;
 
-    User_data[0x3D8 + (b >> 3)] |= (1 << (b & 7)) & 0xFF;
+    User_data[IPREP_LIST + (b >> 3)] |= (1 << (b & 7)) & 0xFF;
 }
 
 int Item_preparation_list_chk(void) {
@@ -101,7 +110,7 @@ int Item_preparation_list_chk(void) {
         return 0;
     }
     bit = e->bit;
-    return (User_data[0x3D8 + (bit >> 3)] & (1 << (bit & 7))) != 0;
+    return (User_data[IPREP_LIST + (bit >> 3)] & (1 << (bit & 7))) != 0;
 }
 
 int Item_preparation_list_search(idx, dir, oa, ob)
@@ -126,13 +135,13 @@ u16 *ob;
         }
         dir = 1;
     }
-    n = 0x42;
+    n = IPREP_NUM;
     do {
         i = (s8)(i + dir);
-        if (i > 0x41) {
+        if (i > IPREP_NUM - 1) {
             i = 0;
         } else if (i < 0) {
-            i = 0x41;
+            i = IPREP_NUM - 1;
         }
         t = &Item_preparation_tbl2[(s8)i];
         e = Item_preparation_adrs((s16)t[0][0], (s16)t[0][1]);
@@ -147,10 +156,14 @@ u16 *ob;
     return 0;
 }
 
+#if !defined(G_PART)
 int Item_preparation_check_list(s16 n) {
-    return (User_data[0x3D8 + (n >> 3)] & (1 << (n & 7))) != 0;
+    return (User_data[IPREP_LIST + (n >> 3)] & (1 << (n & 7))) != 0;
 }
+#endif
 
+#if !defined(G_PART)
 IPREP *Item_preparation_get(s16 n) {
     return &Item_preparation_tbl_00[n];
 }
+#endif

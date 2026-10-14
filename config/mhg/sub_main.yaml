@@ -155,6 +155,8 @@ segments:
       - [0x049CA4, asm, text/em_material_sub]
       - [0x04D0E0, c, main/emw/emt02]
       - [0x04D0F0, asm, text/sub_main_func_004EDD70]
+      - [0x04D110, c, main/pl/pl51]
+      - [0x04D598, asm, text/pl_flag_ck]
       - [0x04D5A0, c, main/pl/pl_flagck]
       - [0x04D5D4, asm, text/pl_flag_set]
       - [0x04D5E0, c, main/pl/pl52]
