@@ -32,6 +32,16 @@ extern char lit_954_003582B0[];
 void Hit_id_init(void);
 u8 Get_hit_id(void);
 int pl_flag_ck(void *, int);
+#ifdef VERSION_MHG
+int Pl_Skill_ck(void *, int);
+int sub_main_func_004F0900(void *);
+#ifndef __MWERKS__
+int sub_main_func_004F0900(void *pl) { /* PC: the PS2 build links src/mhg/main/pl/pl_guard_g.c */
+    u8 k = ((u8 *)pl)[2];
+    return k == 0 || k == 3 || k == 4;
+}
+#endif
+#endif
 void pl_flag_set(void *, int);
 void pl_flag_clr(void *, int);
 void pl_atck_data_set2(void *, int);
@@ -222,6 +232,197 @@ void dm_value_add(HCHR *c, HSHL *sh) {
 }
 #endif
 
+#ifdef VERSION_MHG
+#if !defined(G_PART) || G_PART == 1
+void hit_mark_set_new(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
+    if (sh->mark == 0 || sh->stg != game_w.stage) {
+    } else {
+    if (c->x10 == 1 && c->kind == 0x1D) {
+        eft02_set(c, 0, pos);
+        func_5508F0(c, 6, 1, pos, 1.0f);
+        return;
+    }
+    if (c->x10 == 0 && sub_main_func_004F0900(c) == 1 && ((c->x3EB & 0xC0) == 0 || Pl_Skill_ck(c, 0xA9) == 1) &&
+        (pl_flag_ck(c, 0x8000) != 0 || (Pl_Skill_ck(c, 0x4F) == 1 && ((u8 *)c)[0x12] != 0 && ((u8 *)c)[0x940] != 0)) &&
+        func_639FC0(c->ang_y, c->dm_ang) == 1 && c->x748 >= 0x4B) {
+        eft02_set(c, 0, pos);
+        func_5508F0(c, 6, 1, pos, 1.0f);
+        return;
+    }
+    switch (sh->mark) {
+    case 0x63:
+        func_54B7E0(pos, 0, 1.0f);
+        break;
+    case 0x12:
+        func_5547B0(pos, 8, 0);
+        break;
+    case 1:
+    case 6:
+    case 7:
+    case 8:
+    case 0x14:
+    case 4:
+    case 5:
+    case 0x11:
+        switch (sh->mark) {
+        case 6:
+            func_5547B0(pos, 7, 1);
+            break;
+        case 7:
+            func_5547B0(pos, 7, 2);
+            break;
+        case 8:
+            func_5547B0(pos, 7, 3);
+            break;
+        case 0x11:
+            func_5547B0(pos, 7, 5);
+            break;
+        case 0x14:
+            func_5547B0(pos, 7, 6);
+            break;
+        case 4:
+        case 5:
+            switch (sh->xCB) {
+            case 0:
+            case 2:
+            case 3:
+                if (sh->mark == 4) {
+                    eft02_set(c, 7, pos);
+                } else {
+                    eft02_set(c, 5, pos);
+                }
+                eft02_set(c, 6, pos);
+                break;
+            }
+        case 1:
+            if (pl != 0 && pl->x10 == 0) {
+                if (sh->ailment & 0x10) {
+                    func_54D480(pos, 0, c->dm_ang, pl, 1.0f);
+                } else if (sh->ailment & 0x20) {
+                    func_54D480(pos, 2, c->dm_ang, pl, 1.0f);
+                } else if (sh->ailment & 0x40) {
+                    func_54D480(pos, 3, c->dm_ang, pl, 1.0f);
+                } else if (sh->ailment & 0x80) {
+                    func_54D480(pos, 8, c->dm_ang, pl, 1.0f);
+                } else if (sh->ailment & 2) {
+                    func_54D480(pos, 1, c->dm_ang, pl, 1.0f);
+                } else if (sh->ailment & 4) {
+                    func_54D480(pos, 7, c->dm_ang, pl, 1.0f);
+                } else if (sh->ailment & 1) {
+                    func_54D480(pos, 6, c->dm_ang, pl, 1.0f);
+                }
+            }
+            break;
+        }
+        switch (sh->xCB) {
+        case 1:
+            if (sh->x08 != 0xFF) {
+                eft02_set(c, 0, pos);
+                func_5508F0(c, 6, 1, pos, 1.0f);
+            }
+            break;
+        case 0:
+        default:
+            func_5508F0(c, 0, 0, pos, 0.8f);
+            func_550DD0(c, pos, 2, 0, sh->mark, 0.8f);
+            break;
+        case 2:
+            func_5508F0(c, 0, 2, pos, 0.8f);
+            func_550DD0(c, pos, 2, 2, sh->mark, 0.8f);
+            break;
+        case 3:
+            func_5508F0(c, 0, 3, pos, 1.0f);
+            func_550DD0(c, pos, 5, 3, sh->mark, 1.0f);
+            Eft02_set3(c, 0, 4, 3, pos, 1.0f);
+            break;
+        }
+        break;
+    case 9:
+    case 0xB:
+    case 0xD:
+    case 0xF:
+        func_5547B0(pos, 7, 0);
+    case 0xA:
+    case 0xC:
+    case 0xE:
+    case 0x10:
+        switch (sh->mark) {
+        case 9:
+        case 10:
+            if (sh->x08 != 0xFF) {
+                eft02_set(c, 0, pos);
+                func_5508F0(c, 6, 1, pos, 1.0f);
+            }
+            break;
+        case 15:
+        case 16:
+            func_5508F0(c, 0, 0, pos, 0.8f);
+            func_550DD0(c, pos, 2, 0, sh->mark, 0.8f);
+            break;
+        case 11:
+        case 12:
+            func_5508F0(c, 0, 2, pos, 0.8f);
+            func_550DD0(c, pos, 2, 2, sh->mark, 0.8f);
+            break;
+        case 13:
+        case 14:
+            func_5508F0(c, 0, 3, pos, 1.0f);
+            func_550DD0(c, pos, 5, 3, sh->mark, 1.0f);
+            Eft02_set5(c, sh->mark, 4, 3, pos, 1.0f);
+            break;
+        }
+        break;
+    case 2:
+        func_5508F0(c, 8, 0, pos, 1.0f);
+        func_5508F0(c, 9, 0, pos, 1.0f);
+        break;
+    case 3:
+        Eft06_set_hit(c, 0, 0);
+        break;
+    case 0x17:
+        if (c->x10 == 0) {
+            Eft06_set_hit(c, 0, 1);
+        }
+        break;
+    case 0x15:
+        if (c->x10 == 0) {
+            Eft06_set_hit(c, 0, 2);
+        }
+        break;
+    case 0x16:
+        if (c->x10 == 0) {
+            Eft06_set_hit(c, 0, 3);
+        }
+        break;
+    case 0x13:
+        Eft06_set_hit(c, 9, 0);
+        break;
+    case 0x18:
+        if (pl != 0 && pl->x10 == 0) {
+            if (sh->ailment & 0x10) {
+                func_54D480(pos, 0, c->dm_ang, pl, 1.5f);
+            } else if (sh->ailment & 0x20) {
+                func_54D480(pos, 2, c->dm_ang, pl, 1.2f);
+            } else if (sh->ailment & 0x40) {
+                func_54D480(pos, 3, c->dm_ang, pl, 1.2f);
+            } else if (sh->ailment & 0x80) {
+                func_54D480(pos, 8, c->dm_ang, pl, 1.2f);
+            } else if (sh->ailment & 2) {
+                func_54D480(pos, 1, c->dm_ang, pl, 1.2f);
+            } else if (sh->ailment & 4) {
+                func_54D480(pos, 7, c->dm_ang, pl, 1.2f);
+            } else if (sh->ailment & 1) {
+                func_54D480(pos, 6, c->dm_ang, pl, 1.2f);
+            }
+        }
+        func_5508F0(c, 0, 2, pos, 0.8f);
+        func_550DD0(c, pos, 2, 2, 12, 0.8f);
+        break;
+    }
+    }
+}
+#endif
+#else
 #if !defined(G_PART)
 void hit_mark_set_new(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
     if (sh->mark == 0 || sh->stg != game_w.stage) {
@@ -387,6 +588,7 @@ void hit_mark_set_new(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
     }
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2

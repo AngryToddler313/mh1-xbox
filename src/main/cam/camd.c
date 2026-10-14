@@ -54,6 +54,9 @@ extern f32 *lpView;
 void flMemset(void *, s32, s32);
 void StageCamInit(CAMW *, u8);
 void flvecCopy(f32 *, f32 *);
+#ifdef VERSION_MHG
+s32 GetWallHitLine(f32 *, f32 *, f32 *, s32);
+#endif
 void cam_sw_set_sub(CAMW *);
 s8 Get_cam_grid_XZ(s16 *, s16 *, f32 *, u8 *);
 s32 SetAreaData(CAMW *);
@@ -96,13 +99,13 @@ void NPCZoomInCameraRequest(PLW *npc) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void NPCZoomInCameraCancel(void) {
     CameraWork.sl[3].d.ex.zoom.req = 0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 s32 NPCZoomInCameraCheck(void) {
     return CameraWork.sl[3].d.ex.zoom.req != 0;
 }
@@ -162,17 +165,21 @@ void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void cam_init_sub_demo(CAMW *cw, CAMS *cs) {
     cs->roll = 0.0f;
     cs->fov = 0.9599311f;
     cs->d.demo.no = 0;
     cs->d.demo.state = 0;
     cs->d.demo.arg = 0;
+#ifdef VERSION_MHG
+    cs->d.demo.x65 = 0;
+    cs->d.demo.x66 = 0;
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void cam_sub_demo(CAMW *cw, CAMS *cs) {
     CAMD_DEMO *d;
     s32 r;
@@ -186,6 +193,9 @@ void cam_sub_demo(CAMW *cw, CAMS *cs) {
         }
         d->no = cw->demo_req;
         d->arg = cw->demo_arg;
+#ifdef VERSION_MHG
+        d->x66 = 0;
+#endif
         cs->mode.b++;
         cs->step.w = 0;
     case 1:
@@ -204,19 +214,22 @@ void cam_sub_demo(CAMW *cw, CAMS *cs) {
         d->no = 0;
         d->state = 0;
         d->arg = 0;
+#ifdef VERSION_MHG
+        d->x65 = 0;
+#endif
         break;
     }
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 void DemoCameraRequest(s8 no, s32 arg) {
     CameraWork.demo_req = no;
     CameraWork.demo_arg = arg;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void DemoCameraCancel(void) {
     CAMS *cs = &CameraWork.sl[4];
 
@@ -224,22 +237,33 @@ void DemoCameraCancel(void) {
     cs->d.demo.no = 0;
     cs->d.demo.state = 0;
     cs->d.demo.arg = 0;
+#ifdef VERSION_MHG
+    cs->d.demo.x66 = 0;
     CameraWork.demo_req = 0;
+    cs->d.demo.x65 = 0;
+#else
+    CameraWork.demo_req = 0;
+#endif
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART)
 s8 DemoCameraCheck(void) {
     return CameraWork.sl[4].d.demo.state;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 s32 point_camera(CAMW *cw, CAMS *cs) {
     CAMD_DEMO *d;
     s32 r;
 
     d = &cs->d.demo;
+#ifdef VERSION_MHG
+    if (d->x65 != 0 && (cw->sw_trg & 0x4000) != 0) {
+        return 1;
+    }
+#endif
     switch (cs->step.b) {
     case 0:
         cs->step.b++;
@@ -264,7 +288,7 @@ s32 point_camera(CAMW *cw, CAMS *cs) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static f32 *get_em_local(CAMD_DEMO *d) {
     u8 *em = *(u8 **)((u8 *)d + 0x50);
 
@@ -276,7 +300,7 @@ static f32 *get_em_local(CAMD_DEMO *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void cmd_set_pos(f32 *out, CAMD_DEMO *d, s32 *cmd) {
     PLW *pl;
     f32 *r;
@@ -310,7 +334,7 @@ void cmd_set_pos(f32 *out, CAMD_DEMO *d, s32 *cmd) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void cmd_set_tar(f32 *out, CAMD_DEMO *d, s32 *cmd) {
     PLW *pl;
     f32 *r;
@@ -341,7 +365,7 @@ void cmd_set_tar(f32 *out, CAMD_DEMO *d, s32 *cmd) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void cmd_copy(CAMD_DEMO *d, s32 n) {
     switch (n) {
     case 0:
@@ -360,8 +384,20 @@ void cmd_copy(CAMD_DEMO *d, s32 n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void get_angle(s16 *a, CAMS *cs) {
+#ifdef VERSION_MHG
+    CAMD_DEMO *d = &cs->d.demo;
+    if (cs->cnt_max > 0) {
+        a[0] = d->ax - d->ax0;
+        a[0] = d->ax0 + a[0] * cs->cnt / cs->cnt_max;
+        a[1] = d->ay - d->ay0;
+        a[1] = d->ay0 + a[1] * cs->cnt / cs->cnt_max;
+    } else {
+        a[0] = d->ax;
+        a[1] = d->ay;
+    }
+#else
     if (cs->cnt_max > 0) {
         a[0] = cs->ax - cs->ax0;
         a[0] = cs->ax0 + a[0] * cs->cnt / cs->cnt_max;
@@ -371,10 +407,11 @@ void get_angle(s16 *a, CAMS *cs) {
         a[0] = cs->ax;
         a[1] = cs->ay;
     }
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void cmd_cam_move(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
     s16 ang[2];
     FLMAT m;
@@ -383,6 +420,9 @@ void cmd_cam_move(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
     PLW *pl;
     f32 *r;
     f32 *vz;
+#ifdef VERSION_MHG
+    f32 out[3];
+#endif
 
     if (cs->cnt_max > 0) {
         t = (f32)cs->cnt / (f32)cs->cnt_max;
@@ -452,6 +492,13 @@ void cmd_cam_move(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
         cpInterVector(cs->eye, d->eye, d->eye_o, t);
         break;
     }
+#ifdef VERSION_MHG
+    if (d->x66 != 0) {
+        if (GetWallHitLine(cs->tar, cs->eye, out, 9) == 1) {
+            flvecCopy(cs->eye, out);
+        }
+    }
+#endif
     cs->roll = d->roll * t + d->roll_o * u;
     cs->fov = d->fov * t + d->fov_o * u;
 }

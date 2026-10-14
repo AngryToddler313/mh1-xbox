@@ -538,13 +538,13 @@ void cmd_copy(CAMD_DEMO *d, s32 n) {
 
 void get_angle(s16 *a, CAMS *cs) {
     if (cs->cnt_max > 0) {
-        a[0] = cs->ax - cs->ax0;
-        a[0] = cs->ax0 + a[0] * cs->cnt / cs->cnt_max;
-        a[1] = cs->ay - cs->ay0;
-        a[1] = cs->ay0 + a[1] * cs->cnt / cs->cnt_max;
+        a[0] = CS_DEMO_AX(cs) - CS_DEMO_AX0(cs);
+        a[0] = CS_DEMO_AX0(cs) + a[0] * cs->cnt / cs->cnt_max;
+        a[1] = CS_DEMO_AY(cs) - CS_DEMO_AY0(cs);
+        a[1] = CS_DEMO_AY0(cs) + a[1] * cs->cnt / cs->cnt_max;
     } else {
-        a[0] = cs->ax;
-        a[1] = cs->ay;
+        a[0] = CS_DEMO_AX(cs);
+        a[1] = CS_DEMO_AY(cs);
     }
 }
 
@@ -765,16 +765,16 @@ s32 point_cam_sub(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
             d->x4D = c[2];
             break;
         case 8:
-            cs->ax = *(s16 *)(c + 2);
+            CS_DEMO_AX(cs) = *(s16 *)(c + 2);
             break;
         case 9:
-            cs->ax0 = *(s16 *)(c + 2);
+            CS_DEMO_AX0(cs) = *(s16 *)(c + 2);
             break;
         case 10:
-            cs->ay = *(s16 *)(c + 2);
+            CS_DEMO_AY(cs) = *(s16 *)(c + 2);
             break;
         case 11:
-            cs->ay0 = *(s16 *)(c + 2);
+            CS_DEMO_AY0(cs) = *(s16 *)(c + 2);
             break;
         case 12:
             d->x54 = 0.0625f * w[1];
@@ -812,8 +812,8 @@ s32 point_cam_sub(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
             } else {
                 flvecCopy(d->eye, cs->eye);
                 flvecCopy(d->tar, cs->tar);
-                cs->ax = cs->ax0;
-                cs->ay = cs->ay0;
+                CS_DEMO_AX(cs) = CS_DEMO_AX0(cs);
+                CS_DEMO_AY(cs) = CS_DEMO_AY0(cs);
                 d->roll = cs->roll;
                 d->fov = cs->fov;
                 cs->cnt_max = cs->cnt = -1;
@@ -903,9 +903,9 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
         if (r != 0xFF) {
             cs->req = 0xFF;
             o2 = (CAMS *)((u8 *)cw + (r << 8) + 0x80);
-            cs->ang = d->ang = 10430.378f * flArcTan2(o2->eye[0] - o2->tar[0], o2->eye[2] - o2->tar[2]);
+            CS_STD_ANG(cs) = d->ang = 10430.378f * flArcTan2(o2->eye[0] - o2->tar[0], o2->eye[2] - o2->tar[2]);
         } else if (cw->cam_old != 0) {
-            cs->ang = d->ang = 10430.378f * flArcTan2(cw->eye[0] - cw->tar[0], cw->eye[2] - cw->tar[2]);
+            CS_STD_ANG(cs) = d->ang = 10430.378f * flArcTan2(cw->eye[0] - cw->tar[0], cw->eye[2] - cw->tar[2]);
         } else if ((d->trg & 8) || pl->x8C8 != 0 || d->wall != 0) {
             d->wall = 0;
             d->ang = pl->ang[1] + 0x7FFF + 1;
@@ -927,7 +927,7 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
         }
     }
     a[0] = 0;
-    a[1] = cs->ang;
+    a[1] = CS_STD_ANG(cs);
     a[2] = 0;
     cpRotMatrix(a, (f32 *)&m);
     area = cw->area;
@@ -1023,13 +1023,13 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
             d->gflag = -1;
         }
     }
-    ca = cs->ang;
+    ca = CS_STD_ANG(cs);
     da = d->ang;
     diff = (u16)(da - ca);
     if (diff > 0x8000) {
-        cs->ang = ca - (s16)((u16)(ca + 0x10000 - da) / 6);
+        CS_STD_ANG(cs) = ca - (s16)((u16)(ca + 0x10000 - da) / 6);
     } else {
-        cs->ang = ca + (s16)(diff / 6);
+        CS_STD_ANG(cs) = ca + (s16)(diff / 6);
     }
     d->tar[1] = d->tar[1] + 0.25f * (d->tar_d[1] - d->tar[1]);
     d->eye[1] = d->eye[1] + 0.125f * (d->eye_d[1] - d->eye[1]);
@@ -1194,8 +1194,8 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
             break;
         }
         SubVector(cs->vec, d->tar, d->eye);
-        cs->ay = AarcTan2(cs->vec[0], cs->vec[2]);
-        cs->ax = AarcTan2(-cs->vec[1], CalcDistanceXZ(d->tar, d->eye));
+        CS_STG_AY(cs) = AarcTan2(cs->vec[0], cs->vec[2]);
+        CS_STG_AX(cs) = AarcTan2(-cs->vec[1], CalcDistanceXZ(d->tar, d->eye));
         d->vy = 0;
         d->vx = 0;
         break;
@@ -1229,8 +1229,8 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
         }
         SubVector(cs->vec, d->tar, d->eye);
         if (cw->area_chg != 0) {
-            cs->ay = AarcTan2(cs->vec[0], cs->vec[2]);
-            cs->ax = AarcTan2(-cs->vec[1], CalcDistanceXZ(d->tar, d->eye));
+            CS_STG_AY(cs) = AarcTan2(cs->vec[0], cs->vec[2]);
+            CS_STG_AX(cs) = AarcTan2(-cs->vec[1], CalcDistanceXZ(d->tar, d->eye));
             d->vy = 0;
             d->vx = 0;
         } else {
@@ -1238,18 +1238,18 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
             sc = CalcDistanceXZ(d->tar, d->eye);
             tx = AarcTan2(-cs->vec[1], sc);
             sc = d->fov;
-            ax = cs->ax;
+            ax = CS_STG_AX(cs);
             lim = 521.5189f * sc;
             spd = 52.15189f * sc;
             df = tx - ax;
             if (lim < df) {
-                cs->ax = tx - lim;
+                CS_STG_AX(cs) = tx - lim;
                 d->vx = spd;
             } else if (df < -lim) {
-                cs->ax = tx + lim;
+                CS_STG_AX(cs) = tx + lim;
                 d->vx = -spd / 2;
             } else if (d->vx != 0) {
-                cs->ax = ax + d->vx;
+                CS_STG_AX(cs) = ax + d->vx;
                 n = (s16)(d->vx >> 3);
                 if (n == 0) {
                     d->vx = 0;
@@ -1257,21 +1257,21 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
                     d->vx = d->vx - n;
                 }
             }
-            ay = cs->ay;
+            ay = CS_STG_AY(cs);
             lim = 1.4285715f * (651.8986f * d->fov);
             df = ty - ay;
             if (lim < df) {
                 d->vy = ay;
-                cs->ay = ty - lim;
-                d->vy = cs->ay - d->vy;
+                CS_STG_AY(cs) = ty - lim;
+                d->vy = CS_STG_AY(cs) - d->vy;
                 d->vy = d->vy - (s16)(d->vy >> 2);
             } else if (df < -lim) {
                 d->vy = ay;
-                cs->ay = ty + lim;
-                d->vy = cs->ay - d->vy;
+                CS_STG_AY(cs) = ty + lim;
+                d->vy = CS_STG_AY(cs) - d->vy;
                 d->vy = d->vy - (s16)(d->vy >> 2);
             } else if (d->vy != 0) {
-                cs->ay = ay + d->vy;
+                CS_STG_AY(cs) = ay + d->vy;
                 n = (s16)(d->vy * 20 / 100);
                 if (n == 0) {
                     d->vy = 0;
@@ -1283,8 +1283,8 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
         v[0] = 0;
         v[1] = 0;
         v[2] = flvecCalcLength(cs->vec);
-        flvecRotX(v, 0.000095873799f * cs->ax);
-        flvecRotY(v, 0.000095873799f * cs->ay);
+        flvecRotX(v, 0.000095873799f * CS_STG_AX(cs));
+        flvecRotY(v, 0.000095873799f * CS_STG_AY(cs));
         AddVector(d->tar, d->eye, v);
         d->fov = base * ZoomRateCalc(flvecCalcDistance(d->tar, d->eye), area);
         break;
@@ -1465,8 +1465,13 @@ void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
         AddVector(cs->eye, w, t);
         flvecApplyMat33(t, &pch_pos[d->type][3], (f32 *)d->m);
         AddVector(cs->tar, w, t);
+#ifdef VERSION_MHG
+        d->ang = pl->ang[1] + 0x7FFF + 1;
+        d->x60 = pl->ang[1] + 0x7FFF + 1; /* G: the slot's yaw lives in the work (MH1 CAMS.ang) */
+#else
         cs->ang = pl->ang[1] + 0x7FFF + 1;
         d->ang = pl->ang[1] + 0x7FFF + 1;
+#endif
         cs->act = 1;
         return;
     }

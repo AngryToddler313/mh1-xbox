@@ -54,7 +54,6 @@ void flmatInit(FLMAT *);
 void flmatRotXYZ33(FLMAT *, f32, f32, f32);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
 
-#if !defined(G_PART)
 void cam_init_sub_pchngr(CAMW *cw, CAMS *cs) {
     CAMD_PCH *d = &cs->d.pch;
 
@@ -65,9 +64,7 @@ void cam_init_sub_pchngr(CAMW *cw, CAMS *cs) {
     d->range = d->max - d->min;
     d->fov0 = d->fov1 = cs->fov;
 }
-#endif
 
-#if !defined(G_PART)
 void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
     CAMD_PCH *d;
     PLW *pl;
@@ -179,15 +176,18 @@ void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
         AddVector(cs->eye, w, t);
         flvecApplyMat33(t, &pch_pos[d->type][3], (f32 *)d->m);
         AddVector(cs->tar, w, t);
+#ifdef VERSION_MHG
+        d->ang = pl->ang[1] + 0x7FFF + 1;
+        d->x60 = pl->ang[1] + 0x7FFF + 1; /* G: the slot's yaw lives in the work (MH1 CAMS.ang) */
+#else
         cs->ang = pl->ang[1] + 0x7FFF + 1;
         d->ang = pl->ang[1] + 0x7FFF + 1;
+#endif
         cs->act = 1;
         return;
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 s32 pch_lock_chk(PLW *pl) {
     switch (pl->char0) {
     case 0x3EA:
@@ -200,4 +200,3 @@ s32 pch_lock_chk(PLW *pl) {
     }
     return 0;
 }
-#endif

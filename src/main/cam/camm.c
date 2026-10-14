@@ -98,6 +98,14 @@ f32 flvecCalcLength(f32 *);
 void cpInterVector(f32, f32 *, f32 *, f32 *);
 
 
+#ifdef VERSION_MHG
+void func_001DD5E0(void); /* G only: camera close to the hunter */
+#ifndef __MWERKS__
+void func_001DD5E0(void) {} /* PC: not ported (x5FC is never set) */
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 1
 void CameraMove(void) {
     PLW *pl = CameraWork.pl;
     CAMW *cw = &CameraWork;
@@ -107,6 +115,12 @@ void CameraMove(void) {
     CAMS *c2;
     u32 n;
 
+#ifdef VERSION_MHG
+    cw->x5FC = 0;
+    if (pl->be_flag == 0) {
+        return;
+    }
+#endif
     cam_sw_set_sub(cw);
     cw->grid = Get_cam_grid_XZ(&cw->gx, &cw->gz, pl->pos, cw->x590);
     cw->area_chg = 0;
@@ -177,8 +191,68 @@ void CameraMove(void) {
     cam2view(cw);
     cw->reset = 0;
     View_move();
+#ifdef VERSION_MHG
+    if (cw->x5FC != 0) {
+        func_001DD5E0();
+    }
+#endif
 }
+#endif
 
+#ifdef VERSION_MHG
+#if !defined(G_PART) || G_PART == 2
+void cam_init_sub_std(CAMW *cw, CAMS *cs) {
+    CAMD_STD *d;
+    PLW *pl;
+    f32 in[3];
+    f32 o[3];
+    s32 a[3];
+    FLMAT m;
+
+    pl = cw->pl;
+    cw->x5F7 = 0;
+    cs->req = 0xFF;
+    d = &cs->d.std;
+    if (cw->area->type != 0) {
+        d->cnf = &cam_cnf_chs;
+    } else {
+        d->cnf = &cw->area->u.cnf;
+    }
+    d->cnfe = &d->cnf->e[cw->zoom];
+    d->fov = d->fov_d = d->cnf->fov;
+    d->roll = d->cnf->roll;
+    d->ang2 = pl->ang[1] + 0x7FFF + 1;
+    a[0] = 0;
+    a[1] = d->ang2;
+    a[2] = 0;
+    cpRotMatrix(a, (f32 *)&m);
+    in[0] = 0;
+    in[1] = d->cnfe->y;
+    in[2] = d->cnfe->z;
+    flvecApplyMat33(o, in, (f32 *)&m);
+    d->tar[0] = pl->pos[0];
+    d->tar[1] = pl->pos[1] + d->cnfe->tar_y;
+    d->tar[2] = pl->pos[2];
+    d->eye[0] = d->tar[0] + o[0];
+    d->eye[1] = pl->pos[1] + o[1];
+    d->eye[2] = d->tar[2] + o[2];
+    d->ang = d->ang2;
+    flvecCopy(d->eye_d, d->eye);
+    flvecCopy(d->tar_d, d->tar);
+    d->gnd = GetGroundHit(d->tar);
+    d->gflag = -1;
+    flvecCopy(d->old, d->eye);
+    d->x6E = 0;
+    d->hit_h = 0;
+    d->x2C = 0;
+    d->x68 = 0;
+    d->x7B = 0;
+    d->x7A = 0;
+    d->x29 = 0;
+    d->x2A = 0;
+}
+#endif
+#else
 void cam_init_sub_std(CAMW *cw, CAMS *cs) {
     CAMD_STD *d;
     PLW *pl;
@@ -198,9 +272,9 @@ void cam_init_sub_std(CAMW *cw, CAMS *cs) {
     d->cnfe = &d->cnf->e[cw->zoom];
     d->fov = d->cnf->fov;
     d->roll = d->cnf->roll;
-    cs->ang = pl->ang[1] + 0x7FFF + 1;
+    CS_STD_ANG(cs) = pl->ang[1] + 0x7FFF + 1;
     a[0] = 0;
-    a[1] = cs->ang;
+    a[1] = CS_STD_ANG(cs);
     a[2] = 0;
     cpRotMatrix(a, (f32 *)&m);
     in[0] = 0;
@@ -213,7 +287,7 @@ void cam_init_sub_std(CAMW *cw, CAMS *cs) {
     d->eye[0] = d->tar[0] + o[0];
     d->eye[1] = pl->pos[1] + o[1];
     d->eye[2] = d->tar[2] + o[2];
-    d->ang = cs->ang;
+    d->ang = CS_STD_ANG(cs);
     flvecCopy(d->eye_d, d->eye);
     flvecCopy(d->tar_d, d->tar);
     d->gnd = GetGroundHit(d->tar);
@@ -223,3 +297,4 @@ void cam_init_sub_std(CAMW *cw, CAMS *cs) {
     d->roll_d = d->roll;
     d->x6E = 0;
 }
+#endif
