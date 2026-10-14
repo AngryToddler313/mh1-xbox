@@ -1814,3 +1814,30 @@ Result: G matched 15.54% -> 16.06% of bytes; clean G rebuild 7 OK, MH1 5 OK, MH1
 - hit_mark_set_new (skill checks via G-only func 0x4F0900 = pl_guard_g.c, new mark 0x18) and hit_calc_shl (hit-body flag 4) match G; D_63FA10 = 0x672ED0 in g_names.txt.
 - mccomb.c now matches G as ONE file (registered 0x22AF50-0x231BD4 + rodata 0x2EA730-0x2EA90C): the 26 new G card steps (MH1-hunter import, ops 0xB-0xD) and the helpers 0x22B0D0/B8C0/BA20 are in it under MC_GL. Lessons: (1) a static callee in the same TU gives MWCC register knowledge: callers keep a0/a1 across `mc_r_no_set(w,n)` (so `w->msg = 12` reuses a1) and skip reloads after a static helper (func_0022B0D0 must be static); G's code only matches in the original TU. (2) `(u8 *)((u32)((u32)data_load_ptr + 0x40000) + 0x40000)` keeps the two 0x40000 adds separate with one constant register; a plain pointer sum folds to 0x80000. (3) McActResult ladders: cases in source order 0, -1, -253, -254, -252, -255, default give G's compare order; a stale constant in a1/t0 is a CSE of the same literal. (4) `tools/draft.py mhg/main func_XXXXXXXX` runs m2c on the G asm (asm/mhg/main/text).
 - Skill_set_PL and its helpers stay near-matches (static/int-return variants of sub_main_func_004EF470/7A0/8E0 tried: the helpers differ only in which register holds the table base; 8E0 skips the sign extension of the callee result before `!= 0`). pl_snd01: G's pl01_effect_move is at 0x4E2EB0 (map says 0x4A9150) and calls two huge G-only functions first: not attempted. trans_stage: not attempted (near-match in MH1). `tools/mhg_parts.py --redo` over all guarded files gave only +0 net bytes and DROPS hand-added rodata lines and parts it does not name `_pN` (hit_1, camd_p4): not applied.
+
+### G round 7 (menus on the PC, G parts, small G matches; 14 Oct 2026)
+Result: G matched 16.07% -> 16.26% (main 16.45 -> 16.87, sub_main 13.91 -> 14.44); clean G rebuild 7 OK, MH1 5 OK, MH1 PC + test_quest_loop OK, G PC builds.
+- Owner report "menu options selectable but invisible": the G PC build had NO-OP STAND-INS for G-only helpers that G code calls. func_0012E6E0
+  (= TransSet with a layer byte) was how G's Select_task queues disp_mode_menu, so the whole GAME MENU (NEW GAME / CONTINUE / GALLERY / OPTIONS / NETWORK
+  OPTIONS) was never drawn although it still took input. Also func_0010EF50 (G: load file + load_texlist; PC: load_texlist(file, base, type)) and func_0012DD90
+  (Disp_button with a fifth argument). Now defined in omake.c under `#ifndef __MWERKS__`. List of what is still undefined on the PC:
+  build/mhg/pctree/build/pc/undefined.txt after a G PC build (mixed data and functions); G-only functions that the C calls: select_func_00542B50/80,
+  func_001F19C0, sub_main_func_004A9960, npc_move_func_190, vs_square_func_*.
+- func_0010DD20 (recipe usable by the hunter: skill 0xA8 or item 6 for flag-1 recipes) was a stand-in returning 0, so the mix menu offered no recipe; written
+  (item03.c, matches G) with sub_main_func_004F0020 (skill value by source id, pl53.c, matches G).
+- Item menu: item_list_title (0x2EC640) was zero ("(null)" title), item_cmd_str is G's 5x3 pointer table at sub_main 0x5263C0 (stride 0xC, 3rd command
+  "deliver quest item"), equip_exp_str_sw_attr 0x527EA0 (data_map's low guess was wrong). G's Pit_disp_item_list/func_0011A730 written for the PC
+  (menu_disp_nm.c; frame at 0x25E5A0). Not verified with items in the pouch (the quest-10 stand-in hunter has none). Left: lv123str and the other
+  zero tables of tables_missing.txt (a pointer-array finder is the fast way: look for G pointer arrays whose strings equal MH1's).
+- "CHARACTER SELECTAAAA" header in the select module's character dialog: the title text runs past the end (A glyphs); not looked at (select module).
+- pl53: sub_main_func_004EF470/7A0 now match (`row = tbl[kind]; row += idx;`, and `r = 0` before it); `if (f(...))` instead of `!= 0` removes
+  the extra sign extension of an s8 return; 004EF8E0 still differs at `p = n * p` (mine keeps p extended, G re-extends), 004EF540 and Skill_set_PL open.
+- cam_plEX_zoom matches: G's cpInterVector keeps the MH1 argument order (out, a, b, t) so t moves to f12 last; the pad bits are Psw[4].
+- gfs01 (font): G constants (6 font stacks, 20 palettes, game_w 0x240, select_w 0xF0 with the kept fields at 0xD0/0xDC, Load_overlay(1, 2), AskData
+  0x99000/0xC87, lpSKey+0x666); all_reset differs more (G calls more). build.py does not rebuild a part when only its INCLUDED src changes: delete
+  build/mhg/src/.../X_pN.c.o by hand.
+- tools/mhg_parts.py run over the files that had never been tried added 12 files' worth of parts (f_chat, f_ud, f_hk, f_framec, f_game(b), f_mc, f_disp,
+  f_reward, f_stage(b)); dropparts removed the ones that did not link. f_sphr/f_sk/f_quest and the "no part survives" files fail because their local
+  functions are static in one TU (a part cannot see them): they need whole-file G versions.
+- 189 functions (44 KB) in main/sub_main/game are within 8 instructions of G when the MH1 source is compiled for G; the list is the quickest next win
+  (constants and struct offsets). Method: check.py -v per file, #ifdef VERSION_MHG constants, mhg_parts --redo.
