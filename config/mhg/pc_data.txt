@@ -1,0 +1,96 @@
+# G data the PC build imports that config/mhg/symbols lacks or sizes wrongly (tools/mhg_pcmeta.py
+# adds these to build/mhg/pc/symbols; tools/gen_rt_tables.py imports every name here, at the size
+# given). Names are the G split's labels (D_XXXXXXXX) until the tables are understood.
+# Addresses and sizes only (from asm/mhg data labels and the code that reads them); agent A.
+[main]
+quest_w = 0x0032D010; // size:0x290            # G grew it (Quest_init memsets 0x290)
+select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xAC)
+D_002EECF0 = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
+[sub_main]
+D_004FD8D0 = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to D_00541E40 (Quest_start)
+D_004FDB40 = 0x004FDB40; // size:0x20           # reward-level bonus by random number (Quest_start, quest_w.x14E)
+D_004FDB60 = 0x004FDB60; // size:0xE0           # size distributions (7 x 32 bytes, through D_004FDC40)
+D_004FDC40 = 0x004FDC40; // size:0x20           # pointers to the size distributions
+D_004FDC60 = 0x004FDC60; // size:0x20           # random number -> size distribution
+D_004FDCF0 = 0x004FDCF0; // size:0x220          # quest file (AFS index) lists per quest group 00xxx..20xxx
+D_004FDF10 = 0x004FDF10; // size:0x20           # pointers to the six lists (Quest_start)
+D_00502300 = 0x00502300; // size:0xD0           # em_cmd_init's tables for game_w.x2E 0, 1 (G-only)
+D_005023D0 = 0x005023D0; // size:0xD0           # x2E 2
+D_005024A0 = 0x005024A0; // size:0xD0           # x2E 3
+em_cmd0_tbl = 0x00502570; // size:0xD0          # x2E 4 (G has 52 monster kinds: 0xD0 per table)
+em_cmd1_tbl = 0x00502640; // size:0xD0
+em_cmd2_tbl = 0x00502710; // size:0xD0
+em_cmd3_tbl = 0x005027E0; // size:0xD0
+em_cmd4_tbl = 0x005028B0; // size:0xD0
+em_cmd5_tbl = 0x00502980; // size:0xD0
+em_cmd6_tbl = 0x00502A50; // size:0xD0          # x2E 10
+sun_pos_tbl = 0x005243E0; // size:0x170 noimport # per stage (G 92 stages): G's stage_set_set copies it into stage_work+0xC8 (sub_main 0x4A0E50)
+D_00526000 = 0x00526000; // size:0x70           # {event flag, ?, quest} training quests whose sizes need the flag (sub_main_func_004F3B00)
+D_00541E30 = 0x00541E30; // size:0x10           # the host's 15 random bytes (online)
+D_00541E40 = 0x00541E40; // size:0xA            # size limits in use (Quest_start copies D_004FD8D0)
+[game]
+D_006D5C80 = 0x006D5C80; // size:0x180          # start-area weight lists (D_002EECF0 points here)
+D_6D5E00 = 0x006D5E00; // size:0x30             # per mission map (MISSION2+0x14): pointer lists into D_002EECF0
+
+# Tables indexed by monster kind: MH1 has 35 kinds, G 52 (sizes from MH1's x 52/35, where G's next
+# label leaves room; tools/mhg_pcmeta.py otherwise keeps MH1's size)
+[main]
+enemy_icon_tbl = 0x0025D900; // size:0x34
+[sub_main]
+eft06_em_scale = 0x00503B80; // size:0xD0
+em_prog_tbl = 0x00520800; // size:0xD0
+em_dur_tbl = 0x005088C0; // size:0xD0
+[game]
+eft19_em_ofs_tbl = 0x0067DA30; // size:0xD0
+enemy_mahi_size = 0x0066F0B0; // size:0xD0
+canmot_data_tbl = 0x00673890; // size:0xD0
+em_absolute_ninshiki_len_tbl = 0x00673F40; // size:0xD0
+em_atk_mode_timer_tbl = 0x00676420; // size:0x68
+em_boss_tbl = 0x00676890; // size:0x34
+em_egg_action_flag_tbl = 0x006765B0; // size:0x34
+em_hate_add_tbl = 0x00674AD0; // size:0xD0
+em_hate_sub_tbl = 0x00674BC0; // size:0xD0
+em_hungry_tbl = 0x00674CF0; // size:0xD0
+em_ikari_data_tbl = 0x00676280; // size:0xD0
+em_kehai_add_tbl = 0x006743F0; // size:0xD0
+em_mahi_data_tbl = 0x006755B0; // size:0xD0
+em_max_kehai_hate_tbl = 0x00674020; // size:0xD0
+em_neck_tbl = 0x00673620; // size:0xD0
+em_nest_tbl = 0x006767C0; // size:0xD0
+em_ninshiki_timer_tbl = 0x006744C0; // size:0x68
+em_pl_find_action_tbl = 0x00676CA0; // size:0x34
+em_poison_data_tbl = 0x00675250; // size:0xD0
+em_range_ang_data_tbl = 0x00673CA0; // size:0xD0
+em_range_data_tbl = 0x00673BC0; // size:0xD0
+em_search_tbl = 0x00673510; // size:0xD0
+em_sleep2_data_tbl = 0x006759F0; // size:0xD0
+em_sleep_data_tbl = 0x00675900; // size:0xD0
+em_special_dmg_tbl = 0x00676350; // size:0xD0
+em_suimin_tbl = 0x00674EE0; // size:0xD0
+em_thirst_tbl = 0x00674E00; // size:0xD0
+em_tsuushin_tbl = 0x00676570; // size:0x34
+em_wall_val_tbl = 0x00676500; // size:0x68
+enemy_scale = 0x0066EE40; // size:0xD0
+enemy_size = 0x0066EE00; // size:0x34
+exmot_data_tbl = 0x006737C0; // size:0xD0
+mot_data_tbl = 0x006736F0; // size:0xD0
+em_area_mv_tbl = 0x00676BD0; // size:0xD0
+em_eye_dmg_timer_tbl = 0x00676490; // size:0x68
+# Tables MH1 names that G moved or reshaped (found from G's code that reads them; agent A)
+[game]
+fish_type_tbl = 0x0067E510; // size:0x70        # 2 x 14 lists (G fish_type_set: mission header 0x42 picks the set)
+em_body_tbl = 0x00672ED0; // size:0xD0          # (hit_calc_shl, body_hit_sub_new: aligned lui/lo in the edited twins)
+em_hit_push_tbl = 0x00673150; // size:0xD0
+em_pos_tbl = 0x00673D70; // size:0xD0           # (em_status_init)
+em_hagi_type_tbl = 0x006D5D50; // size:0xD0     # (Em_hagi_point_set; MH1 kept it in main)
+Item_get_tbl = 0x006D4350; // size:0x3A0        # (Stage_item_probability_get; agent C found it too)
+em01_runaway_timer_tbl = 0x00694660; // size:0xA0
+em12_scale_tbl = 0x0069D540; // size:0x2C
+em14_stay_timer_tbl = 0x006A03D0; // size:0xA0
+em15_runaway_timer_tbl = 0x006A4970; // size:0xA0
+em21_runaway_timer_tbl = 0x006B6010; // size:0xA0
+em29_type_tbl = 0x006BAFC0; // size:0x54
+st45_pos_tbl = 0x0069D570; // size:0x78
+st56_pos_tbl = 0x0069D710; // size:0x78
+[sub_main]
+enemy_name = 0x00527A40; // size:0xD0           # (quest_condition_print, disp_monster_list)

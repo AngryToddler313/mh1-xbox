@@ -24,6 +24,7 @@ Usage: python3 tools/mhg_pcmeta.py [--eval]
 """
 import bisect
 import collections
+import glob
 import os
 import re
 import struct
@@ -54,6 +55,66 @@ def read_syms(path):
         out.append((int(m.group(2), 16), int(sz.group(1), 16) if sz else 0, m.group(1), "type:func" in attrs))
     out.sort()
     return out
+
+
+def split_data():
+    """G's split data (asm/mhg/<module>/data, VERSION=mhg tools/rebuild.sh), if present: its
+    labelled objects (dlabel .. enddlabel) as sized objects that pointers may point into (the
+    scan's targets), and the words it writes as `.word SYMBOL` (pointers within the module:
+    splat's own symbolisation). Without asm/mhg both are empty."""
+    objs, ptrs = collections.defaultdict(list), collections.defaultdict(set)
+    ins = re.compile(r"^\s*/\* [0-9A-F]+ ([0-9A-F]{8})(?: [0-9A-F]+)? \*/\s*\.(\w+)\s+(.*)$")
+    for m in G_MODS:
+        for path in sorted(glob.glob(P("asm/mhg/%s/data/data/*.s" % m))):
+            cur, first, last = None, None, None
+            for line in open(path):
+                if line.startswith("dlabel "):
+                    cur, first, last = line.split()[1], None, None
+                    continue
+                if line.startswith("enddlabel"):
+                    if cur and first is not None and last is not None and last > first:
+                        objs[m].append((first, last - first, cur, False))
+                    cur = None
+                    continue
+                mm = ins.match(line)
+                if not mm:
+                    continue
+                a, kind, arg = int(mm.group(1), 16), mm.group(2), mm.group(3).strip()
+                if first is None:
+                    first = a
+                n = {"word": 4, "short": 2, "half": 2, "byte": 1}.get(kind)
+                if n is None:               # .asciz: up to the next line's address
+                    n = 1
+                last = max(last or 0, a + n)
+                if kind == "word" and re.match(r"^[A-Za-z_]\w*$", arg) and a & 3 == 0:
+                    ptrs[m].add(a)
+    return objs, ptrs
+
+
+def add_pc_data(gsyms):
+    """config/mhg/pc_data.txt: G data the PC imports that config/mhg/symbols lacks or sizes
+    wrongly (G-only tables under their split names D_XXXXXXXX, G sizes of grown objects such as
+    quest_w). `[module]` lines start a module; `NAME = 0xADDR; // size:0xN` lines as in the
+    symbol files. A listed address replaces the entry at that address (name and size)."""
+    path = P("config/mhg/pc_data.txt")
+    if not os.path.exists(path):
+        return
+    mod = None
+    for l in open(path):
+        l = l.split("#", 1)[0].strip()
+        mm = re.match(r"^\[(\w+)\]$", l)
+        if mm:
+            mod = mm.group(1)
+            continue
+        m = PAT.match(l)
+        if not m or mod not in gsyms:
+            continue
+        a = int(m.group(2), 16)
+        sz = re.search(r"size:0x([0-9A-Fa-f]+)", m.group(3) or "")
+        lst = [e for e in gsyms[mod] if e[0] != a and e[2] != m.group(1)]
+        lst.append((a, int(sz.group(1), 16) if sz else 0, m.group(1), False))
+        lst.sort()
+        gsyms[mod] = lst
 
 
 class SymIndex:
@@ -178,6 +239,7 @@ def main():
         return
     G = M.load_g()
     gsyms = {m: read_syms(P("config/mhg/symbols/%s.txt" % m)) for m in G_MODS}
+    add_pc_data(gsyms)
     _names, lists = M.read_split_names()
     m1size = {}
     for m, lst in lists.items():
@@ -197,10 +259,14 @@ def main():
                     sz = nxt - a
             out.append((a, sz, n, isf))
         sized[m] = out
-    idx = {m: SymIndex(sized[m], G[m], 0x253D20 if m == "main" else G[m].text_hi) for m in G_MODS}
+    split_objs, split_ptrs = split_data()
+    idx = {m: SymIndex(sorted(sized[m] + split_objs.get(m, [])), G[m], 0x253D20 if m == "main" else G[m].text_hi)
+           for m in G_MODS}
     dr = data_ranges(G, G_MODS)
     dr["main"] = (0x253D20, G["main"].vram + len(G["main"].data))
     found = scan(G, idx, dr, SEES)
+    for m, pos in split_ptrs.items():      # words the split itself writes as `.word SYMBOL`
+        found[m] |= pos
     # carried over from MH1's relocations through same-name data objects
     syms, rel = M.read_mh1_elf()
     gpos = {}

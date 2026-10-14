@@ -170,6 +170,179 @@ void remuneration_item_set(void);
 int quest_item_ck2();
 void Quest_net_sub(void);
 
+#ifdef VERSION_MHG
+/* G (sub_main 0x4B3AA0): quest numbers are u16 in groups (00xxx village, 01xxx-03xxx, 10xxx
+ * training, 20xxx; 50000 and up are not on the disc); mission files mNNNNN.mib through the
+ * per-group AFS index lists D_004FDF10; a 0x48-byte mission header (bytes 0x40-0x47 new: base
+ * size 0x40, start-area set 0x43, size class 0x44, 0x45-0x47); the quest's own random numbers
+ * (quest_w.rnd, sub_main_func_004B5480) for the start area, the reward level bonus and the
+ * monsters' sizes. Written from the asm for the PC (agent A, 14 Oct 2026); not byte-checked. */
+typedef struct QSIZE_LIM { u8 b[10]; } QSIZE_LIM;
+extern QSIZE_LIM D_004FD8D0;    /* {min, max} percent per size class (5) */
+extern QSIZE_LIM D_00541E40;    /* the limits in use (the host's online) */
+extern u8 D_00541E30[15];       /* the host's random bytes (online) */
+extern s8 D_004FDB40[32];       /* reward-level bonus by random number */
+extern s16 *D_004FDF10[];       /* AFS index of each quest file, per group */
+extern s32 quest_data_tbl[];
+int func_66E180();              /* Tutorial_quest_ck (game.bin 0x66E180) */
+int ran_suu();
+static void sub_main_func_004B52E0(void);
+static u16 sub_main_func_004B5480(void);
+#define MIB8(m, o) (((s8 *)(m))[o])
+
+void Quest_start(void)
+{
+    MISSION *m;
+    s32 *p;
+    int i;
+    int no;
+
+    game_w.x0D0 = 0;
+    quest_w.no = game_w.quest = select_w.xAC;
+    game_w.x0D5 = 2;
+    game_w.x1E7 = func_66E180(game_w.quest);
+    Ext_pick_point_init();
+    if (Online_ck() == 0) {
+        for (i = 0; i < 15; i++) {
+            quest_w.rnd[i] = ran_suu(0);
+        }
+        D_00541E40 = D_004FD8D0;
+    } else {
+        for (i = 0; i < 15; i++) {
+            quest_w.rnd[i] = D_00541E30[i];
+        }
+    }
+    sub_main_func_004B52E0();
+    sub_main_func_004B5480();
+    for (i = 0; i < 32; i++) {
+        quest_w.xBC[i].v = 0;
+        quest_w.xBC[i].f = 0;
+    }
+    for (i = 0; i < 52; i++) {
+        quest_w.x16C[i] = 0;
+        quest_w.x1D4[i] = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        quest_w.rnd[i] = sub_main_func_004B5480();
+    }
+    quest_w.x140 = 0;
+    quest_w.x13C = 0;
+    quest_w.x150 = 0;
+    quest_w.x14F = 0;
+    quest_w.x0B = 0;
+    quest_w.xB4[0].a = 0;
+    quest_w.xB4[0].b = 0;
+    quest_w.xB4[1].a = 0;
+    quest_w.xB4[1].b = 0;
+    quest_w.xB4[2].a = 0;
+    quest_w.xB4[2].b = 0;
+    quest_w.xB4[3].a = 0;
+    quest_w.xB4[3].b = 0;
+    quest_w.x23C = 0;
+    quest_w.x23E = 0;
+    quest_w.x240 = 0;
+    quest_w.xB4[game_w.master].b = Get_hunter_rank(&User_data);
+    quest_w.xAE = 1;
+    game_w.x28[0] = 0;
+    game_w.x28[1] = 0;
+    game_w.x28[2] = 0;
+    game_w.x28[3] = 0;
+    quest_w.x98[0].v = 0;
+    quest_w.x98[0].f = 0;
+    quest_w.x98[1].v = 0;
+    quest_w.x98[1].f = 0;
+    quest_w.x98[2].v = 0;
+    quest_w.x98[2].f = 0;
+    quest_w.x98[3].v = 0;
+    quest_w.x98[3].f = 0;
+    quest_w.x98[4].v = 0;
+    quest_w.x98[4].f = 0;
+    quest_w.xAC = 0;
+    quest_w.xAD = 0;
+    quest_w.x03 = 0;
+    quest_w.x00 = 0;
+    quest_w.x01 = 0;
+    quest_w.x3A = 0;
+    quest_w.x3C = 0;
+    quest_w.x10 = 0;
+    quest_w.x04 = 0;
+    quest_w.x1C[0] = 0;
+    quest_w.x24[0] = 0;
+    quest_w.x1C[1] = 0;
+    quest_w.x24[1] = 0;
+    quest_w.x1C[2] = 0;
+    quest_w.x24[2] = 0;
+    quest_w.x1C[3] = 0;
+    quest_w.x24[3] = 0;
+    quest_w.x2C[0] = 0;
+    quest_w.x30[0] = 0;
+    quest_w.x2C[1] = 0;
+    quest_w.x30[1] = 0;
+    no = quest_w.no;
+    if (no != 0) {
+        if (no < 50000) {
+            if (no < 10000) {
+                i = no / 1000;
+            } else if (no < 20000) {
+                i = 4;
+            } else {
+                i = 5;
+            }
+            load_file_mdl(mission_area, D_004FDF10[i][no % 1000]);
+        }
+        m = (MISSION *)mission_area;
+        quest_w.x64 = m;
+        quest_w.x94 = (MISSION2 *)(m->o[0] + (int)m);
+        Quest_pl_stage_init(0xFF);
+        quest_w.x10 = Quest_time_get(1);
+        quest_w.xAF = (quest_w.x10 - 1) / 9000;
+        if (quest_w.xAF > 2) {
+            quest_w.xAF = 2;
+        }
+        quest_w.x38 = 0;
+        quest_w.x6C = (s32 *)(m->o[4] + (int)mission_area);
+        quest_w.x36 = 0;
+        quest_w.x7C = (s32 *)(m->o[7] + (int)mission_area);
+        quest_w.x70 = (s32 *)(m->o[12] + (int)mission_area);
+        quest_w.x84 = (s32 *)(quest_w.x94->x18 + (int)mission_area);
+        quest_w.x74 = (s32 *)(m->o[5] + (int)mission_area);
+        quest_w.x78 = (s32 *)(m->o[6] + (int)mission_area);
+        quest_w.x80 = (s32 *)(m->o[8] + (int)mission_area);
+        quest_w.x8C = (s32 *)(m->o[10] + (int)mission_area);
+        quest_w.x90 = (s32 *)(m->o[11] + (int)mission_area);
+        quest_w.x14 = quest_w.x94->x08;
+        quest_w.x18 = quest_w.x94->x0C;
+        quest_w.x88 = (s32 *)(m->o[3] + (int)mission_area);
+        quest_w.x40 = quest_w.x94->x00;
+        quest_w.x14E = m->o[13];
+        if (!(quest_w.x40 & 0x4000)) {
+            quest_w.x14E += D_004FDB40[sub_main_func_004B5480() & 0x1F];
+        }
+        if (quest_w.x14E >= 16) {
+            quest_w.x14E = 15;
+        }
+        if (quest_w.x14E < 0) {
+            quest_w.x14E = 0;
+        }
+        p = (s32 *)(m->o[9] + (int)mission_area);
+        game_w.x2E = p[0];
+        game_w.x2F = p[1];
+        quest_w.x165[0] = MIB8(m, 0x45);
+        quest_w.x165[1] = MIB8(m, 0x46);
+        quest_w.x165[2] = MIB8(m, 0x47);
+        quest_w.x169 = (quest_w.x10 - 1) / 9000;
+        quest_w.x168 = 0;
+        quest_em_init();
+    } else {
+        s16 st = select_w.x0A;
+
+        quest_w.x64 = (MISSION *)quest_data_tbl;
+        game_w.x2E = 2;
+        game_w.stage = st;
+        game_w.x15 = st;
+    }
+}
+#else
 void Quest_start(void)
 {
     MISSION *m;
@@ -277,6 +450,8 @@ void Quest_start(void)
     }
 }
 
+#endif
+
 void Quest_retire_set(void)
 {
     if (Quest_clear_ck(1) == 0) {
@@ -303,6 +478,74 @@ void Quest_error_set(void)
     }
 }
 
+#ifdef VERSION_MHG
+/* G (sub_main 0x4B4370): a mission whose header byte 0x43 is set starts each hunter in an
+ * area drawn from a weighted list ({weight, stage} pairs, 0xFF ends): D_6D5E00 per mission map
+ * (MISSION2+0x14), list number byte 0x43 - 1, drawn with that player's quest random byte. */
+extern u8 **D_6D5E00[];
+
+void Quest_pl_stage_init(arg)
+int arg;
+{
+    u8 **lists = D_6D5E00[quest_w.x94->x14];
+    u8 *tbl;
+    u8 *t;
+    int sel;
+    int tot;
+    int r;
+
+    if (quest_w.no == 0) {
+        if ((u16)arg == 0xFF) {
+            game_w.stage = select_w.x0A;
+            game_w.x15 = select_w.x0A;
+        } else {
+            player_work[(u16)arg].stg = game_w.stage;
+        }
+        return;
+    }
+    sel = MIB8(quest_w.x64, 0x43);
+    if (sel != 0) {
+        t = lists[sel - 1];
+        tot = 0;
+        for (tbl = t; *tbl != 0xFF; tbl += 2) {
+            tot += *tbl;
+        }
+        arg = (u16)arg;
+        if (arg == 0xFF) {
+            r = quest_w.rnd[game_w.master] % tot;
+        } else {
+            r = quest_w.rnd[arg] % tot;
+        }
+        if (*t != 0xFF) {
+            tot = 0;
+            for (;;) {
+                tot += *t++;
+                if (r < tot) {
+                    break;
+                }
+                t++;
+                if (*t == 0xFF) {
+                    break;
+                }
+            }
+        }
+        if (arg == 0xFF) {
+            game_w.x15 = game_w.stage = *t;
+        } else {
+            player_work[arg].stg = *t;
+        }
+        return;
+    }
+    tbl = (u8 *)(*(s32 *)(mission_area + 4) + (int)mission_area);
+    arg = (u16)arg;
+    if (arg == 0xFF) {
+        tbl += game_w.master * 0x10;
+        game_w.x15 = game_w.stage = *(s32 *)tbl;
+    } else {
+        player_work[arg].stg = *(s32 *)(tbl + arg * 0x10);
+    }
+}
+#else
 void Quest_pl_stage_init(arg)
 int arg;
 {
@@ -326,6 +569,8 @@ int arg;
         player_work[arg].stg = *(s32 *)(tbl + arg * 0x10);
     }
 }
+
+#endif
 
 void Quest_restart(void)
 {
@@ -655,6 +900,37 @@ asm EMW *Em_direct_set(QEM *q)
 {
 #include "Em_direct_set.inc"
 }
+#endif
+
+#ifdef VERSION_MHG
+/* G (sub_main 0x4B52E0): seed the quest's generator from its random bytes 0x155..0x162 (seven
+ * little-endian halfwords), 0x1C3 if they add up to 0 */
+static void sub_main_func_004B52E0(void)
+{
+    int i;
+
+    quest_w.rnd_seed = 0;
+    for (i = 0; i < 14; i += 2) {
+        quest_w.rnd_seed += (u16)(quest_w.rnd[i] + (u16)(quest_w.rnd[i + 1] << 8));
+    }
+    if (quest_w.rnd_seed == 0) {
+        quest_w.rnd_seed = 0x1C3;
+    }
+}
+
+/* G (sub_main 0x4B5480): the quest's generator, seed * 176 mod 65363 (the same numbers on
+ * every machine of an online session: the host sends the bytes) */
+static u16 sub_main_func_004B5480(void)
+{
+    u32 v = quest_w.rnd_seed;
+
+    if (v == 0) {
+        v = 1;
+    }
+    quest_w.rnd_seed = (v * 176) % 0xFF53;
+    return quest_w.rnd_seed;
+}
+
 #endif
 
 void Quest_next_em_clr(arg0, arg1)
@@ -1376,6 +1652,134 @@ static void quest_em_init()
     quest_em_init_sub2(quest_w.x74, &n);
 }
 
+#ifdef VERSION_MHG
+extern u8 *D_004FDC40[];        /* size distributions (32 random slots each) */
+extern u8 D_004FDC60[32];       /* random number -> distribution */
+int func_0012D1B0(void);        /* main: a G work byte (0x35F014) != 0 */
+int sub_main_func_004F3B00();   /* 1: the quest's event flag allows random sizes */
+
+/* G (sub_main 0x4B7810): a random size in percent, clamped to the class limits D_00541E40
+ * (mission header byte 0x44) */
+static u16 sub_main_func_004B7810(void)
+{
+    u8 *d = D_004FDC40[D_004FDC60[sub_main_func_004B5480() & 0x1F]];
+    u16 v = d[sub_main_func_004B5480() & 0x1F];
+    int c = MIB8(quest_w.x64, 0x44);
+
+    if (v < D_00541E40.b[c * 2]) {
+        v = D_00541E40.b[c * 2];
+    }
+    if (D_00541E40.b[c * 2 + 1] < v) {
+        v = D_00541E40.b[c * 2 + 1];
+    }
+    return v;
+}
+
+/* G (sub_main 0x4B78D0): MH1's per-entry set-up of quest_em_init_sub, made a function */
+static void sub_main_func_004B78D0(QEM *e, int *cnt)
+{
+    e->x2E = 2;
+    e->x08 = -1;
+    e->x0A = -1;
+    e->x2C = *cnt;
+    if (e->x05 != 0) {
+        quest_w.x34 += e->x04;
+    }
+    (*cnt)++;
+}
+
+/* G (sub_main 0x4B7920): monster kinds that get a random size */
+static int sub_main_func_004B7920(s16 kind)
+{
+    switch (kind) {
+    case 0x21: case 0x1F: case 0x1C: case 0x1B: case 0x2C: case 0x1A: case 0x30: case 0x16:
+    case 0x2E: case 0x15: case 0x27: case 0x14: case 0x2F: case 0x11: case 0x2D: case 0x0F:
+    case 0x2B: case 0x0E: case 0x31: case 0x29: case 0x0B: case 0x08: case 0x26: case 0x06:
+    case 0x25: case 0x2A: case 0x01:
+        return 1;
+    }
+    return 0;
+}
+
+/* G (sub_main 0x4B7BA0): as MH1, plus each monster's size (QEM+0x30, percent): the mission's
+ * base size (header 0x40) times a random size for the kinds above when the work byte or the
+ * quest's event flag allows it; 100 otherwise */
+static void quest_em_init_sub(p, cnt)
+s32 *p;
+int *cnt;
+{
+    s32 *l0;
+    QEM *e;
+
+    for (;;) {
+        l0 = Em_data_com_adrs_get(p, 0);
+        e = (QEM *)Em_data_com_adrs_get(p, 1);
+        if (l0 == 0) {
+            break;
+        }
+        if (e != 0) {
+            for (;;) {
+                if (e->id == -1) {
+                    break;
+                }
+                sub_main_func_004B78D0(e, cnt);
+                if (sub_main_func_004B7920(e->id) == 1) {
+                    e->x30 = *(s16 *)((u8 *)quest_w.x64 + 0x40);
+                    e->x30 = (u16)e->x30 * sub_main_func_004B7810() / 100;
+                    if (func_0012D1B0() != 1 && sub_main_func_004F3B00(quest_w.no) != 1) {
+                        e->x30 = 100;
+                    }
+                } else {
+                    e->x30 = 100;
+                }
+                e++;
+            }
+        }
+        p += 4;
+    }
+}
+
+/* G (sub_main 0x4B7CD0): as MH1, sizes 100 */
+static void quest_em_init_sub2(p, cnt)
+s32 *p;
+int *cnt;
+{
+    s32 *l0;
+    QEM *e;
+    s32 *q;
+
+    for (;;) {
+        q = (s32 *)*p;
+        if (q == 0) {
+            break;
+        }
+        if (quest_w.no == 0) {
+            q = (s32 *)(int)q;
+        } else {
+            q = (s32 *)((int)q + (int)mission_area);
+        }
+        for (;;) {
+            l0 = Em_data_com_adrs_get(q, 0);
+            e = (QEM *)Em_data_com_adrs_get(q, 1);
+            q += 4;
+            if (l0 == 0) {
+                break;
+            }
+            if (e != 0) {
+                for (;;) {
+                    if (e->id == -1) {
+                        break;
+                    }
+                    sub_main_func_004B78D0(e, cnt);
+                    e->x30 = 100;
+                    e++;
+                }
+            }
+        }
+        p++;
+    }
+}
+#else
 static void quest_em_init_sub(p, cnt)
 s32 *p;
 int *cnt;
@@ -1454,6 +1858,8 @@ int *cnt;
         p++;
     }
 }
+
+#endif
 
 static void station_em_set(void)
 {

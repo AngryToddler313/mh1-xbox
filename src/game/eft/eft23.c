@@ -69,7 +69,7 @@ extern EFT_MDLW *eft_mdlw[5];
 extern EFTW eft_work[128];
 extern QUEST_W quest_w;
 extern FISH_DATA fish_type_data[];
-extern FISH_CHANCE *fish_type_tbl[26];
+extern FISH_CHANCE *fish_type_tbl[];
 extern u16 kuituki_time_tbl[4];
 extern u8 Eft_fish_rgb[][3];
 extern u8 Eft_hire_rgb[][3];
@@ -490,22 +490,38 @@ static s8 fish_type_set(EFTW *ew) {
     u16 total = 0;
     u16 r;
 
+#ifdef VERSION_MHG    /* G (game.bin 0x581C90): 14 lists per set; the second set when mission header byte 0x42 is 1 or 2 */
+    if (((s8 *)quest_w.x64)[0x42] == 2 || ((s8 *)quest_w.x64)[0x42] == 1) {
+        p = fish_type_tbl[14 + ew->arg];
+    } else {
+        p = fish_type_tbl[ew->arg];
+    }
+#else
     if (quest_w.x14E > 0) {
         p = fish_type_tbl[13 + ew->arg];
     } else {
         p = fish_type_tbl[ew->arg];
     }
+#endif
     while (p->weight != 0xFFFF) {
         total += p->weight;
         p++;
     }
     r = (u16)ran_suu(0) % total;
     total = 0;
+#ifdef VERSION_MHG    /* G (game.bin 0x581C90): 14 lists per set; the second set when mission header byte 0x42 is 1 or 2 */
+    if (((s8 *)quest_w.x64)[0x42] == 2 || ((s8 *)quest_w.x64)[0x42] == 1) {
+        p = fish_type_tbl[14 + ew->arg];
+    } else {
+        p = fish_type_tbl[ew->arg];
+    }
+#else
     if (quest_w.x14E > 0) {
         p = fish_type_tbl[13 + ew->arg];
     } else {
         p = fish_type_tbl[ew->arg];
     }
+#endif
     while (p->weight != 0xFFFF) {
         total += p->weight;
         if (r < total) {

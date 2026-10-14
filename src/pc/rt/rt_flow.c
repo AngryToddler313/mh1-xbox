@@ -58,7 +58,7 @@ int rt_flow_tick(void)
     tick++;
     {   /* the debug log: mode / stage / quest changes (quest id = select_w+0xAC) */
         extern u8 select_w[];
-        rt_log_game(m, game_w[1], game_w[0x14], select_w[0xAC], game_w[0xD5]);
+        rt_log_game(m, game_w[1], game_w[0x14], select_w[rt_ver_mhg() ? 0xD0 : 0xAC], game_w[0xD5]);
     }
     rt_font_tick_begin();       /* the text of the previous tick is replaced */
     rt_prims_reset();           /* ot_init */
