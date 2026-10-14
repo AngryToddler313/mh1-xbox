@@ -9,8 +9,7 @@ build/mhg/src/main/net/cpinet26.c.o .rodata .data
 build/mhg/src/main/ime/imeu.c.o .rodata .data
 build/mhg/src/main/net/ms03.c.o .rodata .data
 build/mhg/src/main/net/connect02.c.o .rodata .data
-build/mhg/src/mhg/main/mc/mccomb_p4.c.o .rodata .data
-build/mhg/src/mhg/main/mc/mccomb_p5.c.o .rodata .data
+build/mhg/src/main/mc/mccomb.c.o .rodata .data
 build/mhg/src/main/aq/aq07.c.o .rodata .data
 build/mhg/src/main/aq/aq04.c.o .rodata .data
 build/mhg/src/main/pl/pl71.c.o .rodata .data

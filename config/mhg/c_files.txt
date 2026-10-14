@@ -1234,13 +1234,6 @@ main:rodata 0x002BCE40 0x002BCE70 main/sound/bgm01
 main 0x001D80F0 0x001D82A4 main/sound/bgm02
 main 0x001D7F00 0x001D80E8 main/sound/bgm03
 main 0x001D82B0 0x001D8598 main/sound/bgm04
-main 0x0022B180 0x0022B208 mhg/main/mc/mccomb_p1
-main 0x0022B260 0x0022B8B8 mhg/main/mc/mccomb_p2
-main 0x0022B910 0x0022BA14 mhg/main/mc/mccomb_p3
-main 0x0022BB50 0x0022FDE0 mhg/main/mc/mccomb_p4
-main 0x00231640 0x00231BD4 mhg/main/mc/mccomb_p5
-main:rodata 0x002EA730 0x002EA85C mhg/main/mc/mccomb_p4
-main:rodata 0x002EA8D0 0x002EA90C mhg/main/mc/mccomb_p5
 main 0x00127D70 0x00128108 main/set/setwork2
 game 0x0054AB30 0x0054AC70 mhg/main/pl/f_pl_p1
 game 0x0054AF50 0x0054B1B8 mhg/main/pl/f_pl_p2
@@ -1307,6 +1300,5 @@ game:rodata 0x006D6AC0 0x006D6AF8 mhg/main/pl/f_pl_p7
 sub_main 0x004F0900 0x004F0940 mhg/main/pl/pl_guard_g
 sub_main:rodata 0x0052C320 0x0052C340 mhg/main/hit/hit_1
 sub_main 0x004E0A00 0x004E0F80 main/hit/hitd
-main 0x0022B0D0 0x0022B178 mhg/main/mc/mccomb_g_p1
-main 0x0022B8C0 0x0022B910 mhg/main/mc/mccomb_g_p2
-main 0x0022BA20 0x0022BB4C mhg/main/mc/mccomb_g_p3
+main 0x0022AF50 0x00231BD4 main/mc/mccomb
+main:rodata 0x002EA730 0x002EA90C main/mc/mccomb
