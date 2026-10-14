@@ -92,8 +92,10 @@ static SDL_AssertState xbox_sdl_assert(const SDL_AssertData *d, void *u)
  * "Back + Start held" in the log; most likely closing the audio device, whose callback
  * thread waits on an AC97 interrupt that no longer comes), and nothing there matters
  * when the console reboots anyway. Does not return. */
+void xbox_ac97_stop(void);
 void xbox_log_quit(void)
 {
+    xbox_ac97_stop();           /* no audio DMA left running into the next program (xbox_ac97.c) */
     xbox_log_show();
 }
 

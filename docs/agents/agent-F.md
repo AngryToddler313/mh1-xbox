@@ -677,3 +677,11 @@ Details and numbers: docs/xbox.md "Area change loads: timed, made faster, loadin
   the Xbox game build was checked afterwards (810 objects, links). The loader Makefile now warns.
 - Left for later (if hardware still shows long loads): APX straight to P8 on the Xbox, caching the previous
   area's stage, background reads.
+
+## Stale frame after an area change (13 Oct 2026)
+- Owner (real Xbox): one frame of the old area after the map loading screen. Cause: game2 steps 3-5 (sound
+  pack loads after st_model_load, before pl_init / fade_set(2) in step 6) return before game_core, but the
+  viewer still drew its scene: the new stage from the hunter's old position, no fade (no fade request then).
+  PC RT_SHOTS ticks 14-17 of `--quest 131 --play RT_PL_WARP=10,12250,10000` showed it (bright frame between
+  the dark fade and the black start of the fade-in). The PS2 draws nothing then (flFlip of an empty, cleared
+  buffer): viewer.c now draws a black frame while game2's step is 3..6. Shots 14-17 are black now.
