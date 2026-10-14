@@ -465,3 +465,19 @@ obvious workarounds.
 - **Why:** G on the Xbox had 7 MB free in the village (MH1 16.5 MB); after these, 15.5-16.5 MB. MH1 PC tests
   (quest loop, progression, urgent) and the MH1 xemu quest loop pass.
 - **To revert:** revert the commit "G on the Xbox: ...".
+
+## Debug menu for testers (agent E, 14 Oct 2026)
+- **What:** an in-game debug menu on every build (src/pc/dbgmenu.c, src/pc/rt/rt_dbg.c; docs/pc.md "Debug menu",
+  docs/PLAYING.md "Debug menu for testers"). Choices made without the owner, each easy to change:
+  - the combo **Back + R3** (the game uses neither for this; F10's settings menu is Back + L3) and **F9** on the PC;
+  - **on by default**, off only in a build made with `MH1_RELEASE=1` (nothing builds that way yet: a release package
+    script should set it); mh1pc.ini `debug_menu`, `--debug-menu`, RT_DEBUG_MENU override;
+  - it draws with the game's own font (Japanese names as the game has them) rather than the F10 menu's 5x7 font, so it
+    also works on the Xbox;
+  - buttons held when it closes are kept from the game until released;
+  - G's `item_str` imported at 523 entries (config/mhg/pc_data.txt; it was MH1's 327).
+- **Refactors (no behaviour change, checked with test_quest_loop / test_menu):** rt_village.c `rt_village_leave` (the
+  village exit that Local_main's end did inline) and `rt_world_reset` (the clears at the start of rt_village_enter);
+  viewer.c `read_pad` replaces the three copies of "script or controller" in the tick loop; rt_player.c's RT_PL_GOD /
+  RT_PL_WARP_EM blocks also run for the menu's switches; nothing dropped.
+- **To revert:** revert the commits "Debug menu ..." on agent-E (four commits); test_dbgmenu.sh and dbg_keys.py go with them.

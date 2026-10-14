@@ -1194,6 +1194,81 @@ from the dashboard when nxNetInit starts it again (like the dumper's hang after 
 nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
 before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).
 
+## Keyboard and mouse on the Xbox (research, agent E, 14 Oct 2026; nothing built)
+
+Why: the PC's F8 bug reporter, F9 debug menu typing, the name entry and a free camera want a keyboard and mouse; on
+the Xbox the debug menu works with the pad alone (Back + R3, docs/pc.md "Debug menu"). Read from nxdk's sources
+(~/xboxdev/nxdk) and the RetroKM docs; no firmware, nxdk or game change was made. Statements marked [checked] were
+read in the files named; [memory] is general knowledge not checked here; [design] is a proposal.
+
+**What nxdk has today**
+- USB host stack (lib/usb, libusbohci): the core (hub.c, ohci.c, usb_core.c) and the Xbox XID driver
+  (libusbohci_xbox/xid_driver.c, usbh_xbox.c) are always built. HID, CDC, audio, video and mass storage are built only
+  with NXDK_USB_ENABLE_HID / _CDC / ... set (lib/usb/Makefile) [checked]. Our link uses nxdk_usb.lib, which today has no
+  HID driver (src_hid has no objects) [checked: Makefile; the object list from the research pass].
+- The HID driver (libusbohci/src_hid/hid_driver.c, hid_core.c): hid_probe takes any interface of class 3 with an
+  interrupt endpoint and records subclass / protocol (boot keyboard 1/1, boot mouse 1/2). API in inc/usbh_lib.h:
+  usbh_hid_init, usbh_install_hid_conn_callback, usbh_hid_set_protocol(hdev, 0 = boot), usbh_hid_set_idle,
+  usbh_hid_start_int_read(hdev, ep, callback). The callback gets the raw report and the transfer is resubmitted; there is
+  no report parser and no key or mouse layer: we decode the 8-byte boot keyboard report and the mouse report ourselves.
+  The callback runs in the OHCI interrupt's DPC (usbh_xbox.c): it may only copy into a buffer.
+- inc/usbh_hid.h has `#define HID_DBGMSG sysprintf` switched on [checked], which ends in debugPrint: every HID probe or
+  error would print on the screen. A HID-enabled nxdk_usb.lib has to be built with that line commented out.
+- SDL2 on nxdk: SDL_config_xbox.h has the XID joystick driver and the video driver only, and
+  src/video/xbox/SDL_xbevents.c XBOX_PumpEvents does nothing [checked]: SDL never produces keyboard or mouse events on
+  the Xbox. SDL's joystick driver (src/joystick/xbox/SDL_xboxjoystick.c) is what starts the USB stack (usbh_core_init,
+  usbh_xid_init) and polls the hubs each update.
+
+**Route 1 (the owner's preference): the RetroKM Xbox pad dongle as one composite USB device**
+The Atom S3R dongle (MULTI KM/xboxpad, TinyUSB on the ESP32-S3; descriptors in xboxpad/src/xidpad.c, one XID interface
+today, a custom TinyUSB class driver in src/xid_usb.cpp) would offer three interfaces on one device:
+- IF0: XID 0x58 / 0x42, EP1 IN + EP2 OUT, 32 bytes, 4 ms: as now, first [design];
+- IF1: HID 3 / 1 / 1 (boot keyboard), EP3 IN, 8 bytes, 10 ms, the standard boot report descriptor;
+- IF2: HID 3 / 1 / 2 (boot mouse), EP4 IN, 4 bytes (buttons, dx, dy, wheel), 10 ms.
+Our stack can take that: usb_core.c parses every interface of the configuration and asks each registered driver's probe
+per interface (first taker wins), xid_probe matches the interface class 0x58 / subclass 0x42 only (xid_driver.c line 97)
+and not the VID/PID [checked]; limits MAX_UDEV_DRIVER 8, MAX_HUB_DEVICE 8, CONFIG_HID_MAX_DEV 8 are enough [research pass]. The device
+class stays 0 (per interface), the VID/PID can stay the Controller S's. RetroKM already forwards the laptop's keyboard
+and mouse to its agents over TCP 24850 (common/rkm_proto.h: RKM_KEY with HID usage codes, RKM_MOVEREL, RKM_BUTTON,
+RKM_WHEEL; the hub grabs the USB keyboard and trackball through evdev); the dongle announces RKM_CAP_PAD only today and
+would add RKM_CAP_KEYS / RKM_CAP_REL and turn those messages into the two HID reports. The usage codes are already the
+boot keyboard's key codes.
+Unknowns, to test on the real console: what the dashboard / Evolution X (XAPI's own USB stack, linked into each XBE
+[memory]) does with a pad that has two extra HID interfaces: ignore them (expected [memory]: XAPI drivers match by
+interface class; the Communicator is a multi-interface device too), or refuse the device. The game itself uses nxdk's
+stack, not XAPI, so inside the game it should work once HID is built in.
+
+**Route 2: a hub with separate devices.** hub.c is a full hub class driver (registered in usbh_core_init; the config
+comments count four Controller S pads with their internal hub), so a keyboard and a mouse behind a hub on a pad port
+(through a pad-port-to-USB adapter) should enumerate in nxdk the same way [checked: driver present; not run]. On the
+dongle side a hub means extra hardware; the composite device is simpler.
+
+**Route 3: keyboard and mouse over the network from the laptop.** nxdk's lwIP (lib/net/nforceif/include/lwipopts.h)
+has NO_SYS 0, LWIP_UDP, LWIP_SOCKET and LWIP_NETCONN on [research pass]; src/pc/xbox/xnet_http.c already uses lwIP
+sockets, but only the network loader links the network stack (NXDK_NET), not the game. Sketch [design]: the game opens a
+UDP port (e.g. 24855) and reads it without blocking once per tick; the laptop (a RetroKM "xbox-net" agent) sends one
+datagram per change or every 8 ms: magic u16, sequence u16, a 256-bit key bitmap of HID usages, mouse dx / dy since the
+last datagram, buttons, wheel. Each datagram carries the whole key state, so a lost one heals itself; older sequences are
+dropped; no datagram for 500 ms releases every key. Latency: under 1 ms on a cable, 2-20 ms with jitter over the laptop's
+Wi-Fi: fine for menus and typing, jittery for mouse look. Costs: the network stack's memory and thread in the game, and
+two known problems in docs/xbox.md (nxNetInit hanging when the NIC is still live from the loader, the stack freezing
+after a few connections).
+
+**How the game would read them [design].** One small module (src/pc/xbox/kbm_xbox.c) behind kbm_init / kbm_poll(keys,
+dx, dy, buttons, wheel), filled by the HID callbacks (route 1 / 2) or the UDP reader (route 3). Simplest hook: turn its
+changes into SDL_PushEvent (SDL_KEYDOWN / KEYUP with the scancode = HID usage, SDL_TEXTINPUT for printable keys,
+SDL_MOUSEMOTION / BUTTON / WHEEL): viewer.c's event loop, the F8 / F9 / F10 menus and pad_event (name entry) then work
+unchanged; pad_read's keyboard part reads SDL_GetKeyboardState, which pushed events do not fill, so pad_sdl.c would take
+the key state from kbm under #ifdef XBOX (its key table is already in SDL scancodes = HID usages). The mouse camera
+code needs relative motion only (no SDL relative mode, which asserts on nxdk). For route 1 / 2: build nxdk_usb.lib with
+NXDK_USB_ENABLE_HID=y and HID_DBGMSG off, call usbh_hid_init after SDL's joystick init, and in the connect callback
+set_protocol(0), set_idle(0), start_int_read.
+
+**Risks to test on hardware:** the dashboard with a three-interface pad; TinyUSB on the S3 with the XID app driver next
+to two HID interfaces (3 IN + 1 OUT endpoints: check them against the S3's endpoint limit) and OTA updates still working; the nxdk HID driver on
+connect / disconnect and its DPC callback racing the game thread; the USB memory pool (MEM_POOL_UNIT_NUM 96, 512 KB) with
+the extra pipes; power from a pad port with the dongle's Wi-Fi on; for route 3 the nxNetInit hang and the game's memory.
+
 ## Later idea: 5.1 surround (owner, 13 Oct 2026; not started)
 
 - PC: SDL can open a 5.1 device directly. Xbox: the console's own Dolby Digital path is the APU's

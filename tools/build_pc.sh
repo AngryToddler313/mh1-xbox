@@ -16,7 +16,7 @@ nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/menu.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
+    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/menu.c src/pc/dbgmenu.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
 # stage_set.c (main) spawns each stage's set objects; its calls into the
@@ -398,7 +398,9 @@ PICK_MAIN="$PICK_MAIN $PICK_X"
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 # build id shown in the debug log header (rt_log.c): git hash, "+" when the tree has changes
 : ${MH1_VERSION:=$(git rev-parse --short=10 HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo +)}
-EXTRA_CFLAGS="$EXTRA_CFLAGS ${COV:+-finstrument-functions}"   # function coverage (src/pc/rt/rt_cov.c, tools/cov_report.py)
+EXTRA_CFLAGS="$EXTRA_CFLAGS ${COV:+-finstrument-functions}"
+# MH1_RELEASE=1: a release build (the testers' debug menu is then off unless mh1pc.ini / --debug-menu turns it on)
+[ "${MH1_RELEASE:-0}" != 0 ] && EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_RELEASE"   # function coverage (src/pc/rt/rt_cov.c, tools/cov_report.py)
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L $EXTRA_CFLAGS"
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
@@ -712,7 +714,7 @@ OBJS="$OBJS build/pc/rt_memstat.o"
 python3 tools/gen_rt_meta.py build/pc/rt_meta.c
 cc_obj rt_meta "$CC $CFLAGS $SYS -w -c build/pc/rt_meta.c -o build/pc/rt_meta.o"
 OBJS="$OBJS build/pc/rt_meta.o"
-for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp; do
+for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)
