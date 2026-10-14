@@ -134,3 +134,16 @@ void rt_cam_view(float eye[3], float tar[3], float *roll, float *fov)
     *roll = lpView[0x34 / 4];
     *fov = lpView[0x2C / 4];
 }
+
+/* RT_CAM_TRACE in the village: every slot that wants the view (agent D, G intro camera) */
+void rt_cam_dump(int tick)
+{
+    int k;
+    for (k = 0; k < 5; k++) {
+        CAMS *c = &CameraWork.sl[k];
+        if (c->act)
+            fprintf(stderr, "vcam:   tick %d slot %d act %d mode %d step %d cnt %d/%d eye %.0f %.0f %.0f tar %.0f %.0f %.0f fov %.2f | demo no %d st %d pos %d/%d tar %d/%d move %d\n",
+                    tick, k, c->act, c->mode.w, c->step.w, c->cnt, c->cnt_max, c->eye[0], c->eye[1], c->eye[2], c->tar[0], c->tar[1], c->tar[2], c->fov,
+                    c->d.demo.no, c->d.demo.state, c->d.demo.pos_mode, c->d.demo.pos_part, c->d.demo.tar_mode, c->d.demo.tar_part, c->d.demo.move);
+    }
+}

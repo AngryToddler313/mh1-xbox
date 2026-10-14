@@ -172,7 +172,25 @@ int rt_village_tick(void)
                 s++;
         }
     }
+    if (getenv("RT_DEMO_NOWALL")) {        /* debug aid: the demo camera's wall push-out (G only) off */
+        extern u8 CameraWork[];
+        CameraWork[4 * 0x100 + 0x80 + 0x66] = 0;
+    }
     r = Local_main();
+    if (getenv("RT_CAM_TRACE") && tick % 10 == 0) {     /* the view the village camera made (eye, target, roll, fov) every 10 ticks */
+        void rt_cam_view(float eye[3], float tar[3], float *roll, float *fov);
+        extern u8 CameraWork[];
+        u8 *dm = CameraWork + 4 * 0x100 + 0x80;     /* slot 4's demo work (G) */
+        float e[3], t[3], ro, fv;
+        rt_cam_view(e, t, &ro, &fv);
+        float *m = (float *)(player_work + 0x60 + 0xA00 * game_w[GWX(0xD1)]);
+        fprintf(stderr, "vcam: tick %d eye %.0f %.0f %.0f tar %.0f %.0f %.0f roll %.3f fov %.3f | demo no %d st %d pos %d tar %d move %d x66 %d\n", tick, e[0], e[1], e[2], t[0], t[1], t[2], ro, fv,
+                dm[0x4E], (s8)dm[0x4F], dm[0x49], dm[0x4A], dm[0x48], dm[0x66]);(void)m;
+        {
+            void rt_cam_dump(int);
+            rt_cam_dump(tick);
+        }
+    }
     if (getenv("RT_QUEST_TRACE")) {     /* the saved hunter's data when it changes: money, pouch, item box, stored equipment, worn gear */
         extern u8 User_data[];
         static u8 last[0x460];

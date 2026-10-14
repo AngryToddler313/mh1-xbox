@@ -392,12 +392,18 @@ def main():
         cv = sorted(covered[m])
         starts = [c[0] for c in cv]
         keep = set()
+        # demo camera command streams hold s32 coordinates (0x2C5000 ...) and no pointers: the scan took some for addresses
+        nop = sorted((a, a + sz) for a, sz, n, isf in sized[m] if n.startswith("demo_cam_") and sz)
+        nops = [x[0] for x in nop]
         for a in found[m]:
+            kk = bisect.bisect_right(nops, a) - 1
+            if kk >= 0 and nop[kk][0] <= a < nop[kk][1]:
+                continue
             k = bisect.bisect_right(starts, a) - 1
             if k >= 0 and cv[k][0] <= a < cv[k][1] and not in_ptr_obj(m, a):
                 continue        # (in a pointer table of the split, G's own layout wins: em01's tables grew)
             keep.add(a)
-        found[m] = keep | split_ptrs.get(m, set())     # the split's own `.word SYMBOL` words always count
+        found[m] = {a for a in (keep | split_ptrs.get(m, set())) if not (nop and nop[max(bisect.bisect_right(nops, a) - 1, 0)][0] <= a < nop[max(bisect.bisect_right(nops, a) - 1, 0)][1])}     # the split's own `.word SYMBOL` words always count (but not in a demo camera stream)
     # an overlay word next to a pointer word into main/sub_main data, pointing within 0x40 bytes of
     # it, is a pointer too (the exact rule above wants a label start there: em01's area-route list
     # at game 0x682500 starts with 0x2EC808, inside a main-data block whose later entries have labels)
