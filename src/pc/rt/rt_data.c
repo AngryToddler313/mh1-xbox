@@ -199,6 +199,18 @@ const void *rt_ptr_at(uint32_t va)
     return (const void *)(uintptr_t)h;
 }
 
+/* the imported size of a data table by name (the debug menu counts table rows with it), 0 when not imported */
+size_t rt_table_size(const char *name)
+{
+    const struct rt_table *l[2] = { rt_auto_tables, rt_gen_main_tables }, *t;
+    int k;
+    for (k = 0; k < 2; k++)
+        for (t = l[k]; t->name; t++)
+            if (!strcmp(t->name, name))
+                return t->size;
+    return 0;
+}
+
 static int import_list(const struct rt_table *t)
 {
     int missing = 0;

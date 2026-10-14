@@ -24,6 +24,7 @@
 #include "pl.h"
 #include "fl.h"
 #include "frame.h"
+#include "rt_dbg.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -194,17 +195,19 @@ void rt_player_tick(int no)
         if (tg[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
             p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(tg + 0xAC));
     }
-    if (getenv("RT_PL_WARP_EM")) {  /* test aid: at ticks "t1,t2-t3,..", next to monster 0's carve point (or its first body volume), facing it */
+    if (getenv("RT_PL_WARP_EM") || rt_dbg.warp_em_slot >= 0) {  /* test aid: at ticks "t1,t2-t3,..", next to monster 0's carve point (or its
+                                         * first body volume), facing it; the debug menu's "warp to monster" (rt_dbg.c) asks for one slot once */
         static int tk;
         extern u8 em_work[], StiEM_data[];
         extern u8 *em_body_tbl[];
         int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph);
         u16 Em_Calc_angY(f32 *a, f32 *b);
         const char *s = getenv("RT_PL_WARP_EM");
-        u8 *tg = em_work + 0xA10 * rt_test_target();
-        int hit = 0;
+        u8 *tg = em_work + 0xA10 * (rt_dbg.warp_em_slot >= 0 ? rt_dbg.warp_em_slot : rt_test_target());
+        int hit = rt_dbg.warp_em_slot >= 0;
+        rt_dbg.warp_em_slot = -1;
         tk = aid_tick();
-        for (; *s; s++) {       /* "t" or a range "t1-t2" (every tick in it) */
+        for (; s && *s; s++) {       /* "t" or a range "t1-t2" (every tick in it) */
             int a = atoi(s), b = a;
             const char *dash = strchr(s, '-'), *comma = strchr(s, ',');
             if (dash && (!comma || dash < comma))
@@ -558,7 +561,8 @@ void rt_player_tick(int no)
             memcpy((u8 *)p + 0x60, &m, sizeof m);    /* 0x60-0x9F, as flmatCopy */
         }
     }
-    if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
+    if (getenv("RT_PL_GOD") || rt_dbg.god) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA);
+                                                    * the debug menu's "can't faint" */
         PF(&player_work[no], s16, 0x302) = 100;
         PF(&player_work[no], s16, 0x7AA) = 0;
     }
@@ -755,6 +759,7 @@ void rt_hit_check(void)
         for (k = 0; k < 8; k++)
             PF(e, s16, 0x766 + 2 * k) = (s16)(PF(e, s16, 0x766 + 2 * k) * m);
     }
+    rt_dbg_hits();              /* the debug menu's damage multiplier / one-hit kills: every monster hit this tick (rt_dbg.c) */
     if (tr < 0) tr = getenv("RT_HIT_DM") != NULL;
     if (tr > 1 || (tr && getenv("RT_HIT_DM")[0] == '2')) {   /* RT_HIT_DM=2: live shells each tick */
         extern u8 *shell_w_top;
