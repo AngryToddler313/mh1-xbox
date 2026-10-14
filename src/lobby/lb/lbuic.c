@@ -1,6 +1,9 @@
 /* lbui, run 3: event_eat_set_msg .. SetDialogData (lobby.bin 0x005919E0-0x00591D78): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+#ifdef VERSION_MHG
+#include "lbdlg_g.h"
+#endif
 
 
 /* sprite template for Put_2TF / Put_sprite_rotate (helpLineTbl entries, stride 0x14) */

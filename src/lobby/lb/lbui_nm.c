@@ -2,6 +2,9 @@
  * Near-match file in address order (tools/lbmerge.py ... include/lbui_proto.h lbui.h). */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+#ifdef VERSION_MHG
+#include "lbdlg_g.h"
+#endif
 
 void Lb_eat()
 {

@@ -23,6 +23,5 @@ open('include/lbdlg_g.h', 'w').write('''#ifndef LBDLG_G_H
  * {u16 kind flags, pad, char *msg} where MH1's has 65 pointers; G inserted and reworded messages. The map MH1 id -> G id was
  * made by exact text match, else the most similar text (tools/mhg_dlgmap.py; 14 of 65 are fuzzy: online / server wording). */
 static const unsigned char g_dlg_map[65] = { %s };
-#define NETDLG_MSG(id) (*(char **)((unsigned char *)netDialogMessage + 8 * g_dlg_map[id] + 4))
 #endif
 ''' % txt)

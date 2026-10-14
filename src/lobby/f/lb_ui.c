@@ -25,6 +25,9 @@ void put_button_help(int a, int b, int c, u16 d);
 #define flfntLocate flfntLocate_hdr
 #define DispDialogData DispDialogData_hdr
 #include "lbui.h"
+#ifdef VERSION_MHG
+#include "lbdlg_g.h"
+#endif
 #undef flfntLocate
 #undef DispDialogData
 void flfntLocate(s16 x, s16 y);

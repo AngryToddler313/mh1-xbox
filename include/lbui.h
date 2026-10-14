@@ -79,7 +79,9 @@ extern u8 *SearchResult;
 extern LB_DIALOG dialogData;
 extern char *netDialogMessage[];
 #ifdef VERSION_MHG
-#include "lbdlg_g.h"    /* G's message table: 8-byte entries, other numbers (NETDLG_MSG maps MH1's id) */
+/* G's message table: 8-byte entries, other numbers; NETDLG_MSG maps MH1's id. The map itself (include/lbdlg_g.h, a static
+ * table) is included only by the files that call NETDLG_MSG, so no other object of the module gets the extra data. */
+#define NETDLG_MSG(id) (*(char **)((unsigned char *)netDialogMessage + 8 * g_dlg_map[id] + 4))
 #else
 #define NETDLG_MSG(id) (netDialogMessage[id])
 #endif

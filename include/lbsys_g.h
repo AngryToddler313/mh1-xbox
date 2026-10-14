@@ -110,8 +110,8 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
  * "free of charge" message, it sits at the end). SDH(k) = MH1's shop_default_help[k]; SDH_F(byte offset) the raw-offset form. */
 #ifdef VERSION_MHG
 extern s32 shop_mix_help[];
-static const unsigned char g_dflt_help_map[8] = { 1, 2, 3, 5, 11, 8, 9, 10 };
-#define SDH(k) (shop_mix_help[g_dflt_help_map[(k)]])
+/* the map {1, 2, 3, 5, 11, 8, 9, 10} packed in a constant (no data in the objects that include this header) */
+#define SDH(k) (shop_mix_help[(int)((0x0A09080B05030201ULL >> (8 * (k))) & 0xFF)])
 #define SDH_F(o) SDH((o) / 4)
 #else
 #define SDH(k) (shop_default_help[k])
