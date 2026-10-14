@@ -71,7 +71,11 @@ typedef struct GAME_W {
     s16 xCE;            /* 0x0CE stolen item count */
     u8 x0D0;            /* 0x0D0 cleared by Quest_start */
 #ifdef VERSION_MHG
-    u8 _pad0D1[0x128 - 0xD1]; /* G: master .. x0D5 live at 0x3A (above); whatever G keeps here is unknown */
+    u8 _pad0D1[0xFC - 0xD1]; /* G: master .. x0D5 live at 0x3A (above); whatever G keeps here is unknown */
+    u8 shl10_num;       /* 0x0FC (MH1 0x210) */
+    u8 meat_num;        /* 0x0FD (MH1 0x211) */
+    u8 trap_num;        /* 0x0FE (MH1 0x212) */
+    u8 _pad0FF[0x128 - 0xFF];
 #else
     u8 master;          /* 0x0D1 player number of the session master */
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
@@ -96,9 +100,13 @@ typedef struct GAME_W {
     u8 x1E7;            /* 0x1E7 from func_63AF40(quest) (Quest_start); non-zero: pit menu shows func_63B470 instead of the map (trans_pit_1) */
     u8 x1E8[4][8];      /* 0x1E8 per player flags, cleared by game0 */
     u8 pl_state[8];       /* 0x208 per player: 0xFF = not joined? (player_init0, pl_work_clr); guess */
+#ifndef VERSION_MHG
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
+#else
+    u8 _pad210[3];
+#endif
     s8 x213;            /* 0x213 copied to player work+0x6A4 for the master (pl_init_sub) */
     s8 x214;            /* 0x214 copied to player work+0x6A8 for the master (pl_init_sub) */
     s8 x215;            /* 0x215 added to max life (pl_init_sub) */
