@@ -189,6 +189,45 @@ extern char lit_163_0053B3A0[];
 extern char lit_164_0053B3D0[];
 extern char lit_165_0053B3F0[];
 
+#ifdef VERSION_MHG
+/* G's title_disp (select 0x544420, read from G's code): the title art is one 512x512 texture page drawn
+ * 512x448 (MH1: a 256x256 page, u/v 1..0xFE, 640 wide unless system_w.x31), and the one-line menu is
+ * shown for x1A 0/2/4 at x 0x5F / 0x73 (MH1: 0/2/3 at 0x6C / 0x80). */
+void title_disp(int a) {
+    SPR s;
+    u8 m;
+    SetFilterMode(1);
+    reload_tex(1, 3);
+    SetTextureStage(3);
+    s.x = 0;
+    s.y = 0;
+    s.w = 0x200;
+    s.h = 0x1C0;
+    s.u = 0;
+    s.v = 0;
+    s.col = ((a & 0xFF) << 24) | 0xFFFFFF;
+    s.u2 = 0x1FF;
+    s.v2 = 0x1FF;
+    flps0008(&s);
+    flfntSetSize(0x12, 0x12);
+    flfntSetHalftype(1);
+    m = system_w.x1A;
+    switch (m) {
+    case 0:
+    case 2:
+    case 4:
+        c_disp(0x5F, 0x178);
+        font_print_ex(0x73, 0x178, 0, lit_163_0053B3A0);
+        break;
+    default:
+        c_disp(0x6C, 0x178);
+        c_disp(0x6C, 0x18C);
+        font_print_ex(0x80, 0x178, 0, lit_164_0053B3D0);
+        font_print_ex(0x80, 0x18C, 0, lit_165_0053B3F0);
+        break;
+    }
+}
+#else
 void title_disp(int a) {
     SPR s;
     u8 m;
@@ -227,6 +266,8 @@ void title_disp(int a) {
         break;
     }
 }
+
+#endif
 
 void opening_demo(void) {
     switch (demo_w.step) {

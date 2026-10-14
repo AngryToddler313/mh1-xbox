@@ -159,15 +159,20 @@ With four agents working in parallel, a first playable G hunt on the PC is an es
 3-5 weeks; the village/menus of G-only features come after. These are guesses based on
 MH1's pace, not measurements.
 
-## 5. G on the PC: first runtime (agent B, 13 Oct 2026; paused here)
+## 5. G on the PC: runtime (agent B; shared list of what blocks G at run time)
 
 Build: `tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g (own tree build/mhg/pctree, so build/pc stays MH1's).
-Run: `build/mhg/pc/mhview_g disc/mhg --boot ...` (saves/logs go to `mhgpc/`, never MH1's `mh1pc/`).
+Run (always hidden: a G build opens no window and no real controller unless MH1_SHOW=1 is set by hand, and
+refuses to start without `--shot`):
+`MH1_SAVE_DIR=$PWD/build/mhg/x/card RT_NOMOVIE=1 RT_NAME=TEST build/mhg/pc/mhview_g disc/mhg --boot --input "$(cat tools/pc_scripts/newgame.txt),idle*1500" --shot build/mhg/x/s.png --time 110`
+(RT_SHOTS=t1,t2,... for more pictures; logs of hidden runs go to build/test_logs; without MH1_SAVE_DIR saves
+go to ~/.local/share/mhgpc).
 - tools/mhg_map.py: +974 data names from edited functions (aligned lui/lo and gp references); G rebuild 7 OK.
 - tools/mhg_pcmeta.py: config/mhg/pc_ptrs.txt (G pointer words, addresses only: MH1 relocations carried
   through same-name objects + a scan; scan checked on MH1, precision 96.6-99.6%, misses are jump tables)
   and build/mhg/pc/symbols (sized view; 38 unnamed G functions named from pointer tables, e.g.
   pl01_effect_move = 0x4E2EB0, which mhg_map had paired with 0x4A9150 at 0.56: feed back into mhg_map).
+  config/mhg/pc_names.txt: G addresses of MH1 data names found by hand (`module name 0xADDR # how`).
 - tools/gen_rt_meta.py -> rt_meta.c (G symbols, pointers, MH1->G address map); src/pc/rt/rt_ver.c
   (rt_ver_mhg, RTVA/RTVA_LB/RTVA_SEL); rt_mem.c reads overlay vram/bss from MWo3 headers, sub_main image,
   G symbols/pointers from meta; fmt_mwo_unpack (melt.c) unpacks G's overlays; gen_rt_tables.py /
@@ -175,19 +180,72 @@ Run: `build/mhg/pc/mhview_g disc/mhg --boot ...` (saves/logs go to `mhgpc/`, nev
   build/pc/mhg_*missing.txt).
 - f_sphr.c: G load_stage_hit (lwgNNN.bin link: wall entry 0, ground entry 1) under VERSION_MHG.
 
-How far (13 Oct 2026, later): the boot passes the memory-card autoload and shows the Sofdec/ADX logos
-(--time 5) and the title screen (--time 20; hidden --shot runs). The title art is drawn too large/offset
-(only the top-left of the MONSTER HUNTER logo fits on screen): G's title layout or 2D scale differs from
-MH1's title code; look at the title task next, then the press-start menu.
-- The mc_mes_disp crash was not a bad string pointer: card_data_init is edited in G (memset 0x130D0, icon
-  file 0x9B0 loaded at data_load_ptr+0x20000, MH1: 0x11450 / 0x6D3 / +0x12000). With MH1's numbers
-  McActAvailSet read a wrong file and wrote past mc_file_tbl's MCFILE over the McardMsgTbl string arrays
-  (found with a gdb watchpoint). Fixed under VERSION_MHG in mccomb.c / mccomb_nm.c.
+### How far (13 Oct 2026, evening)
+Power-on -> Sofdec/ADX logos -> title (right size now) -> GAME MENU (NEW GAME / CONTINUE / GALLERY /
+OPTIONS) -> NEW GAME -> character creation (name, sex, face, hair, colour, voice; hunter shown) -> save to
+the card (Japanese card dialogs) -> Game_task -> **stops at the village** (Local_main). CONTINUE crashes in
+the game menu (below). Shots: build/mhg/ng4
+(s_1000 creation, s_1200 save question, s_1400 saved), build/mhg/menu.png, build/mhg/title.png.
+Fixed for G on the way (all under VERSION_MHG / rt_ver_mhg(), MH1 unchanged):
+- title_disp: G's title art is one 512x512 page (MH1: 256x256): G's UVs and menu line (demo.c).
+- font: G's glyph file is AFS_DATA 0x9AE and G's palettes are one colour over four CLUTs (rt_font.c).
+- init_move_work: G has no item work (pl78.c); village motion/NPC tables through RTVA (rt_village.c).
+- Edit_task / edit_trans: G copies written from G's code (edit_nm.c; G added a step 0, MH1's steps +1).
+- yn_tbl, mc_sel_tbl, client_work, filedef_sys (button/frame textures): hand-found G addresses
+  (config/mhg/pc_names.txt).
+- the mc_mes_disp crash: card_data_init is edited in G (memset 0x130D0, icon 0x9B0 at +0x20000;
+  mccomb.c / mccomb_nm.c).
 
-Stand-ins (G only): the boot's set-up quest 10 is not loaded and no monster is spawned at power-on
-(viewer.c, rt_log_standin "G boot: set-up quest 10").
+### Stand-ins (G only, logged with rt_log_standin)
+- G boot: set-up quest 10 not loaded, no monster spawned at power-on (viewer.c).
+- G Edit_task: the MH1-hunter carry-over (card ops 0xB-0xD, step 0 substeps 4-14, select 0x546A40 screen)
+  is skipped: NEW GAME always makes a new hunter.
+- G Edit_task: func_0012D6F0 (sets the gp word 0x2EF26C to -1) and func_0021E370 (after SoftKeyboard_set)
+  are not called.
+- rt_village_enter: MH1's Clear_lobby_ram is not run for G (see the lobby list below).
 
-Edited/missing functions hit at run time, in blocking order (for agent C):
-1. Quest_start (sub_main 0x4B3AA0, edited, 2052 bytes vs 1136): the boot's set-up quest and every quest.
-2. em_cmd_init / em data tables (crash in em_cmd_init on a spawned Rathian: G's em tables differ).
-3. sun_pos_tbl (MH1 0x2F7160) has no G name yet (data map).
+### Blocking list at run time (who; in path order)
+Village (agent D, lobby): the village is blocked here. G's lobby village code is edited almost
+everywhere and MH1's C on G's memory writes MH1 offsets: G's lb_sys is laid out differently (G clears
+0x98 bytes at 0x6548F0, Local_main reads lb_sys+3 at 0x654909 and the exit code at 0x6548F0, ends on
+0x22 / 0x27 where MH1 has 0x20 / 0x25), pNet fields moved (+0x2D / +0x31, MH1 +0xC / +0x11), lb_player
+has 10 entries of 0x38 bytes. Needed as G copies, in the order the village runs them:
+lobby_func_0059A270 (G's Clear_lobby_ram: lb_sys, lb_player, cw = 0x6DEC10, pNet = network_work,
+Lbc_init_network_work, Lb_set_mini_data), Local_main 0x59E480, vs_square_init_pre / init_init /
+init_se / init / event / exit, Lb_stage_load, Lb_npc_set, Lb_set_player, Lb_set_mini_data(_to_pl),
+Lb_make_quest_tbl_local, Lb_check_newCommer, lb_basic_master, Lb_npc_mv, lbc_text_lobby_trans,
+Lbc_init_network_work, Lbc_set_prim; main: Pit_reset (agent C). lb_set_key_quest_local is missing in G.
+G's Game_task (main 0x239490) is rewritten (offline step 2 = 0x239F60: Local_main every tick, 1 ->
+quest, -1 -> back to the title); the PC's rt_flow/rt_village stand for it.
+Quest path (agent A): Quest_start (sub_main 0x4B3AA0), em_cmd_init / em tables (A has WIP on agent-A).
+Main (agent C), blocking CONTINUE: Select_task's menu family is edited in G (csub00 0x1EE8B0, init_mode_sel
+0x1EEAD0, mode_sel 0x1EEC50, mode_sel_end 0x1EF060, mode_sel_exit 0x1EF270, disp_mode_menu 0x1EF420; G's menu
+is NEW GAME / CONTINUE / GALLERY / OPTIONS). NEW GAME happens to work with MH1's C; CONTINUE (with a save on
+the card) takes MH1's sub-menu path and crashes on game_menu_msg / game_menu_msg2 (no G address;
+build/mhg/ct1). Cont_task (select 0x548AC0) is edited too (2784 bytes vs 2616): after that.
+Main (agent C), seen on the way, not blocking:
+- McCardOperation (main 0x231940, edited): G's ops 0xB-0xD (MH1 hunter carry-over).
+- DispSoftkeyboard (0x20B020, edited): the key grid is drawn empty (RT_NAME types the name).
+- Note for G copies that draw: G renumbered mem_tex (all_reset loads filedef_sys 4/5/6 into
+  0x143/0x180/0x17F, MH1 5/6 into 0x157/0x156; the HUD list starts at 0x13F, MH1 0x118). The PC keeps
+  MH1's numbers everywhere (its own loads and MH1's C agree), so a G copy must use MH1's slot numbers,
+  or all loads must move together. (The white squares where buttons belong were filedef_sys, which had
+  no G address: fixed, config/mhg/pc_names.txt.)
+- mc_sel_ck (0x22BD40): G reads its table through the message-table list at 0x2B0B40 (the PC uses
+  mc_sel_tbl = 0x2B0780 = entry 7).
+Data names (agent E for the text tables, C/D for the rest): 76 MH1 data objects the PC C reads have no G
+address yet, so the PC build makes them function stand-ins (reading code bytes). Find them as for yn_tbl
+(the G twin of a function that reads it) and add them to config/mhg/pc_names.txt: Friend_data
+Item_preparation_tbl_00 SearchCondition SearchResult armor_shop_tbl category_name_str
+change_character_tbl chatHandleList chatListFlag check_bit_no connect_msg dod_new_reguration_agree_type
+edit_msg em17_rail_add em17_rail_half_add evdemo_03..24 event_demo ex_equip_tbl fight_bgm_tbl
+friend_entry_str game_menu_msg game_menu_msg2 item_box item_ctr item_pre_rate_tbl item_sp item_w_top
+item_work (gone in G) kbd_zen_dat key_quest key_quest_num lbSendInterval lb_guild_str lb_quest_clear
+lb_quest_exp lb_quest_info lb_quest_level_str lb_quest_message lb_set01_msg lb_talk_tbl load_msg
+mix_manual_tbl movie_no my_job_str netDialogMessage omake_str option_max_kind pSceneSubTitle pSceneTitle
+plazaMenuTbl rtcDate shop_armor00_tag shop_armor01_tag shop_process00_tag st64_dir st_sun_rgba_tbl
+st_sun_tb_tbl staff_tbl strButtonHelp text_lobby_msg tl_etc yes_or_no (list: names in
+build/mhg/pctree/build/pc/rt_gen.c's weak stand-ins that are OBJECTs in docs/survey/mh1_symbols.csv).
+sun_pos_tbl (MH1 0x2F7160) has no G name yet either. Besides those, 149 MH1 tables the PC imports have no
+G address and are zero-filled (build/mhg/pctree/build/pc/mhg_tables_missing.txt after a G build:
+monster_data, stage_fog_tbl, Skill_name, em*_timer_tbl, result_w, ...): the same treatment.

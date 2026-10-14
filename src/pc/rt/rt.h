@@ -54,6 +54,7 @@ const char *rt_text_for(int space, uint32_t va);      /* replacement text or NUL
 void rt_text_finish(void);                            /* after all imports: host-pointer registry */
 const char *rt_text_tr(const char *p);                /* p itself unless it is a registered string */
 size_t rt_text_quest(int no, uint8_t *buf, size_t n, size_t cap);   /* mission file text */
+size_t rt_text_quest_g(int no, uint8_t *buf, size_t n, size_t cap); /* Monster Hunter G mission file (0x48 header) */
 int rt_text_active(void);
 int rt_text_proportional(void);
 void rt_text_font_ready(const unsigned char *adv);    /* ASCII advance widths (px at size 20) */

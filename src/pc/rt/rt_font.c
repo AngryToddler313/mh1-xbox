@@ -92,8 +92,64 @@ void flfntStackReset(void)
     halftype = 1;
 }
 
+#ifdef VERSION_MHG
+/* G rewrote the palette side of the font (main 0x1D5340-0x1D6430, read from G's code): the glyph file is the
+ * same (AFS_DATA 0x9AE, font table entry 0 at 0x288D60: 20x20, 0x1E80 glyphs of 100 bytes), but a palette is
+ * now ONE colour, flfntSetPalData(n, a, b, c, colour): the colour (0xRRGGBB; halved for n < 0x14, the PS2's
+ * 0x80 = 1.0) is the vertex colour that modulates one of four 4-entry CLUTs (table at 0x288D20, PS2 ABGR):
+ * CLUT 1 when a's top byte is set (opaque, the "reverse" style), CLUT 2 / 3 for palettes 0x12 / 0x13 (grey
+ * 0x808080), else CLUT 0 (an alpha ramp: anti-aliased text, transparent background). Here each palette's
+ * four RGBA entries are that product, so the drawing below is unchanged. */
+#define G_FONT_CLUT 0x288D20u
+static void g_pal_set(int n, u32 a, u32 colour)
+{
+    const u8 *clut;
+    u32 col;
+    int k, i;
+    if (n == 0x12 || n == 0x13) {
+        k = n - 0x10;
+        col = 0x808080;
+    } else {
+        k = (a & 0xFF000000) ? 1 : 0;
+        col = n < 0x14 ? (colour >> 1 & 0x7F7F7F) : (colour & 0xFFFFFF);
+    }
+    clut = rt_addr(G_FONT_CLUT + 16u * (u32)k, 16);
+    for (i = 0; i < 4; i++) {
+        u32 r, g, b, al;
+        if (!clut) {            /* no ELF: plain white text */
+            pal[n][i] = i ? 0xFFFFFFFFu : 0;
+            continue;
+        }
+        /* PS2 modulate: tex * vertex / 0x80; vertex alpha 0x80 */
+        r = clut[4 * i] * (col >> 16 & 0xFF) / 0x80;
+        g = clut[4 * i + 1] * (col >> 8 & 0xFF) / 0x80;
+        b = clut[4 * i + 2] * (col & 0xFF) / 0x80;
+        al = clut[4 * i + 3] >= 0x80 ? 0xFF : clut[4 * i + 3] * 2;
+        if (r > 0xFF) r = 0xFF;
+        if (g > 0xFF) g = 0xFF;
+        if (b > 0xFF) b = 0xFF;
+        pal[n][i] = r | g << 8 | b << 16 | al << 24;
+    }
+}
+#endif
+
 void flfntSetPalData(int n, u32 a, u32 b, u32 c, u32 d)
 {
+#ifdef VERSION_MHG
+    int i;
+    (void)b;
+    (void)c;
+    if (n < 0)
+        return;     /* G: n < 0 is the font's own default slot (np+0x49B8) */
+    n &= 0x1F;
+    g_pal_set(n, a, d);
+    if (glyph_tex)
+        for (i = 0; i < NGLYPH; i++)
+            if (glyph_tex[i] && glyph_tex[i][n]) {
+                gfx_release_texture(glyph_tex[i][n]);
+                glyph_tex[i][n] = NULL;
+            }
+#else
     u32 in[4] = { a, b, c, d };
     u8 al = (a & 0xFF000000) ? 0xFF : 0;
     int i;
@@ -113,6 +169,7 @@ void flfntSetPalData(int n, u32 a, u32 b, u32 c, u32 d)
                 gfx_release_texture(glyph_tex[i][n]);
                 glyph_tex[i][n] = NULL;
             }
+#endif
 }
 
 /* flfntCreate + MakeHandle: default palette 0 = white with grey edges */
@@ -141,7 +198,7 @@ void rt_font_init(void)
     size_t n = 0;
     int i;
     if (!font_data) {
-        font_data = rt_file_load(0x6D2, &n);
+        font_data = rt_file_load(rt_ver_mhg() ? 0x9AE : 0x6D2, &n);    /* G: font table 0x2EBF10[0] */
         if (font_data && n < NGLYPH * 100) {
             fprintf(stderr, "rt_font: font file too small (%zu)\n", n);
             free(font_data);
@@ -152,6 +209,17 @@ void rt_font_init(void)
         measure_ascii();
     flfntCreate(NULL);
     flfntInit();
+#ifdef VERSION_MHG
+    {   /* G's font_set (main 0x12B3E0): palettes 1-0x11 one colour each from the table at 0x25F180, 0x12-0x13 grey */
+        const u8 *t = rt_addr(0x25F180u, 0x11 * 4);
+        for (i = 1; i < 0x12; i++)
+            flfntSetPalData(i, 0, 0, 0, t ? (u32)(t[4 * i - 4] | t[4 * i - 3] << 8 | t[4 * i - 2] << 16 | (u32)t[4 * i - 1] << 24) : 0xFFFFFFFFu);
+        for (; i < 0x14; i++)
+            flfntSetPalData(i, 0xFF000000u, 0, 0, 0);
+        font_reset_flag = 0;
+        return;
+    }
+#endif
     for (i = 1; i < 0xE; i++)               /* font_set's palettes */
         flfntSetPalData(i, 0, nfcol_tbl[i - 1][0], nfcol_tbl[i - 1][1], nfcol_tbl[i - 1][2]);
     for (; i < 0x10; i++)
@@ -168,6 +236,13 @@ void flfntSetPalette(int n)
 {
     s16 v = (s16)n;
     int k = v & 0x1F;
+#ifdef VERSION_MHG
+    /* G (main 0x1D58C0): selecting palette 1 makes it black, 0 / 0x12 / 0x13 white */
+    if (v == 1)
+        flfntSetPalData(1, 0, 0, 0, 0xFF000000u);
+    else if (v == 0 || v == 0x12 || v == 0x13)
+        flfntSetPalData(v, 0, 0, 0, 0xFFFFFFFFu);
+#endif
     if (v < 0 && k)
         k -= 0x20;
     cur_pal = (s16)k;
