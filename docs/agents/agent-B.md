@@ -1343,3 +1343,8 @@ Lessons:
   minutes (overlay binaries 8.2 MB vs 1.4 MB; rt_mem shadows 2.2 MB vs 0.5 MB); RT_TRACE=1 names the .bss shadows.
 - G's overlays are packed (MWo3 inside a melt stream); anything sized "for the worst case" around them is paid
   for the whole session because game.bin / sub_main stay loaded.
+- tools/xemu_quest_loop.sh (MH1) on 14 Oct under load average 17-21: run 1 plays new game -> quest 131 -> clear ->
+  village (t8301) -> house (t8399), then the bed-save input starts quest 131 again (t8960) instead of saving, so
+  CONTINUE has 0z. Not from this change: an RT_TRACE run of MH1 makes no gap/whole .bss shadows, MH1's overlays are
+  not packed (melt path unused) and the rest is G-only or paths. The PC test_quest_loop (same input) passes. Worth
+  a run of the xemu loop on main (bed Save? box / "quit game" path changed since 12 Oct).
