@@ -28,6 +28,8 @@ else
 	AUTH=(--netrc-file "$NETRC")
 fi
 [ -n "$XBOX_PASSIVE" ] || AUTH+=(--ftp-port -)
+# XBOX_RATE=2M (or 500K ...): cap the copy speed; some Xbox FTP servers stall when fed at full speed
+[ -n "$XBOX_RATE" ] && AUTH+=(--limit-rate "$XBOX_RATE")
 URL=ftp://$XBOX/${XBOX_DIR:-E/Games/$DIR}
 echo "copying to $URL"
 for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
@@ -35,6 +37,7 @@ for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; 
 	have=$(curl -sSI "${AUTH[@]}" "$URL/$f" 2>/dev/null | tr -d '\r' | awk '/Content-Length/{print $2}')
 	if [ "$have" = "$want" ]; then echo "== $f already there"; continue; fi
 	echo "-> $f ($((want >> 20)) MB)"
-	curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f"
+	curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f" ||
+		{ echo "copy of $f failed: rerun to retry (finished files are skipped); try XBOX_RATE=2M if it keeps stalling"; exit 1; }
 done
 echo "done. On the Xbox start '$NAME' from the games list (E:\\Games\\$DIR\\default.xbe)."
