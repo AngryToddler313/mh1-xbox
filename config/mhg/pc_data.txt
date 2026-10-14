@@ -99,6 +99,12 @@ map_stage_tbl = 0x00520A00; // size:0x30           # pointers to them
 em_species_tbl = 0x004FEE90; // size:0xD0           # per monster kind: pointer to its data, byte 0 = species (em command 0x2C)
 [game]
 shell00_body_tbl = 0x006C7CD0; // size:0x30     # 12 entries (MH1 9): G shell00_i (0x669260) reads it
+shell04_body_tbl = 0x006C2EF0; // size:0x3C     # 15 entries (MH1 12): G's run of hit-table pointers
+shell09_body_tbl = 0x006C68E0; // size:0x54     # 21 entries (MH1 18)
+shell11_body_tbl = 0x006C6F70; // size:0x20     # 8 entries (MH1 7)
+shell16_body_tbl = 0x006C1120; // size:0x54     # 21 entries (MH1 20): em15's attack 27 uses body 20; at MH1 size the PC read past the copy (the hit_calc_shl crash of quests 25/41/10046)
+shell19_body_tbl = 0x006CA6C0; // size:0x5C     # 23 entries (MH1 21)
+fade74_data = 0x0067D750; // size:0x34          # 13 fade colour tables (MH1 10; G repeats fade72_dra twice and adds one)
 [sub_main]
 em_meat_tbl = 0x00509410; // size:0xD0          # G: per kind a list of hit-zone tables by monster state (G hit_hit_sub_em)
 # Monster state (agent A, G hunts without test aids)
