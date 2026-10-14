@@ -85,7 +85,12 @@ void *Start_item_data_adrs_get(void)
 /* 0x226B40: clear quest_w and point it at the free-hunt tables */
 void Quest_init(void)
 {
+#ifdef VERSION_MHG
+    memset(&quest_w, 0, 0x290); /* G: quest_w is 0x290 bytes */
+    quest_w.x64 = (MISSION *)quest_data_tbl;
+#else
     memset(&quest_w, 0, 0x190);
+#endif
     quest_w.x6C = quest_data_tbl[4];
     quest_w.x38 = -1;
     quest_w.x36 = -1;

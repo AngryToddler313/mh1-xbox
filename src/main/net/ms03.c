@@ -3,8 +3,12 @@
 #include "netcw.h"
 
 typedef struct CNF {
+    #ifdef VERSION_MHG
+    u8 pad[0xC83];
+#else
     u8 pad[0xC80];
-    s8 last;            /* 0xC80 last connection setting saved */
+#endif
+    s8 last;            /* 0xC80 (G: 0xC83) last connection setting saved */
 } CNF;
 extern CNF CNFile;
 

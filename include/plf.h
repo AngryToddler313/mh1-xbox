@@ -1,3 +1,4 @@
+#include "version.h"
 #ifndef PLF_H
 #define PLF_H
 /* Raw field access for the player work (PLW, 0xA00 bytes) used by the
@@ -91,7 +92,7 @@ s32 item_blank_ck(PLW *);
 u16 item_sel_sub(PLW *, u16, int);
 void se_req(int, int, int);
 s32 Get_view_dir();
-extern u8 Item_data[327][16];
+extern u8 Item_data[327][ITEM_ROW];
 int calc_vec_ang2(f32 *, f32 *);
 f32 flvecCalcLength(f32 *);
 void Pl_act_set2(PLW *, int, int, int);

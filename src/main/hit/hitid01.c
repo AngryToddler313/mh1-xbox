@@ -1,8 +1,13 @@
 /* hitid01 - hit id counter (SLPM_654.95 0x00114A90-0x00114AD8): Hit_id_init, Get_hit_id. Whole file in hitid_nm.c. */
 /* hitid_nm - SLPM_654.95 0x00114A90-0x00114AD8: hit id counter (1..255, 0 means "none"), kept in game_w+0xD4. */
 #include "types.h"
+#ifdef VERSION_MHG
+#define HIT_ID_OFS 0x3D /* G: game_w.hit_id moved into the gap after x30 */
+#else
+#define HIT_ID_OFS 0xD4
+#endif
 typedef struct HITW {
-    u8 _pad[0xD4];
+    u8 _pad[HIT_ID_OFS];
     u8 hit_id;
 } HITW;
 extern HITW game_w;

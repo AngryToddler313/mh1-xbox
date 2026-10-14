@@ -4,6 +4,20 @@
 #include "plf.h"
 #include "game.h"
 #include "plst.h"
+#ifdef VERSION_MHG
+/* G: skill 0xA0 (guess: recovery down) takes a quarter off */
+void Pl_vital_calc_item(PLW *pl, int dv) {
+    int n;
+    if (Pl_Skill_ck(pl, 0x1A) == 1 && (n = (s16)dv, n > 0)) {
+        n = (s16)(n + n / 4);
+    } else if (Pl_Skill_ck(pl, 0xA0) == 1 && (n = (s16)dv, n > 0)) {
+        n = (s16)(n - n / 4);
+    } else {
+        n = (s16)dv;
+    }
+    Pl_vital_calc(pl, n);
+}
+#else
 void Pl_vital_calc_item(PLW *pl, int dv) {
     int n;
     if (Pl_Skill_ck(pl, 0x1A) == 1 && (n = (s16)dv, n > 0)) {
@@ -15,3 +29,4 @@ void Pl_vital_calc_item(PLW *pl, int dv) {
 }
 
 
+#endif

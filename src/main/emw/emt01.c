@@ -46,6 +46,21 @@ void em21_trans_sub(EMT *w, int part) {
     flSetRenderState(0x19, (int)&m);
 }
 
+#ifdef VERSION_MHG
+/* G: monster kinds 45 and 46 draw like 15 and 21 (new monsters reuse their draw hooks) */
+void em_trans_sub(EMT *w, int part) {
+    switch (w->kind) {
+    case 15:
+    case 45:
+        em15_trans_sub(w, part);
+        break;
+    case 21:
+    case 46:
+        em21_trans_sub(w, part);
+        break;
+    }
+}
+#else
 void em_trans_sub(EMT *w, int part) {
     switch (w->kind) {
     case 0:
@@ -92,3 +107,4 @@ void em_trans_sub(EMT *w, int part) {
         break;
     }
 }
+#endif

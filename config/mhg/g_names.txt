@@ -1,0 +1,21 @@
+/* Hand-found G addresses of MH1 data names that tools/mhg_map.py could not map (found from the G code with tools/check.py -v);
+ * linked into every G module by tools/build.py. gp = 0x2F2B70. */
+PROVIDE(shell01_tbl = 0x002EE9D0);
+PROVIDE(shell02_tbl = 0x002EE9D4);
+PROVIDE(shell05_tbl = 0x002EE9E8);
+PROVIDE(shell13_tbl = 0x002EEA54);
+PROVIDE(shell15_tbl = 0x002EEA60);
+PROVIDE(shell18_tbl = 0x002EEA6C);
+PROVIDE(shell19_tbl = 0x002EEA70);
+PROVIDE(shell20_tbl = 0x002EEA74);
+PROVIDE(shell21_tbl = 0x002EEA78);
+PROVIDE(shell23_tbl = 0x002EEAA0);
+PROVIDE(shell01_body_tbl = 0x006C1CE0);
+PROVIDE(shell19_body_tbl = 0x006CA6C0);
+PROVIDE(Item_data = 0x004FF1F0);
+PROVIDE(quest_data_tbl = 0x00525D50);
+PROVIDE(Item_get_tbl = 0x006D4350);
+PROVIDE(Em_Senko_Ck = 0x00548090); /* game overlay function, called from main (push_senko) */
+PROVIDE(D_00517720 = 0x00517720);
+PROVIDE(select_func_00542B50 = 0x00542B50);
+PROVIDE(select_func_00542B80 = 0x00542B80);

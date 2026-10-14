@@ -3,6 +3,24 @@
 #include "pl.h"
 #include "plitem.h"
 
+#ifdef VERSION_MHG
+/* G: only for gun kind 7 (work35F); ammo_max now comes from a [gun row][ammo type] table. */
+extern u8 D_00517720[][0x18];
+extern u8 D_00514EA0[][32];
+
+void Shell_type_set(PLW *pl, int flag) {
+    if (pl->work35F == 7 && pl->work88E != 0xFF) {
+        pl->ammo_type = Item_data[pl->item[pl->work88E].id].ammo;
+        if (Item_data[pl->item[pl->work88E].id].max == 0xFF) {
+            pl->work8BC = 0xFF;
+        } else {
+            pl->work8BC = pl->item[pl->work88E].num;
+        }
+        pl->work01D = D_00514EA0[D_00517720[pl->wpn_kind][13]][pl->ammo_type];
+        pl->work01C = 0;
+    }
+}
+#else
 void Shell_type_set(PLW *pl, int flag) {
     if (pl->work88E != 0xFF) {
         pl->ammo_type = Item_data[pl->item[pl->work88E].id].ammo;
@@ -15,3 +33,4 @@ void Shell_type_set(PLW *pl, int flag) {
         pl->work01C = 0;
     }
 }
+#endif

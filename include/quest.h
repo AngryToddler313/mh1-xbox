@@ -46,7 +46,11 @@ typedef struct QUEST_W {
     u8 _pad05;
     s8 x06;             /* 0x06 state: 4 clear, 6, 7 retire, 8 error */
     u8 _pad07;
+#ifdef VERSION_MHG
+    u16 no;             /* 0x08 quest number (0: free hunt); u16 in G (lhu in Stage_item_data_get) */
+#else
     s16 no;             /* 0x08 quest number (0: free hunt) */
+#endif
     s8 x0A;             /* 0x0A section number (quest_condition_prog case 0x1B) */
     s8 x0B;             /* 0x0B */
     s32 x0C;            /* 0x0C wait counter (condition program cmd 5/6) */

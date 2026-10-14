@@ -14,12 +14,21 @@ volatile u16 Pl_hold_item_ck(PLW *pl) {
     for (i = 0; i < 20; i++) {
         if (pl->item[i].num != 0) {
             switch (pl->item[i].id) {
+#ifdef VERSION_MHG
+            case 0x201: /* G: hold-item ids moved to 0x201.. (not 0x202) */
+            case 0x203:
+            case 0x204:
+            case 0x205:
+            case 0x206:
+            case 0x207:
+#else
             case 0x91:
             case 0x92:
             case 0xA3:
             case 0x94:
             case 0x93:
             case 0x95:
+#endif
                 r = pl->item[i].id;
                 break;
             default:
