@@ -15,9 +15,6 @@ command -v curl >/dev/null || { echo "curl is needed (sudo apt install curl), or
 # a Monster Hunter G folder (./mh1 xbox with the G disc: dist/xbox/MHG) goes to E:\Games\MHG
 ELF=SLPM_654.95; DIR=MH1; NAME="Monster Hunter"
 [ -f "$SRC/data/SLPM_658.69" ] && { ELF=SLPM_658.69; DIR=MHG; NAME="Monster Hunter G"; }
-for f in default.xbe data/AFS_DATA.AFS data/AFS00.AFS data/AFS01.AFS data/$ELF; do
-	[ -f "$SRC/$f" ] || { echo "$SRC/$f is missing: run ./mh1 xbox DISC first"; exit 1; }
-done
 if grep -q "machine $XBOX" ~/.netrc 2>/dev/null; then
 	AUTH=(--netrc)
 else
@@ -32,12 +29,31 @@ fi
 [ -n "$XBOX_RATE" ] && AUTH+=(--limit-rate "$XBOX_RATE")
 URL=ftp://$XBOX/${XBOX_DIR:-E/Games/$DIR}
 echo "copying to $URL"
+# Evolution X's FTP server drops long transfers at random points. Each file is tried up to
+# XBOX_TRIES times (default 5); a retry resumes from what arrived (curl -C -, the server's SIZE /
+# APPE) and falls back to a fresh copy if the server can't resume. If a file keeps failing at once
+# (426 on start), the Xbox's FTP server is still holding the broken file: restart the Xbox, rerun.
+remote_size() {   # bytes on the Xbox, empty if unknown (SIZE unsupported or no file)
+	curl -sS "${AUTH[@]}" -I "$URL/$1" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-length"{print $2}'
+}
 for f in default.xbe data/$ELF data/AFS01.AFS data/AFS_DATA.AFS data/AFS00.AFS; do
 	want=$(stat -c %s "$SRC/$f")
-	have=$(curl -sSI "${AUTH[@]}" "$URL/$f" 2>/dev/null | tr -d '\r' | awk '/Content-Length/{print $2}')
+	have=$(remote_size "$f")
 	if [ "$have" = "$want" ]; then echo "== $f already there"; continue; fi
 	echo "-> $f ($((want >> 20)) MB)"
-	curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f" ||
-		{ echo "copy of $f failed: rerun to retry (finished files are skipped); try XBOX_RATE=2M if it keeps stalling"; exit 1; }
+	ok=
+	for try in $(seq "${XBOX_TRIES:-5}"); do
+		have=$(remote_size "$f")
+		if [ -n "$have" ] && [ "$have" -gt 0 ] && [ "$have" -lt "$want" ]; then
+			echo "   resuming at $((have >> 20)) MB (try $try)"
+			curl -# "${AUTH[@]}" --ftp-create-dirs -C - -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
+		else
+			[ "$try" -gt 1 ] && echo "   starting again (try $try)"
+			curl -# "${AUTH[@]}" --ftp-create-dirs -T "$SRC/$f" "$URL/$f" && { ok=1; break; }
+		fi
+		sleep 5
+	done
+	[ -n "$ok" ] || { echo "copy of $f failed ${XBOX_TRIES:-5} times: restart the Xbox and rerun (finished files are skipped)"; exit 1; }
+	have=$(remote_size "$f"); [ -z "$have" ] || [ "$have" = "$want" ] || echo "   warning: $f is $have bytes on the Xbox, expected $want"
 done
 echo "done. On the Xbox start '$NAME' from the games list (E:\\Games\\$DIR\\default.xbe)."
