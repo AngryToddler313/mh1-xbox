@@ -164,9 +164,12 @@ def test(q):
                    RT_PL_TARGET='k%d' % kind, RT_PL_WARP_EM='%d-90000' % (max(t_hunt + 40, 900) if kind == p['boss'] else t_hunt + 40), RT_DMG_MUL='40')
         note.append('hunt kind %d x%d on stage(s) %s%s' % (kind, need, '+'.join('%d(%d)' % (s, cand.get(s, wave.get(s, 0))) for s in order), ' (follows the monster)' if kind == p['boss'] else ''))
         secs = 1500
-        if kind == p['boss'] and G and extra:      # the other bosses are slain by the aid; the followed one is fought
-            env['RT_PL_SLAY'] = '300,' + ','.join(map(str, extra))
-            note.append('other bosses %s slain by RT_PL_SLAY' % '+'.join(map(str, extra)))
+        if G and kind == p['boss'] and need > 1:    # a boss that comes back (G revival: 1800 + 150 ticks between kills)
+            secs += 100 * need
+        if kind == p['boss'] and G and extra:      # the other bosses are followed and fought one after the other
+            env['RT_PL_TARGET'] = 'k%d,%s' % (kind, ','.join(map(str, extra)))   # (a boss off the hunter's stage cannot be slain)
+            env['RT_PL_SLAY'] = '8000,%s' % ','.join(map(str, [kind] + extra))
+            note.append('then bosses %s' % '+'.join(map(str, extra)))
         elif kind == p['boss']:
             env['RT_PL_SLAY'] = '8000'       # a boss that stays out of reach (Rathalos aloft) is brought down after 8000 ticks
         elif p['boss'] >= 0:                 # the quest's main monster must die too (quest_enemy_ck): slay it from the start

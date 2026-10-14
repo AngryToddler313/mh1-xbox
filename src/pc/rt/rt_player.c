@@ -136,6 +136,23 @@ int rt_tick_count(void) { return pl_ticks; }
 /* the tick the test aids count: player ticks of the run, or with RT_AID_PER_QUEST=1 of the
  * current quest (from rt_player_game_init), so the same aids repeat in every quest of a soak */
 static int aid_tick(void) { return pl_ticks - quest_base; }
+/* RT_PL_TARGET "kA,B,..": the first of these kinds with a living monster anywhere (quests with several bosses:
+ * a boss off the hunter's stage waits, unhurt, so they are fought one after the other); else the first */
+static int target_kind(const char *s)
+{
+    extern u8 em_work[];
+    const char *q;
+    int i;
+    for (q = s + 1; q; q = strchr(q, ',') ? strchr(q, ',') + 1 : NULL) {
+        int k = atoi(q);
+        for (i = 0; i < 20; i++) {
+            u8 *e = em_work + 0xA10 * i;
+            if (e[0] && e[2] == k && *(s16 *)(e + 0x302) > 0)
+                return k;
+        }
+    }
+    return atoi(s + 1);
+}
 int rt_test_target(void)
 {
     const char *s = getenv("RT_PL_TARGET");
@@ -143,7 +160,7 @@ int rt_test_target(void)
     if (s && s[0] == 'k') {     /* "kN": the nearest living monster of kind N on the hunter's stage */
         extern u8 em_work[];
         PLW *p = &player_work[game_w.master];   /* the local hunter (co-op: not always slot 0) */
-        int kind = atoi(s + 1), i;
+        int kind = target_kind(s), i;
         float best = -1;
         int pass, none = 0;
         for (pass = 0; pass < 2 && best < 0; pass++) {      /* living first, then a dead one still lying there (carving) */
@@ -389,7 +406,7 @@ void rt_player_tick(int no)
             /* "tick,f" with RT_PL_TARGET=kN: follow the monster, goal = the stage a living monster of kind N is on now
              * (large monsters walk between areas) */
             extern u8 em_work[];
-            int kind = atoi(getenv("RT_PL_TARGET") + 1), i;
+            int kind = target_kind(getenv("RT_PL_TARGET")), i;
             goal = -1;
             for (i = 0; i < 20 && goal < 0; i++) {
                 u8 *e = em_work + 0xA10 * i;

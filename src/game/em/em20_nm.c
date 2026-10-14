@@ -374,6 +374,39 @@ void em20_atk_act_set(EMW *em, u16 no, u16 arg) {
     em_act_set2(em, 3, no, arg);
 }
 
+#ifdef VERSION_MHG
+int Quest_enemy_revival_ck(EMW *);
+int Quest_enemy_revival_set(EMW *);
+void em_status_init(EMW *em);
+void em20_init(EMW *em);
+/* G game 0x618A20: em20_init and the start point of a returning monster: map 9 (game_w.x2E) stage 90 at one of
+ * two points (by em+0x1B), elsewhere stage 34 */
+static void em20_revive_init(EMW *em)
+{
+    em20_init(em);
+    if (game_w.x2E == 9) {
+        em->stg = 90;
+        if (((u8 *)em)[0x1B] == 0) {
+            em->ang[1] = 0x8A76;
+            em->pos[0] = 11948.9004f;
+            em->pos[1] = 1010.0f;
+            em->pos[2] = 15923.7998f;
+        } else {
+            em->ang[1] = 18529;
+            em->pos[0] = 3743.19995f;
+            em->pos[1] = 1010.0f;
+            em->pos[2] = 11415.0f;
+        }
+    } else {
+        em->stg = 34;
+        em->ang[1] = 0xF187;
+        em->pos[0] = 12296.0f;
+        em->pos[1] = 978.700012f;
+        em->pos[2] = 2863.30005f;
+    }
+}
+#endif
+
 void em20_act_set(EMW *em, int kind, u16 no, u16 arg) {
     EM20W *w = (EM20W *)em->ex;
 
@@ -400,9 +433,31 @@ void em20_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 3:
         em20_atk_act_set(em, no, arg);
         break;
+#ifdef VERSION_MHG
+    /* G (game 0x62AE30): act 4 no 20 clears ex+0x1B; the die act (5) no 3 brings a monster of a
+     * reviving quest back (Quest_enemy_revival_ck/_set, a fresh status and position: game 0x618A20) */
+    case 4:
+        if (no == 20) {
+            ((u8 *)w)[0x1B] = 0;
+        }
+        em->act_spd = 1.0f;
+        em_act_set2(em, kind, no, arg);
+        break;
+    case 5:
+        if (no == 3 && Quest_enemy_revival_ck(em) == 1) {
+            Quest_enemy_revival_set(em);
+            em_status_init(em);
+            em20_revive_init(em);
+        }
+        em->act_spd = 1.0f;
+        em_act_set2(em, kind, no, arg);
+        break;
+    case 6:
+#else
     case 4:
     case 5:
     case 6:
+#endif
         em->act_spd = 1.0f;
         em_act_set2(em, kind, no, arg);
         break;
