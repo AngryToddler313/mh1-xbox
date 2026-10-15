@@ -243,3 +243,9 @@ armor_shop_tbl = 0x002EEE80; // size:0x90
 [main]
 shop_armor01_tag = 0x002EF040; // size:0x8
 shop_process00_tag = 0x002EF050; // size:0x8
+
+# The workshop's recipe tables at G size (0x18-byte entries: kind, 0, id, four {item, count} pairs ..., 0xFF ends the lists; agent D)
+[sub_main]
+bou_sei_tbl = 0x0050B730; // size:0x6270           # 1049 armour recipes (MH1 359)
+buki_sei_tbl = 0x005119A0; // size:0x1010          # 170 weapon recipes
+kakou_tbl = 0x005129B0; // size:0x23C0             # upgrade table by weapon id, 381 weapons (MH1 234)
