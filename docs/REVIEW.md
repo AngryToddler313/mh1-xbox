@@ -612,3 +612,17 @@ obvious workarounds.
 - **Dropped:** src/pc/install.c's MH1-only constants; **now** one table per game (VERSION_MHG: G's four files, SLPM_658.69, data folder
   mhgpc/data), so dragging a G ISO onto mhview_g.exe installs it.
 - **Dropped:** Lb_put_shopYesNo's MH1 two-string version in the G build (lb_by44.c); **now** G's message table D_2EC5D8 by the answer state.
+
+## G GAME MENU rows, quest clear bits (agent C, 15 Oct 2026, GB2 / GB6)
+- **Dropped:** on the G PC build, MH1's omake menu (omake.c `Omake_task`, `omake_main`, `omake_play`, `omake_exit`, `disp_omake_menu`, `omake_check`: now `#if OMAKE_PART == 0 &&
+  !defined(VERSION_MHG)`) which the GAME MENU's 5th row ran and crashed in (zero omake_str); **now** src/main/omake/omake_g.c: `Omake_task` is G's NETWORK OPTIONS
+  (main 0x1180F0, the name G's symbol view gives it) and `sub_main_func_004A9960` is the GALLERY. MH1 and the PS2 builds are unchanged. **To revert:** the commit "G: NETWORK OPTIONS
+  and GALLERY screens on the PC".
+- **Choice:** the NETWORK OPTIONS rows "delete the login ID" and "network settings" (PS2 network stack, yn_scecom_reboot) answer with the "can't" sound on the PC; the 15
+  gallery event scenes (G 0x4A91D0) do the same; the credits run on black (G plays movie clips behind them). The gallery does not wipe User_data as G does at its start
+  (G's scene viewer plays on a blank hunter; the port has no scene viewer and the card keeps the save).
+- **Dropped:** Quest_clear_bit_set / _ck's quest-number-as-bit-number on the G PC (ud_nm.c); **now** G's list of quest numbers (quest_bit_tbl, G sub_main 0x4FECA0) gives the
+  bit, as G 0x4C74D0 / 0x4C7550. MH1 unchanged. **To revert:** drop the `#ifdef VERSION_MHG` block in ud_nm.c.
+- **Dropped:** Omake_flag_set / _ck's MH1 s16 at option_w+0xFCC on the G PC (ud_nm.c is the copy the G PC build links); **now** G's u32 at +0x2C4C.
+- **Dropped:** MH1's Disp_button on the G PC (disp2_nm.c); **now** G's (the O / X prompts and L1 / R1 icons come from G's sheet; Disp_button_col takes the colour).
+- **Added, not a replacement:** `RT_OMAKE=0x7FF` (test aid: opens omake flags), the gallery pictures in build/C/gb2/.

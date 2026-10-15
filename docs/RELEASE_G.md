@@ -18,7 +18,7 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 | # | Criterion | How to check | Today |
 |---|---|---|---|
 | G1 | Boots from the player's own G disc, nothing Capcom shipped | PC: an installer for the G ISO; Xbox: a player path to get the 1.1 GB of disc files onto E:\Games\MHG | Xbox: `./mh1 xbox DISC` makes dist/xbox/MHG; the loader's HTTP data install exists (tested in xemu; the owner's first try did not start the loader) [docs]. PC: `./mh1 linux|windows` **refuse a G disc** ("Xbox only for now", mh1:63) [verified]; the G PC build opens no window unless MH1_SHOW=1 (agents' rule), tools/play_g.sh is the owner's launcher [docs] |
-| G2 | Title -> NEW GAME -> character -> save -> village -> CONTINUE | hidden runs (section 3) | title, NEW GAME, creation, card save, village intro, Kokoto village: OK. CONTINUE crashed in the game menu whenever a save was on the card: **fixed today** (section 4). EXTRA (omake) menu row crashes [verified]. OPTIONS not reached in my runs |
+| G2 | Title -> NEW GAME -> character -> save -> village -> CONTINUE | hidden runs (section 3) | title, NEW GAME, creation, card save, village intro, Kokoto village: OK. CONTINUE crashed in the game menu whenever a save was on the card: **fixed today** (section 4). The 5th row crash is fixed (GB2, 15 Oct, agent C: it was NETWORK OPTIONS, not an EXTRA menu). OPTIONS opens and leaves through the card save [verified 15 Oct] |
 | G3 | Every offline quest playable from the elder to the reward | tools/test_all_quests_g.sh (98 quests + carts), the elder's lists, a human play-through | 98/98 + carts pass with test aids [verified today]. The elder's quest lists were empty ("1 / 0"): **fixed today**. No human has finished G on the port |
 | G4 | The village works: shops, forge, box, elder, counter | tools/test_gvillage.py (16 cases) | 16/16 OK [verified today]. Equipment detail / skill pages not ported (REVIEW "G village round 2") [docs] |
 | G5 | Saves reliable | card save, CONTINUE, bed save | new-game save + CONTINUE OK today [verified]; G save is 78032 bytes, own Xbox title id [docs]. No G save test script (MH1's test_save.sh is MH1 only) [verified] |
@@ -37,7 +37,7 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 | # | What the player sees | Where | Status | Lane | Basis |
 |---|---|---|---|---|---|
 | GB1 | Most G-only text is Japanese: weapon and armour names, G items, the G NPC lines, half the quests | rt_text, tools/text_map.py; docs/text_coverage.md | 47% official English; the rest needs a source (owner: Monster Hunter Freedom for G content, own translation in its style) | text + owner | [docs] |
-| GB2 | The EXTRA (omake) row of the game menu crashes the game | src/main/omake/omake.c disp_omake_menu (strlen of omake_str[i]); omake_str and check_bit_no are zero stand-ins on the G PC (no G address); mhg_map: disp_omake_menu / Omake_task / omake_init are `missing` in G (G rewrote the menu) | open | main | [verified: crash backtrace build/test_logs, today] |
+| GB2 | **FIXED 15 Oct (agent C).** The GAME MENU rows are NEW GAME / CONTINUE / GALLERY / OPTIONS / NETWORK OPTIONS: G has no MH1-style omake menu. Its Omake_task (main 0x1180F0) is NETWORK OPTIONS and the real "omake" is the GALLERY (sub_main 0x4A9960); MH1's omake menu ran for both on the PC (zero tables) and crashed on the 5th row (strlen of omake_str) | src/main/omake/omake_g.c (new; MH1's omake menu is fenced out of omake.c for G); build/C/gb2/ has the pictures | done: NETWORK OPTIONS (rows 0/1 change the two network bytes, EXIT saves; rows 2/3 need the PS2 network stack and answer with the "can't" sound); GALLERY (4 pages, page-turn wipe, cell wobble, NEW markers, unlock flags, movies on the port's player, the credits scroll, the save prompt on leaving). **Not ported:** the 15 event scenes (G 0x4A91D0 loads a stage and a monster into the game's demo camera: they answer like a closed entry), the movie clips behind the credits (G's cue list at 0x50B678) | main | [verified: hidden runs, pictures] |
 | GB3 | G is not on the PC for players: `./mh1 linux|windows` refuse a G disc; the G PC build is hidden unless MH1_SHOW=1 | mh1:63, viewer.c G hidden rule | **done 15 Oct (agent D)**: `./mh1 linux|windows|xbox` build G from the G disc into dist/<platform>/MHG, play scripts set MH1_SHOW=1; docs/PLAYING.md has a G section | platform | [verified] |
 | GB4 | Nobody has played G through on the port; every quest "passes" with test aids (warps, x40 damage, god mode, RT_PL_SLAY) | tools/test_all_quests.py G mode | process gap; owner F8 play-testing | owner + all | [verified: aids in the script] |
 | GB5 | On the Xbox, G has not been played on hardware (installed through the loader, pad fixed; hands-on test pending). The loader's data install did not start on the owner's first try | docs/xbox.md "Owner's first try", "G on the owner's Xbox: no pad" | waiting for the owner | Xbox + owner | [docs] |
@@ -134,3 +134,38 @@ tools/test_dbgmenu.sh OK (MH1 + G), tools/test_gvillage.py 16/16; G nv2a Xbox bu
    game/em, game/shell, main/pl, main/ud (hunt and save data).
 3. GB4/GB5: the owner plays G on PC and Xbox (F8 reports / plain chat), one star level at a time.
 4. GB3: `./mh1 linux|windows` for a G disc and a player page; GB1 English source decision; GB7 online decision.
+
+## 6. GB6 triage, main lane (agent C, 15 Oct 2026)
+
+Method: docs/survey/mhg_cov_g.txt, the 243 entries under src/main (the lobby, em*, quest and village lanes left out), each aligned against its G
+twin with the register/opcode view of tools/mhg_fdiff.py (immediates and offsets masked, so struct-layout-only differences count as 0): 54 are pure
+layout (nothing to port), 65 differ by less than 15 instructions, 105 by more, 19 have no G twin (missing: G removed or rewrote them). Ported or fixed this round (all [verified] in hidden runs unless said):
+- **Quest clear bits** (Quest_clear_bit_set / _ck, sub_main 0x4C74D0 / 0x4C7550): G numbers the 256 bits by position in a list of quest numbers
+  (sub_main 0x4FECA0, 245 of them); MH1's quest-number-as-bit-number wrote past the bits for every G quest above 255 (10041 = bit 313): memory
+  next to User_data was overwritten after each won G quest. Now G's mapping (ud_nm.c, quest_bit_tbl in pc_data.txt); tools/test_all_quests_g.sh 10 10033 10041 pass.
+- **Omake flags** (Omake_flag_set / _ck): the G PC build links ud_nm.c (f_ud.c is in tools/pc_g_exclude.txt) whose copy had MH1's s16 at option_w+0xFCC; G's is a
+  u32 at +0x2C4C. option_w itself was 0x1200 bytes on the G PC (G's runs to 0x2E80: the flags and the network options wrote past it).
+- **Disp_button** (G 0x12DBA0): G's icon sheet, kinds 20/21 (decide / cancel) are cells 0/1, a colour parameter. The G screens drew white squares
+  for the O / X prompts (mode menu, gallery, card dialogs); every G caller but sub_main 0x4BF800 (not ported, G-only HUD) passes -1 through G 0x12DD90.
+- **Memory card messages**: McardMsgTbl is 63 entries in G (the symbol view had 51): the OPTIONS / GALLERY save crashed at entry 51.
+- G's GAME MENU title strips 7 (NETWORK OPTIONS) and 8, PIT_TEX[4] (gallery sheet), putspr_g.c (func_0012A8B0 / 0012A800 were no-op stand-ins on the PC).
+- rt_movie.c reads G's own movie table (main 0x2A0DE0, 12 movies; MH1's sfd_tbl has 9).
+
+Still MH1 logic where G differs, that a player can notice (nothing here is a crash; sizes are G's):
+| What | Where (MH1 name, G twin) | What the player sees [basis] |
+|---|---|---|
+| Pause menu status page | PlayerStatusWindow (main 0x222E50, 1.3 KB) + func_00223DD0 / 00223AD0 / 00223610 (skill pages) + the G-only page switch | page counter shows "1/-359208930" (G passes the page count, MH1 does not), money line blank (format read through a G pointer cell), the three skill pages (2-4) missing [verified: shot, gvil_ev run] |
+| Pause menu help line | row ステータス shows the friend-list help | the help list has the online entry; offline the rows after it are one off [verified: shot] |
+| Equipment detail windows | equip_exp_core 4.7 KB, EquipmentCompareWindowA, sword_zokusei, slash_level_bar (6 sharpness levels), Put_receive_mark | attack 0, element names missing, sharpness bar wrong (= GN7) |
+| Standard camera | cam_sub_std (main 0x1D9D60): G adds the stage camera table stage_camera_data_ex (func_001DACA0) and a second pad input (pad bits 0xC00) | camera feel in quests; k_HitEmCamera, QuestClearCameraRequest, NPCZoomInCamera* also edited [asm diff only, not seen] |
+| Stage drawing | trans_stage (15 KB, +450 instructions in G), stage_set_set, stage_spr_disp | possibly missing stage effects; the stages look right in the village and quests [asm diff only] |
+| Wall collision | GetWallHitBit2 / GetWallHitBitEm / GetWallHitBitPl / HitWallPlayer (f_sphr.c) | how the hunter / monsters slide along walls [asm diff only] |
+| Player timers | timer_calc_sub_pl (+68 instructions), pl_move_sub (a new field at +0x940, Pl_act_set instead of Pl_act_set2), Pl_item_stack, St_pick_ck2, body_hit_sub_new | status-effect timers, item stacking rules [asm diff only] |
+| Card save screens | disp_savesel / disp_savesel_moji (G draws more of the save slot) | the slot frame shows only its title [verified: shot] |
+| Fade | Fade_busy_ck / fade_set / Fade_task (a second state byte) | none seen |
+| HUD bits | disp_timer, disp_slash_level (G's levels), trans_box, player_info_sub, disp_item_list_present, disp_whole_map | small differences [asm diff only] |
+| Hunter rank | Get_hunter_rank / Get_hunter_status early-out when the rank byte is 0 | none for a normal save |
+| effects | eft13* / eft20* / eft06_m / eft02_t (edited 0.65-0.97; they are the effect lane of em*) | monster effects |
+| Gallery scenes, credits movies | see GB2 | 15 gallery entries inactive |
+The pure-layout and < 15-instruction rest (disp_*, set01_*, Info_*, Get_equip_* ...) are listed by running the method above; they only read other
+struct offsets, which the G build already has (UDW / PLW / game_w G layouts).

@@ -281,7 +281,15 @@ s16 Ud_stock_item_num_ck3(u16 id) {
     s16 n = 0;
     for (i = 0; i < UD_STOCK_N(u); i++) {
         if (u->stock[i].id == id) {
+#ifdef VERSION_MHG
+            if (Item_data[id][3] == 0xFF) {     /* G (sub_main 0x4C5C10): an item with no limit counts as 999 */
+                n = 999;
+            } else {
+                n += u->stock[i].num;
+            }
+#else
             n += u->stock[i].num;
+#endif
         }
     }
     return n;
@@ -587,6 +595,40 @@ s16 Get_bowgun_atk(u8 *w) {
     return r;
 }
 
+#ifdef VERSION_MHG
+/* G (sub_main 0x4C7470, 0x4C74D0, 0x4C7550): the clear bits are numbered by position in a list of quest numbers (0..50, then the
+ * 1001.. and 10001.. series, 245 of them; 0xEA60 ends it), 0xFFFF for a quest that is not in it. MH1's quest-number-as-bit-number
+ * wrote past the 256 bits for G's quest numbers (10041 is bit 313). */
+extern u16 quest_bit_tbl[];
+static u16 quest_bit_no(int n) {
+    const u16 *p = quest_bit_tbl;
+    u16 i = 0;
+
+    for (; *p != 0xEA60; p++, i++) {
+        if (*p == (u16)n) {
+            return i;
+        }
+    }
+    return 0xFFFF;
+}
+
+void Quest_clear_bit_set(int n) {
+    u16 b = quest_bit_no(n);
+
+    if (b != 0xFFFF) {
+        User_data->qclear[b >> 5] |= 1U << (b & 31);
+    }
+}
+
+int Quest_clear_bit_ck(int n) {
+    u16 b = quest_bit_no(n);
+
+    if (b == 0xFFFF) {
+        return 0;
+    }
+    return (User_data->qclear[b >> 5] & (1U << (b & 31))) != 0;
+}
+#else
 void Quest_clear_bit_set(int n) {
     User_data->qclear[n / 32] |= 1LL << (n % 32);
 }
@@ -594,6 +636,7 @@ void Quest_clear_bit_set(int n) {
 int Quest_clear_bit_ck(int n) {
     return (User_data->qclear[n / 32] & (1LL << (n % 32))) != 0;
 }
+#endif
 
 u8 Warehouse_search_space(void) {
     UDW *u = User_data;

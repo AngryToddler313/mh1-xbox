@@ -1938,3 +1938,26 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   through CW_OFS would be the first step.
 - Verified: MH1 rebuild OK x5, G clean rebuild OK x7, MH1 and G PC builds, test_quest_loop, test_dbgmenu, G nv2a Xbox build. tools/test_online_town.sh
   fails at "client BOB stopped early" also with the main checkout's old binary (not from this change).
+
+## G round 10: GAME MENU rows (GB2) and main-lane triage (GB6), 15 Oct 2026
+- **What the 5th row was.** G's GAME MENU lists NEW GAME / CONTINUE / GALLERY / OPTIONS / NETWORK OPTIONS (main_menu_msg at G 0x528520, five pointers; the sub menu D_528538).
+  mode_sel_end's case 4 starts G's `Omake_task` (main 0x1180F0): the NETWORK OPTIONS screen (5 rows: NET file auto-load slot / auto-select "same connection as before" / delete login ID /
+  network settings, then the game restarts / EXIT; values are option_w[0x2A10..], counts at main 0x2EBE68). Case 2 starts the GALLERY, sub_main 0x4A9960: G's real omake. The PC ran MH1's
+  omake menu for both. The coverage note "EXTRA row" in RELEASE_G.md was the 5th row.
+- **Gallery layout (all from G's asm; src/main/omake/omake_g.c).** State block at G 0x541E00 (here `gw`). Pages: GENT {kind (0 movie, 1 event scene), sub (cell style), idx} lists at sub_main 0x4FD280..,
+  page pointer table 0x4FD300, row lengths (main 0x2EC1F8..), cells per page 0x2EC1E0, cell centres 0x4FD330.. (two variants: the last page open or not), cell pictures
+  {u, v, texture 0x21/0x22} (0x4FD1B0 scenes, 0x4FD210 movies), movie unlock table 0x4FD180 {bit, movie}, scene table 0x4FD100 {number, frames, descriptor}. Entry 8 of kind 0 is the credits.
+  Unlock = Omake_flag_ck(bit) (u32 at option_w+0x2C4C); a scene is open when its number's omake flag is set (sub_main 0x4F3A50 reading quest_size_flag_tbl {scene, flag, quest}).
+  "Seen" flags (NEW marker) are bits at option_w+0x2C52 (kind 0: idx, kind 1: idx + 12); leaving with one changed saves through McOperationSet(14). 4A7AE0 = the page, 4A7790 = one cell,
+  4A72F0 = the turned and scaled corners, 4A75F0 = the wobble keyframes (0x4FD3E0 / 0x4FD420), 4A8160 = the page-turn wipe, 4A8580 = input, 4A91D0 = the event scene viewer (not ported).
+  func_0012DD90 is `Disp_button(f, a, b, c)` with t0 = -1 (its fifth argument is ignored), func_001E4300 = movie_exit, 001E42C0 = movie_start (G's table at main 0x2A0DE0).
+- **Credits.** G 0x4E88A0..0x4E8FD0: 30 pages of {x, y, kind, colour, size, str} lines (12 bytes, 0x3E7 ends a page) stacked 0x1F0 apart and scrolled 2.0 per tick from y 448; logo_tbl
+  (0x50B6B0) {u, v, w, h, texture - 0x111}; the end text "Thank you for playing!" at 0x52D4E0. G also starts movie clips by section (func_001E4360, cue list 0x50B678): not ported.
+- **PC data rules hit again.** (a) A G name needs its G size in config/mhg/pc_data.txt: option_w (0x2E80), McardMsgTbl (63 entries), PIT_TEX (5), menu_str_00349330 / menu_str_num (9 titles).
+  The host array is only as big as the symbol, a read past it is not a crash but garbage (the OPTIONS save died at message 61). (b) Functions that exist only in src/mhg/ (the PS2 matches) are no-op
+  stand-ins on the PC unless build_pc.sh lists them: putspr_g.c (func_0012A8B0) was one. (c) `f_ud.c` is excluded for G (tools/pc_g_exclude.txt): G changes to the ud functions go into
+  ud_nm.c, not f_ud.c. (d) The PC keeps MH1's texture slot numbers for the button sheet (0x157, G 0x180) and loads them in its own all_reset; use 0x157 in PC-side G code.
+- **Triage tool.** The masked alignment (tools/mhg_fdiff.py's dis() with immediates replaced) is a quick way to rank the GB6 list: 54 of the 243 main-lane entries are layout only. Method and the
+  open list: RELEASE_G.md section 6.
+- **Tests.** Hidden runs: tools/pc_scripts-style pad scripts, `START` then 200 idle ticks puts the cursor on CONTINUE (row 1), 3 downs = NETWORK OPTIONS, 1 down = GALLERY; `RT_OMAKE=0xFFFF` opens the
+  gallery entries. Needs a card with a hunter (newgame.txt run first with MH1_SAVE_DIR set).

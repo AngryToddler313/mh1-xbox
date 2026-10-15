@@ -339,3 +339,6 @@ gal_end_msg = 0x0052D4E0; // size:0x18 noptr
 # memory card messages: G's list has 63 entries (MH1 51); the 0xCC the symbol view gave read past the host array at entry 51 (the OPTIONS / GALLERY save crashed)
 [main]
 McardMsgTbl = 0x002B0B40; // size:0xFC
+# quest-clear bit numbers (src/main/ud/ud_nm.c Quest_clear_bit_set / _ck; G sub_main 0x4C7470): the quest numbers in bit order
+[sub_main]
+quest_bit_tbl = 0x004FECA0; // size:0x1EC noptr

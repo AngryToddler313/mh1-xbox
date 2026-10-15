@@ -255,3 +255,10 @@ files are in no build's table. US/May/Aug use softkey1_e in slot 4, the demo sof
 **G's lobby client protocol** (cnet, lobby.bin): the command numbers of the lobby server requests are renumbered against MH1 (about +30 for the user
 data group, +41 for mail / admin, unrelated for the room group), the notice event ids shifted by up to 6, member lists hold 10 members (MH1 8) and the
 lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The room count became a byte. [checked: G asm of the cnet request functions]
+
+## G's GALLERY and credits (agent C, 15 Oct 2026)
+- [checked] The GAME MENU has a hidden fourth gallery page that only appears once something on it is open (sub_main 0x4A6EF0); its middle cell stays hidden until the whole page is open.
+- [checked] The gallery lists 12 movies (E3 2003 footage, the old MH opening, ecology films of Gravios / Ganoto / Fulfull / Diablos / Rathian, the 2004 trailer, the guild film) and 15 monster
+  event scenes (the in-engine intros, each tied to a training quest number); the credits are movie 8 of the table at G 0x4FD180.
+- [checked] The credits end with an English line, "Thank you for playing!", in the otherwise Japanese G data; the credit lines themselves are English.
+- [checked] G's NETWORK OPTIONS has a "delete login ID" row and a "network settings" row that warns that unsaved data is lost because the game restarts.
