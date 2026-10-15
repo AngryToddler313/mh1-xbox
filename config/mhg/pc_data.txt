@@ -225,3 +225,12 @@ em21_contents_tbl_0066F6F0 = 0x006B4AE0; // size:0x40
 # start_area_lists; Item_get_tbl 16, 35, 55, 56, 70, 71, 104, 107 (the wyvern egg nest), 108, 135-138, 165, 166, 170, 197)
 [main]
 item_get_rows_main = 0x002EEC68; // size:0x88 noptr
+# Per-stage tables at G's 92 entries (agent A): their words point into game.bin data and sub_main's bss (village
+# ground at 0x541EE0..), which the scan did not take as pointers: `allptr`. With the bss entries left raw, the
+# village crashed in GetGroundHitStatusAreaPl (fault at 0x541F1C = ground_tbl_add[87] + 0xC)
+[sub_main]
+stage_fog_tbl = 0x00521000; // size:0x170 allptr
+ground_tbl_add = 0x005239C0; // size:0x170 allptr
+st_sun_rgba_tbl = 0x005246C0; // size:0x170 allptr
+[main]
+pl_light_tbl2 = 0x00257D20; // size:0x170 allptr
