@@ -694,7 +694,7 @@ void menu_draw(void)
             const char *h = XB("Back + L3: SETTINGS", M.shot ? "F10: PC SETTINGS" : "F10 or Back+L3: PC SETTINGS");
             int hs = H >= 700 ? 2 : 1;
             states_on();
-            text(8 * hs, H - 12 * hs, hs, h, 0xFFFFFFC0u);
+            text(XB(24, 8 * hs), H - XB(24, 12 * hs), hs, h, 0xFFFFFFC0u);     /* Xbox: inside the TV's overscan */
             flush(W, H);
             states_off();
         }

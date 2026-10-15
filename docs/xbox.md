@@ -1610,3 +1610,58 @@ kind in src/ (grep `__asm__("`); the link has no other undefined names.
 tools/xbox_serve.py --data now makes the manifest again when a file in the folder changes size or time (checked
 at each /version and /manifest), so a new G XBE copied into dist/xbox/MHG goes out without a server restart
 (a server started before this change needs one restart).
+
+## Settings menu on the Xbox (agent F, 15 Oct 2026)
+
+The PC's settings menu (docs/pc.md "Settings menu") now runs on the Xbox, MH1 and G. **Back + L3** (hold Back, click
+the left stick) opens it at any time; the title screen shows "Back + L3: SETTINGS" in the bottom-left corner. The game
+does not tick while it is open and the music pauses. D-pad or left stick up/down selects, left/right changes (A also
+steps to the next value), B, Start or Back closes (on release). Back + R3 is still the testers' debug menu.
+
+| row | what | when |
+|---|---|---|
+| Text language | Japanese / English; English only when a translation table is found: `text_table` in the ini, else `E:\Games\MH1\text\en.txt` (MHG: `E:\Games\MHG\text\en.txt`), `...\data\text\en.txt`, `D:\data\text\en.txt` | next start |
+| Aspect ratio | 4:3 (original) / 16:9 anamorphic | at once |
+| HUD | original / prototype gunner (docs/pc.md "Prototype gunner HUD"; bowgun users only) | at once |
+| Button layout | B confirms (Japan) / A confirms (West): circle and cross swapped for the whole game | at once |
+| Music / Effects volume | the game's own OPTION values (kept in the save, as on the PC) | at once |
+| Rumble | on / off | at once |
+| Debug menu (testers) | on / off (Back + R3) | at once |
+
+Code: src/pc/menu.c (the PC file; `rows[]` picks the Xbox rows, a 320 x 240 frame so the 5x7 font is 2x on 640 x 480,
+panel 32 px in from the screen sides for TV overscan), src/pc/gfx/gfx_opts.c (settings file, now built for the Xbox;
+pdclib has no strings.h, so its own case-insensitive compare), src/pc/font5x7.c (the font, out of pick.c),
+xbox_env.c `xbox_env_set` (language = en hands the table to rt_text.c as RT_TEXT_TABLE).
+
+**Settings file.** `settings.ini` in the game folder: `E:\Games\MH1\settings.ini`, `E:\Games\MHG\settings.ini`. Same
+`key = value` format as mh1pc.ini, keys widescreen, language, text_table, confirm, rumble, hud, debug_menu (only once
+changed). Read at boot before anything else (after env.txt; RT_ARGS flags such as `--widescreen`, `--hud gunner` still
+override it), written when the menu closes. Without a `widescreen` line the dashboard's 16:9 setting decides
+(XVideoGetEncoderSettings & VIDEO_WIDESCREEN; logged as "settings: dashboard widescreen on/off").
+
+**16:9.** The video mode stays 640 x 480 (no 720p); the TV is expected to stretch it to 16:9 (set the dashboard and the
+TV to widescreen). gfx_nv2a.c then: the 3D projection is 16:9 (gfx_scene_aspect: the vertical field of view stays, the
+horizontal one grows: Hor+, as on the PC), the game's 4:3 2D is drawn on the middle 3/4 of the frame (x 80..560, so it is
+4:3 again on the TV), HUD widgets anchored left / right by rt_2d.c (render state 0x105, no longer ignored) slide to the
+frame edges, fades and frame-sized draws cover the whole frame, gfx_project maps onto the 4:3 part (name tags, sights,
+sound pan). No culling depends on the aspect (only the near-plane test). Not done: WSS / widescreen signalling of the
+video encoder for SCART (the kernel sets it from the dashboard flag at the mode set, untested), 720p.
+
+**Checked in xemu** (MH1 nv2a, hidden, own HDD image, scripted pad, env RT_ARGS=--quest 10 --play, RT_WEAPON=g2,
+RT_PL_ITEMS, RT_PL_GOD; shots in build/show/F/xset/, not committed):
+- run 1, blank E:: "dashboard widescreen off" -> 4:3 with the original HUD (mh1_43_original.png); at tick 503 the script
+  presses select+l3: "settings menu: opened" (mh1_menu.png, the menu on nv2a, mid-navigation), down/right/down/right/circle:
+  "settings: E:\Games\MH1\settings.ini written", "closed (aspect 16:9, ... hud 1 ...)"; the quest goes on in 16:9 with the
+  gunner HUD.
+- run 2, same disk (a reboot): "settings: E:\Games\MH1\settings.ini read", the quest starts in 16:9 with the gunner HUD
+  (mh1_169_gunner_after_reboot.png); the menu again: HUD original (mh1_169_original.png: timer and vitals at the left
+  edge, item bar at the right edge, scene wider than in 4:3), then 4:3; the file read back with tools/xbox_fatx.py get.
+- Frame time (xemu on the loaded laptop, software GL: only relative): 2D/HUD prof 5.2-5.4 ms/frame with the gunner HUD,
+  5.6-5.9 original 16:9, 5.6-6.8 original 4:3; draw 52-59 ms/frame and 14-16 drawn frames a second in all three, within
+  the run-to-run noise. The menu costs nothing while closed (one test per frame); 16:9 draws a little more scene.
+- G (nv2a, power-on boot, RT_NOMOVIE): the "Back + L3: SETTINGS" hint on the logos/title (mhg_hint_43.png), the script opens
+  the menu at tick 1000, 16:9 on, "settings: E:\Games\MHG\settings.ini written"; the title then shows 4:3 in the middle of
+  the 16:9 frame (mhg_title_169.png).
+- Builds: MH1 PC, test_menu.sh and test_quest_loop.sh pass; G PC (the first build_pc_mhg.sh run failed to link with a
+  duplicate `D_3F360A` between rt_gen.c's stand-in and rt_game's alias header, a second run linked: the adapt headers are
+  made during the first link; not caused by this change); MH1 Xbox null and nv2a, G nv2a link.
