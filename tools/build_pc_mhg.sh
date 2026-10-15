@@ -11,6 +11,10 @@ TOP=$PWD
 python3 tools/mhg_pcmeta.py
 T=build/mhg/pctree
 mkdir -p $T/build
+# the last build's generated aliases (rt_gen.defsym, reused by build_pc.sh to save compiling) went stale when
+# G code started defining one of them itself: "multiple definition of D_3F360A" until a second run. G changes
+# fast, so start from none (a few seconds more per build)
+rm -f $T/build/pc/rt_gen.defsym $T/build/pc/rt_gen.defsym.*
 for d in src include tools third_party config disc; do
     [ -e "$d" ] && ln -sfn "$TOP/$d" $T/$d
 done
