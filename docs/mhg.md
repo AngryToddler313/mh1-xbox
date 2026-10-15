@@ -315,9 +315,9 @@ G offline quests (14 Oct 2026, agent A; docs/agents/agent-A.md "G round 5"): too
   flmatGetTrans (a shell's owner joint, fault in host memory; about 1 run in 4).
 - stage (B/D): the per-stage tables G grew to 92 (stage_fog_tbl, ground_tbl_add, st_sun_rgba_tbl,
   pl_light_tbl2) stay at MH1 size: at G size the village crashed in GetGroundHitStatusAreaPl.
-- G jungle stage 74 has exits out but none in (73/75 do not list it): real data or a G exit-list detail.
-- monster (A, open): em01/em15/em17/em27 G revival; 10030 last revival; 10048 Lao-Shan floor; kind 40 (unused);
-  monster_data / G disp_monster_list (G hunting log, needs G User_data record writers).
+- G jungle stage 74 has exits out but none in: real data, a start-only area (G's random quest start, 3%; docs/FINDS.md).
+- monster (A): em01/em15/em17 G revival tested with RT_QEM_LIVES (tools/test_revival_g.sh); 10048 passes (G event demos,
+  em07 route); G hunting log and its records ported (round 7); kind 40 (unused) not ported.
 
 Quest 10 fails by time-out (quest-failed screen); quests on map 6 (89, 129) hang in an em program (open).
 Loading screens and transitions (14 Oct 2026, agent F; docs/agents/agent-F.md "G: loading screens"): G's loading screen

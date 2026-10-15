@@ -869,3 +869,28 @@ with time left). Result: **96/98 pass + carts** (KNOWN: 10030, 10048). MH1 test_
   (KNOWN 10048) once at the end, plus a clean sweep after the step-1 fix. PS2 rebuilds could not run under the
   1.5 GB cap (wibo: "heap: failed reserve memory"); instead every changed MH1-registered file preprocesses to the
   same text as before (gcc -E with __MWERKS__, MH1 and G), and none is in config/mhg/c_files.txt.
+
+## G round 7: Lao-Shan, thrown items, hunting log, jungle 74, revival tests (15 Oct 2026)
+
+All G code below is PC-only (`#if VERSION_MHG && !__MWERKS__`, or nm / PC files); the PS2 builds keep their bytes.
+- **10048 Lao-Shan passes.** G picks event demos by G quest number and, first, by the quest's monster kinds (game
+  0x54A5D0: kind 7/50 -> the Lao-Shan demo, flags 24/35, stage 14; kinds 2/36 -> flags 27/36); the G PC ran MH1's
+  EvDemoInitialize (MH1 quest numbers): no G demo ever ran. Ported in evdemo.c (+ species match in
+  evdemo_camera_request, evdemo_g_tbl = G 0x678280). em07 (the PC links em07_ai_nm.c, not em07_ai_r01.c): G em07_main
+  without the quest test, em_demo00's flag by kind, em_atk04/05 set EM07W x18 = 2/3 (em command 0x2B sub 5 waits for
+  it: without it the Lao-Shan rammed the stage-28 gate for ever) and the gate flag (G game_w+0x189 = flag1B3).
+  Unattended: 14 (demo, ~2000 ticks) -> 30 -> 28 -> 11 -> 12 at ~58000 ticks. test_all_quests.py: the hunter waits on 12.
+- **Thrown items** (shell03 G 0x65AA90.., shell09 G 0x665920.., eft12 G 0x56FE70..): knives 12-15, poison smoke 11,
+  placed bomb 16, skills 80/83; shell09 kinds 18-23, attack data arg+1 (MH1's atck_data_no is an empty work area on
+  the G PC: every blast had attack data 0 until now), bomber x1.5; eft12 arg 6 puff, 4th smoke colour.
+- **Hunting log** (main 0x125CE0.., sub_main 0x4C8510-0x4C8910, 0x4F44F0, result_prog 0x4F4D00): PIT_W 0x83 carved as
+  hlog_page; User_data+0xD76 kills per kind, +0xD10 size record per kind, +0xC98 monster-list bits (MH1 +0x3F0: the G
+  PC's Monster_list_* read the wrong word). G monster pictures are filedef 7 (rt_2d.c).
+- **Jungle 74**: real data, a start-only area (FINDS). Walking out of it works (74 -> 73, 74 -> 75 checked).
+- **Revival**: RT_QEM_LIVES test aid + tools/test_revival_g.sh: em01 (quest 10: back on 40, killed, clear), em15
+  (quest 40: back on 19, followed, killed), em17 (quests 23/26: back at G's fixed points 64 / 90).
+- Build note: a stale build/mhg/pctree/build/pc/rt_gen.defsym* made the G PC link fail (D_3F360A defined twice after
+  agent D's lb_u.c); deleting the two files fixed it. Not in git.
+- Open: em07_init's G calls (sub_main 0x4DC5D0: em+0x7D4 status-immunity bits?, game 0x549FE0 char set); point_cam_sub
+  case 25 (G sets demo x66 instead of point_cam_hit); G result_prog's other changes (0x4F4900 etc.); the poison
+  knife's ailment value on hit not checked.

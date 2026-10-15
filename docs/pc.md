@@ -1543,6 +1543,8 @@ no include/ header changed.
   `RT_EM_KIND=n` (free play with monster kind n and its own model),
   `RT_PL_WARP="t,x,z,ANG"` (optional facing, hex), RT_PL_WARP_EM goes to a dead
   monster's own pick points, RT_PL_TRACE prints the fishing bite timer.
+  `RT_QEM_LIVES=kind:n,..` (15 Oct 2026, G): the quest's monsters of that kind come back until n died and its hunt
+  goal wants n (tests revival code no offline quest uses: tools/test_revival_g.sh).
 - Not done: Lao-Shan kill on its last stage, trading with the em10 trader,
   sound bomb next to a swimming Plesioth, frame rate on the ARM box (no new
   per-frame host work except the fish effects on fishing stages).

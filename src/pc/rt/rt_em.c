@@ -556,6 +556,39 @@ int rt_quest_load(int no)
             fprintf(stderr, "\n");
         }
     }
+    if (getenv("RT_QEM_LIVES")) {   /* test aid: "kind:n,...": the quest's monsters of that kind come back until n of them
+                                     * died (QEM x04 = n, Quest_enemy_revival_ck) and its hunt goal (program op 2) wants n:
+                                     * tests the revival code of kinds no offline quest revives (G em01/em15/em17) */
+        const char *e = getenv("RT_QEM_LIVES");
+        int kind, n, st, var, cnt = 0;
+        while (e && sscanf(e, "%d:%d", &kind, &n) == 2) {
+            QEM *l = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
+            for (; l && l != (QEM *)-1 && l->id >= 0; l++)
+                if (l->id == kind) {
+                    if (l->x05 != 0)            /* Quest_start counted its lives into quest_w.x34 */
+                        quest_w.x34 += n - l->x04;
+                    l->x04 = (s8)n, cnt++;
+                }
+            for (var = 0; var < 4 && (var == 0 || (quest_w.x74[var] > 0 && quest_w.x74[var] < 0x40000)); var++)
+                for (st = 1; st < 0x58; st++) {
+                    l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, (s8)var);
+                    for (; l && l != (QEM *)-1 && l->id >= 0; l++)
+                        if (l->id == kind)
+                            l->x04 = (s8)n, cnt++;
+                }
+            if (quest_w.x6C) {
+                QCMD *q = (QCMD *)quest_w.x6C;
+                int i;
+                for (i = 0; i < 48 && q->cmd != 0x1F; i++, q++)
+                    if (q->cmd == 2 && q->a == kind)
+                        q->b = (s16)n;
+            }
+            fprintf(stderr, "rt_quest: RT_QEM_LIVES kind %d: %d monster entries get %d lives\n", kind, cnt, n);
+            e = strchr(e, ',');
+            if (e)
+                e++;
+        }
+    }
     if (getenv("RT_QUEST_TRACE")) {
         int i;
         fprintf(stderr, "rt_quest: quest %d supply box:", no);
