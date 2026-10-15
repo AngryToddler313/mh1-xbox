@@ -343,3 +343,19 @@ McardMsgTbl = 0x002B0B40; // size:0xFC
 # quest-clear bit numbers (src/main/ud/ud_nm.c Quest_clear_bit_set / _ck; G sub_main 0x4C7470): the quest numbers in bit order
 [sub_main]
 quest_bit_tbl = 0x004FECA0; // size:0x1EC noptr
+# pause menu STATUS pages (G main 0x222E50, src/main/menu/status_g.c; agent C, 15 Oct 2026): five pages, three of them skill pages.
+# G data the MH1 names (frame_status_*, Skill_name, hunter_appellation) size too small for.
+[main]
+gstat_frame_main = 0x002B01F0; // size:0x78          # 5 frames of 0x18 (the list pointer at +0xC is set from the code)
+gstat_frame_sub = 0x002B0270; // size:0x50           # 5 help-box frames of 0x10
+gskill_kinds = 0x002B02D0; // size:0xA noptr         # the five armour kinds {head 2, body 3, arm 4, waist 5, leg 0} as shorts
+gskill_ex3 = 0x002B02C0; // size:0x10 noptr          # skill kinds that never apply to a melee weapon, 0 ends
+gskill_ex1 = 0x002EC150; // size:0x8 noptr           # kinds that never apply to a gun
+gskill_ex2 = 0x002EC158; // size:0x8 noptr           # kinds that do not apply to bow / light gun jobs 2 and 6
+gskill_mark = 0x002EC650; // size:0x8                # the two marks of the 'which piece carries it' row
+[sub_main]
+gstat_appel = 0x00527B10; // size:0x80               # hunter titles (31 ranks; MH1's table is 21)
+gstat_sub = 0x00527CF0; // size:0x14                 # help text of each status page
+gstat_str = 0x00527D10; // size:0x50                 # status page formats (title with page count, rank, points, money, equipment lines)
+gskill_name = 0x00528B70; // size:0x2B0              # skill names (172 ids; the MH1-named Skill_name table is cut at 54)
+gskill_cat = 0x00528E20; // size:0x108               # skill kind names

@@ -1320,6 +1320,9 @@ void PrintPlayerJob(void *);
 void PlayerEquipmentWindow(PLW *);
 void Put_comment(int, int, int, void *);
 
+int Get_equip_name(u8, u16);
+int Get_equip_rare(u8, u16);
+#ifndef VERSION_MHG    /* G: src/main/menu/status_g.c (five pages, G tables) */
 void PlayerStatusWindow(u8 *pl, int tab) {
     char buf[0x40];
     u8 rank;
@@ -1456,6 +1459,7 @@ void PlayerEquipmentWindow(PLW *pl) {
         ty += 0x20;
     }
 }
+#endif
 
 extern char *menu_stat_job_str[];
 
