@@ -184,3 +184,11 @@ docs/FINDS.md is a scrapbook of curiosities (unused content, leftovers, oddities
 kept. When you notice one, add a short entry there (where, how sure: [checked]/[guess]/[unverified]),
 descriptions only, never game bytes or text.
 
+## Xbox-safe C (14 Oct 2026)
+
+- Never name a symbol with an asm label (`extern u8 x[] __asm__("lb_sys");`): the Xbox build uses win32 names
+  with a leading `_` and the label skips it (undefined lb_sys / lbShop at the Xbox link). Use a plain
+  `extern u8 lbShop[];` and a `#define` for the local alias.
+- Declare functions before calling them: the Xbox clang rejects implicit declarations that the PC build lets
+  through. Check G work with `python3 tools/build_xbox.py --version mhg --gfx nv2a` before reporting.
+

@@ -216,7 +216,8 @@ int get_prim();
 int get_prim_ptr();
 int get_questLevelNum();
 #ifdef VERSION_MHG
-extern u8 lbshop_raw[] __asm__("lbShop");   /* the counter work's page byte (lbShop+4) */
+extern u8 lbShop[];   /* this file has no LB_SHOP (lobby.h); not an asm label: __asm__ skips the "_" of win32 (Xbox) names */
+#define lbshop_raw lbShop   /* the counter work's page byte (lbShop+4) */
 #endif
 int get_quest_info();
 int han2zen();

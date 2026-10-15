@@ -351,6 +351,7 @@ void Lb_event_GH(void) {
 
 #ifdef VERSION_MHG
 void Omake_flag_set();
+void Lb_reset_talk_count(void);   /* defined below; the Xbox clang rejects the implicit declaration */
 int Omake_flag_ck();
 void Lbc_SendMiniData();
 extern char *lb_set01_msg[];
@@ -718,7 +719,7 @@ extern LB_NPCTALK lb_npc_talk_tbl[];
 extern u8 *npc_dialog_table[];
 
 #ifdef VERSION_MHG
-extern u8 lbshop_raw[] __asm__("lbShop");
+#define lbshop_raw ((u8 *)&lbShop)   /* lbShop (LB_SHOP) as bytes; not an asm label: __asm__ skips the "_" of win32 (Xbox) names */
 /* G: the talk rows of the shop NPCs depend on the story: the first block whose condition holds (a story level or a talk event of
  * ck_talkEvent) and whose first flag is not set yet sets its flags (the lines already heard) and picks the row (lobby 0x544CD0,
  * 0x544EF0, 0x545010, 0x545180: local shop 0x38, kind 0x2E, kind 1, kind 2). */
