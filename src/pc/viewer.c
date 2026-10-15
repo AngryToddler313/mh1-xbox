@@ -2344,9 +2344,10 @@ int main(int argc, char **argv)
     /* scripted runs (--input: tests, bug-report replays) never show a window on the desktop;
      * MH1_SHOW=1 shows one anyway for debugging by hand */
     int hide = shot != NULL || ((script != NULL || getenv("MH1_HIDDEN")) && !getenv("MH1_SHOW"));
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && !defined(XBOX)
     if (!getenv("MH1_SHOW"))
-        hide = 1;       /* G: always hidden (above) */
+        hide = 1;       /* G on the PC: always hidden (above). Not on the Xbox: the console is played by
+                         * hand, and hide also turned off the controller there (owner, 14 Oct) */
 #endif
     if (gfx_init(W, H, "MH1 PC viewer", hide) != 0) {
         rt_warn("graphics start-up failed (no window / OpenGL context)");
