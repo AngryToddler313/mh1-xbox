@@ -67,3 +67,15 @@ char *getenv(const char *name)
             return env[i] + n + 1;
     return NULL;
 }
+
+/* setenv for the settings (gfx_opts.c: language = en hands the table to rt_text.c as RT_TEXT_TABLE). A name already
+ * set by env.txt keeps its value; no malloc (one static line each, up to 8). */
+void xbox_env_set(const char *name, const char *value)
+{
+    static char line[8][600];
+    static int nline;
+    if (getenv(name) || nenv >= ENV_MAX || nline >= 8)
+        return;
+    snprintf(line[nline], sizeof line[0], "%s=%s", name, value);
+    env[nenv++] = line[nline++];
+}

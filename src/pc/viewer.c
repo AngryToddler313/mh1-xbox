@@ -24,9 +24,9 @@
 #include <fcntl.h>
 #include <io.h>
 #endif
+#include "gfx/gfx_gl.h"
 #ifndef XBOX
 #include "install.h"
-#include "gfx/gfx_gl.h"
 #include "rt/rt_save.h"
 #endif
 #include <stdio.h>
@@ -816,15 +816,11 @@ static void save_note(int ok, const char *msg)
 #endif
 static int install_only;
 static int size_given, frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
-/* the 3D scene's aspect: the window's, in widescreen mode (the vertical fov stays as the game sets it, so the
- * horizontal one grows: Hor+), else the original 4:3 (gfx_gl.c) */
+/* the 3D scene's aspect: the window's (Xbox: 16:9 anamorphic), in widescreen mode (the vertical fov stays as the game
+ * sets it, so the horizontal one grows: Hor+), else the original 4:3 (gfx_gl.c, gfx_nv2a.c) */
 static float scene_aspect(void)
 {
-#ifdef XBOX
-    return (float)W / H;
-#else
     return gfx_scene_aspect();
-#endif
 }
 
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
@@ -922,6 +918,7 @@ static void read_pad(pad_state *ps)
     else
         pad_read(ps, !dbgmenu_freecam());
     dbgmenu_tick_pad(ps);
+    menu_tick_pad(ps);
 }
 
 /* a --input script kept in a file (--input @file; on the Xbox D:\data\input.txt):
@@ -2059,17 +2056,13 @@ int main(int argc, char **argv)
     }
 #endif
     rt_stack_paint();
-#ifndef XBOX
-    gfx_opts_load(argc, argv);      /* mh1pc.ini; the display flags below override it */
-#endif
+    gfx_opts_load(argc, argv);      /* mh1pc.ini (Xbox: settings.ini in the game folder); the display flags below override it */
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frames = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--time") && i + 1 < argc) fixed_time = (float)atof(argv[++i]);
         else if (!strcmp(argv[i], "--size") && i + 1 < argc) { sscanf(argv[++i], "%dx%d", &W, &H); size_given = 1; }
-#ifndef XBOX
         else if (gfx_opts_arg(argc, argv, &i)) ;       /* --fullscreen, --vsync, --widescreen, ... (docs/pc.md) */
-#endif
         else if (!strcmp(argv[i], "--cam") && i + 1 < argc)
             cam_given = sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]) > 0;
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
@@ -2259,14 +2252,12 @@ int main(int argc, char **argv)
     }
 #endif
     rt_pick_set_args(argc, argv);
-#ifndef XBOX
     {   /* the settings that are read once: the translation table (before the game data is imported) and the button layout */
         extern int rt_pad_swap_confirm;
         gfx_opts_apply_language();
         rt_pad_swap_confirm = pc_opt.western_pad;
         menu_set_shot(shot != NULL);
     }
-#endif
     if (!disc) {
         fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
@@ -2564,10 +2555,8 @@ int main(int argc, char **argv)
 #else
         int on = 1;
 #endif
-#ifndef XBOX
-        if (pc_opt.debug_menu)
+        if (pc_opt.debug_menu)          /* the settings file (the settings menu's row) */
             on = pc_opt.debug_menu == 1;
-#endif
         if (dbg_arg)
             on = dbg_arg == 1;
         if (getenv("RT_DEBUG_MENU"))
@@ -2650,7 +2639,11 @@ int main(int argc, char **argv)
         }
         if (play)
             pick_poll_pad();            /* Back/View + Start on the controller */
-        if (!shot)
+        if (script && menu_open()) {   /* the settings menu open in a scripted run: the script drives it, a step a frame */
+            pad_state mp;
+            script_live = pad_script_next(&mp);
+            menu_pad(&mp);
+        } else if (!shot)
             menu_poll_pad();            /* Back + L3 opens the settings menu; its controller navigation */
         if (play && dbgmenu_wants_pad()) {      /* the debug menu open (or frame step): it reads the pad once a frame, the script too */
             pad_state dp;

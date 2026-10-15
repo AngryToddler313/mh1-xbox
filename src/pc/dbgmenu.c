@@ -83,6 +83,13 @@ void dbgmenu_init(int enabled, const dbgmenu_actions *a)
     rt_log("debug menu: %s (Back + R3%s)", enabled ? "available" : "off", enabled ? ", F9 on the PC" : "");
 }
 int dbgmenu_enabled(void) { return M.enabled; }
+void dbgmenu_set_enabled(int on)            /* the settings menu's "Debug menu" row */
+{
+    M.enabled = on;
+    if (!on)
+        M.frame_step = M.step_pending = M.freecam = 0;
+    rt_log("debug menu: %s (settings menu)", on ? "available" : "off");
+}
 int dbgmenu_freecam(void) { return M.freecam; }
 
 static level *cur(void) { return &M.st[M.depth]; }

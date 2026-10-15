@@ -22,6 +22,7 @@ int gfx_init(int width, int height, const char *title, int hidden)
 void gfx_shutdown(void) {}
 int gfx_project(const float in[3], float out[4]) { (void)in; out[0] = out[1] = out[2] = out[3] = 0; return 0; }
 void gfx_size(int *w, int *h) { *w = W; *h = H; }
+float gfx_scene_aspect(void) { return 4.0f / 3.0f; }
 void gfx_begin_frame(uint32_t clear_rgb) { (void)clear_rgb; }
 void gfx_end_frame(void) { SwitchToThread(); }    /* no vblank wait here: let the audio thread run (gfx_nv2a.c wait_idle) */
 int gfx_read_pixels(uint8_t *rgb) { memset(rgb, 0, (size_t)W * H * 3); return 0; }

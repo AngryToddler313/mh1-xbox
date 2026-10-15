@@ -13,6 +13,7 @@ typedef struct {
 
 void dbgmenu_init(int enabled, const dbgmenu_actions *a);
 int  dbgmenu_enabled(void);
+void dbgmenu_set_enabled(int on);       /* the settings menu turns it on / off at run time */
 void dbgmenu_tick_pad(pad_state *ps);   /* each game tick's pad: the open combo (Back + R3) is taken out; frame-step count */
 int  dbgmenu_hold_ticks(void);          /* 1: no game ticks now (menu open, or frame step waiting for a step) */
 int  dbgmenu_wants_pad(void);           /* the viewer reads the pad once per drawn frame for the menu (open / frame step) */
