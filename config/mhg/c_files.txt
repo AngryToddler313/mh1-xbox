@@ -1503,8 +1503,6 @@ game 0x00554280 0x00554758 mhg/main/pl/f_pl_p43
 game:rodata 0x006D6B00 0x006D6B38 mhg/main/pl/f_pl_p43
 game 0x006696E0 0x00669838 mhg/game/shell/shell00_p2
 game 0x0065F2A0 0x0065F774 mhg/game/shell/shell06b_p3
-game 0x00665B20 0x00665C48 mhg/game/shell/shell09_p1
-game 0x00666340 0x00666348 mhg/game/shell/shell09_p2
 game 0x00666850 0x006668B8 mhg/game/shell/shell10_p2
 game 0x00668040 0x006680D0 mhg/game/shell/shell14_p1
 game 0x00668900 0x00668998 mhg/game/shell/shell14_p3

@@ -1880,3 +1880,33 @@ the rest of the gain is functions that matched after the header/layout fixes (wh
   the C is right, the check names differ), movie_add_list, mode_sel (branch target), MakeMediaVersion (short string literals in .sdata),
   boot main / npc_effect_move / usbkbdm_init (trailing nop of the range), GetPlayerShagamiData (9 off: G tests stage 36 only and uses its own table).
 - Not done: "CHARACTER SELECTAAAA" header glitch and the remaining zero tables (lv123str ...): need a run of the PC build with the select module.
+
+### G round 9 (more matching functions, 15 Oct 2026)
+Result: G matched 18.117% -> about 19.8% (3752 -> 4124 functions). Details in the commits "G: yn work struct ...", "G: register 150+ more ...",
+"G: soft keyboard ...".
+- **Method that found most of it:** (1) a scan of every MH1 C file with `VERSION=mhg tools/check.py` (functions that are not covered by config/mhg/c_files.txt and
+  differ by <= 25 instructions), read the diff, fix with `GV()` / `#ifdef VERSION_MHG`; (2) `tools/mhg_addfn.py FILE [FUNC...]` (new) gives every function of a
+  file that already has G_PART guards and checks OK a part of its own (guard `|| G_PART == N`, wrapper, list line); `tools/mhg_parts.py` / `mhg_addc.py` for files
+  without guards. Running these over ALL files found about 150 functions that matched G but were never registered (shell, lobby cnet / f, set, cam, adxs ...);
+  (3) a G rebuild + `tools/mhg_cdiff.py` names the parts whose DATA references are wrong (check.py cannot see relocation addends), `tools/mhg_dropparts.py --cdiff`
+  drops them (new `--since REV` limits `--sections` to parts that are new since REV: without it the option also drops the old parts that have a rodata line).
+  A part that needs a jump table: `tools/mhg_dataparts.py PART`.
+- **mhg_parts.py** now refuses a file when the inserted guards stop the plain (no G_PART) compile in either version (shell09.c had an #if block the guards
+  broke; the G parts still compiled, the MH1 build would not have).
+- **Layout facts found (G):** yn work struct `ynw`: 4 more bytes at 0x28, every field up to the netcnf work (0x1180, unmoved) is 4 higher (include/yn.h YNO/YNF);
+  PIT_MENU: the message halt flag is the byte behind the log (G 0x17EA), include/menu.h PIT_HALT; monster-list flags at User_data+0xC98, default phrases at
+  option_w+0x2A30; the equipment block of the saved data at 0xC74 (EQUD in f_ud.c); room-member mini data: values at 3.., halfwords at 0xA, 0x14.. (Set_mini_data_to_pl);
+  game_w+0x1F6 for the user-id bytes (was 0x1E8); option screen: the stick offsets are option_w[7], [8]; saved hunter slot 0xE00 in the select screens
+  (select.h UD_SLOT); em_select: work at 0xC0 / 0xC8, 51 monsters; quest_w x16C / x1D4 are u16; Quest_enemy_die's kill-count helper is the static at 0x4B55F0.
+- **Soft keyboard (hk/sk/cmd):** G queues the key sounds in a word of lpSKey (MH1 offset 0x140) instead of calling se_req: `SK_SE(snd)` in include/sk_g.h (PS2 G
+  only; the PC keeps se_req); the conversion flag is tested with `== 1` in the cmd / cursor code (`SK_ON`); the raw offsets of cmd0x / sk18 / hk now go through SKO().
+  kouho_work is at 0x41E020 in G (the symbol file says 0x40E000): `kouho_work_g` in config/mhg/g_names.txt, the macro is in sk_g.h.
+- **MWCC lessons:** `x >= C` compiles the compare into v-registers like G's `slti v0` (Tutorial_quest_ck, `n >= 10001` with `int n = *(u16 *)&field`);
+  a u16 variable shifted with `(u32)n >> 1` gives srl, `(n >> 1)` sra; `(r = ran_suu(1)) & 3` with a u16 r gives G's andi 0xFFFF before the mask; a param kept raw
+  for a call but truncated for the tests needs the parameter declared `int` and a `u16` copy (ed_color_sel; the #ifdef must NOT sit between the guard line and the
+  function head, mhg_parts puts its guard on the head line: use macros for the parameter list).
+- **Not landed (and why):** the lobby cnet family (about 60 functions, cnlbs / cnlbse / cnlbsg / cnlbsh parts): their CnetSys_w / CnetWork references are wrong, G's
+  CnetSys_w starts at 0x6FA760 (the symbol file says 0x6FA808) and its fields behind 0xF00 are shifted irregularly; needs the G layout worked out first. flCompact /
+  flPS2DmaTerminate store a G-only state word (gp-14204); trans_pit_2 calls disp_retire behind a G-only flag byte at 0x2FF2B4; Skill_set_PL still 18 off (prologue
+  store scheduling; the declaration orders do not help); GetPlayerShagamiData (reordered branch, 9 off, four spellings tried); SaveNetFile / hk_cursor_mv / disp_keybase2 /
+  setup_rw_sub / sk_cursor_mv / HardKeyboard_move / hit_cap_cap2_m are raw asm in MH1 (their diffs are only the MH1 bytes against G's).

@@ -570,3 +570,10 @@ obvious workarounds.
 - **Seen, not changed:** the G status page's page counter printed garbage (the code passes two numbers, the US line has the page count built in;
   the English line shows 1/2); in G's quest-info pages the English labels are wider than the Japanese ones and touch the numbers, whose columns
   are placed for Japanese text; the talk window's title and other G-only titles have no US text.
+
+## G round 9 (agent C, 15 Oct 2026)
+- **Dropped:** raw `F8(&PitMenu, 0x1C)` / `FS8(&PitMenu, 0x1C)` accesses in f_chat.c and tu/chat_all.c (a wrong offset for G: its halt flag is behind the log);
+  **now** `PIT_HALT` (include/menu.h; MH1 still byte 0x1C, named `x1C`). **To revert:** the commit "G: yn work struct".
+- **Dropped:** the `(u16)quest_w.x1D4[..]` casts and the s16 type of quest_w.x16C / x1D4 (G reads them with lhu); **now** u16 fields. MH1 code unchanged
+  (these fields are only used by the G block of Quest_enemy_die / Quest_start).
+- **Dropped:** in the yn screens the literal `M2C_FIELD(ynw, ..)` offsets; **now** `YNF()` / `YNO()` (no-ops in MH1).

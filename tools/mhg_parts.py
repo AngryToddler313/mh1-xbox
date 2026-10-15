@@ -181,6 +181,15 @@ def process(path, dry):
                     bad.append(n)
             if sorted(r[1] for r in got) != sorted(r[1] for r in run) and not bad:     # check.py lists a part's functions in symbol-table order
                 bad += [n for n in want]       # part holds other functions than planned
+        # the file itself (no G_PART) must still compile in both versions: a guard inserted into an #if block of the file can break it
+        for ver in ('mhg', 'mh1'):
+            r = subprocess.run(['python3', 'tools/check.py', path], cwd=ROOT, capture_output=True, text=True, env=dict(os.environ, VERSION=ver))
+            if '###' in r.stdout or r.returncode:
+                open(os.path.join(ROOT, path), 'w').write(src)
+                for f in os.listdir(os.path.join(ROOT, wdir)):
+                    if f.startswith(base + '_p'):
+                        os.remove(os.path.join(ROOT, wdir, f))
+                return 'guards break the plain %s compile (file left untouched)' % ver
         if os.environ.get('PARTS_DEBUG'):
             print('attempt', attempt, 'bad:', ','.join(bad))
         if not bad:
