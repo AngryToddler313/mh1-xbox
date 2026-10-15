@@ -3427,6 +3427,14 @@ static void em_demo04_005E06F0(EMW *em, EM17W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+#define EMX_CARVE_TIME EMG_CARVE_TIME
+/* em17's die act is 4 (it has four die functions): the fade ends in em17_act_set(em, 5, 4, 4) */
+#define em17_act_set4(em, k, n, a) em17_act_set(em, 5, 4, 4)
+#else
+#define EMX_CARVE_TIME 0x1C2
+#endif
 static void em_die00_005E07A0(EMW *em, EM17W *w) {
     u8 temp_a0;
 
@@ -3446,7 +3454,7 @@ static void em_die00_005E07A0(EMW *em, EM17W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EMX_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -3454,7 +3462,15 @@ static void em_die00_005E07A0(EMW *em, EM17W *w) {
         break;
     case 2:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
+#ifdef VERSION_MHG
+    case 3:
+        EMG_DIE_REVIVE_FADE(em, em17_act_set4);
+        break;
+#endif
     }
 }
 
@@ -3472,6 +3488,26 @@ static void em_die01_005E08A0(EMW *em, EM17W *w) {
         em->x3F4 = 0;
         em->x388 = 3;
         Quest_enemy_die(em);
+#ifdef VERSION_MHG      /* G em17 die01 (game 0x60C900): carcass 1800 ticks, x9EA held at 5 until the revival */
+        em->x9EA = 5;
+        break;
+    case 1:
+        em->x9EA = 5;
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+            em->work08 = EMX_CARVE_TIME;
+        }
+        break;
+    case 2:
+        Em_hagi_point_cnt_ck(em);
+        EMG_DIE_REVIVE_WAIT(em, 1);
+        break;
+    case 3:
+        EMG_DIE_REVIVE_FADE(em, em17_act_set4);
+        break;
+#else
         em->work08 = 0xE10;
         em->x9EA = 5;
         break;
@@ -3495,6 +3531,7 @@ static void em_die01_005E08A0(EMW *em, EM17W *w) {
             }
         }
         break;
+#endif
     }
 }
 
@@ -3537,7 +3574,7 @@ static void em_die02_005E09C0(EMW *em, EM17W *w) {
         break;
     case 3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EMX_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -3546,7 +3583,15 @@ static void em_die02_005E09C0(EMW *em, EM17W *w) {
         break;
     case 4:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
+#ifdef VERSION_MHG
+    case 5:
+        EMG_DIE_REVIVE_FADE(em, em17_act_set4);
+        break;
+#endif
     }
 }
 
@@ -3578,7 +3623,7 @@ static void em_die03_005E0B90(EMW *em, EM17W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EMX_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -3587,7 +3632,15 @@ static void em_die03_005E0B90(EMW *em, EM17W *w) {
         break;
     case 3:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
+#ifdef VERSION_MHG
+    case 4:
+        EMG_DIE_REVIVE_FADE(em, em17_act_set4);
+        break;
+#endif
     }
 }
 
@@ -3917,6 +3970,11 @@ static void em_move05_005E1400(EMW *em, EM17W *w) {
     case 3:
         em_die03_005E0B90(em, w);
         break;
+#ifdef VERSION_MHG
+    case 4:             /* G game 0x60CF20 */
+        EMG_DIE03(em);
+        break;
+#endif
     }
 }
 

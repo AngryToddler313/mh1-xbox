@@ -4717,6 +4717,12 @@ static void em_demo04_00572FA0(EMW *em, EM01W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+#define EM01_CARVE_TIME EMG_CARVE_TIME
+#else
+#define EM01_CARVE_TIME 0x1C2
+#endif
 static void em_die00_005730C0(EMW *em, EM01W *w) {
     em->x40E = 5;
     Em_Mode_Chg(em, 0, 0);
@@ -4727,18 +4733,20 @@ static void em_die00_005730C0(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em->x388 = 3;
         Quest_enemy_die(em);
+#ifndef VERSION_MHG      /* G's die functions dropped this */
         if (em->kind == 0xB) {
             wyvern_kill_cnt_up(User_data, 1);
         } else {
             wyvern_kill_cnt_up(User_data, 0);
         }
+#endif
         break;
     case 1:
         if (em_frame_check(em, 212.0f, 0)) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EM01_CARVE_TIME;
             em->x05++;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -4746,14 +4754,21 @@ static void em_die00_005730C0(EMW *em, EM01W *w) {
         break;
     case 2:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 3:
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_FADE(em, em01_act_set);
+#else
         if (--em->work08 <= 0) {
             em->x04++;
             em->x01 = 0;
         } else {
             em->x798 = (f32)em->work08 / 150.0f;
         }
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -4776,14 +4791,36 @@ static void em_die01_00573290(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em->x388 = 3;
         Quest_enemy_die(em);
+#ifndef VERSION_MHG
         em->work08 = 0xE10;
+#endif
         em->x9EA = 5;
+#ifndef VERSION_MHG      /* G's die functions dropped this */
         if (em->kind == 0xB) {
             wyvern_kill_cnt_up(User_data, 1);
         } else {
             wyvern_kill_cnt_up(User_data, 0);
         }
+#endif
         break;
+#ifdef VERSION_MHG      /* G em die01 (game 0x59D8C0): carcass 1800 ticks, x9EA held at 5 until the revival */
+    case 1:
+        em->x9EA = 5;
+        if (em->x194 == 0) {
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+            em->work08 = EM01_CARVE_TIME;
+        }
+        break;
+    case 2:
+        Em_hagi_point_cnt_ck(em);
+        EMG_DIE_REVIVE_WAIT(em, 1);
+        break;
+    case 3:
+        EMG_DIE_REVIVE_FADE(em, em01_act_set);
+        break;
+#else
     case 1:
         em->x9EA = 5;
         em->work08 -= 1;
@@ -4810,6 +4847,7 @@ static void em_die01_00573290(EMW *em, EM01W *w) {
             em->x798 = (f32)em->work08 / 150.0f;
         }
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -4855,16 +4893,18 @@ static void em_die02_00573480(EMW *em, EM01W *w) {
             em_char_set(em, 0x52, 0, 0);
             em->x388 = 3;
             Quest_enemy_die(em);
+#ifndef VERSION_MHG      /* G's die functions dropped this */
             if (em->kind == 0xB) {
                 wyvern_kill_cnt_up(User_data, 1);
             } else {
                 wyvern_kill_cnt_up(User_data, 0);
             }
+#endif
         }
         break;
     case 3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EM01_CARVE_TIME;
             em->x05++;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -4872,14 +4912,21 @@ static void em_die02_00573480(EMW *em, EM01W *w) {
         break;
     case 4:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 5:
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_FADE(em, em01_act_set);
+#else
         if (--em->work08 <= 0) {
             em->x04++;
             em->x01 = 0;
         } else {
             em->x798 = (f32)em->work08 / 150.0f;
         }
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -4903,6 +4950,11 @@ static void em_move05_00573F70(EMW *em, EM01W *w) {
     case 2:
         em_die02_00573480(em, w);
         break;
+#ifdef VERSION_MHG
+    case 3:             /* G game 0x59DD80 */
+        EMG_DIE03(em);
+        break;
+#endif
     }
 }
 

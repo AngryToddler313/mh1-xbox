@@ -105,6 +105,7 @@ shell11_body_tbl = 0x006C6F70; // size:0x20     # 8 entries (MH1 7)
 shell16_body_tbl = 0x006C1120; // size:0x54     # 21 entries (MH1 20): em15's attack 27 uses body 20; at MH1 size the PC read past the copy (the hit_calc_shl crash of quests 25/41/10046)
 shell19_body_tbl = 0x006CA6C0; // size:0x5C     # 23 entries (MH1 21)
 fade74_data = 0x0067D750; // size:0x34          # 13 fade colour tables (MH1 10; G repeats fade72_dra twice and adds one)
+eft12_data = 0x0067B230; // size:0x10          # smoke-cloud scale/alpha keys (MH1 main 0x387DB8, 2 pointers); G moved it to game.bin and added a pair for its eft12 kind 6 (G eft12_m04 0x571A50 picks pair 0 or 1 by kind; the PC's MH1 eft12_m04 reads pair 0). Was zero-filled: smoke / dung bombs crashed
 [sub_main]
 em_meat_tbl = 0x00509410; // size:0xD0          # G: per kind a list of hit-zone tables by monster state (G hit_hit_sub_em)
 # Monster state (agent A, G hunts without test aids)

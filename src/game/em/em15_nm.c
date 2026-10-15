@@ -3838,6 +3838,12 @@ static void em_demo04_005C9F20(EMW *em, EM15W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+#define EMX_CARVE_TIME EMG_CARVE_TIME
+#else
+#define EMX_CARVE_TIME 0x1C2
+#endif
 static void em_die00_005CA040(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -3858,7 +3864,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EMX_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -3866,8 +3872,15 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x3:
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -3877,6 +3890,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -3906,7 +3920,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         break;
     case 0x1:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EMX_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -3914,8 +3928,15 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 1);
+#endif
         break;
     case 0x3:
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -3925,6 +3946,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -3979,7 +4001,7 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         break;
     case 0x3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = EMX_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -3988,8 +4010,15 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         break;
     case 0x4:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x5:
+#ifdef VERSION_MHG
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -3999,6 +4028,7 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -4340,6 +4370,11 @@ static void em_move05_005CAD90(EMW *em, EM15W *w) {
     case 2:
         em_die02_005CA340(em, w);
         break;
+#ifdef VERSION_MHG
+    case 3:             /* G game 0x5F6260 */
+        EMG_DIE03(em);
+        break;
+#endif
     }
 }
 
