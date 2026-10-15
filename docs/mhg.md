@@ -317,7 +317,8 @@ G offline quests (14 Oct 2026, agent A; docs/agents/agent-A.md "G round 5"): too
   pl_light_tbl2) stay at MH1 size: at G size the village crashed in GetGroundHitStatusAreaPl.
 - G jungle stage 74 has exits out but none in: real data, a start-only area (G's random quest start, 3%; docs/FINDS.md).
 - monster (A): em01/em15/em17 G revival tested with RT_QEM_LIVES (tools/test_revival_g.sh); 10048 passes (G event demos,
-  em07 route); G hunting log and its records ported (round 7); kind 40 (unused) not ported.
+  em07 route); G hunting log and its records ported (round 7); kind 40 (unused, a cut-down Felyne) ported for the PC
+  (em40_g.c, docs/FINDS.md); G em_type_act_set kinds 35-50 and em_parts_num at 52 kinds (15 Oct).
 
 Quest 10 fails by time-out (quest-failed screen); quests on map 6 (89, 129) hang in an em program (open).
 Loading screens and transitions (14 Oct 2026, agent F; docs/agents/agent-F.md "G: loading screens"): G's loading screen

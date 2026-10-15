@@ -1024,6 +1024,46 @@ void em_type_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 33:
         em33_act_set(em, kind, no, arg);
         break;
+#ifdef VERSION_MHG
+    /* G's kinds 35-50 (G em_type_act_set game 0x544770, its jump table lit_1223_00685080): each takes
+     * the act set of the monster it is built on; kind 40 (unused, em40_g.c) the Felyne's */
+    case 35:
+        em16_act_set(em, kind, no, arg);
+        break;
+    case 36:
+        em02_act_set(em, kind, no, arg);
+        break;
+    case 37:
+    case 41:
+    case 42:
+    case 49:
+        em01_act_set(em, kind, no, arg);
+        break;
+    case 38:
+    case 39:
+        em20_act_set(em, kind, no, arg);
+        break;
+    case 40:
+        em09_act_set(em, kind, no, arg);
+        break;
+    case 43:
+    case 44:
+        em14_act_set(em, kind, no, arg);
+        break;
+    case 45:
+        em15_act_set(em, kind, no, arg);
+        break;
+    case 46:
+        em21_act_set(em, kind, no, arg);
+        break;
+    case 47:
+    case 48:
+        em17_act_set(em, kind, no, arg);
+        break;
+    case 50:
+        em07_act_set(em, kind, no, arg);
+        break;
+#endif
     }
 }
 

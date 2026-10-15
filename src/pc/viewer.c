@@ -1470,6 +1470,17 @@ static monster *em_kind_model(int kind)
             if (idx > 0 && idx < afs.count)
                 snprintf(nm[k], 32, "%s", afs.name[idx]);
         }
+        if (getenv("RT_EM_MODEL")) {    /* test aid "kind:emNN[:emMM]": that kind drawn with emNN's model and
+                                         * textures (and emMM's motion file); G's unused kind 40 has no model of
+                                         * its own (docs/FINDS.md): 40:em09 gives it the Felyne's body */
+            int kk, n1 = -1, n2 = -1;
+            if (sscanf(getenv("RT_EM_MODEL"), "%d:em%d:em%d", &kk, &n1, &n2) >= 2 && kk == kind) {
+                snprintf(a, sizeof a, "em%02d_amh.bin", n1);
+                snprintf(t, sizeof t, "em%02d_tex.bin", n1);
+                if (n2 >= 0)
+                    snprintf(b, sizeof b, "em%02d_tbl.bin", n2);
+            }
+        }
         if (monster_load(e, a, t, b) != 0) {
             fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
             return NULL;

@@ -123,6 +123,8 @@ EM="$EM src/game/em/em03.c"
 EM="$EM src/game/em/em02_ai_nm.c src/game/em/em02.c src/game/em/em02_init.c"
 EM="$EM src/game/em/em07_ai_nm.c src/game/em/em07.c"
 EM="$EM src/game/em/em10_nm.c src/game/em/em33.c"
+# G's unused kind 40 (a cut-down Felyne, written from G's asm; docs/FINDS.md)
+[ "$VERSION" = mhg ] && EM="$EM src/game/em/em40_g.c"
 WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15_nm"
 # The village (lobby.bin: Kokoto village offline, the town online): agent
 # F's whole-file lobby C (src/lobby/f/lb_X.c, the lb_zNN singletons) and
@@ -571,7 +573,7 @@ for f in $GAME; do
     # (grep the file's own declarations; the adaptors are in rt_abi.c)
     src/game/em/em08_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft10_set=rtabi_Eft10_set \
              -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
-    src/game/em/em09*.c|src/game/em/em27*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/game/em/em09*.c|src/game/em/em27*.c|src/game/em/em40_g.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/game/em/em03.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
     src/game/em/em04_act.c|src/game/em/em04_nm.c|src/game/em/em20_ai_nm.c|src/game/em/em21_nm.c)
         ABI="-DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;

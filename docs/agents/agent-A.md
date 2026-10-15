@@ -916,3 +916,20 @@ docs/RELEASE_G.md (criteria, gaps by player impact, coverage) and docs/survey/mh
   and its X.o, then build again.
 - Seen, not mine (in RELEASE_G.md with lanes): EXTRA (omake) row crash (omake_str / check_bit_no), elder fee number missing
   from the talk text, equip_exp_core strings zero, set19 position tables, em14/em17 G act selection (GN6, mine, open).
+
+## G kind 40 on screen (15 Oct 2026)
+
+- Kind 40 = "Higeruu", a cut-down em09 (Felyne) with its own 16-bone em40_tbl and no model; details in docs/FINDS.md.
+- src/game/em/em40_g.c (PC only, VERSION_MHG, written from G game 0x647060-0x648E30, not byte-checked): init, main,
+  acts, sound script; PC-only program table (G's em_prog_tbl[40][3] is named em04_effect_move_0058F3E0 by the G map,
+  so the host would run the Mosswine's script; em40_init installs em40_prog_pc). game_func_00648E20 resolves [0]/[1].
+- Fixes found on the way: em_parts_num imported at 0x28 (kinds 40-51 had 0 motion layers or junk; now 0x34 in
+  config/mhg/pc_data.txt); em_type_act_set lacked G kinds 35-50 (G jump table lit_1223_00685080: each takes its base
+  monster's act set, 40 -> em09); em09_act_set act 1/2 off stage 0x35 sets no position in G (MH1 read one from a
+  stray register; crashed the PC with kind 40).
+- Test aids: RT_QEM_KIND=from:to (rt_em.c + em_create_model in rt_quest.c), RT_EM_MODEL=kind:emNN[:emMM] (viewer.c).
+  Run: `RT_QEM_KIND=23:40 RT_EM_MODEL=40:em09 RT_QUEST_STAGE=1 RT_CAM_EM=k40,350,320,0.6 mhview_g disc/mhg --quest 1`.
+- Checked: G PC build, Xbox G build (nxdk), MH1 PC build + test_quest_loop OK, test_dbgmenu OK, test_all_quests_g
+  10033 10038 10042 10044 28 33 (subspecies quests, after the act-set fix) all PASS.
+- Open: G shell11_i (index and table edited) not ported, so kind 40's swing (and G Aptonoth hits) use MH1's data on
+  the PC; the kind-40 hit does no damage.

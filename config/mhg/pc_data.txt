@@ -40,6 +40,7 @@ enemy_icon_tbl = 0x0025D900; // size:0x34
 [sub_main]
 eft06_em_scale = 0x00503B80; // size:0xD0
 em_prog_tbl = 0x00520800; // size:0xD0
+em_parts_num = 0x005207C0; // size:0x34       # motion layers per kind (Em_max_parts_get); was imported at 0x28: kinds 40-51 read past it
 em_dur_tbl = 0x005088C0; // size:0xD0
 [game]
 eft19_em_ofs_tbl = 0x0067DA30; // size:0xD0

@@ -49,6 +49,11 @@ void rt_set_em_model_loader(void (*fn)(int slot, int kind)) { em_model_fn = fn; 
 void em_create_model(int slot)
 {
     int kind = PU8(&game_w, 0x28 + slot);
+    {   /* test aid RT_QEM_KIND "from:to" (rt_em.c): the model slot of kind `from` holds kind `to` */
+        int from, to;
+        if (getenv("RT_QEM_KIND") && sscanf(getenv("RT_QEM_KIND"), "%d:%d", &from, &to) == 2 && kind == from)
+            PU8(&game_w, 0x28 + slot) = (u8)(kind = to);
+    }
     if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]) {
         /* [0] local init and [3] the per-tick effect script (em_effect_move)
          * are called unconditionally: both must be ported */

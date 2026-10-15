@@ -262,3 +262,44 @@ lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The
   event scenes (the in-engine intros, each tied to a training quest number); the credits are movie 8 of the table at G 0x4FD180.
 - [checked] The credits end with an English line, "Thank you for playing!", in the otherwise Japanese G data; the credit lines themselves are English.
 - [checked] G's NETWORK OPTIONS has a "delete login ID" row and a "network settings" row that warns that unsaved data is lost because the game restarts.
+
+## G's unused monster kind 40: "Higeruu", a cut-down Felyne (agent A, 15 Oct 2026)
+- **What it is.** [checked] G's monster name table (sub_main 0x527A40, used by the hunting log) calls kind 40 ヒゲルー
+  ("Higeruu"; ヒゲ = whiskers/beard, the "-ruu" ending of アイルー Felyne / メラルー Melynx). Kind 51, the other kind
+  with no quest, is ソメルー ("Someruu"). No quest on the disc uses either (dry runs of all 245 mission files).
+- **Its parts.** [checked]
+  - Code: game 0x647060-0x648E30 (~30 functions, between em27's code and the effect helpers), a trimmed copy of em09
+    (Felyne/Melynx, the item thief): same init (same start-position grid, act 1/8, 0x734 = 3), same idle / chase /
+    turn / walk acts, same damage and death motions, same sound numbers (em09's script, first cases), but no item
+    theft, no jump attack, no knock-back physics, no eye blink. Its one attack is motion 21 with a hit (Shell11, arg
+    0x10) at frame 24. G's em_type_act_set (game 0x544770) sends kind 40's command-program acts to em09_act_set.
+  - Data: G's per-kind tables give kind 40 the Felyne's rows almost everywhere (hit spheres, body, hit zones,
+    perception, hunger, range, scale 1.0, not a boss, no anger table, size class 0), its own command program
+    (0x6BE670, the same for all difficulty levels), its own motion-id table, species byte 40, and 300 hit points
+    (Felyne 40, Melynx 50, Kut-Ku 2000).
+  - Files: em40_tbl.bin (AFS_DATA 2044) has 18 motions (slots 1-13, 21, 60-63) for a **16-bone skeleton, the Felyne's
+    bone count** (Felyne/Melynx AHI: 16 bones; Kut-Ku and Rathian: 48); the motions are its own (none equal to em09's).
+    There is no em40_amh/em40_tex: G's model table points kind 40 at em01_amh (the Rathian), the same placeholder
+    as kind 0 and kind 51, and its effect model at em08's. Kind 51 likewise has its own em51_tbl.bin (39 motions,
+    32 bones) and no model.
+- **Not Yian Garuga.** [checked] No ガルルガ string anywhere in PS2 G (SLPM and all overlays) or in Wii G's main.dol; the
+  skeleton, code, tables and name all point at a Felyne-type creature. BUT in Monster Hunter Portable (PSP) the
+  monster name list has イャンガルルガ (Yian Garuga) **in slot 40**, right after Gypceros (39) and before Rathalos (41),
+  with the same order as G for 0-50 and no "Higeruu"/"Someruu" anywhere in DATA.BIN [checked: strings in USRDIR/DATA.BIN].
+  So the slot G left to an unfinished cat creature became Garuga in Portable [guess: reuse of the free number; not
+  checked whether MHP's kind-40 code is Kut-Ku-based].
+- **Wii G** [checked]: the same names in main.dol; motion/em40_tbl.bin and motion/em51_tbl.bin are in fpack 0000.fpk,
+  no emmodel/em40 or em51.
+- **On screen** (PC, hidden runs, not on the PS2): kind 40's code is ported for the PC (src/game/em/em40_g.c,
+  written from G's asm, not byte-checked) and can be spawned with the test aids `RT_QEM_KIND=23:40` (a quest's
+  Melynxes become kind 40) and `RT_EM_MODEL=40:em09` (the Felyne's body, which its 16-bone motions fit). In quest 1
+  (forest area 9) four of them idle (scratch, look around), walk back to where they were placed, turn toward the
+  hunter, run up and swing their pickaxe overhead (motion 21), flinch and fall when hit. [checked: screenshots in
+  build/A/k40/k40_felyne_body_attack_sheet.png, k40_felyne_body_swing.png] With `RT_EM_MODEL=40:em06:em06` (the
+  owner's experiment: Kut-Ku's body and motion file) the code runs Kut-Ku's body-group motions under the same numbers:
+  a pack of Kut-Kus shuffling about with their head and tail in rest pose (kind 40 has one motion layer)
+  [checked: k40_kutku_body_sheet.png]. The swing's hit does no damage on the PC: G edited shell11_i (other table, no
+  +1 on the index) and the PC still runs MH1's. [checked: G raw bytes; not fixed]
+- Found on the way [checked]: the PC imported G's em_parts_num (motion layers per kind) at 40 entries, so kinds 40-51
+  read past it, and its em_type_act_set had no G kinds 35-50, so the command programs of all G subspecies set no
+  acts on the PC; both fixed (config/mhg/pc_data.txt, em_core_nm.c).

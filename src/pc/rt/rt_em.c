@@ -589,6 +589,34 @@ int rt_quest_load(int no)
                 e++;
         }
     }
+    if (getenv("RT_QEM_KIND")) {    /* test aid "from:to": the quest's monsters of kind `from` become kind `to`
+                                     * (model slot and every monster list), e.g. G's unused kind 40 in a quest */
+        int from, to, st, var, cnt = 0, i;
+        void em_create_model(int slot);
+        if (sscanf(getenv("RT_QEM_KIND"), "%d:%d", &from, &to) == 2) {
+            QEM *l = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
+            s32 *k = (s32 *)Em_data_com_adrs_get(quest_w.x78, 0);     /* the kinds whose models Quest_start loads */
+            for (; k && k != (s32 *)-1 && *k != -1; k++)
+                if (*k == from)
+                    *k = to;
+            for (; l && l != (QEM *)-1 && l->id >= 0; l++)
+                if (l->id == from)
+                    l->id = (s16)to, cnt++;
+            for (var = 0; var < 4 && (var == 0 || (quest_w.x74[var] > 0 && quest_w.x74[var] < 0x40000)); var++)
+                for (st = 1; st < 0x58; st++) {
+                    l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, (s8)var);
+                    for (; l && l != (QEM *)-1 && l->id >= 0; l++)
+                        if (l->id == from)
+                            l->id = (s16)to, cnt++;
+                }
+            for (i = 0; i < 4; i++)
+                if (PU8(&game_w, 0x28 + i) == from) {
+                    PU8(&game_w, 0x28 + i) = (u8)to;
+                    em_create_model(i);
+                }
+            fprintf(stderr, "rt_quest: RT_QEM_KIND %d -> %d: %d monster entries\n", from, to, cnt);
+        }
+    }
     if (getenv("RT_QUEST_TRACE")) {
         int i;
         fprintf(stderr, "rt_quest: quest %d supply box:", no);

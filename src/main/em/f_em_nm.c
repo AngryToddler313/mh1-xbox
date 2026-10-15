@@ -120,6 +120,7 @@ void em21_init(EMW *); void em21_main(EMW *);
 void em27_init(EMW *); void em27_main(EMW *);
 void em29_init(EMW *); void em29_main(EMW *);
 void em33_init(EMW *); void em33_main(EMW *);
+void em40_init(EMW *); void em40_main(EMW *);
 
 void em_die(EMW *em);
 void em_erase(EMW *em);
@@ -176,12 +177,15 @@ void em_init_sub(EMW *em) {
     case 34: em08_init(em); break;
 #ifdef VERSION_MHG
     /* G's 16 new kinds (subspecies) reuse the MH1 monsters' init (G em_init_sub 0x4E8FE0, its
-     * jump table at sub_main 0x536FA0); kind 40's init (game 0x647060) is G-only and not ported */
+     * jump table at sub_main 0x536FA0); kind 40's init is G-only (game 0x647060, em40_g.c, PC only) */
     case 35: em16_init(em); break;
     case 36: em02_init(em); break;
     case 37: em01_init(em); break;
     case 38: em20_init(em); break;
     case 39: em20_init(em); break;
+#ifndef __MWERKS__
+    case 40: em40_init(em); break;
+#endif
     case 41: em01_init(em); break;
     case 42: em01_init(em); break;
     case 43: em14_init(em); break;
@@ -563,7 +567,7 @@ void em_move(EMW *em) {
     case 29: em29_main(em); break;
     case 33: em33_main(em); break;
 #ifdef VERSION_MHG
-    /* G's new kinds (G em_move 0x4E9890, jump table at sub_main 0x537070); kind 40 (game 0x648390) not ported */
+    /* G's new kinds (G em_move 0x4E9890, jump table at sub_main 0x537070); kind 40: game 0x648390 (em40_g.c, PC only) */
     case 37: case 41: case 42: case 49: em01_main(em); break;
     case 47: case 48: em17_main(em); break;
     case 38: case 39: em20_main(em); break;
@@ -573,6 +577,9 @@ void em_move(EMW *em) {
     case 45: em15_main(em); break;
     case 35: em16_main(em); break;
     case 46: em21_main(em); break;
+#ifndef __MWERKS__
+    case 40: em40_main(em); break;
+#endif
 #endif
     }
     em->ang[0] = (u16)em->ang[0];

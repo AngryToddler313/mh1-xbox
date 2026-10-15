@@ -133,6 +133,11 @@ void em09_act_set(em, kind, no) EMW *em; int kind; u16 no; {
                 p = em09_rev_set_tbl_st53[(u8)k];
                 em->ang[1] = em09_rev_set_tbl_st53A[(u8)k];
             }
+#ifdef VERSION_MHG
+            else {      /* G (game 0x5D3400): off stage 0x35 it sets no position (MH1 read one from a stray register) */
+                break;
+            }
+#endif
             em->pos[0] = p[0];
             em->pos[1] = p[1];
             p += 2;
