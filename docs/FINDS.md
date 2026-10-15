@@ -114,3 +114,15 @@ Agents: when you trip over something curious, add a short entry here in the same
   Dual Swords too. [checked: docs/mh1_us.md]
 - **G renumbered its quest files** (`mNNNNN.mib`, header grew 0x40 -> 0x48) and stores quest text
   inline. [checked]
+
+## G village (agent D, 14 Oct 2026)
+- **G's stored equipment and item box are 100 / 200 / 300 entries** (two expansions in User_data+0xC97 bits 0 and 1); the shops' sell list and the
+  box window are 10 x 10 pages, and the box's "tidy" is a merge-and-sort view (stacks merged up to each item's maximum, by id).
+  [checked: lobby 0x555850, 0x558230]
+- **A table of "ダミー" (dummy) lines in main** (0x2EEF20, 32 entries) stands in for talk lines that were never written; the elder's talk reached it
+  until the row choice followed G's story tests. [checked]
+- **Offline, G's story level function knows only the tests 0x23..0x3C** (lobby 0x543180); the talk code also asks it for small numbers (0, 3, 13 ...),
+  which are the online town's and answer 0 offline. [checked: asm]
+- **G's talk rows for shop NPCs mark lines as heard by setting event flags** (flags 32-34, 37-42, 83-88, 94-96): the first visit after each story step
+  plays the new line once. [checked: lobby 0x544CD0 ..]
+- **G's workshop has 1049 armour recipes and 170 weapon recipes** (MH1: 359 / 234); the upgrade table is by weapon id (381 entries). [checked]

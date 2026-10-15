@@ -510,3 +510,25 @@ obvious workarounds.
   eft12 G edits (smoke colours of G's kind 6).
 - **To revert:** the commits "G PC: item use ported from G ...", "G quest program command 0x2F ...", "G PC: the
   92-stage tables at G size ..." on agent-A.
+
+## G village round 2 (agent D, 14 Oct 2026)
+- **Dropped:** the GTAG shop-tag stand-in of 6e6fc6da (every G shop used `shop_default_tag_00610A68 + 1`, the item shop's buy / sell
+  pair, as its tab names; GTAG macros in lb_arm, lb_sh1a, lb_sh1c, lb_by47/49/54/129). **Now:** each shop uses G's own table: the armour
+  shop's weapon / armour tabs `shop_armor01_tag` = main 0x2EF040, the workshop's `shop_process00_tag` = main 0x2EF050 (config/mhg/pc_data.txt;
+  their pointers into lobby.bin come from config/mhg/pc_main_lobby.txt, which tools/mhg_main_lobby.py now extends by hand-found ranges),
+  `shop_armor00_tag` = lobby 0x636A5C (pc_names.txt), `shop_process01_tag` is G's own symbol. **Why:** the stand-in gave the wrong tab names
+  (買う / 売る on the armour shop's weapon / armour tabs). **To revert:** the commit "G village: weapon/armour shop list works on the PC".
+- **Choice (guess):** G's story event 1 (the elder's first talk, src/lobby/lb/lb_talk.c Lb_event_story) also sets event flag 0. G's asm sets
+  flag 0 only in event 0 (a kind-0 NPC of the online town, +1500 zenny), and the elder's mode test (get_questLevelNum(36) = event flag 0) would
+  repeat the greeting for ever offline and never open the counter. Remove the `Event_flag_set(0)` line to follow the asm exactly.
+- **Choice:** G's story talk modes keep MH1's mode numbers on the PC (G n = MH1 n-1 for 4..17, n-2 from 19): G's story event (49) runs as 47, its
+  banner mode 48 (the hunter-registration banner, 90 ticks) is shortened to what it does at the end (event flag 4, message 15). G's second counter
+  page (mode 3) is mode 2 with the counter work's page byte 2.
+- **Dropped:** tools/pc_lobby_matched.txt's lb_r.c (MH1's lb_basic_master) for G (tools/pc_lobby_g_exclude.txt); **now** lb_village_nm.c's lb_basic_master
+  has G's kind dispatch (story modes, G shop modes). MH1 unchanged. **To revert:** the commit "the elder's story talk".
+- **Not ported (shown wrong or missing on the PC):** the equipment compare / description windows of G (main equip_exp_core, 4.7 KB, EquipmentCompareWindowA):
+  the shops' weapon detail shows attack 0 and a mis-sized sharpness bar; the G "worn piece next to the new one" detail mode (x1C 3, lobby 0x554010) and the
+  skill pages; the item shop's page ornaments; the farm and the cat kitchen do not exist in G's Kokoto (no spot / NPC for them in stage 87; Lb_eat is a
+  chair of the online guild hall).
+- **Tools:** tools/gvil_ev.py (G village run from a tick-event pad script, GDB=1 for a backtrace), tools/gpeek.py (words / bytes of G's data by address),
+  tools/test_gvillage.py (all the village cases below, about 10 min), RT_POUCH=id:n,.. (village test aid), the village trace now prints the event flags.

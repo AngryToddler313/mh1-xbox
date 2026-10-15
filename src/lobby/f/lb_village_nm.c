@@ -215,7 +215,9 @@ int get_joint_mat_em();
 int get_prim();
 int get_prim_ptr();
 int get_questLevelNum();
-extern u8 lbshop_raw[] __asm__("lbShop");
+#ifdef VERSION_MHG
+extern u8 lbshop_raw[] __asm__("lbShop");   /* the counter work's page byte (lbShop+4) */
+#endif
 int get_quest_info();
 int han2zen();
 int init_set_work();
