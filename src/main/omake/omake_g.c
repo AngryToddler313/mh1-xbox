@@ -4,11 +4,12 @@
  *   GALLERY (3rd row, G's real "omake": sub_main 0x4A9960, see the second half of this file).
  * Written from the asm of SLPM_658.69 (tools/gdraft.py, tools/mhg_fdiff.py); field meanings are guesses.
  * Task block (SELT of omake.c): step +8, sub step +9, counter +0xA, +0xB, cursor row +0x14, second flag +0x15. */
-#include <stdlib.h>
-#include <string.h>
 #include "types.h"
 
-#ifdef VERSION_MHG
+/* PC / Xbox only (tools/build_pc.sh, VERSION=mhg); tools/build.py compiles every src file with MWCC, which gets an empty file */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct GSELT {
     u8 _pad00[8];
