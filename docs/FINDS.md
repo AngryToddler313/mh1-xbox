@@ -47,6 +47,32 @@ Agents: when you trip over something curious, add a short entry here in the same
   The HUD's sprite rectangles were made for cpit1ps, so this only shows pieces, not the design as
   it was meant to look; the mock-up's own layout code no longer exists [guess].
   Try it: `RT_FILEDEF=2:10 tools/play.sh quest 10` (or 5:10 for the other atlas slot).
+  **The pieces, measured (agent F, 14 Oct; texel rectangles x0..x1, y0..y1 inclusive, from the alpha channel and the
+  colours of the decoded texture):** [checked]
+  - sword: 19..255 x 17..44 (the gold hook runs off the right edge). The blade's slot is a **see-through hole**
+    42..186 x 28..32 (5 rows) and the gold hilt's slot another hole 97..179 x 37..38 (2 rows, three rivets across it):
+    made for a bar drawn *under* the frame. A tiny eye hole sits at the tip (28..31 x 29..31).
+  - top name box 0..95 x 79..106 (black inside 84..100, rounded end on the right, cut flat at x = 0) with a tab above it
+    (0..28 x 72..78) reading "..H", probably "..SH" (the first letter is cut by the texture's left edge). Baked text:
+    "ーンの肉" (".. meat", the start is cut off; no MH1 item ends like that, the nearest are the 肉 items 18-24).
+  - bottom name box 0..~83 x 111..136, joined on the right to the wheel's left slot, with a tab under it (0..45 x
+    138..144) reading "..AG" (MAG for magazine is a guess). Baked text, grey-green: "?化骨弾" ("? bone shot"), first
+    glyph cut; no MH1 ammo has that name (the shipped ammo are 通常弾, 貫通弾, 散弾, 徹甲榴弾, ...).
+  - wheel: five oval slots 47x27, centres about (106,124) left (the one the box joins), (134,97) and (187,97) above,
+    (134,150) and (187,150) below, joined by spokes to a hub near (150,124). Their insides are opaque black; four hold
+    baked icons (yellow pouch upper left, blue left and lower left, red lower right), the upper right is empty. None of
+    the shipped ammo uses them: the game's ammo items all share one bullet icon in different colours (Item_data +5 = 26);
+    whether they exist elsewhere in the item atlas was not checked.
+  - pod 192..239 x 108..140 on the rod to the right: white "4" over a red "12" (rounds in the gun over rounds left,
+    is the natural reading [guess]); the rod runs on to the texture's right edge.
+  - bottom: a translucent dark panel 0..~235 x 176..247 (alpha 128) closed by a gold bracket 236..243 with a gold line
+    to the right edge at y 212: a long gauge or message window, empty.
+  **cockpit.amo / cockpit.ahi / cockpit_tex.bin (AFS_DATA 6, 7, 31) are not related:** decoded, cockpit.amo is a tiny
+  model of 16 vertices, an upside-down four-sided pyramid (tip at the origin, square base 20 wide at height 20, UVs
+  spanning a half texture), and cockpit_tex.bin one 64x64 texture of plain white. A 3D marker (a pointer over a target
+  or player) by the look of it [guess about its use]; nothing of the 2D mock-up. [checked: tools/clay_dump.py melt + tree]
+  **Made playable (14 Oct, agent F):** the PC/Xbox port can draw a working HUD from these pieces for bowgun users:
+  `hud = prototype gunner` in mh1pc.ini or the HUD row of the F10 settings menu (docs/pc.md, "Prototype gunner HUD").
 
 ## Leftover developer features
 
@@ -71,6 +97,16 @@ Agents: when you trip over something curious, add a short entry here in the same
 
 ## Version differences
 
+- **G's mega armorskin works like the plain one**: G's Basic_item_set (sub_main 0x4F27B0) raises the defence boost
+  to at least 3 for both armorskin (G item 0x12) and mega armorskin (0x13); MH1 gave 3 and 5. The demondrugs still
+  give 3 and 5. [checked: G asm; whether it is meant is a guess]
+- **G no longer lets an earth crystal sharpen**: MH1's item_action_set sent the earth crystal to the whetstone act;
+  G's does not, but G's whetstone act (game 0x5560A0) still has the earth crystal's +200 case. [checked: G asm]
+- **A stray random-number call in G**: G's food-bonus helper (sub_main 0x4F2730, after eating/drinking with skill
+  0x5A) calls ran_suu with the player-work pointer left in a0 as the stream number, so it steps a 16-bit word far
+  past Rnd_w instead of a random stream. [checked: G asm; what that word is, unverified]
+- **Quest 10030's program has a G-only command 0x2F** (sets the section a time-out jumps to); it is the only offline
+  quest that uses it. [checked: dry runs of all G offline quests]
 - **G can import an MH1 hunter**: G's memory card code has 26 extra screens for carrying a
   hunter over from an MH1 save. [checked: matched code, agent C]
 - **The US disc carries the US network adapter start-up software** (`NTGUIDVD/`). [checked]

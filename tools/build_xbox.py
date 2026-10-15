@@ -23,7 +23,7 @@ OBJ = OUT + '/obj'
 RELAX = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', '-Wno-error=int-conversion',
          '-Wno-error=incompatible-function-pointer-types', '-Wno-error=return-type', '-w']
 # the PC front-end (tools/build_pc.sh PC=) with the Xbox stand-ins instead of OpenGL and the host card
-FRONT = ['src/pc/viewer.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
+FRONT = ['src/pc/viewer.c', 'src/pc/dbgmenu.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
          'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/aan.c', 'src/pc/fmt/hits.c',
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
          'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c',
@@ -179,6 +179,8 @@ def main():
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl
         if version == 'mhg':
             args.append('-DVERSION_MHG')     # as tools/build_pc.sh's CFLAGS for VERSION=mhg
+        if os.environ.get('MH1_RELEASE', '0') != '0':
+            args.append('-DMH1_RELEASE')     # a release build: the debug menu off unless asked for (dbgmenu.c)
         if f != 'src/pc/rt/rt_memstat.c':
             args += ['-include', 'src/pc/rt/rt_memstat.h']
         if 'xbox_libc' not in f and 'xbox_log' not in f:

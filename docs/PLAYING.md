@@ -80,6 +80,17 @@ it copies the files out of the image itself.
    is interrupted. Some dashboards' FTP servers need active mode (the script's default; `XBOX_PASSIVE=1` switches).
    The data is 925 MB: a home Wi-Fi link can take most of an hour. Copy `default.xbe` last or first, it does not
    matter.
+   **If the FTP copy keeps stalling** (Evolution X's FTP server often drops big files part way and cannot
+   resume them), copy only the small network loader by FTP and let it fetch the data from your computer over
+   HTTP instead, with resume and checksums:
+   - `tools/xbox_upload.sh --loader` (set `XBOX_IP=` to your Xbox's address first): puts the loader in
+     `E:\Games\MH1` (it shows as **Monster Hunter**) plus `loader.txt` with this computer's address;
+   - `tools/xbox_serve.py --data dist/xbox/MH1` (or `dist/xbox/MHG` for Monster Hunter G) and leave it running;
+     your firewall must let the Xbox reach port 8765;
+   - start **Monster Hunter** on the Xbox. It copies the files (MH1 into `E:\Games\MH1\data` plus the game as
+     `mh1.xbe`; G into `E:\Games\MHG`), checks every 4 MB piece, shows the progress, and starts the game when
+     done. If the copy stops, start Monster Hunter again: it goes on from where it stopped. Later starts without
+     the server running simply start the game already on the disk.
    Check afterwards that the sizes match the list above. The game itself checks at start-up: if a file is missing
    or has the wrong size (a cut-short copy) it shows which one, says where the files belong and returns to the
    dashboard after ten seconds; fix the copy and start again. (Only the sizes are checked there; the checksum check of
@@ -109,7 +120,7 @@ cancels**, as on the Japanese PS2 (the settings menu can swap this).
 | Z / C | L2 / R2 | | T F G H | d-pad up / left / down / right |
 | Enter | Start (pause menu) | | Backspace | Select |
 
-Esc quits the game. **F10** opens the settings menu, **F11** or **Alt+Enter** toggles fullscreen, **F8** reports a
+Esc quits the game. **F10** opens the settings menu, **F9** the debug menu for testers (below), **F11** or **Alt+Enter** toggles fullscreen, **F8** reports a
 bug (see below). Name entry: type with the keyboard, Enter finishes.
 
 **Gamepad** (PC; any controller SDL knows: Xbox, PlayStation and most others; plug in before or during the game)
@@ -144,6 +155,39 @@ you supply a translation table, see docs/english.md), button layout (circle or c
 volume. The choices are saved in `mh1pc.ini` (Linux `~/.local/share/mh1pc/mh1pc.ini`, Windows
 `%APPDATA%\mh1pc\mh1pc.ini`), a plain text file; the same options exist as command-line flags (docs/pc.md,
 "Display options"). The game logic always runs at its original 30 steps per second, whatever the frame rate.
+
+## Debug menu for testers
+
+Testers can jump straight to any quest, area or screen without scripts or settings. Press **Back + R3** (click the
+right stick while holding Back) on any controller, original Xbox pad included, or **F9** on the PC keyboard. The game
+pauses while the menu is open and keeps the picture underneath. Press the same again, **Start**, or circle on the first
+page to close it.
+
+Moving around: d-pad or left stick up/down picks a row, left/right changes a value (in long lists it jumps 10 rows,
+L1/R1 jump 100), **cross** chooses, **circle** goes back, **square** empties an inventory slot. On the PC the arrow keys,
+PgUp/PgDn, Enter, Backspace/Esc, Delete and the mouse (wheel, click, right click = back) work too. The names are shown
+as the game writes them (Japanese, or English with a translation table).
+
+| row | what it does |
+|---|---|
+| Start a quest | every quest on the disc: number, the Elder's star level (MH1; G shows the quest group), title and goal. The quest starts at once on its base camp, as if accepted at the counter |
+| Area warp | (in a quest) every area the quest file links, through the game's own area change |
+| Go to the village | with or without the first-visit intro |
+| Title screen | back to the logos and title (like a reset) |
+| Item pouch / Item box | pick an item for each slot by name, left/right sets the count. In a quest the pouch is the one you carry now |
+| Money, Equipment | money in steps of 1000 (L1/R1: 100000); weapon (blade or bowgun) and armour by name. New equipment shows from the next area or quest |
+| Hunter rank, Mark all offline quests cleared | MH1 only |
+| Can't faint, One-hit kills, Damage x1..x50 | for fights |
+| Set monster HP, Kill the monsters in this area, Warp to the monster | (in a quest) for the monsters of the area you are in |
+| Quest timer | stop the clock (free roaming) |
+| Show hit volumes | the monsters' body spheres (red) and attack volumes (yellow) |
+| Frame step | the game advances one step per R3 click (or F7 / . on the PC); hold R3 to run |
+| Free camera | PC: fly with W A S D, Space / C, Shift faster, look with the mouse; the controller still moves the hunter |
+
+The menu is on in test builds. A release build (made with `MH1_RELEASE=1`) has it off. To turn it on or off by hand:
+on the PC put `debug_menu = 1` (or `0`) in `mh1pc.ini`, or start with `--debug-menu` / `--no-debug-menu`; on the Xbox
+put `RT_DEBUG_MENU=1` (or `0`) in `data\env.txt`. Changes you make with it are real: a save made afterwards keeps
+them. Use a copy of your memory card for testing.
 
 ## Saves
 

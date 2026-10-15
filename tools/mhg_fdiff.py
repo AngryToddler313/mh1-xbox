@@ -81,7 +81,8 @@ def main():
     t1 = symtab([os.path.join(ROOT, 'config/symbols', f) for f in os.listdir(os.path.join(ROOT, 'config/symbols')) if f.endswith('.txt')])
     t2 = symtab([os.path.join(ROOT, 'config/mhg/symbols', f) for f in os.listdir(os.path.join(ROOT, 'config/mhg/symbols')) if f.endswith('.txt')])
     A = dis(os.path.join(ROOT, 'disc/mh1/split/%s.bin' % mod), vram(os.path.join(ROOT, 'config/%s.yaml' % mod)), a1, s1, t1, GP[1])
-    B = dis(os.path.join(ROOT, 'build/mhg/split/%s.bin' % mod), vram(os.path.join(ROOT, 'config/mhg/%s.yaml' % mod)), a2, s2, t2, GP[2])
+    gmod = row['g_module'] or mod      # G moved some functions to another module (main -> sub_main / game)
+    B = dis(os.path.join(ROOT, 'build/mhg/split/%s.bin' % gmod), vram(os.path.join(ROOT, 'config/mhg/%s.yaml' % gmod)), a2, s2, t2, GP[2])
     if '-g' in sys.argv:       # G only, with branch targets
         for r in B:
             print('%08X %s' % (r[3], fmt(r)))

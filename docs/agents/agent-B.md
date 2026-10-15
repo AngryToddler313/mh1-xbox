@@ -1348,3 +1348,11 @@ Lessons:
   CONTINUE has 0z. Not from this change: an RT_TRACE run of MH1 makes no gap/whole .bss shadows, MH1's overlays are
   not packed (melt path unused) and the rest is G-only or paths. The PC test_quest_loop (same input) passes. Worth
   a run of the xemu loop on main (bed Save? box / "quit game" path changed since 12 Oct).
+
+### MH1 xemu quest loop "no bed save" (14 Oct 2026, resolved)
+Not a game regression. (1) The loop's last screenshot time (480 s) ended the run before the bed save when xemu is
+slow (load 10-17: village at 238 s, bed ~455 s); the quest 131 START seen at t8960 is the script's trailing presses
+AFTER the save (the PC log does the same). tools/xemu_quest_loop.sh now runs to 780 s. (2) With the new AC97 driver
+the movie is audio-clocked in xemu; at <1 frame/s the audio read-ahead piled up the video stream (17 -> 5 MB free
+in 20 s, fatal 0x1E in memcpy at the opening movie). rt_movie.c audio_feed stops reading when sfd_video_backlog()
+> 1 MB. Verified: xemu loop OK (CONTINUE 1550z), PC test_quest_loop OK, both MH1 Xbox builds link.

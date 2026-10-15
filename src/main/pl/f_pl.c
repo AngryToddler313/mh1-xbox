@@ -27,6 +27,13 @@
 #include "f_game.h"
 #include "flow.h"
 #include "hit.h"
+#ifdef VERSION_MHG      /* G renumbered the items: pickaxes 112-114, bug nets 115-117 (G search_act_set 0x54BE90) */
+#define PICKAXE0 112
+#define BUGNET0 115
+#else
+#define PICKAXE0 0x83
+#define BUGNET0 0x86
+#endif
 #ifdef VERSION_MHG
 s32 sub_main_func_004CE8E0(PLW *pl, u8 ammo);   /* pl77.c */
 #endif
@@ -1526,16 +1533,16 @@ block_3:
             case 3:
                 if (mode == 2) {
                     switch (pl->item[pl->work888].id) {
-                    case GV(0x83, 0x70):
-                    case GV(0x84, 0x71):
-                    case GV(0x85, 0x72):
+                    case PICKAXE0:
+                    case PICKAXE0 + 1:
+                    case PICKAXE0 + 2:
                         pl->ang_y = (s16)((calc_vec_ang2(pl->pos, sp30) & 0xFFFF) - 0x4000);
                         pl->work88A = pl->item[pl->work888].id;
                         Pl_act_set(pl, 0, 0x51, 0);
                         break;
-                    case GV(0x86, 0x73):
-                    case GV(0x87, 0x74):
-                    case GV(0x88, 0x75):
+                    case BUGNET0:
+                    case BUGNET0 + 1:
+                    case BUGNET0 + 2:
                         se_req(7, 0x15, 0);
                         break;
                     }
@@ -1545,15 +1552,15 @@ block_3:
                 if (mode == 2) {
                     id = pl->item[pl->work888].id;
                     switch (id) {
-                    case GV(0x86, 0x73):
-                    case GV(0x87, 0x74):
-                    case GV(0x88, 0x75):
+                    case BUGNET0:
+                    case BUGNET0 + 1:
+                    case BUGNET0 + 2:
                         pl->work88A = id;
                         Pl_act_set(pl, 0, 0x52, 0);
                         break;
-                    case GV(0x83, 0x70):
-                    case GV(0x84, 0x71):
-                    case GV(0x85, 0x72):
+                    case PICKAXE0:
+                    case PICKAXE0 + 1:
+                    case PICKAXE0 + 2:
                         se_req(7, 0x15, 0);
                         break;
                     }
@@ -1565,12 +1572,12 @@ block_3:
         } else {
 block_24:
             switch (pl->item[pl->work888].id) {
-            case GV(0x83, 0x70):
-            case GV(0x84, 0x71):
-            case GV(0x85, 0x72):
-            case GV(0x86, 0x73):
-            case GV(0x87, 0x74):
-            case GV(0x88, 0x75):
+            case PICKAXE0:
+            case PICKAXE0 + 1:
+            case PICKAXE0 + 2:
+            case BUGNET0:
+            case BUGNET0 + 1:
+            case BUGNET0 + 2:
                 if (mode == 2) {
                     se_req(7, 0x15, 0);
                 }
@@ -2097,7 +2104,166 @@ static u8 basic_kabe_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) && defined(VERSION_MHG)
+/* G's item_action_set (game 0x54D8C0), written from G's asm for the PC (not byte-checked): G renumbered the items
+   (G ids in the comments' names), added G-only items (ration, first-aid med, mini whetstone, portable spit,
+   tranquilizer ball, ballista ammo, G well-done steak / G barrel bombs) and the tools (pickaxes 0x70-0x72,
+   bug nets 0x73-0x75) leave without a sound (search_act_set handles them). The acts are MH1's. */
+static void item_action_fail(PLW *pl, u8 mode) {
+    se_req(7, 0x15, 0);
+    if (mode == 1) {
+        pl_to_normal(pl, 0, 4, 0);
+    }
+}
+
+static void item_action_set(PLW *pl, u8 mode) {
+    u8 sp3F;
+    u16 sp3C;
+    f32 sp30[3];
+    u16 id;
+
+    if ((s16)Get_Active_itemnum() <= 0) {
+        item_action_fail(pl, mode);
+        return;
+    }
+    id = pl->item[pl->work888].id;
+    switch (id) {
+    case 0x70: case 0x71: case 0x72:            /* pickaxes */
+    case 0x73: case 0x74: case 0x75:            /* bug nets */
+        return;
+    case 0x37:                                  /* dung bomb */
+    case 0x38:                                  /* smoke bomb */
+        pl->work88A = id;
+        if (pl_flag_ck(pl, 0x02000600) == 0) {
+            Pl_act_set2(pl, 0, 0xB, 0xC);
+        } else {
+            Pl_act_set2(pl, 0, 0xE, 0xC);
+        }
+        return;
+    case 0x39:                                  /* poison smoke bomb (G): always the drop act */
+        pl->work88A = id;
+        Pl_act_set2(pl, 0, 0xB, 0xC);
+        return;
+    case 0x3A:                                  /* farcaster */
+        if (Modori_dama_ck() == 1) {
+            pl->work88A = id;
+            Pl_act_set2(pl, 0, 0x72, 0xC);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x2E: case 0x2F: case 0x30: case 0x31: /* throwing knives (G) */
+    case 0x1FF:                                 /* tranquilizer ball (G) */
+    case 0x33:                                  /* paintball */
+    case 0x34:                                  /* flash bomb */
+    case 0x35:                                  /* sonic bomb */
+    case 0x99:                                  /* stone (G) */
+        pl->work88A = id;
+        Pl_act_set2(pl, 0, 0xE, 0xC);
+        return;
+    case 0x25:                                  /* raw meat */
+    case 0x2A: case 0x2B: case 0x2C:            /* poison / paralysis / sleep meat */
+    case 0x42: case 0x43:                       /* small barrel bomb, small barrel bomb+ */
+        if (Niku_ok_ck() == 1 || id == 0x42 || id == 0x43) {
+            if (pl->st == 0) {
+                pl->work88A = id;
+                Pl_act_set2(pl, 0, 0x19, 0xC);
+            } else if (pl->st == 1) {
+                pl->work88A = id;
+                Pl_act_set2(pl, 0, 0x59, 0xC);
+            }
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x44: case 0x45:                       /* large barrel bomb, large barrel bomb+ */
+        if (Taru_ok_ck() == 1) {
+            pl->work88A = id;
+            Pl_act_set2(pl, 0, 0x6F, 0xC);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x3D:                                  /* pitfall trap */
+        if ((s16)Pl_trap_use_ck(pl) >= 0) {
+            pl->work88A = id;
+            Pl_act_set2(pl, 0, 0x2E, 0xC);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x68: case 0x69: case 0x6A: case 0x6B: /* fishing baits */
+    case 0x6C: case 0x6D: case 0x6E: case 0x6F:
+        if ((St_unique_ck(pl, sp30, &sp3C, &sp3F) & 0xFFFF) == 2) {
+            pl->work88A = id;
+            pl->ang_y = sp3C;
+            Pl_act_set2(pl, 0, 0x4F, 0);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x200:                                 /* ballista ammo (G) */
+        if ((St_unique_ck(pl, sp30, &sp3C, &sp3F) & 0xFFFF) == 0x11) {
+            pl->work800 = sp30[0];
+            pl->work804 = sp30[1];
+            pl->work808 = sp30[2];
+            pl->ang_y = sp3C;
+            Pl_adj_calc(pl, 0x14);
+            pl->cnt39A = (s16)sp3F;
+            Pl_act_set2(pl, 0, 0x36, 0x20);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x07: case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+    case 0x1A: case 0x1B: case 0x1C: case 0x20:
+    case 0x81: case 0x82: case 0x8F: case 0x91: case 0x93: case 0x94: case 0xAB: case 0xB9:
+    case 0x1FB: case 0x1FC:                     /* potions, drinks, pills, herbs, seeds, fish, ration, first-aid med */
+        pl->work88A = id;
+        Pl_act_set2(pl, 0, 0x58, 0);
+        return;
+    case 0x76: case 0x77: case 0x1FD:           /* BBQ spits (G sets work88A too) */
+        if (Nikuyaki_ck(pl) == 1) {
+            pl->work88A = id;
+            Pl_act_set(pl, 0, 0x4C, 0);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x78: case 0xAA: case 0x1FE:           /* whetstone, whetfish, mini whetstone */
+        if (pl->kind != 1 && pl->kind != 5) {
+            pl->work88A = id;
+            Pl_act_set2(pl, 0, 0x61, 0);
+            return;
+        }
+        item_action_fail(pl, mode);
+        return;
+    case 0x7B:                                  /* horn */
+        pl->work88A = id;
+        Pl_act_set(pl, 0, 0x5E, 0xC);
+        return;
+    case 0x7C: case 0x7D: case 0x7E: case 0x7F: /* health / antidote / demon / armor horns */
+        pl->work88A = id;
+        Pl_act_set(pl, 0, 0x62, 0xC);
+        return;
+    case 0x26: case 0x27: case 0x28: case 0x29: /* rare / well-done / well-done G / burnt steak */
+        pl->work88A = id;
+        Pl_act_set2(pl, 0, 0x5A, 0);
+        return;
+    case 0x79:                                  /* binoculars */
+        if (pl->st == 1) {
+            Pl_act_set2(pl, 0, 0x66, 0);
+            return;
+        }
+        Pl_act_set2(pl, 0, 0x65, 0);
+        return;
+    default:
+        item_action_fail(pl, mode);
+        return;
+    }
+}
+#elif !defined(G_PART)
 static void item_action_set(PLW *pl, u8 mode) {
     u8 sp3F;
     u16 sp3C;
@@ -2308,12 +2474,12 @@ static void item_action_set(PLW *pl, u8 mode) {
         }
         Pl_act_set2(pl, 0, 0x65, 0);
         return;
-    case 0x83:
-    case 0x84:
-    case 0x85:
-    case 0x86:
-    case 0x87:
-    case 0x88:
+    case PICKAXE0:          /* (G ids: search_act_set) */
+    case PICKAXE0 + 1:
+    case PICKAXE0 + 2:
+    case BUGNET0:
+    case BUGNET0 + 1:
+    case BUGNET0 + 2:
         break;
     default:
         se_req(7, 0x15, 0);
@@ -3456,6 +3622,23 @@ static void pl_mv014(PLW *pl, s32 arg1) {
                     a2 = 1;
                 }
             }
+#ifdef VERSION_MHG
+            switch (pl->work88A) {      /* G pl_mv014 (game 0x550C00): G item ids, shell03 kinds 10-15 are G's */
+            case 0x38: func_628FB0(pl, 0, a2); break;       /* smoke bomb */
+            case 0x3A: func_628FB0(pl, 7, a2); break;       /* farcaster */
+            case 0x34: func_628FB0(pl, 1, a2); break;       /* flash bomb */
+            case 0x37: func_628FB0(pl, 5, a2); break;       /* dung bomb */
+            case 0x39: func_628FB0(pl, 0xB, a2); break;     /* poison smoke bomb */
+            case 0x33: func_628FB0(pl, 6, a2); break;       /* paintball */
+            case 0x99: func_628FB0(pl, 8, a2); break;       /* stone */
+            case 0x35: func_628FB0(pl, 9, a2); break;       /* sonic bomb */
+            case 0x1FF: func_628FB0(pl, 0xA, a2); break;    /* tranquilizer ball */
+            case 0x2E: func_628FB0(pl, 0xC, a2); break;     /* throwing knife */
+            case 0x2F: func_628FB0(pl, 0xD, a2); break;     /* poison knife */
+            case 0x30: func_628FB0(pl, 0xE, a2); break;     /* sleep knife */
+            case 0x31: func_628FB0(pl, 0xF, a2); break;     /* paralysis knife */
+            }
+#else
             switch (pl->work88A) {
             case 0x1A:
                 func_628FB0(pl, 0, a2);
@@ -3482,6 +3665,7 @@ static void pl_mv014(PLW *pl, s32 arg1) {
                 func_628FB0(pl, 0xA, a2);
                 break;
             }
+#endif
             if (Game_clear_ck(1) == 0) {
                 Pl_item_stack(pl, pl->work88A, -1);
             }
@@ -4505,7 +4689,11 @@ static void pl_mv054(PLW *pl, s32 unused_arg) {
             }
             if (pl->x06 == 0) {
                 sougun_adj_sub(pl, 0x19E);
-                if ((pl->sw.trg & GV(0x20, 0x21)) && ((s16)Pl_item_num_ck(pl, GV(0xA2, 0x200)) != 0)) {
+#ifdef VERSION_MHG      /* G pl_mv054: ballista ammo is G item 512; G also fires on button bit 0x01 */
+                if ((pl->sw.trg & 0x21) && ((s16)Pl_item_num_ck(pl, 0x200) != 0)) {
+#else
+                if ((pl->sw.trg & 0x20) && ((s16)Pl_item_num_ck(pl, 0xA2) != 0)) {
+#endif
                     Pl_act_set2(pl, 0, 0x48, 0xC);
                 }
             }
@@ -4531,10 +4719,18 @@ static void pl_mv072(PLW *pl, s32 unused_arg) {
         pl_chr_set2(pl, 0x19E, 0, 0x42);
         action_timer_calc(pl, 0);
         pl->work08 = 0x3C;
+#ifdef VERSION_MHG      /* G pl_mv072: G item 512, and the pad rumbles */
+        if ((Pl_master_ck(pl) != 1) || ((s16)Pl_item_num_ck(pl, 0x200) != 0)) {
+            Pl_item_stack(pl, 0x200, -1);
+            vib_set_pl(pl, 2);
+            func_637F60(pl, 0);
+        }
+#else
         if ((Pl_master_ck(pl) != 1) || ((s16)Pl_item_num_ck(pl, 0xA2) != 0)) {
             Pl_item_stack(pl, 0xA2, -1);
             func_637F60(pl, 0);
         }
+#endif
         break;
     case 1:
         pl->work08 = pl->work08 - 1;
@@ -5015,6 +5211,9 @@ static void pick_set_sub(PLW *pl, u16 arg1) {
 
 
 
+#ifdef VERSION_MHG      /* G pl_mv071 (game 0x554280): skill 170 plays the gather motion at 2.6x */
+#define PL_MV071_FAST(pl) do { if (Pl_Skill_ck(pl, 170) == 1) { (pl)->chr_spd0 = 2.6f; (pl)->chr_spd1 = 2.6f; } } while (0)
+#endif
 #if !defined(G_PART)
 static void pl_mv071(PLW *pl, u32 arg1) {
     u16 n;
@@ -5035,15 +5234,24 @@ static void pl_mv071(PLW *pl, u32 arg1) {
         case 0:
         case 1:
             pl_chr_set2(pl, 0x195, -0xE, 0);
+#ifdef VERSION_MHG
+            PL_MV071_FAST(pl);
+#endif
             break;
         case 2:
             if (Pl_master_ck(pl) == 1) {
                 set01_set(0, 0xA, 0);
             }
             pl_chr_set2(pl, 0x195, -0xE, 0);
+#ifdef VERSION_MHG
+            PL_MV071_FAST(pl);
+#endif
             break;
         case 3:
             pl_chr_set2(pl, 0x1A3, -6, 0);
+#ifdef VERSION_MHG
+            PL_MV071_FAST(pl);
+#endif
             break;
         case 4:
             pl_chr_set2(pl, 0x19F, 0, 0);
@@ -5060,28 +5268,42 @@ static void pl_mv071(PLW *pl, u32 arg1) {
             case 4:
             case 5:
                 switch (pl->work88A) {
-                case 0x83:
+                case PICKAXE0:
                     n = 3;
                     break;
-                case 0x84:
+                case PICKAXE0 + 1:
                     n = 0xA;
                     break;
-                case 0x85:
+                case PICKAXE0 + 2:
                     n = 0xF;
                     break;
-                case 0x86:
+                case BUGNET0:
                     n = 3;
                     break;
-                case 0x87:
+                case BUGNET0 + 1:
                     n = 0xA;
                     break;
-                case 0x88:
+                case BUGNET0 + 2:
                     n = 0xF;
                     break;
                 }
+#ifdef VERSION_MHG
+                /* G: skills 103 / 104 halve the tool's odds now and then (1 in 4 / 1 in 2) */
+                if (Pl_Skill_ck(pl, 103) == 1 && (ran_suu(1) & 3) == 0) {
+                    n = (n >> 1) + 1;
+                }
+                if (Pl_Skill_ck(pl, 104) == 1 && (ran_suu(1) & 1) == 0) {
+                    n = (n >> 1) + 1;
+                }
+#define PL_MV071_SK0 48
+#define PL_MV071_SK1 49
+#else
+#define PL_MV071_SK0 0x32
+#define PL_MV071_SK1 0x33
+#endif
                 h = (ran_suu(1) & 0xFFFF) % n;
                 if (h == 0) {
-                    if ((Pl_Skill_ck(pl, 0x32) != 1 || ((r = ran_suu(1)) & 3)) && (Pl_Skill_ck(pl, 0x33) != 1 || ((r = ran_suu(1)) & 1))) {
+                    if ((Pl_Skill_ck(pl, PL_MV071_SK0) != 1 || ((r = ran_suu(1)) & 3)) && (Pl_Skill_ck(pl, PL_MV071_SK1) != 1 || ((r = ran_suu(1)) & 1))) {
                         set01_set(1, 0xE, (s16)pl->work88A);
                         Pl_item_stack(pl, pl->work88A, -1);
                     }
@@ -5338,7 +5560,11 @@ static void pl_mv079(PLW *pl, s32 unused_arg) {
         break;
     case 1:
         if (frame_check(104.0f, pl, 0) != 0) {
-            if (pl->work88A == GV(0x7D, 0x6B)) {
+#ifdef VERSION_MHG
+            if (pl->work88A == 0x6B) {        /* G pl_mv079: frog (MH1 0x7D) */
+#else
+            if (pl->work88A == 0x7D) {
+#endif
                 func_555A90(pl, 1);
             } else {
                 func_555A90(pl, 0);
@@ -5504,6 +5730,81 @@ static void pl_mv085(PLW *pl, s32 unused_arg) {
         adx_se_set(pl, 0xA);
         break;
     case 1:
+#ifdef VERSION_MHG
+        /* G pl_mv085 (game 0x555380): G item ids (raw meat 37 -> rare 38 / well-done 39 / burnt 41); with the gourmet
+           spit (119) the burn point is 20 later (MH1 10) and 275-284 gives well-done steak G (40, outcome 4) */
+        pl->work8CA = pl->work8CA + 1;
+        t = pl->work8CA;
+        {
+            s16 burn = 270 + (pl->work88A == 0x77 ? 20 : 10);
+            if (t >= burn) {
+                pl->work8D0 = 3;
+            } else if (t >= 270) {
+                pl->work8D0 = (pl->work88A == 0x77 && t >= 275 && t < 285) ? 4 : 2;
+            } else if (t >= 0xB4) {
+                pl->work8D0 = 1;
+            } else {
+                pl->work8D0 = 0;
+            }
+        }
+        if (Pl_master_ck(pl) == 1 && ((pl->sw.trg & 0x20) || pl->work8CA >= 0x12C)) {
+            u16 got = 0;
+            adx_se_stop(pl);
+            switch (pl->work8D0) {
+            case 0:
+                if (Game_clear_ck(1) == 0) {
+                    set01_set(0, 0xB, 0);
+                }
+                Pl_act_set2(pl, 0, 0x4B, 0);
+                break;
+            case 1:
+                if (Game_clear_ck(1) == 0) {
+                    Pl_item_stack(pl, 0x25, -1);
+                    set01_set(1, 9, 0x26);
+                    adx_se_set(pl, 0xB);
+                    got = 0x26;
+                }
+                Pl_act_set2(pl, 0, 0x4B, 0);
+                break;
+            case 2:
+            case 4:
+                if (Game_clear_ck(1) == 0) {
+                    int se;
+                    Pl_item_stack(pl, 0x25, -1);
+                    switch (FLD8(system_w, 0x1A)) {
+                    case 0:
+                        se = 0xC;
+                        break;
+                    default:
+                        se = 0xE;
+                        break;
+                    }
+                    if (pl->work8D0 == 4) {
+                        se = 0xF;
+                    }
+                    adx_se_set(pl, se);
+                    got = pl->work8D0 == 4 ? 0x28 : 0x27;
+                    set01_set(1, 9, got);
+                }
+                Pl_act_set2(pl, 0, 0x4D, 0);
+                break;
+            case 3:
+                if (Game_clear_ck(1) == 0) {
+                    Pl_item_stack(pl, 0x25, -1);
+                    set01_set(1, 0xA, 0x29);
+                    adx_se_set(pl, 0xD);
+                    got = 0x29;
+                }
+                Pl_act_set2(pl, 0, 0x4B, 0);
+                break;
+            }
+            /* G's ItemStockRequest (5th argument 1, func_0011CD20) answers 3 when the pouch cannot take it: message */
+            if (got != 0 && (s16)ItemStockRequest(pl, got, pl->x8E6, 0) == 3) {
+                set01_set(1, 3, (s16)got);
+            }
+        }
+        break;
+#else
         pl->work8CA = pl->work8CA + 1;
         t = pl->work8CA;
         if (t >= 0x118) {
@@ -5570,6 +5871,7 @@ go:
             }
         }
         break;
+#endif
     }
 }
 #endif
@@ -5805,6 +6107,21 @@ static void pl_mv095(PLW *pl, s32 arg1) {
             pl_chr_set2(pl, 0x1A5, 2, 0);
         } else {
             pl_chr_set2(pl, 0x1A9, 4, 0);
+#ifdef VERSION_MHG      /* G pl_mv095 (game 0x555E80): only the master plays the horn's effect; G horn ids */
+            if (Pl_master_ck(pl) == 1) {
+                Fue_item_set(pl);
+            }
+            switch (pl->work88A) {
+            case 0x7C:
+            case 0x7D:
+                n = 0xC;
+                break;
+            case 0x7E:
+            case 0x7F:
+                n = 8;
+                break;
+            }
+#else
             Fue_item_set(pl);
             switch (pl->work88A) {
             case 0x8A:
@@ -5820,10 +6137,15 @@ static void pl_mv095(PLW *pl, s32 arg1) {
                 n = 8;
                 break;
             }
+#endif
         }
         if ((Pl_master_ck(pl) == 1) && (Game_clear_ck(1) == 0)) {
             h = (ran_suu(1) & 0xFFFF) % n;
+#ifdef VERSION_MHG      /* G: skill 48 or 108 saves the horn 1 time in 4, skill 49 1 in 2 */
+            if ((h == 0) && ((Pl_Skill_ck(pl, 48) != 1 && Pl_Skill_ck(pl, 108) != 1) || ((r = ran_suu(1)) & 3)) && ((Pl_Skill_ck(pl, 49) != 1) || ((r = ran_suu(1)) & 1))) {
+#else
             if ((h == 0) && ((Pl_Skill_ck(pl, 0x32) != 1) || ((r = ran_suu(1)) & 3)) && ((Pl_Skill_ck(pl, 0x33) != 1) || ((r = ran_suu(1)) & 1))) {
+#endif
                 set01_set(1, 0xE, (s16)pl->work88A);
                 Pl_item_stack(pl, pl->work88A, -1);
             }
@@ -5855,8 +6177,27 @@ static void pl_mv097(PLW *pl, s32 unused_arg) {
         pl->work39C = 0;
         break;
     case 1:
+#ifdef VERSION_MHG      /* G pl_mv097 (game 0x5560A0): skill 74 skips ahead to frame 218 of the motion */
+        if (Pl_Skill_ck(pl, 74) == 1 && frame_check(98.0f, pl, 0) != 0) {
+            pl_chr_set2(pl, 0x19D, 0, 218);
+        }
+#endif
         if ((frame_check(260.0f, pl, 0) != 0) && (Game_clear_ck(1) == 0)) {
             Pl_item_stack(pl, pl->work88A, -1);
+#ifdef VERSION_MHG
+            switch (pl->work88A) {
+            case 0x78:          /* whetstone */
+            case 0xAA:          /* whetfish */
+                n = 0x96;
+                break;
+            case 0x1FE:         /* mini whetstone */
+                n = 0x64;
+                break;
+            case 0x9C:          /* earth crystal: MH1 let it sharpen; G still lists it here, but G item_action_set no longer sends it */
+                n = 0xC8;
+                break;
+            }
+#else
             switch (pl->work88A) {
             case 0x69:
             case 0x5E:
@@ -5869,6 +6210,7 @@ static void pl_mv097(PLW *pl, s32 unused_arg) {
                 n = 0xC8;
                 break;
             }
+#endif
             if (Pl_Skill_ck(pl, 0x18) == 1) {
                 t = (s16)n;
                 n = (s16)(t + t / 4);
@@ -5877,6 +6219,11 @@ static void pl_mv097(PLW *pl, s32 unused_arg) {
                 t = (s16)n;
                 n = (s16)(t + t / 2);
             }
+#ifdef VERSION_MHG
+            if (Pl_Skill_ck(pl, 73) == 1) {     /* G: skill 73 halves it */
+                n = (s16)((s16)n / 2);
+            }
+#endif
             Pl_slash_calc(pl, n);
         }
         if (pl->work194 == 0) {
@@ -10348,6 +10695,11 @@ static void egg_set(PLW *pl) {
 }
 #endif
 
+#ifdef VERSION_MHG
+#define HOLD_CANNONBALL 0x201
+#else
+#define HOLD_CANNONBALL 0xA3
+#endif
 #if !defined(G_PART)
 static void egg_com_ck(PLW *pl, int arg1) {
     u8 sp3F;
@@ -10406,7 +10758,11 @@ go:
                     Pl_act_set2(pl, 0, 4, 0);
                     break;
                 }
+#ifdef VERSION_MHG      /* G egg_com_ck (game 0x560D20): not while work88C is set; the cannonball is G item 513 */
+                if ((v & 0x200) && pl->work88C == 0) {
+#else
                 if (v & 0x200) {
+#endif
                     Pl_act_set2(pl, 5, 3, 0);
                 }
                 job_special_com_ck(pl, 2);
@@ -10421,9 +10777,9 @@ go:
                         }
                         break;
                     case 24:
-                        if ((Pl_hold_item_ck(pl) & 0xFFFF) == 0xA3) {
+                        if ((Pl_hold_item_ck(pl) & 0xFFFF) == HOLD_CANNONBALL) {
                             pl->work56B = pl->work56B & 0xF0;
-                            Pl_item_stack(pl, 0xA3, -0xA);
+                            Pl_item_stack(pl, HOLD_CANNONBALL, -0xA);
                             pl->ang_y = sp3C;
                             pl->cnt39A = sp3F;
                             Pl_act_set2(pl, 0, 0x37, 0x20);

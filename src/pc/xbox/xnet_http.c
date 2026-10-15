@@ -76,6 +76,19 @@ static int send_all(int s, const void *p, int n)
     return 0;
 }
 
+/* wait at most 10 s for data: nxdk's lwIP has no SO_RCVTIMEO, and a download stalled half way
+ * on 12 Oct 2026 (the loader then hung for good) */
+static int recv_wait(int s, char *p, int n)
+{
+    struct timeval tv = { 10, 0 };
+    fd_set r;
+    FD_ZERO(&r);
+    FD_SET(s, &r);
+    if (lwip_select(s + 1, &r, NULL, NULL, &tv) <= 0)
+        return -1;
+    return lwip_recv(s, p, n, 0);
+}
+
 /* one HTTP/1.0 request; returns the body (malloc'd, NUL-terminated) or NULL
  * on any error or a status other than 200 */
 char *xh_http(const char *method, const char *path, const void *body, int nbody, int *nout)
@@ -96,16 +109,7 @@ char *xh_http(const char *method, const char *path, const void *body, int nbody,
                 goto fail;
             buf = p;
         }
-        {   /* at most 10 s without data: nxdk's lwIP has no SO_RCVTIMEO, and a download
-             * stalled half way on 12 Oct 2026 (the loader then hung for good) */
-            struct timeval tv = { 10, 0 };
-            fd_set r;
-            FD_ZERO(&r);
-            FD_SET(s, &r);
-            if (lwip_select(s + 1, &r, NULL, NULL, &tv) <= 0)
-                goto fail;
-        }
-        if ((k = lwip_recv(s, buf + n, cap - n, 0)) < 0)
+        if ((k = recv_wait(s, buf + n, cap - n)) < 0)
             goto fail;
         if (k == 0)
             break;
@@ -130,4 +134,49 @@ fail:
         lwip_close(s);
     free(buf);
     return NULL;
+}
+
+long xh_get_range(const char *path, unsigned long from, int (*fn)(void *ctx, const char *p, int n), void *ctx)
+{
+    static char buf[65536];
+    char req[320], *body, *cl;
+    long want = -1, got = 0;
+    int s, n = 0, k;
+
+    if ((s = dial()) < 0)
+        return -1;
+    snprintf(req, sizeof req, "GET %s HTTP/1.0\r\nHost: %s\r\nRange: bytes=%lu-\r\n\r\n", path, xh_host, from);
+    if (send_all(s, req, strlen(req)) < 0)
+        goto out;
+    for (;;) {                  /* the header: status line, Content-Length */
+        if (n >= (int)sizeof buf - 1 || (k = recv_wait(s, buf + n, sizeof buf - 1 - n)) <= 0)
+            goto out;
+        n += k;
+        buf[n] = 0;
+        if ((body = strstr(buf, "\r\n\r\n")) != NULL)
+            break;
+    }
+    if (n < 12 || !(!strncmp(buf + 9, "206", 3) || (!strncmp(buf + 9, "200", 3) && from == 0)))
+        goto out;
+    *body = 0;
+    if (!(cl = strstr(buf, "Content-Length:")))
+        goto out;
+    want = atol(cl + 15);
+    body += 4;
+    n -= body - buf;
+    while (got < want) {
+        if (n > 0) {
+            if (n > want - got)
+                n = want - got;
+            if (fn(ctx, body, n))
+                break;
+            got += n;
+        }
+        body = buf;
+        if ((n = recv_wait(s, buf, sizeof buf)) <= 0)
+            break;
+    }
+out:
+    lwip_close(s);
+    return got == want ? got : -1 - got;
 }

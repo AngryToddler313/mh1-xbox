@@ -170,9 +170,9 @@ anything the coordinator must know to merge. Then stop.
 
 ## Memory cap and clean builds (14 Oct 2026)
 
-The laptop has 7.8 GB and several agents build at once. A python process grew to 5.6 GB during a
+The laptop has 7.8 GB, about 3 GB of it used by the owner's own apps, and several agents build at once (14 Oct: at most two agents at a time; cap lowered to 1.5 GB after a third OOM, a 2.3 GB python under the old 3 GB cap). A python process grew to 5.6 GB during a
 G rebuild and the kernel's OOM killer took down the coordinator's session twice. Run every build
-under a cap so a runaway dies alone: `(ulimit -v 3000000; VERSION=mhg tools/rebuild.sh)` (same
+under a cap so a runaway dies alone: `(ulimit -v 1500000; VERSION=mhg tools/rebuild.sh)` (same
 for tools/rebuild.sh, build_pc*.sh, tests). Exception: tools/test_save.sh builds with AddressSanitizer, which reserves terabytes of virtual
 memory and aborts under `ulimit -v`: run that one test without the cap. Before claiming a rebuild passes after changing
 config/mhg/c_rawfuncs.txt or registrations, prove it from clean

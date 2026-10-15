@@ -91,6 +91,7 @@ Precedence: built-in defaults < file < command-line flags.
 | `--filter2d nearest\|linear\|sharp` | `filter2d` | HUD / menu / text art: nearest keeps the original pixels hard at any scale; sharp is nearest at the whole-number part of the scale and bilinear for the rest (below) |
 | `--english`, `--japanese`, `--text-table FILE` | `language` (`ja`/`en`), `text_table` | text language, see "Settings menu" |
 | `--confirm circle\|cross` | `confirm` | button layout, see "Settings menu" |
+| `--hud original\|gunner` | `hud` (`original` / `prototype gunner`) | the prototype gunner HUD, see "Prototype gunner HUD" |
 | `--ini FILE`, `--no-ini` | | use another settings file / ignore it |
 
 Layout (gfx_gl.c `layout()`): `rc` is the largest 4:3 rectangle in the window, `sc` the 3D scene rectangle.
@@ -155,6 +156,7 @@ menu.h (stubs on the Xbox), hooks in viewer.c.
 | 2D art filter | smooth / sharp (integer) / nearest | yes |
 | Text language | Japanese / English (English only when a table file exists) | at the next start |
 | Button layout | circle confirms (Japan) / cross confirms (West) | yes |
+| HUD | original / prototype gunner (bowgun users only, see "Prototype gunner HUD") | yes |
 | Music / Effects volume | the game's own options: option_w[1] / option_w[2], 0..7 | yes |
 | Restore display defaults / Close | | |
 
@@ -173,6 +175,84 @@ that the game does not tick while the menu is open and runs on after Esc, and th
 
 Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, quest 131 and the pause menu at
 960x720 4:3 and 1280x720 widescreen, plus --msaa 4 --aniso 8 --filter2d nearest; the PC test set at the defaults.
+
+### Debug menu (agent E, 14 Oct 2026)
+
+For testers, on every build (PC, Windows, ARM, Xbox; MH1 and G): **Back + R3** on a controller, **F9** on the PC
+keyboard. Players' description and the row list: docs/PLAYING.md "Debug menu for testers". Code:
+- src/pc/dbgmenu.c (platform side): pages (main, quests, areas, pouch / box, item picker, equipment, equipment list),
+  controller / keyboard / mouse input, drawing. It draws with the game's own font (rt_font.c `rt_font_dbg_text`, its own
+  white palette and glyph textures) and untextured quads, in the 640 x 448 text frame through gfx_draw_2d, so the GL and
+  nv2a backends show the same picture and Japanese names need nothing extra. The hit volumes are projected with
+  gfx_project and drawn as thin quads in the 512 x 448 frame.
+- src/pc/rt/rt_dbg.c (game side): quests (MH1 `questName` + the Elder's `quest_local_tbl` for the star level; G
+  `quest_file_tbl` groups, checked against the AFS file names mNNNNN.mib; title / goal from the mission file's own text
+  offsets: MH1 header +0x60 / +0x64, G the string table at the offset in +0x60), areas (the quest file's exit lists, the
+  table Stage_mv_data_get reads, checked against the mission buffer; the warp sets PLW+0x738 / +0x73A / +0x73C.. and
+  Pl_ofs_set as stage_mv_ck does, game2 steps 2-6 do the load), items (`item_str`, `Item_data` +3 stack limit; G's
+  item_str is 523 entries: config/mhg/pc_data.txt), pouch (PLW+0x828 in a quest, User_data+0x37C otherwise), item box
+  (User_data+0x1C4; G through UDO, lbsys_g.h), money (+0x20), MH1 hunter rank (+0x37B) and Quest_clear_bit_set,
+  equipment (Ken_data / Gun_data / Armor_*_Data names; MH1 Warehouse_equip_stack + Warehouse_equip + Set_equip_idx, the
+  game's own equipment-box functions; G writes its equipped set at User_data+0xC74.. as G's Get_equip_value reads it).
+- Toggles reuse the test-aid code: rt_dbg.god = the RT_PL_GOD block, rt_dbg.warp_em_slot = the RT_PL_WARP_EM block (target:
+  the living monster of the hunter's area with the most hp), rt_dbg_hits (after hit_check, rt_hit_check) does the damage
+  multiplier and one-hit kills for every monster hit that tick, the "kill" request (as RT_PL_SLAY) and the stopped timer.
+- viewer.c: `read_pad` (each tick's pad, also takes the open combo out), dbgmenu_hold_ticks in the three tick-hold tests
+  (as menu_hold_ticks), the per-frame pad for the menu (the --input script feeds it while it is open, one step per drawn
+  frame), dbgmenu_draw after menu_draw, the actions dbg_start_quest (rt_village_leave, rt_world_reset, all_reset,
+  quest_from_village: the village counter's path), dbg_village (game mode 6; Event_flag 2 for the intro), dbg_title
+  (rt_boot_init: the power-on sequence; select.bin's data re-imported), and the free camera (cam[] from the game eye,
+  WASD / mouse as the old free-fly viewer; the keyboard stops driving the hunter while it is on).
+- Buttons held when the menu closes are kept from the game until released (circle / cross / Enter would act at once).
+- On / off: on unless built with `MH1_RELEASE=1` (tools/build_pc.sh, tools/build_xbox.py add -DMH1_RELEASE); mh1pc.ini
+  `debug_menu = 1/0`, `--debug-menu` / `--no-debug-menu` (Xbox: RT_ARGS), RT_DEBUG_MENU=1/0 decide over the default.
+  Only with --play / --boot / --input (the viewer's free-play mode has no game to edit).
+- Test: `tools/test_dbgmenu.sh` (after test_quest_loop.sh): village edits with the game paused, quest 131 from the list,
+  quest 10 killed from the menu, frame step, and G (quest list 244 entries, quest 4, pouch). `tools/dbg_keys.py` turns
+  "open d5 x x r1 o" into an --input script; RT_DBG_SHOTS=prefix writes prefix_NN.png of each new menu page.
+- Checked in xemu (MH1 nv2a build, hidden, scripted pad from D:\data\input.txt with RT_ARGS=--quest 10 --play): the
+  menu, the quest list and the pouch page look as on the PC; quest 134 started from it. Not checked: a real controller
+  or keyboard (all runs scripted), the real Xbox, G on the Xbox, the free camera (needs a window and a mouse), MH1's
+  "with intro" village path from the title screen, and how many draw calls the real NV2A takes for the menu (one per
+  glyph; xemu drew 15-25 fps with it open).
+- Limits: area names are numbers (no name table found yet); "Title screen" re-runs the boot without reloading main's
+  data tables (a fresh power-on is safer before a long session); equipment changes show from the next area / quest.
+
+### Prototype gunner HUD (agent F, 14 Oct 2026)
+
+An optional HUD for bowgun users built from cockpit2.apx, an early HUD mock-up on the disc that the game never loads
+(docs/FINDS.md). Off by default. Turn it on with the HUD row of the F10 settings menu, `hud = prototype gunner` in
+mh1pc.ini, or `--hud gunner` (`--hud original` turns it off). It shows only while the hunter carries a gun (job 1 or 5,
+the test disp_cannon uses); blade users always get the original HUD. The game logic is not touched: src/pc/rt/rt_hud_gun.c
+draws it from the game's own state, called from the HUD wrappers in rt_2d.c (rt_hud_disp_pl_vital, rt_hud_disp_item).
+
+- Top: the sword. Health fills the blade's slot (150 health = the whole slot; dark grey up to the hunter's maximum,
+  red = health that comes back, green = health now: the same three values disp_pl_vital draws), stamina the gold
+  hilt's slot (150 = full) in the original's colours (red flash when tired).
+- Bottom right: the ammo wheel. The slot by the name box holds the loaded ammo, the other four the next two and the
+  previous two ammo types the gun can take (the order Pl_shell_set cycles through); the box shows its name (yellow
+  while a new type is picked but not yet loaded), the pod the rounds in the gun over the rounds left (red, "--" for
+  unlimited normal shot LV1). Crag shot keeps the mock-up's own yellow pouch icon; the rest use the game's item icons.
+- Bottom left: the item wheel, the same wheel mirrored: the selected pouch item, its neighbours in the order the item
+  select cycles, its name, the count over the stack limit.
+- The original's bullet row and "loading" messages (disp_cannon) and the map stay as they are.
+- Liberties: baked text, icons and digits are covered with black (the boxes' and slots' insides are black in the
+  texture), names and numbers are drawn with the game's font, the boxes get a rounded end mirrored from the top box,
+  the tabs and the long bottom gauge of the texture are not used. Widescreen: the item wheel and the sword keep to the
+  left edge, the ammo wheel to the right.
+- The texture is loaded on first use into mem_tex 0x158 (a slot nothing uses), from filedef_sys[3] (AFS_DATA 10 in
+  MH1 JP), with a host buffer.
+- The Xbox build has the code but no settings file yet: there rt_hud_style stays 0 (original HUD).
+
+Test aid: `RT_WEAPON=gN` starts with Gun_data row N (a bowgun; e.g. g2) instead of a sword; with `RT_PL_ITEMS` the
+gun loads from the new pouch as pl_init does. Shot used (hidden):
+`RT_WEAPON=g2 RT_PL_ITEMS="1:5,20:3,31:2,60:1,61:30,44:5,47:20" build/pc/mhview disc/mh1 --quest 10 --play --hud gunner
+--no-ini --size 960x720 --shot build/show/gunhud/q10.png --time 25`.
+
+G (checked 14 Oct with build/mhg/pc/mhview_g, same code): the player fields it reads are the same, cockpit2 is
+filedef_sys[3] there too (AFS_DATA 12), and the shot types keep their numbers (crag 9-11), but G renumbered the items:
+its ammo are ids 73-103 (73 = normal LV1 ... 82-84 crag), so the G shot used
+`RT_PL_ITEMS="7:5,20:3,26:2,73:1,74:30,82:5,79:20"`. Bows (G) are not handled specially (no charge gauge).
 
 ## Build
 
@@ -239,7 +319,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
 
 Environment variables for the player: `RT_WEAPON=id` (Ken_data id, default
-156, the first sword and shield; 1 = the first great sword), `RT_PL_TRACE=1`
+156, the first sword and shield; 1 = the first great sword; `gN` = Gun_data row N, a bowgun), `RT_PL_TRACE=1`
 (action, step, motions, frame, position per tick), `RT_EM_POS=x,z` (put the Rathian there, for hit tests),
 `RT_HIT_DM=1` (print damage the Rathian takes; `2` also lists live attack
 shells and their hit volumes), `RT_SKIP_TYPE=n` (do not draw prims of

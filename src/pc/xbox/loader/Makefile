@@ -1,7 +1,7 @@
 # MH1 network loader: make -C src/pc/xbox/loader (after . ~/xboxdev/env.sh)
 # -> build/xbox/loader/default.xbe; tools/xbox_upload.sh --loader installs it.
 XBE_TITLE = Monster\ Hunter
-SRCS = main.c ../xnet_http.c
+SRCS = main.c install.c ../xnet_http.c
 NXDK_NET = y
 OUTPUT_DIR = ../../../../build/xbox/loader
 # XH_HOST / XH_PORT (optional): the laptop address used when loader.txt is missing

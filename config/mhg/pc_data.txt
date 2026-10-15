@@ -84,7 +84,7 @@ em_body_tbl = 0x00672ED0; // size:0xD0          # (hit_calc_shl, body_hit_sub_ne
 em_hit_push_tbl = 0x00673150; // size:0xD0
 em_pos_tbl = 0x00673D70; // size:0xD0           # (em_status_init)
 em_hagi_type_tbl = 0x006D5D50; // size:0x10     # G: 4 pointers (quest rank, mission header 0x42) to per-kind carve tables (Em_hagi_point_set 0x4B7250)
-Item_get_tbl = 0x006D4350; // size:0x3A0        # (Stage_item_probability_get; agent C found it too)
+Item_get_tbl = 0x006D4350; // size:0x5E0        # (Stage_item_probability_get; agent C found it too) G: 376 pick ids up to st01_unique_tbl (MH1 232; pick id 235 read past the end)
 em12_scale_tbl = 0x0069D540; // size:0x2C
 em29_type_tbl = 0x006BAFC0; // size:0x54
 st45_pos_tbl = 0x0069D570; // size:0x78
@@ -99,6 +99,13 @@ map_stage_tbl = 0x00520A00; // size:0x30           # pointers to them
 em_species_tbl = 0x004FEE90; // size:0xD0           # per monster kind: pointer to its data, byte 0 = species (em command 0x2C)
 [game]
 shell00_body_tbl = 0x006C7CD0; // size:0x30     # 12 entries (MH1 9): G shell00_i (0x669260) reads it
+shell04_body_tbl = 0x006C2EF0; // size:0x3C     # 15 entries (MH1 12): G's run of hit-table pointers
+shell09_body_tbl = 0x006C68E0; // size:0x54     # 21 entries (MH1 18)
+shell11_body_tbl = 0x006C6F70; // size:0x20     # 8 entries (MH1 7)
+shell16_body_tbl = 0x006C1120; // size:0x54     # 21 entries (MH1 20): em15's attack 27 uses body 20; at MH1 size the PC read past the copy (the hit_calc_shl crash of quests 25/41/10046)
+shell19_body_tbl = 0x006CA6C0; // size:0x5C     # 23 entries (MH1 21)
+fade74_data = 0x0067D750; // size:0x34          # 13 fade colour tables (MH1 10; G repeats fade72_dra twice and adds one)
+eft12_data = 0x0067B230; // size:0x10          # smoke-cloud scale/alpha keys (MH1 main 0x387DB8, 2 pointers); G moved it to game.bin and added a pair for its eft12 kind 6 (G eft12_m04 0x571A50 picks pair 0 or 1 by kind; the PC's MH1 eft12_m04 reads pair 0). Was zero-filled: smoke / dung bombs crashed
 [sub_main]
 em_meat_tbl = 0x00509410; // size:0xD0          # G: per kind a list of hit-zone tables by monster state (G hit_hit_sub_em)
 # Monster state (agent A, G hunts without test aids)
@@ -163,6 +170,7 @@ Shell_max_tbl = 0x00514EA0; // size:0x2C0          # [22 gun classes (Gun_data +
 Ken_data = 0x00515360; // size:0x23C0              # 381 swords (MH1 234)
 Gun_data = 0x00517720; // size:0x750               # 78 guns of 0x18 bytes (MH1 26 of 0x14)
 Item_data = 0x004FF1F0; // size:0x28E0             # 523 items of 0x14 bytes (MH1 327 of 0x10)
+item_str = 0x00501AD0; // size:0x82C               # 523 item name pointers (MH1 327; the debug menu lists them); next object em_cmdg0_tbl 0x502300
 Skill_data = 0x0050A380; // size:0x3C0             # 60 skills of 0x10 {id, 3 x (points <= lim: skill), 3 x (points >= lim: skill)} (G replaced MH1's Equip_Bonus)
 armor_kind_tbl = 0x005207A0; // size:0x20          # per equipment kind: pointer to its armour table (skill points at +0x14 of each row)
 slash_msg_down = 0x00528428; // size:0x4           # sharpness messages (pointers to main strings; Pl_slash_calc)
@@ -190,3 +198,38 @@ em_cmd_pos_tbl = 0x00673E40; // size:0xD0
 [sub_main]
 rem_item_exit_sel_tbl = 0x004FD9E0; // size:0x1C   # 7 lists of draw chances (MH1 4): base, other, skills 0x32/0x33/0x36, G-only mode, skill 0x69
 rem_kill_calc_tbl = 0x004FD960; // size:0x18       # G-only: kill-count ranges of reward ids 26-35
+# Item names: G has 524 entries (MH1 327); the info banner (set01_i) read past MH1's end for G items (crash on delivery)
+[sub_main]
+item_str = 0x00501AD0; // size:0x830
+# Pointer tables G grew (G's pointer words run to the next symbol; the PC had MH1's size): per monster kind (52),
+# pick ids, effect lists (agent A, G quest sweep). The per-stage tables G grew to 92 stages are at the end of this file.
+[main]
+em_alpha_clay = 0x00260430; // size:0xD0
+[sub_main]
+eft06_data = 0x00502F70; // size:0x50
+eft13_data = 0x00504C20; // size:0x130
+em_ride_data = 0x005081F0; // size:0xD0
+[game]
+em01_contents_tbl_0064FD70 = 0x0068CE90; // size:0x80
+em01_stage_move_ok_data = 0x00694890; // size:0x30
+em11_stage_move_ok_data = 0x00694A30; // size:0x30
+em09_contents_tbl = 0x0069C100; // size:0x30
+em15_contents_tbl_00661900 = 0x006A40C0; // size:0x30
+em15_stage_move_ok_data = 0x006A4A50; // size:0x30
+em16_contents_tbl = 0x006A6910; // size:0x40
+em17_route_tbl = 0x006A8280; // size:0x40
+em20_stage_move_ok_data = 0x006B3030; // size:0x30
+em21_contents_tbl_0066F6F0 = 0x006B4AE0; // size:0x40
+# 17 one-item pick rows {chance, item, 0xFFFF, -} that G keeps in main .data (label-less, between st03_se_pos2 and
+# start_area_lists; Item_get_tbl 16, 35, 55, 56, 70, 71, 104, 107 (the wyvern egg nest), 108, 135-138, 165, 166, 170, 197)
+[main]
+item_get_rows_main = 0x002EEC68; // size:0x88 noptr
+# Per-stage tables at G's 92 entries (agent A): their words point into game.bin data and sub_main's bss (village
+# ground at 0x541EE0..), which the scan did not take as pointers: `allptr`. With the bss entries left raw, the
+# village crashed in GetGroundHitStatusAreaPl (fault at 0x541F1C = ground_tbl_add[87] + 0xC)
+[sub_main]
+stage_fog_tbl = 0x00521000; // size:0x170 allptr
+ground_tbl_add = 0x005239C0; // size:0x170 allptr
+st_sun_rgba_tbl = 0x005246C0; // size:0x170 allptr
+[main]
+pl_light_tbl2 = 0x00257D20; // size:0x170 allptr

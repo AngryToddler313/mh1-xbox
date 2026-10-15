@@ -682,3 +682,95 @@ int strlen_sp(const char *s)
     }
     return n;
 }
+
+/* ------------------------------------------------------------ the debug menu's text (src/pc/dbgmenu.c)
+ * Drawn at once (not through the font stacks) in the game's 640 x 448 text frame, with the game's own glyphs, so
+ * Japanese names (items, quests, weapons) show on every platform. Its own palette: 0 clear, 1 black edge, 2 grey,
+ * 3 white; the colour comes from the vertices. Its own textures, apart from the game's 32 palettes. */
+static gfx_texture **dbg_glyph;
+int rt_font_dbg_ready(void)
+{
+    size_t n = 0;
+    if (!font_data) {
+        font_data = rt_file_load(rt_ver_mhg() ? 0x9AE : 0x6D2, &n);
+        if (font_data && n < NGLYPH * 100) {
+            free(font_data);
+            font_data = NULL;
+        }
+    }
+    if (font_data && !dbg_glyph)
+        dbg_glyph = calloc(NGLYPH, sizeof *dbg_glyph);
+    return font_data && dbg_glyph;
+}
+
+static gfx_texture *dbg_tex(int idx)
+{
+    if (!dbg_glyph[idx]) {
+        static const u32 dp[4] = { 0, 0xFF000000u, 0xFF999999u, 0xFFFFFFFFu };     /* ABGR words as pal[] */
+        u8 rgba[20 * 20 * 4];
+        const u8 *g = font_data + idx * 100;
+        int i;
+        for (i = 0; i < 400; i++)
+            memcpy(rgba + 4 * i, &dp[(g[i >> 2] >> (6 - 2 * (i & 3))) & 3], 4);
+        dbg_glyph[idx] = gfx_create_texture(20, 20, rgba);
+    }
+    return dbg_glyph[idx];
+}
+
+/* the width of s at that size: 2-byte characters size, ASCII size / 2 */
+float rt_font_dbg_width(float size, const char *s)
+{
+    const u8 *p = (const u8 *)s;
+    float w = 0;
+    while (*p) {
+        unsigned c = *p++;
+        if (((c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100)) && *p) {
+            p++;
+            w += size;
+        } else
+            w += size / 2;
+    }
+    return w;
+}
+
+/* draw s at x, y (top left, 640 x 448 frame), size in that frame's pixels, colour 0xRRGGBBAA; at most max_w wide
+ * (0: no limit). Returns the pen's end x. The caller sets the 2D render states (blend on). */
+float rt_font_dbg_text(float x, float y, float size, const char *s, u32 rgba, float max_w)
+{
+    const u8 *p = (const u8 *)s;
+    float x0 = x;
+    u8 col[6 * 4];
+    int i;
+    if (!rt_font_dbg_ready())
+        return x;
+    for (i = 0; i < 6; i++) {
+        col[4 * i] = (u8)(rgba >> 24);
+        col[4 * i + 1] = (u8)(rgba >> 16);
+        col[4 * i + 2] = (u8)(rgba >> 8);
+        col[4 * i + 3] = (u8)rgba;
+    }
+    while (*p) {
+        unsigned c = *p++, code;
+        float adv;
+        if (((c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100)) && *p) {
+            code = c << 8 | *p++;
+            adv = size;
+        } else {
+            code = ascii2sjis(c);
+            adv = size / 2;
+        }
+        if (max_w > 0 && x + adv - x0 > max_w)
+            break;
+        if (code != 0x8140) {
+            int idx = sjis2index(code);
+            if (idx >= 0) {
+                float pos[12] = { x, y, x + size, y, x, y + size, x + size, y, x + size, y + size, x, y + size };
+                float st[12] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1 };
+                gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)dbg_tex(idx));
+                gfx_draw_2d(640, 448, 6, pos, st, col);
+            }
+        }
+        x += adv;
+    }
+    return x;
+}

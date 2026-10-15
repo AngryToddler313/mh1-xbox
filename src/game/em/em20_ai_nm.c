@@ -5139,6 +5139,54 @@ static void em_demo04_005F5870(EMW *em, EM20W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G (game 0x622920, 0x622B20, 0x622D10): the carcass lies 1800 ticks (MH1 450); in a quest whose monster comes
+ * back (Quest_enemy_revival_ck) the carve wait counts down, the carve points go, and after a 150-tick fade the
+ * die act 3 (game_func_00622FE0) raises it again through em20_act_set(em, 5, 3, 4). Without a revival the
+ * carcass stays. (die01 keeps the check's result in x9EA, G 0x9E2.) */
+int Quest_enemy_revival_ck(EMW *);
+void Em_hagi_point_clr(EMW *);
+void em_cmd_reset(EMW *);
+#define G_DIE_CARVE_TIME 1800
+#define G_DIE_REVIVE_WAIT(em, keep)                                         \
+    do {                                                                \
+        int rv_ = Quest_enemy_revival_ck(em);                           \
+        if (keep) (em)->x9EA = (u8)rv_;                                 \
+        if (rv_ != 0 && --(em)->work08 <= 0) {                          \
+            (em)->x05 += 1;                                             \
+            Em_hagi_point_clr(em);                                      \
+            if (keep) (em)->x9EA = 0;                                   \
+            (em)->work08 = 150;                                         \
+        }                                                               \
+    } while (0)
+#define G_DIE_REVIVE_FADE(em)                                               \
+    do {                                                                \
+        if ((em)->work08 > 0) {                                         \
+            (em)->work08 -= 1;                                          \
+        }                                                               \
+        if ((em)->work08 > 0) {                                         \
+            (em)->x798 = (f32)(em)->work08 / 150.0f;                    \
+        } else if ((em)->x8C3 == 0) {                                   \
+            em20_act_set(em, 5, 3, 4);                                  \
+        }                                                               \
+    } while (0)
+
+/* G game 0x622FE0: die act 3, the monster gets up again (or goes when it may not come back) */
+static void em_die03_00622FE0(EMW *em, EM20W *w) {
+    if (em->x05 == 0) {
+        if (Quest_enemy_revival_ck(em) == 1) {
+            em_cmd_reset(em);
+            em->x839 = 0;
+            em_act_set(em, 0, 1);
+        } else {
+            em->x04 += 1;
+        }
+    }
+}
+#else
+#define G_DIE_CARVE_TIME 0x1C2
+#endif
+
 static void em_die00_005F5990(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -5159,7 +5207,7 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = G_DIE_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -5167,8 +5215,14 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        G_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x3:
+#ifdef VERSION_MHG
+        G_DIE_REVIVE_FADE(em);
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -5177,6 +5231,7 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
             return;
         }
         em->x798 = (f32) em->work08 / 150.0f;
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -5206,8 +5261,11 @@ static void em_die01_005F5B30(EMW *em, EM20W *w) {
         Quest_enemy_die(em);
         break;
     case 0x1:
+#ifdef VERSION_MHG
+        em->x9EA = 5;
+#endif
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = G_DIE_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -5215,8 +5273,14 @@ static void em_die01_005F5B30(EMW *em, EM20W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        G_DIE_REVIVE_WAIT(em, 1);
+#endif
         break;
     case 0x3:
+#ifdef VERSION_MHG
+        G_DIE_REVIVE_FADE(em);
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -5225,6 +5289,7 @@ static void em_die01_005F5B30(EMW *em, EM20W *w) {
             return;
         }
         em->x798 = (f32) em->work08 / 150.0f;
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -5277,7 +5342,7 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
         break;
     case 0x3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = G_DIE_CARVE_TIME;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -5286,8 +5351,14 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
         break;
     case 0x4:
         Em_hagi_point_cnt_ck(em);
+#ifdef VERSION_MHG
+        G_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x5:
+#ifdef VERSION_MHG
+        G_DIE_REVIVE_FADE(em);
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -5296,6 +5367,7 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
             return;
         }
         em->x798 = (f32) em->work08 / 150.0f;
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -5707,6 +5779,11 @@ static void em_move05_005F6810(EMW *em, EM20W *w) {
     case 2:
         em_die02_005F5CB0(em, w);
         break;
+#ifdef VERSION_MHG
+    case 3:
+        em_die03_00622FE0(em, w);
+        break;
+#endif
     }
 }
 

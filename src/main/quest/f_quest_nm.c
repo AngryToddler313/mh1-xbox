@@ -897,6 +897,12 @@ again:
             quest_w.x14F = p->a;
             i++;
             break;
+#ifdef VERSION_MHG
+        case 0x2F:      /* G (sub_main 0x4B9040): the section the time-out jumps to (like 0x1B, no message) */
+            quest_w.x0A = p->a;
+            i++;
+            break;
+#endif
         case 0x25:
             game_w.x0D5 = 5;
             quest_w.x06 = 5;
@@ -984,7 +990,8 @@ again:
  * (rem_item_calc_tbl), 26-35 kill ranges (rem_kill_calc_tbl), 36-40 more flag bits, 0x8000 the
  * base reward, other ids always. A drawn item id 0 adds nothing (MH1 wrote an empty entry, which
  * left id 1 / count 0 in G's list after the sort). Item chances: rem_item_exit_sel_tbl, 7 lists in G
- * (base reward: skills 0x32 / 0x33 / 0x36 / 0x69; the G-only main 0x12D170 case is not ported). */
+ * (base reward: main 0x12D170 (always 0 in the shipped game), skills 0x32 / 0x33 / 0x36 / 0x69). */
+int func_0012D170(void);
 extern u16 rem_kill_calc_tbl[];
 void remuneration_item_set(void)
 {
@@ -1044,7 +1051,9 @@ void remuneration_item_set(void)
         tbl = (REMI *)(e->tbl + (u32)mission_area);
         for (i = 0; n < 0x20; i++) {
             if (id == 0x8000) {
-                if (Pl_Skill_ck(pl, 0x32) == 1) {
+                if (func_0012D170() == 1) {
+                    sel = rem_item_exit_sel_tbl[5];
+                } else if (Pl_Skill_ck(pl, 0x32) == 1) {
                     sel = rem_item_exit_sel_tbl[2];
                 } else if (Pl_Skill_ck(pl, 0x33) == 1) {
                     sel = rem_item_exit_sel_tbl[3];

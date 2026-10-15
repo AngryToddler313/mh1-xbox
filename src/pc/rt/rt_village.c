@@ -46,9 +46,12 @@ int rt_village_active(void) { return active || rt_online_active(); }     /* the 
 int rt_village_active(void) { return active; }
 #endif
 
+void rt_village_leave(void);
+
 /* Game_task mode 6 (offline): what the PS2 does before Local_main runs */
 void rt_motion_em_release(void);
-void rt_village_enter(void)
+/* what all_reset clears of the world (the village entry; the debug menu's quest start / title) */
+void rt_world_reset(void)
 {
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
     rt_motion_em_release();             /* and their motions (all_reset -> em_motion_free; rt_motion.c) */
@@ -63,6 +66,11 @@ void rt_village_enter(void)
         void prim_init(void);
         prim_init();
     }
+}
+
+void rt_village_enter(void)
+{
+    rt_world_reset();
     rt_cam_init(game_w[0x14]);          /* camera work (also with the host's own camera) */
     {
         void rt_lb_reload(void);
@@ -299,14 +307,22 @@ int rt_village_tick(void)
         last = v;
     }
     if (r == 1 || r == -1) {
-        void com_motion_load(int n);
-        active = 0;
-        game_w[GWX(0x1DC)] = 0;
-        rt_motion_em_release();         /* the NPCs' motions go with the village */
-        com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
+        rt_village_leave();
         return r == 1 ? *(s16 *)(select_w + (rt_ver_mhg() ? 0xD0 : 0xAC)) : -1;     /* the quest number (G +0xD0) */
     }
     return 0;
+}
+
+/* Leaving the village (Local_main's end, or the debug menu starting a quest / the title from here) */
+void rt_village_leave(void)
+{
+    void com_motion_load(int n);
+    if (!active)
+        return;
+    active = 0;
+    game_w[GWX(0x1DC)] = 0;
+    rt_motion_em_release();         /* the NPCs' motions go with the village */
+    com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
 }
 
 /* com_motion_load (main 0x111A80): the common motion set n
