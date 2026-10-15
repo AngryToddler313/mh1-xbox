@@ -135,3 +135,10 @@ Agents: when you trip over something curious, add a short entry here in the same
   [checked]
 - **G reads most of its on-screen strings through pointer cells** in its data instead of addressing the string directly (a localisation
   hook?); the cells sit in two blocks around 0x526xxx-0x528xxx. [checked, purpose is a guess]
+
+## The US build's offline village text is G's lineage (15 Oct 2026, agent E)
+- **The US release's lobby overlay holds the offline village UI that MH1 JP lacks and G has:** the bench / chair action menu (sit, stand, price list,
+  banquet camera on/off, the five room grades), the item box commands, the cooking results, the quest result messages. The JP MH1 disc has none of
+  these, so the US build came from a later Japanese source than the JP disc we have. [checked: string pools of the three discs]
+- **The US quest-result table keeps a few Japanese debug lines** (a failed-mission line, a "test 3" entry). [checked]
+- **MH1 US has a dual-sword tutorial page and a bug-collecting / mining / bug-net / pickaxe block:** G's tutorial list has the same pages, MH1 JP does not. [checked]

@@ -1066,3 +1066,21 @@ Lessons:
 - The game font has every glyph we need for an English overlay too (half-width ASCII), so a debug UI can use it on every
   backend; one draw per glyph is fine on the PC, unmeasured on the real NV2A.
 - `ulimit -v 3000000` is for builds: xemu needs more address space ("cannot set up guest memory 'pc.ram'").
+
+## G in English, round 3 (15 Oct 2026)
+Result: G 37% -> 47% (6363 / 13263); MH1 JP 76% (6272 / 8148). Hidden G shots of the shops, forge, item box, elder, pause menu, status, equipment and a
+quest's info pages are English (docs/english.md "G round 3"). Verified: G PC build, MH1 PC build, tools/test_quest_loop.sh, tools/test_dbgmenu.sh,
+`. ~/xboxdev/env.sh; python3 tools/build_xbox.py --version mhg --gfx nv2a` (nxdk-cc must be on PATH, the env file does that).
+- tools/text_map.py: `propagate_same_text_g`, `_one_english` (blank-only differences agree), `manual_pairs` (tools/text_pairs_manual.txt), `SHIFTED_US_TABLES`,
+  `is_japanese` counts kana / kanji only. src/pc/rt/rt_font.c: flfntPrintf translates its format.
+- Method that worked for tables the code reference cannot reach: compare the string POOLS of G and the US build in address order (`ascii_chunks`), take
+  the pairs text_map already has as anchors (longest increasing subsequence), align what lies between two anchors, then read both sides. The US lobby
+  (0x699580..0x69b540 offline UI, 0x69b540..0x69d300 online UI) and sub_main (0x5BA7A0..0x5BB960 pause / status pages, 0x5BA000..0x5BA790 quest result
+  and HUD messages) are in G's order. tools/pool_align.py prints the aligned candidates for two ranges (the ranges must run in parallel, else the alignment shifts); the manual file is the result.
+- Gotchas: (1) `have` sets built from en_mhg.txt must map sub_main -> main ids. (2) The status rows of G sub_main (0x538DB0..) and the lobby shop rows
+  (0x640D40..) carried English of the next row before; after any table change print the rows with their English and read them. (3) A global score search
+  of one JP string against 178000 US chunks takes 2 minutes for 190 strings even with caching; the dictionary term lookup must be cached per string
+  (first try: 30 minutes, killed). (4) Tools run under `ulimit -v`; text_map needs 2.5 GB cap, not 1.5.
+- Not done: G quest counter shots (find the counter NPC position), the options page values, G-only ranks, online UI pairs of the US lobby
+  (0x69b540..0x69d300 are the online screens: the G online lobby rows could be paired the same way), memory card dialogs of G (66 + 58 twins), game tutorial
+  pages (26 twins with G edits).

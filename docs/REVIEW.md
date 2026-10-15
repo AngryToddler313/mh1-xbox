@@ -538,3 +538,21 @@ obvious workarounds.
   chair of the online guild hall).
 - **Tools:** tools/gvil_ev.py (G village run from a tick-event pad script, GDB=1 for a backtrace), tools/gpeek.py (words / bytes of G's data by address),
   tools/test_gvillage.py (all the village cases below, about 10 min), RT_POUCH=id:n,.. (village test aid), the village trace now prints the event flags.
+
+## G in English, round 3 (agent E, 15 Oct 2026)
+- **Dropped:** (1) the "still Japanese" test of tools/text_map.py counted every double-byte pair, so US lines with full-width blanks, colons or
+  Latin letters were thrown away; **now** only kana (0x82 0x9F.., 0x83) and kanji (0x88..) count. (2) the US pairing of the MH1 table
+  `plaza_main_msg` (its rows are shifted against the US table: three of the rows checked by eye got the English of a neighbour); **now** no English
+  for it (`SHIFTED_US_TABLES`). (3) the position-paired tutorial titles (buki_str, tuto07_msg: the US has a dual-sword page and a bug-collecting
+  block the JP lacks, every title after them was shifted by one); **now** hand-checked pairs in tools/text_pairs_manual.txt.
+  **To revert:** the commit "G in English round 3".
+- **Added, not a replacement:** tools/text_pairs_manual.txt (addresses only, read by text_map.manual_pairs: `jp` / `g` / `gf` / `drop` lines): 300
+  hand-checked G -> US pairs for the offline village UI the structure could not reach (shop, forge, item box, action menu, pause menu pages,
+  status, equipment, quest result and HUD messages, tutorial titles), found by aligning G's and the US build's string pools (the US lobby and
+  sub_main hold the offline village UI of a later source than the JP disc, which is G's lineage). `propagate_same_text_g`: a G string no table
+  paired takes the English of the same Japanese text elsewhere (+1076 strings).
+- **Changed in shared runtime code:** src/pc/rt/rt_font.c flfntPrintf looks its format up in the text layer (rt_text_tr), like the other font entry
+  points: G's pause menu passes page titles as the format itself, they stayed Japanese.
+- **Seen, not changed:** the G status page's page counter printed garbage (the code passes two numbers, the US line has the page count built in;
+  the English line shows 1/2); in G's quest-info pages the English labels are wider than the Japanese ones and touch the numbers, whose columns
+  are placed for Japanese text; the talk window's title and other G-only titles have no US text.

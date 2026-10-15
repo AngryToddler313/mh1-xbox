@@ -256,6 +256,7 @@ void flfntPrintf(const char *fmt, ...)
     FNT_ENT *e;
     if (s < 0) s = 0;
     if (s > 4) s = 4;
+    fmt = rt_text_tr(fmt);      /* a title the code passes as the format itself (G's pause menu pages) */
     if (getenv("RT_FONT_TRACE") && atoi(getenv("RT_FONT_TRACE")) > 1)
         fprintf(stderr, "font: print z %.1f stack %d n %d pos %u draw %d\n", cur_z, s, nstack[s], strpos, in_draw);
     if (nstack[s] >= STACK_MAX || strpos >= STRBUF - 2)

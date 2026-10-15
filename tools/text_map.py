@@ -1256,7 +1256,10 @@ def is_japanese(b):
     i = n = 0
     while i < len(b):
         if td.dbl(b, i):
-            n += 1
+            # kana (0x82 0x9F.. hiragana, 0x83 katakana) and kanji (0x88..): not the symbols and full-width letters
+            # (0x81 xx, 0x82 0x4F-0x9A) the US text keeps for blanks, colons and digits
+            if b[i] >= 0x88 or b[i] == 0x83 or (b[i] == 0x82 and b[i + 1] >= 0x9F):
+                n += 1
             i += 2
         else:
             i += 1
@@ -1285,6 +1288,14 @@ def _norm_jp(b):
     return b.strip(b" ").replace(b"\x81\x40", b" ").strip(b" ")
 
 
+def _one_english(c):
+    """the English of a Counter of candidates when they differ only in blanks at the ends (most common spelling,
+    the shorter one on a tie); None when they really differ"""
+    if len({x.strip() for x in c}) != 1:
+        return None
+    return sorted(c, key=lambda x: (-c[x], len(x), x))[0]
+
+
 def propagate_same_text(jp, S, owner, en_jp, minlen=4):
     """A JP string no table paired (its US table was not located, or the US code no longer uses it) takes the
     English of the same Japanese text (blanks at the ends ignored) when every paired occurrence of that text has
@@ -1305,13 +1316,71 @@ def propagate_same_text(jp, S, owner, en_jp, minlen=4):
         b = jp.cstr(*jk)
         nb = _norm_jp(b)
         c = eng.get(nb)
-        if len(nb) < minlen or not c or len(c) != 1:
+        xb = _one_english(c) if c else None
+        if len(nb) < minlen or xb is None:
             continue
-        xb = next(iter(c))
         if good_english(b, xb)[0]:
             en_jp[jk] = xb
             n += 1
     return n
+
+
+def propagate_same_text_g(jp, g, GS, en_jp, en_g, minlen=4):
+    """A G string no table paired takes the English of the same Japanese text (blanks at the ends ignored) from
+    the JP build or from G itself when every paired occurrence has the same English: the G-only label tables
+    (menu words, shop commands) repeat MH1 words whose US twin was paired in another table."""
+    eng = collections.defaultdict(collections.Counter)
+    for jk, xb in en_jp.items():
+        if jk[0] != "quest":
+            eng[_norm_jp(jp.cstr(*jk))][xb] += 1
+    for gk, xb in en_g.items():
+        if gk[0] not in ("quest", "slot") and gk in GS:
+            eng[_norm_jp(g.cstr(*gk))][xb] += 1
+    new = {}
+    for gk in GS:
+        if gk in en_g:
+            continue
+        b = g.cstr(*gk)
+        nb = _norm_jp(b)
+        c = eng.get(nb)
+        xb = _one_english(c) if c else None
+        if len(nb) < minlen or xb is None:
+            continue
+        if good_english(b, xb)[0]:
+            new[gk] = xb
+    return new
+
+
+MANUAL = os.path.join(HERE, "text_pairs_manual.txt")
+SHIFTED_US_TABLES = {"plaza_main_msg"}
+
+
+def manual_pairs(path=MANUAL):
+    """Hand-checked pairs the structure could not find (tables the US build rewired), lines `KIND SPACE:0xADDR SPACE:0xADDR`
+    with addresses only: `jp` MH1 JP string -> US string, `g` G string -> US string (checked like every pair: printf
+    conversions, not Japanese), `gf` the same without the conversion check (the US string prints fewer or other numbers
+    than G's code passes; the extra arguments are ignored by printf), `drop` + `g`/`jp` + one address: no English for this
+    string (the US text does not fit what the code prints). Returns ({jp key: us key}, {g key: us key}, {g key: us key
+    forced}, {drop keys})."""
+    jpm, gm, gf, drop = {}, {}, {}, set()
+    if not os.path.exists(path):
+        return jpm, gm, gf, drop
+    for line in open(path):
+        line = line.split("#")[0].split()
+        if not line:
+            continue
+        if line[0] == "drop" and len(line) == 3:
+            drop.add((line[1], x_key(line[2])))
+            continue
+        if len(line) != 3 or line[0] not in ("jp", "g", "gf"):
+            continue
+        {"jp": jpm, "g": gm, "gf": gf}[line[0]][x_key(line[1])] = x_key(line[2])
+    return jpm, gm, gf, drop
+
+
+def x_key(t):
+    sp, a = t.split(":")
+    return (sp, int(a, 16))
 
 
 def key_id(k):
@@ -1653,6 +1722,13 @@ def main():
     omu, outu, rowsu = run_us(jp, us, funcs, objs, S, cells, cache)
     en_jp = {}
     drop = collections.Counter()
+    # US tables whose rows the position pairing shifted (the US build has more / fewer rows; checked by eye against
+    # both discs): no English is better than the neighbour's
+    for jk in [k for k in outu if owner.get(k) and owner[k][1] in SHIFTED_US_TABLES]:
+        del outu[jk]
+    man_jp, man_g, man_gf, man_drop = manual_pairs()
+    for jk, xk in man_jp.items():
+        outu[jk] = collections.Counter({xk: 1})
     for jk, cnt in outu.items():
         xk = cnt.most_common(1)[0][0]
         xb = us.cstr(*xk)
@@ -1690,6 +1766,9 @@ def main():
     log("memory-card messages: %d slots re-flowed from the US groups" % len(lsp))
     nprop = propagate_same_text(jp, S, owner, en_jp)
     log("same Japanese text elsewhere: %d more JP strings" % nprop)
+    for kind, k in man_drop:
+        if kind == "jp":
+            en_jp.pop(k, None)
     log("US: %d JP strings with English (%d quest fields); dropped %s; %.0fs" % (len(en_jp), nq, dict(drop), time.time() - t0))
     hdr = ["English text table for MH1 JP, made by tools/text_map.py from your own discs. Do not share.",
            "ids are the Japanese build's (rt_text.c); source: the US disc"]
@@ -1741,6 +1820,20 @@ def main():
             if (sp, v) not in en_g:
                 en_g[(sp, v)] = xb
                 gk_slot.add((sp, v))
+    for gk, xk in man_g.items():
+        xb = us.cstr(*xk)
+        if xb and good_english(g.cstr(*gk), xb)[0]:
+            en_g[gk] = xb
+    for gk, xk in man_gf.items():
+        xb = us.cstr(*xk)
+        if xb and not is_japanese(xb):
+            en_g[gk] = xb
+    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g)
+    en_g.update(same_g)
+    for kind, k in man_drop:
+        if kind == "g":
+            en_g.pop(k, None)
+    log("G: same Japanese text elsewhere: %d more G strings" % len(same_g))
     log("G: %d G strings with English; %s; %.0fs" % (len(en_g), dict(gstat), time.time() - t0))
     hdr = ["English text table for Monster Hunter G, made by tools/text_map.py from your own discs. Do not share.",
            "ids are G's (main incl. sub_main, game, lobby, select, yn addresses; quest:N:offset of mNNNNN.mib); source: the US disc via MH1 JP"]

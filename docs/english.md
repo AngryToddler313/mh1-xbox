@@ -498,3 +498,32 @@ dialogs of new game / continue (slot labels, "Please select a save location.", t
 hint, item window title shows "(null)", HUD hints. Lines fit their boxes (US breaks kept or re-flowed at 42 characters).
 The village HUD, item box and an NPC talk could not be reached by script (the first-visit event runs a camera tour and
 RT_VILLAGE_START frames do not take input). Memory-card messages are written as per-slot lines (see docs/REVIEW.md).
+
+### G round 3: the village in English (agent E, 15 Oct 2026)
+
+G with `RT_TEXT_TABLE=build/text/en_mhg.txt`, hidden (tools/gvil_ev.py scenes, shots in build/D/g/, not committed): 37% -> 47% of G's strings (6363 of
+13263). Seen in English in the unmodified G code: item shop (buy / sell tabs, list, price prompt, the not-enough-money line), weapon and armour shop (tabs, list,
+the current hunter type line, prompts), forge (create / improve), the item box (menu, item window, prompts), the elder's story pages, the pause menu (all
+rows, the help box), the Status page (title, rows, page 1/2 and 2/2), the equipment page, the quest-info pages in a quest
+(page titles, labels, area, quest name), the bench action menu and hints. What it took:
+- **Same Japanese text elsewhere (G):** a G string no table paired takes the English of the identical Japanese text (JP build or G) when all uses agree
+  (`propagate_same_text_g`, +1076: the G-only quest tables whose text is MH1's, labels, armour names). Blanks-only differences count as agreeing.
+- **The US build holds G's offline UI:** the US lobby / sub_main strings of the offline village (action menu, item box, cooking, price chart, quest result
+  and HUD messages, status and equipment pages) are the text of a later source than the JP MH1 disc. The structural pairing cannot reach them (the
+  functions differ). They were found by aligning the string pools of G and the US build by order (tools/pool_align.py: a dynamic-programming alignment
+  between anchors that are already paired, scored by printf conversions, colour codes, newline count, length ratio, and a small dictionary of names from
+  the paired item / monster / weapon tables) and then **checked pair by pair by reading both sides**: 300 pairs in tools/text_pairs_manual.txt
+  (`g` G -> US, `jp` JP -> US, `gf` forced when the US line prints fewer numbers, `drop` no English), addresses only. The aligner alone was not good enough:
+  about one pair in three was wrong where G edited a line.
+- **lb_menu_msg and its siblings** (G lobby 0x6368D0 / 0x636910 / 0x636970; the online lobby's menu rows): the code reference of MH1's
+  functions does not reach the US ones; the rows are paired by hand now (first row .. logout; the mail row has no US twin).
+- **Wrong rows found and removed:** the MH1 table `plaza_main_msg` (shifted), the tutorial titles (US has extra pages), G status rows that had English of
+  the next row (name / weapon / HR / HRP / money). A semantic check (a dictionary of ~100 UI words) flags such rows, but it flags many right ones too (543 of
+  6400, mostly item descriptions); it was used to find these, not to filter the table. Checked 15 Oct by eye: roughly 25 of ~100 flagged rows in the village UI were wrong.
+- **rt_font.c:** `flfntPrintf` now looks its format up in the text layer: G's pause menu passes the page titles (Status, Equipment) as the format.
+- `text_map.is_japanese` counts only kana and kanji now.
+- **Still Japanese in the village:** the talk window's title, G-only labels (some hunter rank names, a HUD toggle, the hunting-record page),
+  G's new NPC lines (447 G-only lines, 123 edited: no official text; the candidate source is the MHG "English Remix", not used), armour / weapon names of
+  the G-only pieces (2500+), the G-only item names, the memory-card dialogs of G-only slots, online text (US has another service), G's quest counter
+  (not reached by a script: its NPC position is not in the docs). Not looked at: the options page's value rows, the character creation help box
+  (no text in the select overlay, so the "junk bytes" box is not a table string).
