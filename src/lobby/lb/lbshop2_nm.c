@@ -136,6 +136,78 @@ int lb_shop_select(void) {
     return 1;
 }
 
+#ifdef VERSION_MHG
+/* G (lobby 0x588500): the detail panel shows "所持数 ×", the pouch count (coloured at the maximum) and the box's free room for
+ * the item in parentheses; one-off items (472/473) and monster-list items have their own marks. */
+extern char *lb_rule_msg_etc[];
+extern char *lb_ibox_str[];
+extern char lit_274_0065E1C8[];
+extern char *pit_help_str_tbl[];
+extern int Ud_stock_item_num_ck3(u16);
+int sub_main_func_004C91E0(void *, int);
+void font_print_ex();
+void lb_shop_put_itemDetail(void) {
+    int id, i, have = 0, room = 0;
+    u8 *row;
+
+    Lb_draw_square(0x11F, 0xFC, 0x141, 2, 0xFF537F56, 1);
+    if (lbShop.mode == 0) {
+        id = lbShop.tbl[lbShop.cur];
+    } else {
+        if (User_data[0].item[lbShop.cur].num <= 0) return;
+        id = User_data[0].item[lbShop.cur].id;
+    }
+    row = (u8 *)Item_data + id * ITEM_ROW;
+    flfntSetSize(0x12, 0x12);
+    if (lbShop.x1C == 0) {
+        font_print_ex(0x168, 0x104, Equip_moji_color_rare(row[2]), shopList[lbShop.cur].name);
+        font_set_palette(0);
+        flfntLocate(0x168, 0x11B);
+        font_print(lit_274_0065E1C8, lb_rule_msg_etc[4], lb_ibox_str[4]);
+        if (lbShop.x15 == 5) {
+            flfntLocate(0x230, 0x132);
+            font_print(lb_rule_msg_etc[5]);
+            Lb_put_button(0x212, 0x12F, 3);
+        }
+        flfntSetSize(0x1C, 0x14);
+        if (lb_monster_list_check(id) == 1 || id == 472 || id == 473) {
+            if (id == 472 || id == 473)
+                have = (((u8 *)User_data)[0xC97] >> ((id - 472) & 1)) & 1;
+            else
+                have = Monster_list_chk((id - ML_BASE) & 0xFF) == 1;
+        } else {
+            have = Ud_item_num_ck(id);
+            room = Ud_stock_item_num_ck3(id);
+            if (room >= 1000) room = 999;
+        }
+        if (have == 0xFF) {
+            font_print_ex(0x1B0, 0x11A, 2, lb_ibox_str[3], have);
+        } else {
+            flfntLocate(0x1B0, 0x11A);
+            if (have >= row[3]) {
+                font_print(lit_274_0065E1C8 + 0x10, have, room);
+                if (Ud_stock_item_num_ck3(id) == 0) {
+                    flfntLocate(0x1B0, 0x11A);
+                    font_set_palette(2);
+                    font_print(lit_274_0065E1C8 + 0x28, room);
+                }
+            } else {
+                font_print(lit_274_0065E1C8 + 0x30, have, room);
+                if (Ud_stock_item_num_ck3(id) == 0) {
+                    flfntLocate(0x1B0, 0x11A);
+                    font_print(lit_274_0065E1C8 + 0x40, room);
+                }
+            }
+        }
+    } else {
+        flfntLocate(0x168, 0x108);
+        font_set_palette(0);
+        font_print(*(char **)((u8 *)pit_help_str_tbl[1] + id * 4 + 0x60));
+    }
+    Lb_put_itemIcon(0x122, 0x102, 0x36, id);
+    Lb_put_itemRare(0x12A, 0x136, (s8)row[2]);
+}
+#else
 void lb_shop_put_itemDetail(void) {
     s16 have = 0;
     int t;
@@ -193,6 +265,8 @@ void lb_shop_put_itemDetail(void) {
     Lb_put_itemIcon(0x122, 0x102, 0x36, id);
     Lb_put_itemRare(0x12A, 0x136, (s8)Item_data[id].rare);
 }
+
+#endif
 
 void lb_shop_listIcon(int x, int y, int z, s16 n) {
     int v;

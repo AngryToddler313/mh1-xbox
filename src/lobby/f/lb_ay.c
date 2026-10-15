@@ -1,5 +1,6 @@
 /* Lobby item box (storage) small helpers: slot checks, count select, yes/no, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 typedef struct ITEMSLOT { u16 id; s16 num; } ITEMSLOT;
 extern u8 *ib;
 extern u8 User_data[];
@@ -16,7 +17,7 @@ int u_item_chk(int a) {
     if (id == 0) {
         return 0;
     }
-    return D_3396D5[id * 0x10] != 0xFF ? 1 : 0;
+    return D_3396D5[id * ITEM_ROW] != 0xFF ? 1 : 0;
 }
 int u_equip_chk(int a) {
     u8 *u;
@@ -26,7 +27,7 @@ int u_equip_chk(int a) {
     if (*(u8 *)(v * 6 + u + 0x44) == 0) {
         return -1;
     }
-    if (v == u[0x457] || v == u[0x458] || v == u[0x459] || v == u[0x45A] || v == u[0x45B] || v == u[0x456]) {
+    if (v == UDEQ(u, 1) || v == UDEQ(u, 2) || v == UDEQ(u, 3) || v == UDEQ(u, 4) || v == UDEQ(u, 5) || v == UDEQ(u, 0)) {
         return 0;
     }
     return 1;
@@ -39,15 +40,15 @@ int item_kosuu_sel_chk() {
     unsigned long long new_var;
     a0 = ib[8] * 4;
     new_var2 = D_3396D3;
-    new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * 0x10];
+    new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * ITEM_ROW];
     if (new_var == 0xFF) {
         return 0;
     }
     p = (u8 *)(a0 + (int)u);
-    if (new_var2[(*((u16 *)(p + 0x1C4))) * 0x10] == 1) {
+    if (new_var2[(*((u16 *)(p + UDO(0x1C4)))) * ITEM_ROW] == 1) {
         return 0;
     }
-    return *(s16 *)(p + 0x1C6) != 1 ? 1 : 0;
+    return *(s16 *)(p + UDO(0x1C6)) != 1 ? 1 : 0;
 }
 int pick_kosuu_sel_chk() {
     u8 *v;
@@ -58,7 +59,7 @@ int pick_kosuu_sel_chk() {
     }
     i = ib[0xB] * 4;
     v = (u8 *)(i + (int)u);
-    return (D_3396D3[*(u16 *)(v + 0x37C) * 0x10] - *(s16 *)(v + 0x37E)) >= 2;
+    return (D_3396D3[*(u16 *)(v + UDO(0x37C)) * ITEM_ROW] - *(s16 *)(v + UDO(0x37E))) >= 2;
 }
 u8 *sortup_idx_chk(int a) {
     u8 *u;
@@ -139,7 +140,7 @@ void kosuu_select(int pad, int c) {
     mx = D_3C7186[t0[8] * 4];
     if (!(c & 0xFF)) {
         k = t0[0xB] * 4;
-        a1 = D_3396D3[*(u16 *)(k + (int)u + 0x37C) * 0x10] - *(s16 *)(k + (int)u + 0x37E);
+        a1 = D_3396D3[*(u16 *)(k + (int)u + UDO(0x37C)) * ITEM_ROW] - *(s16 *)(k + (int)u + UDO(0x37E));
         if (a1 < (mx & 0xFF)) {
             mx = a1;
         }

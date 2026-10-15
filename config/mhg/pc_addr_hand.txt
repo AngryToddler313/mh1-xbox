@@ -1,1 +1,48 @@
 004761B0 003E1530 1  # Snd_stcom_tbl+... (vs_square_init_se load_bin_req)
+# User_data (MH1 0x3C6FC0, 0x480 bytes) -> G (0x32C210, 0xE00 bytes): the box (0x1C4..) moved by +0x588, the pouch and everything after it by +0x8A8
+# (UDO in include/lbsys_g.h); one entry per 0x10 bytes so that literal addresses in lobby C (D_3C7184 = the item box, D_3C733C = the pouch,
+# 0x3C738D = the worn weapon kind ...) land on the same field (tools/pc_abs.py follows an entry for 0x40 bytes)
+003C7184 0032C95C 1  # User_data+0x1C4
+003C7194 0032C96C 1  # User_data+0x1D4
+003C71A4 0032C97C 1  # User_data+0x1E4
+003C71B4 0032C98C 1  # User_data+0x1F4
+003C71C4 0032C99C 1  # User_data+0x204
+003C71D4 0032C9AC 1  # User_data+0x214
+003C71E4 0032C9BC 1  # User_data+0x224
+003C71F4 0032C9CC 1  # User_data+0x234
+003C7204 0032C9DC 1  # User_data+0x244
+003C7214 0032C9EC 1  # User_data+0x254
+003C7224 0032C9FC 1  # User_data+0x264
+003C7234 0032CA0C 1  # User_data+0x274
+003C7244 0032CA1C 1  # User_data+0x284
+003C7254 0032CA2C 1  # User_data+0x294
+003C7264 0032CA3C 1  # User_data+0x2A4
+003C7274 0032CA4C 1  # User_data+0x2B4
+003C7284 0032CA5C 1  # User_data+0x2C4
+003C7294 0032CA6C 1  # User_data+0x2D4
+003C72A4 0032CA7C 1  # User_data+0x2E4
+003C72B4 0032CA8C 1  # User_data+0x2F4
+003C72C4 0032CA9C 1  # User_data+0x304
+003C72D4 0032CAAC 1  # User_data+0x314
+003C72E4 0032CABC 1  # User_data+0x324
+003C72F4 0032CACC 1  # User_data+0x334
+003C7304 0032CADC 1  # User_data+0x344
+003C7314 0032CAEC 1  # User_data+0x354
+003C7324 0032CAFC 1  # User_data+0x364
+003C7334 0032CB0C 1  # User_data+0x374
+003C7344 0032CE3C 1  # User_data+0x384
+003C7354 0032CE4C 1  # User_data+0x394
+003C7364 0032CE5C 1  # User_data+0x3A4
+003C7374 0032CE6C 1  # User_data+0x3B4
+003C7384 0032CE7C 1  # User_data+0x3C4
+003C7394 0032CE8C 1  # User_data+0x3D4
+003C73A4 0032CE9C 1  # User_data+0x3E4
+003C73B4 0032CEAC 1  # User_data+0x3F4
+003C73C4 0032CEBC 1  # User_data+0x404
+003C73D4 0032CECC 1  # User_data+0x414
+003C73E4 0032CEDC 1  # User_data+0x424
+003C73F4 0032CEEC 1  # User_data+0x434
+003C7404 0032CEFC 1  # User_data+0x444
+003C7414 0032CF0C 1  # User_data+0x454
+003C7424 0032CF1C 1  # User_data+0x464
+003C7434 0032CF2C 1  # User_data+0x474

@@ -124,7 +124,7 @@ void rt_village_enter(void)
                 fprintf(stderr, " %02x", q);
         fprintf(stderr, "\n");
     }
-    {   /* test aids (no save data), first visit only: RT_MONEY=n, RT_BOX_ITEMS="id:n,..." (item box = User_data+0x1C4, 100 slots),
+    {   /* test aids (no save data), first visit only: RT_MONEY=n, RT_POUCH="id:n,..." (20 slots), RT_BOX_ITEMS="id:n,..." (item box = User_data+0x1C4, 100 slots),
          * RT_WARE="kind:id,..." (stored equipment: kind 0 weapon .. as the box lists them; User_data+0x44, 6 bytes each) */
         extern u8 User_data[];
         static int done;
@@ -142,6 +142,18 @@ void rt_village_enter(void)
                     if (*q++ != ',')
                         break;
                 }
+            if ((q = getenv("RT_POUCH")))       /* the pouch (G: User_data+0xC24, MH1 +0x37C: UDO(0x37C)), 20 slots */
+                for (k = 0; k < 20 && sscanf(q, "%i:%i%n", &id, &n, &used) == 2; k++) {
+                    *(u16 *)(User_data + UDO(0x37C) + 4 * k) = (u16)id;
+                    *(s16 *)(User_data + UDO(0x37E) + 4 * k) = (s16)n;
+                    q += used;
+                    if (*q++ != ',')
+                        break;
+                }
+            if (getenv("RT_POUCH")) {
+                extern void Set_userdata(void *);
+                Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);      /* the village's player copy of the pouch (as the item box does) */
+            }
             if ((q = getenv("RT_WARE")))
                 for (k = 0; k < 64 && sscanf(q, "%i:%i%n", &n, &id, &used) == 2; k++) {
                     User_data[0x44 + 6 * k] = 1;
