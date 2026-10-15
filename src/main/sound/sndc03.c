@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00159D30-0x00159FE4: Pl_se_req2 .. snd_joint_load_init. See snd_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "sysw.h"
 
@@ -123,15 +124,23 @@ void se_chg_sub(int a, int b, int c, int d, int e, int f) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void se_stop_all(void) {
+#ifdef MHG_PS2
+    flSndPortStop();            /* G's sound wrappers sit one slot later than MH1's names */
+#else
     flSndAllStop();
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void se_stat(void) {
+#ifdef MHG_PS2
+    flSndAllStop();
+#else
     flSndStatGet();
+#endif
 }
 #endif
 

@@ -18,10 +18,12 @@ static int ConvertModelMeshAMO_WeightModel(void *, void *);
 
 /* original bytes: build/raw/plAMOGetModelMatrixlist.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 1
 asm int plAMOGetModelMatrixlist(s16 *out, void *f, u32 idx)
 {
 #include "plAMOGetModelMatrixlist.inc"
 }
+#endif
 #else
 int plAMOGetModelMatrixlist(s16 *out, void *f, u32 idx) {
     u8 *m = plAMOGetModelHead(f, idx);
@@ -47,6 +49,7 @@ int plAMOGetModelMatrixlist(s16 *out, void *f, u32 idx) {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 1
 int plAMOGetModelAttribute(int *out, void *f, u32 idx) {
     u8 *m = plAMOGetModelHead(f, idx);
     u8 *d;
@@ -84,7 +87,9 @@ int plAMOGetModelAttribute(int *out, void *f, u32 idx) {
     out[17] = src[17];
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plAMOGetModelNum(void *f) {
     u8 *h = GetFileHeadAMO(f);
     u8 *d;
@@ -98,7 +103,9 @@ int plAMOGetModelNum(void *f) {
     }
     return *(int *)(d + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *plAMOGetModelHead(void *f, u32 idx) {
     u8 *h = GetFileHeadAMO(f);
     u8 *d;
@@ -119,7 +126,9 @@ u8 *plAMOGetModelHead(void *f, u32 idx) {
     }
     return d;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plAMOGetMaterialNum(void *f) {
     u8 *h = GetFileHeadAMO(f);
     u8 *d;
@@ -133,7 +142,9 @@ int plAMOGetMaterialNum(void *f) {
     }
     return *(int *)(d + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *plAMOGetMaterialHead(void *f, u32 idx) {
     u8 *h = GetFileHeadAMO(f);
     u8 *d;
@@ -154,7 +165,9 @@ u8 *plAMOGetMaterialHead(void *f, u32 idx) {
     }
     return d;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *plAMOGetMaterialData(void *f, u32 idx) {
     u8 *p = plAMOGetMaterialHead(f, idx);
 
@@ -163,8 +176,10 @@ u8 *plAMOGetMaterialData(void *f, u32 idx) {
     }
     return p + 0xC;
 }
+#endif
 
 /* Converts material idx of the file into the 0x4C byte render material at out. */
+#if !defined(G_PART) || G_PART == 1
 int plAMOSetMaterialData(void *f, u32 idx, f32 *out) {
     f32 *m = (f32 *)plAMOGetMaterialData(f, idx);
     u8 *t;
@@ -195,7 +210,9 @@ int plAMOSetMaterialData(void *f, u32 idx, f32 *out) {
     *(int *)((u8 *)out + 0x48) = (int)m[12];
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *plAMOGetTextureHead(void *f, u32 idx) {
     u8 *h = GetFileHeadAMO(f);
     u8 *d;
@@ -216,7 +233,9 @@ u8 *plAMOGetTextureHead(void *f, u32 idx) {
     }
     return d;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 *plAMOGetTextureData(void *f, u32 idx) {
     u8 *p = plAMOGetTextureHead(f, idx);
 
@@ -225,7 +244,9 @@ u8 *plAMOGetTextureData(void *f, u32 idx) {
     }
     return p + 0xC;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plAMOGetMaterialListNum(void *f, u32 idx) {
     u8 *m = plAMOGetModelHead(f, idx);
     u8 *d;
@@ -239,7 +260,9 @@ int plAMOGetMaterialListNum(void *f, u32 idx) {
     }
     return *(int *)(d + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plAMOGetMaterialList(void *f, u32 idx, int *out) {
     u8 *m = plAMOGetModelHead(f, idx);
     u8 *d;
@@ -262,11 +285,15 @@ int plAMOGetMaterialList(void *f, u32 idx, int *out) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void *GetFileHeadAMO(void *f) {
     return f;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int SearchDirectoryAMO(u8 *f, int type) {
     u32 i;
     u32 n = *(u32 *)(f + 4);
@@ -280,8 +307,10 @@ static int SearchDirectoryAMO(u8 *f, int type) {
     }
     return -1;
 }
+#endif
 
 /* idx-th (0 based) entry of the given type below f, or with type -1 simply the idx-th entry. */
+#if !defined(G_PART) || G_PART == 1
 static u8 *GetSubDataAMO(u8 *f, int type, int idx) {
     int i;
     int n;
@@ -307,7 +336,9 @@ static u8 *GetSubDataAMO(u8 *f, int type, int idx) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetIndexListNumAMOModelMesh(u8 *mesh) {
     u8 *d = GetSubDataAMO(mesh, 5, 0);
 
@@ -316,7 +347,9 @@ static int GetIndexListNumAMOModelMesh(u8 *mesh) {
     }
     return *(int *)(d + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetIndexListDescAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 5, 0);
     int i;
@@ -333,7 +366,9 @@ static int GetIndexListDescAMOModelMesh(u8 *mesh, int idx) {
     }
     return *(int *)d;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetPrimitiveNumAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 5, 0);
     int i;
@@ -350,7 +385,9 @@ static int GetPrimitiveNumAMOModelMesh(u8 *mesh, int idx) {
     }
     return *(int *)(d + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetAllPrimitiveNumAMOModelMesh(u8 *mesh) {
     u32 n;
     u32 i;
@@ -366,7 +403,9 @@ static int GetAllPrimitiveNumAMOModelMesh(u8 *mesh) {
     }
     return sum;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetVertexNumAMOModelMesh(u8 *mesh) {
     u8 *d = GetSubDataAMO(mesh, 0x70000, 0);
 
@@ -375,7 +414,9 @@ static int GetVertexNumAMOModelMesh(u8 *mesh) {
     }
     return *(int *)(d + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetMaterialIndexAMOModelMesh(u8 *mesh, int list, int prim) {
     int sum = 0;
     u8 *d;
@@ -401,13 +442,16 @@ static int GetMaterialIndexAMOModelMesh(u8 *mesh, int list, int prim) {
     }
     return ((int *)(d + 0xC))[sum];
 }
+#endif
 
 /* original bytes: build/raw/GetPrimVertexNumAMOModelMesh.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 1
 static asm int GetPrimVertexNumAMOModelMesh(u8 *mesh, int list, int prim)
 {
 #include "GetPrimVertexNumAMOModelMesh.inc"
 }
+#endif
 #else
 static int GetPrimVertexNumAMOModelMesh(u8 *mesh, int list, int prim) {
     u8 *d;
@@ -438,10 +482,12 @@ static int GetPrimVertexNumAMOModelMesh(u8 *mesh, int list, int prim) {
 
 /* original bytes: build/raw/GetPrimCullTypeAMOModelMesh.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 1
 static asm int GetPrimCullTypeAMOModelMesh(u8 *mesh, int list, int prim)
 {
 #include "GetPrimCullTypeAMOModelMesh.inc"
 }
+#endif
 #else
 static int GetPrimCullTypeAMOModelMesh(u8 *mesh, int list, int prim) {
     u8 *d;
@@ -474,10 +520,12 @@ static int GetPrimCullTypeAMOModelMesh(u8 *mesh, int list, int prim) {
 
 /* original bytes: build/raw/GetPrimVertexIndexAMOModelMesh.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 1
 static asm int GetPrimVertexIndexAMOModelMesh(u8 *mesh, int list, int prim, int vtx)
 {
 #include "GetPrimVertexIndexAMOModelMesh.inc"
 }
+#endif
 #else
 static int GetPrimVertexIndexAMOModelMesh(u8 *mesh, int list, int prim, int vtx) {
     u8 *d;
@@ -507,6 +555,7 @@ static int GetPrimVertexIndexAMOModelMesh(u8 *mesh, int list, int prim, int vtx)
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 1
 static u8 *GetVertexAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 0x70000, 0);
 
@@ -516,7 +565,9 @@ static u8 *GetVertexAMOModelMesh(u8 *mesh, int idx) {
     d += 0xC;
     return d + idx * 12;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static u8 *GetNormalAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 0x80000, 0);
 
@@ -526,7 +577,9 @@ static u8 *GetNormalAMOModelMesh(u8 *mesh, int idx) {
     d += 0xC;
     return d + idx * 12;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static u8 *GetStAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 0xA0000, 0);
 
@@ -536,7 +589,9 @@ static u8 *GetStAMOModelMesh(u8 *mesh, int idx) {
     d += 0xC;
     return d + idx * 8;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static u8 *GetVertexColorAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 0xB0000, 0);
 
@@ -546,7 +601,9 @@ static u8 *GetVertexColorAMOModelMesh(u8 *mesh, int idx) {
     d += 0xC;
     return d + idx * 16;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int GetWeightNumAMOModelMesh(u8 *mesh, int idx) {
     u8 *d = GetSubDataAMO(mesh, 0xC0000, 0);
     u8 *q;
@@ -564,8 +621,10 @@ static int GetWeightNumAMOModelMesh(u8 *mesh, int idx) {
     }
     return *(int *)q;
 }
+#endif
 
 /* GetWeightAMOModelMesh: matches */
+#if !defined(G_PART) || G_PART == 1
 static u8 *GetWeightAMOModelMesh(u8 *mesh, int idx, int w) {
     u8 *d = GetSubDataAMO(mesh, 0xC0000, 0);
     int i;
@@ -587,7 +646,9 @@ static u8 *GetWeightAMOModelMesh(u8 *mesh, int idx, int w) {
     d += w * 8;
     return d;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int plAMOCreateClayFromImage(void *clay, void *f, u32 idx) {
     u8 *m;
     u8 *d;
@@ -617,14 +678,18 @@ int plAMOCreateClayFromImage(void *clay, void *f, u32 idx) {
         return 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int ConvertModelMeshAMO(void *clay, void *mesh) {
     if (SearchDirectoryAMO(mesh, 0xC0000) != 0) {
         return ConvertModelMeshAMO_NormalModel(clay, mesh);
     }
     return ConvertModelMeshAMO_WeightModel(clay, mesh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int CheckMaterialChangeAMO(u8 *mesh) {
     int i;
     int j;
@@ -644,15 +709,20 @@ static int CheckMaterialChangeAMO(u8 *mesh) {
     }
     return 0;
 }
+#endif
 
 /* ConvertModelMeshAMO_NormalModel (0x00192090, 1560 bytes): original bytes, no C yet. */
+#if !defined(G_PART)
 static asm int ConvertModelMeshAMO_NormalModel(void *clay, void *mesh)
 {
 #include "ConvertModelMeshAMO_NormalModel.inc"
 }
+#endif
 
 /* ConvertModelMeshAMO_WeightModel (0x001926B0, 1816 bytes): original bytes, no C yet. */
+#if !defined(G_PART)
 static asm int ConvertModelMeshAMO_WeightModel(void *clay, void *mesh)
 {
 #include "ConvertModelMeshAMO_WeightModel.inc"
 }
+#endif

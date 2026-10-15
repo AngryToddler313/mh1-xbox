@@ -4,6 +4,7 @@
    in the loop. */
 /* menu_nm - f_menu (SLPM_654.95 0x00127440-0x00134950, main.bin): the whole pit menu file as near-match C, not built; matching runs are built from it as menuNN.c.
  * Field meanings are guesses. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -175,13 +176,13 @@ void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
 #endif
 
 /* The camp icon at map position (x, y). */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void camp_disp_sub(f32 x, f32 y) {
     PFLPS q;
     f32 w, h;
 
-    reload_tex(1, 0x119);
-    SetTextureStage(0x119);
+    reload_tex(1, GSLOT(0x119, 0x140));
+    SetTextureStage(GSLOT(0x119, 0x140));
     SetFilterMode(0);
     q.s[0] = 0.8f * (x - 8.0f);
     q.s[1] = y - 8.0f;

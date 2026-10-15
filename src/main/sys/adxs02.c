@@ -3,6 +3,7 @@
    queue (load_bin = blocking load, load_bin_req/load_task = background queue of 64 entries x 0x100 bytes) and the
    two BGM stream channels (str_*: play/pause/stop, master volume, fades). Working file: matching functions are
    split into runs. Names of fields are guesses from use. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 extern GAME_W game_w;
@@ -55,12 +56,12 @@ typedef struct LOADQ {
 } LOADQ;
 extern LOADW load_w;
 extern LOADQ load_q[64];
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void load_work_init(void) {
     int i;
 
     memset(&load_w, 0, 0x10);
-    for (i = 0; i < 64; i++) {
+    for (i = 0; i < GV(64, 32); i++) {
         load_q[i].kind = -1;
     }
 }
@@ -76,7 +77,7 @@ void load_bin_req(u32 id, void *dst) {
     load_w.busy = 1;
     n = load_w.wr + 1;
     load_w.wr = n;
-    load_w.wr = n % 64;
+    load_w.wr = n % GV(64, 32);
 }
 #endif
 void next_que_set(LOADQ *q);
@@ -130,7 +131,7 @@ void load_task(void) {
     }
 }
 #endif
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void next_que_set(LOADQ *q) {
     LOADW *w = &load_w;
     int n;
@@ -138,20 +139,20 @@ void next_que_set(LOADQ *q) {
     q->kind = -1;
     n = w->rd + 1;
     w->rd = n;
-    w->rd = n % 64;
+    w->rd = n % GV(64, 32);
     if (load_q[w->rd].kind < 0) {
         w->busy = 0;
     }
 }
 #endif
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 s8 load_busy_ck(void) {
     return load_w.busy;
 }
 #endif
 /* Calls the function queued as kind 2 (q->id holds the address, nargs picks how many of the four
    queued arguments are real; unused ones are passed along anyway). */
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 void call_func(LOADQ *q) {
     void (*f)() = (void (*)())q->id;
     s32 a = q->arg[0];
@@ -249,7 +250,7 @@ void SetOpeMode(int);
 void Eft_rendope_set(int);
 
 /* AFS file size in bytes (sectors * 0x800). */
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 3
 int afs_file_length(u32 id) {
     u16 file = id;
     u16 part = id >> 16;

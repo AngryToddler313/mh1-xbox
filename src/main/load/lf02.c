@@ -1,4 +1,5 @@
 /* lf02 - file and texture loading 0x0011ED20-0x0011EF04: load_file_mdl, load_pl_motion, load_plcom_motion, load_em_motion, load_stage_model, load_eft_model, load_weapon_model. Whole file in loadf_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 extern void *arc_ptr;
@@ -56,7 +57,6 @@ void *flCreateTextureFromApx_mem(void *, int);
 
 
 
-#if !defined(G_PART) || G_PART == 1
 int load_file_mdl(void *dst, int id) {
     if (id < 0) {
         return -1;
@@ -67,49 +67,43 @@ int load_file_mdl(void *dst, int id) {
     }
     return 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int load_pl_motion(int a, int n) {
     return load_file_mdl(pl_area_top, pl_motion_data[n]);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int load_plcom_motion(int n) {
     return load_file_mdl(pl_area_top, common_motion_data[n]);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int load_em_motion(int a, int n) {
     return load_file_mdl(pl_area_top, em_motion_data[n]);
 }
+
+#ifdef MHG_PS2
+void func_0010FD10(void *);
 #endif
 
-#if !defined(G_PART)
 void load_stage_model(int n) {
     u8 *dst = stage_model;
 
     load_file_mdl(data_load_ptr, stage_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
-}
+#ifdef MHG_PS2
+    func_0010FD10(data_load_ptr);   /* G: extra step on the file buffer */
 #endif
+}
 
-#if !defined(G_PART) || G_PART == 2
 void load_eft_model(int n) {
     u8 *dst = stage_model;
 
     load_file_mdl(data_load_ptr, effect_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void load_weapon_model(int n) {
     u8 *dst = pl_area_top;
 
     load_file_mdl(data_load_ptr, weapon_model_data[n]);
     amo_ahi_expand(data_load_ptr, dst, dst + 0x128000);
 }
-#endif

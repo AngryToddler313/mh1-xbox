@@ -1,4 +1,8 @@
 /* fs2_02 - font setup 0x00161C20-0x00161C9C: font_print_strings. Whole file in fontst2_nm.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define font_print_sp func_0012BDD0
+#endif
 #include "types.h"
 
 extern u32 nfcol_tbl[][3];

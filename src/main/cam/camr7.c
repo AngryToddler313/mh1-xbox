@@ -32,7 +32,11 @@ f32 k_HitWallCamera(f32 *cam, f32 *tar, f32 *dist) {
             } else {
                 hit = GetWallHitBit2((*pp)[3], a, b, cam, 0x8001);
             }
+#ifdef VERSION_MHG
+            if ((u8)hit > 0) {          /* G tests > 0 (blez) */
+#else
             if ((u8)hit != 0) {
+#endif
                 *dist = flvecCalcDistance(c, cam);
             } else {
                 *dist = 0.0f;

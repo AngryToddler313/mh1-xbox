@@ -56,7 +56,7 @@ u8 hit_sphr_sphr(f32 *a, f32 *b, f32 ra, f32 rb) {
 
 /* original bytes kept (does not match as C yet): build/raw/hit_sphr_sphr2.inc, see config/c_rawfuncs.txt */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 asm u8 hit_sphr_sphr2(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb)
 {
 #include "hit_sphr_sphr2.inc"
@@ -64,7 +64,7 @@ asm u8 hit_sphr_sphr2(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb)
 #endif
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 u8 hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb) {
     f32 d = flvecCalcDistance(a, b);
     f32 r = ra + rb;
@@ -103,7 +103,7 @@ asm u8 hit_cap_cap2_m(HPK *k1, HPK *k2, f32 *out)
 #endif
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void hit_cap_cap2_sub(f32 *a, f32 *v, f32 *out, f32 len, f32 r) {
     if (len < 0.001f) {
         flvecCopy(out, a);
@@ -119,7 +119,7 @@ void hit_cap_cap2_sub(f32 *a, f32 *v, f32 *out, f32 len, f32 r) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 u8 hit_sphr_cap_m(f32 *c, HPK *k, f32 *out, f32 r) {
     f32 dir[3];
     f32 v[3];
@@ -226,7 +226,7 @@ u8 hit_sphr_cap_m(f32 *c, HPK *k, f32 *out, f32 r) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 u8 hit_cap_sphr_m(HPK *k, f32 *c, f32 *out, f32 r) {
     f32 dir[3];
     f32 v[3];
@@ -404,7 +404,7 @@ asm u8 hit_cap_cap3_m(HPK *k1, HPK *k2, f32 *out)
 #endif
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 void hit_cap_cap3_sub(f32 *v, f32 *out, f32 r, f32 d) {
     f32 t;
 
@@ -421,7 +421,7 @@ void hit_cap_cap3_sub(f32 *v, f32 *out, f32 r, f32 d) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 u8 hit_sphr_pln(f32 *c, f32 *p, f32 *n, f32 *out, f32 r) {
     f32 v[3];
     f32 nn[3];
@@ -479,7 +479,7 @@ u8 hit_line_sphr2(HLINE *l, f32 *c, f32 r) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 5
+#if !defined(G_PART) || G_PART == 4
 void p_point_line2(f32 *p0, f32 *p1, f32 *dir, f32 *pt, f32 *out, f32 len) {
     f32 v[3];
     f32 t;

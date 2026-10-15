@@ -10,6 +10,7 @@
    Share_item_num_ck, Ext_pick_point_init, Em_hagi_point_cnt_ck, em_work_serch2, quest_condition_prog,
    remuneration_item_set, quest_item_ck2, Quest_net_sub. */
 
+#include "g_alias.h"
 #include "quest.h"
 #include "plf.h"
 #include "types.h"
@@ -190,6 +191,7 @@ static void sub_main_func_004B52E0(void);
 static u16 sub_main_func_004B5480(void);
 #define MIB8(m, o) (((s8 *)(m))[o])
 
+#if !defined(G_PART)
 void Quest_start(void)
 {
     MISSION *m;
@@ -342,6 +344,7 @@ void Quest_start(void)
         game_w.x15 = st;
     }
 }
+#endif
 #else
 void Quest_start(void)
 {
@@ -452,6 +455,7 @@ void Quest_start(void)
 
 #endif
 
+#if !defined(G_PART) || G_PART == 1
 void Quest_retire_set(void)
 {
     if (Quest_clear_ck(1) == 0) {
@@ -463,20 +467,25 @@ void Quest_retire_set(void)
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Quest_error_set2(void)
 {
     game_w.x0D5 = 8;
     quest_w.x06 = 8;
     quest_w.x36 = -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Quest_error_set(void)
 {
     if (Quest_clear_ck(1) == 0) {
         Quest_error_set2();
     }
 }
+#endif
 
 #ifdef VERSION_MHG
 /* G (sub_main 0x4B4370): a mission whose header byte 0x43 is set starts each hunter in an
@@ -484,6 +493,7 @@ void Quest_error_set(void)
  * (MISSION2+0x14), list number byte 0x43 - 1, drawn with that player's quest random byte. */
 extern u8 **start_area_tbl[];
 
+#if !defined(G_PART)
 void Quest_pl_stage_init(arg)
 int arg;
 {
@@ -545,6 +555,7 @@ int arg;
         player_work[arg].stg = *(s32 *)(tbl + arg * 0x10);
     }
 }
+#endif
 #else
 void Quest_pl_stage_init(arg)
 int arg;
@@ -572,6 +583,7 @@ int arg;
 
 #endif
 
+#if !defined(G_PART) || G_PART == 2
 void Quest_restart(void)
 {
     s32 *p = quest_w.x6C;
@@ -589,7 +601,9 @@ void Quest_restart(void)
         quest_w.x36 = i + 1;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Quest_clear_ck(arg)
 int arg;
 {
@@ -603,7 +617,9 @@ int arg;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Quest_time_get(arg)
 int arg;
 {
@@ -622,14 +638,18 @@ int arg;
         return quest_w.x10;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Quest_em_init_set(arg)
 int arg;
 {
     station_em_set();
     Quest_next_em_set(arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Quest_enemy_revival_ck(arg)
 int arg;
 {
@@ -649,6 +669,7 @@ int arg;
     }
     return 0;
 }
+#endif
 
 #ifdef VERSION_MHG
 extern u16 em_size_max_tbl[];   /* G 0x4FD8E0: per species, the largest size a returning monster grows to */
@@ -661,13 +682,16 @@ void se_req(int, int, int);
 
 /* G (sub_main 0x4B7A60): kinds that grow 5% each time they come back (sub_main_func_004B7920's
  * list without kind 0x21) */
+#if !defined(G_PART)
 static int em_revival_grow_ck(s16 kind)
 {
     return kind != 0x21 && sub_main_func_004B7920(kind) == 1;
 }
+#endif
 
 /* G (sub_main 0x4B55F0): mission header 0x45 == 2: count kills of kind header 0x46; at the
  * count in header 0x47 show the message and play SE 0x77 once */
+#if !defined(G_PART)
 static void quest_kill_count_ck(EMW *e)
 {
     if (quest_w.x165[0] == 0 || quest_w.x165[0] != 2) {
@@ -684,7 +708,9 @@ static void quest_kill_count_ck(EMW *e)
     se_req(1, 0x77, 0);
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 int Quest_enemy_revival_set(e)
 EMW *e;
 {
@@ -744,7 +770,9 @@ EMW *e;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Quest_enemy_die(e)
 EMW *e;
 {
@@ -786,7 +814,9 @@ EMW *e;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Quest_enemy_escape(e)
 EMW *e;
 {
@@ -797,7 +827,9 @@ EMW *e;
         q->x0A = -1;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Quest_enemy_capture(e)
 EMW *e;
 {
@@ -821,14 +853,18 @@ EMW *e;
         q->x2E |= 8;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Quest_enemy_hagi_set(a, b)
 int a;
 int b;
 {
     quest_w.x13C = quest_w.x13C | b;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int Quest_remuneration_calc(void)
 {
     int v;
@@ -849,7 +885,9 @@ int Quest_remuneration_calc(void)
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Quest_condition_judging(void)
 {
     int i;
@@ -981,19 +1019,23 @@ int Quest_condition_judging(void)
     }
     return 0;
 }
+#endif
 
 /* Em_direct_set: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Em_direct_set.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm EMW *Em_direct_set(QEM *q)
 {
 #include "Em_direct_set.inc"
 }
 #endif
+#endif
 
 #ifdef VERSION_MHG
 /* G (sub_main 0x4B52E0): seed the quest's generator from its random bytes 0x155..0x162 (seven
  * little-endian halfwords), 0x1C3 if they add up to 0 */
+#if !defined(G_PART) || G_PART == 4
 static void sub_main_func_004B52E0(void)
 {
     int i;
@@ -1006,9 +1048,11 @@ static void sub_main_func_004B52E0(void)
         quest_w.rnd_seed = 0x1C3;
     }
 }
+#endif
 
 /* G (sub_main 0x4B5480): the quest's generator, seed * 176 mod 65363 (the same numbers on
  * every machine of an online session: the host sends the bytes) */
+#if !defined(G_PART) || G_PART == 4
 static u16 sub_main_func_004B5480(void)
 {
     u32 v = quest_w.rnd_seed;
@@ -1016,12 +1060,20 @@ static u16 sub_main_func_004B5480(void)
     if (v == 0) {
         v = 1;
     }
+#ifdef VERSION_MHG
+    v = (v * 176) % 0xFF53;     /* G returns the value it stored without reading it back */
+    quest_w.rnd_seed = v;
+    return v;
+#else
     quest_w.rnd_seed = (v * 176) % 0xFF53;
     return quest_w.rnd_seed;
+#endif
 }
+#endif
 
 #endif
 
+#if !defined(G_PART) || G_PART == 5
 void Quest_next_em_clr(arg0, arg1)
 int arg0;
 int arg1;
@@ -1138,16 +1190,20 @@ int arg1;
         }
     }
 }
+#endif
 
 /* Quest_next_em_set: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Quest_next_em_set.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void Quest_next_em_set(int n)
 {
 #include "Quest_next_em_set.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 char *Quest_str_get(int n)
 {
     s32 *p;
@@ -1158,7 +1214,9 @@ char *Quest_str_get(int n)
     p += n;
     return (char *)((u32)*p + (int)mission_area);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static s16 stolen_item_num_ck(item)
 u16 item;
 {
@@ -1172,7 +1230,9 @@ u16 item;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static u16 stolen_item_stack(int item, s16 num)
 {
     s16 i;
@@ -1225,7 +1285,9 @@ static u16 stolen_item_stack(int item, s16 num)
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 void Item_stolen(pl, item, num)
 void *pl;
 int item;
@@ -1237,48 +1299,60 @@ s16 num;
     stolen_item_stack(item, -num);
     quest_w.xAD = 1;
 }
+#endif
 
 /* Item_regained: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Item_regained.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void Item_regained(PLW *pl, int unused)
 {
 #include "Item_regained.inc"
 }
 #endif
+#endif
 
 /* Share_item_stack: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Share_item_stack.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 9
 asm int Share_item_stack(PLW *pl, int item, int num)
 {
 #include "Share_item_stack.inc"
 }
 #endif
+#endif
 
 /* Net_Share_item_stack: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Net_Share_item_stack.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 9
 asm int Net_Share_item_stack(PLW *pl, int item, int num)
 {
 #include "Net_Share_item_stack.inc"
 }
 #endif
+#endif
 
 /* Share_item_num_ck: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Share_item_num_ck.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s16 Share_item_num_ck(int item, int mode)
 {
 #include "Share_item_num_ck.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static int share_item_ck_ck(void)
 {
     return (quest_w.x40 & 0x100) != 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 s16 Quest_share_item_num_ck(item)
 int item;
 {
@@ -1292,7 +1366,9 @@ int item;
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART)
 void Share_item_conv(pl)
 PLW *pl;
 {
@@ -1323,8 +1399,10 @@ PLW *pl;
         }
     }
 }
+#endif
 
 /* Ext_pick_point_init: clears the 20 gathering/carving point slots (agent B; the plain loop, MWCC unrolls it 5x). */
+#if !defined(G_PART) || G_PART == 11
 void Ext_pick_point_init(void)
 {
     STIEM *s;
@@ -1338,7 +1416,9 @@ void Ext_pick_point_init(void)
         s++;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 int Ext_pick_point_set(a, pos)
 STIEM *a;
 f32 *pos;
@@ -1371,13 +1451,17 @@ f32 *pos;
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 u16 Ext_pick_point_cnt_ck(n)
 int n;
 {
     return StiEM_data[n].cnt;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Ext_pick_point_clr(n)
 int n;
 {
@@ -1386,7 +1470,9 @@ int n;
         ext_pick_point_tbl_clr_ex((s8)n);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Ext_pick_point_pos(n, p)
 int n;
 f32 *p;
@@ -1395,14 +1481,18 @@ f32 *p;
     StiEM_data[n].pos[1] = p[1];
     StiEM_data[n].pos[2] = p[2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Ext_pick_point_st(n, st)
 int n;
 s8 st;
 {
     StiEM_data[n].stg = st;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 u16 Ext_pick_point_ck(pl)
 PLW *pl;
 {
@@ -1429,7 +1519,9 @@ PLW *pl;
     }
     return 0xFFFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 int Ext_pick_point_ck2(pl)
 PLW *pl;
 {
@@ -1462,7 +1554,9 @@ PLW *pl;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void ext_pick_point_fifo_ck(void)
 {
     int n;
@@ -1486,7 +1580,9 @@ static void ext_pick_point_fifo_ck(void)
         Ext_pick_point_clr(stiem_stack_tbl[i]);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void ext_pick_point_tbl_clr(arg)
 int arg;
 {
@@ -1506,7 +1602,9 @@ int arg;
     stiem_stack_tbl[n] = -1;
     quest_w.x3B--;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void ext_pick_point_tbl_clr_ex(n)
 int n;
 {
@@ -1526,7 +1624,9 @@ int n;
         } while (i < quest_w.x3B);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Ext_pick_point_st_clr(void)
 {
     int i;
@@ -1544,14 +1644,18 @@ void Ext_pick_point_st_clr(void)
         } while (i >= 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void ext_pick_point_tbl_set(n)
 s8 n;
 {
     stiem_stack_tbl[quest_w.x3B] = n;
     quest_w.x3B++;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 s8 Em_hagi_point_set(em, n)
 EMW *em;
 int n;
@@ -1600,7 +1704,9 @@ int n;
     }
     return em->x88D;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 int Em_tail_hagi_point_set(tail)
 u8 *tail;
 {
@@ -1631,29 +1737,35 @@ u8 *tail;
     sp.x19 = h[0xA];
     return Ext_pick_point_set(&sp, (f32 *)(tail + 0x24));
 }
+#endif
 
 /* Em_hagi_point_cnt_ck: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Em_hagi_point_cnt_ck.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 11
 asm int Em_hagi_point_cnt_ck(EMW *em)
 {
 #include "Em_hagi_point_cnt_ck.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Em_hagi_point_clr(em)
 EMW *em;
 {
     Ext_pick_point_clr(em->x88D);
     em->x88D = -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 void Quest_forfeit_message(void)
 {
     char buf[0x20];
     int n;
 
-    str_gattai(buf, lit_1730_0036B290, quest_w.x18);
+    str_gattai(buf, GSTR(lit_1730_0036B290, gptr_00526324), quest_w.x18);
     n = strlen(buf);
     if (n & 1) {
         buf[n] = 0x20;
@@ -1662,7 +1774,9 @@ void Quest_forfeit_message(void)
     buf[0x1F] = 0;
     set01_set2_use_mem(buf);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void str_gattai(char *dst, char *fmt, ...)
 {
     va_list ap;
@@ -1670,7 +1784,9 @@ static void str_gattai(char *dst, char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(dst, fmt, ap);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void enemy_insurance_sub(n)
 int n;
 {
@@ -1690,7 +1806,9 @@ int n;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void em_next_tbl_ck(n)
 int n;
 {
@@ -1717,7 +1835,9 @@ int n;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void em_data_st_adrs_set(tbl, n, val, k)
 s32 *tbl;
 int n;
@@ -1749,7 +1869,9 @@ loop:
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 11
 static void quest_em_init()
 {
     int n;
@@ -1758,6 +1880,7 @@ static void quest_em_init()
     quest_em_init_sub(quest_w.x78, &n);
     quest_em_init_sub2(quest_w.x74, &n);
 }
+#endif
 
 #ifdef VERSION_MHG
 extern u8 *quest_size_dist_tbl[];        /* size distributions (32 random slots each) */
@@ -1767,6 +1890,7 @@ int sub_main_func_004F3B00();   /* 1: the quest's event flag allows random sizes
 
 /* G (sub_main 0x4B7810): a random size in percent, clamped to the class limits quest_size_lim
  * (mission header byte 0x44) */
+#if !defined(G_PART)
 static u16 sub_main_func_004B7810(void)
 {
     u8 *d = quest_size_dist_tbl[quest_size_dist_sel[sub_main_func_004B5480() & 0x1F]];
@@ -1781,8 +1905,10 @@ static u16 sub_main_func_004B7810(void)
     }
     return v;
 }
+#endif
 
 /* G (sub_main 0x4B78D0): MH1's per-entry set-up of quest_em_init_sub, made a function */
+#if !defined(G_PART) || G_PART == 12
 static void sub_main_func_004B78D0(QEM *e, int *cnt)
 {
     e->x2E = 2;
@@ -1794,8 +1920,10 @@ static void sub_main_func_004B78D0(QEM *e, int *cnt)
     }
     (*cnt)++;
 }
+#endif
 
 /* G (sub_main 0x4B7920): monster kinds that get a random size */
+#if !defined(G_PART)
 static int sub_main_func_004B7920(s16 kind)
 {
     switch (kind) {
@@ -1807,10 +1935,12 @@ static int sub_main_func_004B7920(s16 kind)
     }
     return 0;
 }
+#endif
 
 /* G (sub_main 0x4B7BA0): as MH1, plus each monster's size (QEM+0x30, percent): the mission's
  * base size (header 0x40) times a random size for the kinds above when the work byte or the
  * quest's event flag allows it; 100 otherwise */
+#if !defined(G_PART)
 static void quest_em_init_sub(p, cnt)
 s32 *p;
 int *cnt;
@@ -1845,8 +1975,10 @@ int *cnt;
         p += 4;
     }
 }
+#endif
 
 /* G (sub_main 0x4B7CD0): as MH1, sizes 100 */
+#if !defined(G_PART)
 static void quest_em_init_sub2(p, cnt)
 s32 *p;
 int *cnt;
@@ -1886,6 +2018,7 @@ int *cnt;
         p++;
     }
 }
+#endif
 #else
 static void quest_em_init_sub(p, cnt)
 s32 *p;
@@ -1968,6 +2101,7 @@ int *cnt;
 
 #endif
 
+#if !defined(G_PART)
 static void station_em_set(void)
 {
     QEM *e;
@@ -2019,7 +2153,9 @@ static void station_em_set(void)
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 13
 static QEM *em_work_serch(em)
 EMW *em;
 {
@@ -2066,10 +2202,12 @@ EMW *em;
     }
     return 0;
 }
+#endif
 
 /* em_work_serch2: K&R definition (the original sign-extends both s16 arguments itself), a for loop over the
    quest's stage lists (agent B). Its caller quest_em_die casts the arguments to s16 (the original extends them at
    the call as with an s16 prototype; MWCC accepts no prototype next to the K&R definition). */
+#if !defined(G_PART)
 static QEM *em_work_serch2(no, stg)
 s16 no;
 s16 stg;
@@ -2112,7 +2250,9 @@ s16 stg;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 14
 void Quest_timer_calc(n)
 int n;
 {
@@ -2123,30 +2263,38 @@ int n;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 14
 void Quest_timer_reset(void)
 {
     quest_w.x10 = Quest_time_get(1);
 }
+#endif
 
 /* quest_condition_prog: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/quest_condition_prog.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s16 quest_condition_prog(PLW *pl, int i)
 {
 #include "quest_condition_prog.inc"
 }
 #endif
+#endif
 
 /* remuneration_item_set: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/remuneration_item_set.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void remuneration_item_set(void)
 {
 #include "remuneration_item_set.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 15
 static u16 *quest_supplies_get(pl, p)
 PLW *pl;
 u16 *p;
@@ -2160,7 +2308,9 @@ u16 *p;
     Pl_item_stack(pl, a, b);
     return p;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 15
 int quest_item_set(id, num)
 s16 id;
 s16 num;
@@ -2179,7 +2329,9 @@ s16 num;
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 15
 int quest_enemy_set(id, num)
 s16 id;
 s16 num;
@@ -2200,22 +2352,28 @@ s16 num;
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 16
 static int quest_item_ck(q)
 QUEST_W *q;
 {
     return (s16)Pl_item_num_ck(&player_work[game_w.master], (u16)q->x1C[0]) >= q->x24[0];
 }
+#endif
 
 /* quest_item_ck2: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/quest_item_ck2.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int quest_item_ck2(QUEST_W *q, QEM *em)
 {
 #include "quest_item_ck2.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static int quest_item_ck3(unused, p)
 int unused;
 s16 *p;
@@ -2229,7 +2387,9 @@ s16 *p;
     num = *p;
     return (s16)Pl_item_num_ck(&player_work[game_w.master], id, id) >= num;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static int quest_share_item_ck(q)
 QUEST_W *q;
 {
@@ -2242,7 +2402,9 @@ QUEST_W *q;
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static int quest_enemy_ck(q)
 QUEST_W *q;
 {
@@ -2255,7 +2417,9 @@ QUEST_W *q;
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static s16 quest_enemy_ck2(q, kind)
 QUEST_W *q;
 int kind;
@@ -2269,7 +2433,9 @@ int kind;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static int quest_enemy_ck_sub(q, kind)
 QUEST_W *q;
 int kind;
@@ -2303,7 +2469,9 @@ int kind;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static int quest_enemy_ck_sub2(q, kind)
 QUEST_W *q;
 int kind;
@@ -2328,7 +2496,9 @@ int kind;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static int em_capture_conv(kind)
 int kind;
 {
@@ -2344,7 +2514,9 @@ int kind;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void quest_failed_ptr_set(flag)
 int flag;
 {
@@ -2364,7 +2536,9 @@ int flag;
     }
     quest_w.x36 = i;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 17
 static void quest_presuccess_ptr_set(flag)
 int flag;
 {
@@ -2384,7 +2558,9 @@ int flag;
     }
     quest_w.x36 = i;
 }
+#endif
 
+#if !defined(G_PART)
 static void em_herb_set(void)
 {
     QEM q;
@@ -2398,16 +2574,20 @@ static void em_herb_set(void)
     q.x1C = 0;
     Em_direct_set(&q);
 }
+#endif
 
 /* Quest_net_sub: original bytes kept (near-match C in src/main/quest/f_quest_nm.c, linked weak by the PC build): build/raw/Quest_net_sub.inc,
    config/c_rawfuncs.txt */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void Quest_net_sub(void)
 {
 #include "Quest_net_sub.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void quest_em_die(void)
 {
     QEM *e;
@@ -2423,7 +2603,7 @@ static void quest_em_die(void)
         no = e->x0A;
         i = 0;
         for (;;) {
-            if (em->id == no && *(u8 *)((u8 *)em + 0x9EB) == *(u8 *)&e->x2C) {
+            if (em->id == no && *(u8 *)((u8 *)em + GV(0x9EB, 0x9E3)) == *(u8 *)&e->x2C) {
                 if (em->kind != e->id) {
                     return;
                 }
@@ -2475,7 +2655,9 @@ static void quest_em_die(void)
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void quest_timer_send(void)
 {
     if (game_w.info_stop == 0) {
@@ -2486,7 +2668,9 @@ static void quest_timer_send(void)
         net_send_sys(6, game_w.master);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void q_net_send_em_die(e, em)
 QEM *e;
 EMW *em;
@@ -2497,7 +2681,9 @@ EMW *em;
     quest_w.x186 = em->stg | (u16)(e->x04 << 8);
     net_send_sys(6, game_w.master);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 18
 static void q_net_send_em_capture(e, em)
 QEM *e;
 EMW *em;
@@ -2508,3 +2694,4 @@ EMW *em;
     quest_w.x186 = em->stg;
     net_send_sys(6, game_w.master);
 }
+#endif

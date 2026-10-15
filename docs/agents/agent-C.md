@@ -1841,3 +1841,42 @@ Result: G matched 16.07% -> 16.26% (main 16.45 -> 16.87, sub_main 13.91 -> 14.44
   functions are static in one TU (a part cannot see them): they need whole-file G versions.
 - 189 functions (44 KB) in main/sub_main/game are within 8 instructions of G when the MH1 source is compiled for G; the list is the quickest next win
   (constants and struct offsets). Method: check.py -v per file, #ifdef VERSION_MHG constants, mhg_parts --redo.
+
+### G round 8 (near-G functions, 14 Oct 2026)
+Result: G matched 16.256% -> 18.116% (3358 -> 3751 functions; main 16.87 -> 21.19, sub_main 14.44 -> 17.44, game 25.19 -> 25.75); clean G
+rebuild 7 OK, MH1 rebuild 5 OK. 194 of the 224 near-G functions I listed (<= 8 instructions off G, outside em/eft) are registered now;
+the rest of the gain is functions that matched after the header/layout fixes (whole files via mhg_addc.py, more parts from mhg_parts.py).
+- Method: `VERSION=mhg tools/check.py FILE -v` (a small scan script over c_files.txt lists the functions with <= 8 differing instructions),
+  `#ifdef VERSION_MHG` / the macros of include/g_alias.h, then `tools/mhg_parts.py --redo`, `tools/mhg_addc.py` for files that match whole,
+  `tools/mhg_dataparts.py --files ...` for parts with switch tables, clean G rebuild, tools/mhg_cdiff.py for what is left.
+- include/g_alias.h (new, include first): MHG_PS2 = the PS2 compiler building G (`VERSION_MHG && __MWERKS__`). Things the G PC build owns
+  (texture slots, sound numbers, player count, pad structs, dropped calls) use GV(mh1, g) / GSLOT / GSTR and stay MH1 values on the PC; real
+  layout facts (struct fields, game_w, PIT_W, PIT_CHAT, User_data, lpSKey) use plain VERSION_MHG like the rest of the repo.
+  GSTR(mh1_literal, gptr_XXXXXXXX): G reads many strings through a pointer cell (`lw a0, off(at)` instead of `lui/addiu`): the cells are
+  `extern void *gptr_*[]` (an array declaration, so MWCC addresses them with lui/lw instead of gp) and PROVIDEd in config/mhg/g_names.txt.
+  g_names.txt also holds: names the module's own symbol file lacks (DispLobbyMenu, lobby_func_005C0E20, em_hagi_type_tbl, flPadFixedAnalogSelectSwitch,
+  ps2_v_counter_hi, ot9, cw_client_g, Snd_steft_tbl_g = the table 6 bytes below the symbol file's Snd_steft_tbl, func_001C1E98/1F58 = ADXT_Stop/GetStat which
+  the symbol file labels one slot off) and aliases for the G-only calls (flPS2_Mem_move16_16A -> func_00136088, font_print_sp -> func_0012BDD0, ...).
+- New layouts: PIT_CHAT is 0x5F bytes (text 2 x 0x20), PIT_W has x83 at 0x88 and everything after +1 (0x98 bytes), User_data (ud.h: +0x588 before
+  the item box, +0x320 before the pouch, u16 equipment indexes with 0xFFFF = none, save slot 0xE00, omake flags a u32 in option_w+0x2C4C), lpSKey
+  (include/sk_g.h SKO(): +8 for the 0x44 string, +12 from 0x140), FNP of the flfnt library (+0x40 first, +8 before halftype), SETW message in a halfword at 0x3E
+  (SE1()), game_w model bookkeeping +8 (crmdl05), 10 players instead of 8 in the pl/yure/frame loops, Ncm message tables 1..135, option menu
+  has two more entries (cur 7..9), tutorial quests are 10001..10003 (mkmap/tutorial: 10001..10010).
+- Raw functions: the near functions that are `asm` + `.inc` in MH1 (GetPrim*AMOModelMesh, ng_word_sub, flPS2DmaAddQueue2, Conv*to32, plmem*,
+  GetTim2*, ...) are identical to G apart from absolute addresses, so config/mhg/c_rawfuncs.txt now lists them with their G addresses; the G .inc is
+  then the G bytes. They land as G code but are not C matches (same status as the MH1 raw holdouts).
+- Tools: (1) check.py compares a call to a function of the same file by address (callee lands at this function's address - its offset + its offset),
+  so statics with a different name suffix no longer show as differences; it also reads config/mhg/g_names.txt for names. (2) mhg_parts.py: the
+  "part holds other functions" test ignored that check.py lists functions in symbol-table order, which dropped whole runs (flps0, f_chat); fixed
+  (sorted compare) and a run is split where source order runs against address order. (3) mhg_dropparts.py --sections deletes parts that have a
+  rodata line too (camd_p4, f_pl): do not use it; tools/mhg_dataparts.py finds the table range itself (object symbols @N, the lui/addiu pair of the G
+  bytes) and writes both lines (it reproduces camd_p4's hand-found range exactly). (4) Removed the stale "did not link" c_skip_funcs lines of f_pl, camd,
+  f_game (their parts have had hand-added rodata lines since); camd.c itself is kept as at HEAD (its p4 run is out of source order, the tool cannot
+  build it). mhg_addc.py takes the data slot size from MH1: mkmap (10 entries in G) and ncmreq01 (136-entry tables) needed hand-corrected rodata ranges.
+- A clean G build needs build/raw (MH1 .inc files, `python3 -c "import sys; sys.path.insert(0,'tools'); import build; build.gen_raw()"`)
+  as well as build/mhg/raw: some G files include an MH1-identical raw function through -Ibuild/raw.
+- Not landed (30 of the 224): em_die (A), f_get.c (8 raw statics in one big TU; parts cannot see them), fladdm PS2SHADER_* (static asm called from
+  flPS2AddMatrix_*), pl_move (calls a static), shell09_move / set12 / PowerOffHandler / empty_23E4E0 / flCompactVRAM (the G map labels a neighbour:
+  the C is right, the check names differ), movie_add_list, mode_sel (branch target), MakeMediaVersion (short string literals in .sdata),
+  boot main / npc_effect_move / usbkbdm_init (trailing nop of the range), GetPlayerShagamiData (9 off: G tests stage 36 only and uses its own table).
+- Not done: "CHARACTER SELECTAAAA" header glitch and the remaining zero tables (lv123str ...): need a run of the PC build with the select module.

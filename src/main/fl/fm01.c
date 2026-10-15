@@ -1,4 +1,5 @@
 /* fm01 - fl misc 0x00187C50-0x00187D10: flPS2GetStaticVramArea. Whole file in flmisc_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct FLPS2 {
@@ -58,13 +59,13 @@ int flPS2GetStaticVramArea(int size) {
     int pages;
     VRAMENT *e;
 
-    if (flVramStaticNum >= 3) {
+    if (flVramStaticNum >= GV(3, 4)) {
         return 0;
     }
     flPS2DeleteAllVramList();
     pages = (((u32)(size + 0xFF) >> 8) + 0x1F) & ~0x1F;
     e = flVramStatic;
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < GV(3, 4); i++) {
         if (e->used == 0) {
             break;
         }

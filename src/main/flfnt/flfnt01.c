@@ -5,6 +5,9 @@ typedef unsigned __int128 u128;
 typedef unsigned long u64;
 
 typedef struct FNP {
+#ifdef VERSION_MHG
+    u8 _g00[0x40];      /* G: 0x40 bytes of new state first (sw/sh/x/y/z/halftype read 0x40..0x48 later) */
+#endif
     s32 tex;            /* 0x00 texture handle (tex[0]) */
     s32 w;              /* 0x04 default glyph width */
     s32 h;              /* 0x08 default glyph height */
@@ -22,6 +25,9 @@ typedef struct FNP {
     u8 *list[5];        /* 0x38 request lists */
     u32 strlen;         /* 0x4C bytes used in the string buffer */
     u8 *str;            /* 0x50 string buffer */
+#ifdef VERSION_MHG
+    s32 _g50[2];        /* G: 8 more bytes before halftype */
+#endif
     s32 halftype;       /* 0x54 */
     s32 x58;            /* 0x58 */
     s32 x5C;            /* 0x5C */
@@ -45,6 +51,7 @@ s32 flfntMakeHandle(void);
 int vsprintf(char *, const char *, char *);
 
 void flfntCacheFlush(void);
+void flfntSetHalftype(int);
 void flLockPalette(int, int, void *, int);
 void flUnlockPalette(int, void *);
 typedef struct FREQ {
@@ -122,10 +129,14 @@ void flfntStackReset(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void flfntInit(void) {
     flfntStackReset();
+#ifdef VERSION_MHG
+    flfntSetHalftype(1);        /* G sets the half-width type instead of flushing the cache */
+#else
     flfntCacheFlush();
+#endif
 }
 #endif
 

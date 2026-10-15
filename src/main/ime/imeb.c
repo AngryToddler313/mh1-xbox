@@ -4,6 +4,7 @@
  * from the original symbols; struct fields are named by offset (guesses). Source of
  * truth for the whole range, in ADDRESS order, brace on its own line (tools/genruns.py
  * extracts the matching runs). */
+#include "g_alias.h"
 #include "types.h"
 
 typedef long long s64;
@@ -100,7 +101,11 @@ typedef struct HCHAR {
 } HCHAR;
 
 extern HCHAR hchar[80];
+#ifdef VERSION_MHG
+extern u8 overlay_no[3];
+#else
 extern u8 overlay_no[2];
+#endif
 extern u8 Arrangement[4];
 extern int D_00386B00[];          /* 0x386B00 */
 extern s16 *name_tbl[3];
@@ -470,11 +475,14 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void Overlay_reset(void)
 {
     overlay_no[0] = 0;
     overlay_no[1] = 0;
+#ifdef VERSION_MHG
+    overlay_no[2] = 0;          /* G has a third overlay slot */
+#endif
 }
 #endif
 
@@ -500,7 +508,7 @@ int Load_overlay(int arg0, int arg1)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 int disp_select(void)
 {
     u16 *p;
@@ -531,7 +539,7 @@ int disp_select(void)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 int current_makedisp(pos, len, buf)
 int pos;
 int len;
@@ -548,7 +556,7 @@ u16 *buf;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 int first_makedisp(pos, len, buf)
 int pos;
 int len;
@@ -558,7 +566,7 @@ u16 *buf;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 void unify_khmem(int pos, int flag)
 {
     KH **pk;
@@ -588,7 +596,7 @@ void unify_khmem(int pos, int flag)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 u8 *select_tostr(void)
 {
     meantosjis(meanbuf, outbuf, disp_select());
@@ -596,7 +604,7 @@ u8 *select_tostr(void)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 u8 *select_subtostr(int arg0, int n)
 {
     int k;

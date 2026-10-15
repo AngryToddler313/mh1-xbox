@@ -1,4 +1,8 @@
 /* SLPM_654.95 0x002671A0-0x002671D4: net_bgm_set .. net_bgm_set. See netbgm_nm.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define se_stat func_00129190
+#endif
 #include "types.h"
 
 typedef struct NETCW {

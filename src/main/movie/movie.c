@@ -3,6 +3,7 @@
  * sfd_work holds the CRI player handle and the texture the frames are
  * uploaded into; movie_draw draws that texture as a full-screen sprite.
  * Field names are guesses. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct {
@@ -81,11 +82,16 @@ void movie_add_list();
 void movie_stop();
 void movie_reset();
 
+#if !defined(G_PART) || G_PART == 1
 void movie_reset(void)
 {
+#ifndef MHG_PS2     /* G's movie_reset is an empty stub */
     memset(&sfd_work, 0, sizeof(sfd_work));
+#endif
 }
+#endif
 
+#if !defined(G_PART)
 int movie_start(no)
 int no;
 {
@@ -132,7 +138,9 @@ int no;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void movie_request(no, add)
 int no;
 int add;
@@ -156,14 +164,18 @@ int add;
         w->ply->vt->x2C(w->ply, vol);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void movie_add_list(no)
 int no;
 {
     SFD_W *w = &sfd_work;
     mwPlyEntryAfs(w->ply, 0, sfd_tbl[no].file);
 }
+#endif
 
+#if !defined(G_PART)
 void movie_stop(void)
 {
     SFD_W *w = &sfd_work;
@@ -172,7 +184,9 @@ void movie_stop(void)
         w->ply->vt->x1C(w->ply);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void movie_exit(void)
 {
     SFD_W *w = &sfd_work;
@@ -186,13 +200,17 @@ void movie_exit(void)
     }
     movie_reset();
 }
+#endif
 
+#if !defined(G_PART)
 int movie_status_ck(void)
 {
     SFD_W *w = &sfd_work;
     return w->ply->vt->x20(w->ply) & 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 int movie_server(void)
 {
     s32 frm[20];
@@ -221,3 +239,4 @@ int movie_server(void)
     }
     return w->ready;
 }
+#endif

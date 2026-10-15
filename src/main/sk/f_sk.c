@@ -2,13 +2,15 @@
  * phrases): state in lpSKey (struct at 0 .. 0x668 bytes, layout guessed from offsets). Near-match C, not built;
  * matching runs would be built from it as skNN.c. Field meanings are guesses. */
 #include "types.h"
+#include "g_alias.h"
+#include "sk_g.h"
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 #define F8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define F16(p, o) (*(u16 *)((u8 *)(p) + (o)))
 #define FS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
@@ -122,15 +124,26 @@ void Pl_chat_act_req(int);
 u8 *getPS2KbData(void);
 /* sk19 - f_sk (0x0025F9C0-0x0025FA84): sk_get_key_code, soft keyboard cursor cell to key code and the row/column pointers. */
 
+#if !defined(G_PART) || G_PART == 1
 int Softkey_free_0(void *a, void *b) {
     return 0;
 }
+#endif
 
+#ifdef MHG_PS2
+void func_001193E0(void);
+#endif
+#if !defined(G_PART) || G_PART == 1
 int Softkey_free_1(void *a, void *b, int c) {
     Pl_chat_act_req((u8)((u8)c + 1));
+#ifdef MHG_PS2
+    func_001193E0();            /* G: 16-byte helper after the request */
+#endif
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 s8 sk_get_key_code() {
     u8 *l;
 
@@ -147,13 +160,17 @@ s8 sk_get_key_code() {
     }
     return SKS8(0x2E);
 }
+#endif
 
+#if !defined(G_PART)
 void SoftKeyboard_init(void) {
     lpSKey = softkeyboard;
     SKB(0x37) = 0;
     SoftkeyAppInit();
 }
+#endif
 
+#if !defined(G_PART)
 void SoftKeyboard_set(int type, u8 mode, s16 maxlen, char *init) {
     int o = type * 0x30;
 
@@ -187,7 +204,7 @@ void SoftKeyboard_set(int type, u8 mode, s16 maxlen, char *init) {
         SKS8(0x44) = 0;
         SKS8(0x29) = -1;
     } else {
-        strcpy((char *)lpSKey + 0x44, init);
+        strcpy((char *)lpSKey + SKO(0x44), init);
         SKS16(0x2A) = strlen(init);
     }
     sk_key_repeat(0, 0);
@@ -195,9 +212,11 @@ void SoftKeyboard_set(int type, u8 mode, s16 maxlen, char *init) {
     sk_kbd_act_exec();
     sk_conv_init(init);
     comkan_init();
-    memset(lpSKey + 0x658, 0, 0xA);
+    memset(lpSKey + SKO(0x658), 0, 0xA);
 }
+#endif
 
+#if !defined(G_PART)
 static void sk_init_mode(u8 mode) {
     SKB(0x1D) = mode;
     SKS32(0x20) = inp_mask_tbl[mode];
@@ -254,34 +273,42 @@ static void sk_init_mode(u8 mode) {
     sk_palette_cursor_set();
     sk_set_yn_kigou_f();
 }
+#endif
 
 /* original bytes: build/raw/sk_key_repeat.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 2
 asm static s16 sk_key_repeat(s16 now, s16 hold)
 {
 #include "sk_key_repeat.inc"
 }
 #endif
+#endif
 
 
 /* original bytes: build/raw/SoftKeyboard_move.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s8 SoftKeyboard_move(char *out, s16 sw, s16 hold)
 {
 #include "SoftKeyboard_move.inc"
 }
 #endif
+#endif
 
 
 /* original bytes: build/raw/sk_cursor_mv.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void sk_cursor_mv(s16 k, s16 sw)
 {
 #include "sk_cursor_mv.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 3
 void sk_cmd_input(u8 *key) {
     s8 m = SKS8(0x30);
 
@@ -302,16 +329,20 @@ void sk_cmd_input(u8 *key) {
         hk_kbd_input_sub(key);
     }
 }
+#endif
 
 /* original bytes: build/raw/sk_moji_input.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void sk_moji_input(u8 *key)
 {
 #include "sk_moji_input.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 static void sk_reibun_input(void) {
     char buf[0x100];
     u8 *r = SKP(0xC);
@@ -326,13 +357,15 @@ static void sk_reibun_input(void) {
             return;
         }
         strcpy(buf, (char *)s);
-        n = kbd_insert(lpSKey + 0x44, buf, SKU16(0x2A), SKU16(0x3A));
+        n = kbd_insert(lpSKey + SKO(0x44), buf, SKU16(0x2A), SKU16(0x3A));
         SKU16(0x2A) = SKU16(0x2A) + n;
         SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
         se_req(7, 0x16, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void kbd_reibun_input_sub(int a, int b, void *c) {
     u8 v = SKB(0x25);
 
@@ -341,7 +374,9 @@ void kbd_reibun_input_sub(int a, int b, void *c) {
         sk_reibun_input();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static s8 sk_zen_han_check(u8 a) {
     int t = han_zen_tbl_671[a];
     s8 u = t;
@@ -351,7 +386,9 @@ static s8 sk_zen_han_check(u8 a) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART)
 void sk_zen_han_chg(void) {
     int snd = 0x15;
     s8 t = sk_zen_han_check(SKB(0x1E));
@@ -373,7 +410,9 @@ void sk_zen_han_chg(void) {
     }
     se_req(7, snd, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void sk_backspace(int a, int b, void *c) {
     u8 m = SKB(0x1D);
     int len;
@@ -386,7 +425,7 @@ void sk_backspace(int a, int b, void *c) {
         return;
     }
     if (SKB(0x2F) == 0) {
-        s = lpSKey + 0x158;
+        s = lpSKey + SKO(0x158);
         if (SKB(0x158) != 0) {
             n = SKU16(0x2C);
             if (n != 0) {
@@ -401,7 +440,7 @@ void sk_backspace(int a, int b, void *c) {
             }
         } else {
             n = SKU16(0x2A);
-            s = lpSKey + 0x44;
+            s = lpSKey + SKO(0x44);
             if (n != 0) {
                 len = sk_letlenB(s, n);
                 *(s + n - len) = 0;
@@ -426,8 +465,10 @@ done:
         se_req(7, 0x16, 0);
     }
 }
+#endif
 
 
+#if !defined(G_PART)
 void sk_speaking(int a, int b, void *c) {
     if (SKB(0x158) != 0) {
         cmd_kakutei_all();
@@ -441,25 +482,31 @@ void sk_speaking(int a, int b, void *c) {
     }
     se_req(7, 0x18, 0);
 }
+#endif
 
 /* original bytes: build/raw/sk_pltchange.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void sk_pltchange(int back)
 {
 #include "sk_pltchange.inc"
 }
 #endif
+#endif
 
 
 /* original bytes: build/raw/setup_rw_sub.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void setup_rw_sub(int n)
 {
 #include "setup_rw_sub.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 5
 static void setup_rw_moji(void) {
     char *k = (char *)lpSKey;
     RW2 *f = (RW2 *)((u8 *)&free_rw_tbl[0][2] + *(s32 *)(*(u8 **)((u8 *)k + 0x10) + 0x20) * 0xC);
@@ -473,19 +520,23 @@ static void setup_rw_moji(void) {
         = RWP(moji_tbl_kata_s, 0x14) = RWP(moji_tbl_kata_sh, 0x14) = RWP(moji_tbl_abn, 0x14) = RWP(moji_tbl_abn_s, 0x14)
         = RWP(moji_tbl_abn_h, 0x14) = RWP(moji_tbl_abn_sh, 0x14) = RWP(moji_tbl_mark, 0x14) = RWP(moji_tbl_free, 0x14) = *r;
 }
+#endif
 
 
 /* original bytes: build/raw/dakuten_ck.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 5
 asm static int dakuten_ck(char *tbl)
 {
 #include "dakuten_ck.inc"
 }
 #endif
+#endif
 
 
 /* Han2zen: half-width ASCII letters to full-width (matches; the PC build uses the near-match copy in sk_nm.c) */
 #ifdef __MWERKS__
+#if !defined(G_PART) || G_PART == 5
 void Han2zen(s8 *src, s8 *dst) {
     s8 c;
     int d;
@@ -512,41 +563,49 @@ void Han2zen(s8 *src, s8 *dst) {
     *dst = 0;
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 5
 static void disp_keybase(f32 x, s16 y, int col) {
     struct { s16 p[4]; int col; } q;
     u8 *k;
 
     q.col = col;
     k = SKP(4);
-    q.p[0] = x + *(f32 *)k * *(f32 *)(lpSKey + 0x14);
-    q.p[2] = x + *(f32 *)(lpSKey + 0x14) * (*(f32 *)k + key_size_tbl[F16(k, 6)].w);
+    q.p[0] = x + *(f32 *)k * *(f32 *)(lpSKey + SKO(0x14));
+    q.p[2] = x + *(f32 *)(lpSKey + SKO(0x14)) * (*(f32 *)k + key_size_tbl[F16(k, 6)].w);
     q.p[1] = y + FS16(k, 4);
     q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)].h;
     flps0004(&q);
 }
+#endif
 
 /* original bytes: build/raw/disp_keybase2.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm static void disp_keybase2(f32 x, s16 y, int col)
 {
 #include "disp_keybase2.inc"
 }
 #endif
+#endif
 
 
 /* original bytes: build/raw/DispSoftkeyboard.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void DispSoftkeyboard(int scale)
 {
 #include "DispSoftkeyboard.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART)
 void kbd_plt1_move(u8 *c, int a, void *b) {
-    if (palette_ng_sub2(c[3], lpSKey + 0x1F, lpSKey + 0x1E) != 0) {
+    if (palette_ng_sub2(c[3], lpSKey + SKO(0x1F), lpSKey + SKO(0x1E)) != 0) {
         se_req(7, 0x15, 0);
         return;
     }
@@ -592,12 +651,16 @@ void kbd_plt1_move(u8 *c, int a, void *b) {
     }
     se_req(7, 0x16, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void sk_set_etc_data() {
     sk_board_ptr_replace();
     sk_get_key_code();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 static int dakuten_ck_sub(u8 *p) {
     u8 c = p[3];
 
@@ -609,19 +672,27 @@ static int dakuten_ck_sub(u8 *p) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void dakuten_ck_ten(void) {
     dakuten_ck(ten_moji);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void dakuten_ck_han(void) {
     dakuten_ck(maru_moji);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 s8 SoftKeyboard_alive_check(void) {
     return SKS8(0x31);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void SoftKeyboard_exit(void) {
     if (SoftKeyboard_alive_check() != 0) {
         sk_kbd_act_kill();
@@ -629,39 +700,53 @@ void SoftKeyboard_exit(void) {
         SKS8(0x32) = -1;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void SoftKeyboard_pos_set(f32 x, s16 y) {
-    *(f32 *)(lpSKey + 0x40) = x;
+    *(f32 *)(lpSKey + SKO(0x40)) = x;
     SKS16(0x38) = y;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void sk_skb_exec(void) {
     SKS8(0x30) = 1;
     SKS8(0x26) = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 void sk_skb_kill(void) {
     SKS8(0x30) = 0;
     SKS8(0x26) = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void sk_kbd_act_exec(void) {
     SKS8(0x31) = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void sk_kbd_act_kill() {
     SKS8(0x31) = 0;
 }
+#endif
 
 /* original bytes: build/raw/palette_ng_sub.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int palette_ng_sub(int pal, u8 *f, u8 *e)
 {
 #include "palette_ng_sub.inc"
 }
 #endif
+#endif
 
 
+#if !defined(G_PART) || G_PART == 8
 static int palette_ng_sub2(p, f, e)
 int p;
 u8 *f;
@@ -698,11 +783,15 @@ u8 *e;
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 void sk_disp_palette_set(void) {
     SKB(0x1F) = disp_plt_tbl_1413[SKB(0x1E)];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 s8 sk_daisyo_check(u8 a) {
     int t = daisyo_tbl_1423[a];
     s8 u = t;
@@ -712,7 +801,9 @@ s8 sk_daisyo_check(u8 a) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART)
 void sk_daisyo_chg(void) {
     int snd = 0x15;
     s8 t = sk_daisyo_check(SKB(0x1E));
@@ -735,7 +826,9 @@ void sk_daisyo_chg(void) {
     }
     se_req(7, snd, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void sk_palette_cursor_set(void) {
     u8 f = SKB(0x1F);
 
@@ -749,8 +842,10 @@ set:
         SKB(0x25) = palette_set_tbl[SKB(0x1F) * 2 + 1];
     }
 }
+#endif
 
 
+#if !defined(G_PART)
 static void sk_board_ptr_replace(void) {
     u8 m = SKB(0x1D);
     u8 e;
@@ -797,18 +892,24 @@ static void sk_board_ptr_replace(void) {
         *(u8 **)lpSKey = board_tbl[0];
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 9
 void kbd_free_set(void) {
     cmd_kakutei_all();
-    if (Softkey_free_0(lpSKey + 0x44, lpSKey + 0x2A) < 0) {
+    if (Softkey_free_0(lpSKey + SKO(0x44), lpSKey + SKO(0x2A)) < 0) {
         SKB(0x35) |= 0xF;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 9
 void kbdExecServer_flag_clear(void) {
     softkeyboard[0x37] = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 9
 int yn_mask_char_check(u8 *p) {
     char buf[4];
     int r = 0;
@@ -829,7 +930,9 @@ int yn_mask_char_check(u8 *p) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 static int key_mask_check(KM *k) {
     int r = 0;
     u8 m;
@@ -865,7 +968,9 @@ static int key_mask_check(KM *k) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 10
 static int mh_char_make_check(u8 *p) {
     int r = 0;
 
@@ -875,4 +980,5 @@ static int mh_char_make_check(u8 *p) {
     }
     return r;
 }
+#endif
 

@@ -88,6 +88,22 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 x80;           /* 0x80  */
     s8 x81;           /* 0x81  */
     s8 x82;           /* 0x82  */
+#ifdef VERSION_MHG
+    /* G (tools/mhg_offdiff.py votes + check.py): x83 moved to 0x88 and the fields after it sit one byte later; x8D at 0x90; 0x98 bytes */
+    u8 _padG83;       /* 0x83 */
+    s8 x84;           /* 0x84  */
+    s8 x85;           /* 0x85 mix effect kind (mix_effect_set) */
+    s16 x86;          /* 0x86 mix effect frame counter */
+    u8 x83;           /* 0x88 */
+    u8 x88;           /* 0x89 */
+    u8 lb;            /* 0x8A 1 in the lobby */
+    u8 x8A;           /* 0x8B game_w+0x1DD */
+    u8 x8B;           /* 0x8C game_w+0x0F */
+    u8 x8C;           /* 0x8D option_w+3 */
+    u8 _pad8E[0x90 - 0x8E];
+    u8 x8D;           /* 0x90 */
+    u8 _pad91[0x98 - 0x91];
+#else
     u8 x83;           /* 0x83  */
     s8 x84;           /* 0x84  */
     s8 x85;           /* 0x85 mix effect kind (mix_effect_set) */
@@ -99,11 +115,16 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     u8 x8C;           /* 0x8C option_w+3 */
     u8 x8D;           /* 0x8D  */
     u8 _pad8E[0x90 - 0x8E];
+#endif
 } PIT_W;
 
 /* One chat log entry (PitMenu.log[64], 0x5D bytes; f_chat). */
 typedef struct PIT_CHAT {
+#ifdef VERSION_MHG
+    char text[2][0x20]; /* G: lines are one byte longer (entry 0x5F bytes, every later field +2) */
+#else
     char text[2][0x1F]; /* 0x00 message split into two display lines */
+#endif
     u8 nline;           /* 0x3E number of display lines used */
     u8 who;             /* 0x3F player number (0xFF: plaza) */
     u8 col[4];          /* 0x40 colours */

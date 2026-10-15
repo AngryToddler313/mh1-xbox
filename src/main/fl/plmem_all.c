@@ -34,7 +34,6 @@ static void plmemAppendBlockList(PLMEM *, int);
 static void plmemDeleteBlockList(PLMEM *, int);
 void plmemCompact(PLMEM *);
 
-#if !defined(G_PART) || G_PART == 1
 int plmemRegisterAlign(PLMEM *m, u32 size, int align) {
     int h;
     if (!(plmemGetFreeSpace(m) > size + align)) {
@@ -64,20 +63,16 @@ int plmemRegisterAlign(PLMEM *m, u32 size, int align) {
     plmemAppendBlockList(m, h);
     return h + 1;
 }
-#endif
 
 #ifdef __MWERKS__
-#if !defined(G_PART)
 asm int plmemRegisterS(PLMEM *m, u32 size)
 {
 #include "plmemRegisterS.inc"
 }
-#endif
 #else
 int plmemRegisterS(PLMEM *m, u32 size);
 #endif
 
-#if !defined(G_PART) || G_PART == 2
 u32 plmemTemporaryUse(PLMEM *m, int size) {
     u32 need = ~(m->align - 1) & (size + m->align - 1);
 
@@ -97,9 +92,7 @@ u32 plmemTemporaryUse(PLMEM *m, int size) {
     }
     return m->base - m->size;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 u32 plmemRetrieve(PLMEM *m, int h) {
     int i = h - 1;
 
@@ -108,9 +101,7 @@ u32 plmemRetrieve(PLMEM *m, int h) {
     }
     return m->blocks[i].addr;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 int plmemRelease(PLMEM *m, int h) {
     PLBLK *b;
     u32 size;
@@ -128,20 +119,16 @@ int plmemRelease(PLMEM *m, int h) {
     plmemDeleteBlockList(m, h);
     return 1;
 }
-#endif
 
 #ifdef __MWERKS__
-#if !defined(G_PART)
 asm void plmemCompact(PLMEM *m)
 {
 #include "plmemCompact.inc"
 }
-#endif
 #else
 void plmemCompact(PLMEM *m);
 #endif
 
-#if !defined(G_PART)
 int plmemGetFreeSpace(PLMEM *m) {
     if (m->dir != 0) {
         {
@@ -152,9 +139,7 @@ int plmemGetFreeSpace(PLMEM *m) {
     }
     return m->cur - (m->base - m->size) - m->x20;
 }
-#endif
 
-#if !defined(G_PART)
 static int plmemPullHandle(PLMEM *m) {
     int i;
     PLBLK *b;
@@ -173,16 +158,13 @@ static int plmemPullHandle(PLMEM *m) {
     }
     return 0xFFFF;
 }
-#endif
 
 /* original bytes: build/raw/plmemAppendBlockList.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 static asm void plmemAppendBlockList(PLMEM *m, int h)
 {
 #include "plmemAppendBlockList.inc"
 }
-#endif
 #else
 static void plmemAppendBlockList(PLMEM *m, int h) {
     PLBLK *b = m->blocks;
@@ -239,12 +221,10 @@ static void plmemAppendBlockList(PLMEM *m, int h) {
 
 /* original bytes: build/raw/plmemDeleteBlockList.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 static asm void plmemDeleteBlockList(PLMEM *m, int h)
 {
 #include "plmemDeleteBlockList.inc"
 }
-#endif
 #else
 static void plmemDeleteBlockList(PLMEM *m, int h) {
     PLBLK *b = m->blocks;

@@ -16,6 +16,10 @@
 /* plf.h declares these two with other types than their definitions here: keep its prototypes out */
 #define pl_work_clr pl_work_clr_proto_unused
 #define stick_pow_get stick_pow_get_proto_unused
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define ItemStockRequest func_0011CD20
+#endif
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
@@ -228,6 +232,9 @@ static void fish_com_ck(PLW *pl);
 static void pl_mv078(PLW *pl, s32 arg1);
 static void pl_mv079(PLW *pl, s32 unused_arg);
 static void pl_mv083(PLW *pl, s32 unused_arg);
+#ifdef MHG_PS2
+void game_func_0054B4B0(u16);
+#endif
 static void pl_mv084(PLW *pl, s32 arg1);
 static void pl_mv085(PLW *pl, s32 unused_arg);
 static void pl_mv086(PLW *pl, s32 unused_arg);
@@ -437,11 +444,11 @@ void player_init0(PLW *pl) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 37
 void clr_pl_work(void) {
     int i;
     PLW *p = player_work;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < GV(8, 10); i++) {
         memset(p, 0, 0xA00);
         p++;
     }
@@ -449,7 +456,7 @@ void clr_pl_work(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 38
+#if !defined(G_PART) || G_PART == 37
 void player_mv(void) {
     switch (pl_cnt_w[0]) {
     case 0:
@@ -504,7 +511,7 @@ clr:
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 39
+#if !defined(G_PART) || G_PART == 38
 static void pl_work_clr(pl, no, prog)
 PLW *pl;
 int no;
@@ -529,7 +536,7 @@ PLPROG *prog;
 
 
 
-#if !defined(G_PART) || G_PART == 39
+#if !defined(G_PART) || G_PART == 38
 void Pl_ofs_set(PLW *pl, f32 *pos, int ang) {
     s32 rot[3];
     f32 ofs[4];
@@ -931,7 +938,7 @@ asm void timer_calc_sub_pl(PLW *pl)
 
 
 
-#if !defined(G_PART) || G_PART == 40
+#if !defined(G_PART) || G_PART == 39
 static void timer_calc_sub_em(PLW *pl) {
     s16 temp_v1;
     u8 temp_a1;
@@ -947,7 +954,7 @@ static void timer_calc_sub_em(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 40
+#if !defined(G_PART) || G_PART == 39
 void pl_timer_calc(PLW *pl) {
     s16 temp_v0_3;
     s16 temp_v0_5;
@@ -1079,7 +1086,7 @@ static void pl_dm_value_sub(PLW *pl) {
 
 
 
-#if !defined(G_PART) || G_PART == 41
+#if !defined(G_PART) || G_PART == 40
 u16 item_sel_sub(PLW *pl, u16 sel, int dir) {
     s16 n;
     s16 i;
@@ -1233,7 +1240,7 @@ static int pl_status_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 40
+#if !defined(G_PART) || G_PART == 39
 void hit_stop_calc(PLW *pl) {
     u8 a = pl->work409;
     if (a != 0) {
@@ -1260,7 +1267,7 @@ static int stick_dir_set(PLW *pl, int no) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static u8 stick_pow_get(PLW *pl, int arg1) { /* arg1 unused, callers pass 0 */
     u8 r = 0;
     u16 p;
@@ -1273,6 +1280,9 @@ static u8 stick_pow_get(PLW *pl, int arg1) { /* arg1 unused, callers pass 0 */
     case 2:
     case 3:
     case 4:
+#ifdef VERSION_MHG
+    case 6:
+#endif
         pl->x8C8 = 0;
         p = pl->sw.pow[0];
         if (p >= 0x78) {
@@ -1289,7 +1299,7 @@ static u8 stick_pow_get(PLW *pl, int arg1) { /* arg1 unused, callers pass 0 */
 #endif
 
 /* em_ninshiki_ck: written from the asm (agent B): marks the monsters on the hunter's stage that noticed him (x88F has his bit) as seen (x7EE), aims at the last one. */
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 static void em_ninshiki_ck(PLW *pl) {
     s16 i;
     u8 bit;
@@ -1319,7 +1329,7 @@ static void em_ninshiki_ck(PLW *pl) {
 
 
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 static int em_ninshiki_ck2(PLW *pl) {
     u8 a = pl->work81E;
     if (a != 0) {
@@ -1333,7 +1343,7 @@ static int em_ninshiki_ck2(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 static int pl_ride_ck(PLW *pl) {
     f32 d, lim;
     u8 k;
@@ -1351,7 +1361,7 @@ static int pl_ride_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 static int ex_kabe_ck(PLW *pl) {
     u16 a = pl->sw.an_now;
     if (a & 0x2000) {
@@ -1370,7 +1380,7 @@ static int ex_kabe_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 4
+#if !defined(G_PART) || G_PART == 3
 static void unique_act_set(PLW *pl) {
     f32 sp90[3];
     u16 sp9C;
@@ -1488,7 +1498,7 @@ static void job_special_com_ck(PLW *pl, u8 mode) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void search_act_set(PLW *pl, u8 mode) {
     u16 sp3E;
     f32 sp30[3];
@@ -1516,16 +1526,16 @@ block_3:
             case 3:
                 if (mode == 2) {
                     switch (pl->item[pl->work888].id) {
-                    case 0x83:
-                    case 0x84:
-                    case 0x85:
+                    case GV(0x83, 0x70):
+                    case GV(0x84, 0x71):
+                    case GV(0x85, 0x72):
                         pl->ang_y = (s16)((calc_vec_ang2(pl->pos, sp30) & 0xFFFF) - 0x4000);
                         pl->work88A = pl->item[pl->work888].id;
                         Pl_act_set(pl, 0, 0x51, 0);
                         break;
-                    case 0x86:
-                    case 0x87:
-                    case 0x88:
+                    case GV(0x86, 0x73):
+                    case GV(0x87, 0x74):
+                    case GV(0x88, 0x75):
                         se_req(7, 0x15, 0);
                         break;
                     }
@@ -1535,15 +1545,15 @@ block_3:
                 if (mode == 2) {
                     id = pl->item[pl->work888].id;
                     switch (id) {
-                    case 0x86:
-                    case 0x87:
-                    case 0x88:
+                    case GV(0x86, 0x73):
+                    case GV(0x87, 0x74):
+                    case GV(0x88, 0x75):
                         pl->work88A = id;
                         Pl_act_set(pl, 0, 0x52, 0);
                         break;
-                    case 0x83:
-                    case 0x84:
-                    case 0x85:
+                    case GV(0x83, 0x70):
+                    case GV(0x84, 0x71):
+                    case GV(0x85, 0x72):
                         se_req(7, 0x15, 0);
                         break;
                     }
@@ -1555,12 +1565,12 @@ block_3:
         } else {
 block_24:
             switch (pl->item[pl->work888].id) {
-            case 0x83:
-            case 0x84:
-            case 0x85:
-            case 0x86:
-            case 0x87:
-            case 0x88:
+            case GV(0x83, 0x70):
+            case GV(0x84, 0x71):
+            case GV(0x85, 0x72):
+            case GV(0x86, 0x73):
+            case GV(0x87, 0x74):
+            case GV(0x88, 0x75):
                 if (mode == 2) {
                     se_req(7, 0x15, 0);
                 }
@@ -2315,7 +2325,7 @@ static void item_action_set(PLW *pl, u8 mode) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static s32 trade_get_ck_00139680(PLW *pl) {
     s16 i;
     PLW *p;
@@ -2344,7 +2354,7 @@ static s32 trade_get_ck_00139680(PLW *pl) {
                             Pl_act_set2(pl, 0, 0x68, 0);
                             return 1;
                         }
-                        set01_set2(lit_1830);
+                        set01_set2(GSTR(lit_1830, gptr_00528410));
                         pl->work936 = 0x5A;
                         goto ret0;
                     }
@@ -2714,7 +2724,7 @@ static void gun_adj_sub(PLW *pl) {
 
 
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 7
 static void scope_add(PLW *pl, int arg1) {
     pl->x8EE = pl->x8EE + arg1;
     if ((s16)arg1 >= 0) {
@@ -2730,7 +2740,7 @@ static void scope_add(PLW *pl, int arg1) {
 /* sougun_adj_sub matches with `#pragma opt_propagation off` (the original negates the constant v at run time instead of
    folding it), blend_calc's s8 parameter, the angle read as u16 (lhu), `v = (s8)v` after the second negation, an int `pw`, the angle difference d as u32 with unsigned compares. */
 #pragma opt_propagation off
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 7
 static void sougun_adj_sub(PLW *pl, u16 id) {
     s8 v;
     u16 step;
@@ -2843,7 +2853,7 @@ static void sougun_adj_sub(PLW *pl, u16 id) {
 
 
 
-#if !defined(G_PART) || G_PART == 6
+#if !defined(G_PART) || G_PART == 7
 static void pl_mv000(PLW *pl, s32 unused_arg) {
     u16 c;
 
@@ -3022,7 +3032,7 @@ go:
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv004(PLW *pl, u32 arg1) {
     u8 s;
     u8 t;
@@ -3092,7 +3102,7 @@ static void pl_mv004(PLW *pl, u32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv006(PLW *pl, s32 arg1) {
     int sp4C;
     f32 sp40[3];
@@ -3209,7 +3219,7 @@ static void pl_mv006(PLW *pl, s32 arg1) {
 #endif
 
 /* pl_mv021: `case 0: default:` on the arg1 switch. */
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv021(PLW *pl, s32 arg1) {
     int sp4C;
     f32 sp40[3];
@@ -3318,7 +3328,7 @@ static void pl_mv021(PLW *pl, s32 arg1) {
 
 
 
-#if !defined(G_PART) || G_PART == 7
+#if !defined(G_PART) || G_PART == 8
 static void pl_mv008(PLW *pl, int arg1) {
     u8 s;
     u8 t;
@@ -3508,7 +3518,7 @@ static void pl_mv014(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 8
+#if !defined(G_PART) || G_PART == 9
 static void pl_mv017(PLW *pl, s32 arg1) {
     f32 spCC;
     s32 spC0[3];
@@ -3572,7 +3582,7 @@ static void pl_mv017(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 8
+#if !defined(G_PART) || G_PART == 9
 static void pl_mv022(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3597,7 +3607,7 @@ static void pl_mv022(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 8
+#if !defined(G_PART) || G_PART == 9
 static void pl_mv024(PLW *pl, s32 arg1) {
     u8 s;
     s32 w;
@@ -3647,7 +3657,7 @@ static void pl_mv024(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 8
+#if !defined(G_PART) || G_PART == 9
 static void pl_mv025(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -3764,7 +3774,7 @@ static void pl_mv028(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 9
+#if !defined(G_PART) || G_PART == 10
 static void pl_mv030(PLW *pl, s32 unused_arg) {
     f32 sp7C;
     s32 sp70[3];
@@ -3985,7 +3995,7 @@ b25:
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv033(PLW *pl, s32 arg1) {
     u8 s;
     s32 w;
@@ -4036,7 +4046,7 @@ static void pl_mv033(PLW *pl, s32 arg1) {
 
 
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv037(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4056,7 +4066,7 @@ static void pl_mv037(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv038(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4079,7 +4089,7 @@ static void pl_mv038(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv039(PLW *pl, s32 unused_arg) {
     pl->work40E = 2;
     Pl_basic_flagset(pl, 0x8002, 0, 0);
@@ -4088,7 +4098,7 @@ static void pl_mv039(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv040(PLW *pl, s32 unused_arg) {
     int sp2C;
     u16 c;
@@ -4123,7 +4133,7 @@ static void pl_mv040(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv041(PLW *pl, s32 unused_arg) {
     u16 c;
 
@@ -4156,7 +4166,7 @@ static void pl_mv041(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv042(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4184,7 +4194,7 @@ static void pl_mv042(PLW *pl, s32 unused_arg) {
 
 
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv043(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4208,7 +4218,7 @@ static void pl_mv043(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv044(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4229,7 +4239,7 @@ static void pl_mv044(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv046(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4264,7 +4274,7 @@ static void pl_mv046(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 10
+#if !defined(G_PART) || G_PART == 11
 static void pl_mv047(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4353,7 +4363,7 @@ static void pl_mv049(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 11
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv051(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4376,7 +4386,7 @@ static void pl_mv051(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 11
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv052(PLW *pl, s32 unused_arg) {
     f32 sp20[3];
     u8 s;
@@ -4428,7 +4438,7 @@ static void pl_mv052(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 11
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv053(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4453,7 +4463,7 @@ static void pl_mv053(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static void pl_mv054(PLW *pl, s32 unused_arg) {
     f32 sp20[3];
     u16 sp2C;
@@ -4495,7 +4505,7 @@ static void pl_mv054(PLW *pl, s32 unused_arg) {
             }
             if (pl->x06 == 0) {
                 sougun_adj_sub(pl, 0x19E);
-                if ((pl->sw.trg & 0x20) && ((s16)Pl_item_num_ck(pl, 0xA2) != 0)) {
+                if ((pl->sw.trg & GV(0x20, 0x21)) && ((s16)Pl_item_num_ck(pl, GV(0xA2, 0x200)) != 0)) {
                     Pl_act_set2(pl, 0, 0x48, 0xC);
                 }
             }
@@ -4536,7 +4546,7 @@ static void pl_mv072(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 12
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv055(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4567,7 +4577,7 @@ static void pl_mv055(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 12
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv057(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4589,7 +4599,7 @@ static void pl_mv057(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 12
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv058(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4612,7 +4622,7 @@ static void pl_mv058(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 12
+#if !defined(G_PART) || G_PART == 13
 static void pl_mv059(PLW *pl, s32 unused_arg) {
     u8 s;
     s32 w;
@@ -4687,7 +4697,7 @@ static void pl_mv060(PLW *pl, s32 unused_arg) {
 
 
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv061(PLW *pl, s32 unused_arg) {
     u8 s;
     s32 w;
@@ -4720,7 +4730,7 @@ static void pl_mv061(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv062(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4741,7 +4751,7 @@ static void pl_mv062(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv063(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -4770,7 +4780,7 @@ static void pl_mv063(PLW *pl, s32 unused_arg) {
 
 
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void kabe_hosei(PLW *pl, int arg1) {
     f32 sp90[3];
     f32 sp80[3];
@@ -4793,7 +4803,7 @@ static void kabe_hosei(PLW *pl, int arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void kabe_com_ck(PLW *pl) {
     s32 p;
     s32 d;
@@ -4836,7 +4846,7 @@ go:
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv064(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -4863,7 +4873,7 @@ static void pl_mv064(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv065(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -4894,7 +4904,7 @@ static void pl_mv065(PLW *pl, s32 arg1) {
 
 
 
-#if !defined(G_PART) || G_PART == 13
+#if !defined(G_PART) || G_PART == 14
 static void pl_mv068(PLW *pl, s32 unused_arg) {
     f32 sp30[3];
     f32 sp20[3];
@@ -4958,7 +4968,7 @@ static void pl_mv068(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 static void pick_set_sub(PLW *pl, u16 arg1) {
     s32 r;
     s16 q;
@@ -4980,7 +4990,7 @@ static void pick_set_sub(PLW *pl, u16 arg1) {
                 return;
             }
             adx_se_set(pl, 8);
-            set01_set2(lit_3557);
+            set01_set2(GSTR(lit_3557, gptr_00528414));
             return;
         }
         q = ItemStockRequest(pl, r, pl->x8E6, 3);
@@ -5176,7 +5186,7 @@ static void pl_mv093(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 14
+#if !defined(G_PART) || G_PART == 15
 static void pl_mv076(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5203,7 +5213,7 @@ static void pl_mv076(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 14
+#if !defined(G_PART) || G_PART == 15
 static void pl_mv077(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5275,7 +5285,7 @@ static void fish_com_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 15
+#if !defined(G_PART) || G_PART == 16
 static void pl_mv078(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -5307,7 +5317,7 @@ static void pl_mv078(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 static void pl_mv079(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5328,7 +5338,7 @@ static void pl_mv079(PLW *pl, s32 unused_arg) {
         break;
     case 1:
         if (frame_check(104.0f, pl, 0) != 0) {
-            if (pl->work88A == 0x7D) {
+            if (pl->work88A == GV(0x7D, 0x6B)) {
                 func_555A90(pl, 1);
             } else {
                 func_555A90(pl, 0);
@@ -5348,7 +5358,7 @@ static void pl_mv079(PLW *pl, s32 unused_arg) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 static void pl_mv083(PLW *pl, s32 unused_arg) {
     EMW *e;
     s16 i;
@@ -5413,7 +5423,11 @@ static void pl_mv083(PLW *pl, s32 unused_arg) {
             adx_se_set(pl, 5);
             Pl_item_stack(pl, pl->work88A, -1);
             if ((s16)ItemStockRequest(pl, pl->fish_time, pl->x8E6, 0) == 3) {
+#ifdef MHG_PS2
+                game_func_0054B4B0(pl->fish_time);     /* G: its own 'box full' notice (20 bytes) */
+#else
                 set01_set(1, 3, (s16)pl->fish_time);
+#endif
             }
         }
         if (pl->work194 == 0) {
@@ -9256,7 +9270,7 @@ static void pl_dm006(PLW *pl) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 26
 static void pl_dm007(PLW *pl, s32 arg1) {
     f32 spA0[3];
     f32 sp90[3];
@@ -9271,6 +9285,9 @@ static void pl_dm007(PLW *pl, s32 arg1) {
     switch (s) {
     case 0:
         pl->x05 = s + 1;
+#ifdef VERSION_MHG
+        pl->work93D = 0;
+#endif
         if (arg1 == 0) {
             pl_chr_set2(pl, 0xD5, 0, 0);
         } else {
@@ -9347,7 +9364,7 @@ go:
 #endif
 
 /* pl_dm008: the kind switch's default needs `case 0: default:` (a lone default reuses a0). */
-#if !defined(G_PART) || G_PART == 27
+#if !defined(G_PART) || G_PART == 26
 static void pl_dm008(PLW *pl) {
     u8 s;
 
@@ -9383,7 +9400,7 @@ static void pl_dm008(PLW *pl) {
 
 
 
-#if !defined(G_PART) || G_PART == 27
+#if !defined(G_PART) || G_PART == 26
 static void pl_dm009(PLW *pl, s32 arg1) {
     f32 sp80[3];
     s32 sp70[3];
@@ -9432,7 +9449,7 @@ static void pl_dm009(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 27
+#if !defined(G_PART) || G_PART == 26
 static void pl_dm011(PLW *pl) {
     u8 s;
 
@@ -9497,7 +9514,7 @@ static void pl_dm015(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm016(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -9534,7 +9551,7 @@ static void pl_dm016(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm017(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9559,7 +9576,7 @@ static void pl_dm017(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void piyo_reset(PLW *pl) {
     pl->x7AC = 0;
     pl->x7AA = 0;
@@ -9567,7 +9584,7 @@ static void piyo_reset(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm019(PLW *pl, s32 unused_arg) {
     s8 n;
     u8 s;
@@ -9618,7 +9635,7 @@ static void pl_dm019(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm020(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9640,7 +9657,7 @@ static void pl_dm020(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm021(PLW *pl, s32 unused_arg) {
     f32 sp20[3];
     s32 w;
@@ -9701,7 +9718,7 @@ static void pl_dm021(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm022(PLW *pl, s32 arg1) {
     s16 v;
     u16 r;
@@ -9778,7 +9795,7 @@ static void pl_dm022(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 28
+#if !defined(G_PART) || G_PART == 27
 static void pl_dm023(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -9900,7 +9917,7 @@ static void pl_damage(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 28
 static void pl_die000(PLW *pl, s32 arg1) {
     int c;
     u8 v;
@@ -9950,7 +9967,7 @@ static void pl_die000(PLW *pl, s32 arg1) {
                 Quest_forfeit_message();
             }
             if ((quest_w.x14 <= 0) && ((s8)c == 1)) {
-                set01_set2(lit_6243);
+                set01_set2(GSTR(lit_6243, gptr_00528418));
             }
             break;
         }
@@ -9961,7 +9978,7 @@ static void pl_die000(PLW *pl, s32 arg1) {
             pl->work91E = 0x63;
         }
         PlayerDieCameraRequest();
-        set01_set2(lit_6244);
+        set01_set2(GSTR(lit_6244, gptr_0052841C));
         if ((s8)c < 2) {
             Quest_forfeit_message();
         }
@@ -9971,9 +9988,9 @@ static void pl_die000(PLW *pl, s32 arg1) {
             break;
         }
         if ((s8)c == 1) {
-            set01_set2(lit_6243);
+            set01_set2(GSTR(lit_6243, gptr_00528420));
         }
-        set01_set2(lit_6245);
+        set01_set2(GSTR(lit_6245, gptr_00528424));
         break;
     case 1:
         if ((pl->char0 == 0xD2) && (frame_check(164.0f, pl, 0) != 0) && !((r = ran_suu(1)) & 0x3F)) {
@@ -10005,7 +10022,7 @@ static void pl_die000(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 29
+#if !defined(G_PART) || G_PART == 28
 static void pl_die(PLW *pl) {
     pl->work8C2 = 0;
     pl->x8C6 = 0;
@@ -10025,7 +10042,7 @@ static void pl_die(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 29
+#if !defined(G_PART) || G_PART == 28
 static void pl_demo000(PLW *pl, s32 unused_arg) {
     EMW *e;
     u8 *q;
@@ -10099,7 +10116,7 @@ static void pl_demo000(PLW *pl, s32 unused_arg) {
 
 
 
-#if !defined(G_PART) || G_PART == 29
+#if !defined(G_PART) || G_PART == 28
 static void pl_demo001(PLW *pl, s32 unused_arg) {
     f32 f;
     u8 s;
@@ -10142,7 +10159,7 @@ static void pl_demo001(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 29
+#if !defined(G_PART) || G_PART == 28
 static void pl_demo002(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10165,7 +10182,7 @@ static void pl_demo002(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 29
+#if !defined(G_PART) || G_PART == 28
 static void pl_demo003(PLW *pl, s32 unused_arg) {
     u8 s;
     u8 v;
@@ -10193,7 +10210,7 @@ static void pl_demo003(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 29
+#if !defined(G_PART) || G_PART == 28
 static void pl_demo004(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10280,7 +10297,7 @@ static void pl_demo005(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 30
+#if !defined(G_PART) || G_PART == 29
 static void pl_demo(PLW *pl) {
     pl->work8C2 = 0;
     pl->x8C6 = 0;
@@ -10315,7 +10332,7 @@ static void pl_demo(PLW *pl) {
 
 
 
-#if !defined(G_PART) || G_PART == 30
+#if !defined(G_PART) || G_PART == 29
 static void egg_set(PLW *pl) {
     s32 id;
 
@@ -10427,7 +10444,7 @@ go:
 
 
 
-#if !defined(G_PART) || G_PART == 31
+#if !defined(G_PART) || G_PART == 30
 static void pl_egg00(PLW *pl, s32 arg1) {
     s32 w;
     u8 s;
@@ -10528,7 +10545,7 @@ static void pl_egg02(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 32
+#if !defined(G_PART) || G_PART == 31
 static void pl_egg03(PLW *pl, s32 arg1) {
     s32 v;
     s32 id;
@@ -10665,7 +10682,7 @@ static void pl_egg05(PLW *pl, s32 arg1) {
 
 
 
-#if !defined(G_PART) || G_PART == 33
+#if !defined(G_PART) || G_PART == 32
 static void pl_egg07(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -10691,7 +10708,7 @@ static void pl_egg07(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 33
+#if !defined(G_PART) || G_PART == 32
 static void pl_egg(PLW *pl) {
     pl->flag12 = 0;
     switch (pl->flag15) {
@@ -10740,7 +10757,7 @@ static void pl_egg(PLW *pl) {
 
 
 
-#if !defined(G_PART) || G_PART == 33
+#if !defined(G_PART) || G_PART == 32
 static void pl_chat00(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10767,7 +10784,7 @@ static void pl_chat00(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 33
+#if !defined(G_PART) || G_PART == 32
 static void pl_chat01(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10789,7 +10806,7 @@ static void pl_chat01(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 33
+#if !defined(G_PART) || G_PART == 32
 static void pl_chat02(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10822,7 +10839,7 @@ static void pl_chat02(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 33
+#if !defined(G_PART) || G_PART == 32
 static void pl_chat03(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10876,7 +10893,7 @@ static void pl_chat04(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 34
+#if !defined(G_PART) || G_PART == 33
 static void pl_chat05(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -10930,7 +10947,7 @@ static void pl_chat06(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat07(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10963,7 +10980,7 @@ static void pl_chat07(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat08(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -10996,7 +11013,7 @@ static void pl_chat08(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat09(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -11017,7 +11034,7 @@ static void pl_chat09(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat10(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -11050,7 +11067,7 @@ static void pl_chat10(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat11(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -11083,7 +11100,7 @@ static void pl_chat11(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat12(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -11116,7 +11133,7 @@ static void pl_chat12(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat16(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -11149,7 +11166,7 @@ static void pl_chat16(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 35
+#if !defined(G_PART) || G_PART == 34
 static void pl_chat(PLW *pl) {
     Pl_view_reset(pl);
     switch (pl->flag15) {
@@ -11228,12 +11245,12 @@ void pl_move(void) {
         pl_move_sub(p);
         i++;
         p++;
-    } while (i < 8);
+    } while (i < GV(8, 10));
     hit_timer_calc_shl();
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 36
+#if !defined(G_PART) || G_PART == 35
 static void pl_move_sub_sub(PLW *pl) {
     pl->work8F0 = 0;
     pl->work4D4 = 1;
@@ -11274,7 +11291,7 @@ asm void pl_move_sub(PLW *pl)
 #endif
 
 /* pl_turn_sub: written from the asm (agent B). The rotation step r is a u16 used with -= / +=, the stick angle b is read as u16. */
-#if !defined(G_PART) || G_PART == 37
+#if !defined(G_PART) || G_PART == 36
 static void pl_turn_sub(PLW *pl) {
     u8 k;
     int t;
@@ -11353,7 +11370,7 @@ other:
 
 /* pl_horm_sub: written from the asm (agent B). work81A is read and written as u16 (lhu), the -= / += forms reload it. */
 #define W81A (*(u16 *)&pl->work81A)
-#if !defined(G_PART) || G_PART == 37
+#if !defined(G_PART) || G_PART == 36
 static void pl_horm_sub(PLW *pl) {
     f32 dmin;
     f32 d;

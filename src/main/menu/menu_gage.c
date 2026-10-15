@@ -1,6 +1,7 @@
 /* menu_gage - f_menu disp (SLPM_654.95 0x00130F50-0x0013127C): gage_disp, a horizontal gauge (health / stamina
  * style: 48-pixel texture pieces, then the rest and the end cap). Matched by agent B (12 Oct 2026): n = w / 48 before
  * r = w % 48, the piece width taken from the stored q.s[0]. Meanings are guesses. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -315,8 +316,8 @@ void gage_disp(GAGE *g, int sel) {
     f32 x, l, t;
     u32 w, n, r;
 
-    reload_tex(1, 0x11A);
-    SetTextureStage(0x11A);
+    reload_tex(1, GSLOT(0x11A, 0x141));
+    SetTextureStage(GSLOT(0x11A, 0x141));
     q.s[1] = g->y;
     q.s[3] = 0xD;
     q.col = g->col;

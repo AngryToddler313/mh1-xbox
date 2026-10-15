@@ -1,5 +1,6 @@
 /* Stage work (stage_work, 0x3D8230): per-frame stage logic, sound sources,
  * sun/flash sprites. SLPM_654.95 main, f_stage range. */
+#include "g_alias.h"
 #include "flow.h"
 
 extern s16 flash_flag;
@@ -117,9 +118,9 @@ void stage_mv_ck(void) {
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void clr_stg_work(void) {
-    memset(&stage_work, 0, 0x64);
+    memset(&stage_work, 0, GV(0x64, 0x100));
 }
 #endif
 

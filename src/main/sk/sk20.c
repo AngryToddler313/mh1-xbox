@@ -1,6 +1,7 @@
 /* sk20 - f_sk 0x0027BF80-0x0027C0AC: Reibun_print (prints a phrase cut to n characters, ending in an SJIS ellipsis when too long),
  * SoftkeyAppInit (empty), SoftkeyLoad, SoftkeyTextureSet, SetBlendingMode. */
 #include "types.h"
+#include "g_alias.h"
 
 void font_print_uf(char *);
 void mkTexture(int, int, int);
@@ -49,14 +50,14 @@ void SoftkeyLoad(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void SoftkeyTextureSet(void) {
-    reload_tex(1, 0x11C);
-    SetTextureStage(0x11C);
+    reload_tex(1, GSLOT(0x11C, 0x143));
+    SetTextureStage(GSLOT(0x11C, 0x143));
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void SetBlendingMode(int mode) {
     if (mode != 1) {
         SetTrnslMode(4, 5);

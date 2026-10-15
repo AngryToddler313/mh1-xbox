@@ -1,5 +1,9 @@
 /* fl library system start up: flInitialize, system_work_init, system_hard_init, flFlip, flPS2VramFullClear. SLPM_654.95 0x0018BD90-0x0018C304.
  * (flPS2VSyncCallback, 0x0018C110, uses the `ei` instruction and is kept as original bytes via config/c_rawfuncs.txt.) */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define func_0016AE70 func_001361B0
+#endif
 #include "types.h"
 
 extern u8 flPs2State[];
@@ -68,6 +72,7 @@ int system_work_init(void);
 int system_hard_init(void);
 void flPS2VramFullClear(void);
 
+#if !defined(G_PART)
 int flInitialize(void) {
     int t;
 
@@ -93,7 +98,14 @@ int flInitialize(void) {
     *(int *)0x10000800 = 0;
     return 1;
 }
+#endif
 
+#ifdef MHG_PS2
+extern int ps2_v_counter_hi;
+void ADXM_ExecMain(void);
+#endif
+
+#if !defined(G_PART) || G_PART == 1
 int system_work_init(void) {
     int p;
     int t;
@@ -116,18 +128,24 @@ int system_work_init(void) {
     plfree = free;
     flClayNum = 0;
     flLoadCount = 0x64;
+#ifdef MHG_PS2
+    ps2_v_counter_hi = 0;           /* G: a second counter word, cleared here */
+#endif
     PS2S(int, 0x3EC) = -1;
     flSystemRenderState = 0x202;
     flSystemRenderOperation = 0x138B032;
     return 1;
 }
+#endif
 
 /* original bytes: build/raw/system_hard_init.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int system_hard_init(void)
 {
 #include "system_hard_init.inc"
 }
+#endif
 #else
 int system_hard_init(void) {
     int sp;
@@ -172,11 +190,14 @@ int system_hard_init(void) {
 #endif
 
 /* flPS2VSyncCallback (0x0018C110, 172 bytes): original bytes, it ends with the `ei` instruction. */
+#if !defined(G_PART)
 asm void flPS2VSyncCallback(void)
 {
 #include "flPS2VSyncCallback.inc"
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int flFlip(void) {
     flPS2DmaWait();
     flmwFlip();
@@ -189,9 +210,14 @@ int flFlip(void) {
     flPS2DrawPreparation();
     PS2S(int, 0x3F0) = 0;
     PS2S(int, 0x3EC) = -1;
+#ifdef MHG_PS2
+    ADXM_ExecMain();                /* G runs the ADX main step here */
+#endif
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void flPS2VramFullClear(void) {
     u8 img[0x60];
     int h;
@@ -214,3 +240,4 @@ void flPS2VramFullClear(void) {
     } while (i < 0x10);
     flPS2ReleaseSystemMemory(h);
 }
+#endif

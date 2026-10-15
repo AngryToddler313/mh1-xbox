@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0026CC90-0x0026CD60: SoftKey_Getstr .. YnFile_Data_load. See netwk_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct NETCW {
@@ -187,13 +188,10 @@ void Ncm_spr_kill2(int m);
 
 
 
-#if !defined(G_PART) || G_PART == 1
 u8 *SoftKey_Getstr(void) {
     return SoftKeyWork + 4;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void SoftKey_onoff(int on) {
     switch (on & 0xFF) {
     case 0:
@@ -204,30 +202,21 @@ void SoftKey_onoff(int on) {
         break;
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void SoftKey_trans(void) {
     if (SoftKeyWork[0] == 1) {
         DispSoftkeyboard(1);
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void Def_net_data_set(void) {
     memset(CNFile, 0, 0x1BEC);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void Net_Fade_Sub(void) {
     /* empty */
 }
-#endif
 
-#if !defined(G_PART)
 void YnFile_Data_load(int a, int b) {
-    load_file_mdl(b, a + 2313);
+    load_file_mdl(b, a + GV(2313, 3342));
 }
-#endif

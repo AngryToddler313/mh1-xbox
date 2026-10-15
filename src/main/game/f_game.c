@@ -1,6 +1,7 @@
 /* Game mode state machine, matching part 1: game0 .. game3 (SLPM_654.95 main
  * 0x0010FC70-0x00110C30). game_w+0 is the mode, +1 the step inside a mode,
  * +2 a sub-step.  Names of fields are guesses (see docs/agents/agent-E.md). */
+#include "g_alias.h"
 #include "f_game.h"
 
 #define PL8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
@@ -96,7 +97,10 @@ void game11(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
+#ifdef MHG_PS2
+extern s16 Snd_steft_tbl_g[];
+#endif
 void game12(void) {
     u8 *top = pl_area_top;
     int n, idx;
@@ -125,9 +129,15 @@ void game12(void) {
     case 3:
         flSndPortStop(7);
         if (game_w.stage == 0xC) {
+#ifdef MHG_PS2
+            idx = Snd_steft_tbl_g[11] + 8 | 0x10000;    /* G: the table starts 6 bytes below the symbol file's Snd_steft_tbl */
+        } else {
+            idx = Snd_steft_tbl_g[game_w.x2E] + 8 | 0x10000;
+#else
             idx = Snd_steft_tbl[8] + 7 | 0x10000;
         } else {
             idx = Snd_steft_tbl[game_w.x2E] + 7 | 0x10000;
+#endif
         }
         FlushCache(0);
         load_bin_req(idx, top);
@@ -239,7 +249,7 @@ void game13(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 void game1(void) {
     swset();
     switch (game_w.step) {

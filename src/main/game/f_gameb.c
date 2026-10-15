@@ -1,5 +1,6 @@
 /* Game mode state machine, matching part 2: game4, game5, game_core
  * (SLPM_654.95 main 0x00110C30-0x00110F08). */
+#include "g_alias.h"
 #include "f_game.h"
 
 /* Mode 5 (game4): wait until every player is ready (select_w ready flags),
@@ -67,7 +68,7 @@ void game4(void) {
 #endif
 
 /* Mode 6 (game5): result screen with a 60-frame network sync tick. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void game5(void) {
     s16 t;
 
@@ -79,7 +80,9 @@ void game5(void) {
         net_send_sys(8, game_w.master);
     }
     trans();
-    font_draw();
+#ifndef MHG_PS2
+    font_draw();    /* G draws the font elsewhere */
+#endif
 }
 #endif
 

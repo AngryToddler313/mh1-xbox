@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0016F900-0x0016F98C: flPS2SystemTmpBuffFlush .. flPS2SystemTmpBuffFlush. See flsys_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct FLSYS {
@@ -52,7 +53,7 @@ void flPS2SystemTmpBuffFlush(void) {
     case 1:
         flPs2State.tmp_base = flPS2GetSystemBuffAdrs(flPs2State.tmp_handle[flPs2State.tmp_idx]);
         flPs2State.tmp_cur = flPs2State.tmp_base;
-        flPs2State.tmp_end = (u8 *)((u32)flPs2State.tmp_base + 0x80000);
+        flPs2State.tmp_end = (u8 *)((u32)flPs2State.tmp_base + GV(0x80000, 0xA0000));
         break;
     }
 }

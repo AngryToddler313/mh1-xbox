@@ -454,3 +454,10 @@ obvious workarounds.
 - **Why:** G on the Xbox had 7 MB free in the village (MH1 16.5 MB); after these, 15.5-16.5 MB. MH1 PC tests
   (quest loop, progression, urgent) and the MH1 xemu quest loop pass.
 - **To revert:** revert the commit "G on the Xbox: ...".
+
+## 14 Oct 2026, agent C: G round 8
+- **Dropped:** the "did not link" lines of config/mhg/c_skip_funcs.txt for src/main/pl/f_pl.c, cam/camd.c and game/f_game.c (stale since the
+  parts' rodata lines were added by hand). **Now:** tools/mhg_dataparts.py writes the rodata lines itself, so mhg_parts.py can include those functions.
+  **Why:** a redo of f_pl lost 3.6 KB of hand-curated parts otherwise. **To revert:** restore the lines from the previous commit.
+- **Changed:** tools/mhg_parts.py now compares a part's functions as a set (not in symbol-table order) and splits runs against source order.
+  **Why:** it dropped whole runs (flps0_p1, f_chat) as "bad". **To revert:** commit "G round 8" for tools/mhg_parts.py.

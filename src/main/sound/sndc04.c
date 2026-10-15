@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0015A230-0x0015A51C: snd_joint_load_pl .. edit_se_load. See snd_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "sysw.h"
 
@@ -71,7 +72,7 @@ extern s8 *Snd_armor_tbl[];
 
 /* Loads the player's weapon/armour sound joint tables, one step per call (emsnd_p[0] is the step);
  * returns 1 when done. w is the player work, +0x34C weapon kind, +0x8D3 armour. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 int snd_joint_load_pl(u8 *top, void *w) {
     int done = 0;
     int id;
@@ -79,7 +80,7 @@ int snd_joint_load_pl(u8 *top, void *w) {
     switch (emsnd_p[0]) {
     case 0:
         flSndJointInit(top + 0x40000, top + 0x80000);
-        load_bin_req((Snd_weapon_tbl[WB(w, 0x34C)] + 0x10) | 0x10000, top);
+        load_bin_req((Snd_weapon_tbl[WB(w, 0x34C)] + GV(0x10, 0x14)) | 0x10000, top);
         emsnd_p[0]++;
         break;
     case 1:
@@ -90,11 +91,11 @@ int snd_joint_load_pl(u8 *top, void *w) {
         break;
     case 2:
         if (WB(w, 0x11) == 0) {
-            id = (WB(w, 0x8D3) + 0x73) | 0x10000;
+            id = (WB(w, 0x8D3) + GV(0x73, 0x9E)) | 0x10000;
         } else if (WB(w, 0x34C) == 0x6F) {
-            id = 0x10087;
+            id = GV(0x10087, 0x100B2);
         } else {
-            id = (WB(w, 0x8D3) + 0x7D) | 0x10000;
+            id = (WB(w, 0x8D3) + GV(0x7D, 0xA8)) | 0x10000;
         }
         load_bin_req(id, top + 0x20000);
         emsnd_p[0]++;

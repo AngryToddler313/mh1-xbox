@@ -1,4 +1,5 @@
 /* menu22 - f_menu 0x00132510-0x001325B4: wyvern ripple effect */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -310,8 +311,8 @@ void wyvn_efct_ripple(void) {
     if (lpPit->x3F != 0) {
         SetTrnslMode(4, 1);
         SetFilterMode(1);
-        reload_tex(1, 0x118);
-        SetTextureStage(0x118);
+        reload_tex(1, GSLOT(0x118, 0x13F));
+        SetTextureStage(GSLOT(0x118, 0x13F));
         efct_circle(0x199, 0xAC, 0xFFFFFF, 120.0f, (f32)lpPit->x3F);
         SetTrnslMode(4, 5);
     }

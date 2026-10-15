@@ -67,12 +67,24 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#ifdef VERSION_MHG
+#if !defined(G_PART) || G_PART == 1
+int Menu_equipment_i(void) {    /* G returns 0 */
+    lpPit->x43 = 0;
+    lpPit->x44 = 0;
+    PitMenu.x10 = 0;
+    return 0;
+}
+#endif
+#else
 void Menu_equipment_i(void) {
     lpPit->x43 = 0;
     lpPit->x44 = 0;
     PitMenu.x10 = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Menu_equipment_mv(int sw) {
     PLW *pl = lpPit->pl;
     u8 sel;
@@ -93,15 +105,27 @@ int Menu_equipment_mv(int sw) {
     }
     return sw;
 }
+#endif
 
+#ifdef VERSION_MHG
+#if !defined(G_PART) || G_PART == 2
+int menu_option_i(void) {       /* G returns 0 */
+    lpPit->x43 = 0;
+    PitMenu.x10 = 0;
+    return 0;
+}
+#endif
+#else
 void menu_option_i(void) {
     lpPit->x43 = 0;
     PitMenu.x10 = 0;
 }
+#endif
 
 /* 0x12A4C0: option screen: ListSelect over the 5 rows, toggle / cycle the setting, copy them to option_w and
  * game_w, start the pad vibration when it was switched on. */
 #define lpPit_opt(i) ((&lpPit->x88)[i])   /* option row values, lpPit+0x88.. */
+#if !defined(G_PART)
 int menu_option_mv(int sw) {
     u8 c;
 
@@ -158,3 +182,4 @@ int menu_option_mv(int sw) {
     }
     return (u16)((u16)sw & 0x8040);
 }
+#endif

@@ -1,4 +1,8 @@
 /* f_menu run (SLPM_654.95 0x00133B40-0x00133FA4): disp_retire, trans_pit_0, trans_pit_1, trans_pit_2, trans_pit_1_lb, trans_pit_2_lb. Whole file in menu_nm.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define func_5B4980 DispLobbyMenu
+#endif
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -145,7 +149,7 @@ void disp_retire(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void trans_pit_0(void) {
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);
@@ -232,7 +236,7 @@ void trans_pit_2(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void trans_pit_1_lb(void) {
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);

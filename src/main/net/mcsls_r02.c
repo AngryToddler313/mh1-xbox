@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00231050-0x00231D40: mcsls_r0_wait_start .. mcsls_send. See mcsls_r0_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "mcsls.h"
 
@@ -83,14 +84,21 @@ void mcsls_r0_wait_start(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+extern s32 MCSLS_SWIN_MINUS;
+#endif
+
+#if !defined(G_PART) || G_PART == 1
 void mcsls_r0_start_init(void) {
+#ifdef MHG_PS2
+    MCSLS_SWIN_MINUS = (&MCSLS_SWIN_LIMIT)[2];  /* G: copies the word 8 bytes after the window limit */
+#endif
     mcsls_w.x151 = 0;
     mcsls_set_status(5);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void mcsls_r0_game_move(void) {
     if (!(mcsls_w.t_que < 0.06666667f) && mcsls_app_que_send() != 0) {
         mcsls_w.t_que = 0.0f;
@@ -98,22 +106,22 @@ void mcsls_r0_game_move(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void mcsls_r0_user_drop(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void mcsls_r0_error(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void mcsls_r0_close(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 int mcsls_app_push_is_ready(int n) {
     if (mcsls_w.state == 5 && CCnNetMsg_CnGetMsgSize(&app_send_que) > 0xC8) {
         return 0;
@@ -137,7 +145,7 @@ void mcsls_app_push(int data, int n) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 int mcsls_app_que_send(void) {
     CNMSG sp50;
     s16 sp6E;
@@ -206,7 +214,7 @@ int mcsls_app_que_send(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 int mcsls_app_que_recv_is_stock(void) {
     int i;
 
@@ -219,7 +227,7 @@ int mcsls_app_que_recv_is_stock(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 int mcsls_calc_master_id(void) {
     int i;
 
@@ -233,7 +241,7 @@ int mcsls_calc_master_id(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 int mcsls_app_que_recv_rot(void) {
     int i;
     int j;
@@ -334,7 +342,7 @@ int mcsls_app_que_recv_rot(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 int mcsls_app_pull(s32 *data, s32 *tag) {
     int h;
     int n;
@@ -351,13 +359,13 @@ int mcsls_app_pull(s32 *data, s32 *tag) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void mcsls_app_purge(void) {
     CCnNetMsg_CnPurgeData(&app_recv_que, -1);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void mcsls_send(void) {
     int n;
     int r;

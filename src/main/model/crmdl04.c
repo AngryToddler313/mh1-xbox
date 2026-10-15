@@ -1,5 +1,6 @@
 /* crmdl04 - SLPM_654.95 0x00124F80-0x00125060: edit_create_model (the two character-edit models: loads each, reserves a model work slot and calls
  * model_work_set; the screen y of the second is 10 + 0x32). */
+#include "g_alias.h"
 #include "types.h"
 #include "mdlw.h"
 
@@ -29,6 +30,6 @@ void edit_create_model(void) {
         edit_top[i] = h;
         edit_mdlw[i] = (s32)get_mdlw_ptr(h);
         set_used_mdlw(h, 1);
-        model_work_set((s16)h, a, (s16)(10 + i * 0x32), EDIT_TEX[i], 0x900, 2);
+        model_work_set((s16)h, a, (s16)(GV(10, 13) + i * 0x32), EDIT_TEX[i], 0x900, 2);
     }
 }

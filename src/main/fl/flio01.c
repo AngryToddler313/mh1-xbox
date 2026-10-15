@@ -2,6 +2,10 @@
 /* flio_nm - SLPM_654.95 0x0016F290-0x0016F600 (g_flPS2DmaAddQueue.s): host-file helpers of the fl library: build the
    path "<prefix>NAME<suffix>" (name upper-cased, prefix lit_269_0035BE00, suffix lit_270_0035BE08) in a 0x800 byte stack
    buffer, open it under the ADXM lock and read / write / append / measure. Working file. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define ADXM_Unlock ADXPS2_ExecVint
+#endif
 #include "types.h"
 extern char lit_269_0035BE00[];
 extern char lit_270_0035BE08[];

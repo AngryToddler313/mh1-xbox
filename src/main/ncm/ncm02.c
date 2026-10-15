@@ -1,4 +1,5 @@
 /* ncm02 - 0x00270660-0x002707E4: Ncm_mssage_disp. Whole file in ncm_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 void flfntSetSize(int, int);
@@ -43,7 +44,7 @@ void Ncm_mssage_disp(int no) {
     s16 x0;
     char **lines;
 
-    if (no == 0 || no >= 0x7A) {
+    if (no == 0 || no >= GV(0x7A, 0x88)) {
         return;
     }
     x = ncm_pos_col_tbl[no][0];

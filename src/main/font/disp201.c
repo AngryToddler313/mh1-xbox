@@ -1,5 +1,6 @@
 /* SLPM_654.95 0x001637B0-0x00163810: Disp_back .. Disp_back. See disp2_nm.c. */
 #include "types.h"
+#include "g_alias.h"
 #include "game.h"
 
 typedef struct SP2 { s16 a, b; } SP2;
@@ -32,8 +33,8 @@ s16 *Start_item_data_adrs_get(void);
 void Disp_back(void) {
     PUT_2TF q = lit_562_00300780;
 
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(&q);

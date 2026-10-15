@@ -1,13 +1,15 @@
 /* Soft keyboard conversion (0x00262E50-0x002633A0): cmd_muhenkan .. yn_kigou_inbuf_set. See cmd_nm.c. */
+#include "g_alias.h"
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -86,18 +88,18 @@ typedef struct { s8 b[0x11]; } ZK;
 extern ZK lit_913_0034E410;
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void cmd_muhenkan(void) {
     if (SKS8(0x36) == 0) {
         if (SKS32(0x150) > 1) {
-            apiask_38_FirstHenkanToHira(lpSKey + 0x458, lpSKey + 0x558);
+            apiask_38_FirstHenkanToHira(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
             kata_kouho_set();
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
             return;
         }
         if (SKS32(0x14C) == 1) {
-            SKS32(0x14C) = apiask_21_NextKouho(lpSKey + 0x458, lpSKey + 0x558);
+            SKS32(0x14C) = apiask_21_NextKouho(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
         }
@@ -118,14 +120,14 @@ void sk_henkan_sub(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void kbd_yn_kigou_kakutei(void) {
     int r;
 
     if (SKS8(0x458) != 0 && SKB(0x2F) != 0) {
-        r = kbd_insert(lpSKey + 0x44, lpSKey + 0x458, SKU16(0x2A), SKU16(0x3A));
+        r = kbd_insert(lpSKey + SKO(0x44), lpSKey + SKO(0x458), SKU16(0x2A), SKU16(0x3A));
         SKU16(0x2A) = SKU16(0x2A) + r;
-        memset(lpSKey + 0x158, 0, 0x100);
+        memset(lpSKey + SKO(0x158), 0, GV(0x100, 0xFF));
         SKB(0x2F) = 0;
         SKS8(0x26) = 0;
         SKS16(0x2C) = 0;
@@ -133,7 +135,7 @@ void kbd_yn_kigou_kakutei(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART)
 void kouhogun_table_set(int n) {
     int o = n << 8;
     int w = n * 0x101;
@@ -149,7 +151,7 @@ void kouhogun_table_set(int n) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART)
 void yn_kouho_work_set(int a, int b) {
     s8 *p;
     int v;
@@ -163,9 +165,9 @@ void yn_kouho_work_set(int a, int b) {
 
 #if !defined(G_PART)
 void yn_kigou_inbuf_set(void) {
-    memset(lpSKey + 0x458, 0, 0x100);
-    strcpy((char *)lpSKey + 0x458, (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
-    strcpy((char *)lpSKey + 0x158, (char *)lpSKey + 0x458);
+    memset(lpSKey + SKO(0x458), 0, 0x100);
+    strcpy((char *)lpSKey + SKO(0x458), (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
+    strcpy((char *)lpSKey + SKO(0x158), (char *)lpSKey + SKO(0x458));
 }
 #endif
 
@@ -192,7 +194,7 @@ void Set_KouhoTableSub(int start, int rev) {
             yn_kigou_inbuf_set();
         } else {
             for (i = 0; i < n; i++) {
-                kouho_work[i * 0x101] = apiask_21_NextKouho(kouho_work + i * 0x101 + 1, lpSKey + 0x558);
+                kouho_work[i * 0x101] = apiask_21_NextKouho(kouho_work + i * 0x101 + 1, lpSKey + SKO(0x558));
             }
             for (i = 0; i < n - 1; i++) {
                 apiask_20_PrevKouho(b320, b64);
@@ -214,7 +216,7 @@ void Set_KouhoTableSub(int start, int rev) {
             yn_kigou_inbuf_set();
         } else {
             for (i = n - 1; i >= 0; i--) {
-                kouho_work[i * 0x101] = apiask_20_PrevKouho(kouho_work + i * 0x101 + 1, lpSKey + 0x558);
+                kouho_work[i * 0x101] = apiask_20_PrevKouho(kouho_work + i * 0x101 + 1, lpSKey + SKO(0x558));
             }
             for (i = 0; i < n - 1; i++) {
                 apiask_21_NextKouho(b320, b64);

@@ -1,6 +1,10 @@
 /* fl PS2 2D primitives (f_flps0, SLPM_654.95 main 0x175120-0x177540): flPS2psAddQueue sends a packet built on the
  * scratchpad, flPS2CheckGSClip tests a screen point against the viewport, and the flps* handlers each build one GS
  * primitive (line, rectangle, gradient, sprite, triangle, ...) from a template packet on the scratchpad. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define flPS2_Mem_move16_16A func_00136088
+#endif
 #include "types.h"
 
 typedef unsigned long u64;
@@ -44,7 +48,7 @@ f32 flPS2ConvScreenFZ(f32);
 #define SET_RGBAQ(r, g, b, a, q) ((u64)(r) | ((u64)(g) << 8) | ((u64)(b) << 16) | ((u64)(a) << 24) | ((u64)(q) << 32))
 #define SET_XYZ(x, y, z) ((u64)(x) | ((u64)(y) << 16) | ((u64)(z) << 32))
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 int flPS2psAddQueue(u32 *p) {
     int n;
     u64 buf;
@@ -91,7 +95,7 @@ typedef struct LINEF {
     u32 col;
 } LINEF;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 int flps0002(LINEF *q) {
     u32 c;
     s16 x;
@@ -122,7 +126,7 @@ int flps0002(LINEF *q) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 int flps0004(LINEF *q) {
     u32 c;
     s16 x;
@@ -155,7 +159,7 @@ typedef struct SPRG {
 #define RGBAQ_OF(c) SET_RGBAQ(((c) >> 16) & 0xFF, ((c) >> 8) & 0xFF, (c) & 0xFF, ((c) >> 24) & 0xFF, 1)
 #define XYZ_OF(x, y) SET_XYZ((PS2S(int, 0x3A4) + (x)) << 4, (PS2S(int, 0x3A8) + (y)) << 4, (u32)PS2S(f32, 0x44))
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 int flps0005(SPRG *q) {
     u32 c;
     s16 x0;
@@ -234,7 +238,7 @@ typedef struct TRIF {
     u32 col;
 } TRIF;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps0009(TRIF *q) {
     u32 c;
     s16 x;
@@ -268,7 +272,7 @@ typedef struct TRITF {
     s16 u0, v0, u1, v1, u2, v2;
 } TRITF;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps000C(TRITF *q) {
     u32 c;
     s16 x;
@@ -314,7 +318,7 @@ typedef struct SPR3DF {
     u32 col;
 } SPR3DF;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps0D00(SPR3DF *q) {
     u32 c;
     f32 x;
@@ -351,7 +355,7 @@ typedef struct SPR3DTF {
     f32 s0, t0, s1, t1;
 } SPR3DTF;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps0F00(SPR3DTF *q) {
     u32 c;
     f32 x;
@@ -401,7 +405,7 @@ typedef struct SPR3DM {
     u32 col;
 } SPR3DM;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps1300(SPR3DM *q) {
     u32 c;
     f32 x;
@@ -444,7 +448,7 @@ typedef struct SPR3DMT {
     f32 s0, t0, s1, t1;
 } SPR3DMT;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps1400(SPR3DMT *q) {
     u32 c;
     f32 x;
@@ -496,7 +500,7 @@ typedef struct TRI3DTG {
     f32 st[3][2];
 } TRI3DTG;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int flps1600(TRI3DTG *q) {
     u32 c;
     f32 x;

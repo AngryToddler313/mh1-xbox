@@ -4,6 +4,7 @@
  * (SETW+0x30) starts per stage, on some stages from where the master player
  * stands (inside or outside a building); arg picks the kind. Guessed from
  * sun_pos_tbl and the camera maths in set13_m. */
+#include "g_alias.h"
 #include "set.h"
 #include "game.h"
 #include "pl.h"
@@ -12,20 +13,27 @@
 void flvecCopy(f32 *, f32 *);
 
 void set13_move(SETW *sw);
+#ifdef MHG_PS2
+void game_func_0064EFF0(SETW *sw);
+#endif
 void set13_i(SETW *sw);
 void set13_m(SETW *sw);
 void set13_d(SETW *sw);
 void set13_e(SETW *sw);
 void set13_trans(PRIM *pr);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void Set13_set(int arg) {
-    SETW *sw = pull_set_work(0);
+    SETW *sw = pull_set_work(GV(0, 1));
 
     if (sw != 0) {
-        sw->type = 13;
+        sw->type = GV(13, 2);
         sw->arg = arg;
+#ifdef MHG_PS2
+        sw->move = game_func_0064EFF0;      /* G: the game module has its own copy of the dispatcher */
+#else
         sw->move = set13_move;
+#endif
     }
 }
 #endif
@@ -44,7 +52,7 @@ void Set13_set2(int arg, f32 *pos, int n) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 void set13_move(SETW *sw) {
     switch (sw->mode) {
     case 0:

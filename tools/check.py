@@ -42,8 +42,9 @@ if MHG:
     CFLAGS = CFLAGS + ["-DVERSION_MHG"]
     SECTIONS = dict(SECTIONS, sub_main="sub_main.bin", nethttp="nethttp.bin")
 G_FUNCNAMES = {}        # G address -> func_XXXXXX names (MH1 address names the shared C uses), tools/mhg_funcnames.py
-if MHG and os.path.exists(os.path.join(ROOT, "config/mhg/g_funcnames.txt")):
-    for _l in open(os.path.join(ROOT, "config/mhg/g_funcnames.txt")):
+for _f in ("g_funcnames.txt", "g_names.txt"):
+  if MHG and os.path.exists(os.path.join(ROOT, "config/mhg", _f)):
+    for _l in open(os.path.join(ROOT, "config/mhg", _f)):
         _m = re.match(r"PROVIDE\((\w+) = 0x([0-9A-F]+)\)", _l)
         if _m:
             G_FUNCNAMES.setdefault(int(_m.group(2), 16), set()).add(_m.group(1))
@@ -108,6 +109,9 @@ def original_functions():
     return out
 
 
+POS = {}    # function name -> (section, offset) in the last object read (a call to a function of the same file is checked by address)
+
+
 def read_obj(path):
     """Functions in a relocatable .o: name -> (bytes, {offset: mask},
     {offset: call target name}). Call targets come from R_MIPS_26 relocs,
@@ -157,6 +161,7 @@ def read_obj(path):
         fcalls = {o - val: n for (si, o), n in calls.items()
                   if si == sh and val <= o < val + size}
         funcs[name] = (code, masks, fcalls)
+        POS[name] = (sh, val)
     return funcs
 
 
@@ -174,7 +179,7 @@ def func_names_by_addr():
     return out
 
 
-def compare(mine, masks, orig, base, calls=None, names=None, module=None):
+def compare(mine, masks, orig, base, calls=None, names=None, module=None, me=None):
     lines, ok = [], len(mine) == len(orig)
     for i in range(0, max(len(mine), len(orig)), 4):
         a = struct.unpack_from("<I", orig, i)[0] if i + 4 <= len(orig) else None
@@ -189,7 +194,10 @@ def compare(mine, masks, orig, base, calls=None, names=None, module=None):
                 for _m in SECTIONS:
                     want = want | names.get((_m, tgt), set())
                 want = want | G_FUNCNAMES.get(tgt, set())
-            if calls[i] not in want and re.sub(r'_[0-9A-F]{8}$', '', calls[i]) not in want:
+            wb = {re.sub(r'_[0-9A-F]{8}$', '', w) for w in want}
+            # a callee in the same object lands at this function's address - its offset + its own offset (files link as one run)
+            local = me in POS and calls[i] in POS and POS[calls[i]][0] == POS[me][0] and base - POS[me][1] + POS[calls[i]][1] == tgt
+            if not local and calls[i] not in want and re.sub(r'_[0-9A-F]{8}$', '', calls[i]) not in wb:
                 same = False
                 note = "   (calls %s, original calls %s)" % (calls[i], "/".join(sorted(want)) or "?")
         ok = ok and same
@@ -267,7 +275,7 @@ def main():
                 images[mod] = module_image(mod)
             base, img = images[mod]
             o = img[addr - base: addr - base + size]
-            ok, lines = compare(code, masks, o, addr, calls, names, mod)
+            ok, lines = compare(code, masks, o, addr, calls, names, mod, name)
             nd = sum(1 for l in lines if l.startswith(">>"))
             if best is None or ok or nd < best[5]:     # same-named functions: keep the closest original
                 best = (ok, lines, mod, addr, size, nd)

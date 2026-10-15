@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0028B330-0x0028B3A8: save_data_load_game_for_net .. save_data_load_game_for_net. See netfile2_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 #define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
@@ -116,7 +117,7 @@ s32 save_data_load_game_for_net(s32 arg0) {
         return -1;
     }
     if (check_sum_ck(&card_w) == 0) {
-        return -1;
+        return GV(-1, -2);
     }
     if (arg0 & 0xFF) {
         mc_copy_patch(0);

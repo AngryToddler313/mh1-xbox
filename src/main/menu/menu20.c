@@ -1,4 +1,5 @@
 /* menu20 - f_menu 0x0012BCA0-0x0012BF48: quest text printers */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -364,7 +365,7 @@ void font_print_quest_target(int a, int b) {
 #endif
 
 /* 0x12BE00 */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void font_print_Bdragon(void) {
     char buf[8];
     u16 out[12];
@@ -377,7 +378,7 @@ void font_print_Bdragon(void) {
         *o = ((*p + 0x1F) << 8) | 0x82;
     }
     *o = 0;
-    font_print(lit_2242, out);
+    font_print(GSTR(lit_2242, gptr_00527BB0), out);
 }
 #endif
 

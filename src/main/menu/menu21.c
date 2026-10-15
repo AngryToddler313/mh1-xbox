@@ -1,4 +1,5 @@
 /* menu21 - f_menu 0x0012C780-0x0012CAE8: item mix window */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -306,6 +307,7 @@ int Pl_shell_set(PLW *, u16, int);
 
 
 /* 0x12C780 */
+#if !defined(G_PART)
 void Pit_disp_item_mix(void) {
     u32 col;
     int sel;
@@ -369,8 +371,10 @@ void Pit_disp_item_mix(void) {
         font_print_uf(item_str[lpPit->x78]);
     }
 }
+#endif
 
 /* 0x12CA50 */
+#if !defined(G_PART) || G_PART == 1
 void put_mix_material(u8 a, u16 id) {
     if (id != 0xFFFF) {
         if (a != 0xFF) {
@@ -382,5 +386,6 @@ void put_mix_material(u8 a, u16 id) {
         return;
     }
     font_set_palette(3);
-    font_print_uf(lit_2567);
+    font_print_uf(GSTR(lit_2567, gptr_00527BF4));
 }
+#endif

@@ -5,6 +5,9 @@ typedef unsigned __int128 u128;
 typedef unsigned long u64;
 
 typedef struct FNP {
+#ifdef VERSION_MHG
+    u8 _g00[0x40];      /* G: 0x40 bytes of new state first (sw/sh/x/y/z/halftype read 0x40..0x48 later) */
+#endif
     s32 tex;            /* 0x00 texture handle (tex[0]) */
     s32 w;              /* 0x04 default glyph width */
     s32 h;              /* 0x08 default glyph height */
@@ -22,6 +25,9 @@ typedef struct FNP {
     u8 *list[5];        /* 0x38 request lists */
     u32 strlen;         /* 0x4C bytes used in the string buffer */
     u8 *str;            /* 0x50 string buffer */
+#ifdef VERSION_MHG
+    s32 _g50[2];        /* G: 8 more bytes before halftype */
+#endif
     s32 halftype;       /* 0x54 */
     s32 x58;            /* 0x58 */
     s32 x5C;            /* 0x5C */
@@ -79,24 +85,34 @@ int flfntSjis2Index(u32 c);
 void flfntPaletteTrans();
 void flnecCheckFont(int idx);
 
+#if !defined(G_PART) || G_PART == 1
 void flfntSetSize(int w, int h) {
     np->sw = w;
     np->sh = h;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flfntLocate(int x, int y) {
     np->x = x;
     np->y = y;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flfntSetZ(f32 z) {
     np->z = z;
 }
+#endif
 
+#if !defined(G_PART)
 void flfntSetPalette(int pal) {
     np->pal = (s16)pal % 32;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void flfntSetHalftype(int t) {
     np->halftype = t;
 }
+#endif

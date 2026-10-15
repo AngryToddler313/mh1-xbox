@@ -1,5 +1,4 @@
 # functions that match per check.py but break the G link inside a part (relocation addends, data); tools/mhg_parts.py leaves them out
-src/main/cam/camd.c DemoCameraCheck # part cam/camd_p2 did not link (addend / data)
 src/main/net/netwk02.c ms_network_bb_connect_driver # part net/netwk02_p1 did not link (addend / data)
 src/main/net/netwk02.c ms_network_connect_last_setting # part net/netwk02_p1 did not link (addend / data)
 src/main/net/netwk02.c ms_network_matching # part net/netwk02_p1 did not link (addend / data)
@@ -31,3 +30,5 @@ src/main/ud/f_ud.c ItemCopy_Ud2Pl # part mhg/main/ud/f_ud_p1 did not link
 src/main/ud/f_ud.c Gold_add # part mhg/main/ud/f_ud_p1 did not link
 src/main/ud/f_ud.c Get_pl_id # part mhg/main/ud/f_ud_p5 did not link
 src/main/ud/f_ud.c Copy_user_id # part mhg/main/ud/f_ud_p5 did not link
+src/main/sys/f_ioread.c MakeMediaVersion # part mhg/main/sys/f_ioread_p1 did not link
+src/main/pl/f_pl.c pl_move # calls the static pl_move_sub, which is not in a part

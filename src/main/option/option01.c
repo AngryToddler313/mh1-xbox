@@ -1,4 +1,8 @@
 /* SLPM_654.95 0x001267C0-0x00127440: option_default_set .. disp_option_sub_menu. See option_nm.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define Disp_button func_0012DD90
+#endif
 #include "types.h"
 #include "gwx.h"
 
@@ -144,7 +148,7 @@ void option_init(OPTTSK *t) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void option_main_menu(t, pad)
 OPTTSK *t;
 u16 pad;
@@ -152,11 +156,11 @@ u16 pad;
     int p;
 
     if (Psw[2] & 0x20) {
-        if (t->cur == 5) {
+        if (t->cur == GV(5, 7)) {
             t->step = 2;
             decide_se();
         } else {
-            if (t->cur == 6) {
+            if (t->cur == GV(6, 8)) {
                 decide_se();
                 if (option_w[3] == 0) {
                     option_w[3] = 1;
@@ -165,29 +169,29 @@ u16 pad;
                 }
                 option_default_set();
             }
-            if (t->cur == 7) {
+            if (t->cur == GV(7, 9)) {
                 t->step = 4;
                 t->sub = 0;
                 cancel_se();
             }
         }
     } else if (Psw[2] & 0x40) {
-        if (t->cur != 7) {
-            t->cur = 7;
+        if (t->cur != GV(7, 9)) {
+            t->cur = GV(7, 9);
             cancel_se();
         }
     } else {
         p = pad & 0xFFFF;
         if (p & 0x2000) {
             if (t->cur == 0) {
-                t->cur = 7;
+                t->cur = GV(7, 9);
             } else {
                 t->cur = t->cur - 1;
             }
             cursor_se();
         }
         if (p & 0x1000) {
-            if (t->cur == 7) {
+            if (t->cur == GV(7, 9)) {
                 t->cur = 0;
             } else {
                 t->cur = t->cur + 1;
@@ -242,7 +246,7 @@ void param_change_00126B30(OPTTSK *t, long d) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 3
 int cfg_change_ck(void) {
     s16 i;
     s8 *a = option_w;
@@ -319,7 +323,7 @@ void option_sub_menu(OPTTSK *t, int pad) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void option_exit(OPTTSK *t) {
     u8 c;
     u8 st = t->sub;
@@ -354,7 +358,7 @@ void option_exit(OPTTSK *t) {
         t->cnt = c;
         if (c >= 0xA) {
             Tsk_Exit(t);
-            Load_overlay(1, 1);
+            Load_overlay(1, GV(1, 2));
             Select_Tsk_Execute();
             fade_set(2);
         }
@@ -414,13 +418,13 @@ void disp_option_menu(OPTTSK *t) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void disp_option_sub_menu(OPTTSK *t, u16 keys) {
     SPRQ q;
     s16 i;
 
     switch (t->cur) {
-    case 5:
+    case GV(5, 7):
         Sel_back_disp(0xFF);
         Sel_menu_disp(3);
         flfntSetSize(0x12, 0x12);
@@ -428,9 +432,9 @@ void disp_option_sub_menu(OPTTSK *t, u16 keys) {
         font_print_ex(0xB8, 0x154, 0, lit_390_00358780);
         font_print_ex(0x124, 0x188, 0, lit_391_00358798);
         flfntSetSize(0x24, 0x12);
-        font_print_ex(0x1A2, 0x130, 0, lit_392_003587A8, option_w[5]);
-        font_print_ex(0x1A2, 0x154, 0, lit_392_003587A8, option_w[6]);
-        Disp_button(1.0f, 1, 0x10F, 0x185, 8);
+        font_print_ex(0x1A2, 0x130, 0, lit_392_003587A8, option_w[GV(5, 7)]);
+        font_print_ex(0x1A2, 0x154, 0, lit_392_003587A8, option_w[GV(6, 8)]);
+        Disp_button(1.0f, GV(1, 21), 0x10F, 0x185, 8);
         reload_tex(1, 8);
         SetTextureStage(8);
         q.w = 0x40;

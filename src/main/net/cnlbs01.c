@@ -1,4 +1,5 @@
 /* cnlbs01 - cnLBS file download requests 0x0027CF10-0x0027D028: cnLBS_Read_FileDownload, cnLBS_Get_FileDownloadInfo, cnLBS_Read_FileDownloadHeader. Whole file in cnlbs_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct DLE { s32 size; s32 x4; s32 ofs; } DLE;
@@ -32,6 +33,7 @@ typedef struct CBRES { s8 val; s8 id; u8 pad[6]; } CBRES;
 
 
 
+#if !defined(G_PART)
 int cnLBS_Read_FileDownload(int a, void *cb)
 {
     if (A_U8(0x677344) == 0) {
@@ -46,14 +48,18 @@ int cnLBS_Read_FileDownload(int a, void *cb)
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_Get_FileDownloadInfo(u8 *a, void **b)
 {
-    *a = A_U8(0x6AFF7C);
+    *a = A_U8(GV(0x6AFF7C, 0x731162));
     *b = D_6AFF80;
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int cnLBS_Read_FileDownloadHeader(void *cb)
 {
     int h = func_5AD280(1, 0, cb);
@@ -64,3 +70,4 @@ int cnLBS_Read_FileDownloadHeader(void *cb)
     }
     return -1;
 }
+#endif

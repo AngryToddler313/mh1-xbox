@@ -1,4 +1,5 @@
 /* AQ session layer (0x0022DCC0-0x0022DDF4): pl_AQ_set, AQ_recv_flag_set, AQ_join_num_get, AQ_session_exit(_online). See aq_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 void *memset(void *, int, int);
@@ -186,7 +187,6 @@ typedef struct AQPKT {
 
 
 
-#if !defined(G_PART) || G_PART == 1
 void pl_AQ_set(int pl, u8 *d, int flag) {
     int rest = d[1] - 4;
     u8 *p = d + 4;
@@ -202,31 +202,24 @@ void pl_AQ_set(int pl, u8 *d, int flag) {
         } while (rest > 0);
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void AQ_recv_flag_set(int v) {
     aq_work.recv_flag = v;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int AQ_join_num_get(void) {
     return CngNetAQJoinNumGet(cng_netAQ) & 0xFF;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void AQ_session_exit(void) {
     CngNetAQSessionExit(cng_netAQ);
     system_w.x34 = 0;
 }
-#endif
 
-#if !defined(G_PART)
 void AQ_session_exit_online(void) {
     CngNetAQSessionExit_online(cng_netAQ);
     system_w.x34 = 0;
-    CngNetAQInit(cng_netAQ);
-}
+#ifndef MHG_PS2
+    CngNetAQInit(cng_netAQ);    /* G does not re-init the session here (the PC keeps it) */
 #endif
+}

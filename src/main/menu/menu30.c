@@ -1,5 +1,6 @@
 /* menu30 - f_menu 0x0012F830-0x0012FAEC: item window (select ex) and disp_shell_name (matched by agent B: no width
    temp, buf 32 bytes on the PS2 / 64 on the PC) */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -307,6 +308,7 @@ int Pl_shell_set(PLW *, u16, int);
 
 
 /* 0x12F830 */
+#if !defined(G_PART) || G_PART == 1
 void disp_item_sub_select_ex(void) {
     PFLPS3 q;
     PLW *pl = lpPit->pl;
@@ -321,8 +323,8 @@ void disp_item_sub_select_ex(void) {
             *(s16 *)(btn_item_sel_3617 + 0xA) += 2;
         }
         PutButtonICON(btn_item_sel_3617, 2);
-        reload_tex(1, 0x11A);
-        SetTextureStage(0x11A);
+        reload_tex(1, GSLOT(0x11A, 0x141));
+        SetTextureStage(GSLOT(0x11A, 0x141));
         q.s[0] = 0x14B;
         q.s[2] = 0x9C;
         q.s[1] = 0x105;
@@ -333,9 +335,11 @@ void disp_item_sub_select_ex(void) {
         PutSpriteDiv3(&q, 9, 0xC);
     }
 }
+#endif
 
 /* The selected ammo's name and count (shell slot), centred in the 186-pixel box at x 419; palette 5 when it does
    not fit the gun. Returns 0 when the slot holds no ammo. */
+#if !defined(G_PART)
 int disp_shell_name(u8 slot, int y) {
 #ifdef __MWERKS__
     char buf[32];
@@ -367,3 +371,4 @@ int disp_shell_name(u8 slot, int y) {
     font_print_uf(buf);
     return 1;
 }
+#endif

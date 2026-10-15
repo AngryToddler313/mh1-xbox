@@ -92,7 +92,7 @@ int flPS2DmaAddQueue(u32 tag, DMACTL *c) {
 
 /* original bytes: build/raw/flPS2DmaAddQueue2.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 asm int flPS2DmaAddQueue2(int mode, u32 tag, u32 *x, DMACTL *c)
 {
 #include "flPS2DmaAddQueue2.inc"

@@ -5,6 +5,11 @@
  * weapon_create_model, Pl_model_id_set, armor_create_model).
  * Replaces the runs gm01..gm05, mkm01, hp01..hp04, light03 (get_mdlw_ptr), clay/get_clay_ptr and crmdl03 (Pl_model_id_set).
  * Statics are the LOCAL symbols of the original. Field names are guesses. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define load_texlist func_0010EF50
+#define load_texlist_pl func_0010F0B0
+#endif
 #include "types.h"
 #include "mdlw.h"
 

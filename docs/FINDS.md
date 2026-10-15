@@ -78,3 +78,12 @@ Agents: when you trip over something curious, add a short entry here in the same
   Dual Swords too. [checked: docs/mh1_us.md]
 - **G renumbered its quest files** (`mNNNNN.mib`, header grew 0x40 -> 0x48) and stores quest text
   inline. [checked]
+
+## Monster Hunter G differences found while matching (14 Oct 2026, agent C)
+
+- **G has 10 player slots where MH1 has 8**, tutorial quests numbered 10001+ instead of 0x83.., and only stage 36 keeps a "shagami" area
+  table (the ground-material lookup in G ignores the per-stage table pointers of MH1). [checked: G code vs MH1 code, tools/check.py diffs]
+- **G's chat log entries are 0x5F bytes** (two 0x20-byte display lines) against MH1's 0x5D, and the soft keyboard state is 12 bytes bigger.
+  [checked]
+- **G reads most of its on-screen strings through pointer cells** in its data instead of addressing the string directly (a localisation
+  hook?); the cells sit in two blocks around 0x526xxx-0x528xxx. [checked, purpose is a guess]
