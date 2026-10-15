@@ -13,6 +13,9 @@ then the root directory cluster. Nothing else on the image is touched.
     tools/xbox_fatx.py format xbox_files/hdd.img      # E: empty (all data on E: lost)
     tools/xbox_fatx.py ls xbox_files/hdd.img [DIR]     # e.g. Games/MH1
     tools/xbox_fatx.py get xbox_files/hdd.img Games/MH1/mh1log.txt [OUT]
+    tools/xbox_fatx.py put xbox_files/hdd.img LOCALFILE Games/MH1/loader.txt [BYTES]
+        (copies LOCALFILE, or only its first BYTES, streamed; replaces a file of that name, makes the
+        folders; for test set-ups such as a half-copied game folder)
 
 Run them only while xemu is not running (it caches the disk). Standard library only.
 """
@@ -51,8 +54,8 @@ def fmt(img):
 
 
 class Vol:
-    def __init__(self, img):
-        self.f = open(img, 'rb')
+    def __init__(self, img, write=False):
+        self.f = open(img, 'r+b' if write else 'rb')
         self.f.seek(E_OFFSET)
         sig, _vid, spc, root = struct.unpack('<4sIII', self.f.read(16))
         if sig != b'FATX':
@@ -60,7 +63,7 @@ class Vol:
         self.cl = spc * SECTOR
         self.n, self.ent, table = geometry()
         self.f.seek(E_OFFSET + PAGE)
-        self.fat = self.f.read(table)
+        self.fat = bytearray(self.f.read(table))
         self.data = E_OFFSET + PAGE + table
         self.root = root
 
@@ -103,7 +106,98 @@ class Vol:
         return c, attr, size
 
 
+    # ---- writing (put) ----
+    def setfat(self, c, v):
+        struct.pack_into('<H' if self.ent == 2 else '<I', self.fat, c * self.ent, v)
+
+    def alloc(self, n):
+        out, end = [], (0xFFFF if self.ent == 2 else 0xFFFFFFFF)
+        fmt_ = '<H' if self.ent == 2 else '<I'
+        c = 1
+        while len(out) < n:
+            c += 1
+            if c >= self.n:
+                sys.exit('E: is full')
+            if struct.unpack_from(fmt_, self.fat, c * self.ent)[0] == 0:
+                out.append(c)
+        for a, b in zip(out, out[1:] + [None]):
+            self.setfat(a, b if b is not None else end)
+        return out
+
+    def free(self, first):
+        for c in list(self.chain(first)):
+            self.setfat(c, 0)
+
+    def flush(self):
+        self.f.seek(E_OFFSET + PAGE)
+        self.f.write(self.fat)
+
+    def entry(self, dirc, name, attr, first, size):
+        """write (or replace) the entry NAME in the directory starting at cluster DIRC"""
+        t = time.localtime()
+        stamp = ((t.tm_year - 2000) << 25) | (t.tm_mon << 21) | (t.tm_mday << 16) | (t.tm_hour << 11) | \
+            (t.tm_min << 5) | (t.tm_sec // 2)
+        e = bytearray(b'\xff' * 64)
+        nb = name.encode('latin-1')
+        e[0], e[1] = len(nb), attr
+        e[2:2 + len(nb)] = nb
+        struct.pack_into('<IIIII', e, 0x2C, first, size, stamp, stamp, stamp)
+        slot = None
+        clusters = list(self.chain(dirc))
+        for c in clusters:
+            self.f.seek(self.data + (c - 1) * self.cl)
+            d = self.f.read(self.cl)
+            for i in range(0, self.cl, 64):
+                ln = d[i]
+                if ln <= 42 and ln not in (0, 0xE5) and d[i + 2:i + 2 + ln].decode('latin-1').lower() == name.lower():
+                    slot = (c, i)
+                    break
+                if slot is None and ln in (0, 0xFF, 0xE5):
+                    slot = (c, i)
+                    if ln != 0xE5:
+                        break
+            else:
+                continue
+            break
+        if slot is None:                        # directory full: one more cluster
+            c = self.alloc(1)[0]
+            self.setfat(clusters[-1], c)
+            self.f.seek(self.data + (c - 1) * self.cl)
+            self.f.write(b'\xff' * self.cl)
+            slot = (c, 0)
+        self.f.seek(self.data + (slot[0] - 1) * self.cl + slot[1])
+        self.f.write(e)
+
+    def put(self, src, dest, nbytes=None):
+        parts = [p for p in dest.replace('\\', '/').split('/') if p]
+        dirc = self.root
+        for part in parts[:-1]:
+            hit = [(fc, a) for name, a, fc, _ in self.entries(dirc) if name.lower() == part.lower()]
+            if hit and hit[0][1] & 0x10:
+                dirc = hit[0][0]
+            else:
+                c = self.alloc(1)[0]
+                self.f.seek(self.data + (c - 1) * self.cl)
+                self.f.write(b'\xff' * self.cl)
+                self.entry(dirc, part, 0x10, c, 0)
+                dirc = c
+        for name, a, fc, _ in self.entries(dirc):
+            if name.lower() == parts[-1].lower() and not a & 0x10 and fc:
+                self.free(fc)
+        size = os.path.getsize(src) if nbytes is None else min(nbytes, os.path.getsize(src))
+        cl = self.alloc((size + self.cl - 1) // self.cl) if size else []
+        with open(src, 'rb') as fh:
+            for c in cl:
+                self.f.seek(self.data + (c - 1) * self.cl)
+                self.f.write(fh.read(min(self.cl, size - fh.tell())))
+        self.entry(dirc, parts[-1], 0, cl[0] if cl else 0, size)
+        self.flush()
+        print('E:/%s: %d bytes' % ('/'.join(parts), size))
+
+
 def main():
+    if len(sys.argv) >= 5 and sys.argv[1] == 'put':
+        return Vol(sys.argv[2], True).put(sys.argv[3], sys.argv[4], int(sys.argv[5]) if len(sys.argv) > 5 else None)
     if len(sys.argv) < 3 or sys.argv[1] not in ('format', 'ls', 'get'):
         sys.exit(__doc__)
     cmd, img = sys.argv[1], sys.argv[2]

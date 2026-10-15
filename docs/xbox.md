@@ -1514,3 +1514,84 @@ the G disc + tools/xbox_install.sh, or any FTP program). Then either install dis
 in E:\Games\MHG\data and its log reaches the server as usual. Check: boot to the title, NEW GAME, character
 creation, save (E:\UDATA\4D480002 next to MH1's 4D480001), the village; the free-memory numbers in the
 log ("alive" lines); frame rate in the village. Not testable yet: a quest from the village (G quest counter).
+
+### Installing game data through the loader (agent B, 14 Oct 2026)
+
+**Why.** Copying G's folder (dist/xbox/MHG: default.xbe 4.8 MB, data/SLPM_658.69 2 MB, AFS01.AFS 24 MB,
+AFS_DATA.AFS 144 MB, AFS00.AFS 884 MB) to the owner's Xbox over Evolution X's FTP kept failing: transfers
+stall or abort at random points (curl 55 / 426), no passive mode, no SIZE (so no resume), and a half-written
+file stays locked until the Xbox restarts. Small files always get through. So the big files now go through
+our own network loader over HTTP, and FTP is only needed once for the small loader.
+
+**How it works.**
+- Laptop: `tools/xbox_serve.py --data dist/xbox/MHG` (or `dist/xbox/MH1`, or a bare folder of the four disc
+  files). At start it reads the folder once and computes a CRC32 for each file and for each 4 MB chunk
+  (about 10 s for G). `/version` then ends in a `DATA` line; `GET /manifest` gives
+  `MH1DATA <folder> <chunk> <files>` and per file `F <size> <crc32> <path>` + `C <chunk crc32s>`;
+  `GET /data/<path>` answers `Range: bytes=N-` with 206 and streams the file in 1 MB pieces (never the
+  whole file in memory). Only the listed files are reachable. The target folder is MHG when the folder holds
+  SLPM_658.69, else MH1. For G the folder's default.xbe is installed too (E:\Games\MHG\default.xbe, so G
+  shows as its own game) and no build is served (`/version` "none"); for MH1 the folder's default.xbe is
+  served as the build (mh1.xbe), never written over the loader (the loader refuses a manifest that tries).
+- Xbox (src/pc/xbox/loader/install.c, xh_get_range in ../xnet_http.c): on `DATA` the loader fetches the
+  manifest before the usual build check. Per file: if `E:\Games\<folder>\mh1data.txt` already lists it with
+  the same size and CRC it is skipped without reading. Otherwise the file on the disk (FTP leftovers, a cut
+  copy, an older file) is read chunk by chunk and kept up to the first chunk whose CRC is wrong; the download
+  starts there with a Range request. Each 4 MB chunk is checked in memory and then written with one
+  WriteFile (the pdclib 1 KB fwrite lesson). A dropped connection or 10 s without data: "connection lost at
+  N MB, resuming in 3 s", again from the last good chunk; it gives up after 20 tries in a row without
+  progress (about 2 minutes). A finished file is read back and checked once more, then added to
+  mh1data.txt. The screen shows one line per file (Checking / Copying N / M MB and the speed / OK).
+- After that: for G, with no build served, "Starting E:\Games\MHG\default.xbe in 5 s" and G runs. For MH1
+  the loader carries on as usual (downloads the build, starts mh1.xbe). If something could not be finished:
+  "Install not finished. Start Monster Hunter again to go on from here." and the dashboard after 60 s; the
+  next start goes on from the last good chunk.
+- The trigger is the server: started with --data, every loader start checks the data (a few seconds when all
+  is recorded in mh1data.txt); without --data nothing changes. No pad input needed.
+
+**Tested in xemu** (hidden, test loader `make -C src/pc/xbox/loader OUTPUT_DIR=../../../../build/xbox/loader_test
+XH_HOST='\"10.0.2.2\"' XH_PORT=8792`, server on port 8792, `tools/run_xemu.sh --xbe
+build/xbox/loader_test/default.xbe --net`):
+- a 47 MB folder of random bytes: all files arrive, byte-identical (read back with tools/xbox_fatx.py get);
+- the real dist/xbox/MHG over the fake one (wrong files already there, same names): server killed during
+  AFS_DATA.AFS at 56 MB and restarted 15 s later: the loader retried and went on at 56 MB; xemu then killed
+  (power off) during AFS00.AFS at 88 MB on screen; the next start skipped the four recorded files, found
+  84 MB of AFS00.AFS good on the disk (the last chunks had not reached the disk image) and went on from
+  there (resumed at 592 MB after a second power-off); the last start read AFS00.AFS back (884 MB, CRC
+  434fa486 as on the laptop), recorded it and started E:\Games\MHG\default.xbe: G booted from
+  D:\data = E:\Games\MHG\data (AFS_DATA.AFS opened, SLPM_658.69 loaded). default.xbe, SLPM_658.69,
+  AFS01.AFS and AFS_DATA.AFS read back from the disk image byte-identical (tools/xbox_fatx.py get; don't
+  do that for AFS00.AFS: xbox_fatx.py holds the whole file in memory and that run ran the laptop out of
+  memory). mh1data.txt is rewritten from the current manifest each start (stale lines drop out; changed
+  after the test run, built, not rerun);
+- xemu needs more than the 1.5 GB `ulimit -v` cap (it fails at "cannot set up guest memory" even at 3 GB;
+  ran at 6 GB);
+- xemu's NAT network gives 1.0-2.8 MB/s (so ~10 minutes for G there); the real Xbox on a wired LAN should be
+  faster, not measured.
+Not tested: the real Xbox (Evolution X launching the loader; the network freezes noted above were never
+reproduced in xemu).
+
+**Owner, to install G:**
+1. Install the new loader once over FTP (two small files): `tools/xbox_upload.sh --loader` (asks for the
+   FTP login; it rebuilds the loader first).
+2. `./mh1 xbox disc/mhg` if dist/xbox/MHG is not there yet, then `tools/xbox_serve.py --data dist/xbox/MHG`
+   and leave it running.
+3. On the Xbox start "Monster Hunter" (E:\Games\MH1). It installs G into E:\Games\MHG and starts it. If it
+   stops ("Install not finished"), just start Monster Hunter again: it goes on where it stopped. The leftover
+   FTP files in E:\Games\MHG do not need deleting (good chunks are kept, the rest is overwritten; the
+   FTP server's lock ends when the dashboard starts the loader).
+4. Afterwards serve builds as before (`tools/xbox_serve.py`, without --data); G is also in the games list as
+   "Monster Hunter G".
+
+**Owner's first try (14 Oct 2026): stayed on the Evolution X screen, the server got no request.**
+Rechecked in xemu with exactly what `xbox_upload.sh --loader` builds (default address; the built XBE differs
+from the one in the main checkout only in 6 timestamp bytes), E:\Games\MH1\loader.txt pointing at a test
+server, and E:\Games\MHG holding a half install like the owner's (default.xbe, SLPM_658.69, AFS01.AFS complete,
+AFS_DATA.AFS 60 MB, AFS00.AFS 50 MB, empty mh1data.txt; set up with the new `tools/xbox_fatx.py put`): the
+loader screen comes up, /version and /manifest arrive 1 s after DHCP, the first three files are checked OK and
+AFS_DATA.AFS resumes. Nothing before the loader's screen touches the network or E:\Games\MHG (it sets the
+video mode first, then mounts E:), so "stays on the Evolution X screen" means the XBE did not start at all.
+Candidates, not confirmed: the FTP upload of the loader ended early without an error (xbox_upload.sh now reads
+the size back from the listing and fails if it differs), or the half-copied G XBE (E:\Games\MHG\default.xbe,
+listed as "Monster Hunter G") was started instead of "Monster Hunter", or a file still locked by a stalled FTP
+transfer (restart the Xbox before trying).
