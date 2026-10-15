@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0026CB60-0x0026CBDC: Net_put_overlay_data .. Net_kb_input_sub. See netwk_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct NETCW {
@@ -187,19 +188,14 @@ void Ncm_spr_kill2(int m);
 
 
 
-#if !defined(G_PART)
 void Net_put_overlay_data(int n) {
-    Load_overlay(n & 0xFF, 2);
+    Load_overlay(n & 0xFF, GV(2, 3));
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int NetLoadWait(void) {
     return 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int Net_kb_input_sub(void) {
     int r = 0;
 
@@ -209,4 +205,3 @@ int Net_kb_input_sub(void) {
     }
     return r;
 }
-#endif

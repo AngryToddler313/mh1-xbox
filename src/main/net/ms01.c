@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00267FD0-0x002685B4: start_cancel_check .. ms_network_bb_authentication. See ms_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "netcw.h"
 
@@ -34,12 +35,13 @@ int func_A769C0();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 int start_cancel_check(s16 *p) {
     int ret = 0;
 
     if (net_swdata3(0) & 0x8000) {
         *p += 1;
-        if (*p >= 0x3C) {
+        if (*p >= GV(0x3C, 0x1E)) {
             ret = 1;
         }
     } else {
@@ -47,7 +49,9 @@ int start_cancel_check(s16 *p) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 int ms_network_bb_authentication(void) {
     int ret = 0;
     int r;
@@ -201,3 +205,4 @@ int ms_network_bb_authentication(void) {
     }
     return ret;
 }
+#endif

@@ -1,4 +1,8 @@
 /* lf03 - file and texture loading 0x0011EF90-0x0011F3EC: load_enemy_model, load_enemy_sub_model, load_npc_model, load_set_model, load_edit_model, debug_model_load, reload_tex, LoadCameraData, Meltw, GetLinkFileNum, GetLinkFileAddress, GetLinkFileSize, amo_ahi_expand. Whole file in loadf_nm.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define flReloadTexture flCompactVRAM
+#endif
 #include "types.h"
 
 extern void *arc_ptr;
@@ -107,7 +111,7 @@ void debug_model_load(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void reload_tex(int num, int id) {
     if (num != 0) {
         flReloadTexture(num, &mem_tex[id]);
@@ -118,7 +122,7 @@ void reload_tex(int num, int id) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void LoadCameraData(int n) {
     u32 id = camera_data_tbl[n];
     void *p = 0;
@@ -134,7 +138,7 @@ void LoadCameraData(int n) {
 /* LZ style decompressor: 16 bit flag words (bit set = copy token), tokens are u16:
  * top 5 bits = length (0 = a separate u16 length follows), low 11 bits = distance back in u16s
  * (0 = fill with zeros). Clear flag = one literal u16. */
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void Meltw(u16 *src, u16 *dst) {
     int flags;
     int bits;
@@ -185,25 +189,25 @@ void Meltw(u16 *src, u16 *dst) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 int GetLinkFileNum(int *p) {
     return p[0];
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void *GetLinkFileAddress(u8 *p, int n) {
     return p + *(int *)(p + n * 8 + 4);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 long GetLinkFileSize(u8 *p, int n) {
     return *(int *)(p + n * 8 + 8);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void amo_ahi_expand(void *link, void *a, void *b) {
     void *src = GetLinkFileAddress(link, 0);
 

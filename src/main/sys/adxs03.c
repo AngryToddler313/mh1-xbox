@@ -3,6 +3,7 @@
    queue (load_bin = blocking load, load_bin_req/load_task = background queue of 64 entries x 0x100 bytes) and the
    two BGM stream channels (str_*: play/pause/stop, master volume, fades). Working file: matching functions are
    split into runs. Names of fields are guesses from use. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 extern GAME_W game_w;
@@ -31,6 +32,11 @@ void str_server(void);
 void load_task(void);
 void ADXT_Pause(int, int);
 void ADXT_Stop(int);
+#ifdef MHG_PS2
+void func_001C1E98(int);
+void func_001C2818(int, int);
+int func_001C1F58(int);
+#endif
 int ADXT_GetStat(int);
 void ADXT_StartAfs(int, int, int);
 void ADXT_StartSeamless(int);
@@ -77,7 +83,6 @@ void str_play_sub(int ch, int file, int vol, int pause);
 void str_fadein_vol(int ch, int frames, int vol);
 void str_master_vol(int update);
 void str_init(void);
-#if !defined(G_PART)
 void str_init(void) {
     int i;
     STRW *w;
@@ -88,24 +93,16 @@ void str_init(void) {
         memset(w, 0, 0x14);
     }
 }
-#endif
-#if !defined(G_PART)
 void str_play(int ch, int file) {
     str_play_sub(ch, file, str_w[ch].vol_max, 0);
 }
-#endif
-#if !defined(G_PART)
 void str_play_vol(int ch, int file, int vol) {
     str_play_sub(ch, file, vol, 0);
 }
-#endif
-#if !defined(G_PART)
 void str_play_f_vol(int ch, int file, int frames, int vol) {
     str_play_sub(ch, file, 0, 0);
     str_fadein_vol(ch, frames, vol);
 }
-#endif
-#if !defined(G_PART)
 void str_play_sub(int ch, int file, int vol, int pause) {
     str_pause(ch, pause);
     str_volume(ch, vol);
@@ -118,24 +115,20 @@ void str_play_sub(int ch, int file, int vol, int pause) {
         }
     }
 }
-#endif
-#if !defined(G_PART)
 void str_pause(int ch, int on) {
     ADXT_Pause(adxt[ch], on);
 }
-#endif
-#if !defined(G_PART)
 void str_stop(int ch) {
+#ifdef MHG_PS2
+    func_001C1E98(adxt[ch]);        /* G: the ADXT_Stop slot is one function earlier than MH1's names say */
+#else
     ADXT_Stop(adxt[ch]);
-}
 #endif
-#if !defined(G_PART) || G_PART == 1
+}
 void str_stop_all(void) {
     str_init();
     str_master_vol(0);
 }
-#endif
-#if !defined(G_PART) || G_PART == 1
 void str_master_vol(int update) {
     int i;
     STRW *w;
@@ -151,8 +144,6 @@ void str_master_vol(int update) {
         }
     }
 }
-#endif
-#if !defined(G_PART)
 void str_volume(int ch, int vol) {
     STRW *w = &str_w[ch];
     int v;
@@ -165,21 +156,19 @@ void str_volume(int ch, int vol) {
     if (v < -999) {
         v = -999;
     }
+#ifdef MHG_PS2
+    func_001C2818(adxt[ch], v);
+#else
     ADXT_SetOutVol(adxt[ch], v);
-}
 #endif
-#if !defined(G_PART) || G_PART == 2
+}
 void str_outmode(int mode) {
     ADXT_SetOutputMono(mode ^ 1);
     flSndOutputMode(mode);
 }
-#endif
-#if !defined(G_PART) || G_PART == 2
 int str_getstat(int ch) {
     return str_w[ch].stat;
 }
-#endif
-#if !defined(G_PART) || G_PART == 2
 void str_fadeout(int ch, int frames) {
     STRW *w = &str_w[ch];
 
@@ -188,8 +177,6 @@ void str_fadeout(int ch, int frames) {
     w->fade_cnt = frames;
     w->fade_len = frames;
 }
-#endif
-#if !defined(G_PART) || G_PART == 2
 void str_fadein(int ch, int frames) {
     STRW *w = &str_w[ch];
 
@@ -198,8 +185,6 @@ void str_fadein(int ch, int frames) {
     w->fade_cnt = frames;
     w->fade_len = frames;
 }
-#endif
-#if !defined(G_PART) || G_PART == 2
 void str_fadein_vol(int ch, int frames, int vol) {
     STRW *w = &str_w[ch];
 
@@ -208,8 +193,6 @@ void str_fadein_vol(int ch, int frames, int vol) {
     w->fade_cnt = frames;
     w->fade_len = frames;
 }
-#endif
-#if !defined(G_PART)
 void str_server(void) {
     int i;
     STRW *w;
@@ -220,10 +203,14 @@ void str_server(void) {
             w->fade_cnt--;
             str_volume(i, w->fade_from + (w->fade_to - w->fade_from) * (w->fade_len - w->fade_cnt) / w->fade_len);
         }
+        
+#ifdef MHG_PS2
+        w->stat = func_001C1F58(*a);
+#else
         w->stat = ADXT_GetStat(*a);
+#endif
     }
 }
-#endif
 /* ===== 0x00100E20-0x00101E38: card work reset, effect work pool (eft_work: 0x80 entries of 0x40 bytes) ===== */
 extern u8 card_w[];
 extern u8 card_w2[];

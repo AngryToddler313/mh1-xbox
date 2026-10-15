@@ -126,3 +126,12 @@ Agents: when you trip over something curious, add a short entry here in the same
 - **G's talk rows for shop NPCs mark lines as heard by setting event flags** (flags 32-34, 37-42, 83-88, 94-96): the first visit after each story step
   plays the new line once. [checked: lobby 0x544CD0 ..]
 - **G's workshop has 1049 armour recipes and 170 weapon recipes** (MH1: 359 / 234); the upgrade table is by weapon id (381 entries). [checked]
+
+## Monster Hunter G differences found while matching (14 Oct 2026, agent C)
+
+- **G has 10 player slots where MH1 has 8**, tutorial quests numbered 10001+ instead of 0x83.., and only stage 36 keeps a "shagami" area
+  table (the ground-material lookup in G ignores the per-stage table pointers of MH1). [checked: G code vs MH1 code, tools/check.py diffs]
+- **G's chat log entries are 0x5F bytes** (two 0x20-byte display lines) against MH1's 0x5D, and the soft keyboard state is 12 bytes bigger.
+  [checked]
+- **G reads most of its on-screen strings through pointer cells** in its data instead of addressing the string directly (a localisation
+  hook?); the cells sit in two blocks around 0x526xxx-0x528xxx. [checked, purpose is a guess]

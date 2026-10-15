@@ -2,6 +2,7 @@
  * key repeat for the item grid, and the screen drawing (help text, frames,
  * time left). reward_mv (before it) is a near-match kept in f_reward_nm.c.
  * Meanings are guesses. */
+#include "g_alias.h"
 #include "reward.h"
 
 extern char lit_843_00386A40[];
@@ -43,6 +44,6 @@ void reward_cursor_mv(u8 *p, int keys)
     now = (col & 7) | ((row & 1) << 3);
     if (old != now) {
         *p = now;
-        se_req(7, 0x16, 0);
+        se_req(7, GV(0x16, 0x17), 0);
     }
 }

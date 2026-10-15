@@ -68,7 +68,6 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
-#if !defined(G_PART) || G_PART == 1
 int lb_item_stock_mv(int sw) {
     int r = item_stock_mv(sw);
 
@@ -77,12 +76,9 @@ int lb_item_stock_mv(int sw) {
     }
     return r;
 }
-#endif
 
-#if !defined(G_PART)
 void map_move(int sw) {
     if (lpPit->lb == 0 && lpPit->x83 == 0 && ((u16)sw & 0x4000)) {
         lpPit->x3E ^= 1;
     }
 }
-#endif

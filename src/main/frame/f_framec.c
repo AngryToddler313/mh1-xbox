@@ -1,5 +1,6 @@
 /* Motion system, matching part 3 (SLPM_654.95 0x001263F0-0x001267BC):
  * frame_check .. em_frame_check3 and move(). See f_frame_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 #include "pl.h"
@@ -7,7 +8,6 @@
 #include "frame.h"
 
 /* 1 if frame f is reached during this tick's step of layer n. */
-#if !defined(G_PART) || G_PART == 1
 int frame_check(FRW *w, int n, f32 f) {
     int loop = 0;
     f32 cur;
@@ -37,10 +37,8 @@ int frame_check(FRW *w, int n, f32 f) {
     }
     return 0;
 }
-#endif
 
 /* Monsters: frame 2 is scaled by the animation speed (act_spd at +0x930). */
-#if !defined(G_PART) || G_PART == 1
 int em_frame_check(FRW *w, int n, f32 f) {
     f32 spd = *(f32 *)((u8 *)w + 0x930);
 
@@ -49,10 +47,8 @@ int em_frame_check(FRW *w, int n, f32 f) {
     }
     return frame_check(w, n, f);
 }
-#endif
 
 /* 1 once layer n is at or past frame f. */
-#if !defined(G_PART) || G_PART == 1
 int frame_check2(FRW *w, int n, f32 f) {
     if (w->mt[0].b_dir != 0) {
         return 0;
@@ -62,29 +58,22 @@ int frame_check2(FRW *w, int n, f32 f) {
     }
     return 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int em_frame_check2(FRW *w, int n, f32 f) {
     return frame_check2(w, n, f);
 }
-#endif
 
 /* 1 while layer n is between frames a and b. */
-#if !defined(G_PART) || G_PART == 1
 int frame_check3(FRW *w, int n, f32 a, f32 b) {
     if (frame_check2(w, n, a) != 0 && frame_check2(w, n, b) == 0) {
         return 1;
     }
     return 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int em_frame_check3(FRW *w, int n, f32 a, f32 b) {
     return frame_check3(w, n, a, b);
 }
-#endif
 
 void player_mv(void);
 void old_pos_save(EMW *);
@@ -112,7 +101,6 @@ void Pit_mv(void);
 
 /* One game tick: players, monsters/NPCs (20 slots), hits, then the
  * camera, effects, shells, set objects, items and the cockpit. */
-#if !defined(G_PART)
 void move(void) {
     int i;
     EMW *em;
@@ -142,7 +130,7 @@ void move(void) {
         body_hit();
     }
     bgm_server();
-    for (i = 0, pl = player_work; i < 8; i++, pl++) {
+    for (i = 0, pl = player_work; i < GV(8, 10); i++, pl++) {
         if (pl->be_flag != 0 && (game_w.x2E == 1 || ((u8 *)pl)[0x7EC] != 0)) {
             HitWallPlayer(pl, 1);
         }
@@ -167,4 +155,3 @@ void move(void) {
     move_stage();
     Pit_mv();
 }
-#endif

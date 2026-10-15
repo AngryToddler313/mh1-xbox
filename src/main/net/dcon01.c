@@ -1,7 +1,14 @@
 /* dcon01 - f_connect (0x00271050-0x00271094): dcon_task_init, reset the dial-connect task work. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define func_5B25B0 lobby_func_005C0E20
+#endif
 #include "types.h"
 
 extern u8 D_6DD7E0[];
+#ifdef MHG_PS2
+extern u8 cw_client_g[];
+#endif
 extern void *cw;
 extern u8 dcon_tk_w[];
 extern u8 memory_card_port;
@@ -12,7 +19,11 @@ int func_5B25B0();
 
 void dcon_task_init(void)
 {
+#ifdef MHG_PS2
+    cw = cw_client_g;           /* G's client work */
+#else
     cw = D_6DD7E0;
+#endif
     memset(dcon_tk_w, 0, 0x1A);
     memory_card_port = net_common_w.x0D;
     func_5B25B0();

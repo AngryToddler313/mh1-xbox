@@ -1,6 +1,7 @@
 /* fl pad layer part 1 (SLPM_654.95 0x0018E430-0x0018E624): flpad_ram_clear, flPADInitialize, flPADDestroy, flPADWorkClear (flPADConfigSet follows in flpad_nm.c, 10 of 32 off).
  * flpad_root / flpad_conf are two 0x110 byte work blocks (one per port set), flpad_config holds 0x2C bytes of
  * (s16, s16) button-map pairs per port. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct PADPAIR { s16 a, b; } PADPAIR;
@@ -62,9 +63,9 @@ void flPADDestroy(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void flPADWorkClear(void) {
-    flpad_ram_clear((s32 *)flpad_root, 0x110);
-    flpad_ram_clear((s32 *)flpad_conf, 0x110);
+    flpad_ram_clear((s32 *)flpad_root, GV(0x110, 0x88));
+    flpad_ram_clear((s32 *)flpad_conf, GV(0x110, 0x88));
 }
 #endif

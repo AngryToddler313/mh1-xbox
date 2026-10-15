@@ -2,6 +2,7 @@
  * not byte offsets, so the loop does not keep field addresses), disp_gun_load_mess, the blinking "loading" text of
  * the bowguns, and disp_menu, the pit menu frame (page title, blinking arrow). Matched by agent B (12 Oct 2026): the
  * blink phases are u32, the text position before the colour; disp_menu keeps the page in s16 n / base / k. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -312,7 +313,7 @@ int Pl_shell_set(PLW *, u16, int);
 /* 0x12BCA0 */
 
 /* The bowgun ammo display: one icon per shot in the clip (loaded / empty), the loading messages. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void disp_cannon(void) {
     PFLPS2 q;
     PLW *pl;
@@ -322,8 +323,8 @@ void disp_cannon(void) {
     pl = lpPit->pl;
     if (pl->kind == 1 || pl->kind == 5) {
         SetFilterMode(0);
-        reload_tex(1, 0x11A);
-        SetTextureStage(0x11A);
+        reload_tex(1, GSLOT(0x11A, 0x141));
+        SetTextureStage(GSLOT(0x11A, 0x141));
         if (pl->work8BC == 0) {
             if (pl->flag12 != 0 && (u16)Pl_shell_set(pl, pl->work88E, 1) != 0xFF) {
                 disp_gun_load_mess(2);

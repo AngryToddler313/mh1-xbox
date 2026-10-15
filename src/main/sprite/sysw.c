@@ -1,6 +1,7 @@
 /* System work helpers. SLPM_654.95 0x001611F0-0x00161480 (g_system_w_init):
  * system_w clear, small random numbers, gaussian weight table for blurs,
  * sprite slot work, render start/end. Names from the symbol file. */
+#include "g_alias.h"
 #include "types.h"
 
 extern u8 system_w[0x80];
@@ -32,15 +33,22 @@ void system_error(void) {
 }
 #endif
 
-#if !defined(G_PART)
-void init_ran_suu(void) {
-    Rnd_w[0] = rtcDate[1];
-    Rnd_w[1] = rtcDate[1];
+#ifdef MHG_PS2
+#define RAN_ARG u8 seed         /* G: the seed is a parameter */
+#define RAN_SEED seed
+#else
+#define RAN_ARG void
+#define RAN_SEED rtcDate[1]
+#endif
+#if !defined(G_PART) || G_PART == 1
+void init_ran_suu(RAN_ARG) {
+    Rnd_w[0] = RAN_SEED;
+    Rnd_w[1] = RAN_SEED;
 }
 #endif
 
 /* Tiny linear congruential generator, one state per stream n. */
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 int ran_suu(int n) {
     u32 r;
     u32 v;
@@ -56,7 +64,7 @@ int ran_suu(int n) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void init_std_rate(void) {
     int i;
 
@@ -70,13 +78,13 @@ void init_std_rate(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void sprite_work_init(void) {
     memset(sprite_w, 0, 0x100);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void sprite_work_free(s16 n) {
     s8 *p = (s8 *)&sprite_w[n * 4];
 
@@ -86,7 +94,7 @@ void sprite_work_free(s16 n) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void all_sprite_free(void) {
     s16 i;
 
@@ -96,7 +104,7 @@ void all_sprite_free(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void render_start(void) {
     flBeginRender();
     reload_tex_total = 0;
@@ -106,7 +114,7 @@ void render_start(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
+#if !defined(G_PART) || G_PART == 2
 void render_end(void) {
     flEndRender();
     render_flag--;

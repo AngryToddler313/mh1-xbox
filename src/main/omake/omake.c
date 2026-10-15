@@ -3,6 +3,10 @@
  * machine (tsk+8 = phase, tsk+9 = sub step); mode_sel_end leaves to
  * Game_task / Option_task / Omake_task; Omake_task runs the extras menu
  * (movies and the staff roll). Field meanings are guesses. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define disp_omake_menu sub_main_func_004A7AE0
+#endif
 #include "types.h"
 
 #ifndef OMAKE_PART
@@ -1392,7 +1396,7 @@ SELT *tsk;
 {
     if (Fade_busy_ck() != 1) {
         Tsk_Exit(tsk);
-        Load_overlay(1, 1);
+        Load_overlay(1, GV(1, 2));
         Select_Tsk_Execute();
         fade_set(2);
         return;

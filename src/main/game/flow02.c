@@ -1,6 +1,7 @@
 /* SLPM_654.95 0x001116D0-0x00111B1C: init_pl_work (matched by agent B: be_flag else-branch jumps to the next slot,
    the three weapon halfwords read before they are stored, (u16)i to a K&R Quest_pl_stage_init), init_view_work ..
    em_motion_load. See flow_nm.c. */
+#include "g_alias.h"
 #include "flow.h"
 #include "em.h"
 
@@ -211,7 +212,7 @@ void swset_w_init(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void st_model_load(stage)
 u8 stage;
 {
@@ -228,28 +229,28 @@ u8 stage;
         sw->x34 = 1;
         sw->mdls = (void *)get_mdlw_ptr(m);
         set_used_mdlw(m, 1);
-        st_model_work_set(m, stage_model, 0xEA, STAGE_TEX[game_w.stage], 0);
+        st_model_work_set(m, stage_model, GV(0xEA, 0x111), STAGE_TEX[game_w.stage], 0);
         set_create_model(game_w.stage);
         LoadCameraData(game_w.stage);
     }
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void com_motion_load(void) {
     load_plcom_motion();
     create_plcom_motion();
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void pl_motion_load(int n) {
     load_pl_motion();
     create_pl_motion(n);
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 1
 void em_motion_load(int a, int b) {
     load_em_motion();
     create_em_motion(a, b);

@@ -1,4 +1,5 @@
 /* fs2_01 - font setup 0x00161770-0x00161968: font_set, font_set2, font_stack_reset, font_draw, font_draw_stack_no. Whole file in fontst2_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 extern u32 nfcol_tbl[][3];
@@ -83,11 +84,11 @@ void font_stack_reset(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void font_draw(void) {
     s16 i;
 
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < GV(5, 6); i++) {
         flfntDraw(i);
     }
     font_reset_flag = 1;

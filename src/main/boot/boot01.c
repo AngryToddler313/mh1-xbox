@@ -1,4 +1,5 @@
 /* boot01 - 0x0022FDD0-0x0022FE00: program entry (main): starts the CRI middleware and the network queue, then runs ACRMain forever. Whole file in boot_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 void mwInit(void);
@@ -20,7 +21,9 @@ extern s32 *CurDevice;
 
 void main(void) {
     mwInit();
-    CngNetAQInit(cng_netAQ);
+#ifndef MHG_PS2
+    CngNetAQInit(cng_netAQ);    /* not in G's main (the PC keeps it) */
+#endif
     for (;;) {
         ACRMain();
     }

@@ -1,6 +1,7 @@
 /* menu39 - f_menu 0x0012A110-0x0012A1CC: menu_data_mix_sub (item mix list cursor move). Whole file in menu_nm.c. */
 /* menu_nm - f_menu (SLPM_654.95 0x00127440-0x00134950, main.bin): the whole pit menu file as near-match C, not built; matching runs are built from it as menuNN.c.
  * Field meanings are guesses. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -166,7 +167,7 @@ void menu_data_mix_sub(int sw) {
         p = Item_preparation_list_search(&lpPit->x81, d, &lpPit->x6C, &lpPit->x6E);
         if (lpPit->x68 != p) {
             lpPit->x68 = p;
-            se_req(7, 0x16, 0);
+            se_req(7, GV(0x16, 0x17), 0);
         }
     }
     PitMenu.x10 = 1;

@@ -1,5 +1,6 @@
 /* tarpad layer (SLPM_654.95 0x00194DF0-0x00194FF4): tarPADDestroy, tarPADFixedAnalogSelectSwitch, flPADConfigSetACRtoXX, tarPADRead, ps2PADWorkClear.
  * tarpad_root is a 0x34 byte record per port (+6 slot byte, +8 button bits, +0x1C / +0x28 the two analog stick vectors). */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct TARPAD {
@@ -51,10 +52,12 @@ void tarPADDestroy(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void tarPADFixedAnalogSelectSwitch(s8 v) {
     flPadFixedAnalogSelectSwitch[0] = v;
-    flPadFixedAnalogSelectSwitch[1] = v;
+#ifndef MHG_PS2
+    flPadFixedAnalogSelectSwitch[1] = v;    /* G has one pad here */
+#endif
 }
 #endif
 
@@ -104,11 +107,11 @@ void tarPADRead(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void ps2PADWorkClear(void) {
-    flpad_ram_clear((s32 *)tarpad_root, 0x68);
-    flpad_ram_clear((s32 *)ps2pad_state, 0x40);
-    flpad_ram_clear((s32 *)ps2pad_backup, 0x40);
+    flpad_ram_clear((s32 *)tarpad_root, GV(0x68, 0x34));
+    flpad_ram_clear((s32 *)ps2pad_state, GV(0x40, 0x20));
+    flpad_ram_clear((s32 *)ps2pad_backup, GV(0x40, 0x20));
     flpad_ram_clear((s32 *)ps2pad_clear, 0x20);
 }
 #endif

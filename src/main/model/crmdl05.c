@@ -1,5 +1,6 @@
 /* crmdl05 - monster and NPC model creation (SLPM_654.95 0x00124820-0x00124C48): em_create_model, npc_create_model.
    Working copy of the whole range in crmdl_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "mdlw.h"
 
@@ -63,7 +64,11 @@ extern STW stage_work;
 typedef struct GWM {            /* game_w: monster model bookkeeping, 4 slots */
     u8 _pad00[0x28];
     u8 em_kind[4];              /* 0x28 monster kind per slot, 0 = none */
+#ifdef VERSION_MHG
+    u8 _pad2C[0x90 - 0x2C];     /* G: the model bookkeeping sits 8 bytes later */
+#else
     u8 _pad2C[0x88 - 0x2C];
+#endif
     s32 mdl_ptr[4];             /* 0x88 */
     s16 mdl_n[4];               /* 0x98 */
     s16 mdl_no[4];              /* 0xA0 */
@@ -106,7 +111,7 @@ void em_create_model(int slot) {
         g->mdl_n[slot] = 1;
         g->mdl_ptr[slot] = (s32)get_mdlw_ptr(h);
         set_used_mdlw(h, 1);
-        em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), ENEMY_TEX[g->em_kind[slot]], 0x900, slot & 0xFF);
+        em_model_work_set((s16)h, area, (s16)(slot * 20 + GV(0x9A, 0xC1)), ENEMY_TEX[g->em_kind[slot]], 0x900, slot & 0xFF);
         em_motion_load(slot, g->em_kind[slot]);
         if (em_sub_model_data[g->em_kind[slot]] != -1) {
             load_enemy_sub_model(g->em_kind[slot]);
@@ -120,7 +125,7 @@ void em_create_model(int slot) {
             g->sub_n[slot] = 1;
             g->sub_ptr[slot] = (s32)get_mdlw_ptr(h);
             set_used_mdlw(h, 1);
-            model_work_set((s16)h, area, (s16)(slot * 20 + 0xA6), ENEMY_SUB_TEX[g->em_kind[slot]], 0x900, 0);
+            model_work_set((s16)h, area, (s16)(slot * 20 + GV(0xA6, 0xD1)), ENEMY_SUB_TEX[g->em_kind[slot]], 0x900, 0);
         } else {
             g->sub_n[slot] = -1;
         }
@@ -142,18 +147,18 @@ void npc_create_model(int slot) {
         set_used_mdlw(h, 1);
         switch (slot) {
         case 0:
-            pl_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], pl_shader_tbl0[0], 0x100, 0);
+            pl_model_work_set((s16)h, area, (s16)(slot * 20 + GV(0x9A, 0xC1)), NPC_TEX[slot], pl_shader_tbl0[0], 0x100, 0);
             break;
         case 1:
-            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + GV(0x9A, 0xC1)), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 0xA);
             break;
         case 2:
-            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + GV(0x9A, 0xC1)), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 9);
             break;
         case 3:
-            em_model_work_set((s16)h, area, (s16)(slot * 20 + 0x9A), NPC_TEX[slot], 0x900, slot & 0xFF);
+            em_model_work_set((s16)h, area, (s16)(slot * 20 + GV(0x9A, 0xC1)), NPC_TEX[slot], 0x900, slot & 0xFF);
             em_motion_load(slot, 0x20);
             break;
         }

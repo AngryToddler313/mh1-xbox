@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00110F10-0x001111E8: game_init .. load_eft. See flow_nm.c. */
+#include "g_alias.h"
 #include "flow.h"
 #include "em.h"
 
@@ -102,7 +103,6 @@ void com_motion_load();
 
 
 #ifdef VERSION_MHG
-#if !defined(G_PART) || G_PART == 1
 void game_init(void) {
     memset(&game_w, 0, 0x240);
     all_model_free();
@@ -117,7 +117,6 @@ void game_init(void) {
     GWS8(0x17) = SELB(0xDC);
     CameraWorkInit();
 }
-#endif
 #else
 void game_init(void) {
     memset(&game_w, 0, 0x224);
@@ -135,15 +134,12 @@ void game_init(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
 void stage_init(void) {
     Pit_init();
     func_63B020();
     Q_camera_init();
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void stage_load(void) {
     int i;
 
@@ -169,9 +165,7 @@ void stage_load(void) {
     debug_model_load();
     all_initmotion_free();
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void player_all_load(int n) {
     PLW *pl = &player_work[n];
 
@@ -179,9 +173,7 @@ void player_all_load(int n) {
     pl_create_model(n);
     player_init0(pl);
 }
-#endif
 
-#if !defined(G_PART)
 void load_eft(void) {
     s32 m;
 
@@ -190,14 +182,13 @@ void load_eft(void) {
     if (m >= 0) {
         eft_mdlw[0] = get_mdlw_ptr(m);
         set_used_mdlw(m, 1);
-        model_work_set(m, stage_model, 0x10A, EFT_TEX[0], 0xB00, 0);
+        model_work_set(m, stage_model, GV(0x10A, 0x131), EFT_TEX[0], 0xB00, 0);
         load_eft_model(4);
         m = get_start_mdlw(1);
         if (m >= 0) {
             eft_mdlw[4] = get_mdlw_ptr(m);
             set_used_mdlw(m, 1);
-            model_work_set(m, stage_model, 0x126, EFT_TEX[4], 0x800, 1);
+            model_work_set(m, stage_model, GV(0x126, 0x14D), EFT_TEX[4], 0x800, 1);
         }
     }
 }
-#endif

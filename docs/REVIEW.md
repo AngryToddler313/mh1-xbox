@@ -481,6 +481,12 @@ obvious workarounds.
   (quest loop, progression, urgent) and the MH1 xemu quest loop pass.
 - **To revert:** revert the commit "G on the Xbox: ...".
 
+## 14 Oct 2026, agent C: G round 8
+- **Dropped:** the "did not link" lines of config/mhg/c_skip_funcs.txt for src/main/pl/f_pl.c, cam/camd.c and game/f_game.c (stale since the
+  parts' rodata lines were added by hand). **Now:** tools/mhg_dataparts.py writes the rodata lines itself, so mhg_parts.py can include those functions.
+  **Why:** a redo of f_pl lost 3.6 KB of hand-curated parts otherwise. **To revert:** restore the lines from the previous commit.
+- **Changed:** tools/mhg_parts.py now compares a part's functions as a set (not in symbol-table order) and splits runs against source order.
+  **Why:** it dropped whole runs (flps0_p1, f_chat) as "bad". **To revert:** commit "G round 8" for tools/mhg_parts.py.
 ## Debug menu for testers (agent E, 14 Oct 2026)
 - **What:** an in-game debug menu on every build (src/pc/dbgmenu.c, src/pc/rt/rt_dbg.c; docs/pc.md "Debug menu",
   docs/PLAYING.md "Debug menu for testers"). Choices made without the owner, each easy to change:

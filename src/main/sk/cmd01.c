@@ -1,13 +1,14 @@
 /* Soft keyboard conversion (SLPM_654.95 0x00262A90-0x00262D10): sk_conv_init, kata_kouho_set, get_kouho_suu. See cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -86,30 +87,33 @@ typedef struct { s8 b[0x11]; } ZK;
 extern ZK lit_913_0034E410;
 
 
+#if !defined(G_PART) || G_PART == 1
 void sk_conv_init(void) {
-    memset(lpSKey + 0x144, 0, 0x514);
+    memset(lpSKey + SKO(0x144), 0, 0x514);
     memset(kouhogun, 0, 0x300);
 }
+#endif
 
+#if !defined(G_PART)
 void kata_kouho_set(void) {
     char a[0x100];
     char b[0x100];
     int i;
 
     if (SKS8(0x36) == 0) {
-        strcpy(a, (char *)lpSKey + 0x458);
-        apiask_37_FirstHenkanToKata(lpSKey + 0x458, lpSKey + 0x558);
-        SKS32(0x14C) = apiask_21_NextKouho(lpSKey + 0x458, lpSKey + 0x558);
-        strcpy(b, (char *)lpSKey + 0x458);
-        if (strcmp((char *)lpSKey + 0x458, a) != 0) {
+        strcpy(a, (char *)lpSKey + SKO(0x458));
+        apiask_37_FirstHenkanToKata(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
+        SKS32(0x14C) = apiask_21_NextKouho(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
+        strcpy(b, (char *)lpSKey + SKO(0x458));
+        if (strcmp((char *)lpSKey + SKO(0x458), a) != 0) {
             i = 0;
             if (SKS32(0x14C) != 0) {
                 do {
-                    SKS32(0x14C) = apiask_21_NextKouho(lpSKey + 0x458, lpSKey + 0x558);
-                    if (strcmp((char *)lpSKey + 0x458, a) == 0 || SKS32(0x14C) == 0) {
+                    SKS32(0x14C) = apiask_21_NextKouho(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
+                    if (strcmp((char *)lpSKey + SKO(0x458), a) == 0 || SKS32(0x14C) == 0) {
                         break;
                     }
-                    if (strcmp((char *)lpSKey + 0x458, b) == 0) {
+                    if (strcmp((char *)lpSKey + SKO(0x458), b) == 0) {
                         SKS32(0x14C) = 0;
                         return;
                     }
@@ -119,7 +123,9 @@ void kata_kouho_set(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 int get_kouho_suu(void) {
     char a[0x100];
     char b[0x100];
@@ -135,7 +141,7 @@ int get_kouho_suu(void) {
             n = 0x1F;
         }
     } else {
-        strcpy(a, (char *)lpSKey + 0x458);
+        strcpy(a, (char *)lpSKey + SKO(0x458));
         n = 0;
         SKS32(0x14C) = apiask_21_NextKouho(c, d);
         strcpy(b, c);
@@ -164,3 +170,4 @@ int get_kouho_suu(void) {
     }
     return n;
 }
+#endif

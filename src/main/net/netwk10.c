@@ -1,4 +1,8 @@
 /* netwk10 - f_netwk 0x0026CBE0-0x0026CC88: Net_kb_input_init2. Whole file in netwk_nm.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define SoftKeyboard_set func_00220F40
+#endif
 #include "types.h"
 
 typedef struct NETCW {

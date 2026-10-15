@@ -1,6 +1,7 @@
 /* tutorial - game.bin 0x0063ACA0-0x0063B020: Tutorial_prog to soncho_no_oshie.
  * Tutorial quests: sets event flags when the player reaches a stage or
  * does a step, and has the village chief ("soncho") announce it. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 #include "pl.h"
@@ -35,14 +36,15 @@ static int tuto_stage_in_flag_set(int quest, PLW *pl);
 static int tuto_flag_set_sub(int flag);
 static void soncho_no_oshie(void);
 
+#if !defined(G_PART) || G_PART == 1
 void Tutorial_prog(void) {
     PLW *pl = &player_work[game_w.master];
     int flag;
     int id;
 
-    flag = tuto_stage_in_flag_set(quest_w.no, pl);
-    switch (quest_w.no) {
-    case 0x83:
+    flag = tuto_stage_in_flag_set(GV(quest_w.no, (u16)quest_w.no), pl);
+    switch (GV(quest_w.no, (u16)quest_w.no)) {
+    case GV(0x83, 10001):
         if (pl->stg == 0x15) {
             if ((id = Get_tuto_id(quest_t001_tbl)) != 0 && Event_flag_ck(id) == 0) {
                 Event_flag_set(id);
@@ -51,25 +53,27 @@ void Tutorial_prog(void) {
             }
         }
         break;
-    case 0x84:
-    case 0x85:
+    case GV(0x84, 10002):
+    case GV(0x85, 10003):
         break;
     }
     if (flag != 0) {
         soncho_no_oshie();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Tuto_flag_set(int kind) {
     int flag = 0;
 
     switch (kind) {
     case 0:
-        switch (quest_w.no) {
-        case 0x83:
+        switch (GV(quest_w.no, (u16)quest_w.no)) {
+        case GV(0x83, 10001):
             flag = tuto_flag_set_sub(0x6A);
             break;
-        case 0x84:
+        case GV(0x84, 10002):
             tuto_flag_set_sub(0x6D);
             flag = tuto_flag_set_sub(0x6E);
             break;
@@ -80,7 +84,9 @@ void Tuto_flag_set(int kind) {
         soncho_no_oshie();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int tuto_stage_in_flag_set(int quest, PLW *pl) {
     TUTO_STIN *t;
     s8 *row;
@@ -106,7 +112,9 @@ static int tuto_stage_in_flag_set(int quest, PLW *pl) {
     }
     return flag;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static int tuto_flag_set_sub(int flag) {
     if (Event_flag_ck(flag) == 0) {
         Event_flag_set(flag);
@@ -115,7 +123,9 @@ static int tuto_flag_set_sub(int flag) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Tutorial_quest_ck(void) {
 #ifdef VERSION_MHG      /* G (game.bin 0x66E180): the training quests 10001-10007, 10010, 10014, 10015, 10019 */
     if (quest_w.no > 10000 && quest_w.no < 10008) {
@@ -134,7 +144,9 @@ int Tutorial_quest_ck(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Tutorial_flag_set(int flag) {
     if (tuto_flag_set_sub(flag)) {
         soncho_no_oshie();
@@ -142,8 +154,11 @@ int Tutorial_flag_set(int flag) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static void soncho_no_oshie(void) {
     set01_set2(lit_173_0068A530);
     se_req(7, (ran_suu(1) & 3) + 0x28, 0);
 }
+#endif

@@ -1,4 +1,5 @@
 /* pit04 - pit menu helpers 0x00274EC0-0x0027501C: ListSelect, PageSelect. Whole file in pit_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 #include "pl.h"
@@ -54,7 +55,7 @@ int ListSelect(u8 *p, int pad, int n) {
     }
     if (v != old) {
         *p = v;
-        se_req(7, 0x16, 0);
+        se_req(7, GV(0x16, 0x17), 0);
         return 1;
     }
     return 0;
@@ -81,7 +82,7 @@ int PageSelect(u8 *p, int pad, int n) {
     }
     if (v != old) {
         *p = v;
-        se_req(7, 0x16, 0);
+        se_req(7, GV(0x16, 0x17), 0);
         return 1;
     }
     return 0;

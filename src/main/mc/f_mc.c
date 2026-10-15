@@ -4,6 +4,10 @@
  * Each mc_* function is a small step machine called every frame: it returns -1
  * while busy, 0 when done, 1 on error (mc_check_card returns the card state).
  * Field names are guesses. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define ADXM_Unlock ADXPS2_ExecVint
+#endif
 #include "types.h"
 #include "mcw.h"
 extern u8 keep_rtc[8];
@@ -63,7 +67,6 @@ extern void (*mc_act_jmp[])();
 
 /* out: u8 weekday, second, minute, hour(?), day, month, u16 year (struct of 8 bytes) */
 
-#if !defined(G_PART)
 void MemcardInit(void)
 {
     memset(&MemcardWork, 0, 0xB4);
@@ -72,9 +75,7 @@ void MemcardInit(void)
     } while (sceMcInit() < 0);
     sceCdReadClock(keep_rtc);
 }
-#endif
 
-#if !defined(G_PART)
 void McReadClock(out)
 u8 *out;
 {
@@ -96,9 +97,7 @@ u8 *out;
     mon = out[5];
     out[0] = (out[4] + (year + year / 4 - year / 100 + year / 400 + (mon * 13 + 8) / 5)) % 7;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_sync(w)
 MCW *w;
 {
@@ -106,9 +105,7 @@ MCW *w;
     w->res = 0;
     return -(sceMcSync(1, &w->cmd, &w->res) == 0);
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_check_card(w)
 MCW *w;
 {
@@ -180,11 +177,9 @@ MCW *w;
     }
     return -1;
 }
-#endif
 
 /* out: u8 weekday, second, minute, hour(?), day, month, u16 year (struct of 8 bytes) */
 
-#if !defined(G_PART)
 static int mc_check_file(w)
 MCW *w;
 {
@@ -206,9 +201,7 @@ MCW *w;
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_read_file(w)
 MCW *w;
 {
@@ -255,9 +248,7 @@ err:
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_mkdir(w)
 MCW *w;
 {
@@ -282,9 +273,7 @@ MCW *w;
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_create_file(w)
 MCW *w;
 {
@@ -317,9 +306,7 @@ err:
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_write_file(w)
 MCW *w;
 {
@@ -366,9 +353,7 @@ err:
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_attr_file(w)
 MCW *w;
 {
@@ -406,9 +391,7 @@ MCW *w;
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_format(w)
 MCW *w;
 {
@@ -430,16 +413,12 @@ MCW *w;
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_unformat()
 {
     return 1;
 }
-#endif
 
-#if !defined(G_PART)
 static int mc_delete_dir(w)
 MCW *w;
 {
@@ -506,11 +485,9 @@ rm:
     }
     return -1;
 }
-#endif
 
 /* out: u8 weekday, second, minute, hour(?), day, month, u16 year (struct of 8 bytes) */
 
-#if !defined(G_PART)
 static int mc_get_dir(w)
 MCW *w;
 {
@@ -540,9 +517,7 @@ MCW *w;
     }
     return -1;
 }
-#endif
 
-#if !defined(G_PART)
 void McActInit(file)
 int file;
 {
@@ -551,9 +526,7 @@ int file;
     MemcardWork.step = 0;
     MemcardWork.act = 0;
 }
-#endif
 
-#if !defined(G_PART)
 void McActMain(void)
 {
     MCW *w = &MemcardWork;
@@ -566,23 +539,17 @@ void McActMain(void)
         ADXM_Unlock();
     }
 }
-#endif
 
-#if !defined(G_PART)
 void McActStopSet(void)
 {
     MemcardWork.act = 0;
     MemcardWork.xB0 = 0;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_stop(void)
 {
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_return(w)
 MCW *w;
 {
@@ -590,9 +557,7 @@ MCW *w;
         McActStopSet();
     }
 }
-#endif
 
-#if !defined(G_PART)
 void McActCheckSet(void)
 {
     MemcardWork.astep = 0;
@@ -601,9 +566,7 @@ void McActCheckSet(void)
     MemcardWork.ret = -1;
     MemcardWork.port = 0;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_check(w)
 MCW *w;
 {
@@ -613,9 +576,7 @@ MCW *w;
         }
     }
 }
-#endif
 
-#if !defined(G_PART)
 void McActLoadSet(port, buf)
 int port;
 u8 *buf;
@@ -631,9 +592,7 @@ u8 *buf;
     sprintf(MemcardWork.name, lit_422_00384308, f->dir, f->dir);
     MemcardWork.len = f->dsize;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_load(w)
 MCW *w;
 {
@@ -678,9 +637,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 void McActSave0Set(port, buf, flag)
 int port;
 u8 *buf;
@@ -698,9 +655,7 @@ int flag;
     sprintf(MemcardWork.name, lit_422_00384308, f->dir, f->dir);
     MemcardWork.len = f->dsize;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_save0(w)
 MCW *w;
 {
@@ -764,9 +719,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 void McActSaveSet(port, buf)
 int port;
 u8 *buf;
@@ -784,9 +737,7 @@ u8 *buf;
     MemcardWork.len = f->dsize;
     MemcardWork.xB0 = 1;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_save(w)
 MCW *w;
 {
@@ -905,9 +856,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 void McActFormatSet(port)
 int port;
 {
@@ -918,9 +867,7 @@ int port;
     MemcardWork.xB0 = 1;
     MemcardWork.step = 0;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_format(w)
 MCW *w;
 {
@@ -938,9 +885,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_unformat(w)
 MCW *w;
 {
@@ -958,9 +903,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_delete(w)
 MCW *w;
 {
@@ -1005,9 +948,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_remove(w)
 MCW *w;
 {
@@ -1025,9 +966,7 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 void McActListSet(port, pattern, buf)
 int port;
 char *pattern;
@@ -1041,9 +980,7 @@ u8 *buf;
     sprintf(MemcardWork.name, lit_421_00384300, pattern);
     MemcardWork.buf = buf;
 }
-#endif
 
-#if !defined(G_PART)
 static void mc_act_list(w)
 MCW *w;
 {
@@ -1081,50 +1018,38 @@ MCW *w;
     }
     mc_act_return(w);
 }
-#endif
 
-#if !defined(G_PART)
 int McActResult(void)
 {
     return MemcardWork.ret;
 }
-#endif
 
-#if !defined(G_PART)
 int McActConChk(port)
 int port;
 {
     return MemcardWork.state[port];
 }
-#endif
 
-#if !defined(G_PART)
 void McActNewClr(void)
 {
     MemcardWork.changed = 0;
 }
-#endif
 
-#if !defined(G_PART)
 int McActNewChk(port)
 int port;
 {
     return MemcardWork.changed & (1 << port);
 }
-#endif
 
 /* original bytes: build/raw/McActAvailSet.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 asm void McActAvailSet(s32 *img)
 {
 #include "McActAvailSet.inc"
 }
 #endif
-#endif
 
 
-#if !defined(G_PART) || G_PART == 1
 static void mc_icon_sys_set(w)
 MCW *w;
 {
@@ -1140,5 +1065,4 @@ MCW *w;
         strcpy(p + 0x184, f->l3);
     }
 }
-#endif
 

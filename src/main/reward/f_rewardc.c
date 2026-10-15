@@ -1,6 +1,10 @@
 /* Quest reward screen, drawing (0x293420-0x293684): help text for the
  * current mode, the item list windows, frame and the time left. Meanings are
  * guesses. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define ItemListWindow func_0011EA80
+#endif
 #include "reward.h"
 
 extern char lit_843_00386A40[];
@@ -69,6 +73,6 @@ void disp_reward(void)
         break;
     }
     DispFrameList(pf_reward_menu, 0, w->x1);
-    sprintf(buf, lit_843_00386A40, w->x6 / 30);
+    sprintf(buf, GSTR(lit_843_00386A40, gptr_005262BC), w->x6 / 30);
     DispFrameMessage(pf_reward_time, buf);
 }

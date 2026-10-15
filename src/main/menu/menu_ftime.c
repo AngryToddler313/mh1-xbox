@@ -4,6 +4,10 @@
  * font_print_quest_time, the quest timer as zenkaku "mm:ss". The `& 0xFFFFFFFF` and the int temps are what the
  * permuter found. Pit_disp_quest matched by agent B (12 Oct 2026): the page number read once into n, `return` in the
  * then-block of case 0, `break` after case 1; its buf is 40 bytes on the PS2 (frame size) and 64 on the PC. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define strlen func_001D5970
+#endif
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -69,7 +73,7 @@ extern u8 item_cmd_item_num[], D_6EAC80[];
 extern u8 frame_matA[], frame_matB[], frame_mix_cmd[], frame_mixed_item[];
 
 /* The other hunters' names above their heads (online: the room member id). */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void disp_name(void) {
     PLW *pl;
     f32 pos[3];
@@ -176,7 +180,7 @@ void Pit_disp_quest(void) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 2
 void font_print_quest_time(int n) {
     char buf[8];
     u16 out[12];

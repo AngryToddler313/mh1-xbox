@@ -1,4 +1,5 @@
 /* f_menu run (SLPM_654.95 0x0012DD20-0x0012DDF4): wyvern_area, DispWholeMap. Whole file in menu_nm.c. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -146,13 +147,13 @@ void wyvern_area(f32 *x, f32 *y, f32 *z, int no) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void DispWholeMap(void) {
     PFLPS q;
 
     SetFilterMode(1);
-    reload_tex(1, 0x156);
-    SetTextureStage(0x156);
+    reload_tex(1, GSLOT(0x156, 0x17F));
+    SetTextureStage(GSLOT(0x156, 0x17F));
     q.s[2] = 0x200;
     q.s[0] = 0;
     q.s[3] = 0x1C0;

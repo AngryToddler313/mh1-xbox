@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x002687C0-0x002687E0: ms_net_patch_set_init .. ms_net_patch_set_init. See ms_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "netcw.h"
 
@@ -34,8 +35,15 @@ int func_A769C0();
 
 
 
+#ifdef MHG_PS2
+void SaveNetFile_init(void);
+#endif
+
 void ms_net_patch_set_init(void) {
     net_common_w.x89 = 0;
     net_common_w.x8A = 0;
     net_common_w.x11 = 1;
+#ifdef MHG_PS2
+    SaveNetFile_init();         /* G ends with this call */
+#endif
 }

@@ -1,4 +1,5 @@
 /* cnlbs03 - cnLBS file download requests 0x0027D380-0x0027D4A0: __cnet_SendReq_FileDownloadData, __cnet_CallBack_Result_Plaza_NumOfPlaza_0027D420, _cnet_CallBack_Result_Plaza_PlazaStatus_0027D460. Whole file in cnlbs_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct DLE { s32 size; s32 x4; s32 ofs; } DLE;
@@ -32,9 +33,10 @@ typedef struct CBRES { s8 val; s8 id; u8 pad[6]; } CBRES;
 
 
 
+#if !defined(G_PART) || G_PART == 1
 u16 __cnet_SendReq_FileDownloadData(int a, int b, int c)
 {
-    u16 r = func_5ADEE0(D_6EA740, 0xD1);
+    u16 r = func_5ADEE0(D_6EA740, GV(0xD1, 0xE8));
 
     func_5AE0B0(D_6EA740, a);
     func_5AE120(D_6EA740, b);
@@ -43,16 +45,20 @@ u16 __cnet_SendReq_FileDownloadData(int a, int b, int c)
     func_5AE300(D_6EA740);
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_CallBack_Result_Plaza_NumOfPlaza_0027D420(CBRES res)
 {
     if (res.val == 0) {
-        A_U8(0x677346) = 1;
+        A_U8(GV(0x677346, 0x6FB753)) = 1;
         return;
     }
-    A_U8(0x677346) = 2;
+    A_U8(GV(0x677346, 0x6FB753)) = 2;
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_CallBack_Result_Plaza_PlazaStatus_0027D460(CBRES res)
 {
     if (res.val == 0) {
@@ -61,3 +67,4 @@ void _cnet_CallBack_Result_Plaza_PlazaStatus_0027D460(CBRES res)
     }
     A_U8(0x677346) = 100;
 }
+#endif

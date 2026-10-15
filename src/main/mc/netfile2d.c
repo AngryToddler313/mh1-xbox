@@ -1,4 +1,5 @@
 /* netfile2d - SLPM_654.95 0x0028B4B0-0x0028B578 (encode_data_0028B4B0): see netfile2c.c. */
+#include "g_alias.h"
 #include "types.h"
 
 int ran_suu();
@@ -19,7 +20,7 @@ u16 *buf;
     *buf = 0;
     sum = buf++;
     *buf++ = 0x5963;
-    for (i = 0; i < 0x8A20; i++) {
+    for (i = 0; i < GV(0x8A20, 0x9860); i++) {
         *sum = *sum + *buf;
         *buf ^= key;
         buf++;

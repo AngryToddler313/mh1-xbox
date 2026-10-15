@@ -1,4 +1,5 @@
 /* fs02 - fl system memory 0x0016F770-0x0016F8FC: flAllocMemory, flGetFrame, flReleaseFrame, flAllocMemoryS, flPS2GetSystemMemoryHandle, flPS2ReleaseSystemMemory, flPS2GetSystemBuffAdrs, flCompact, flPS2SystemTmpBuffInit. Whole file in flsys_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct FLSYS {
@@ -104,13 +105,13 @@ void flCompact(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void flPS2SystemTmpBuffInit(void) {
     int i;
     int *s = (int *)&flPs2State;
 
     for (i = 0; i < 2; i++) {
-        s[0x105] = flPS2GetSystemMemoryHandle(0x80000, 1);
+        s[0x105] = flPS2GetSystemMemoryHandle(GV(0x80000, 0xA0000), 1);
         s++;
     }
     flPS2SystemTmpBuffFlush();

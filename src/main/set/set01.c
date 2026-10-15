@@ -2,10 +2,17 @@
  * set01's static functions, so they are in the same file).
  * The on-screen info banner: messages are queued in set01_stack (up to 20),
  * and each shown one slides down from the top, holds, then slides away. */
+#include "g_alias.h"
 #include "set.h"
 #include "game.h"
 #include "pl.h"
 #include "prim.h"
+
+#ifdef VERSION_MHG
+#define SE1(sw) (*(s16 *)((u8 *)(sw) + 0x3E))      /* G keeps the message number in a halfword at 0x3E */
+#else
+#define SE1(sw) ((sw)->se1)
+#endif
 
 typedef struct SET01_STACK {
     u8 type;            /* 0x00 0xFF = string given directly */
@@ -71,14 +78,14 @@ static void set01_d(SETW *sw);
 static void set01_e(SETW *sw);
 static void set01_trans(PRIM *pr);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void Info_Initialization(void) {
     game_w.info_now = 0xFF;
     set01_stack_suu = 0;
     set01_stack_ptr = 0;
     set01_stack_timer = 0;
     game_w.info_seq = 0;
-    memset(set01_stack, 0, sizeof(set01_stack));
+    memset(set01_stack, 0, GV(sizeof(set01_stack), 960));
 }
 #endif
 
@@ -124,15 +131,18 @@ void Info_control(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 static void set01_set_sub(int type, int msg, s16 arg, u8 seq) {
     SETW *sw = pull_set_work(1);
 
     if (sw != 0) {
         sw->type = 1;
+#ifdef VERSION_MHG
+        sw->flag3E = 1;
+#endif
         sw->move = set01_move;
         sw->arg = type;
-        sw->se1 = msg;
+        SE1(sw) = msg;
         sw->timer = arg;
         game_w.info_now = seq;
     }
@@ -217,7 +227,7 @@ u8 set01_set2_use_mem(char *str) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 1
+#if !defined(G_PART) || G_PART == 3
 static void set01_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -249,14 +259,14 @@ static void set01_i(SETW *sw) {
     se_req(7, 0x10, 0);
     switch (sw->arg) {
     case 0:
-        len = strlen(info_str0[sw->se1]);
+        len = strlen(info_str0[SE1(sw)]);
         break;
     case 1:
-        len = strlen(info_str1[sw->se1]);
+        len = strlen(info_str1[SE1(sw)]);
         len += (s16)strlen(item_str[sw->timer]);
         break;
     case 2:
-        len = strlen(info_str2[sw->se1]);
+        len = strlen(info_str2[SE1(sw)]);
         len += (s16)strlen(item_str[sw->timer]);
         break;
     case 3:
@@ -264,7 +274,7 @@ static void set01_i(SETW *sw) {
         if (len & 1) {
             len++;
         }
-        len += (s16)strlen(info_str3[sw->se1]);
+        len += (s16)strlen(info_str3[SE1(sw)]);
         break;
     case 4:
         len = ((s16)strlen(*str) + 1) & ~1;
@@ -288,7 +298,7 @@ static void set01_i(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void set01_m(SETW *sw) {
     switch (sw->mode2) {
     case 0:
@@ -317,7 +327,7 @@ static void set01_m(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 4
 static void set01_d(SETW *sw) {
     sw->mode++;
     sw->be_flag = 0;
@@ -325,7 +335,7 @@ static void set01_d(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART) || G_PART == 4
 static void set01_e(SETW *sw) {
     push_set_work(sw);
 }
@@ -354,7 +364,7 @@ static void set01_trans(PRIM *pr) {
     switch (sw->arg) {
     case 0:
         font_set_palette(0);
-        font_print(lit_355_0035B7C0, info_str0[sw->se1]);
+        font_print(lit_355_0035B7C0, info_str0[SE1(sw)]);
         break;
     case 1:
         font_set_palette(2);
@@ -362,11 +372,11 @@ static void set01_trans(PRIM *pr) {
         len = strlen(item_str[sw->timer]);
         font_set_palette(0);
         flfntLocate(sw->pos[0] + 10.0f * len, sw->pos[1]);
-        font_print(lit_355_0035B7C0, info_str1[sw->se1]);
+        font_print(lit_355_0035B7C0, info_str1[SE1(sw)]);
         break;
     case 2:
-        font_print(lit_355_0035B7C0, info_str2[sw->se1]);
-        len = strlen(info_str2[sw->se1]);
+        font_print(lit_355_0035B7C0, info_str2[SE1(sw)]);
+        len = strlen(info_str2[SE1(sw)]);
         font_set_palette(2);
         flfntLocate(sw->pos[0] + 10.0f * len, sw->pos[1]);
         font_print(lit_355_0035B7C0, item_str[sw->timer]);
@@ -380,7 +390,7 @@ static void set01_trans(PRIM *pr) {
         }
         font_set_palette(0);
         flfntLocate(sw->pos[0] + 10.0f * len, sw->pos[1]);
-        font_print(lit_355_0035B7C0, info_str3[sw->se1]);
+        font_print(lit_355_0035B7C0, info_str3[SE1(sw)]);
         break;
     case 4:
         font_set_palette(0);

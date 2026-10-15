@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0022C7D0-0x0022C944: CngNet_MSG_Read .. CngNet_MSG_ReadU16. See cngmsg_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct CNGMSG {
@@ -49,61 +50,47 @@ void swapb(u8 *buf, int n);
 
 
 
-#if !defined(G_PART)
 void CngNet_MSG_Read(CNGMSG *m, u8 *dst, int n) {
     if (m->wr < m->rd + n) {
-        mcsls_critical_error(4);
+        mcsls_critical_error(GV(4, 3));
     }
     memcpy(dst, m->base + m->rd, n);
     m->rd = m->rd + n;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void CngNet_MSG_ReadTop(CNGMSG *m) {
     m->rd = 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void CngNet_MSG_WriteU8(CNGMSG *m, u8 v) {
     u8 b = v;
 
     CngNet_MSG_Write(m, &b, 1);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 u8 CngNet_MSG_ReadU8(CNGMSG *m) {
     u8 b;
 
     CngNet_MSG_Read(m, &b, 1);
     return b;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 u32 CngNet_MSG_ReadU32(CNGMSG *m) {
     u32 v;
 
     CngNet_MSG_Read(m, (u8 *)&v, 4);
     return v;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void CngNet_MSG_WriteU16(CNGMSG *m, u16 v) {
     u16 b = v;
 
     CngNet_MSG_Write(m, (u8 *)&b, 2);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 u16 CngNet_MSG_ReadU16(CNGMSG *m) {
     u16 v;
 
     CngNet_MSG_Read(m, (u8 *)&v, 2);
     return v;
 }
-#endif

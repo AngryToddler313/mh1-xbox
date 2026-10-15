@@ -18,7 +18,6 @@ extern NCQ net_common_w;
 
 
 
-#if !defined(G_PART)
 void Ncm_mssage_disp_req(u8 id) {
     switch (id) {
     case 1:
@@ -138,6 +137,22 @@ void Ncm_mssage_disp_req(u8 id) {
     case 119:
     case 120:
     case 121:
+#ifdef VERSION_MHG
+    case 122:
+    case 123:
+    case 124:
+    case 125:
+    case 126:
+    case 127:
+    case 128:
+    case 129:
+    case 130:
+    case 131:
+    case 132:
+    case 133:
+    case 134:
+    case 135:
+#endif
         if (net_common_w.ib < 8) {
             net_common_w.qb[net_common_w.ib] = id;
             net_common_w.kb[net_common_w.ib] = 0;
@@ -156,9 +171,7 @@ void Ncm_mssage_disp_req(u8 id) {
         break;
     }
 }
-#endif
 
-#if !defined(G_PART)
 void Ncm_mssage_disp_option_req(u8 id) {
     switch (id) {
     case 1:
@@ -212,6 +225,15 @@ void Ncm_mssage_disp_option_req(u8 id) {
     case 53:
     case 54:
     case 55:
+#ifdef VERSION_MHG
+    case 56:
+    case 57:
+    case 58:
+    case 59:
+    case 60:
+    case 61:
+    case 62:
+#endif
     case 63:
     case 64:
     case 65:
@@ -270,6 +292,23 @@ void Ncm_mssage_disp_option_req(u8 id) {
     case 118:
     case 119:
     case 120:
+#ifdef VERSION_MHG
+    case 121:
+    case 122:
+    case 123:
+    case 124:
+    case 125:
+    case 126:
+    case 127:
+    case 128:
+    case 129:
+    case 130:
+    case 131:
+    case 132:
+    case 133:
+    case 134:
+    case 135:
+#endif
         if (net_common_w.ib < 8) {
             net_common_w.qb[net_common_w.ib] = id;
             net_common_w.kb[net_common_w.ib] = 4;
@@ -288,9 +327,7 @@ void Ncm_mssage_disp_option_req(u8 id) {
         break;
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void Ncm_err_mssage_disp_req(u8 id) {
     switch (id) {
     case 1:
@@ -315,9 +352,7 @@ void Ncm_err_mssage_disp_req(u8 id) {
         break;
     }
 }
-#endif
 
-#if !defined(G_PART)
 void Ncm_menu_disp_req(u8 id) {
     switch (id) {
     case 0:
@@ -338,6 +373,11 @@ void Ncm_menu_disp_req(u8 id) {
     case 9:
     case 10:
     case 11:
+#ifdef VERSION_MHG
+    case 12:
+    case 13:
+    case 14:
+#endif
         if (net_common_w.ib < 8) {
             net_common_w.qb[net_common_w.ib] = id;
             net_common_w.kb[net_common_w.ib] = 1;
@@ -346,9 +386,7 @@ void Ncm_menu_disp_req(u8 id) {
         break;
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void Net_disp_net_name_req(u8 id) {
     switch (id) {
     case 0:
@@ -375,4 +413,3 @@ void Net_disp_net_name_req(u8 id) {
         break;
     }
 }
-#endif

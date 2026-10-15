@@ -5,6 +5,7 @@
  * check000/event000 are the generic check/event functions used by the demo
  * tables evdemo_NN (data, not in C), evdemo_camera_request starts the demo
  * camera on the monster with the given id. Field meanings are guesses. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct EVD {
@@ -53,11 +54,19 @@ typedef struct GW {
     s16 x26;
     u8 _p28[4];
     u16 quest;
+#ifdef VERSION_MHG
+    u8 _p2E[0x3A - 0x2E];
+    u8 master;                  /* G: 0x3A */
+    u8 _p3B[0x1F5 - 0x3B];
+    u8 info_stop;               /* G: 0x1F5 */
+    u8 _p1F6[0x240 - 0x1F6];
+#else
     u8 _p2E[0xD1 - 0x2E];
     u8 master;
     u8 _pD2[0x21F - 0xD2];
     u8 info_stop;
     u8 _p220[4];
+#endif
 } GW;
 extern GW game_w;
 extern EVENT_DEMO event_demo;
@@ -152,7 +161,7 @@ EVD *d;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART)
 void EvDemoMove(void)
 {
     int i;
@@ -188,7 +197,7 @@ void EvDemoMove(void)
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
+#if !defined(G_PART)
 int check000(s)
 EVSLOT *s;
 {
@@ -200,7 +209,7 @@ EVSLOT *s;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int event000(s)
 EVSLOT *s;
 {
@@ -232,10 +241,10 @@ EVSLOT *s;
             if (s->timer == 0) {
                 switch (s->data->kind) {
                 case 2:
-                    demo_bgm_set(0x4E);
+                    demo_bgm_set(GV(0x4E, 0x51));
                     break;
                 case 3:
-                    demo_bgm_set(0x54);
+                    demo_bgm_set(GV(0x54, 0x57));
                     break;
                 }
             }

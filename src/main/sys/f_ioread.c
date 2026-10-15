@@ -2,6 +2,10 @@
  * translation unit: ACRMain (per frame entry), MakeMediaVersion (version string from the build date), system_w_set, InitSystemData,
  * setBGcolor, ioRead/ioRead_sub/ioRead2 (PS2 pad -> Psw), NetDisp, InitCommonWork (work area layout from app_mem_top = 0x8A0000).
  * Replaces the runs io01-io04 and ior01 and the near-match files ioread_nm.c and mmv_nm.c. Field names are guesses. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define strtok strtok_r
+#endif
 #include "types.h"
 #include "sysw.h"
 
@@ -104,6 +108,7 @@ int strlen();
 int sprintf();
 int scePrintf();
 
+#if !defined(G_PART)
 int ACRMain(void) {
     switch (xxx) {
     case 0:
@@ -171,7 +176,9 @@ int ACRMain(void) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void MakeMediaVersion(void) {
     char delim[5] = " :\t\n";
     char date[0x20];
@@ -231,8 +238,10 @@ void MakeMediaVersion(void) {
     scePrintf(lit_151_003583D0);
     scePrintf(lit_148_00358390);
 }
+#endif
 
 
+#if !defined(G_PART)
 void system_w_set(void) {
     system_w.x1A = 0;
     system_w.x3C = 0;
@@ -256,7 +265,9 @@ void system_w_set(void) {
     str_master_vol(0);
     flAdjustScreen(option_w[5], option_w[6]);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void InitSystemData(void) {
     system_w_init();
     option_default_set();
@@ -267,7 +278,9 @@ void InitSystemData(void) {
     quest_price = 0;
     all_reset();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void setBGcolor(int n) {
     u8 *t = bg_col_tbl[n];
     u32 r = *t++;
@@ -276,8 +289,10 @@ void setBGcolor(int n) {
 
     flSetRenderState(0x14, (r << 16) | 0xFF000000 | (g << 8) | b);
 }
+#endif
 
 /* PS2 pad state of pad n (flpad_adr[n], 0x88 bytes). The test has no effect in the retail build. */
+#if !defined(G_PART) || G_PART == 1
 static void ioread_sub(int n) {
     u8 st = flpad_adr[n].state;
 
@@ -285,7 +300,9 @@ static void ioread_sub(int n) {
         return;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void ioRead(void) {
     int i;
 
@@ -294,16 +311,20 @@ void ioRead(void) {
     }
     ioRead2();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static u16 pad_pow_fix(u32 v) {
     if (v < 0x2D) {
         v = 0;
     }
     return v;
 }
+#endif
 
 /* Converts pad n's PS2 buttons and sticks into the game's pad word Psw[n]: buttons (on/old/trg/rel), the two analog sticks
    as directions (an) plus angle (0x10000 = full turn) and strength, and the repeat state. */
+#if !defined(G_PART) || G_PART == 1
 static void ioRead_sub(int n) {
     u32 b;
     u16 v;
@@ -381,7 +402,9 @@ static void ioRead_sub(int n) {
         p->rcnt = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void ioRead2(void) {
     int i;
     u16 t;
@@ -408,17 +431,23 @@ void ioRead2(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void NetDisp(void) {
     if (CpInetTcpConnected() != 0 && (System_timer & 0x1F) == 0) {
         CpInetInterfaceProblem(CurDevice->x0, MyEtherInitMode == 1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void DebugProgram(void) {
     /* empty in the retail build */
 }
+#endif
 
+#if !defined(G_PART)
 static void InitCommonWork(void) {
     int i;
 
@@ -454,3 +483,4 @@ static void InitCommonWork(void) {
     pub_flag = 0;
     pub_pause = 0;
 }
+#endif

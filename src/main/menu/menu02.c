@@ -1,4 +1,5 @@
 /* f_menu run (SLPM_654.95 0x00127440-0x0012749C): PitWork_init. Whole file in menu_nm.c. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -70,9 +71,9 @@ int menu_chcnfg_reibun(int sw);
 
 void PitWork_init(void) {
     lpPit = &pit_work;
-    memset(lpPit, 0, 0x90);
+    memset(lpPit, 0, GV(0x90, 0x98));
     GWS8(0xE) = 0;
-    memset(&PitMenu, 0, 0x1764);
+    memset(&PitMenu, 0, GV(0x1764, 0x17F8));
     lpPit->x3C = 10;
     Chat_log_clear();
 }

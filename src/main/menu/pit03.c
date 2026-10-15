@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00275540-0x002755C8: Item_ok_chk .. Pit_shot_ok_chk. See pit_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 #include "pl.h"
@@ -39,12 +40,12 @@ int Item_ok_chk(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int Pit_shot_ok_chk(PLW *pl) {
     if (*((u8 *)pl + 0x8ED) != 0) {
         return 1;
     }
-    if ((s16)act_ck(pl, 0, 0x36) != 0 && (s16)Pl_item_num_ck(pl, 0xA2) != 0) {
+    if ((s16)act_ck(pl, 0, 0x36) != 0 && (s16)Pl_item_num_ck(pl, GV(0xA2, 0x200)) != 0) {
         return 1;
     }
     return 0;

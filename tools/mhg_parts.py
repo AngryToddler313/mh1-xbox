@@ -75,6 +75,22 @@ def runs_of(oks):
     return runs
 
 
+def runs_by_source(runs, sp):
+    """a part's functions are laid out in SOURCE order: split a run of contiguous G addresses wherever the source order
+    runs against the address order (e.g. a function defined before its lower-addressed neighbour)"""
+    out = []
+    for run in runs:
+        cur = []
+        for r in run:
+            if cur and sp[r[1]][0] < sp[cur[-1][1]][0]:
+                out.append(cur)
+                cur = []
+            cur.append(r)
+        if cur:
+            out.append(cur)
+    return out
+
+
 def strip_parts(path):
     """undo an earlier run on this file: guards, wrappers, list lines (only for files whose parts this tool made)"""
     base = re.sub(r'\.c$', '', os.path.basename(path))
@@ -136,7 +152,7 @@ def process(path, dry):
     rel = os.path.relpath(os.path.dirname(path), 'src')
     wdir = os.path.join('src/mhg', rel)
     for attempt in range(int(os.environ.get('PARTS_TRIES', 4))):
-        runs = runs_of(oks)
+        runs = runs_by_source(runs_of(oks), sp)
         guard = {}
         for k, run in enumerate(runs, 1):
             for r in run:
@@ -163,7 +179,7 @@ def process(path, dry):
             for n in want:
                 if n not in ok:
                     bad.append(n)
-            if [r[1] for r in got] != [r[1] for r in run] and not bad:
+            if sorted(r[1] for r in got) != sorted(r[1] for r in run) and not bad:     # check.py lists a part's functions in symbol-table order
                 bad += [n for n in want]       # part holds other functions than planned
         if os.environ.get('PARTS_DEBUG'):
             print('attempt', attempt, 'bad:', ','.join(bad))

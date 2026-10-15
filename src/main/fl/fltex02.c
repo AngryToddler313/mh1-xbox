@@ -20,7 +20,6 @@ static void PageConv8to32(u8 *buf, u8 *dst, int bw);
 static void BlockConv4to32(u8 *src, u8 *dst, int bw);
 static void BlockConv8to32(u8 *src, u8 *dst, int bw);
 
-#if !defined(G_PART) || G_PART == 1
 int flPS2Conv4_8_32(a, b, c, d, mode)
 int a;
 int b;
@@ -39,16 +38,13 @@ int mode;
         return -1;
     }
 }
-#endif
 
 /* near-match (register choice: d and the row stride swap, 28 lines), original bytes linked; the C is the reading copy */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 static asm void Conv4to32()
 {
 #include "Conv4to32.inc"
 }
-#endif
 #else
 static void Conv4to32(w, h, src, dst)
 int w;
@@ -88,7 +84,6 @@ u8 *dst;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 2
 static void PageConv4to32(u8 *buf, u8 *dst, int bw) {
     
     int by;
@@ -103,16 +98,13 @@ static void PageConv4to32(u8 *buf, u8 *dst, int bw) {
         }
     }
 }
-#endif
 
 /* near-match (nibble select order and registers), original bytes linked; the C is the reading copy */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 static asm void BlockConv4to32(u8 *src, u8 *dst, int bw)
 {
 #include "BlockConv4to32.inc"
 }
-#endif
 #else
 static void BlockConv4to32(u8 *src, u8 *dst, int bw) {
     CLMP **tp = clm_tbl4_ptr;
@@ -152,12 +144,10 @@ static void BlockConv4to32(u8 *src, u8 *dst, int bw) {
 
 /* near-match (register choice, as Conv4to32), original bytes linked; the C is the reading copy */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 static asm void Conv8to32()
 {
 #include "Conv8to32.inc"
 }
-#endif
 #else
 static void Conv8to32(w, h, src, dst)
 int w;
@@ -199,7 +189,6 @@ u8 *dst;
 }
 #endif
 
-#if !defined(G_PART) || G_PART == 3
 static void PageConv8to32(u8 *buf, u8 *dst, int bw) {
     int by;
     int bx;
@@ -213,16 +202,13 @@ static void PageConv8to32(u8 *buf, u8 *dst, int bw) {
         }
     }
 }
-#endif
 
 /* near-match (the original steps the table pointer after every pair; MWCC merges the steps here), original bytes linked; the C is the reading copy */
 #ifdef __MWERKS__
-#if !defined(G_PART)
 static asm void BlockConv8to32(u8 *src, u8 *dst, int bw)
 {
 #include "BlockConv8to32.inc"
 }
-#endif
 #else
 static void BlockConv8to32(u8 *src, u8 *dst, int bw) {
     CLMP **tp = clm_tbl8_ptr;

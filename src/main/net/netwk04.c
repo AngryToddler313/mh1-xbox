@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0026BCC0-0x0026C0F8: net_joy_ok_ck_each .. Net_demo_camera_set. See netwk_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct NETCW {
@@ -187,19 +188,14 @@ void Ncm_spr_kill2(int m);
 
 
 
-#if !defined(G_PART) || G_PART == 1
 int net_joy_ok_ck_each(s8 p) {
     return (Psw[game_w[0x20 + p]].x04 & 0x20) != 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int net_joy_cancel_ck_each(s8 p) {
     return (Psw[game_w[0x20 + p]].x04 & 0x40) != 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int net_shot_ok_ck(int kind) {
     int r = 0;
 
@@ -231,9 +227,7 @@ int net_shot_ok_ck(int kind) {
     }
     return r;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int net_shot_ng_ck(void) {
     int r = 0;
 
@@ -247,9 +241,7 @@ int net_shot_ng_ck(void) {
     }
     return r;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int net_yesno_operation_move(void) {
     int sw = net_swdata();
 
@@ -268,21 +260,15 @@ int net_yesno_operation_move(void) {
     }
     return -(net_shot_ng_ck() != 0);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void Net_work_move() {
     /* empty */
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void Net_trans_set() {
     net_connect_draw();
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int Net_fade_check(void) {
     switch (Fade_busy_ck() & 0xFF) {
     case 0:
@@ -293,15 +279,11 @@ int Net_fade_check(void) {
         return 0;
     }
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void Net_fade_kill(void) {
     fade_reset();
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 int Net_fade_execute(int a, int b, int mode) {
     if ((s16)mode == 1) {
         fade_set(1);
@@ -310,35 +292,24 @@ int Net_fade_execute(int a, int b, int mode) {
     }
     return 1;
 }
-#endif
 
-#if !defined(G_PART)
 void Net_all_reset() {
     Ncm_spr_kill_all();
-    release_texture(0x14D, 8);
+    release_texture(GV(0x14D, 0x174), GV(8, 9));
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void Net_work_init_all() {
     /* empty */
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void Net_setBGcolor() {
     /* empty */
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void Net_McWorkInit() {
     McActInit();
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void Net_demo_camera_set(void) {
     /* empty */
 }
-#endif

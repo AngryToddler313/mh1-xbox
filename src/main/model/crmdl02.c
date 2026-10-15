@@ -1,6 +1,7 @@
 /* crmdl02 - stage model release (SLPM_654.95 0x00124DC0-0x00124EBC): release_stage_model, set_create_model (0x124EC0-0x124F73). Whole file in crmdl_nm.c. */
 /* crmdl_nm - SLPM_654.95 0x00123DC0-0x00125060: model creation per kind (player parts, weapon, armor, monster,
    npc, set, edit) and the matching releases. mdlw slots come from get_start_mdlw/set_used_mdlw. Working file. */
+#include "g_alias.h"
 #include "types.h"
 #include "mdlw.h"
 typedef struct PLM {            /* PLW fields touched here (player_work[], 0xA00 each) */
@@ -54,7 +55,6 @@ typedef struct STW {
     s16 first;                  /* 0x38 first slot */
 } STW;
 extern STW stage_work;
-#if !defined(G_PART) || G_PART == 1
 void release_stage_model(void) {
     s16 i;
     s16 t;
@@ -82,8 +82,6 @@ void release_stage_model(void) {
         }
     }
 }
-#endif
-#if !defined(G_PART)
 void set_create_model(int n) {
     int h;
     int off = n * 4;
@@ -95,14 +93,13 @@ void set_create_model(int n) {
             set_top = h;
             set_mdlw = (s32)get_mdlw_ptr(h);
             set_used_mdlw(h, 1);
-            model_work_set((s16)h, stage_model, 0x12D, *(s32 *)((u8 *)SET_TEX + off), 0, 0);
+            model_work_set((s16)h, stage_model, GV(0x12D, 0x154), *(s32 *)((u8 *)SET_TEX + off), 0, 0);
         }
     } else {
         set_top = -1;
         set_mdlw = 0;
     }
 }
-#endif
 typedef struct GWM {            /* game_w: monster model bookkeeping, 4 slots */
     u8 _pad00[0x28];
     u8 em_kind[4];              /* 0x28 monster kind per slot, 0 = none */

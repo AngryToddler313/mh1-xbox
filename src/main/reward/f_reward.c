@@ -3,6 +3,7 @@
  * tables, the result screen backdrop/frame drawing, the check that unlocks a
  * bonus movie after a quest, the result step machine (result_prog) and the
  * money payout (gold_init/gold_main). Meanings are guesses. */
+#include "g_alias.h"
 #include "reward.h"
 
 #if !defined(G_PART) || G_PART == 1
@@ -43,14 +44,14 @@ int set;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 1
 void disp_mark(void)
 {
     SPR2TF spr;
 
     SetFilterMode(1);
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     spr.size[0] = 0xB9;
     spr.size[1] = 0xB9;
     spr.pos[0] = (0x280 - spr.size[0]) / 2;

@@ -4,6 +4,13 @@
  * player_sel/player_wait run the per-player ready handshake (net_send_sys messages 2 and 8), em_select is the
  * debug monster picker (4 slots of kind + count, at most 16 monsters in total) with disp_em_select drawing it,
  * sel_default_set fills select_w with the default characters. Field names are guesses from use. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define load_texlist func_0010EF50
+#endif
+#ifdef MHG_PS2 /* G calls another function here (tools/check.py VERSION=mhg) */
+#define flReloadTexture flCompactVRAM
+#endif
 #include "types.h"
 extern u8 select_w[];
 extern u8 game_w[];
@@ -12,6 +19,11 @@ extern u8 system_w[];
 #define SELS8(o) (*(s8 *)(select_w + (o)))
 #define SELH(o) (*(u16 *)(select_w + (o)))
 #define SELSH(o) (*(s16 *)(select_w + (o)))
+#ifdef VERSION_MHG
+#define GAME_MASTER 0x3A        /* G's game_w.master */
+#else
+#define GAME_MASTER 0xD1
+#endif
 #define GW8(o) (*(u8 *)(game_w + (o)))
 #define GWS8(o) (*(s8 *)(game_w + (o)))
 extern s32 mem_tex[];
@@ -51,7 +63,6 @@ void player_wait(u8 *t);
 void em_select(u8 *t);
 /* Task entry of the select screen: reloads the select texture, runs the step (0 init, 1 player select, 2 wait, 3 monster
    select), sends a keep-alive (net_send_sys 8) every 60 frames and draws. */
-#if !defined(G_PART)
 void Plsel_task(u8 *t) {
     s16 n;
 
@@ -76,12 +87,10 @@ void Plsel_task(u8 *t) {
     SELSH(4) = n;
     if (n >= 0x3C) {
         SELSH(4) = 0;
-        net_send_sys(8, GW8(0xD1));
+        net_send_sys(8, GW8(GAME_MASTER));
     }
     trans();
 }
-#endif
-#if !defined(G_PART)
 void init_plsel(u8 *t) {
     all_reset();
     clr_pl_work();
@@ -89,18 +98,15 @@ void init_plsel(u8 *t) {
     fade_reset();
     mkTexture(0, 1, 0);
     load_texlist(PIT_TEX[0], 2, 0);
-    load_texlist(SEL_TEX[0], 0x9A, 0);
+    load_texlist(SEL_TEX[0], GV(0x9A, 0xC1), 0);
     t[0x14] = 0;
     t[8]++;
 }
-#endif
-#if !defined(G_PART) || G_PART == 1
 void disp_str(int x, int y, int s, int pal) {
     flfntSetSize(0x14, 0x14);
     flfntLocate(x, y);
     font_set_palette(pal & 0xFF);
     font_print(lit_596_0035B158, s);
 }
-#endif
 typedef struct SELEM { u8 _p00[2]; u8 cur; u8 _p03[0x9C - 3]; u16 kind[4]; u16 cnt[4]; } SELEM;
 #define PSW16(o) (*(u16 *)(Psw + (o)))

@@ -89,9 +89,12 @@ void fade_set(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void fade_reset(void) {
     fade_w.state = 0;
+#ifdef VERSION_MHG
+    *((u8 *)&fade_w + 1) = 0;   /* G also clears the rgb index byte */
+#endif
     fade_w.req = 0;
     fade_w.ent = 0;
     fade_w.prev = 0;
