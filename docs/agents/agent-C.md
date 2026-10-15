@@ -1910,3 +1910,31 @@ Result: G matched 18.117% -> about 19.8% (3752 -> 4124 functions). Details in th
   flPS2DmaTerminate store a G-only state word (gp-14204); trans_pit_2 calls disp_retire behind a G-only flag byte at 0x2FF2B4; Skill_set_PL still 18 off (prologue
   store scheduling; the declaration orders do not help); GetPlayerShagamiData (reordered branch, 9 off, four spellings tried); SaveNetFile / hk_cursor_mv / disp_keybase2 /
   setup_rw_sub / sk_cursor_mv / HardKeyboard_move / hit_cap_cap2_m are raw asm in MH1 (their diffs are only the MH1 bytes against G's).
+
+### G round 10 (lobby cnet family, 15 Oct 2026)
+Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobby/cnet (cnlbs / cnlbse / cnlbsg / cnlbsh / cnlbsf parts).
+- **G's CnetSys_w** is one struct at **0x006FA760** (symbol file: 0x006FA808 = +0xA8, where the socket fields sit), about 0x3A726 bytes, same fields but
+  re-laid out. The PS2 G build names it `CnetSys_g` (PROVIDEd in config/mhg/g_names.txt; `#define CnetSys_w CnetSys_g` in include/lbnet.h under `MHG_PS2`),
+  so files that `extern u8 CnetSys_w[]` themselves (lb_t*.c, lb_gt*.c) keep the old symbol and their MH1 offsets (right for >= 0xFDC). The G PC build and MH1
+  keep the MH1 layout (the PC runtime owns that memory).
+- **Where the fields went** (config/mhg/lbnet_fields_g.txt is the source, tools/lbfields.py writes both structs into include/lbnet.h, `VERSION=mhg
+  tools/lbfieldcheck.py` compiles the G one and checks every offset): burst slots 15 x 0x28 (MH1: 12 x 0x24) with slot numbers 7 -> 9 and 9 -> 11 (match
+  and personal data; 0..6 unchanged); socket / receive fields +0xA8; room rule block at 0x1372; battle result moved to the end (0x3A6A8); login users 0x162F;
+  member lists hold **10** members (0x3C0 bytes, MH1 8); the tables: G's `lobby` table is at 0x4470 (26 entries), `plaza` 0x6898 (35), `room` 0x9944 (8) (entry
+  0x164 as in MH1, but the name sits at +0x20 and the explanation at +0x62: CNET_PIECE has 2 more bytes before the name); the rule table 0xA464; the room count is
+  a byte at 0x33908 (MH1 0x4052, a halfword), the member counts 0x3390B / 0x3390C / 0x3390E; match information 0x704 bytes (MH1 0x5D4); condition search
+  result 0x23F4 (MH1 0x1CC4).
+- **How the sources address it:** named fields through the generated struct; raw MH1 offsets through `CNO(off)` (piecewise map, include/lbnet.h; the identity in
+  MH1 / PC), `CNOE(off)` for name / explanation inside a table entry (+2 more), `CNW` / `CNWP` already apply CNO. Protocol numbers: G renumbered the commands
+  (`GV(0xF1, 0x11A)` ...), the notice event ids and the piece kinds (plaza 0 -> 1, lobby 1 -> 2), the notice handlers call `_cnet_Return_CallBack(id)` where MH1
+  jumps to `_cnetEvent_JumpCallBack(id, 0)` (`CNEVT(mh1_id, g_id)` in lbnet_proto.h).
+- **Not landed:** about 40 cnet functions. G's symbol names of the lobby / room clusters are scrambled (the map paired functions of the same shape): the
+  functions at 0x5BB4xx-0x5BB6xx are named Lobby* but work on the room table (0x9944), the Room* ones at 0x5E34xx-0x5E39xx work on the lobby table, and
+  `__cnet_SendReq_Piece*` / `SendMail` / `RoomSetExplain` labels are shifted as well. Renaming needs the symbol files and asm labels regenerated (a C function named
+  by its MH1 twin cannot sit under another label: the asm callers use the G label), so those stay open. Others: `_cnet_RecvFromLbs_NoticeMailMessage`
+  (20 off), `cnLBS_PlazaExit` (G passes no argument), `__cnet_RecvFromLbs` (command table 293 entries, G data), `SetSendStringData2` (frame size).
+- **lb_cli.c** has 158 G twins that are still open: its `CWS_*` overlay structs, `F(type, ptr, 0xOFF)` accesses and absolute `*(s8 *)0x3F36CC` globals are written
+  with MH1 offsets / addresses (CW_OFS is not applied everywhere, the lobby state numbers moved by +16, pNet flags moved). A generator that rewrites the CWS typedefs
+  through CW_OFS would be the first step.
+- Verified: MH1 rebuild OK x5, G clean rebuild OK x7, MH1 and G PC builds, test_quest_loop, test_dbgmenu, G nv2a Xbox build. tools/test_online_town.sh
+  fails at "client BOB stopped early" also with the main checkout's old binary (not from this change).

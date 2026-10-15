@@ -94,3 +94,4 @@ build/mhg/src/lobby/f/lb_al09.c.o .rodata .data
 build/mhg/src/lobby/f/lb_gdr16.c.o .rodata .data
 build/mhg/src/lobby/f/lb_ge2503.c.o .rodata .data
 build/mhg/src/lobby/f/lb_ge2505.c.o .rodata .data
+build/mhg/src/mhg/lobby/cnet/cnlbs_p63.c.o .rodata .data
