@@ -1681,3 +1681,5 @@ main 0x0020D220 0x0020D448 main/sk/cmdy01
 main 0x0020DBC0 0x0020DC7C main/sk/sk18
 main 0x0020CB20 0x0020CBBC mhg/main/sk/cmd02_p3
 main 0x0020CBC0 0x0020CBF8 mhg/main/sk/cmd02_p4
+lobby 0x00559310 0x00559388 mhg/lobby/f/lb_a02_p2
+sub_main 0x004F4190 0x004F41A8 mhg/lobby/b/lb_bz73_p2

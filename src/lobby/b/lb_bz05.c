@@ -1,4 +1,5 @@
 /* lb_bz05 - lobby UI/client 0x005B2570-0x005B25F4: tk_sw_on_ck, tk_sw_new_ck, cpn_GetCNData (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern char Friend_data[];
 extern char tmp_friend_data[];
@@ -14,5 +15,5 @@ s32 tk_sw_new_ck(s32 arg0) {
 
 void cpn_GetCNData(void) {
     memcpy(&Friend_data, &CNFile, 0x960);
-    memcpy(&tmp_friend_data, &CNFile, 0x960);
+    memcpy(&tmp_friend_data, &CNFile, GV(0x960, 192));
 }

@@ -1,4 +1,5 @@
 /* lb_a02 - lobby commer/trade/chair 0x005C55D0-0x005C5678: Lb_chat_receipt, Lb_get_plID. Whole file in lb_a.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern char lit_238_0065ECF0[];
 extern char lit_476_0065ED10[];
@@ -25,7 +26,7 @@ void Lb_chat_receipt(u8 *msg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int Lb_get_plID(u8 *mac) {
     int i = 0;
     LBCOMMER *c = lbCommer;
@@ -33,7 +34,7 @@ int Lb_get_plID(u8 *mac) {
         if (memcmp(c, mac, 6) == 0) return i;
         i = (i + 1) & 0xFF;
         c++;
-    } while (i < 8);
+    } while (i < GV(8, 10));
     return 0xFF;
 }
 #endif
