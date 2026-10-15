@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""carry_match.py [mhg|us] [OUT.csv]: how much of MH1's matched (byte-exact) C appears with the same
+"""carry_match.py [mhg|us|p0521|p0813|d1227] [OUT.csv]: how much of MH1's matched (byte-exact) C appears with the same
 instruction shape in another build: PS2 Monster Hunter G (disc/mhg) or the US MH1 (disc/mh1_us; its
 overlays must first be unpacked with `tools/mwo_unpack.py disc/mh1_us/AFS_DATA.AFS -o build/us_ovl`).
 Masking as tools/mhg_match.py (addresses, jump targets, 16-bit immediates). Splits the count into
 functions we have matched (config/c_files.txt minus c_rawfuncs) and the rest, and counts the functions
 found at exactly one place (their name can be carried over directly). OUT.csv lists every function
-(names and sizes only, no game bytes). Run from the repository root. Standard library only."""
+(names and sizes only, no game bytes). Run from the repository root. Standard library only.
+p0521 / p0813 / d1227: the May / Aug 2004 prototypes and the Dec 2004 EU demo (disc/mh1_proto_0521, ...);
+unpack their overlays first: `tools/mwo_unpack.py disc/mh1_proto_0521/AFS_DATA.AFS -o build/proto/mh1_proto_0521_ovl`."""
 import struct, csv, sys, collections, os, glob
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/"
 def words(b): return list(struct.unpack('<%dI' % (len(b)//4), b[:len(b)//4*4]))
@@ -19,14 +21,20 @@ SEC2MOD = {'main':'main','game.bin':'game','lobby.bin':'lobby','select.bin':'sel
 mh1 = {'main': (open(R+'disc/mh1/split/main.bin','rb').read(), 0x100000)}
 for k in ('game.bin','lobby.bin','select.bin','yn.bin'):
     mh1[k] = (open(R+'disc/mh1/split/'+k,'rb').read(), 0x533980)   # whole file: the MWo3 header is part of the load, code VA = base + file offset
+PROTO = {'p0521': ('mh1_proto_0521', 'SLUS_291.10', 0x180, 0x28ba00),     # first PT_LOAD: file offset, filesz
+         'p0813': ('mh1_proto_0813', 'TLES_527.07', 0x180, 0x28e680),
+         'd1227': ('mh1_demo_1227', 'SLED_530.83', 0x280, 0x251300)}
 TGT = sys.argv[1] if len(sys.argv) > 1 else 'mhg'
 if TGT == 'us':
     ge = open(R+'disc/mh1_us/SLUS_208.96','rb').read(); G = {'main': ge[0x180:0x180+2724224]}; OVD = R+'build/us_ovl/*.bin'
+elif TGT in PROTO:
+    d, exe, off, size = PROTO[TGT]
+    ge = open(R+'disc/'+d+'/'+exe,'rb').read(); G = {'main': ge[off:off+size]}; OVD = R+'build/proto/'+d+'_ovl/*.bin'
 else:
     ge = open(R+'disc/mhg/SLPM_658.69','rb').read(); G = {'main': ge[0x200:0x200+0x1ef200]}; OVD = R+'disc/mhg/overlays/*.bin'
 for f in sorted(glob.glob(OVD)):
     k = os.path.basename(f)
-    if k.startswith(('dnas','nethttp')): continue
+    if k.startswith(('dnas','nethttp','str_')): continue
     G[k] = open(f,'rb').read()[0x40:]
 K = 6
 gw = {}; idx = collections.defaultdict(list); graw = {}

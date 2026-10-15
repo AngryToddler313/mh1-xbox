@@ -155,3 +155,99 @@ Agents: when you trip over something curious, add a short entry here in the same
   it can at last die (below 1000 hp it cannot die anywhere else). About 58000 ticks (32 min). [checked on the PC]
 - **em17's revival points are fixed**: a returning em17 monster of kind 0x16 / 0x30 always comes back on
   stage 64, kinds 17 / 47 on stage 90, whatever the quest's map. [checked: game 0x606800]
+
+## Prototypes and demo (agent F, 15 Oct 2026)
+
+Three extra MH1 builds from the owner (disc/mh1_proto_0521, disc/mh1_proto_0813, disc/mh1_demo_1227; all stripped).
+Tools: `tools/carry_match.py p0521|p0813|d1227` (added today; unpack the overlays first with tools/mwo_unpack.py, see its
+docstring), `tools/afs_extract.py --list`, `tools/text_map.py`'s quest reader, `tools/clay_dump.py` for textures. Hidden shots
+and decoded pictures in build/proto/shots/ (not committed). Short table in docs/mh1_us.md section 7.
+
+**What they are**
+- **May 21, 2004 (SLUS_291.10, "VER 1.01")** is a US build two months after the JP release and four before US retail. It
+  already has the US layout (sub_main overlay at 0x548180, English text, Dual Swords name and sounds) but its code is the
+  closest of all to JP: 74.5% of all JP function bytes appear with the same instruction shape (US retail 70.7%), 75% of our
+  matched C. 172 JP functions exist unchanged only in May and were changed later (monster AI and effects like em01_init,
+  em_cmd_ck, em08_main, em16_main, eft13/eft16, the save/net file code NetFileLoad, SaveNetFile, NetAutoLoad; Quest_start,
+  Pl_item_stack). Nothing that May lacks came back in Aug/US. It still ships JP leftovers: 14 Japanese quest files (m001..
+  m136, text identical to JP) next to their English u-twins, JP's player motion tables (plcom/lbcom byte-identical to JP),
+  JP's loading.apx, and kari_amh / test00_amh / back2.apx (gone in US retail). [checked]
+- **Aug 13, 2004 (TLES_527.07, "VER 0.10", PAL)** is an EU test build of the US game: its AFS data equals US retail where
+  names overlap (AFS00/AFS01 identical, AFS_DATA 949 same, 66 changed), the item names are already the final US ones, the
+  GMR magazine text is in. Code: 68% of matched C (as US). EU bits: memory card ids BETLES-52707MH / NET (52707 = the later
+  EU product number), SCEE DNAS legal text, a DNAS overlay stamped 2004-07-07 "eu" (US and May: 2003-07-08 "us"). English
+  only; no language or 50/60 Hz menu in the strings [checked; whether it really runs at 50 Hz is a guess from SYSTEM.CNF].
+- **Dec 27, 2004 EU demo (SLED_530.83)** is a five-language trial of the EU release: 62.9% of matched C (the rest is the
+  localisation: font printing, equipment/text getters, soft keyboard, memory card, credits, shops, renderer setup).
+  [checked]
+
+**All three are cut-down discs** (AFS_DATA 1036 / 1021 / 808 entries against 2353): 31 stage models (US 78), 15 monster
+models (demo 13; US 30), 48 weapon model files (demo 10; US 278), 487 armour parts (demo 252; US 1116). The protos carry
+only 14 quests (1-4, 6, 36-38, 131-136); the demo has no quest files at all (below). No Rathian, Fatalis, Lao-Shan, Diablos,
+Khezu, Gravios/Basarios, Plesioth or Kirin models; Kut-Ku and (if file number = monster kind) Rathalos and Gypceros are in
+[checked: file lists; kind mapping is a guess from docs/pc.md's table]. Dual Swords: name and its weapon sounds 124-134
+are on all three discs, its motion table w06_tbl.bin on none. [checked]
+
+**Unused / early content**
+- **A quest 108 that retail never had** (Aug proto, u108.mib): "Slay the Rathalos!", a copy of quest 9 (data before the
+  text 99.9% identical) under a new number, with an earlier requestor: "The Hostile Lord" instead of retail's "The Kindly
+  Lord". Neither JP nor US has a 108. [checked]
+- **Early English names (May proto)**: the item table has the same 336 slots as retail, 17 names differ: Plesioth parts
+  were "Sea Wyvern" Fang / Liver / Jaw (retail "Piscine"), Sonic Bomb was "Firecracker", Fire Herb "Powdergrass",
+  Scatterfish "Sprayfish", "Rathian Spine" (Spike), "Rubbery Skin" (Hide), "Citation" (Commendation); Felynes are
+  "Felyx" (the demo's English file still says Felyx twice). Monster notes describe Mosswine as "wild pigs" (also in the
+  demo). [checked: pointer tables compared by index]
+- **The magazine tie-in quest, mid-localisation**: JP's reward items for the Dengeki magazine event survive in May as
+  "Dengeki Ticket" and "GMR Ticket" (US retail: "Dummy item" and "Chrome Voucher"), and the event's thank-you line still
+  thanks Dengeki Magazine; by August the US magazine GMR has its own thank-you line. The EU demo's text files keep the
+  Dengeki line, translated into all five languages. [checked]
+- **Online web-page pictures** (Aug and demo; JP/US have other ones): an MH logo banner, "Yian Kut-Ku" and "Rathalos" quarry
+  cards, a "QUARRY" header, monster banners for the online news pages (the demo adds 14: R_KHEZU, a black "unknown"
+  silhouette, an event cartoon of hunters roasting meat, ...). [checked: decoded PNGs]
+- Two demo-only stage models, st27 and st29 (no textures of their own; their lw/lg companions are byte copies of stage 33's
+  and stage 45's, the desert), and textureless copies of st28/30/31: probably demo versions of the maps with exits closed
+  [guess].
+
+**EU demo specifics**
+- **Language select + 50/60 Hz menu at boot**: "Select your language." in five languages, then Start Game / Change video
+  mode / Alter TV display position, a 60 Hz test screen ("If you can see this message...") whose background,
+  videotest.apx, is a 512x512 Rathalos artwork, and a screen-offset adjuster (X/Y). The text lives in five data-only
+  overlays str_e/f/g/i/s.bin (ids 6-10, loaded at 0x888000, 0x4C-0x55 KB each), plus per-language HUD atlases
+  (cpit1ps_e..s: the German one says "MUNITION WECHS." where English says "CHANGE BULLETS"), loading screens, three
+  controller help pages per language (con_E1..3) and a small 7.9 KB Latin font (pal_s20rm04.bin) in place of the 632 KB
+  JIS font. [checked]
+- **Trial screen**: "TRIAL VER." on the title and a "trial demo of a game still in development... discs will not be
+  exchanged" notice, in five languages. [checked]
+- **How the demo locks content**: by data. There are no mNNN/uNNN quest files; instead two quest files per language
+  (x036.mbt "Jungle Menace", Kut-Ku; x136.mbt "Your First Monster Hunt!", Velociprey) and a quest-text index (xqidx.mbt) that
+  still describes about 99 quests. Monsters, stages and gear outside those quests are simply not on the disc. The functions
+  that check key quests and the event market (lb_key_quest_ck, lb_guild_check_keyQuest, Lb_event_market, Lb_event_GH) differ
+  from retail [checked]; whether they are the lock or only the localisation is a guess.
+- **Bonus movie "E3 2003 Demo Movie"** (BONUS3.sfd, 2:35, 320x448 MPEG-2 + ADX; the gallery's other movies are cut): the
+  2003 E3 trailer, including a Japanese-HUD gunner fight in the desert. [checked: frames at build/proto/shots/bonus3_*.png]
+- **A bigger name/chat word filter**: JP, US and the protos keep a list of about 670 banned words in select.bin (the
+  same list in US and May); the demo moves it into the main executable and grows it to about 885, adding about 240
+  French, German, Italian and Spanish swear words (22 English ones dropped). The JP KinshiYogo_chk ("forbidden words
+  check") changed shape in the demo. [checked: counts of the uppercase word runs]
+- Credits add the Capcom Europe ("CEE Staff") localisation team. [checked]
+
+**Network**
+- All three keep the online mode and DNAS overlays. May and Aug point at `*.reo.capcom.sf.yav4.com` hosts (regweb, snap01,
+  app01: "reo" test servers [guess]); US retail keeps app01.reo but adds an `mh-beta` bootstrap and an `mh.capcom...` registration page; the demo at an EU beta bootstrap
+  (`bootstrap01.mheu-beta...`) and an EU registration page. The lobby web browser identifies as "Y/K/Browser 1.50 for
+  MHUSA" in May, 1.60 in Aug/US, "1.60 for MHEU" in the demo. May ships NTGUI2/ (an older network-adapter setup) instead of
+  NTGUIDVD/. [checked; nothing was connected to]
+
+**Developer leftovers**
+- Aug proto, yn.bin: a debug banner "SNAP THREAD MOVING" between two rows of exclamation marks, and a network-setting
+  dump (Hardware / IP Address / Netmask / Primary DNS ... with printf formats). [checked: strings; never seen on screen]
+- No debug menu text was found in any of the three. JP's DebugProgram, debug_model_load and the test-server screen
+  (test_server_sel_disp) have no same-shape copy in any western build (removed or changed; carry_match cannot tell which).
+  [checked]
+- JP's omake (bonus gallery) player omake_play is unchanged in all three but changed in US retail. [checked]
+
+**cockpit2.apx and the Xbox HUD textures**: cpit1xb, cpit2xb and cockpit2.apx are byte-identical in all five builds (JP, US,
+May, Aug, demo), and cockpit2 stays in filedef_sys **slot 3** everywhere, even in the demo, whose table grew from 9 to 19
+slots (slots 9-13 the per-language loading screens, 14-18 the per-language HUD atlases; map slots moved 16 -> 24). The xb
+files are in no build's table. US/May/Aug use softkey1_e in slot 4, the demo softkey1_pal. [checked: tables read at US
+0x217974, May 0x214344, Aug 0x216B74, demo 0x1DD194 (file offsets); no loader looked at]

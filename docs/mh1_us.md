@@ -135,3 +135,21 @@ to G's (all 7808 glyphs). tools/carry_match.py reads overlays as `file[0x40:]` w
 words are at load + file offset (the header is part of the load, text_dump.py does it that way), so its overlay windows
 are shifted by 16 words; the module percentages in section 4 are therefore slightly low for game / lobby / select / yn
 [inferred from em_eye_search_set at file offset 0x80; not re-run].
+
+## 7. Prototypes and the EU demo (agent F, 15 Oct 2026)
+
+Details and the fun parts in docs/FINDS.md, "Prototypes and demo". [verified: tools/carry_match.py p0521/p0813/d1227/us,
+afs_extract --list]
+
+| build | boots | SYSTEM.CNF | main ELF (first load) | AFS_DATA / AFS00 / AFS01 entries | JP matched C found | all JP code found | quests |
+|---|---|---|---|---|---|---|---|
+| JP retail (Mar 2004) | SLPM_654.95 | 1.02 NTSC | 2.66 MB, symbols | 2318 / 108 / 160 | - | - | 153 (m) |
+| May 21 2004 proto | SLUS_291.10 | 1.01 NTSC | 2.67 MB | 1036 / 108 / 171 | 75.1% | 74.5% | 14 (u + JP m twins) |
+| Aug 13 2004 proto | TLES_527.07 | 0.10 PAL | 2.68 MB | 1021 / 113 / 171 | 68.0% | 70.3% | 15 (incl. unused 108) |
+| US retail (Sept 2004) | SLUS_208.96 | 1.00 NTSC | 2.72 MB | 2353 / 113 / 171 | 68.4% | 70.7% | 159 (u) |
+| Dec 27 2004 EU demo | SLED_530.83 | 1.00 PAL | 2.43 MB | 808 / 106 / 171 | 62.9% | 64.5% | 2 per language (.mbt) |
+
+All three extras have the US overlay split (sub_main, game, lobby, select, yn, dnas_*); the demo adds five text overlays
+str_e/f/g/i/s. 7607 JP functions are found in all four western builds, 3131 in none (the US rework), 172 only in May.
+The May build is the best bridge for naming US code: its code is closer to JP than US retail is. (Section 4's US
+numbers above were measured with the overlay-offset shift noted in section 6; today's US run gives 68.4% / 70.7%.)
