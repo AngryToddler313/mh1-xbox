@@ -72,7 +72,7 @@ geometry; with `--quest N --stage S` and the game camera every stage is lit norm
 Window, fullscreen, quality and widescreen. Defaults keep the original look: a 4:3 picture (the PS2 frame is
 512 x 448 shown at 4:3), vsync on, no MSAA, bilinear 2D art. Code: src/pc/gfx/gfx_gl.c (layout, MSAA, anisotropic,
 2D filter, fullscreen), src/pc/gfx/gfx_opts.c (settings file, flags, frame cap), src/pc/gfx/gfx_gl.h. The Xbox
-build does not use any of it (it stays 4:3; gfx_nv2a.c ignores the new render state 0x105).
+build uses gfx_opts.c and the widescreen option too (16:9 anamorphic, docs/xbox.md "Settings menu on the Xbox").
 
 Settings file `mh1pc.ini`, next to the save folder (Linux `~/.local/share/mh1pc/mh1pc.ini`, Windows
 `%APPDATA%\mh1pc\mh1pc.ini`; with MH1_SAVE_DIR it sits in that folder's parent). `key = value`, written back on a
@@ -143,7 +143,7 @@ catches up afterwards), the music is paused and the last picture stays drawn und
 at once. Keyboard: Up / Down, Left / Right, Enter / Space (next value), Esc / F10 close. Controller: D-pad or left stick,
 cross changes, circle / start / back close (on release, so the game does not see the press). Mouse: click a row (right
 click = previous), wheel. Code: src/pc/menu.c (own 5x7 font from pick.c on an atlas texture, window-pixel 2D draws),
-menu.h (stubs on the Xbox), hooks in viewer.c.
+menu.h, hooks in viewer.c (the same menu runs on the Xbox with fewer rows: docs/xbox.md "Settings menu on the Xbox").
 
 | row | what | live? |
 |---|---|---|
@@ -158,6 +158,8 @@ menu.h (stubs on the Xbox), hooks in viewer.c.
 | Button layout | circle confirms (Japan) / cross confirms (West) | yes |
 | HUD | original / prototype gunner (bowgun users only, see "Prototype gunner HUD") | yes |
 | Music / Effects volume | the game's own options: option_w[1] / option_w[2], 0..7 | yes |
+| Rumble | on / off (ini `rumble`): off, flPADShockSet sends nothing (pad_rumble_off) | yes |
+| Debug menu (testers) | on / off (ini `debug_menu`): the Back + R3 / F9 menu (dbgmenu_set_enabled) | yes |
 | Restore display defaults / Close | | |
 
 Notes. The volumes are not a copy: they edit the same bytes the game's OPTION screen edits (option_w, system_w 0x36 / 0x37,
@@ -170,7 +172,9 @@ of them held) for the whole game, so the in-game menus and the controls both mov
 text keep the Japanese shapes (they are font glyphs). The settings are written to mh1pc.ini when the menu closes (and at exit).
 
 Test: `tools/test_menu.sh` (uses the save of test_quest_loop.sh): RT_MENU_AT=tick opens the menu at that tick,
-RT_MENU_KEYS="down,right,enter,esc,..." feeds one key per two frames, RT_MENU_SAVE=1 lets a --shot run write the ini. It checks
+RT_MENU_KEYS="down,right,enter,esc,..." feeds one key per two frames, RT_MENU_SAVE=1 lets a --shot run write the ini. An --input
+script can also open it (`select+l3` in a tick's step: viewer.c read_pad -> menu_tick_pad) and then drives it a step per drawn frame
+(as for the debug menu); buttons still held when it closes stay hidden from the game until released. It checks
 that the game does not tick while the menu is open and runs on after Esc, and that the changes reach the ini.
 
 Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, quest 131 and the pause menu at
@@ -242,7 +246,7 @@ draws it from the game's own state, called from the HUD wrappers in rt_2d.c (rt_
   left edge, the ammo wheel to the right.
 - The texture is loaded on first use into mem_tex 0x158 (a slot nothing uses), from filedef_sys[3] (AFS_DATA 10 in
   MH1 JP), with a host buffer.
-- The Xbox build has the code but no settings file yet: there rt_hud_style stays 0 (original HUD).
+- The Xbox build: the same, set from its settings menu (Back + L3) or `hud = prototype gunner` in settings.ini (docs/xbox.md).
 
 Test aid: `RT_WEAPON=gN` starts with Gun_data row N (a bowgun; e.g. g2) instead of a sword; with `RT_PL_ITEMS` the
 gun loads from the new pouch as pl_init does. Shot used (hidden):

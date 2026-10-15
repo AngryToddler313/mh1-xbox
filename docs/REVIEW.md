@@ -577,3 +577,17 @@ obvious workarounds.
 - **Dropped:** the `(u16)quest_w.x1D4[..]` casts and the s16 type of quest_w.x16C / x1D4 (G reads them with lhu); **now** u16 fields. MH1 code unchanged
   (these fields are only used by the G block of Quest_enemy_die / Quest_start).
 - **Dropped:** in the yn screens the literal `M2C_FIELD(ynw, ..)` offsets; **now** `YNF()` / `YNO()` (no-ops in MH1).
+
+## Settings menu on the Xbox (agent F, 15 Oct 2026)
+- **Dropped:** src/pc/menu.h's Xbox stubs (no settings menu on the Xbox); **now** menu.c, gfx_opts.c and the new font5x7.c are built
+  for the Xbox too (tools/build_xbox.py FRONT), with the console's rows only. **To revert:** the commit "Xbox: the settings menu".
+- **Dropped:** viewer.c's Xbox scene aspect `W / H` (always 4:3); **now** gfx_scene_aspect() on every backend (gfx_nv2a.c: 16:9 when
+  widescreen; gfx_null.c 4:3).
+- **Moved:** the 5x7 font table from pick.c (pick_font_rows) to src/pc/font5x7.c (font5x7_rows), so the Xbox menu has it without the
+  PC-only bug reporter. Same glyphs.
+- **Choice:** Xbox widescreen is 16:9 anamorphic in the 640 x 480 mode (no 720p); with no `widescreen` line in settings.ini the
+  dashboard's 16:9 flag decides (a player with a widescreen dashboard gets 16:9 on the first start). If the owner prefers 4:3 always
+  until chosen, drop the XVideoGetEncoderSettings line in gfx_opts_load.
+- **Choice:** the settings combo is also taken from each game tick's pad (menu_tick_pad), so the combo's buttons never reach the
+  game and scripted runs can open it; buttons held at close are hidden from the game until released (before, cross on "Close"
+  reached the game).

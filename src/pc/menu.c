@@ -1,6 +1,8 @@
 /*
- * menu.c - the PC settings menu (docs/pc.md, "Settings menu"). F10 opens it at any time (also on the title screen, which
- * shows a hint); on a controller Back + L3 does. While it is open the game does not tick (the viewer's tick loop asks
+ * menu.c - the settings menu (docs/pc.md, "Settings menu"; Xbox: docs/xbox.md, "Settings menu on the Xbox"). F10 opens it
+ * at any time (also on the title screen, which shows a hint); on a controller Back + L3 does (the Xbox has only that).
+ * The Xbox shows the rows that mean something on the console (language, aspect, HUD, button layout, volumes, rumble, debug
+ * menu) and draws it in a 320 x 240 frame on the 4:3 picture (2x the 5x7 font on a 640 x 480 screen). While it is open the game does not tick (the viewer's tick loop asks
  * menu_hold_ticks), the music is paused, and the last picture stays drawn underneath so the changes that apply live
  * (aspect ratio, 2D filter, anisotropy, vsync, fullscreen) can be seen at once.
  *
@@ -17,12 +19,16 @@
  * frames once it is open (up down left right enter esc); RT_MENU_SAVE=1 lets a --shot run write mh1pc.ini.
  */
 #include "menu.h"
+#include "font5x7.h"
+#include "dbgmenu.h"
 #include "gfx/gfx.h"
 #include "gfx/gfx_gl.h"
 #include "pad/pad.h"
 #include "rt/rt_log.h"
 
+#ifndef XBOX
 #include <SDL.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,9 +40,19 @@ extern unsigned char system_w[];
 void str_master_vol(int);
 void rt_2d_restore_texture(void);
 void audio_pause(int on);
-const unsigned char *pick_font_rows(int c);
+int flPADShockSet(int port, int strength, int frames);
 
-enum { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_HUD, R_MUSIC, R_EFFECTS, R_DEFAULTS, R_CLOSE, R_N };
+enum { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_HUD, R_MUSIC, R_EFFECTS, R_RUMBLE, R_DEBUG,
+       R_DEFAULTS, R_CLOSE, R_N };
+#ifdef XBOX     /* the rows shown, in order */
+static const int rows[] = { R_LANG, R_ASPECT, R_HUD, R_PAD, R_MUSIC, R_EFFECTS, R_RUMBLE, R_DEBUG, R_CLOSE };
+#define XB(xbox, pc) (xbox)
+#else
+static const int rows[] = { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_HUD, R_MUSIC, R_EFFECTS,
+                            R_RUMBLE, R_DEBUG, R_DEFAULTS, R_CLOSE };
+#define XB(xbox, pc) (pc)
+#endif
+#define NROWS ((int)(sizeof rows / sizeof rows[0]))
 
 static struct {
     int inited, open, sel, shot;
@@ -44,18 +60,20 @@ static struct {
     int have_table;                 /* a translation table exists (English offered) */
     int rel_mouse;
     int pad_prev, pad_hold, pad_rep, pad_close;
+    int pad_now, tick_prev, mask;            /* the game's pad: the open combo's edge; buttons held when the menu closed (kept from the game until released) */
     /* scripted test */
     int at, done;
     const char *keys;
     int key_wait;
     /* drawn layout (window pixels), for the mouse */
-    int row_y[R_N], row_h, px0, px1, ly0;
+    int row_y[NROWS], row_h, px0, px1, ly0;
     int hover;
 } M;
 
 static const char *label[R_N] = {
     "Display", "Aspect ratio", "VSync", "Frame rate cap", "Anti-aliasing (MSAA)", "Anisotropic filter", "2D art filter",
-    "Text language", "Button layout", "HUD", "Music volume", "Effects volume", "Restore display defaults", "Close"
+    "Text language", "Button layout", "HUD", "Music volume", "Effects volume", "Rumble", "Debug menu (testers)",
+    "Restore display defaults", "Close"
 };
 static const int fps_list[] = { 0, 30, 60, 72, 90, 120, 144, 165, 240 };
 #define NFPS ((int)(sizeof fps_list / sizeof fps_list[0]))
@@ -79,6 +97,7 @@ static void init(void)
 /* ------------------------------------------------------------ the settings */
 static int clampi(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
 
+#ifndef XBOX
 static int fps_index(void)
 {
     int i, best = 0;
@@ -110,6 +129,8 @@ static int aniso_index(void)
     return i;
 }
 
+#endif
+
 static void vol_change(int idx, int d)       /* the game's option screen: the value, system_w, the stream master volume */
 {
     int v = clampi(option_w[idx] + d, 0, 7);
@@ -119,6 +140,7 @@ static void vol_change(int idx, int d)       /* the game's option screen: the va
     str_master_vol(1);
 }
 
+#ifndef XBOX
 static void defaults(void)
 {
     gfx_opt.widescreen = 0;
@@ -131,15 +153,14 @@ static void defaults(void)
     rt_pad_swap_confirm = 0;
     rt_hud_style = 0;
 }
+#endif
 
 static void change(int row, int d)
 {
     switch (row) {
+#ifndef XBOX
     case R_DISPLAY:
         gfx_set_fullscreen(!gfx_opt.fullscreen);
-        break;
-    case R_ASPECT:
-        gfx_opt.widescreen = !gfx_opt.widescreen;
         break;
     case R_VSYNC:
         gfx_set_vsync(!gfx_opt.vsync);
@@ -176,6 +197,13 @@ static void change(int row, int d)
         gfx_opt.filter2d = m;
         break;
     }
+    case R_DEFAULTS:
+        defaults();
+        break;
+#endif
+    case R_ASPECT:
+        gfx_opt.widescreen = !gfx_opt.widescreen;
+        break;
     case R_LANG:
         if (M.have_table)
             pc_opt.lang_en = !pc_opt.lang_en;
@@ -193,8 +221,14 @@ static void change(int row, int d)
     case R_EFFECTS:
         vol_change(2, d);
         break;
-    case R_DEFAULTS:
-        defaults();
+    case R_RUMBLE:
+        pad_rumble_off = !pad_rumble_off;
+        if (pad_rumble_off)
+            flPADShockSet(0, 0, 0);       /* stop one that is running */
+        break;
+    case R_DEBUG:
+        dbgmenu_set_enabled(!dbgmenu_enabled());
+        pc_opt.debug_menu = dbgmenu_enabled() ? 1 : 2;
         break;
     }
 }
@@ -203,12 +237,10 @@ static const char *value(int row, char *buf, size_t n, const char **note)
 {
     *note = "";
     switch (row) {
+#ifndef XBOX
     case R_DISPLAY:
         *note = "Alt+Enter or F11 switches too";
         return gfx_opt.fullscreen ? "Fullscreen" : "Windowed";
-    case R_ASPECT:
-        *note = gfx_opt.widescreen ? "wider view; menus stay 4:3, the HUD hugs the edges" : "the original 4:3 picture";
-        return gfx_opt.widescreen ? "16:9 (wide)" : "4:3 (original)";
     case R_VSYNC:
         return gfx_opt.vsync ? "On" : "Off";
     case R_FPS:
@@ -230,19 +262,24 @@ static const char *value(int row, char *buf, size_t n, const char **note)
     case R_FILTER:
         *note = gfx_opt.filter2d == F2D_SHARP ? "nearest at whole-number scales, smooth between" : "";
         return gfx_opt.filter2d == F2D_NEAREST ? "Nearest (hard pixels)" : gfx_opt.filter2d == F2D_SHARP ? "Sharp (integer scale)" : "Smooth (bilinear)";
+#endif
+    case R_ASPECT:
+        *note = gfx_opt.widescreen ? XB("set the TV to 16:9; menus stay 4:3", "wider view; menus stay 4:3, the HUD hugs the edges")
+                                   : "the original 4:3 picture";
+        return gfx_opt.widescreen ? XB("16:9 (anamorphic)", "16:9 (wide)") : "4:3 (original)";
     case R_LANG:
         if (!M.have_table) {
-            *note = "English needs text/en.txt (docs/english.md)";
+            *note = XB("English needs text\\en.txt in the game folder", "English needs text/en.txt (docs/english.md)");
             return "Japanese";
         }
         if (pc_opt.lang_en != M.lang0)
             *note = "applies at the next start";
         return pc_opt.lang_en ? "English" : "Japanese";
     case R_PAD:
-        *note = "swaps circle and cross everywhere; icons stay as is";
-        return pc_opt.western_pad ? "Cross confirms (West)" : "Circle confirms (Japan)";
+        *note = XB("the game's button icons keep the PS2 shapes", "swaps circle and cross everywhere; icons stay as is");
+        return pc_opt.western_pad ? XB("A confirms (West)", "Cross confirms (West)") : XB("B confirms (Japan)", "Circle confirms (Japan)");
     case R_HUD:
-        *note = rt_hud_style ? "bowgun users: the unused early HUD mock-up, rebuilt" : "";
+        *note = rt_hud_style ? XB("bowgun users: the unused early HUD, rebuilt", "bowgun users: the unused early HUD mock-up, rebuilt") : "";
         return rt_hud_style ? "Prototype gunner" : "Original";
     case R_MUSIC:
     case R_EFFECTS: {
@@ -253,10 +290,11 @@ static const char *value(int row, char *buf, size_t n, const char **note)
         snprintf(buf + 7, n - 7, " %d", v);
         return buf;
     }
-    case R_DEFAULTS:
-        return "";
-    case R_CLOSE:
-        return "";
+    case R_RUMBLE:
+        return pad_rumble_off ? "Off" : "On";
+    case R_DEBUG:
+        *note = XB("Back + R3 opens it", "Back + R3 (F9 on the PC) opens it");
+        return dbgmenu_enabled() ? "On" : "Off";
     }
     return "";
 }
@@ -273,9 +311,11 @@ static void do_open(void)
     M.pad_hold = M.pad_rep = M.pad_close = 0;
     M.hover = -1;
     audio_pause(1);
+#ifndef XBOX
     M.rel_mouse = SDL_GetRelativeMouseMode();
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor(SDL_ENABLE);
+#endif
     rt_log("settings menu: opened");
 }
 
@@ -284,15 +324,18 @@ static void do_close(void)
     if (!M.open)
         return;
     M.open = 0;
+    M.mask = M.pad_now;                   /* buttons still held (cross on Close): the game sees them only after a release */
     audio_pause(0);
+#ifndef XBOX
     if (M.rel_mouse)
         SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_ShowCursor(M.rel_mouse ? SDL_DISABLE : SDL_ENABLE);
+#endif
     if (!M.shot || getenv("RT_MENU_SAVE"))
         gfx_opts_save();
-    rt_log("settings menu: closed (aspect %s, vsync %d, fps cap %d, msaa %d, aniso %d, 2D filter %d, language %s, confirm %s, hud %d)",
+    rt_log("settings menu: closed (aspect %s, vsync %d, fps cap %d, msaa %d, aniso %d, 2D filter %d, language %s, confirm %s, hud %d, rumble %d, debug menu %d)",
            gfx_opt.widescreen ? "16:9" : "4:3", gfx_opt.vsync, gfx_opt.fps_cap, gfx_opt.msaa, gfx_opt.aniso, gfx_opt.filter2d,
-           pc_opt.lang_en ? "en" : "ja", pc_opt.western_pad ? "cross" : "circle", rt_hud_style);
+           pc_opt.lang_en ? "en" : "ja", pc_opt.western_pad ? "cross" : "circle", rt_hud_style, !pad_rumble_off, dbgmenu_enabled());
 }
 
 /* a key, from the keyboard, the controller or the test script */
@@ -301,22 +344,22 @@ static void key(int k)
 {
     switch (k) {
     case K_UP:
-        M.sel = (M.sel + R_N - 1) % R_N;
+        M.sel = (M.sel + NROWS - 1) % NROWS;
         break;
     case K_DOWN:
-        M.sel = (M.sel + 1) % R_N;
+        M.sel = (M.sel + 1) % NROWS;
         break;
     case K_LEFT:
-        change(M.sel, -1);
+        change(rows[M.sel], -1);
         break;
     case K_RIGHT:
-        change(M.sel, 1);
+        change(rows[M.sel], 1);
         break;
     case K_ENTER:
-        if (M.sel == R_CLOSE)
+        if (rows[M.sel] == R_CLOSE)
             do_close();
         else
-            change(M.sel, 1);
+            change(rows[M.sel], 1);
         break;
     case K_ESC:
         do_close();
@@ -324,12 +367,15 @@ static void key(int k)
     }
 }
 
+#ifdef XBOX
+int menu_event(const void *p) { (void)p; return 0; }
+#else
 static int row_at(int x, int y)
 {
     int i;
     if (x < M.px0 || x >= M.px1)
         return -1;
-    for (i = 0; i < R_N; i++)
+    for (i = 0; i < NROWS; i++)
         if (y >= M.row_y[i] && y < M.row_y[i] + M.row_h)
             return i;
     return -1;
@@ -392,23 +438,21 @@ int menu_event(const void *p)
     }
 }
 
-void menu_poll_pad(void)
+#endif
+
+/* the pad while the menu is open (the controller once a drawn frame, or the --input script: viewer.c) */
+void menu_pad(const pad_state *p)
 {
-    pad_state p;
-    int b, dir_x = 0, dir_y = 0, now;
-    init();
-    pad_read(&p, 0);                     /* the controller alone: the keyboard has its own keys here */
-    b = p.bits;
+    int b = p->bits, dir_x = 0, dir_y = 0, now;
+    M.pad_now = b;
     if (!M.open) {
-        if ((b & (PAD_SELECT | PAD_L3)) == (PAD_SELECT | PAD_L3) && (M.pad_prev & (PAD_SELECT | PAD_L3)) != (PAD_SELECT | PAD_L3))
-            do_open();
         M.pad_prev = b;
         return;
     }
-    if ((b & PAD_UP) || p.ly < -70) dir_y = -1;
-    else if ((b & PAD_DOWN) || p.ly > 70) dir_y = 1;
-    if ((b & PAD_LEFT) || p.lx < -70) dir_x = -1;
-    else if ((b & PAD_RIGHT) || p.lx > 70) dir_x = 1;
+    if ((b & PAD_UP) || p->ly < -70) dir_y = -1;
+    else if ((b & PAD_DOWN) || p->ly > 70) dir_y = 1;
+    if ((b & PAD_LEFT) || p->lx < -70) dir_x = -1;
+    else if ((b & PAD_RIGHT) || p->lx > 70) dir_x = 1;
     now = dir_y * 3 + dir_x;             /* a direction held: first press at once, then repeating */
     if (now == 0) {
         M.pad_hold = M.pad_rep = 0;
@@ -432,6 +476,39 @@ void menu_poll_pad(void)
         key(K_ESC);
     }
     M.pad_prev = b;
+}
+
+/* the controller, once a drawn frame: Back + L3 opens the menu (also while the game is held, e.g. on a frozen frame), and
+ * the navigation while it is open */
+void menu_poll_pad(void)
+{
+    pad_state p;
+    int b;
+    init();
+    pad_read(&p, 0);                     /* the controller alone: the keyboard has its own keys here */
+    b = p.bits;
+    if (!M.open) {
+        if ((b & MENU_COMBO) == MENU_COMBO && (M.pad_prev & MENU_COMBO) != MENU_COMBO)
+            do_open();
+        M.pad_prev = b;
+        return;
+    }
+    menu_pad(&p);
+}
+
+/* each game tick's pad (the script or the controller): Back + L3 opens the menu and the game does not see it; buttons
+ * held when the menu closed stay hidden from the game until released */
+void menu_tick_pad(pad_state *ps)
+{
+    int b = ps->bits;
+    init();
+    ps->bits &= (uint16_t)~M.mask;
+    M.mask &= b;
+    if ((b & MENU_COMBO) == MENU_COMBO && (M.tick_prev & MENU_COMBO) != MENU_COMBO) {
+        ps->bits &= (uint16_t)~MENU_COMBO;
+        do_open();
+    }
+    M.tick_prev = b;
 }
 
 static void script_keys(void)          /* RT_MENU_KEYS: one key per two drawn frames while open */
@@ -478,7 +555,7 @@ static void atlas_make(void)
     int c, x, y;
     memset(px, 0, sizeof px);
     for (c = 32; c < 128; c++) {
-        const unsigned char *rows = pick_font_rows(c);
+        const unsigned char *rows = font5x7_rows(c);
         int cx = ((c - 32) % 16) * 8, cy = ((c - 32) / 16) * 8;
         for (y = 0; y < 7; y++)
             for (x = 0; x < 5; x++)
@@ -602,16 +679,22 @@ void menu_draw(void)
     const char *note = "";
     init();
     script_keys();
+#ifdef XBOX
+    W = 320;                            /* a 320 x 240 frame on the 4:3 picture: the 5x7 font at 2x on 640 x 480 */
+    H = 240;
+    sc = 1;
+#else
     gfx_size(&W, &H);
+    sc = H >= 1000 ? 3 : H >= 480 ? 2 : 1;
+#endif
     if (!atlas)
         atlas_make();
-    sc = H >= 1000 ? 3 : H >= 480 ? 2 : 1;
     if (!M.open) {
         if (rt_boot_title()) {          /* the hint on the title screen */
-            const char *h = M.shot ? "F10: PC SETTINGS" : "F10 or Back+L3: PC SETTINGS";
+            const char *h = XB("Back + L3: SETTINGS", M.shot ? "F10: PC SETTINGS" : "F10 or Back+L3: PC SETTINGS");
             int hs = H >= 700 ? 2 : 1;
             states_on();
-            text(8 * hs, H - 12 * hs, hs, h, 0xFFFFFFC0u);
+            text(XB(24, 8 * hs), H - XB(24, 12 * hs), hs, h, 0xFFFFFFC0u);     /* Xbox: inside the TV's overscan */
             flush(W, H);
             states_off();
         }
@@ -621,34 +704,37 @@ void menu_draw(void)
         sc--;
     lh = 12 * sc;
     pad = 8 * sc;
-    pw = 58 * 6 * sc;
-    ph = pad * 2 + lh * (R_N + 4);
+    pw = XB(288, 58 * 6 * sc);           /* Xbox: 32 px in from each side of the screen (TV overscan) */
+    ph = pad * 2 + lh * (NROWS + 4);
     x0 = (W - pw) / 2;
     y0 = (H - ph) / 2;
     if (y0 < 0)
         y0 = 0;
     states_on();
+    gfx_set_2d_anchor(GFX_A_STRETCH);   /* the dimming covers the whole screen (also beside a 4:3 frame on a wide one) */
     quad(0, 0, (float)W, (float)H, 0x000000A8u);
+    flush(W, H);
+    gfx_set_2d_anchor(GFX_A_CENTER);
     quad((float)x0, (float)y0, (float)(x0 + pw), (float)(y0 + ph), 0x10141CF0u);
     quad((float)x0, (float)y0, (float)(x0 + pw), (float)(y0 + 2 * sc), 0xE0A040FFu);
     quad((float)x0, (float)(y0 + ph - 2 * sc), (float)(x0 + pw), (float)(y0 + ph), 0xE0A040FFu);
-    text(x0 + pad, y0 + pad, sc, "MONSTER HUNTER PC SETTINGS", 0xFFD060FFu);
+    text(x0 + pad, y0 + pad, sc, XB("MONSTER HUNTER SETTINGS", "MONSTER HUNTER PC SETTINGS"), 0xFFD060FFu);
     M.px0 = x0;
     M.px1 = x0 + pw;
     M.row_h = lh;
-    vx = x0 + pad + 26 * 6 * sc;
-    for (i = 0; i < R_N; i++) {
-        int y = y0 + pad + lh * (i + 2);
+    vx = x0 + pad + XB(22, 26) * 6 * sc;
+    for (i = 0; i < NROWS; i++) {
+        int r = rows[i], y = y0 + pad + lh * (i + 2);
         const char *v, *n;
         unsigned col = i == M.sel ? 0xFFFFFFFFu : 0xB8C0D0FFu;
         M.row_y[i] = y - sc * 2;
         if (i == M.sel)
             quad((float)(x0 + sc * 3), (float)(y - sc * 2), (float)(x0 + pw - sc * 3), (float)(y + lh - sc * 3), 0x2F5F9FE0u);
-        text(x0 + pad, y, sc, label[i], col);
-        v = value(i, buf, sizeof buf, &n);
-        if (i == R_CLOSE)
-            text(x0 + pad + 26 * 6 * sc, y, sc, "(Esc / F10)", 0x8890A0FFu);
-        else if (i == R_DEFAULTS)
+        text(x0 + pad, y, sc, label[r], col);
+        v = value(r, buf, sizeof buf, &n);
+        if (r == R_CLOSE)
+            text(vx, y, sc, XB("(B / Start)", "(Esc / F10)"), 0x8890A0FFu);
+        else if (r == R_DEFAULTS)
             text(vx, y, sc, "(Enter)", 0x8890A0FFu);
         else {
             if (i == M.sel) {
@@ -661,7 +747,8 @@ void menu_draw(void)
             note = n;
     }
     text(x0 + pad, y0 + ph - pad - lh * 2 + sc * 2, sc, note, 0x90D090FFu);
-    text(x0 + pad, y0 + ph - pad - lh + sc, sc, "Up/Down select  Left/Right change  Enter next  Esc close", 0x8890A0FFu);
+    text(x0 + pad, y0 + ph - pad - lh + sc, sc, XB("D-pad select, Left/Right change, B close",
+                                                   "Up/Down select  Left/Right change  Enter next  Esc close"), 0x8890A0FFu);
     flush(W, H);
     states_off();
 }

@@ -710,3 +710,10 @@ Details and numbers: docs/xbox.md "Area change loads: timed, made faster, loadin
   village: NOW LOADING. MH1 same run (quest 131): unchanged pictures plus the black quest-start frame.
 - Not exercised by a run: G vs_square_init (a walk-through village exit; the same request + load path as init_init).
   Not done: G's boot-time request (main 0x110CB0) and G's Disp_NowLoading2 (edit screens: MH1's still runs).
+
+## Settings menu on the Xbox (15 Oct 2026)
+Details in docs/xbox.md "Settings menu on the Xbox". For agents: the Xbox build now links menu.c, gfx_opts.c and
+font5x7.c; gfx_gl.h is included by the Xbox front end (gfx_opt / pc_opt / rt_hud_style) but its "PC only" functions
+exist only in gfx_gl.c. xemu runs that write settings.ini must use their own HDD image (XBOX_FILES=dir with a copy of
+bios/mcpx and a fresh `tools/xbox_fatx.py format`ted hdd.img), or a widescreen / gunner choice sticks for every later run
+on the shared disk. Scripts open the menu with `select+l3*3`, then one step per drawn frame (`down*2,idle*6,right*2,...`).

@@ -156,6 +156,17 @@ volume. The choices are saved in `mh1pc.ini` (Linux `~/.local/share/mh1pc/mh1pc.
 `%APPDATA%\mh1pc\mh1pc.ini`), a plain text file; the same options exist as command-line flags (docs/pc.md,
 "Display options"). The game logic always runs at its original 30 steps per second, whatever the frame rate.
 
+## Settings (Xbox)
+
+Hold **Back** and click the **left stick** (Back + L3) at any time; the title screen reminds you. The game pauses
+while the menu is open. Rows: text language (English only when you put a translation table at
+`E:\Games\MH1\text\en.txt`, MHG: `E:\Games\MHG\text\en.txt`; applies at the next start), 4:3 or 16:9 (for a
+widescreen TV set to stretch the picture; menus stay 4:3, the HUD moves to the screen edges), the HUD (original or
+the prototype gunner HUD for bowgun users), which button confirms (B as in Japan, or A), music and effects volume,
+rumble on/off, and the testers' debug menu on/off. D-pad moves, left/right changes, B or Start closes. The choices are
+saved in `settings.ini` in the game's folder on E: and read at every start; until you change the aspect ratio there,
+the dashboard's widescreen setting decides it.
+
 ## Debug menu for testers
 
 Testers can jump straight to any quest, area or screen without scripts or settings. Press **Back + R3** (click the

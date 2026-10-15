@@ -21,6 +21,7 @@
  * buffer memory as is (format assumed X8R8G8B8, untested).
  */
 #include "../gfx/gfx.h"
+#include "../gfx/gfx_gl.h"           /* gfx_opt.widescreen (settings menu, gfx_opts.c) */
 
 #include <hal/video.h>
 #include <pbkit/pbkit.h>
@@ -78,6 +79,7 @@ struct gfx_clay {
 
 static struct {
     int w, h;
+    int anchor;                     /* GFX_RS_2D_ANCHOR */
     float view[16], proj[16], world[16], texmat[16], viewport[16];
     uint32_t fade;
     uint32_t batch_hide;            /* GFX_RS_BATCH_HIDE */
@@ -106,7 +108,23 @@ static void mat_mul(float *out, const float *a, const float *b)       /* out = a
     memcpy(out, r, sizeof r);
 }
 
-/* gfx.h: the game's 512 x 448 frame fills the picture here */
+/* Widescreen (gfx_opt.widescreen, docs/xbox.md "Settings menu on the Xbox") is 16:9 anamorphic: the 640 x 480 frame is
+ * stretched to 16:9 by the TV. The 3D fills it with a 16:9 projection (scene_aspect in viewer.c: the vertical field of
+ * view stays, the horizontal one grows, as on the PC); the game's 4:3 2D sits on the middle 3/4 of the frame (x 80..560),
+ * so it looks 4:3 again on the TV; HUD widgets anchored left / right (rt_2d.c) slide to the frame's edges, fades and
+ * window-sized draws cover all of it. 4:3: the 2D covers the whole frame. */
+float gfx_scene_aspect(void)
+{
+    return gfx_opt.widescreen ? 16.0f / 9.0f : 4.0f / 3.0f;
+}
+
+static void rect43(float *x, float *w)     /* the 4:3 picture in the frame: x offset and width */
+{
+    *w = gfx_opt.widescreen ? G.w * 0.75f : (float)G.w;
+    *x = (G.w - *w) * 0.5f;
+}
+
+/* gfx.h: the game's 512 x 448 frame is the 4:3 picture (the whole frame, or its middle in widescreen) */
 int gfx_project(const float in[3], float out[4])
 {
     float a[4] = { in[0], in[1], in[2], 1.0f }, b[4], c[4];
@@ -123,7 +141,11 @@ int gfx_project(const float in[3], float out[4])
         out[2] = -1;
         return 0;
     }
-    out[0] = (c[0] / c[3] * 0.5f + 0.5f) * 512.0f;
+    {
+        float rx, rw;
+        rect43(&rx, &rw);
+        out[0] = ((c[0] / c[3] * 0.5f + 0.5f) * G.w - rx) * 512.0f / rw;
+    }
     out[1] = (0.5f - c[1] / c[3] * 0.5f) * 448.0f;
     out[2] = c[2] / c[3] * 0.5f + 0.5f;
     return 1;
@@ -601,6 +623,9 @@ void gfx_set_render_state(int state, uintptr_t v)
     case GFX_RS_BATCH_TEX:
         G.batch_tex = (gfx_texture *)v;
         break;
+    case GFX_RS_2D_ANCHOR:
+        G.anchor = (int)v;
+        break;
     case GFX_RS_ZWRITE:
         G.zwrite = v != 0;
         push1(NV097_SET_DEPTH_MASK, G.zwrite);
@@ -1057,10 +1082,18 @@ void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, con
         v[i].st[0] = st ? st[2 * i] : 0;
         v[i].st[1] = st ? st[2 * i + 1] : 0;
     }
-    /* virtual w x h screen (origin top left) straight to window pixels */
+    /* virtual w x h screen (origin top left) to frame pixels: on the 4:3 picture; anchored HUD widgets at its edges,
+     * stretched draws (fades, a frame-sized virtual screen) over the whole frame (see gfx_scene_aspect) */
     memcpy(m, ident, sizeof m);
-    m[0] = (float)G.w / w;
     m[5] = (float)G.h / h;
+    if (G.anchor == GFX_A_STRETCH || (w == G.w && h == G.h) || !gfx_opt.widescreen) {
+        m[0] = (float)G.w / w;
+    } else {
+        float rx, rw;
+        rect43(&rx, &rw);
+        m[0] = rw / w;
+        m[12] = G.anchor == GFX_A_LEFT ? 0.0f : G.anchor == GFX_A_RIGHT ? G.w - rw : rx;
+    }
     memcpy(tm, ident, sizeof tm);
     if (t && t->rect) {
         tm[0] = (float)t->w;

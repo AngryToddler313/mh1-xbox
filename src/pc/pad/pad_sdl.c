@@ -62,6 +62,7 @@ int pad_text_take(char *out, int n)
 /* Scripted / hidden / screenshot / audio-dump runs (tests, agents) must never open a real controller: it would
  * read stray input and rumble in the owner's hands. They use the script and the keyboard map only. */
 static int headless;
+int pad_rumble_off;
 void pad_set_headless(int on) { headless = on; }
 
 void pad_init(void)
@@ -281,10 +282,11 @@ int pad_script_next(pad_state *p)
 int flPADShockSet(int port, int strength, int frames)
 {
     if (strength > 0)
-        rt_log("rumble: port %d strength %d frames %d%s", port, strength, frames, headless ? " (headless: not sent)" : ctl ? "" : " (no controller)");
+        rt_log("rumble: port %d strength %d frames %d%s", port, strength, frames, headless ? " (headless: not sent)" :
+               pad_rumble_off ? " (rumble off in the settings)" : ctl ? "" : " (no controller)");
     if (headless || port != 0 || !ctl)
         return 0;
-    if (strength <= 0) {                /* vib_stop / vib_stop_all: strength 0 */
+    if (strength <= 0 || pad_rumble_off) {                /* vib_stop / vib_stop_all: strength 0 */
         SDL_GameControllerRumble(ctl, 0, 0, 0);
         return 0;
     }
