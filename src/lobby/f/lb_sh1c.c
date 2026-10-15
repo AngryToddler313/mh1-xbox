@@ -1,11 +1,5 @@
 /* lb_sh1c - one translation unit 0x0053AB50-0x0053C23C (lbtu3). */
 #include "lobby_s.h"
-#ifdef VERSION_MHG
-extern s32 shop_default_tag_00610A68[];
-#define GTAG(x) ((s32 *)(shop_default_tag_00610A68 + 1))
-#else
-#define GTAG(x) (x)
-#endif
 extern s8 r_no_process;
 extern s32 armorIndex;
 extern char User_data[];
@@ -452,7 +446,7 @@ void armor_shop2_trans() {
 }
 
 void lb_armor_init() {
-    lbShop.tag = GTAG(shop_armor00_tag);
+    lbShop.tag = (shop_armor00_tag);
     lbShop.x17 = 2;
 }
 

@@ -1195,6 +1195,7 @@ extern char lit_3511[];
 extern char lit_3512[];
 extern char lit_3513[];
 extern char lit_3514[];
+extern char lit_2264[];
 extern char *item_str[];
 extern u8 Item_data[][ITEM_ROW];
 int Item_preparation_one_ck(s16);
@@ -1209,8 +1210,40 @@ void ItemListWindow(int page, int cursel, int mode) {
     UD_ITEM *it;
     u8 *w;
 
+#ifdef VERSION_MHG
+    /* G (main 0x11EA80): mode 2 lists the village pouch (User_data+0xC24) instead of the player's, mode 0x10 shows the pouch merged
+     * and sorted by item id (the fuller stack first) with no cursor, on the cursor's page (mode 0x20, the hint frame, is not drawn) */
+    static UD_ITEM sorted[20];
+    if (mode & 2) {
+        w = (u8 *)&User_data + 0xC24;
+    } else {
+        w = (u8 *)&player_work[GW(0xD1)] + 0x828;
+    }
+    if (mode & 0x10) {
+        int i, j, n = 0;
+        UD_ITEM *src = (UD_ITEM *)w;
+        for (i = 0; i < 20; i++)
+            if (src[i].id != 0)
+                sorted[n++] = src[i];
+        for (i = n; i < 20; i++) {
+            sorted[i].id = 0;
+            sorted[i].num = 0;
+        }
+        for (i = 1; i < n; i++) {
+            UD_ITEM k = sorted[i];
+            for (j = i - 1; j >= 0 && (sorted[j].id > k.id || (sorted[j].id == k.id && sorted[j].num < k.num)); j--)
+                sorted[j + 1] = sorted[j];
+            sorted[j + 1] = k;
+        }
+        w = (u8 *)sorted;
+        page %= 10;
+        cursel = 0;
+    }
+    base = (s16)(page / 10) * 10;
+#else
     base = (s16)(page / 10) * 10;
     w = (u8 *)&player_work[GW(0xD1)] + 0x828;
+#endif
     SetTrnslMode(4, 5);
     if (cursel != 0) {
         FS32(item_list_frame, 0x10) = cursel;
@@ -1248,7 +1281,11 @@ void ItemListWindow(int page, int cursel, int mode) {
                     if (it->num >= Item_data[it->id][3]) {
                         font_set_palette(pal);
                     }
+#ifdef VERSION_MHG
+                    font_print(lit_2264, it->num);     /* G: lit_3514 has no G address, this is the same %3d string */
+#else
                     font_print(lit_3514, it->num);
+#endif
                 }
             }
         }

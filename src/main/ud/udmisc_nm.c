@@ -59,13 +59,20 @@ typedef struct EQPL {
     u8 x8D3;            /* 0x8D3 */
 } EQPL;
 
+#ifdef VERSION_MHG
+#define UD_EQ0 0xC74        /* G: the worn weapon record and the armour bytes sit at 0xC74.. (MH1 0x3CC..), User_data is 0xE00 bytes */
+#define UD_POUCH 0xC24      /* G: the pouch (MH1 0x37C) */
+#else
+#define UD_EQ0 0x3CC
+#define UD_POUCH 0x37C
+#endif
 typedef struct EQUD {
     u8 pad00;
     u8 x01;
     u8 x02;
     u8 x03;
     s32 x04;
-    u8 pad08[0x3CC - 8];
+    u8 pad08[UD_EQ0 - 8];
     s16 wx3CC;
     s16 wx3CE;
     s16 wx3D0;
@@ -110,20 +117,20 @@ void Set_userdata(PLW *pl) {
         pl->item[j].id = u[0].item[j].id;
         pl->item[j].num = u[0].item[j].num;
     }
-    PLB(pl, 0x8D3) = UDB(u, 0x3D7);
+    PLB(pl, 0x8D3) = UDB(u, UD_EQ0 + 0xB);
     PLB(pl, 0x34C) = Get_weapon_id(u->item + 20);
-    PLH(pl, 0x35E) = UDH(u, 0x3CC);
-    PLH(pl, 0x360) = UDH(u, 0x3CE);
-    PLH(pl, 0x362) = UDH(u, 0x3D0);
+    PLH(pl, 0x35E) = UDH(u, UD_EQ0);
+    PLH(pl, 0x360) = UDH(u, UD_EQ0 + 2);
+    PLH(pl, 0x362) = UDH(u, UD_EQ0 + 4);
     Set_equip_data((void *)pl, (void *)u);
 }
 
 void ItemCopy_Pl2Ud(PLW *pl) {
-    memcpy((u8 *)User_data + 0x37C, (u8 *)pl + 0x828, 0x50);
+    memcpy((u8 *)User_data + UD_POUCH, (u8 *)pl + 0x828, 0x50);
 }
 
 void ItemCopy_Ud2Pl(PLW *pl) {
-    memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50);
+    memcpy((u8 *)pl + 0x828, (u8 *)User_data + UD_POUCH, 0x50);
 }
 
 void Gold_add(int n) {

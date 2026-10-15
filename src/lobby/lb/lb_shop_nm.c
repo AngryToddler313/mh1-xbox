@@ -199,6 +199,151 @@ int shop_end_ck(void) {
     return 2;
 }
 
+#ifdef VERSION_MHG
+/* G (lobby 0x548440): the sell grid is 10 columns x 10 rows per page (x70 column, x6C row, xG7C page of 100; x6D = number of
+ * pages), the item lists show 7 per page as before. Page keys 0x80 / 0x8 turn the grid pages. The triangle key (detail window) works
+ * as in MH1 here (x1C 0/1); G's third mode (x1C 3: the worn piece next to the new one, lobby 0x554010 counts its skills) is not
+ * ported, nor are the per-shop help texts of the detail pages. */
+extern s32 shop_armor_help[];
+extern s32 shop_process2_help[];
+int shop_select_items(void) {
+    LB_SHOPITEM *it = (LB_SHOPITEM *)((u8 *)lbShop.list + lbShop.cur * 0x28);
+    int keys;
+    int n;
+
+    if (lbShop.count == 0) {
+        if (lbShop.key & 0x40) {
+            cnWrap_SoundRequest(3);
+            return 3;
+        }
+        return 2;
+    }
+    keys = lbShop.key;
+    if (keys & 0x20) {
+        if (it->state == 0) {
+            if (lbShop.f2C == 0) cnWrap_SoundRequest(0);
+            if (lbShop.x1C == 3) lbShop.x1C = 0;
+            return 0;
+        }
+        cnWrap_SoundRequest(7);
+        return 1;
+    }
+    if (keys & 0x40) {
+        cnWrap_SoundRequest(3);
+        if (lbShop.x1C == 0) return 3;
+        if (lbShop.x8E == 1) {
+            if (lbShop.mode == 0 && lbShop.x1A != 0 && (lbShop.x1C == 1 || lbShop.x1C == 3)) lbShop.help = shop_armor_help[1];
+        } else if (lbShop.x8E == 2) {
+            if (lbShop.mode == 1 && (lbShop.x1C == 3 || lbShop.x1C == 1)) lbShop.help = shop_process2_help[2];
+        }
+        lbShop.x1C = 0;
+        goto fin;
+    }
+    if (keys & 0x200) {
+        if (it->state != 2) {
+            if (lbShop.x8E == 2 && *(s32 *)((u8 *)lbShop.tbl + lbShop.cur * 8 + 4) == 0x3E7) {
+                cnWrap_SoundRequest(7);
+            } else {
+                cnWrap_SoundRequest(lbShop.x8E == 0 ? 0xF : 0xE);
+                if (lbShop.x1C == 1) {
+                    lbShop.x1C = 0;
+                } else {
+                    lbShop.x1C = 1;
+                    lbShop.x6E = 0;
+                    lbShop.xG7E = (*(s32 *)((u8 *)lbShop.tbl + lbShop.cur * 8) < 6 && lbShop.x84 == 1) ? 3 : 4;
+                }
+            }
+        }
+        goto fin;
+    }
+    if (keys & 0x800) {
+        if (lbShop.x1C != 0 && lbShop.x8E != 0 && !(lbShop.x8E == 3 && lbShop.x1C != 2)) {
+            if ((lbShop.x1C == 1 || lbShop.x1C == 3) && lbShop.x8E != 0) {
+                cnWrap_SoundRequest(1);
+                if (--lbShop.x6E < 0) lbShop.x6E = lbShop.xG7E - 1;
+            }
+        } else if (lbShop.x6D >= 2 || lbShop.x84 == 1) {
+            cnWrap_SoundRequest(1);
+            if (lbShop.x84 == 1) {
+                lbShop.x70 = lbShop.x70 % 10 == 0 ? lbShop.x70 + 9 : lbShop.x70 - 1;
+            } else {
+                lbShop.x6C--;
+                if (lbShop.x6C < 0) lbShop.x6C = lbShop.x6D - 1;
+                lbShop.x70 = 0;
+            }
+        }
+        goto fin;
+    }
+    if (keys & 0x400) {
+        if (lbShop.x1C != 0 && lbShop.x8E != 0 && !(lbShop.x8E == 3 && lbShop.x1C != 2)) {
+            if ((lbShop.x1C == 1 || lbShop.x1C == 3) && lbShop.x8E != 0) {
+                cnWrap_SoundRequest(1);
+                if (++lbShop.x6E >= lbShop.xG7E) lbShop.x6E = 0;
+            }
+        } else if (lbShop.x6D >= 2 || lbShop.x84 == 1) {
+            cnWrap_SoundRequest(1);
+            if (lbShop.x84 == 1) {
+                lbShop.x70 = lbShop.x70 % 10 == 9 ? lbShop.x70 - 9 : lbShop.x70 + 1;
+            } else {
+                lbShop.x6C++;
+                if (lbShop.x6C >= lbShop.x6D) lbShop.x6C = 0;
+                lbShop.x70 = 0;
+            }
+        }
+        goto fin;
+    }
+    if (keys & 0x2000) {
+        if (lbShop.x1C == 0 || lbShop.x8E == 0 || (lbShop.x8E == 3 && lbShop.x1C != 2)) {
+            cnWrap_SoundRequest(1);
+            if (lbShop.x84 == 1) {
+                if (lbShop.x6C == 0) lbShop.x6C = 9;
+                else lbShop.x6C--;
+            } else {
+                lbShop.x70--;
+                if (lbShop.x70 < 0) {
+                    lbShop.x70 = 6;
+                    if (lbShop.x70 + lbShop.x6C * 7 >= lbShop.count) lbShop.x70 = lbShop.count % 7 - 1;
+                }
+            }
+        }
+        goto fin;
+    }
+    if (keys & 0x1000) {
+        if (lbShop.x1C == 0 || lbShop.x8E == 0 || (lbShop.x8E == 3 && lbShop.x1C != 2)) {
+            cnWrap_SoundRequest(1);
+            if (lbShop.x84 == 1) {
+                if (++lbShop.x6C >= 10) lbShop.x6C = 0;
+            } else {
+                lbShop.x70++;
+                if (lbShop.x70 >= 7) lbShop.x70 = 0;
+                if (lbShop.x70 + lbShop.x6C * 7 >= lbShop.count) lbShop.x70 = 0;
+            }
+        }
+        goto fin;
+    }
+    if (lbShop.x8E != 0 && (keys & 0x80)) {
+        if (lbShop.x84 == 1 && lbShop.x6D >= 2) {
+            if (++lbShop.xG7C >= lbShop.x6D) lbShop.xG7C = 0;
+            cnWrap_SoundRequest(1);
+        } else if (it->state != 2 && (lbShop.mode != 0 || lbShop.x1A != 1)) {
+            if (lbShop.x8E == 3 || lbShop.x8E == 2) {
+                cnWrap_SoundRequest(0xE);
+                if (lbShop.x1C == 2) lbShop.x1C = 0;
+                else {
+                    lbShop.x1C = 2;
+                    lbShop.x6E = 0;
+                }
+            }
+        }
+    } else if (lbShop.x8E != 0 && (keys & 0x8) && lbShop.x84 == 1 && lbShop.x6D >= 2) {
+        lbShop.xG7C = lbShop.xG7C == 0 ? lbShop.x6D - 1 : lbShop.xG7C - 1;
+        cnWrap_SoundRequest(1);
+    }
+fin:
+    lbShop.cur = lbShop.x84 == 1 ? lbShop.x70 + lbShop.x6C * 10 + lbShop.xG7C * 100 : lbShop.x70 + lbShop.x6C * 7;
+    return 2;
+}
+#else
 int shop_select_items(void) {
     LB_SHOPITEM *it = (LB_SHOPITEM *)((u8 *)lbShop.list + lbShop.cur * 0x28);
     int keys;
@@ -338,6 +483,8 @@ clear1C:
     lbShop.cur = lbShop.x70 + lbShop.x6C * 7;
     return 2;
 }
+
+#endif
 
 int shop_select_tag(void) {
     if (lbShop.key & 0x20) {

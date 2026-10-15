@@ -124,7 +124,7 @@ void rt_village_enter(void)
                 fprintf(stderr, " %02x", q);
         fprintf(stderr, "\n");
     }
-    {   /* test aids (no save data), first visit only: RT_MONEY=n, RT_BOX_ITEMS="id:n,..." (item box = User_data+0x1C4, 100 slots),
+    {   /* test aids (no save data), first visit only: RT_MONEY=n, RT_POUCH="id:n,..." (20 slots), RT_BOX_ITEMS="id:n,..." (item box = User_data+0x1C4, 100 slots),
          * RT_WARE="kind:id,..." (stored equipment: kind 0 weapon .. as the box lists them; User_data+0x44, 6 bytes each) */
         extern u8 User_data[];
         static int done;
@@ -142,6 +142,18 @@ void rt_village_enter(void)
                     if (*q++ != ',')
                         break;
                 }
+            if ((q = getenv("RT_POUCH")))       /* the pouch (G: User_data+0xC24, MH1 +0x37C: UDO(0x37C)), 20 slots */
+                for (k = 0; k < 20 && sscanf(q, "%i:%i%n", &id, &n, &used) == 2; k++) {
+                    *(u16 *)(User_data + UDO(0x37C) + 4 * k) = (u16)id;
+                    *(s16 *)(User_data + UDO(0x37E) + 4 * k) = (s16)n;
+                    q += used;
+                    if (*q++ != ',')
+                        break;
+                }
+            if (getenv("RT_POUCH")) {
+                extern void Set_userdata(void *);
+                Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);      /* the village's player copy of the pouch (as the item box does) */
+            }
             if ((q = getenv("RT_WARE")))
                 for (k = 0; k < 64 && sscanf(q, "%i:%i%n", &n, &id, &used) == 2; k++) {
                     User_data[0x44 + 6 * k] = 1;
@@ -237,15 +249,17 @@ int rt_village_tick(void)
                 if (*(u16 *)(User_data + UDO(0x37C) + 4 * k))
                     fprintf(stderr, " %d:%d", *(u16 *)(User_data + UDO(0x37C) + 4 * k), *(s16 *)(User_data + UDO(0x37E) + 4 * k));
             fprintf(stderr, " | box:");
-            for (k = 0; k < 100; k++)
+            for (k = 0; k < (rt_ver_mhg() ? 300 : 100); k++)
                 if (*(u16 *)(User_data + UDO(0x1C4) + 4 * k))
                     fprintf(stderr, " %d:%d", *(u16 *)(User_data + UDO(0x1C4) + 4 * k), *(s16 *)(User_data + UDO(0x1C6) + 4 * k));
             fprintf(stderr, " | ware:");
-            for (k = 0; k < 64; k++)
+            for (k = 0; k < (rt_ver_mhg() ? 300 : 64); k++)
                 if (User_data[0x44 + 6 * k])
                     fprintf(stderr, " %d/%d/%d", User_data[0x45 + 6 * k], *(u16 *)(User_data + 0x46 + 6 * k), *(u16 *)(User_data + 0x48 + 6 * k));
             fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d\n", User_data[UDO(0x3CD)], *(u16 *)(User_data + UDO(0x3CE)), *(u16 *)(User_data + UDO(0x3D0)),
                     User_data[UDO(0x3D2)], User_data[UDO(0x3D3)], User_data[UDO(0x3D4)], User_data[UDO(0x3D5)], User_data[UDO(0x3D6)]);
+            fprintf(stderr, "rt_village: tick %d event flags %04x %04x %04x %04x %04x %04x %04x %04x\n", tick, *(u16 *)(User_data + 0x24), *(u16 *)(User_data + 0x26),
+                    *(u16 *)(User_data + 0x28), *(u16 *)(User_data + 0x2A), *(u16 *)(User_data + 0x2C), *(u16 *)(User_data + 0x2E), *(u16 *)(User_data + 0x30), *(u16 *)(User_data + 0x32));
         }
     }
     static int spots_stage = -1;
@@ -340,18 +354,20 @@ int rt_village_tick(void)
 #else
 #define LBS(o) lbShop[o]
 #endif
-        static int last = -1;
+        static int last = -1, lastk = -1, lastc = -1;
 #ifdef VERSION_MHG
 #define LBW(o) (*(s32 *)(lbShop + ((o) == 0x80 ? 0x78 : (o) == 0x74 ? 0x70 : (o) == 0x64 ? 0x64 : (o) == 0x50 ? 0x50 : 0x4C)))
 #else
 #define LBW(o) (*(s32 *)(lbShop + (o)))
 #endif
         int v = LBS(0x14) | LBS(0x15) << 8 | LBS(0x19) << 16 | LBS(0x1B) << 24;
-        if (v != last)
+        if (v != last || (u32)*(u16 *)(lbShop + LBSHOP_OFS(0x8C)) != (u32)lastk || LBW(0x74) != lastc)
             fprintf(stderr, "rt_village: tick %d shop step %d sub %d mode %d x1B %d x68 %d | count %d cur %d tbl %08x help %d list %08x key %04x item0 price %d state %d name %.12s\n", tick, (s8)LBS(0x14),
                     (s8)LBS(0x15), (s8)LBS(0x19), LBS(0x1B), *(s32 *)(lb_sys + LBSYS_OFS(0x68)), LBW(0x80), LBW(0x74), LBW(0x64), LBW(0x4C),
                     (u32)LBW(0x50), (u32)*(u16 *)(lbShop + LBSHOP_OFS(0x8C)), LBW(0x50) ? *(s32 *)LBW(0x50) : 0, LBW(0x50) ? *(s16 *)((u8 *)LBW(0x50) + 0x24) : 0, LBW(0x50) ? (char *)LBW(0x50) + 4 : "");
         last = v;
+        lastk = *(u16 *)(lbShop + LBSHOP_OFS(0x8C));
+        lastc = LBW(0x74);
     }
     if (r == 1 || r == -1) {
         rt_village_leave();

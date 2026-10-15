@@ -4,6 +4,13 @@ extern s8 D_39DAD1[16];
 extern s8 D_39DAD0[16];
 extern s16 D_39DAD2[16];
 extern u8 *ib;
+#ifdef VERSION_MHG
+#define IBCT u16           /* G: the box, equipment and swap cursors are 16-bit (the box holds up to 300 slots) */
+#define IBCURW(w) F(u16, (u8 *)(w) + F(u8, (w), IBO(3)) * 2, IBO(8))      /* the cursor of the active column */
+#else
+#define IBCT u8
+#define IBCURW(w) F(u8, F(u8, (w), IBO(3)) + (int)(w), 8)
+#endif
 /* item box slots: 4 bytes per slot at User_data + 0x37C (u16 item id, s16 amount) */
 typedef struct IBS4 { u16 w[2]; } IBS4;
 /* pouch (User_data + 0x1C4) and item box (User_data + 0x37C) slots, 4 bytes each: u16 item id, s16 amount */
@@ -41,6 +48,11 @@ char *Get_equip_name();
 void Lb_put_gold();
 void flfntLocate();
 extern u8 D_3396DE[];
+#ifdef VERSION_MHG
+#define IT_SELL(off) (*(s32 *)((u8 *)Item_data + (off) + 0x10))      /* G: s32 sell price at +0x10 of the 0x14-byte row */
+#else
+#define IT_SELL(off) (*(u16 *)(D_3396DE + (off)))
+#endif
 int u_equip_chk();
 int Get_equip_kaitori();
 void Gold_add();
@@ -95,7 +107,7 @@ s32 Lb_ItemBox_open() {
 s32 Lb_ItemBox_open() {
     F(s32, ib, IBO(4)) = 0;
     F(s16, ib, IBO(2)) = 0;
-    F(s8, ib, IBO(0xB)) = F(u16, ib, IBO(8)) = 0;
+    F(s8, ib, IBO(0xB)) = F(IBCT, ib, IBO(8)) = 0;
     F(s8, ib, IBO(0x1F)) = 0;
     F(u8, ib, IBO(0x20)) = 0xFF;
     *(s8 *)0x39DAD1 = 5;
@@ -200,7 +212,7 @@ s32 Lb_ItemBox_mv(int arg0) {
             if (s0 & 0x20) {
                 arg0 = 0;
                 F(s8, ib, IBO(3)) = 0;
-                F(s16, ib, IBO(8)) = F(u8, ib, IBO(0xB)) = 0;
+                F(IBCT, ib, IBO(8)) = F(u8, ib, IBO(0xB)) = 0;
                 F(s8, ib, IBO(0x1F)) = 0;
                 F(s8, ib, IBO(0x1D)) = -1;
                 F(u8, ib, IBO(0x1E)) = 0xFF;
@@ -357,6 +369,52 @@ void selling_price_disp_sub(void) {
 }
 
 /* edit a quantity byte with the d-pad: mode 0 = two decimal digits, otherwise two octal digits (hi << 3 | lo) */
+#ifdef VERSION_MHG
+/* G (lobby 0x5527F0): the cursor is a 16-bit slot number, page * 100 + row * 10 + column; the box has 1 to 3 pages (the
+ * expansions bought: User_data+0xC97 bits 0 and 1, sub_main 0x4C9290 / 0x4C9220); L/R keys 0x80 / 0x08 turn the page. Both the box
+ * and the equipment grid use it (mode is gone). */
+static int ib_pages(void) { return 1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1); }
+int ib_cursor_norm(int v)      /* sub_main 0x4C9290: a negative slot wraps by +100, a page past the last one is the last page */
+{
+    int mx, pg;
+    v = (s16)v;
+    if (v <= 0) {
+        while (v < 0)
+            v = (s16)(v + 100);
+        return v;
+    }
+    mx = ib_pages() - 1;
+    pg = v / 100;
+    if (mx < pg)
+        pg = mx;
+    return v % 100 + pg * 100;
+}
+void itembox_cursor_mv(u8 *val, int pad, int mode) {
+    u16 *cur = (u16 *)val;
+    int v = ib_cursor_norm(*cur), pg = v / 100, w = v % 100, pages = ib_pages(), col, row, moved = 0, nv;
+    int p = (u16)pad;
+    (void)mode;
+    if (p & 0x88) {
+        moved = 1;
+        if (p & 0x80) {
+            pg = pg + 1 < pages ? pg + 1 : 0;
+        } else {
+            pg = pg == 0 ? pages - 1 : pg - 1;
+        }
+    }
+    col = w % 10;
+    row = w / 10;
+    if (p & 0x800) col = col == 0 ? 9 : col - 1;
+    if (p & 0x400) col = col < 9 ? col + 1 : 0;
+    if (p & 0x2000) row = row == 0 ? 9 : row - 1;
+    if (p & 0x1000) row = row < 9 ? row + 1 : 0;
+    nv = (s16)(pg * 100 + row * 10 + col);
+    if (*cur != nv) {
+        *cur = nv;
+        se_req(7, moved ? 0x11 : 0x17, 0);
+    }
+}
+#else
 void itembox_cursor_mv(u8 *val, int pad, int mode) {
     int v;
     int hi;
@@ -422,6 +480,152 @@ void itembox_cursor_mv(u8 *val, int pad, int mode) {
     }
 }
 
+#endif
+
+
+#ifdef VERSION_MHG
+/* ---- G's "tidy up" (整頓): key 0x4000 in every tab asks yes / no; yes merges and sorts the item pouch (main 0x21DFA0, stock tab) or
+ * the item box / stored equipment (lobby 0x5583B0). The sorted copy of the box is the same as the 0x400 view of ItemboxWindowX. ---- */
+extern u8 ib_tidy_buf[];
+u8 *ib_tidy_view(int equip);
+void ItemCopy_Ud2Pl(void *);
+
+static void ib_shell_sort(u8 *a, int n, int sz, int (*gt)(const u8 *, const u8 *))
+{
+    int h = 1, i, j;
+    u8 tmp[8];
+    if (n < 2)
+        return;
+    while (h < n)
+        h = 3 * h + 1;
+    for (h /= 3; h > 0; h /= 3)
+        for (i = h; i < n; i++) {
+            memcpy(tmp, a + i * sz, sz);
+            for (j = i - h; j >= 0 && gt(a + j * sz, tmp); j -= h)
+                memcpy(a + (j + h) * sz, a + j * sz, sz);
+            memcpy(a + (j + h) * sz, tmp, sz);
+        }
+}
+static int ib_item_gt(const u8 *a, const u8 *k)   /* a[j] goes after k: a higher id, or the same id with the smaller stack */
+{
+    u16 ia = *(const u16 *)a, ik = *(const u16 *)k;
+    return ia > ik || (ia == ik && *(const s16 *)(a + 2) < *(const s16 *)(k + 2));
+}
+static u32 ib_equip_key(const u8 *e)    /* lobby 0x558590 */
+{
+    static const u32 job_tbl[7] = { 0, 0x06000000, 0x01000000, 0x02000000, 0x03000000, 0x05000000, 0x04000000 };
+    static const u32 kind_tbl[6] = { 0x60000000, 0x10000000, 0x10000000, 0x30000000, 0x40000000, 0x50000000 };
+    u32 k = *(const u16 *)(e + 2);
+    u8 *d = Get_equip_data_ptr((void *)e);
+    if (e[1] == 6 || e[1] == 7) {
+        u8 job = Get_weapon_job((void *)e);
+        return k + job_tbl[job < 7 ? job : 0] + ((u32)d[e[1] == 6 ? 0x12 : 0xB] << 16);
+    }
+    return k + kind_tbl[e[1] < 6 ? e[1] : 0] + ((u32)d[0xD] << 16);
+}
+static int ib_equip_gt(const u8 *a, const u8 *k) { return ib_equip_key(k) < ib_equip_key(a); }
+u8 *ib_tidy_sorted(int equip)
+{
+    u8 *v = ib_tidy_view(equip);
+    int n = 0;
+    if (!equip) {
+        while (n < 300 && *(u16 *)(v + 4 * n) != 0)
+            n++;
+        ib_shell_sort(v, n, 4, ib_item_gt);
+    } else {
+        while (n < 300 && v[6 * n] != 0)
+            n++;
+        ib_shell_sort(v, n, 6, ib_equip_gt);
+    }
+    return v;
+}
+/* the box (equip 0) or the stored equipment (equip 1) replaced by its tidy copy; the worn pieces follow their moves */
+static void ib_tidy_apply(int equip)
+{
+    u8 *v = ib_tidy_sorted(equip);
+    int n = (1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1)) * 100, i, k;
+    if (!equip) {
+        memcpy(User_data + 0x74C, v, 4 * n);
+        return;
+    }
+    for (k = 0; k < 6; k++) {
+        u16 *wi = (u16 *)(User_data + 0xCFE + 2 * k);
+        if (*wi != 0xFFFF) {
+            u8 *want = User_data + 0x44 + 6 * *wi;
+            u16 nw = 0xFFFF;
+            for (i = 0; i < n; i++)
+                if (want[0] != 0 && v[6 * i] != 0 && !memcmp(v + 6 * i + 1, want + 1, 5)) {
+                    nw = i;
+                    break;
+                }
+            *wi = nw;
+        }
+    }
+    memcpy(User_data + 0x44, v, 6 * n);
+}
+/* main 0x21DFA0 (village): the pouch with the gaps closed, sorted, copied to the player work */
+void Pouch_tidy_village(void)
+{
+    u8 *l = User_data + 0xC24;
+    int i, j, n = 0;
+    for (i = 0; i < 20; i++) {
+        if (*(u16 *)(l + 4 * i) != 0) {
+            n++;
+            continue;
+        }
+        for (j = i + 1; j < 20; j++)
+            if (*(u16 *)(l + 4 * j) != 0) {
+                memcpy(l + 4 * i, l + 4 * j, 4);
+                memset(l + 4 * j, 0, 4);
+                n++;
+                break;
+            }
+    }
+    ib_shell_sort(l, n, 4, ib_item_gt);
+    ItemCopy_Ud2Pl((u8 *)player_work + 0xA00 * game_w.master);
+}
+/* returns 1 when the prompt took the pad (what: 0 pouch, 1 box items, 2 stored equipment, 3 the active column) */
+static int ib_tidy_prompt(s32 *padp, int what)
+{
+    s32 pad = *padp;
+    if (F(u8, ib, 0x2F) != 0) {
+        yes_no_select(pad);
+        if ((u16)pad & 0x40) {
+            se_req(7, 0x14, 0);
+            *padp = 0;
+        } else if ((u16)pad & 0x20) {
+            *padp = 0;
+            if (F(u8, ib, 0x17) == 0) {
+                if (what == 0) {
+                    Pouch_tidy_village();
+                    F(u8, ib, 0x16) %= 10;
+                } else {
+                    int col = what == 3 ? F(u8, ib, 3) : what - 1;
+                    ib_tidy_apply(col);
+                    F(u16, ib, 0x10 + 2 * col) %= 100;
+                }
+                se_req(7, 0x13, 0);
+            } else {
+                se_req(7, 0x14, 0);
+            }
+        } else {
+            return 1;
+        }
+        F(u8, ib, 0x2F) = 0;
+        return 1;
+    }
+    if ((u16)pad & 0x4000) {
+        F(u8, ib, 0x2F) = 1;
+        F(u8, ib, 0x17) = 0;
+        F(u8, ib, 0x2D) = 0;
+        se_req(7, 0x24, 0);
+        *padp = 0;
+        return 1;
+    }
+    return 0;
+}
+#endif
+
 /* item box "stock" tab: take the item under the cursor into the pouch */
 s32 itembox_stock(s32 pad) {
     u16 left;
@@ -433,6 +637,11 @@ s32 itembox_stock(s32 pad) {
     w = ib;
     switch (F(u8, w, IBO(5))) {
     case 0:
+#ifdef VERSION_MHG
+        *(s16 *)0x39DAD2 = 0x1B;
+        if (ib_tidy_prompt(&pad, 0))
+            return pad;
+#endif
         *(s16 *)0x39DAD2 = 0;
         if (F(u8, w, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
@@ -451,14 +660,14 @@ s32 itembox_stock(s32 pad) {
                 left = Ud_u_item_stack(*(u16 *)(k + (int)u + UDO(0x37C)), *(u16 *)(k + (int)u + UDO(0x37E))) & 0xFFFF;
                 if (left == 0) {
                     k = F(u8, ib, IBO(0xB)) * 4;
-                    *(s16 *)(k + (int)u + 0x37E) = 0;
+                    *(s16 *)(k + (int)u + UDO(0x37E)) = 0;
                     k = F(u8, ib, IBO(0xB)) * 4;
-                    *(u16 *)(k + (int)u + 0x37C) = 0;
+                    *(u16 *)(k + (int)u + UDO(0x37C)) = 0;
                     F(s8, ib, IBO(0x1D)) = 1;
                     se_req(7, 0x2C, 0, left);
                 } else {
                     k = F(u8, ib, IBO(0xB)) * 4;
-                    *(s16 *)(k + (int)u + 0x37E) = left;
+                    *(s16 *)(k + (int)u + UDO(0x37E)) = left;
                     F(s8, ib, IBO(0x1D)) = 2;
                     se_req(7, 0x15, 0, left);
                 }
@@ -530,7 +739,7 @@ s32 ib_select_sub(s32 pad) {
     }
     itembox_cursor_mv(w + IBO(9), pad, 1);
     if (!(p & 0x20) && (p & 0x200)) {
-        F(u8 *, ib, IBO(0x14)) = User_data + F(u8, ib, IBO(9)) * 6 + 0x44;
+        F(u8 *, ib, IBO(0x14)) = User_data + F(IBCT, ib, IBO(9)) * 6 + 0x44;
         if (*F(u8 *, ib, IBO(0x14)) != 0) {
             F(u8, ib, IBO(0x1F)) = 2;
             F(s8, ib, IBO(0x18)) = 0;
@@ -607,13 +816,18 @@ s32 itembox_sortup(s32 pad) {
     case 1:
         switch (F(u8, w, IBO(6))) {
         case 0:
+#ifdef VERSION_MHG
+            *(s16 *)D_39DAD2 = 0x1B;
+            if (ib_tidy_prompt(&pad, 3))
+                return pad;
+#endif
             pad = ib_select_sub(pad) & 0xFFFF;
             if (pad & 0x40) {
                 pad = (u16)(pad & 0xFFBF);
                 *(u8 *)D_39DAD0 = 0;
                 F(u8, ib, IBO(5)) = 0;
             } else if (pad & 0x20) {
-                F(u8, ib, IBO(0xA)) = F(u8, F(u8, ib, IBO(3)) + (int)ib, 8);
+                F(IBCT, ib, IBO(0xA)) = IBCURW(ib);
                 F(u8, ib, IBO(6)) = F(u8, ib, IBO(6)) + 1;
                 se_req(7, 0x25, 0);
             }
@@ -624,29 +838,38 @@ s32 itembox_sortup(s32 pad) {
                 pad = (u16)(pad & 0xFFBF);
                 F(u8, ib, IBO(6)) = 0;
             } else if (pad & 0x20) {
-                second = F(u8, ib, IBO(0xA));
-                first = *(u8 *)((int)(ib + IBO(8)) + F(u8, ib, IBO(3)));
+                second = F(IBCT, ib, IBO(0xA));
+                first = IBCURW(ib);
                 col = F(u8, ib, IBO(3));
-                if (first != F(u8, ib, IBO(0xA))) {
+                if (first != F(IBCT, ib, IBO(0xA))) {
                     u = User_data;
                     if (col == 0) {
                         tmp4 = *(SW4 *)((first << 2) + (int)u + UDO(0x1C4));
-                        *(SW4 *)((first << 2) + (int)u + 0x1C4) = *(SW4 *)((second << 2) + (int)u + 0x1C4);
-                        *(SW4 *)((F(u8, ib, IBO(0xA)) << 2) + (int)u + 0x1C4) = tmp4;
+                        *(SW4 *)((first << 2) + (int)u + UDO(0x1C4)) = *(SW4 *)((second << 2) + (int)u + UDO(0x1C4));
+                        *(SW4 *)((F(IBCT, ib, IBO(0xA)) << 2) + (int)u + UDO(0x1C4)) = tmp4;
                     } else {
                         i1 = sortup_idx_chk(first, second);
-                        i2 = sortup_idx_chk(F(u8, ib, IBO(0xA)));
+                        i2 = sortup_idx_chk(F(IBCT, ib, IBO(0xA)));
                         w = ib;
                         p10 = w + IBO(0xA);
-                        tmp6 = ((SW6 *)(u + 0x44))[F(u8, F(u8, w, IBO(3)) + (int)w, 8)];
-                        ((SW6 *)(u + 0x44))[F(u8, F(u8, w, IBO(3)) + (int)w, 8)] = ((SW6 *)(u + 0x44))[F(u8, w, IBO(0xA))];
-                        ((SW6 *)(u + 0x44))[F(u8, w, IBO(0xA))] = tmp6;
+                        tmp6 = ((SW6 *)(u + 0x44))[IBCURW(w)];
+                        ((SW6 *)(u + 0x44))[IBCURW(w)] = ((SW6 *)(u + 0x44))[F(IBCT, w, IBO(0xA))];
+                        ((SW6 *)(u + 0x44))[F(IBCT, w, IBO(0xA))] = tmp6;
+#ifdef VERSION_MHG
+                        if (i1 != 0) {
+                            *(u16 *)i1 = *(u16 *)p10;
+                        }
+                        if (i2 != 0) {
+                            *(u16 *)i2 = IBCURW(ib);
+                        }
+#else
                         if (i1 != 0) {
                             *i1 = *p10;
                         }
                         if (i2 != 0) {
-                            *i2 = F(u8, F(u8, ib, IBO(3)) + (int)ib, 8);
+                            *i2 = IBCURW(ib);
                         }
+#endif
                     }
                     F(u8, ib, IBO(6)) = 0;
                     se_req(7, 0x26, 0);
@@ -691,6 +914,13 @@ void Disp_lb_item_box(void) {
             case 0:
                 switch (F(u8, w, IBO(5))) {
                 case 0:
+#ifdef VERSION_MHG
+                    if (F(u8, w, 0x2F) != 0) {          /* the tidy prompt: the pouch as it will be sorted, no cursor */
+                        ItemListWindow(F(u8, w, IBO(0xB)), 0, 0x10);
+                        yes_no_disp_sub();
+                        return;
+                    }
+#endif
                     ItemListWindow(F(u8, w, IBO(0xB)), 0xA9182, 8, 3);
                     item_explanation(F(u8, ib, IBO(0x1F)), F(u8, ib, IBO(0xB)));
                     return;
@@ -704,25 +934,33 @@ void Disp_lb_item_box(void) {
                 case 0:
                     if (F(u8, w, IBO(0x1F)) != 0) {
                     } else {
-                        pos = 0;
-                        Put_shousai(F(u8, w, IBO(5)), 1, 2, 3);
+#ifdef VERSION_MHG
+                        if (F(u8, w, 0x2F) != 0) {
+                            pos = 0x400;
+                            yes_no_disp_sub();
+                        } else
+#endif
+                        {
+                            pos = 0;
+                            Put_shousai(F(u8, w, IBO(5)), 1, 2, 3);
+                        }
                     }
-                    ItemboxWindow(F(u8, ib, IBO(8)), pos);
+                    ItemboxWindow(F(IBCT, ib, IBO(8)), pos);
                     return;
                 case 1:
-                    ItemboxWindow(F(u8, w, IBO(8)), 0x10, 2, 3);
+                    ItemboxWindow(F(IBCT, w, IBO(8)), 0x10, 2, 3);
                     ItemListWindow(F(u8, ib, IBO(0xB)), 0xA9182, 8);
                     item_explanation(F(u8, ib, IBO(0x1F)), F(u8, ib, IBO(0xB)));
                     return;
                 case 2:
                     kosuu_disp_sub();
-                    ItemboxWindow(F(u8, ib, IBO(8)), 0x10);
+                    ItemboxWindow(F(IBCT, ib, IBO(8)), 0x10);
                     ItemListWindow(F(u8, ib, IBO(0xB)), 0x808080, 0);
                     return;
                 case 3:
                     yes_no_disp_sub();
                 case 4:
-                    ItemboxWindow(F(u8, ib, IBO(8)), 0x10);
+                    ItemboxWindow(F(IBCT, ib, IBO(8)), 0x10);
                     ItemListWindow(F(u8, ib, IBO(0xB)), 0x808080, 0);
                     return;
                 }
@@ -735,11 +973,17 @@ void Disp_lb_item_box(void) {
                         pos = (F(u8, w, IBO(0x18)) & 3) | 0x21C;
                     } else {
                         pos = 0x208;
+#ifdef VERSION_MHG
+                        if (F(u8, w, 0x2F) != 0) {
+                            pos = 0x408;
+                            yes_no_disp_sub();
+                        } else
+#endif
                         if (F(s8, w, IBO(0x1D)) < 0) {
                             Put_shousai(1, a, 2, 3);
                         }
                     }
-                    ItemboxWindow(F(u8, ib, IBO(9)), pos);
+                    ItemboxWindow(F(IBCT, ib, IBO(9)), pos);
                     return;
                 case 1:
                     EquipmentCompareWindow(F(s32, w, IBO(0x10)), F(s32, w, IBO(0x14)), 0x132, 0x38, F(u8, w, IBO(0x18)));   /* t0 (asm 0x60D154) */
@@ -764,6 +1008,12 @@ void Disp_lb_item_box(void) {
                         }
                     } else {
                         pos = (F(u8, w, IBO(3)) & 1) * 8;
+#ifdef VERSION_MHG
+                        if (F(u8, w, 0x2F) != 0) {
+                            pos |= 0x400;
+                            yes_no_disp_sub();
+                        } else
+#endif
                         Put_shousai(1, a, 2, 3);
                     }
                     w = ib;
@@ -781,7 +1031,7 @@ cursor:
                             fa = (f32)ang;
                             new_var = flSin(0.0000958738f * fa);
                             w = ib;
-                            ItemboxWindowCursor(F(u8, w, IBO(0xA)), (((((s8)(int)(96.0f * new_var)) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, IBO(3)));
+                            ItemboxWindowCursor(F(IBCT, w, IBO(0xA)), (((((s8)(int)(96.0f * new_var)) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, IBO(3)));
                             return;
                         }
                     }
@@ -808,6 +1058,12 @@ cursor:
                                 pos = (F(u8, w, IBO(0x18)) & 3) | 0xFC;
                             }
                         } else if (F(s8, w, IBO(0x1D)) < 0) {
+#ifdef VERSION_MHG
+                            if (F(u8, w, 0x2F) != 0) {
+                                pos = (col & 1) * 8 | 0x420;
+                                yes_no_disp_sub();
+                            } else
+#endif
                             Put_shousai(st, 0xE8, col, 1);
                         }
                         break;
@@ -849,6 +1105,11 @@ s32 itembox_pickup(s32 pad) {
     p5 = w + IBO(5);
     switch (*p5) {
     case 0:
+#ifdef VERSION_MHG
+        *(s16 *)D_39DAD2 = 0x1B;
+        if (ib_tidy_prompt(&pad, 1))
+            return pad;
+#endif
         *(s16 *)D_39DAD2 = 3;
         if (F(u8, w, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
@@ -862,31 +1123,31 @@ s32 itembox_pickup(s32 pad) {
         }
         itembox_cursor_mv(ib + IBO(8), pad, 0);
         if ((u16)pad & 0x20) {
-            if (u_item_chk(F(u8, ib, IBO(8))) == 0) {
+            if (u_item_chk(F(IBCT, ib, IBO(8))) == 0) {
                 se_req(7, 0x15, 0);
             } else {
                 F(u8, ib, IBO(0x1F)) = 0;
                 F(u8, ib, IBO(0xB)) = 0;
                 while (F(u8, ib, IBO(0xB)) < 0x14) {
-                    if (*(u16 *)(u + (F(u8, ib, IBO(0xB)) & 0xFF) * 4 + UDO(0x37C)) == *(u16 *)(u + F(u8, ib, IBO(8)) * 4 + UDO(0x1C4))) {
+                    if (*(u16 *)(u + (F(u8, ib, IBO(0xB)) & 0xFF) * 4 + UDO(0x37C)) == *(u16 *)(u + F(IBCT, ib, IBO(8)) * 4 + UDO(0x1C4))) {
                         break;
                     }
                     F(u8, ib, IBO(0xB)) += 1;
                 }
                 if (F(u8, ib, IBO(0xB)) < 0x14) {
                     cur = F(u8, ib, IBO(0xB));
-                    id16 = *(u16 *)(cur * 4 + (int)u + UDO(0x37C)) * 0x10;
+                    id16 = *(u16 *)(cur * 4 + (int)u + UDO(0x37C)) * ITEM_ROW;
                     mx = D_3396D3[id16];
                     if (mx != 0xFF && *(s16 *)(F(u8, ib, IBO(0xB)) * 4 + (int)u + UDO(0x37E)) < mx) {
                         if (pick_kosuu_sel_chk() == 0) {
                             k = F(u8, ib, IBO(0xB)) * 4;
-                            *(s16 *)(k + (int)u + 0x37E) += 1;
-                            k = F(u8, ib, IBO(8)) * 4;
-                            *(s16 *)(k + (int)u + 0x1C6) -= 1;
-                            k = F(u8, ib, IBO(8)) * 4;
+                            *(s16 *)(k + (int)u + UDO(0x37E)) += 1;
+                            k = F(IBCT, ib, IBO(8)) * 4;
+                            *(s16 *)(k + (int)u + UDO(0x1C6)) -= 1;
+                            k = F(IBCT, ib, IBO(8)) * 4;
                             if (*(s16 *)(k + (int)u + UDO(0x1C6)) == 0) {
-                                k = F(u8, ib, IBO(8)) * 4;
-                                *(u16 *)(k + (int)u + 0x1C4) = 0;
+                                k = F(IBCT, ib, IBO(8)) * 4;
+                                *(u16 *)(k + (int)u + UDO(0x1C4)) = 0;
                             }
                             F(s8, ib, IBO(0x1D)) = 7;
                             *(s16 *)D_39DAD2 = 7;
@@ -957,16 +1218,16 @@ menu:
                     F(u8, ib, IBO(0x21)) = 0;
                     se_req(7, 0x13, 0);
                 } else if (item_kosuu_sel_chk() == 0) {
-                    j = F(u8, ib, IBO(8));
+                    j = F(IBCT, ib, IBO(8));
                     k = F(u8, ib, IBO(0xB));
-                    *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
-                    j = F(u8, ib, IBO(8));
+                    *(u16 *)((k * 4) + (int)u + UDO(0x37C)) = *(u16 *)((j * 4) + (int)u + UDO(0x1C4));
+                    j = F(IBCT, ib, IBO(8));
                     k = F(u8, ib, IBO(0xB));
-                    *(s16 *)((k * 4) + (int)u + 0x37E) = *(s16 *)((j * 4) + (int)u + 0x1C6);
-                    k = F(u8, ib, IBO(8)) * 4;
-                    *(s16 *)(k + (int)u + 0x1C6) = 0;
-                    k = F(u8, ib, IBO(8)) * 4;
-                    *(u16 *)(k + (int)u + 0x1C4) = 0;
+                    *(s16 *)((k * 4) + (int)u + UDO(0x37E)) = *(s16 *)((j * 4) + (int)u + UDO(0x1C6));
+                    k = F(IBCT, ib, IBO(8)) * 4;
+                    *(s16 *)(k + (int)u + UDO(0x1C6)) = 0;
+                    k = F(IBCT, ib, IBO(8)) * 4;
+                    *(u16 *)(k + (int)u + UDO(0x1C4)) = 0;
                     F(s8, ib, IBO(0x1D)) = 7;
                     *(s16 *)D_39DAD2 = 7;
                     F(u8, ib, IBO(5)) = 4;
@@ -991,17 +1252,17 @@ menu:
                         *(s16 *)D_39DAD2 = 5;
                         kosuu_select(pad, F(u8, ib, IBO(6)));
                         if (sel & 0x20) {
-                            j = F(u8, ib, IBO(8));
+                            j = F(IBCT, ib, IBO(8));
                             k = F(u8, ib, IBO(0xB));
-                            *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
+                            *(u16 *)((k * 4) + (int)u + UDO(0x37C)) = *(u16 *)((j * 4) + (int)u + UDO(0x1C4));
                             k = F(u8, ib, IBO(0xB)) * 4;
-                            *(s16 *)(k + (int)u + 0x37E) = *(s16 *)(k + (int)u + 0x37E) + F(s16, ib, IBO(0x1A));
-                            k = F(u8, ib, IBO(8)) * 4;
-                            *(s16 *)(k + (int)u + 0x1C6) = *(s16 *)(k + (int)u + 0x1C6) - F(s16, ib, IBO(0x1A));
-                            k = F(u8, ib, IBO(8)) * 4;
+                            *(s16 *)(k + (int)u + UDO(0x37E)) = *(s16 *)(k + (int)u + UDO(0x37E)) + F(s16, ib, IBO(0x1A));
+                            k = F(IBCT, ib, IBO(8)) * 4;
+                            *(s16 *)(k + (int)u + UDO(0x1C6)) = *(s16 *)(k + (int)u + UDO(0x1C6)) - F(s16, ib, IBO(0x1A));
+                            k = F(IBCT, ib, IBO(8)) * 4;
                             if (*(s16 *)(k + (int)u + UDO(0x1C6)) == 0) {
-                                k = F(u8, ib, IBO(8)) * 4;
-                                *(u16 *)(k + (int)u + 0x1C4) = 0;
+                                k = F(IBCT, ib, IBO(8)) * 4;
+                                *(u16 *)(k + (int)u + UDO(0x1C4)) = 0;
                             }
                             F(s8, ib, IBO(0x1D)) = 7;
                             *(s16 *)D_39DAD2 = 7;
@@ -1033,14 +1294,14 @@ menu:
                 } else {
                     k = F(u8, w, IBO(0xB)) * 4;
                     tmp4 = *(SW4 *)(k + (int)u + UDO(0x37C));
-                    j = F(u8, w, IBO(8));
+                    j = F(IBCT, w, IBO(8));
                     k = F(u8, w, IBO(0xB));
-                    *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
-                    *(s16 *)((k * 4) + (int)u + 0x37E) = *(s16 *)((j * 4) + (int)u + 0x1C6);
-                    k = F(u8, ib, IBO(8)) * 4;
-                    *(u16 *)(k + (int)u + 0x1C4) = 0;
-                    k = F(u8, ib, IBO(8)) * 4;
-                    *(s16 *)(k + (int)u + 0x1C6) = 0;
+                    *(u16 *)((k * 4) + (int)u + UDO(0x37C)) = *(u16 *)((j * 4) + (int)u + UDO(0x1C4));
+                    *(s16 *)((k * 4) + (int)u + UDO(0x37E)) = *(s16 *)((j * 4) + (int)u + UDO(0x1C6));
+                    k = F(IBCT, ib, IBO(8)) * 4;
+                    *(u16 *)(k + (int)u + UDO(0x1C4)) = 0;
+                    k = F(IBCT, ib, IBO(8)) * 4;
+                    *(s16 *)(k + (int)u + UDO(0x1C6)) = 0;
                     Ud_u_item_stack(tmp4.a, tmp4.b);
                     F(s8, ib, IBO(0x1D)) = 7;
                     F(u8, ib, IBO(5)) = 4;
@@ -1094,6 +1355,11 @@ s32 itembox_equipchange(s32 pad) {
             return 0;
         }
 select:
+#ifdef VERSION_MHG
+        *(s16 *)0x39DAD2 = 0x1B;
+        if (ib_tidy_prompt(&pad, 2))
+            return pad;
+#endif
         *(s16 *)0x39DAD2 = 0xA;
         if (F(u8, ib, IBO(0x1F)) != 0) {
             if ((u16)pad & 0x240) {
@@ -1108,7 +1374,7 @@ select:
         r = (u16)pad;
         if (r & 0x20) {
             w = ib;
-            F(u8 *, w, IBO(0x14)) = u + F(u8, w, IBO(9)) * 6 + 0x44;
+            F(u8 *, w, IBO(0x14)) = u + F(IBCT, w, IBO(9)) * 6 + 0x44;
             w = ib;
             ok = 0;
             if (*F(u8 *, w, IBO(0x14)) != 0) {
@@ -1152,7 +1418,7 @@ select:
                     if (F(u8, w, IBO(1)) != 0) {
                         ok = 0;
                         F(s8, w, IBO(0x1D)) = 0xC;
-                        F(u8, ib, IBO(0x1E)) = F(u8, ib, IBO(9));
+                        F(u8, ib, IBO(0x1E)) = F(IBCT, ib, IBO(9));
                     }
                     F(u8 *, ib, IBO(0x14)) = 0;
                 } else if (F(u8, w, IBO(1)) == 0) {
@@ -1160,7 +1426,7 @@ select:
                     if (!(st & ((u[1] == 0 ? 1 : 2) & 0xFF))) {
                         ok = 0;
                         F(s8, ib, IBO(0x1D)) = 0xE;
-                        F(u8, ib, IBO(0x1E)) = F(u8, ib, IBO(9));
+                        F(u8, ib, IBO(0x1E)) = F(IBCT, ib, IBO(9));
                     } else {
                         if (u[UDEQ(u, 0) * 6 + 0x45] == 6) {
                             mask = 4;
@@ -1170,7 +1436,7 @@ select:
                         if (!(st & (mask & 0xFF))) {
                             ok = 0;
                             F(s8, ib, IBO(0x1D)) = 0xD;
-                            F(u8, ib, IBO(0x1E)) = F(u8, ib, IBO(9));
+                            F(u8, ib, IBO(0x1E)) = F(IBCT, ib, IBO(9));
                         }
                     }
                 } else {
@@ -1196,7 +1462,7 @@ set4:
             }
         } else if (r & 0x200) {
             w = ib;
-            F(u8 *, w, IBO(0x14)) = u + F(u8, w, IBO(9)) * 6 + 0x44;
+            F(u8 *, w, IBO(0x14)) = u + F(IBCT, w, IBO(9)) * 6 + 0x44;
             w = ib;
             if (*F(u8 *, w, IBO(0x14)) != 0) {
                 *(s16 *)0x39DAD2 = 0xA;
@@ -1234,7 +1500,7 @@ set4:
                 if (F(u8 *, w, IBO(0x14)) == 0) {
                     r = Warehouse_equip_out(u, F(u8 *, w, IBO(0x10))[1]);
                 } else {
-                    r = Warehouse_equip(u, F(u8, w, IBO(9)));
+                    r = Warehouse_equip(u, F(IBCT, w, IBO(9)));
                 }
                 if (r == 1) {
                     *(s16 *)0x39DAD2 = 0x12;
@@ -1329,6 +1595,11 @@ s32 itembox_sellout(s32 pad) {
                 return 0;
             }
 sel:
+#ifdef VERSION_MHG
+            *(s16 *)D_39DAD2 = 0x1B;
+            if (ib_tidy_prompt(&pad, 3))
+                return pad;
+#endif
             pad = ib_select_sub(pad) & 0xFFFF;
             if (pad & 0x40) {
                 *(u8 *)D_39DAD0 = 0;
@@ -1340,15 +1611,15 @@ sel:
                 *(s16 *)D_39DAD2 = *p3 + 0x16;
                 if (pad & 0x20) {
                     if (*p3 == 0) {
-                        ok = u_item_chk(F(u8, w, IBO(8)));
+                        ok = u_item_chk(F(IBCT, w, IBO(8)));
                         if (ok == 1) {
                             if (item_kosuu_sel_chk() == 0) {
                                 *(s16 *)D_39DAD2 = 0x19;
                                 F(u8, ib, IBO(6)) = 2;
                                 F(u8, ib, IBO(0x21)) = 0;
                                 w = ib;
-                                k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
-                                F(s32, w, IBO(0xC)) = *(u16 *)(D_3396DE + F(u16, k + (int)u, UDO(0x1C4)) * 0x10);
+                                k = IBCURW(w) * 4;
+                                F(s32, w, IBO(0xC)) = IT_SELL(F(u16, k + (int)u, UDO(0x1C4)) * ITEM_ROW);
                             } else {
                                 F(s16, ib, IBO(0x1A)) = 1;
                                 *(s16 *)D_39DAD2 = 0x18;
@@ -1356,13 +1627,13 @@ sel:
                             }
                         }
                     } else {
-                        r = (s8)u_equip_chk(F(u8, w, IBO(9)));
+                        r = (s8)u_equip_chk(F(IBCT, w, IBO(9)));
                         if (r > 0) {
                             *(s16 *)D_39DAD2 = 0x19;
                             F(u8, ib, IBO(6)) = 2;
                             F(u8, ib, IBO(0x21)) = 0;
                             w = ib;
-                            k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 6;
+                            k = IBCURW(w) * 6;
                             s = (u8 *)(k + (int)u);
                             F(s32, ib, IBO(0xC)) = Get_equip_kaitori(F(u8, s, 0x45), F(u16, s, 0x46));
                             ok = 1;
@@ -1397,9 +1668,9 @@ sel:
                 if (sel & 0x20) {
                     w = ib;
                     pad = 0;
-                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
-                    mx = F(u16, k + (int)u, UDO(0x1C4)) * 0x10;
-                    F(s32, w, IBO(0xC)) = F(s16, w, IBO(0x1A)) * *(u16 *)(D_3396DE + mx);
+                    k = IBCURW(w) * 4;
+                    mx = F(u16, k + (int)u, UDO(0x1C4)) * ITEM_ROW;
+                    F(s32, w, IBO(0xC)) = F(s16, w, IBO(0x1A)) * IT_SELL(mx);
                     F(u8, ib, IBO(6)) = F(u8, ib, IBO(6)) + 1;
                     F(u8, ib, IBO(0x21)) = 0;
                     se_req(7, 0x13, 0);
@@ -1433,27 +1704,27 @@ sel:
                                 se_req(7, 0x14, 0);
                             } else {
                                 if (F(u8, w, IBO(3)) == 0) {
-                                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                    k = IBCURW(w) * 4;
                                     s = (u8 *)(k + (int)u);
-                                    if (*(D_3396D3 + F(u16, s, UDO(0x1C4)) * 0x10) == 0xFF) {
+                                    if (*(D_3396D3 + F(u16, s, UDO(0x1C4)) * ITEM_ROW) == 0xFF) {
                                         F(u16, s, UDO(0x1C4)) = 0;
                                         w = ib;
-                                        k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                        k = IBCURW(w) * 4;
                                         F(s16, k + (int)u, UDO(0x1C6)) = 0;
                                     } else {
                                         F(s16, s, UDO(0x1C6)) = F(s16, s, UDO(0x1C6)) - F(s16, w, IBO(0x1A));
                                         w = ib;
-                                        k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                        k = IBCURW(w) * 4;
                                         if (F(s16, k + (int)u, UDO(0x1C6)) == 0) {
-                                            k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 4;
+                                            k = IBCURW(w) * 4;
                                             F(u16, k + (int)u, UDO(0x1C4)) = 0;
                                         }
                                     }
                                 } else {
-                                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 6;
+                                    k = IBCURW(w) * 6;
                                     F(s16, k + (int)u, 0x46) = 0;
                                     w = ib;
-                                    k = F(u8, F(u8, w, IBO(3)) + (int)w, 8) * 6;
+                                    k = IBCURW(w) * 6;
                                     F(s8, k + (int)u, 0x44) = 0;
                                 }
                                 Gold_add(F(s32, ib, IBO(0xC)));
@@ -1478,6 +1749,273 @@ typedef struct IBICON { s16 x, y, w, h; s32 color; s16 u0, v0, u1, v1; } IBICON;
 
 /* item box window: the slot grid (100 pouch slots or 64 equipment slots), the cursor and the name/price line.
    cur = cursor slot (negative: none), flags: 4 help, 8 equipment grid, 0x10 dimmed, 0x20 gold, 0x40 price, 0x80/0x100/0x200 equipment modes */
+#ifdef VERSION_MHG
+/* G (lobby 0x555850, written from G's code for the PC): the item box and the equipment box are 10 x 10 grids of 100 slots per
+ * page (pages = the box's expansions + 1, selected by the cursor index / 100), icons 25 x 25 for both, the page colour comes from
+ * a table at lb_item_box_base + 0x20, the item text has the owned amount ("name x N", the amount coloured at the maximum) and
+ * no category prefix, a page indicator sits above the grid (lobby 0x556750), the gold frame is drawn here.
+ * flags 0x400: the "tidy" view (lobby 0x558230): the entries merged and sorted, shown instead of the stored order. */
+extern char *lb_ibox_str[];                     /* G 0x6364C0: [3] = the infinity sign, [4] = the multiplication sign */
+extern char lit_1928[];
+void *memset(void *, int, unsigned);
+void *memcpy(void *, const void *, unsigned);
+void PutArrow();
+void flfntSetSize();
+void SetFilterMode();
+u8 ib_tidy_buf[0x708] __attribute__((aligned(4)));
+static int ib_stock_n(void) { return (1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1)) * 100; }
+
+/* the merged and sorted copy of the box (equip == 0: items, stacked up to each item's maximum, by id; else the stored
+ * equipment in use, by kind/id order of storage), a pointer to the entries (4 or 6 bytes each) */
+u8 *ib_tidy_view(int equip) {
+    int n = ib_stock_n(), i, j, m = 0;
+    memset(ib_tidy_buf, 0, sizeof ib_tidy_buf);
+    if (!equip) {
+        u16 *t = (u16 *)ib_tidy_buf;
+        for (i = 0; i < n; i++) {
+            u16 id = *(u16 *)(User_data + 0x74C + 4 * i);
+            int num = *(s16 *)(User_data + 0x74E + 4 * i);
+            int mx;
+            if (id == 0)
+                continue;
+            mx = ((u8 *)Item_data)[id * ITEM_ROW + 3];
+            for (j = 0; j < m && num > 0 && mx != 0xFF; j++)
+                if (t[2 * j] == id && (s16)t[2 * j + 1] < mx) {
+                    int room = mx - (s16)t[2 * j + 1];
+                    int mv = num < room ? num : room;
+                    t[2 * j + 1] += mv;
+                    num -= mv;
+                }
+            while (num > 0 && m < n) {
+                int mv = (mx != 0xFF && num > mx) ? mx : num;
+                t[2 * m] = id;
+                t[2 * m + 1] = mv;
+                m++;
+                num -= mv;
+            }
+        }
+        for (i = 1; i < m; i++) {       /* insertion sort by id, the fuller stack first */
+            u16 a = t[2 * i], b = t[2 * i + 1];
+            for (j = i - 1; j >= 0 && (t[2 * j] > a || (t[2 * j] == a && (s16)t[2 * j + 1] < (s16)b)); j--) {
+                t[2 * j + 2] = t[2 * j];
+                t[2 * j + 3] = t[2 * j + 1];
+            }
+            t[2 * j + 2] = a;
+            t[2 * j + 3] = b;
+        }
+    } else {
+        for (i = 0; i < n; i++)
+            if (User_data[0x44 + 6 * i] != 0) {
+                memcpy(ib_tidy_buf + 6 * m, User_data + 0x44 + 6 * i, 6);
+                m++;
+            }
+    }
+    return ib_tidy_buf;
+}
+
+static void ib_page_bar(int base, int y, int page, int pages, int flags, int alpha)
+{
+    /* lobby 0x556750 (style 0): the "n/m" page number with an arrow at each side, drawn when the box has more than one page */
+    u8 *row = (u8 *)lb_item_box_base + 0x30;
+    int col = (flags & 0x410) ? (int)0xA0606060 : (int)0xFF20FF28;
+    if (pages < 2)
+        return;
+    if (row[0x12] != 0) {
+        *(s16 *)(lb_item_box_base + 0x60) = (s16)base;
+        *(s16 *)(lb_item_box_base + 0x62) = (s16)(y + 2);
+        DispFrameMessageA(lb_item_box_base + 0x60, 0, alpha);
+    }
+    PutArrow(base, y, *(s16 *)(row + 0xC), 0x12, col, 1);
+    PutArrow((s16)(base + *(s16 *)(row + 0xE)), y, *(s16 *)(row + 0xC), 0x12, col, 0);
+    flfntSetSize(0x12, 0x12);
+    flfntLocate((s16)(base + *(s16 *)(row + 0x10)), y);
+    font_print("%d/%d", page + 1, pages);
+}
+
+void ItemboxWindowX(int cur, int flags, f32 base) {
+    IBQUAD q;
+    IBICON ic;
+    char text[0x40];
+    int equip = (flags & 8) != 0;
+    int dim = flags & 0x10;
+    int alpha = dim ? 0x60 : 0xFF;
+    int tidy = flags & 0x400;
+    int page, curp, idx, i, k, price = -1, col, full, norm;
+    f32 x0;
+    u8 *data, *d;
+    u8 *e;
+
+    data = tidy ? ib_tidy_view(equip) : (equip ? User_data + 0x44 : User_data + 0x74C);
+    if (tidy && cur >= 0)
+        cur = (s16)cur % 100;
+    page = (s16)cur / 100;
+    curp = (s16)cur % 100;
+    *(s16 *)lb_item_box_base = base;
+    DispFrameMessageA(lb_item_box_base, 0, alpha);
+    SetFilterMode(1);
+    reload_tex(1, 0x118);       /* G 0x13F: the PC keeps MH1's numbers */
+    SetTextureStage(0x118);
+    x0 = 153.0f + base;
+    for (i = 0; i < 100; i++) {
+        s16 xx = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10)) + 3;
+        q.x = xx;
+        q.x2 = 20.48f + (f32)xx;
+        q.y = i / 10 * 0x19 + 0x3D;
+        q.y2 = q.y + 0x15;
+        q.color = (alpha << 24) | (*(u32 *)(lb_item_box_base + 0x20 + 4 * page) & 0xFFFFFF);
+        if (equip && !tidy && Now_equip_ck(User_data, (s16)(page * 100 + i)) == 1)
+            q.color = (alpha << 24) | 0x1078D4;
+        flps0004(&q);
+    }
+    ic.w = 0x19;
+    ic.h = 0x19;
+    if (!equip) {
+        u16 *p = (u16 *)(data + page * 400);
+        for (i = 0; i < 100; i++, p += 2) {
+            u8 *r;
+            int cat;
+            if (*p == 0)
+                continue;
+            r = (u8 *)Item_data + *p * ITEM_ROW;
+            cat = r[5];
+            if (cat == 0xFF)
+                continue;
+            k = cat + 1;
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10));
+            ic.y = i / 10 * 0x19 + 0x3B;
+            ic.u0 = ((k & 7) << 5) + 1;
+            ic.v0 = ((k >> 3) << 5) + 1;
+            ic.u1 = ((k & 7) << 5) + 0x1F;
+            ic.v1 = ((k >> 3) << 5) + 0x1F;
+            ic.color = item_col_tbl[r[6]];
+            ic.color = (ic.color & 0xFFFFFF) | (alpha << 24);
+            flps0008(&ic);
+        }
+    } else {
+        int mode80 = flags & 0x80, mode100 = flags & 0x100, mode200 = flags & 0x200;
+        e = data + page * 600;
+        for (i = 0; i < 100; i++, e += 6) {
+            int rare, now;
+            if (e[0] == 0)
+                continue;
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10));
+            ic.y = i / 10 * 0x19 + 0x3B;
+            Get_equip_icon_uv(e, &ic.u0, &ic.u1);
+            rare = Get_equip_rare(e[1], *(u16 *)(e + 2)) & 0xFF;
+            now = !tidy ? (Now_equip_ck(User_data, (s16)(page * 100 + i)) == 1) : 0;
+            if (mode80) {
+                if (now) {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                    flps0008(&ic);
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                    ic.color = (alpha << 24) | 0x909010;
+                } else {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                }
+            } else if (mode100) {
+                int kd = (e[1] != 6 && e[1] != 7);
+                ic.color = Equip_icon_color_rare(rare, alpha, kd);
+                if (now) {
+                    flps0008(&ic);
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                    ic.color = (alpha << 24) | (kd ? 0x808010 : 0xFFFF00);
+                }
+            } else if (mode200) {
+                ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                if (now) {
+                    if (e[1] == 6 || e[1] == 7) {
+                        ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                        flps0008(&ic);
+                        ic.color = (alpha << 24) | 0x808010;
+                    } else {
+                        flps0008(&ic);
+                        ic.color = (alpha << 24) | 0xFFFF00;
+                    }
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                } else if (equip_ok_chk(e) == 0) {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                }
+            } else {
+                ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                if (now) {
+                    flps0008(&ic);
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                    ic.color = (alpha << 24) | 0xFFFF00;
+                }
+            }
+            flps0008(&ic);
+        }
+    }
+    if ((s16)cur >= 0) {
+        if (!tidy) {        /* the cursor (lobby 0x555570): a square that pulses */
+            f32 sn = flSin(0.0000958738f * (f32)(u16)((System_timer & 0x1F) << 11));
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(curp % 10));
+            ic.y = curp / 10 * 0x19 + 0x3B;
+            ic.u0 = 0; ic.v0 = 0; ic.u1 = 0x20; ic.v1 = 0x20;
+            ic.color = (alpha << 24) | ((((s8)(108.0f * sn) + 0x8C) & 0xFF) << 16) | ((((s8)(6.0f * sn) + 0xF8) & 0xFF) << 8) | (((s8)(38.0f * sn) + 0xD6) & 0xFF);
+            flps0008(&ic);
+        }
+        flfntSetSize(0x12, 0x12);
+        full = dim ? 13 : 2;
+        norm = dim ? 10 : 0;
+        font_set_palette(norm);
+        ib_page_bar((int)base, 27, page, ib_stock_n() / 100, flags, alpha);
+        idx = (s16)cur;
+        if (!equip) {
+            d = data + idx * 4;
+            if (*(u16 *)d == 0) {
+                sprintf(text, lit_1923_00668480, item_str[0]);
+                price = -1;
+            } else {
+                u16 id = *(u16 *)d;
+                int mx = ((u8 *)Item_data)[id * ITEM_ROW + 3], n = *(s16 *)(d + 2);
+                if (mx == 0xFF) {
+                    sprintf(text, lit_1923_00668480 + 8, item_str[id], lb_ibox_str[3]);
+                } else if (mx == 1) {
+                    sprintf(text, lit_1923_00668480, item_str[id]);
+                } else if (n >= mx) {
+                    sprintf(text, lit_1923_00668480 + 0x10, item_str[id], lb_ibox_str[4], full, n, norm);
+                } else {
+                    sprintf(text, lit_1923_00668480 + 0x28, item_str[id], lb_ibox_str[4], n);
+                }
+                price = *(s32 *)((u8 *)Item_data + id * ITEM_ROW + 0x10);
+            }
+        } else {
+            e = data + idx * 6;
+            if (e[0] == 0) {
+                sprintf(text, lit_1923_00668480, item_str[0]);
+                price = -1;
+            } else {
+                sprintf(text, lit_1923_00668480, Get_equip_name(e[1], *(u16 *)(e + 2)));
+                price = Get_equip_kaitori(e[1], *(u16 *)(e + 2));
+            }
+        }
+        if (!tidy) {
+            flfntLocate((int)(5.0f + base), 0x13F);
+            font_print(lit_1923_00668480, text);      /* G's func_0012BDD0: format, then print */
+            if ((flags & 0x40) && price >= 0) {
+                flfntSetSize(0x18, 0x12);
+                flfntLocate((int)(198.0f + base), 0x13F);
+                font_print(lit_1928, price);
+                flfntSetSize(0x12, 0x12);
+            }
+            if (flags & 4) {
+                if (!equip) {
+                    Disp_help_mess(1, (u16)(*(u16 *)(User_data + 0x74C + idx * 4) + 0x18));
+                } else if (User_data[0x44 + idx * 6] != 0) {
+                    EquipmentDescriptionWindow(User_data + 0x44 + idx * 6, (int)base, 184, flags & 3, 0);
+                }
+            }
+        }
+    }
+    if (flags & 0x20) {
+        *(s16 *)(lb_item_box_base + 0x10) = 144.0f + base;
+        DispFrameMessageA(lb_item_box_base + 0x10, 0, alpha);
+        flfntSetSize(25, 20);
+        font_print_ex((int)(180.0f + base), 27, 0, lit_1928, *(s32 *)(User_data + 0x20));
+    }
+}
+#else
 void ItemboxWindowX(int cur, int flags, f32 base) {
     IBQUAD q;
     IBICON ic;
@@ -1714,3 +2252,4 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         Lb_put_gold();
     }
 }
+#endif

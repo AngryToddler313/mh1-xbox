@@ -15,9 +15,7 @@ lobby item_box 0x653330     # G Lb_ItemBox_init (lobby 0x552470, called from mai
 lobby netDialogMessage 0x636F20  # G SetDialogData (lobby 0x59F430) reads {u16 kind, pad, char *msg} entries (8 bytes) from D_00636F20/24; data_map.txt has it at low confidence
 lobby lb_set01_msg 0x636B60  # G Lb_put_set01 (lobby 0x59D750) reads its message table at lb_quest_attribute+0xB0; data_map.txt has 0x636BC0 (low confidence, 24 entries off)
 sub_main D_00528A80 0x528A80  # quest condition texts (pointer table), read by the G quest sheet (src/lobby/f/lb_guild_g.c)
-sub_main D_004FEE90 0x4FEE90  # groups of monster numbers for the hunt statistics (sub_main 0x4C87C0 / 0x4C8870)
 sub_main D_004FEA50 0x4FEA50  # the 50 quests of sub_main 0x4C9410
-sub_main D_004FF1D0 0x4FF1D0  # equipment sets of sub_main 0x4C8A10
 main D_0035EF10 0x35EF10      # G Lb_guild writes the "quest taken" byte here
 main D_0035EFEB 0x35EFEB      # G lb_select_quest: the "cannot take" dialog flag
 lobby D_005E7800 0x5E7800     # quest story data (12 bytes, then the triples at D_005E7810)
@@ -27,3 +25,5 @@ main item_str 0x501AD0         # G 0x501AD0: table of the "no item" name pointer
 main item_list_title 0x002EC640  # G Pit_disp_item_list family: pointers to the two list titles (アイテム / 調合); found by matching MH1's two strings' G twins (data_map.txt had it only as low); without it the item list title printed "(null)"
 sub_main item_cmd_str 0x005263C0  # G Pit_disp_item_list (0x11E4D0): five variants of three command strings (捨てる / 渡す / 納品する), stride 0xC (MH1: three variants of two, stride 8)
 sub_main equip_exp_str_sw_attr 0x00527EA0  # the seven element names (火 水 雷 龍 毒 麻痺 睡眠) as pointers; data_map.txt's low guess 0x527E10 is the format-string block
+lobby shop_armor00_tag 0x636A5C  # G lb_armor_init (0x54E670) stores shop_default_tag_00610A68+4: the item shop tab pair 買う/売る, which the armour shop also shows first
+lobby lb_ibox_str 0x6364C0   # G ItemboxWindowX (lobby 0x555850): string pointers; [3] the infinity sign, [4] the multiplication sign shown after an item name

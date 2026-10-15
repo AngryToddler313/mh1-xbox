@@ -1,7 +1,13 @@
 /* Lobby item box (storage) small helpers: slot checks, count select, yes/no, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#include "lbsys_g.h"
 typedef struct ITEMSLOT { u16 id; s16 num; } ITEMSLOT;
 extern u8 *ib;
+#ifdef VERSION_MHG
+#define IBCT u16           /* G: the box / equipment cursors are 16-bit */
+#else
+#define IBCT u8
+#endif
 extern u8 User_data[];
 extern ITEMSLOT D_3C7184[];
 extern u8 D_3C7186[];
@@ -12,21 +18,21 @@ u8 *Get_equip_data_ptr();
 
 int u_item_chk(int a) {
     u16 id;
-    id = D_3C7184[a & 0xFF].id;
+    id = D_3C7184[(IBCT)a].id;
     if (id == 0) {
         return 0;
     }
-    return D_3396D5[id * 0x10] != 0xFF ? 1 : 0;
+    return D_3396D5[id * ITEM_ROW] != 0xFF ? 1 : 0;
 }
 int u_equip_chk(int a) {
     u8 *u;
     int v;
     u = User_data;
-    v = a & 0xFF;
+    v = (IBCT)a;
     if (*(u8 *)(v * 6 + u + 0x44) == 0) {
         return -1;
     }
-    if (v == u[0x457] || v == u[0x458] || v == u[0x459] || v == u[0x45A] || v == u[0x45B] || v == u[0x456]) {
+    if (v == UDEQ(u, 1) || v == UDEQ(u, 2) || v == UDEQ(u, 3) || v == UDEQ(u, 4) || v == UDEQ(u, 5) || v == UDEQ(u, 0)) {
         return 0;
     }
     return 1;
@@ -37,17 +43,17 @@ int item_kosuu_sel_chk() {
     u8 *u = User_data;
     u8 *new_var2;
     unsigned long long new_var;
-    a0 = ib[8] * 4;
+    a0 = *(IBCT *)(ib + IBO(8)) * 4;
     new_var2 = D_3396D3;
-    new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * 0x10];
+    new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * ITEM_ROW];
     if (new_var == 0xFF) {
         return 0;
     }
     p = (u8 *)(a0 + (int)u);
-    if (new_var2[(*((u16 *)(p + 0x1C4))) * 0x10] == 1) {
+    if (new_var2[(*((u16 *)(p + UDO(0x1C4)))) * ITEM_ROW] == 1) {
         return 0;
     }
-    return *(s16 *)(p + 0x1C6) != 1 ? 1 : 0;
+    return *(s16 *)(p + UDO(0x1C6)) != 1 ? 1 : 0;
 }
 int pick_kosuu_sel_chk() {
     u8 *v;
@@ -56,32 +62,20 @@ int pick_kosuu_sel_chk() {
     if (item_kosuu_sel_chk() == 0) {
         return 0;
     }
-    i = ib[0xB] * 4;
+    i = ib[IBO(0xB)] * 4;
     v = (u8 *)(i + (int)u);
-    return (D_3396D3[*(u16 *)(v + 0x37C) * 0x10] - *(s16 *)(v + 0x37E)) >= 2;
+    return (D_3396D3[*(u16 *)(v + UDO(0x37C)) * ITEM_ROW] - *(s16 *)(v + UDO(0x37E))) >= 2;
 }
 u8 *sortup_idx_chk(int a) {
     u8 *u;
-    int v;
-    v = a & 0xFF;
+    int v, k;
+    static const u8 order[6] = { 1, 2, 3, 4, 5, 0 };
+    v = (IBCT)a;
     u = User_data;
-    if (v == User_data[0x457]) {
-        return u + 0x457;
-    }
-    if (v == u[0x458]) {
-        return u + 0x458;
-    }
-    if (v == u[0x459]) {
-        return u + 0x459;
-    }
-    if (v == u[0x45A]) {
-        return u + 0x45A;
-    }
-    if (v == u[0x45B]) {
-        return u + 0x45B;
-    }
-    if (v == u[0x456]) {
-        return u + 0x456;
+    for (k = 0; k < 6; k++) {
+        if (v == UDEQ(u, order[k])) {
+            return (u8 *)&UDEQ(u, order[k]);
+        }
     }
     return 0;
 }
@@ -102,7 +96,7 @@ int equip_ok_chk(u8 *e) {
   {
     return 0;
   }
-  r = (u[(u[0x456] * r) + 0x45] == 6) ? (4) : (8);
+  r = (u[(UDEQ(u, 0) * r) + 0x45] == 6) ? (4) : (8);
   if (!(new_var[0] & (r & 0xFF)))
   {
     return 0;
@@ -113,7 +107,7 @@ void yes_no_select(u16 pad) {
     u8 *t;
     u8 *q;
     t = ib;
-    q = t + 0x21;
+    q = t + IBO(0x21);
     if (*q == 0) {
         if (pad & 0x400) {
             *q = 1;
@@ -136,17 +130,17 @@ void kosuu_select(int pad, int c) {
     u8 mx;
     t0 = ib;
     u = User_data;
-    mx = D_3C7186[t0[8] * 4];
+    mx = D_3C7186[*(IBCT *)(t0 + IBO(8)) * 4];
     if (!(c & 0xFF)) {
-        k = t0[0xB] * 4;
-        a1 = D_3396D3[*(u16 *)(k + (int)u + 0x37C) * 0x10] - *(s16 *)(k + (int)u + 0x37E);
+        k = t0[IBO(0xB)] * 4;
+        a1 = D_3396D3[*(u16 *)(k + (int)u + UDO(0x37C)) * ITEM_ROW] - *(s16 *)(k + (int)u + UDO(0x37E));
         if (a1 < (mx & 0xFF)) {
             mx = a1;
         }
     }
     t = pad & 0xFFFF;
-    t0[0x1C] = 0;
-    q = (s16 *)(ib + 0x1A);
+    t0[IBO(0x1C)] = 0;
+    q = (s16 *)(ib + IBO(0x1A));
     a3 = *q;
     if (t & 0x800) {
         *q = 1;
@@ -172,11 +166,11 @@ void kosuu_select(int pad, int c) {
     a1 = (s16)a3;
     if (a1 < 0) {
         se_req(7, 0x15, 0);
-    } else if (a1 != *(s16 *)(ib + 0x1A)) {
+    } else if (a1 != *(s16 *)(ib + IBO(0x1A))) {
         se_req(7, 0x16, 0);
     }
     t0 = ib;
-    if (*(s16 *)(t0 + 0x1A) >= (mx & 0xFF)) {
-        t0[0x1C] = 1;
+    if (*(s16 *)(t0 + IBO(0x1A)) >= (mx & 0xFF)) {
+        t0[IBO(0x1C)] = 1;
     }
 }

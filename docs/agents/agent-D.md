@@ -1378,3 +1378,21 @@ The 5.6 GB python was not reproduced by rebuild.sh, build.py (also with a missin
 - Weapon/armour/process shops: tags now use G's shop_default_tag_00610A68+1 (GTAG in lb_arm/lb_sh1a/lb_sh1c/lb_by47/49/54/129); crash gone, buy/sell menu shows. Buy list and sell list NOT verified (my pad scripts did not get past the menu; the tools/gvil.sh pad names are ddown/dup, not down).
 - Item box "no item" text: `item_str` added to config/mhg/pc_names.txt (0x501AD0), untested (the build was killed by the OOM before I could re-run). Main now has item_list_title for the "(null)" header.
 - Open: forge (slot 10), item box tidy/3-digit editor, G lb_basic_master/lb_check_status (elder first meeting needs RT_EVENT_SET=1), cat kitchen, farm, sell, quantity picker, final verification set (clean G rebuild 7 OK, MH1 rebuild 5 OK, test_quest_loop.sh).
+
+## G village round 2 (agent D, Sonnet, 14 Oct 2026): shops, box, forge, elder on the PC
+Everything below runs hidden on build/mhg/pc/mhview_g and is checked by `tools/test_gvillage.py` (15 cases, ~10 min: weapon / armour / item shop buy, sell,
+quantity picker; forge weapon / armour / upgrade; item box store / take / equip change / tidy / sell; the elder's first talk). Pictures in build/D/g/.
+Tools: `tools/gvil_ev.py TAG END_TICK "tick:pad,..." [W=x,z] [ENV=v]` (the timing of tools/test_activities.py works: circle*2 at 45/75/105/135.., a G run needs
+`W=` for the warp, RT_MONEY / RT_POUCH / RT_BOX_ITEMS / RT_WARE for the state; GDB=1 for a backtrace under gdb with ASLR on if you add `set disable-randomization off`),
+`tools/gpeek.py MODULE ADDR [N] [-b|-h]` (G data words), tools/gvil.sh now ends the log with `EXIT n`.
+- Shops: lb_armor_tag_decide01/00 (G's table pick by story level and job, 100/200/300 sell list), tab-name tables (see REVIEW), `shop_select_items` G copy
+  (lb_shop_nm.c: 10 x 10 grid pages, keys 0x80 / 0x8 turn pages), armour icons +1 (lb_by125), the item shop's detail panel (lbshop2_nm.c), G ItemboxWindowX
+  (lb_ib.c; also draws the sell grid), pouch list (chat_nm.c ItemListWindow: village pouch, sorted preview), Set_userdata / ItemCopy on G offsets (udmisc_nm.c).
+- Box: 16-bit cursors (IBCT / IBCURW in lb_ib.c), itembox_cursor_mv with pages, the tidy prompt (key 0x4000 = Select: pouch via main 0x21DFA0, box via lobby
+  0x5583B0 = ib_tidy_apply), the box and pouch offsets through UDO everywhere, yes/no / quantity helpers (lb_ay.c) on G's ib layout. "No item" text works
+  (item_str). Literal MH1 User_data addresses are mapped by config/mhg/pc_addr_hand.txt (one entry per 0x10 bytes; **delete build/mhg/pctree/build/pc/abs/* and the
+  matching .o after changing a pc_addr file: the build does not track it**).
+- Forge: G's recipe tables imported at G size (pc_data.txt), the rest was MH1's code.
+- Elder: lb_talk_init G copy (rows by story / event flags), ck_talkEvent from G, lb_basic_master G kind dispatch (lb_village_nm.c), story events (mode 47) from G's
+  lobby 0x544760, pointer tables for the counter's story tests (hunt_group_tbl, equip_set_tbl); the counter talk reads the NPC kind at +0xE (this port's NPC layout).
+- Not done: see docs/REVIEW.md "Not ported" (equipment description windows, skill pages, banner animation). The farm and the cat kitchen are not in G's village.
