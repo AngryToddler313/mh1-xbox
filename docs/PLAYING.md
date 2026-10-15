@@ -80,6 +80,17 @@ it copies the files out of the image itself.
    is interrupted. Some dashboards' FTP servers need active mode (the script's default; `XBOX_PASSIVE=1` switches).
    The data is 925 MB: a home Wi-Fi link can take most of an hour. Copy `default.xbe` last or first, it does not
    matter.
+   **If the FTP copy keeps stalling** (Evolution X's FTP server often drops big files part way and cannot
+   resume them), copy only the small network loader by FTP and let it fetch the data from your computer over
+   HTTP instead, with resume and checksums:
+   - `tools/xbox_upload.sh --loader` (set `XBOX_IP=` to your Xbox's address first): puts the loader in
+     `E:\Games\MH1` (it shows as **Monster Hunter**) plus `loader.txt` with this computer's address;
+   - `tools/xbox_serve.py --data dist/xbox/MH1` (or `dist/xbox/MHG` for Monster Hunter G) and leave it running;
+     your firewall must let the Xbox reach port 8765;
+   - start **Monster Hunter** on the Xbox. It copies the files (MH1 into `E:\Games\MH1\data` plus the game as
+     `mh1.xbe`; G into `E:\Games\MHG`), checks every 4 MB piece, shows the progress, and starts the game when
+     done. If the copy stops, start Monster Hunter again: it goes on from where it stopped. Later starts without
+     the server running simply start the game already on the disk.
    Check afterwards that the sizes match the list above. The game itself checks at start-up: if a file is missing
    or has the wrong size (a cut-short copy) it shows which one, says where the files belong and returns to the
    dashboard after ten seconds; fix the copy and start again. (Only the sizes are checked there; the checksum check of
