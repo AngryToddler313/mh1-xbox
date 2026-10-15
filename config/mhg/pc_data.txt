@@ -249,3 +249,9 @@ shop_process00_tag = 0x002EF050; // size:0x8
 bou_sei_tbl = 0x0050B730; // size:0x6270           # 1049 armour recipes (MH1 359)
 buki_sei_tbl = 0x005119A0; // size:0x1010          # 170 weapon recipes
 kakou_tbl = 0x005129B0; // size:0x23C0             # upgrade table by weapon id, 381 weapons (MH1 234)
+
+# pointer tables of the quest counter's story tests (lb_guild_g.c; pointers into main's data / sub_main): the hunt statistics' groups of
+# monster numbers (sub_main 0x4C87C0 / 0x4C8870) and the equipment sets (0x4C8A10)
+[sub_main]
+hunt_group_tbl = 0x004FEE90; // size:0x340 allptr
+equip_set_tbl = 0x004FF1D0; // size:0x10 allptr

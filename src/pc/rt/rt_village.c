@@ -249,15 +249,17 @@ int rt_village_tick(void)
                 if (*(u16 *)(User_data + UDO(0x37C) + 4 * k))
                     fprintf(stderr, " %d:%d", *(u16 *)(User_data + UDO(0x37C) + 4 * k), *(s16 *)(User_data + UDO(0x37E) + 4 * k));
             fprintf(stderr, " | box:");
-            for (k = 0; k < 100; k++)
+            for (k = 0; k < (rt_ver_mhg() ? 300 : 100); k++)
                 if (*(u16 *)(User_data + UDO(0x1C4) + 4 * k))
                     fprintf(stderr, " %d:%d", *(u16 *)(User_data + UDO(0x1C4) + 4 * k), *(s16 *)(User_data + UDO(0x1C6) + 4 * k));
             fprintf(stderr, " | ware:");
-            for (k = 0; k < 64; k++)
+            for (k = 0; k < (rt_ver_mhg() ? 300 : 64); k++)
                 if (User_data[0x44 + 6 * k])
                     fprintf(stderr, " %d/%d/%d", User_data[0x45 + 6 * k], *(u16 *)(User_data + 0x46 + 6 * k), *(u16 *)(User_data + 0x48 + 6 * k));
             fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d\n", User_data[UDO(0x3CD)], *(u16 *)(User_data + UDO(0x3CE)), *(u16 *)(User_data + UDO(0x3D0)),
                     User_data[UDO(0x3D2)], User_data[UDO(0x3D3)], User_data[UDO(0x3D4)], User_data[UDO(0x3D5)], User_data[UDO(0x3D6)]);
+            fprintf(stderr, "rt_village: tick %d event flags %04x %04x %04x %04x %04x %04x %04x %04x\n", tick, *(u16 *)(User_data + 0x24), *(u16 *)(User_data + 0x26),
+                    *(u16 *)(User_data + 0x28), *(u16 *)(User_data + 0x2A), *(u16 *)(User_data + 0x2C), *(u16 *)(User_data + 0x2E), *(u16 *)(User_data + 0x30), *(u16 *)(User_data + 0x32));
         }
     }
     static int spots_stage = -1;

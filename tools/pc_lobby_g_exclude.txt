@@ -6,3 +6,4 @@ src/lobby/f/lb_gaf04.c
 src/lobby/f/lb_gaf05.c
 src/lobby/f/lb_gaf06.c
 src/lobby/f/lb_gaf07.c
+src/lobby/f/lb_r.c

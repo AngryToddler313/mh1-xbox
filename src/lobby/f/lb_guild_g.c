@@ -84,9 +84,9 @@ extern u16 System_timer;
 extern char *D_00528A80[];
 extern u32 D_005E7800[];
 extern u16 D_005E7810[];
-extern char *D_004FEE90[];
+extern char *hunt_group_tbl[];
 extern u16 D_004FEA50[];
-extern u16 *D_004FF1D0[];
+extern u16 *equip_set_tbl[];
 extern u8 D_0035EF10;
 extern u8 D_0035EFEB;
 
@@ -152,7 +152,7 @@ void lb_set_questpage_info(void);
 
 static int ud_group_max(void *u, int n)             /* sub_main 0x4C87C0: the largest hunt count in a group */
 {
-    u8 *p = (u8 *)D_004FEE90[n & 0xFF];
+    u8 *p = (u8 *)hunt_group_tbl[n & 0xFF];
     int best = 0;
     for (; *p != 0xFF; p++) {
         int v = UD_HUNT(u, *p) & 0xFFFF;
@@ -165,7 +165,7 @@ static int ud_group_max(void *u, int n)             /* sub_main 0x4C87C0: the la
 
 static int ud_group_sum(void *u, int n)             /* sub_main 0x4C8870: the capture count of a group, capped */
 {
-    u8 *p = (u8 *)D_004FEE90[n & 0xFF];
+    u8 *p = (u8 *)hunt_group_tbl[n & 0xFF];
     int sum = 0;
     for (; *p != 0xFF; p++) {
         sum = (sum + UD_CAPT(u, *p)) & 0xFFFF;
@@ -195,7 +195,7 @@ static int ud_equip_set_ck(void *u, int n)          /* sub_main 0x4C8A10: one pi
     if ((n & 0xFF) >= 4) {
         return 0;
     }
-    t = D_004FF1D0[n & 0xFF];
+    t = equip_set_tbl[n & 0xFF];
     cnt = UD_WARE_N(u);
     for (; (t[0] & 0xFF) != 0xFF; t += 2) {
         w = (u8 *)u;
@@ -1037,7 +1037,7 @@ void Lb_guild(void)                                   /* 0x55A2D0 */
         GU8(0x635F9C) = 0;
         GU8(0x636000) = 0;
         GU8(0x636064) = 0;
-        PIT_POS = *(s32 *)(npc_dialog_table + em[0x34] * 4);
+        PIT_POS = *(s32 *)(npc_dialog_table + em[0xE] * 4);       /* the NPC kind: this port keeps MH1's NPC work layout (G +0x34) */
         W_STEP++;
         W_SUB = 0;
         W_SEL = 0;

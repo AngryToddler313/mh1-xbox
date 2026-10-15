@@ -58,6 +58,7 @@ void Lb_event_GH();
 void Lb_event_localLv5End();
 void Lb_event_guild();
 void Lb_event_guildstart();
+void Lb_event_story();
 void Lb_event_localLast();
 void Lb_join();
 int Lbs_MatchEntry();
@@ -252,7 +253,11 @@ void lb_check_status(void) {
         Lb_event_guild();
         break;
     case 47:
+#ifdef VERSION_MHG
+        Lb_event_story();         /* G's story events (lobby 0x544760, its mode 49) */
+#else
         Lb_event_guildstart();
+#endif
         break;
     case 49:
         Lb_event_localLast();

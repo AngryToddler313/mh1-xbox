@@ -15,9 +15,7 @@ lobby item_box 0x653330     # G Lb_ItemBox_init (lobby 0x552470, called from mai
 lobby netDialogMessage 0x636F20  # G SetDialogData (lobby 0x59F430) reads {u16 kind, pad, char *msg} entries (8 bytes) from D_00636F20/24; data_map.txt has it at low confidence
 lobby lb_set01_msg 0x636B60  # G Lb_put_set01 (lobby 0x59D750) reads its message table at lb_quest_attribute+0xB0; data_map.txt has 0x636BC0 (low confidence, 24 entries off)
 sub_main D_00528A80 0x528A80  # quest condition texts (pointer table), read by the G quest sheet (src/lobby/f/lb_guild_g.c)
-sub_main D_004FEE90 0x4FEE90  # groups of monster numbers for the hunt statistics (sub_main 0x4C87C0 / 0x4C8870)
 sub_main D_004FEA50 0x4FEA50  # the 50 quests of sub_main 0x4C9410
-sub_main D_004FF1D0 0x4FF1D0  # equipment sets of sub_main 0x4C8A10
 main D_0035EF10 0x35EF10      # G Lb_guild writes the "quest taken" byte here
 main D_0035EFEB 0x35EFEB      # G lb_select_quest: the "cannot take" dialog flag
 lobby D_005E7800 0x5E7800     # quest story data (12 bytes, then the triples at D_005E7810)

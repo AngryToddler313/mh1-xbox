@@ -215,6 +215,7 @@ int get_joint_mat_em();
 int get_prim();
 int get_prim_ptr();
 int get_questLevelNum();
+extern u8 lbshop_raw[] __asm__("lbShop");
 int get_quest_info();
 int han2zen();
 int init_set_work();
@@ -2016,6 +2017,143 @@ block_48:
                         }
                     }
                     M2C_FIELD(arg0, s8 *, 0x8EC) = 0;
+#ifdef VERSION_MHG
+                    /* G (lobby 0x597F78 ..): the talk kind of the NPC chooses the mode by the story (get_questLevelNum); G's new numbers are
+                     * translated to MH1's (this port keeps MH1's x68 numbers: G n = MH1 n-1 for 4..17, n-2 from 19; G 49 = the story event
+                     * (here 47), G 3 = a second counter page (here 2 with the counter work's page byte 2)). lb_sys+4 is the story event number. */
+                    {
+                        u8 *sys = (u8 *)lb_sys;
+                        u8 kind = M2C_FIELD(temp_s0, u8 *, 0xE);
+                        int ret_tail = 0;
+#define SYS_SUB (*(s32 *)(sys + 4))
+#define STORY(n) do { M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 47; SYS_SUB = (n); } while (0)
+#define SHOPMODE(m, lvl_story, sub) do { if ((lvl_story) >= 0 && get_questLevelNum(lvl_story) == 1) { STORY(sub); } else { M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = (m); Lb_shop_init(); } M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1; NPCZoomInCameraRequest(temp_s1); return; } while (0)
+                        switch (kind) {
+                        case 0x55: case 4: case 0x4B:
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            if (M2C_FIELD(temp_s1, u8 *, 0x15) == 0x79 || M2C_FIELD(temp_s1, u8 *, 0x15) == 0x7A) {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 6;
+                                Lb_act_set(temp_s1, 0, 0x64);
+                            } else {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
+                            }
+                            NPCZoomInCameraRequest(temp_s1);
+                            goto block_119;
+                        case 0x48:
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            if (get_questLevelNum(0) == 0) {
+                                STORY(6);
+                            } else if (get_questLevelNum(33) == 1) {
+                                STORY(9);
+                            } else if (get_questLevelNum(59) == 1) {
+                                STORY(4);
+                            } else if (M2C_FIELD(temp_s1, u8 *, 0x15) == 0x79 || M2C_FIELD(temp_s1, u8 *, 0x15) == 0x7A) {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 6;
+                                Lb_act_set(temp_s1, 0, 0x64);
+                            } else {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
+                            }
+                            NPCZoomInCameraRequest(temp_s1);
+                            goto block_119;
+                        case 0x47: {
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            if (get_questLevelNum(36) == 0) {
+                                STORY(1);
+                            } else if (get_questLevelNum(50) == 1 && Event_flag_ck(80) == 0) {
+                                STORY(2);
+                            } else if (get_questLevelNum(59) == 1) {
+                                STORY(4);
+                            } else if (get_questLevelNum(58) == 1) {
+                                STORY(3);
+                            } else {
+                                flMemset(lb_pit, 0, 12);        /* the counter's work (G 0x654830) */
+                                *(u8 *)(lbshop_raw + 4) = 0;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 2;
+                            }
+                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x1D)) = 0;
+                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x1C)) = 0;
+                            NPCZoomInCameraRequest(temp_s1);
+                            return;
+                        }
+                        case 6: {
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            if (get_questLevelNum(0) == 0) {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
+                            } else {
+                                int counter2 = 1;
+                                if (((u8 *)&User_data)[0xC23] < 21) {
+                                    if (cw[0xFA5F] == 0) { STORY(0); counter2 = 0; }
+                                } else if (get_questLevelNum(13) == 0) {
+                                    if (cw[0xFA5F] == 0) { STORY(8); counter2 = 0; }
+                                }
+                                if (counter2) {
+                                    flMemset(lb_pit, 0, 12);
+                                    *(u8 *)(lbshop_raw + 4) = 2;
+                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 2;
+                                }
+                            }
+                            Lb_act_set(temp_s1, 0, 0x65);
+                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x1D)) = 0;
+                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x1C)) = 0;
+                            NPCZoomInCameraRequest(temp_s1);
+                            return;
+                        }
+                        case 0:
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            if (get_questLevelNum(0) == 0) {
+                                STORY(0);
+                            } else {
+                                flMemset(lb_pit, 0, 12);
+                                *(u8 *)(lbshop_raw + 4) = 1;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 2;
+                            }
+                            Lb_act_set(temp_s1, 0, 0x65);
+                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x1D)) = 0;
+                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(0x1C)) = 0;
+                            NPCZoomInCameraRequest(temp_s1);
+                            return;
+                        case 1: case 0x2D:
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 3;
+                            Lb_shop_init();
+                            NPCZoomInCameraRequest(temp_s1);
+                            return;
+                        case 0x38: SHOPMODE(34, 60, 5);
+                        case 3: SHOPMODE(9, -1, 0);
+                        case 0x4C: SHOPMODE(10, -1, 0);
+                        case 0x49: SHOPMODE(11, 60, 5);
+                        case 5: SHOPMODE(12, 3, 7);
+                        case 0x2E: case 2: SHOPMODE(13, -1, 0);
+                        case 0x3A: case 0x4A:
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 14;
+                            Lb_shop_init();
+                            NPCZoomInCameraRequest(temp_s1);
+                            goto block_119;
+                        case 0x54: case 0x58: {
+                            int idx = (s16)(*(u8 *)0x3F3404 - 0x51);
+                            if (Online_ck() == 0)
+                                idx = 0;
+                            if (*(lb_sys + LBSYS_OFS(0x88) + idx) == 0) {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 18;
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                NPCZoomInCameraRequest(M2C_FIELD(arg0, u8 **, 0x3B0));
+                            }
+                            return;
+                        }
+                        default:
+                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                            if (M2C_FIELD(temp_s1, u8 *, 0x15) == 0x79 || M2C_FIELD(temp_s1, u8 *, 0x15) == 0x7A) {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 6;
+                                Lb_act_set(temp_s1, 0, 0x64);
+                            } else {
+                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 5;
+                            }
+                            return;
+                        }
+                        (void)ret_tail;
+                    }
+#else
                     temp_a2_2 = M2C_FIELD(temp_s0, u8 *, 0xE);
                     switch (temp_a2_2) {            /* switch 2; irregular */
                     case 0x55:                      /* switch 2 */
@@ -2130,6 +2268,7 @@ block_109:
                         }
                         return;
                     }
+#endif
                 } else {
                     goto block_119;
                 }
