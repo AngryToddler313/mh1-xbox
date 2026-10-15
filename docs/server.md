@@ -152,8 +152,13 @@ the faithful records (4.2).
 
 ### 2.6 Real PS2s through a patch (owner's decision, 9 Oct 2026)
 
-Design only; nothing of this is built. The patch changes the player's own Japanese game (SLPM_654.95, NTSC-J) so that
-it skips DNAS, skips the KDDI portal and goes straight to our lobby server.
+**Built 15 Oct 2026 (agent B): `tools/ps2_patch.py`, docs/network.md 3.6** (the DNAS skip and the portal skip below,
+compiled on the player's machine from our C into his own disc image; checked statically, not run on a PS2 / PCSX2
+yet). The hunt is step 2 (docs/network.md 3.7, S7 below). The design as written on 9 Oct follows; where the build
+differs: the credentials are written into each player's patch (the "personal patch" option), delivery is (1) / (4)
+together (the player's rebuild compiles the patch; a .ppf for his own .iso is an option), no pnach. The patch changes
+the player's own Japanese game (SLPM_654.95, NTSC-J) so that it skips DNAS, skips the KDDI portal and goes straight to
+our lobby server.
 
 **What the patch changes** (all places are in code this repo has decompiled; addresses from the files named):
 
@@ -456,7 +461,7 @@ first monsters on every machine.
 | S6 | Session code frame (one relay port, 4.3), relay limits per address, metrics | 1 | client change |
 | S7 | Faithful mcsls mode (4.2) end to end with a PC client linking mcsls | 3-5 | decompiled mcsls linked on PC |
 | S8 | Optional: news / top info editor, rankings, operator web page, TLS option on PC | 1-3 | |
-| S9 | Real PS2s through a patch (2.6): byte list from the decompiled code, patch tool (ISO + pnach), PCSX2 tests | 3-5 (plus S7) | S7; owner OK on the DNAS legal note |
+| S9 | Real PS2s through a patch (2.6): patch tool (ISO / PPF) **built 15 Oct 2026** (lobby and town; network.md 3.6); PCSX2 tests and the hunt (S7, network.md 3.7) open | 3-5 (plus S7) | S7 for hunting |
 | S10 | Not planned: unpatched PS2s (DNAS + HTTPS portal server side) | large, needs Sony material | section 2.1 |
 
 ## 13. What the owner must decide

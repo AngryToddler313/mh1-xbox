@@ -279,6 +279,33 @@ Step by step: docs/server.md, "Run your own server". Each player puts the server
 This talks only to your server. The port does **not** connect to public servers of the original game, and must
 not be pointed at them without their operators' permission. Online play on the Xbox is not available yet.
 
+### Playing online on a PS2 or in PCSX2 (patch your own disc)
+
+A real PS2 (or PCSX2) can join the same server as the PC version: lobby, town, chat, rooms. **Hunting together does
+not work yet for PS2 players** (the PS2 speaks the original in-hunt protocol, which the server does not relay yet:
+docs/network.md 3.7). Only the Japanese Monster Hunter disc (SLPM-65495); not G yet.
+
+1. Ask the server's operator for an account (docs/server.md, "Run your own server"): an 8-digit login and a
+   16-character password.
+2. On the Linux machine, set up the PS2 rebuild of your own disc once (README.md, Phase 1: the PS2 compiler and
+   binutils; `tools/rebuild.sh main lobby` must print OK for both).
+3. Patch a copy of your disc image (the original is not changed):
+
+       python3 tools/ps2_patch.py "Monster Hunter (Japan).iso" --server 192.168.1.20:10200 --login 12345678 --password YOURPASSWORD
+
+   `--server` is the server's address (or name) and lobby port. The result is `Monster Hunter (Japan) (mh1-server).iso`
+   next to the original (`--out` for another name). `--ppf FILE.ppf` writes only a small PPF patch for your .iso
+   instead. The patch skips DNAS (Sony's shut-down network check) and replaces the shut-down KDDI login portal by
+   your server and account; nothing else in the game changes. The patched image contains your login and your copy
+   of the game: do not share it.
+4. PCSX2: enable the network adaptor (DEV9, Ethernet) and boot the patched .iso. A real PS2: the patched .iso through
+   OPL (USB, network or HDD) with the network adaptor. In the game's network menu make a connection setting as usual
+   ("Add Setting"; IP automatic). Then choose the network mode on the title screen.
+
+Untested on a PS2 and in PCSX2 so far (the patch was checked by reading the patched code; docs/network.md 3.6 lists
+what still needs a first real run). When the server runs on the same PC as PCSX2, give its LAN address, not
+127.0.0.1. The patch refuses the addresses of MH Oldschool, which serves unpatched discs itself.
+
 ## Known issues
 
 * The game is in **Japanese**. An English translation table can be loaded (docs/english.md) but none is included.

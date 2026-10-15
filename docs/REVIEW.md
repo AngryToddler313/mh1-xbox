@@ -678,3 +678,10 @@ obvious workarounds.
 - **Dropped:** the sprintf with a made-up format address in lb_guild_g.c lb_guild_talk (fee number in the elder's sentence); **now** Lb_num_to_str(guildPrice, p) as G.
 - **Dropped:** for G the box's equip-change called Lb_equip_set (MH1 only; G removed it); **now** G's two steps (armor_set_myArmor, then Skill_set_PL).
 - **Changed (G):** the story banner (mode 48) now waits its 90 ticks and then the "close" button (key 0x40), as G; before, it ended at once.
+
+## PS2 online patch (agent B, 15 Oct 2026)
+- **Dropped:** rt_online_config's own fill of the portal's work (bsCsvWork password / server / user counts, ConnectLbsId,
+  BsLbsInfo, BsLbsCount, D_3A3B71) in src/pc/rt/rt_online.c; **now** mh1p_fill_server_table (src/ps2patch/online.c), the same
+  code the PS2 online patch (tools/ps2_patch.py) puts into lobby.bin's internet_browser. **Why:** one copy, and the PC online
+  tests exercise the PS2 patch's server table. Small differences: BsLbsInfo's name is copied with 0x20 bytes (was 0x40; the
+  name is "Local test server"). **To revert:** the commit "PS2 online patch: ...".

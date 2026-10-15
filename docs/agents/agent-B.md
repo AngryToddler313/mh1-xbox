@@ -1356,3 +1356,13 @@ AFTER the save (the PC log does the same). tools/xemu_quest_loop.sh now runs to 
 the movie is audio-clocked in xemu; at <1 frame/s the audio read-ahead piled up the video stream (17 -> 5 MB free
 in 20 s, fatal 0x1E in memcpy at the opening movie). rt_movie.c audio_feed stops reading when sfd_video_backlog()
 > 1 MB. Verified: xemu loop OK (CONTINUE 1550z), PC test_quest_loop OK, both MH1 Xbox builds link.
+
+## PS2 online patch, step 1 (15 Oct 2026)
+- tools/ps2_patch.py + src/ps2patch/online.c + `#ifdef MH1_ONLINE_PATCH` in src/main/net/ms01.c; details docs/network.md 3.6,
+  step 2 notes 3.7, player steps docs/PLAYING.md. Test: tools/test_ps2_patch.sh (needs ~3 GB ulimit for wibo).
+- Technique (reusable for later PS2 patches): compile a TU with a -D option, link it alone at its original address with
+  `-T` symbol assignments from `nm build/<module>.elf` (+ `_gp = 0x38EB70`), objcopy the section, splice into the rebuilt
+  module, and refuse if any byte outside the intended function changed. Overlay code cannot use small data (gp range), so
+  the patch has no short string literals: settings live in a struct defined in the patch (.data, placed after the code).
+- A replaced function must start at its original address (callers jal there): put it first in the file.
+- PCSX2 not installed: nothing was run on a PS2 / emulator.

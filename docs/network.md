@@ -592,6 +592,97 @@ rooms, in use since round 1.) Annex messages 6210-6215 have handlers but no send
 
 Not done yet: the Xbox build of the town was not run; personal data is never sent by the PC (section 5.8). The Windows build runs the
 town under Wine (section 4).
+### 3.6 PS2 patch: a real PS2 or PCSX2 on our server (agent B, 15 Oct 2026)
+
+Step 1 of the online plan (docs/DECISIONS.md, 15 Oct 2026): the player's own Japanese disc (SLPM-65495), patched on
+the player's machine, goes online with **our** server (`tools/server/mh1_server.py`), the same lobby as the PC port.
+Tool: `tools/ps2_patch.py`; patch code: `src/ps2patch/online.c` and one `#ifdef MH1_ONLINE_PATCH` in
+`src/main/net/ms01.c`; test: `tools/test_ps2_patch.sh`. How a player uses it: docs/PLAYING.md, "Playing online on a
+PS2 or in PCSX2".
+
+**What changes, and nothing else** (the tool refuses to write if any other byte differs):
+
+| | Original | Patched | Where |
+|---|---|---|---|
+| (a) DNAS | `ms_network_bb_authentication` (main 0x268040, ms01.c) loads the dnas_net overlay and calls `InetDNAS2ConnectNetStart` (0xA769C0) every frame until it says 1 (authenticated); Sony's DNAS servers are gone | `r = 1` at once: the success path runs as before (`#ifdef MH1_ONLINE_PATCH` in ms01.c; the function is recompiled, 0x268040-0x2685B4) | SLPM_654.95, 671 bytes |
+| (b) server address | `internet_browser` (lobby 0x5B5980, 720 bytes; `server_connect` step 0) runs the in-game browser on the KDDI Multi-Matching BB portal (HTTPS, gone), whose pages leave the password and server table in `bsCsvWork`, the MMBB id in `D_3A3B71` (= bsCsvWork+0x11), the server list in `BsLbsInfo` / `BsLbsCount`, then loads the network models (its steps 4-6) | our `internet_browser` (src/ps2patch/online.c): step 0 as before, then `mh1p_fill_server_table` fills the same work from the player's settings (`--server HOST:PORT`, `--login`, `--password`; kept in the same 720 bytes after the code), sets `MMBB_LOGIN = 1` as a portal login did, and runs steps 4-6 unchanged | AFS_DATA.AFS (lobby.bin), 720 bytes |
+
+Everything after that is the game's own unchanged code: the server select (`server_select_00`, `create_server_table`
+with one server), `tcp_init` (a dotted address directly, a name through the console's DNS: `InetDnsGetIPAddress`),
+the lobby login (6101 with the 8-digit key and the 16-character password) and the whole town. The PC online build links
+the same `mh1p_fill_server_table` (rt_online.c fills its `MH1PCONF` from mh1pc.ini), so every PC online test runs the
+patch's server-table code against mh1-server (`tools/test_online_server.sh`: accounts, login, town, a hunt).
+
+**How the patch is made** (no Capcom bytes in the repository, and none in a file we hand out):
+1. The player sets up the byte-matching rebuild from his own disc (README.md Phase 1; `tools/rebuild.sh main lobby`
+   must say OK). This needs the PS2 compiler (MWCC via wibo) and binutils, as for any PS2 work in this repo.
+2. `tools/ps2_patch.py DISC --server HOST:PORT --login L --password P` checks DISC (size and CRC32 of SLPM_654.95 and
+   AFS_DATA.AFS, tools/disc_files.py), checks that build/main.bin and build/lobby.bin are byte for byte the disc's
+   main section and lobby.bin, writes `build/ps2patch/mh1p_conf.h` (the settings), compiles ms01.c and
+   src/ps2patch/online.c with `-DMH1_ONLINE_PATCH`, links each at its original address with the rebuild's symbols
+   (`_gp` = 0x38EB70; no small data allowed in the patch: lobby.bin is out of the gp range), checks the size (at most
+   the original range; the rest is filled with nops), that only the patched function changed, that the patched code
+   no longer calls `InetDNAS2ConnectNetStart` / `MainBsInitialize` / `MainBrowser` / `MainBsDispose` (and the original
+   did), and that the server address is in the patched lobby.bin.
+3. It writes a copy of the .iso with the changed bytes (the files keep their place and size: the main section's file
+   offset from the ELF, lobby.bin's offset in AFS_DATA.AFS, the files' sectors from the ISO9660 root), or with
+   `--ppf FILE` only a PPF 3.0 patch for that .iso, or for a disc folder a patched SLPM_654.95 and AFS_DATA.AFS.
+   `--dry-run --disasm` builds and checks everything and prints the patched code (ours) and settings.
+4. With the options off nothing changes: the normal build does not compile src/ps2patch (tools/build.py), and ms01.c
+   without `MH1_ONLINE_PATCH` is the matching file (`tools/rebuild.sh`: 5 OK).
+
+The tool refuses MH Oldschool's addresses and the original service's names (the list in net_cpinet.c), a login that
+is not 8-10 digits and a password longer than 16 characters. Each player's patch holds his own login: the patched
+image and the .ppf are personal (and the image is the player's copy of the game).
+
+**Verified (15 Oct 2026, without a PS2 or PCSX2)**: `tools/test_ps2_patch.sh` on the owner's disc: rebuild identical
+to the disc; the DNAS call and the three browser calls gone; settings in place; MH Oldschool addresses refused; the
+PPF applied to the .iso gives exactly the patched files, and those differ from the originals only inside
+ms_network_bb_authentication (SLPM_654.95) and internet_browser (AFS_DATA.AFS). Read in the disassembly
+(`--disasm`): the patched internet_browser's gp-relative stores hit COM_R_No_2 (0x38A870), Net_Err_No (0x38A128),
+MMBB_LOGIN (0x38A150) and BsLbsCount (0x38A12C); its calls go to Net_fade_kill, cnLbc_LoadNetModel /
+cnLbc_LoadModelWait (lobby 0x5B2C20 / 0x5B2C30), memset and strncpy. The server side: `tools/test_online_server.sh`
+with the shared fill code.
+
+**Not verified (needs PCSX2 or a PS2; PCSX2 is not installed on the dev machine, so nothing was run, and an emulator
+window must not open on the owner's screen anyway)**: the patched disc booting into the network menu, DNAS screen ending with success,
+the server select, the login against mh1-server, the town. Open questions for that first run:
+* A new hunter's first login: the PS2 may open the in-game browser on a local page (`afs://02/3`, personal data)
+  that the PC skips (`MainBrowser` "closed"); whether it submits anywhere is unknown.
+* PCSX2's network adaptor (DEV9, Ethernet, PCAP or Sockets mode) and how the guest reaches a server on the same PC:
+  use the PC's LAN address in `--server` rather than 127.0.0.1 **[guess]**.
+* The connection setting: the game's own network settings (yn overlay) on the memory card are needed as before (as
+  for MH Oldschool: "Add Setting" in the game's network menu); unchanged by the patch.
+* After a hunt the PS2 connects again (`CnetWork+5 = 3`, `server_connect`): the patched `internet_browser` fills the
+  table again; fine on paper.
+
+**What is not in step 1: the hunt.** After matching, a PS2 connects to the 6916 game server address and speaks
+`mcsls` records (section 5.5, docs/server.md 2.4 / 4.2), while mh1-server's relay and the PC / Xbox ports speak
+net_peer frames. So a patched PS2 reaches the lobby, the town, rooms and matching, but **cannot hunt yet**. Step 2:
+
+### 3.7 Step 2: in-hunt parity (what is needed; nothing built)
+
+1. **The faithful game-server relay** (`tools/server/mcs.py`, docs/server.md 4.2, milestone S7): sends 0x1031, reads
+   the 0x82 login (`cmcs_04`: `mmbbc_encode(key, seq)`), finds the match by the decoded key, relays records
+   `[u8 len][u8 cmd<<4 | sender]` to the other members (checking the sender id), health checks 0x1021, answers or
+   ignores 0xF0 keep-alives. Open: the exact header of 0x1031, what 0x1032 means, whether the old server consumed
+   keep-alives (all from the client code: `CnInetCheckMcsPacket2`, `mcsls_recv` / `mcsls_send`, main
+   0x22C670-0x23A000).
+2. **The lobby's hand-off for PS2s**: today 6914 says `mh1-relay` and 6916 gives a net_peer relay port, which a PC
+   understands; a PS2 ignores 6914 and speaks mcsls to 6916. So 6916 must point at the mcs relay for any room with a
+   PS2 in it (or for every room once the PC speaks mcsls, 3 below). The two can share one port: a net_peer joiner
+   sends HELLO at once, a PS2 waits for the server's 0x1031, so "who talks first" tells them apart **[guess, cheap
+   to test]**.
+3. **The PC / Xbox side** (DECISIONS.md prefers this): link the game's own mcsls stack (`mcsls_*`, `Cng*`,
+   `CnInet*Mcs*`, `aqcmd`; decompiled, not linked in the PC build) for online hunts instead of net_peer.c, so PS2, PC
+   and Xbox all send the same records. Needs: the missing near-matches of that range as PC C, the `CpInet*` TCP calls
+   (already there), the 0x82 login; then `tools/test_online_server.sh` against mcs.py instead of relay.py. net_peer
+   stays for direct-connect co-op without a server.
+4. The alternative, a translator in the relay between mcsls records and net_peer frames (both carry the same AQ
+   packets; mcsls adds its own sync / ping / fragment layer), is more risk and keeps two protocols.
+5. Tests: PC-only first (two PC clients over mcsls through mcs.py, the same hunt as test_online_server.sh), then the
+   owner with PCSX2 / a PS2 and a PC in one room.
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online

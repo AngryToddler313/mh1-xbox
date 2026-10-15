@@ -256,7 +256,8 @@ if [ -n "$ONLINE" ]; then
              src/main/net/netsyn05.c src/main/net/netsyn08.c src/main/net/netsyn09.c src/main/net/netsyn10.c src/main/net/netsyn11_nm.c"
     NETLB="src/lobby/cnet/cnlbs.c src/lobby/cnet/cnlbsb.c src/lobby/cnet/cnlbsc.c src/lobby/cnet/cnlbsd.c src/lobby/cnet/cnlbse.c \
            src/lobby/cnet/cnlbsf.c src/lobby/cnet/cnlbsg.c src/lobby/cnet/cnlbsh.c src/lobby/cnet/cnlbs_nm.c \
-           src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c"
+           src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c \
+           src/ps2patch/online.c"   # (online.c: the server table fill shared with the PS2 online patch)
     GAME="$GAME $NETMAIN $NETLB"
     WEAK="$WEAK lb__cnlbs_nm lb__lbui_nm"   # lbui_nm: the plaza TUs lb_plz2/3 (matched C) win
     # main's cnLBS file-download C calls the lobby's cnet helpers by address

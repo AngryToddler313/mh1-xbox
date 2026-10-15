@@ -106,7 +106,14 @@ int ms_network_bb_authentication(void) {
         if (start_cancel_check(&net_common_w.x0A) != 0) {
             net_common_w.x06 = 0x3D;
         }
+#ifdef MH1_ONLINE_PATCH
+        /* the PS2 online patch (tools/ps2_patch.py, docs/network.md "PS2 patch"): DNAS skipped. The original asks
+         * InetDNAS2ConnectNetStart (dnas_net overlay, Sony's DNAS against servers gone since 2007) every frame until
+         * it returns 1 (authenticated); here it is 1 at once and the success path below runs as before */
+        r = 1;
+#else
         r = func_A769C0(&net_common_w.x03, &net_common_w.x06, &net_common_w.timer);
+#endif
         if (r < 0) {
             net_common_w.sub = 0;
             net_common_w.step = 0xF;

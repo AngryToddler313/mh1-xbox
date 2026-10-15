@@ -31,6 +31,7 @@
 #include "rt.h"
 #include "rt_log.h"
 #include "types.h"
+#include "ps2patch.h"
 #include "../gfx/gfx_gl.h"
 #include "../net/net_cpinet.h"
 #ifdef _WIN32
@@ -39,9 +40,6 @@
 #include <time.h>
 #endif
 
-extern char bsCsvWork[];            /* the portal's server table: first 16 bytes = login password */
-extern char ConnectLbsId[];         /* id of the chosen lobby server in that table */
-extern char D_3A3B71[];             /* the MMBB id (login key), 10 characters */
 extern u8 ConnWork[];               /* +4 = socket */
 extern u8 *cw, *pNet;
 extern u8 client_work[], network_work[];
@@ -60,7 +58,7 @@ void rt_cam_init(int stage);
 static int wanted, active, phase, ticks, trace = -1, back;
 static char host[128] = "127.0.0.1", key[16] = "00000000", pass[24] = "LOCALTEST0000000";
 static int port = 10200;
-static char sname[64] = "Local test server";
+static char sname[32] = "Local test server";
 
 enum { O_CONNECT, O_LOBBY, O_MATCHED, O_FAILED };
 int rt_online_visible(int slot);
@@ -108,28 +106,19 @@ static void rt_online_config(void)
     if ((e = getenv("RT_NET_PORT")) && *e) port = atoi(e);
     if ((e = getenv("RT_NET_ID")) && *e) snprintf(key, sizeof key, "%.10s", e);
     if ((e = getenv("RT_NET_PASS")) && *e) snprintf(pass, sizeof pass, "%.16s", e);
-    /* the server table internet_browser leaves in bsCsvWork (lb_tcp01.c reads it): password, one server */
-    memset(bsCsvWork, 0, 0x1000);
-    strncpy(bsCsvWork, pass, 0x10);
-    strncpy(ConnectLbsId, "LOCALTESTLBS", 12);
-    strncpy(bsCsvWork + 0x603, "LOCALTESTLBS", 12);
-    snprintf(bsCsvWork + 0x22F, 0x40, "%s:%d", host, port);
-    strcpy(bsCsvWork + 0x2522, "0");            /* users now / at most (create_server_table) */
-    strcpy(bsCsvWork + 0x266C, "100");
-    {   /* the server list the portal leaves (Get_ServerName: id at +0, name at +0xD, 0x102 a server) */
-        extern char BsLbsInfo[];
-        memset(BsLbsInfo, 0, 0xA14);
-        memcpy(BsLbsInfo, "LOCALTESTLBS", 12);
-        snprintf(BsLbsInfo + 0xD, 0x40, "%s", sname);
+    {   /* what the portal left (password, one lobby server, the MMBB id): the same code as the PS2 online patch's
+         * internet_browser (src/ps2patch/online.c, docs/network.md "PS2 patch") */
+        MH1PCONF c;
+        memset(&c, 0, sizeof c);
+        memcpy(c.id, "LOCALTESTLBS", 12);
+        snprintf(c.name, sizeof c.name, "%s", sname);
+        snprintf(c.server, sizeof c.server, "%s:%d", host, port);
+        snprintf(c.login, sizeof c.login, "%s", key);
+        snprintf(c.password, sizeof c.password, "%s", pass);
+        strcpy(c.users, "0");
+        strcpy(c.users_max, "100");
+        mh1p_fill_server_table(&c);
     }
-    {   /* the number of lobby servers in the table (create_server_table counts them): one. With one server the
-         * first login goes straight on to the lobby (lbc_login_finish); with several the client logs out and shows
-         * the server list (server_select) */
-        extern s8 BsLbsCount;
-        BsLbsCount = 1;
-    }
-    memset(D_3A3B71, ' ', 0xA);
-    memcpy(D_3A3B71, key, strlen(key) < 0xA ? strlen(key) : 0xA);
 }
 
 /* Game_task mode 6 with the network mode chosen: connect first */
