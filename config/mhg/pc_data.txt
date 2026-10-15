@@ -202,8 +202,7 @@ rem_kill_calc_tbl = 0x004FD960; // size:0x18       # G-only: kill-count ranges o
 [sub_main]
 item_str = 0x00501AD0; // size:0x830
 # Pointer tables G grew (G's pointer words run to the next symbol; the PC had MH1's size): per monster kind (52),
-# pick ids, effect lists (agent A, G quest sweep). The per-stage tables G grew (92 stages: pl_light_tbl2, stage_fog_tbl,
-# ground_tbl_add, st_sun_rgba_tbl) are left at MH1 size: grown, the village crashed in GetGroundHitStatusAreaPl
+# pick ids, effect lists (agent A, G quest sweep). The per-stage tables G grew to 92 stages are at the end of this file.
 [main]
 em_alpha_clay = 0x00260430; // size:0xD0
 [sub_main]

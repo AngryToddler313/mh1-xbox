@@ -97,6 +97,16 @@ Agents: when you trip over something curious, add a short entry here in the same
 
 ## Version differences
 
+- **G's mega armorskin works like the plain one**: G's Basic_item_set (sub_main 0x4F27B0) raises the defence boost
+  to at least 3 for both armorskin (G item 0x12) and mega armorskin (0x13); MH1 gave 3 and 5. The demondrugs still
+  give 3 and 5. [checked: G asm; whether it is meant is a guess]
+- **G no longer lets an earth crystal sharpen**: MH1's item_action_set sent the earth crystal to the whetstone act;
+  G's does not, but G's whetstone act (game 0x5560A0) still has the earth crystal's +200 case. [checked: G asm]
+- **A stray random-number call in G**: G's food-bonus helper (sub_main 0x4F2730, after eating/drinking with skill
+  0x5A) calls ran_suu with the player-work pointer left in a0 as the stream number, so it steps a 16-bit word far
+  past Rnd_w instead of a random stream. [checked: G asm; what that word is, unverified]
+- **Quest 10030's program has a G-only command 0x2F** (sets the section a time-out jumps to); it is the only offline
+  quest that uses it. [checked: dry runs of all G offline quests]
 - **G can import an MH1 hunter**: G's memory card code has 26 extra screens for carrying a
   hunter over from an MH1 save. [checked: matched code, agent C]
 - **The US disc carries the US network adapter start-up software** (`NTGUIDVD/`). [checked]

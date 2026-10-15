@@ -38,7 +38,7 @@ if G:
     EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests; other carried
                                                 # items: the nest the dry run's RT_PICK_ALL lists (one item at 100%)
     SKIP = {}
-    KNOWN = {10048: 'Ashen Lao-Shan: hp floors at 1000 on stage 14 (the siege areas are not walked; slay aid cannot finish it)'}
+    KNOWN = {10048: 'Lao-Shan: G Em_Dmg_Sys keeps kinds 7/50 at >= 1000 hp off stage 12; on the PC it walks to stage 28 and stays (G em07_main/init and the quest event demo not ported)'}
 
 def run(q, env, inp, secs, tag):
     e = dict(os.environ, RT_NOMOVIE='1', RT_QUEST_TRACE='1', **env)

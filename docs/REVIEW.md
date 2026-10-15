@@ -496,3 +496,17 @@ obvious workarounds.
   viewer.c `read_pad` replaces the three copies of "script or controller" in the tick loop; rt_player.c's RT_PL_GOD /
   RT_PL_WARP_EM blocks also run for the menu's switches; nothing dropped.
 - **To revert:** revert the commits "Debug menu ..." on agent-E (four commits); test_dbgmenu.sh and dbg_keys.py go with them.
+
+## G round 6: items, revival, stage tables (agent A, 14 Oct 2026)
+- **Dropped:** the comment/decision that the four 92-stage tables stay at MH1 size (config/mhg/pc_data.txt) and quest
+  10030 from the G sweep's KNOWN list. **Now:** the tables at G size with the new `allptr` pc_data flag
+  (tools/mhg_pcmeta.py) so their sub_main-bss pointers are converted; 10030 passes (quest command 0x2F added).
+- **Choice:** G's item code (item_action_set, Basic_item_set, Fue_item_set and the item acts) is written as
+  VERSION_MHG blocks beside MH1's in the same functions, not as separate files; the em01/em15/em17 G revival uses a
+  new shared header include/em_revive_g.h (em20 keeps its own copy from round 5; folding it in is a possible tidy-up).
+- **Choice:** G's food-bonus random call (ran_suu with a pointer as the stream, see FINDS) uses its own LCG state on the
+  PC instead of copying the stray write.
+- **Not done:** G's em07 (Lao-Shan) main/init/quest event demo; shell03 (thrown items) G kinds 11-15 run MH1's C;
+  eft12 G edits (smoke colours of G's kind 6).
+- **To revert:** the commits "G PC: item use ported from G ...", "G quest program command 0x2F ...", "G PC: the
+  92-stage tables at G size ..." on agent-A.

@@ -835,3 +835,37 @@ with time left). Result: **96/98 pass + carts** (KNOWN: 10030, 10048). MH1 test_
   kill counts and crown sizes: main 0x126100/0x126160/0x126340, sub_main 0x4C8580/0x4C85A0/0x4C8750/0x4C87C0/
   0x4C8870 over User_data records and the per-species lists at 0x4FEE90, crown sizes 0x4FEF60; names 0x527A40,
   frame lists 0x25E860..), it needs the G User_data record writers too.
+
+## G round 6: hit crash, items, revival, stage tables (14 Oct 2026)
+
+- **hit_calc_shl crash (quests 25/41/10046)**: G grew shell16_body_tbl to 21 entries; em15's attack 27 uses body 20,
+  and the PC copy at MH1 size (20) made hit_calc_shl walk a neighbouring host table (ASLR-dependent, about 1 run in 3;
+  reproduced only with ASLR on: gdb `set disable-randomization off`). A scan of G's pointer runs found the same for
+  shell04/09/11/19_body_tbl and fade74_data: all at G size in config/mhg/pc_data.txt. 8 replays clean after.
+- **Items**: G's item_action_set (game 0x54D8C0), Basic_item_set (0x4F27B0, + food bonus 0x4F2730),
+  Fue_item_set (0x4F3610) and the acts with item ids (pl_mv014 throw, 054/072 ballista 512, 071 gather skills,
+  079 frog, 085 BBQ with the gourmet spit and well-done steak G, 095 horn, 097 whetstone, egg_com_ck cannon 513)
+  ported under VERSION_MHG (f_pl.c, pl79.c, pl80.c; not in the G PS2 build). eft12_data (smoke keys) had no G
+  address (zero-filled): smoke/dung bombs crashed; now G 0x67B230. Hidden check (build/A/itest.sh pattern: quest 10/1,
+  RT_PL_ITEMS id:3, square at a tick, RT_PL_TRACE acts): every item starts its act (drink 88, steak 90, whetstone 97,
+  horn 94/98, throw 14, drop 11, meat/small barrel 25, large barrel 111, pitfall 46, farcaster 114, binoculars 101,
+  BBQ 76/85); potion +30 hp. Trap/barrel/farcaster refuse in the base camp (as the game). Not done: shell03's G kinds
+  11-15 (poison smoke, knives) and G's eft12 edits run MH1's C (no crash seen).
+- **Revival**: em01/em15/em17 G act_set + die functions + die act 3 (em17: 4) with their start points
+  (include/em_revive_g.h). em27: G only moved MH1's die04 revival into act_set (same behaviour, not ported). The
+  G revival code path is built and runs the G sweep; no offline quest revives these kinds (not observed).
+- **10030**: not a revival problem: the PC's quest_condition_prog lacked G command 0x2F (time-out section), so the
+  program stopped after 18 kills. Added; 10030 passes.
+- **10048 (Lao-Shan, kind 7)**: G Em_Dmg_Sys keeps kinds 7 and 50 at >= 1000 hp unless on stage 12 (game 0x583F30),
+  faithful. Unattended, the PC's Lao-Shan walks from 14 to stage 28 and stays (checked with gdb at quest end). G's
+  em07_main replaces MH1's quest-number test (101/107/184/206) with event flags 24 (kind 7) / 35: ported, the
+  monster then waits on stage 14 for the quest's event demo, which the G PC does not run (evdemo stand-ins), so
+  reverted. Needs: G evdemo for the fortress quests, G em07_main/em07_init, then check its route to stage 12.
+- **92-stage tables** at G size: their words into sub_main's bss (village ground 0x541EE0..) were not taken as
+  pointers, so the village faulted at 0x541F1C (= ground_tbl_add[87]+0xC). tools/mhg_pcmeta.py `allptr` flag.
+- Jungle stage 74 exits and monster_data / hunting log: not reached.
+- Tools: tools/mhg_fdiff.py reads the G counterpart from its own module (main -> sub_main/game).
+- Verification: G PC build OK; MH1 PC build, test_quest_loop OK, test_all_quests 38/38; G sweep 97/98 + carts
+  (KNOWN 10048) once at the end, plus a clean sweep after the step-1 fix. PS2 rebuilds could not run under the
+  1.5 GB cap (wibo: "heap: failed reserve memory"); instead every changed MH1-registered file preprocesses to the
+  same text as before (gcc -E with __MWERKS__, MH1 and G), and none is in config/mhg/c_files.txt.
