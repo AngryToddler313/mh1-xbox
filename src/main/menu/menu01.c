@@ -1,5 +1,13 @@
 /* f_menu run 1 (SLPM_654.95 0x00127950-0x00127C6C): select_yes_no, Cockpit_menu_chk*, enemy_mark_chk, menu_exit, player_name_print, player_name_id_print. Whole file in menu_nm.c. */
 #include "g_alias.h"
+#include "lbsys_g.h"
+extern u8 lb_sys[];
+#if defined(__MWERKS__) && !defined(VERSION_MHG)
+extern u8 D_6EAEBC[];       /* lb_sys + 0x6C (the PS2 MH1 main module only sees the address name) */
+#define LB_X6C (*(int *)D_6EAEBC)
+#else
+#define LB_X6C (*(int *)(lb_sys + LBSYS_OFS(0x6C)))
+#endif
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -59,7 +67,7 @@ int Cockpit_menu_chk(void) {
 #if !defined(G_PART) || G_PART == 1
 int Cockpit_menu_chk_lobby(void) {
     if (Online_ck() == 1 && game_w.x1DC == 1) {
-        return *(int *)GV(0x6EAEBC, 0x6548F8);
+        return LB_X6C;
     }
     return 0;
 }

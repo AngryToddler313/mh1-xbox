@@ -83,3 +83,4 @@ get_kouhostr = 0x00249630;
 pl_ride_ck = 0x00137000;   /* f_pl.c static, named in the data (action tables) */
 pl_mv083 = 0x00140100;     /* f_pl.c static, named in the data */
 em_neck_tbl = 0x0063FF90;  /* game.bin data read by main (emmk01.c mlCalcTransEM) */
+D_6EAEBC = 0x006EAEBC;   /* lb_sys + 0x6C, read by Cockpit_menu_chk_lobby (menu01.c) */
