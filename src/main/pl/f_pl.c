@@ -5203,8 +5203,6 @@ static void pick_set_sub(PLW *pl, u16 arg1) {
 
 #ifdef VERSION_MHG      /* G pl_mv071 (game 0x554280): skill 170 plays the gather motion at 2.6x */
 #define PL_MV071_FAST(pl) do { if (Pl_Skill_ck(pl, 170) == 1) { (pl)->chr_spd0 = 2.6f; (pl)->chr_spd1 = 2.6f; } } while (0)
-#else
-#define PL_MV071_FAST(pl) do { } while (0)
 #endif
 #if !defined(G_PART)
 static void pl_mv071(PLW *pl, u32 arg1) {
@@ -5226,18 +5224,24 @@ static void pl_mv071(PLW *pl, u32 arg1) {
         case 0:
         case 1:
             pl_chr_set2(pl, 0x195, -0xE, 0);
+#ifdef VERSION_MHG
             PL_MV071_FAST(pl);
+#endif
             break;
         case 2:
             if (Pl_master_ck(pl) == 1) {
                 set01_set(0, 0xA, 0);
             }
             pl_chr_set2(pl, 0x195, -0xE, 0);
+#ifdef VERSION_MHG
             PL_MV071_FAST(pl);
+#endif
             break;
         case 3:
             pl_chr_set2(pl, 0x1A3, -6, 0);
+#ifdef VERSION_MHG
             PL_MV071_FAST(pl);
+#endif
             break;
         case 4:
             pl_chr_set2(pl, 0x19F, 0, 0);
@@ -5787,7 +5791,6 @@ static void pl_mv085(PLW *pl, s32 unused_arg) {
         }
         break;
 #else
-    case 1:
         pl->work8CA = pl->work8CA + 1;
         t = pl->work8CA;
         if (t >= 0x118) {
