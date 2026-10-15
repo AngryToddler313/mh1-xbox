@@ -57,7 +57,7 @@ u16 Pl_shell_set(PLW *pl, int slot, int dir);
 #define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
 
 typedef struct { s16 x, y, w, h; u32 col; s16 u0, v0, u1, v1; } SPR;     /* flps0008 */
-typedef struct { s16 x0, y0, x1, y1; u32 col; } RECT;                     /* flps0004 */
+typedef struct { s16 x0, y0, x1, y1; u32 col; } HudRect;                     /* flps0004 */
 
 /* ------------------------------------------------------------ the texture */
 static u32 proto_handle;
@@ -110,7 +110,7 @@ static void spr(float x0, float y0, float x1, float y1, int tu0, int tv0, int tu
 
 static void rect(float x0, float y0, float x1, float y1, u32 col)
 {
-    RECT q;
+    HudRect q;
     q.x0 = (s16)floorf(x0 + 0.5f);
     q.y0 = (s16)floorf(y0 + 0.5f);
     q.x1 = (s16)floorf(x1 + 0.5f);
