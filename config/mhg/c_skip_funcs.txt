@@ -32,3 +32,4 @@ src/main/ud/f_ud.c Get_pl_id # part mhg/main/ud/f_ud_p5 did not link
 src/main/ud/f_ud.c Copy_user_id # part mhg/main/ud/f_ud_p5 did not link
 src/main/sys/f_ioread.c MakeMediaVersion # part mhg/main/sys/f_ioread_p1 did not link
 src/main/pl/f_pl.c pl_move # calls the static pl_move_sub, which is not in a part
+src/lobby/cnet/cnlbs.c __cnet_SendReq_ConditionSearchUser # part mhg/lobby/cnet/cnlbs_p63 did not link

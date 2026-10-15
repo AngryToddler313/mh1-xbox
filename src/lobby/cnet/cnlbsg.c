@@ -41,11 +41,11 @@ void _cnet_RecvFromLbs_RequestBattleResult(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 37
 void __cnet_SendAns_BattleResult(void) {
     CNET_BATRES *b = &CnetSys_w.batres;
 
-    SetSendCommand(&send_work, 0x19);
+    SetSendCommand(&send_work, GV(0x19, 0x17));
     if (b->flag != 0) {
         SetSendData16(&send_work, 0x5678);
         SetSendStringData2(&send_work, b, 0xF);
@@ -156,11 +156,11 @@ void __cnet_SendSet_ConnectionPair(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 void __cnet_SendSet_FirstData(void) {
     u8 *s0 = (u8 *)&CnetSys_w.firstdata;
 
-    SetSendCommand(&send_work, 0x11);
+    SetSendCommand(&send_work, GV(0x11, 0xF));
     SetSendData8(&send_work, s0[0]);
     SetSendData8(&send_work, s0[1]);
     SetSendData8(&send_work, s0[2]);
@@ -178,9 +178,9 @@ void __cnet_SendSet_FirstData(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 void __cnet_SendReq_UserID(void) {
-    SetSendCommand(&send_work, 0x16);
+    SetSendCommand(&send_work, GV(0x16, 0x14));
     SetSendStringData2(&send_work, CnetSys_w.login_users[3].id, 6);
     SetSendStringData2(&send_work, CnetSys_w.login_users[3].handle, strlen(CnetSys_w.login_users[3].handle) & 0xFFFF);
     SetSendCommandLen(&send_work);
@@ -188,9 +188,9 @@ void __cnet_SendReq_UserID(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 void __cnet_SendSet_LoginFinish(void) {
-    SetSendCommand(&send_work, 0x1A);
+    SetSendCommand(&send_work, GV(0x1A, 0x18));
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
@@ -205,9 +205,9 @@ void __cnet_SendSet_TelephoneNumber(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 int __cnet_SendSet_MiniDataRegist(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, 0x21) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0x21, 0x1D)) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, arg1);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -225,7 +225,7 @@ void __cnet_SendReq_EchoPacket(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 38
 int __cnet_Recv_UserIDandHandle(void) {
     u8 n;
     int i;
@@ -240,7 +240,7 @@ int __cnet_Recv_UserIDandHandle(void) {
     if (0 < n) {
         s0 = (u8 *)&CnetSys_w;
         do {
-            p = GetRecvDataOption3(s0 + 0x147E, 0x40, GetRecvDataOption3(s0 + 0x146A, 0x10, GetRecvDataOption3(s0 + 0x1462, 8, p)));
+            p = GetRecvDataOption3(s0 + CNO(0x147E), 0x40, GetRecvDataOption3(s0 + CNO(0x146A), 0x10, GetRecvDataOption3(s0 + CNO(0x1462), 8, p)));
             i++;
             s0 += 0x5C;
         } while (i < n);
@@ -268,9 +268,9 @@ void cnLBS_Get_ChatMessage(CNET_CHAT *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void __cnet_SendSet_ChatMessage(int arg0, int arg1, int arg2) {
-    SetSendCommand(&send_work, 0xE8);
+    SetSendCommand(&send_work, GV(0xE8, 0xFB));
     SetSendStringData2(&send_work, arg1, arg2);
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
@@ -278,11 +278,11 @@ void __cnet_SendSet_ChatMessage(int arg0, int arg1, int arg2) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 39
 void _cnet_RecvFromLbs_NoticeChatMessage(void) {
     memset(CnetSys_w.chat.from, 0, 0x120);
     GetRecvData8(&CnetSys_w.chat.d, GetRecvData8(&CnetSys_w.chat.c, GetRecvData8(&CnetSys_w.chat.b, GetRecvData8(&CnetSys_w.chat.a, GetRecvDataOption3(CnetSys_w.chat.msg, 0x100, GetRecvDataOption3(CnetSys_w.chat.x, 0x10, GetRecvDataOption3(CnetSys_w.chat.from, 8, recv_work)))))));
-    _cnetEvent_JumpCallBack(5, 0);
+    CNEVT(5, 11);
 }
 #endif
 
@@ -298,19 +298,19 @@ void cnLBS_Get_ChatBinary(CNET_B308 *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
 void __cnet_SendSet_ChatBinary(int arg0, int arg1) {
-    SetSendCommand(&send_work, 0xF6);
+    SetSendCommand(&send_work, GV(0xF6, 0x100));
     SetSendStringData2(&send_work, arg0, arg1);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 40
 void _cnet_RecvFromLbs_NoticeChatBinary(void) {
     GetRecvDataOption3(CNWP(0x375C0), 0x300, GetRecvDataOption3(CNWP(0x375B8), 8, &recv_work));
-    _cnetEvent_JumpCallBack(0xC, 0);
+    CNEVT(0xC, 13);
 }
 #endif
 
@@ -344,11 +344,11 @@ void _cnet_RecvFromLbs_AnswerChatMessageTU(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 41
 void _cnet_RecvFromLbs_NoticeChatMessageTU(void) {
     memset(CnetSys_w.chat.from, 0, 0x120);
     GetRecvData8(&CnetSys_w.chat.d, GetRecvData8(&CnetSys_w.chat.c, GetRecvData8(&CnetSys_w.chat.b, GetRecvData8(&CnetSys_w.chat.a, GetRecvDataOption3(CnetSys_w.chat.msg, 0x100, GetRecvDataOption3(CnetSys_w.chat.x, 0x10, GetRecvDataOption3(CnetSys_w.chat.from, 8, recv_work)))))));
-    _cnetEvent_JumpCallBack(0x2A, 0);
+    CNEVT(0x2A, 12);
 }
 #endif
 
@@ -364,9 +364,9 @@ int cnLBS_Send_ChatBinaryTU(int arg0, int arg1, int arg2, int arg3) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 22
 int __cnet_SendSet_ChatBinaryTU(int arg0, int arg1, int arg2) {
-    int cmd = SetSendCommand(&send_work, 0xFB) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0xFB, 0x102)) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, 6);
     SetSendStringData2(&send_work, arg1, arg2);
     SetSendCommandLen(&send_work);
@@ -381,10 +381,10 @@ void _cnet_RecvFromLbs_AnswerChatBinaryTU(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 42
 void _cnet_RecvFromLbs_NoticeChatBinaryTU(void) {
     GetRecvDataOption3(CNWP(0x375C0), 0x300, GetRecvDataOption3(CNWP(0x375B8), 8, &recv_work));
-    _cnetEvent_JumpCallBack(0xC, 0);
+    CNEVT(0xC, 13);
 }
 #endif
 
@@ -406,9 +406,9 @@ int cnLBS_MatchEntry(int arg0, int arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 24
 int __cnet_SendReq_MatchEntry(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x9B) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0x9B, 0xB9)) & 0xFFFF;
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -422,24 +422,24 @@ void _cnet_RecvFromLbs_MatchEntry(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 23
 int cnLBS_MatchStart(void) {
-    SetSendCommand(&send_work, 0xA1);
+    SetSendCommand(&send_work, GV(0xA1, 0xBF));
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return 0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 25
 int cnLBS_Read_MatchInfomation(int cb) {
-    if (CnetSys_w.burst[7].state == 0) {
-        memset(&CnetSys_w.matchinfo, 0, 0x5D4);
+    if (CnetSys_w.burst[GV(7, 9)].state == 0) {
+        memset(&CnetSys_w.matchinfo, 0, GV(0x5D4, 0x704));
         __cnet_SendReq_MatchJoin();
-        CnetSys_w.burst[7].cb = (void *)cb;
-        CnetSys_w.burst[7].state = 1;
-        CnetSys_w.burst[7].x21 = 0;
-        CnetSys_w.burst[7].run = 0;
+        CnetSys_w.burst[GV(7, 9)].cb = (void *)cb;
+        CnetSys_w.burst[GV(7, 9)].state = 1;
+        CnetSys_w.burst[GV(7, 9)].x21 = 0;
+        CnetSys_w.burst[GV(7, 9)].run = 0;
         return 0;
     }
     return -1;
@@ -450,7 +450,7 @@ int cnLBS_Read_MatchInfomation(int cb) {
 void _cnet_RecvFromLbs_MatchJoin(void) {
     u8 v;
     R7 res;
-    if (CnetSys_w.burst[7].state != 0) {
+    if (CnetSys_w.burst[GV(7, 9)].state != 0) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 __cnet_Recv_Byte(&v);
@@ -472,7 +472,7 @@ void _cnet_RecvFromLbs_MatchPlSide(void) {
     u8 v;
     R7 res;
 
-    if (CnetSys_w.burst[7].state != 0) {
+    if (CnetSys_w.burst[GV(7, 9)].state != 0) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 __cnet_Recv_Byte(&v);
@@ -555,7 +555,7 @@ void _cnet_RecvFromLbs_MatchBattleCode(void) {
     CNET_RES res;
     u8 *p;
 
-    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+    if (CnetSys_w.burst[GV(7, 9)].state != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 GetRecvDataString(CNWP(0x30312), recv_work);
@@ -576,7 +576,7 @@ void _cnet_RecvFromLbs_MatchGameRule(void) {
     CNET_RES res;
     u8 *p;
 
-    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+    if (CnetSys_w.burst[GV(7, 9)].state != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 GetRecvDataString(CNWP(0x30323), recv_work);
@@ -619,77 +619,77 @@ void __cnet_Return_MatchInformation(CNET_RES res) {
     if (res.val == -1) {
         __cnet_SendReq_MatchRejection(res.val);
     }
-    if (CnetSys_w.burst[7].cb != 0) {
-        CnetSys_w.burst[7].state = 0;
-        CnetSys_w.burst[7].x21 = 0;
-        CnetSys_w.burst[7].cb(res, &res);
+    if (CnetSys_w.burst[GV(7, 9)].cb != 0) {
+        CnetSys_w.burst[GV(7, 9)].state = 0;
+        CnetSys_w.burst[GV(7, 9)].x21 = 0;
+        CnetSys_w.burst[GV(7, 9)].cb(res, &res);
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 26
 int __cnet_SendReq_MatchJoin(void) {
-    int cmd = SetSendCommand(&send_work, 0xA3) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0xA3, 0xC1)) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 27
 void __cnet_SendReq_MatchPlSide(int arg0) {
-    SetSendCommand(&send_work, 0xA5);
+    SetSendCommand(&send_work, GV(0xA5, 0xC3));
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 28
 void __cnet_SendReq_MatchOpponentInfo(int arg0) {
-    SetSendCommand(&send_work, 0xA9);
+    SetSendCommand(&send_work, GV(0xA9, 0xC7));
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 29
 void __cnet_SendReq_MatchOpponentStatus(int arg0) {
-    SetSendCommand(&send_work, 0xAB);
+    SetSendCommand(&send_work, GV(0xAB, 0xC9));
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 30
 void __cnet_SendReq_MatchGameRule(void) {
-    SetSendCommand(&send_work, 0xA7);
+    SetSendCommand(&send_work, GV(0xA7, 0xC5));
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 31
 void __cnet_SendReq_MatchBattleCode(void) {
-    SetSendCommand(&send_work, 0xAE);
+    SetSendCommand(&send_work, GV(0xAE, 0xCC));
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 32
 void __cnet_SendReq_MatchMcsIpAddr(void) {
-    SetSendCommand(&send_work, 0xB0);
+    SetSendCommand(&send_work, GV(0xB0, 0xCE));
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 33
 int __cnet_SendReq_MatchRejection(void) {
-    int cmd = SetSendCommand(&send_work, 0xAD) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0xAD, 0xCB)) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
@@ -787,9 +787,9 @@ void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 34
 int __cnet_Send_PatchLineCheck(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0xC2) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0xC2, 0xE0)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -828,9 +828,9 @@ int cnLBS_Answer_PatchFinish(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 35
 int __cnet_Send_PatchFinish(void) {
-    int cmd = SetSendCommand(&send_work, 0xC4) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, GV(0xC4, 0xE2)) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
@@ -943,9 +943,9 @@ void cnLBS_Init_LobbyBgProcess(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 36
 void cnLBS_Init_LobbyBgBurstProcess(void) {
-    memset((u8 *)&CnetSys_w + 0xE18, 0, 0x1B0);
+    memset((u8 *)&CnetSys_w + 0xE18, 0, GV(0x1B0, 0x258));
 }
 #endif
 
@@ -991,7 +991,7 @@ int __cnetSub_Return_BgProcess(CNET_RES res, int mode, int slot) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 43
 void __cnetSub_Run_BgProcess(void) {
     int i;
 
@@ -1000,7 +1000,7 @@ void __cnetSub_Run_BgProcess(void) {
             if (CnetSys_w.bg[i].cb != 0) CnetSys_w.bg[i].cb(i);
         }
     }
-    for (i = 0; i < 12; i++) {
+    for (i = 0; i < GV(12, 15); i++) {
         if (CnetSys_w.burst[i].state == 1) {
             if (CnetSys_w.burst[i].run != 0) CnetSys_w.burst[i].run(i);
         }

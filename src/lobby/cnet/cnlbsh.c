@@ -103,10 +103,10 @@ void __cnet_SendSet_LineCheck(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void _cnet_RecvFromLbs_NoticeShutDown(void) {
     __cnet_Recv_ServerMessage();
-    _cnetEvent_JumpCallBack(2, 0);
+    CNEVT(2, 2);
 }
 #endif
 
@@ -116,17 +116,17 @@ void _cnet_RecvFromLbs_NoticeShutDownOpponent(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void _cnet_RecvFromLbs_NoticeMatchCancel(void) {
     __cnet_Recv_ServerMessage();
-    _cnetEvent_JumpCallBack(7, 0);
+    CNEVT(7, 6);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void _cnet_RecvFromLbs_NoticeLobbyFull(void) {
     __cnet_Recv_ServerMessage();
-    _cnetEvent_JumpCallBack(8, 0);
+    CNEVT(8, 7);
 }
 #endif
 

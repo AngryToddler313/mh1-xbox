@@ -1,0 +1,69 @@
+# G (Monster Hunter G) layout of CnetSys_w, as an override of config/lbnet_fields.txt (tools/lbfields.py).
+# G's CnetSys_w starts at 0x006FA760 (the symbol file says 0x006FA808 = +0xA8, which is where the socket fields sit).
+# Line: NAME GOFFSET [DIM [SIZE]]   DIM replaces the array count of the field (SIZE: its new byte size when the element size differs).
+# Found by pairing accesses of MH1 and G twins (tools/mhg_fields.py) and from the G asm; a field not listed here is
+# placed after the end of the G struct (its G offset is unknown, functions that use it do not match in G).
+# [checked] = read in G code, [paired] = tools/mhg_fields.py votes only, [guess] = continued from a neighbour.
+active 0x000
+x14 0x014
+bg 0x018
+burst 0xE18 [15] 0x258
+sock 0x1084
+rlen 0x1088
+rcmd 0x108C
+rcat 0x108E
+rseq 0x1090
+rseq2 0x1092
+rres 0x1094
+xfee 0x1096
+xff0 0x1098
+xff4 0x109C
+xff8 0x10A0
+patch_ptr 0x10A4
+patch_cnt 0x10A8
+x1004 0x10AC
+patch_x 0x10AE
+patch_ver 0x10B0
+patch_size 0x10B4
+patch_a 0x10BC
+patch_b 0x10CC
+rcnt 0x10D4
+echo_sum 0x10D6
+echo_n 0x10D8
+login 0x10DC
+acct 0x111C
+firstdata 0x1178
+pdata 0x11A2
+rule 0x1372
+n_login_user 0x162C
+login_users 0x162F
+decide_id 0x179F
+decide_handle 0x17A7
+minidata 0x17FB
+topinfo 0x1857
+warnmsg 0x285C
+leave_user 0x3860
+lobby_member 0x38BC [0x3C0]
+room_member 0x3C7C [0x3C0]
+annex_member 0x403C [0x3C0]
+extra_member 0x43FC
+lobby 0x4470 [26]
+plaza 0x6898 [35]
+room 0x9944 [8]
+ruletbl 0xA464
+n_lobby_member 0x3390B
+n_room_member 0x3390C
+n_annex_member 0x3390E
+resttime 0x3391C
+last_id 0x3391E
+gsaddr 0x33920
+gsport 0x33928
+matchinfo 0x33930
+chat 0x342DA
+chatbin 0x343FA
+srvmsg 0x34702
+loginbuf 0x34A02
+csearch 0x36B10
+cs_slot 0x38F04
+curplace 0x3A684
+batres 0x3A6A8

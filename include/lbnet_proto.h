@@ -362,6 +362,12 @@ void cnLBS_Send_RegurationAgree();
 void _cnet_RecvFromLbs_AnswerRegurationAgree();
 void cnLBS_Set_CallBackNoticeEvent();
 void _cnetEvent_JumpCallBack();
+/* a notice handler's event: MH1 jumps to the callback of event id a, G goes through _cnet_Return_CallBack(id g) */
+#ifdef MHG_PS2
+#define CNEVT(a, g) _cnet_Return_CallBack(g)
+#else
+#define CNEVT(a, g) _cnetEvent_JumpCallBack(a, 0)
+#endif
 void _cnet_Return_CallBack();
 void cnLBS_Init_LobbyBgProcess();
 void cnLBS_Init_LobbyBgBurstProcess();

@@ -3,6 +3,7 @@
 /* lobby network layer (cnLBS / __cnet*). CnetSys_w is one big work area of
  * the online lobby client; fields are added as functions are matched. */
 #include "types.h"
+#include "g_alias.h"
 
 /* event/result record passed by value (8 bytes) to notice and completion callbacks */
 typedef struct CNET_RES {
@@ -36,6 +37,9 @@ typedef struct CNET_BURST {
     u8 x21;             /* 0x21 progress */
     u8 res;             /* 0x22 result: 1 ok, 2 failed */
     u8 cnt;             /* 0x23 */
+#ifdef MHG_PS2
+    u8 gx24[4];         /* 0x24 G: the slot is 0x28 bytes (4 more at the end: a guess) */
+#endif
 } CNET_BURST;
 
 /* plaza / lobby / room table entries (0x164 bytes each); the entry of id n is table[n - 1] */
@@ -50,9 +54,21 @@ typedef struct CNET_PIECE {
     u16 mb;             /* 0x1A */
     u8 status;          /* 0x1C */
     u8 pwinfo;          /* 0x1D password info */
+#ifdef MHG_PS2
+    u8 gx1E[2];         /* 0x1E G: two bytes more before the name (read from G's getters); the explanation is 2 shorter */
+    char name[0x42];    /* 0x20 */
+    char explain[0x102];/* 0x62 */
+#else
     char name[0x42];    /* 0x1E */
     char explain[0x104];/* 0x60 */
+#endif
 } CNET_PIECE;
+/* offsets of the name / explanation inside a table entry written as raw MH1 offsets (CNO + G's 2 byte shift) */
+#ifdef MHG_PS2
+#define CNOE(o) (CNO(o) + 2)
+#else
+#define CNOE(o) (o)
+#endif
 
 /* personal data of the hunter (copied by value, 0x1D0 bytes) */
 typedef struct CNET_PDATA {
@@ -138,6 +154,100 @@ typedef struct CNET_RULE {
     u8 sel[0x20];       /* 0x14B chosen value per rule */
 } CNET_RULE;
 
+#ifdef MHG_PS2
+typedef struct CNET_SYS {
+    s32 active;  /* 0x000  */
+    u8 _pad004[0x10];
+    s8 x14;  /* 0x014  */
+    u8 _pad015[0x3];
+    CNET_BG bg[0x80];  /* 0x018 background request slots */
+    CNET_BURST burst[15];  /* 0xE18 burst slots */
+    u8 _pad1070[0x14];
+    s32 sock;  /* 0x1084 socket handle */
+    s32 rlen;  /* 0x1088 bytes read by the last select */
+    s16 rcmd;  /* 0x108C command of the last packet */
+    u16 rcat;  /* 0x108E category of the last packet */
+    u16 rseq;  /* 0x1090 sequence of the last packet */
+    u16 rseq2;  /* 0x1092  */
+    s8 rres;  /* 0x1094 result byte */
+    u8 _pad1095[0x1];
+    u16 xfee;  /* 0x1096  */
+    s32 xff0;  /* 0x1098  */
+    s32 xff4;  /* 0x109C  */
+    u8* xff8;  /* 0x10A0  */
+    s32 patch_ptr;  /* 0x10A4  */
+    s32 patch_cnt;  /* 0x10A8  */
+    s16 x1004;  /* 0x10AC  */
+    u16 patch_x;  /* 0x10AE  */
+    s32 patch_ver;  /* 0x10B0 patch information version */
+    s32 patch_size;  /* 0x10B4  */
+    u8 _pad10B8[0x4];
+    char patch_a[0x10];  /* 0x10BC patch information string */
+    char patch_b[8];  /* 0x10CC patch information string 2 */
+    u16 rcnt;  /* 0x10D4 receive counter */
+    u16 echo_sum;  /* 0x10D6  */
+    u8 echo_n;  /* 0x10D8  */
+    u8 _pad10D9[0x3];
+    CNET_LOGIN login;  /* 0x10DC login configuration (copied by value) */
+    CNET_B5C acct;  /* 0x111C account being logged in */
+    CNET_FIRSTDATA firstdata;  /* 0x1178 first data sent after login */
+    u8 _pad119C[0x6];
+    CNET_PDATA pdata;  /* 0x11A2 personal data being registered */
+    CNET_RULE rule;  /* 0x1372 room rule being set */
+    u8 _pad14DD[0x14F];
+    u8 n_login_user;  /* 0x162C  */
+    u8 _pad162D[0x2];
+    CNET_LUSER login_users[4];  /* 0x162F users returned by the login server (entry 3 is the account being logged in) */
+    char decide_id[8];  /* 0x179F decided user id */
+    char decide_handle[0x10];  /* 0x17A7 decided user handle */
+    u8 _pad17B7[0x44];
+    CNET_B5C minidata;  /* 0x17FB mini data of a lobby member */
+    CNET_B1004 topinfo;  /* 0x1857 top information */
+    u8 _pad285B[0x1];
+    CNET_H1004 warnmsg;  /* 0x285C login warning message */
+    CNET_B5C leave_user;  /* 0x3860 user who left the room */
+    u8 lobby_member[0x3C0];  /* 0x38BC  */
+    u8 room_member[0x3C0];  /* 0x3C7C  */
+    u8 annex_member[0x3C0];  /* 0x403C  */
+    u8 extra_member[0x60];  /* 0x43FC extra member entry */
+    u8 _pad445C[0x14];
+    CNET_PIECE lobby[26];  /* 0x4470 lobby table */
+    CNET_PIECE plaza[35];  /* 0x6898 plaza table (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before) */
+    CNET_PIECE room[8];  /* 0x9944 room table */
+    CNET_RULETBL ruletbl;  /* 0xA464 room rule allocation table */
+    u8 _pad33908[0x3];
+    u8 n_lobby_member;  /* 0x3390B  */
+    u8 n_room_member;  /* 0x3390C  */
+    u8 _pad3390D[0x1];
+    u8 n_annex_member;  /* 0x3390E  */
+    u8 _pad3390F[0xD];
+    u16 resttime;  /* 0x3391C room rest time */
+    u16 last_id;  /* 0x3391E id of the last received plaza/lobby/room item */
+    u8 gsaddr[4];  /* 0x33920 game server address bytes */
+    u8 _pad33924[0x4];
+    u8 gsport[2];  /* 0x33928 game server port bytes */
+    u8 _pad3392A[0x6];
+    CNET_W5D4 matchinfo;  /* 0x33930 match information */
+    u8 _pad33F04[0x3D6];
+    CNET_CHAT chat;  /* 0x342DA chat message being received */
+    CNET_B308 chatbin;  /* 0x343FA chat binary */
+    char srvmsg[0x300];  /* 0x34702 server message */
+    CNET_BUF2000 loginbuf;  /* 0x34A02  */
+    u8 _pad36A02[0x10E];
+    CNET_CSEARCH csearch;  /* 0x36B10 condition search result */
+    u8 _pad387D4[0x730];
+    u16 cs_slot;  /* 0x38F04 bg slot of the condition search in progress */
+    u8 _pad38F06[0x177E];
+    s16 curplace[3];  /* 0x3A684 current place (3 values) */
+    u8 _pad3A68A[0x1E];
+    CNET_BATRES batres;  /* 0x3A6A8 battle result being reported */
+    u8 _pad3A6D0[0x10];
+    u16 last_ja;  /* 0x3A6E0 joined users of the last item [G offset unknown] */
+    u8 last_status;  /* 0x3A6E2 status of the last item [G offset unknown] */
+    u8 last_pwinfo;  /* 0x3A6E3  [G offset unknown] */
+    char last_name[0x42];  /* 0x3A6E4 name of the last item [G offset unknown] */
+} CNET_SYS;
+#else
 typedef struct CNET_SYS {
     s32 active;  /* 0x000  */
     u8 _pad004[0x10];
@@ -228,14 +338,34 @@ typedef struct CNET_SYS {
     u8 _pad3BA52[0x6];
     s16 curplace[3];  /* 0x3BA58 current place (3 values) */
 } CNET_SYS;
+#endif
+#ifdef MHG_PS2
+/* G's CnetSys_w starts 0xA8 below the symbol file's CnetSys_w (0x006FA808): the PS2 G build names its own symbol
+ * (PROVIDEd in config/mhg/g_names.txt); files that do not include this header keep the old symbol and old offsets */
+#define CnetSys_w CnetSys_g
+#endif
 extern CNET_SYS CnetSys_w;
 
 typedef long long s64;
 typedef unsigned long long u64;
-#define CNWP(off) ((u8 *)&CnetSys_w + (off))
+/* CNO(off): the offset of a CnetSys_w byte that is written as a MH1 offset in the source; G has a different layout
+ * (config/mhg/lbnet_fields_g.txt). The zones are the MH1 offset ranges that moved together; a plaza / lobby / room
+ * table entry is reached through the table's offset, so use CNO on the whole constant (CNO(0x61DE)). */
+#ifdef MHG_PS2
+#define CNO(o) ((o) + ((o) < 0xFDC ? 0 : (o) < 0x1436 ? 0xA8 : (o) < 0x145E ? 0x39272 : (o) < 0x1462 ? 0x1CE : \
+    (o) < 0x268E ? 0x1CD : (o) < 0x39EE ? 0x1CE : (o) < 0x3CEE ? 0x28E : (o) < 0x3FEE ? 0x34E : \
+    (o) < 0x404E ? 0x40E : (o) < 0x4052 ? 0x410 : (o) < 0x4054 ? 0x2F8B6 : (o) < 0x4064 ? 0x40E : \
+    (o) < 0x4E4C ? 0x2834 : (o) < 0x61C4 ? -0x9DC : (o) < 0x6CE4 ? 0x3780 : (o) < 0x6E48 ? 0x2CC32 : \
+    (o) < 0x302EC ? 0x361C : (o) < 0x302EE ? 0x361F : (o) < 0x302EF ? 0x3620 : (o) < 0x30300 ? 0x361E : \
+    (o) < 0x308E4 ? 0x3620 : (o) < 0x375B8 ? 0x3750 : (o) < 0x39BC0 ? -0x31BE : (o) < 0x39D8C ? -0x31FA : \
+    (o) < 0x3BA50 ? -0x327C : (o) < 0x3BA54 ? -0x2B4C : -0x13D4))
+#else
+#define CNO(o) (o)
+#endif
+#define CNWP(off) ((u8 *)&CnetSys_w + CNO(off))
 
 /* byte access at an offset of CnetSys_w for fields not named yet */
-#define CNW(T, off) (*(T *)((u8 *)&CnetSys_w + (off)))
+#define CNW(T, off) (*(T *)((u8 *)&CnetSys_w + CNO(off)))
 
 /* send_work (0x006EA740, size 0x310): outgoing packet being built */
 typedef struct SEND_WORK {
