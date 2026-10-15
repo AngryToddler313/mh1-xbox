@@ -90,7 +90,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 x82;           /* 0x82  */
 #ifdef VERSION_MHG
     /* G (tools/mhg_offdiff.py votes + check.py): x83 moved to 0x88 and the fields after it sit one byte later; x8D at 0x90; 0x98 bytes */
-    u8 _padG83;       /* 0x83 */
+    s8 hlog_page;     /* 0x83 G: hunting log page 0-2, bit 7 = one monster's page (Menu_data_mv / disp_monster_list) */
     s8 x84;           /* 0x84  */
     s8 x85;           /* 0x85 mix effect kind (mix_effect_set) */
     s16 x86;          /* 0x86 mix effect frame counter */

@@ -1761,6 +1761,27 @@ void wyvn_efct_ripple(void) {
 }
 
 /* 0x1332F0 */
+#ifdef VERSION_MHG
+/* G (main 0x125A50): one frame list for every language, and the hunting log is the first page, the mix list the second */
+void Pit_disp_data(void) {
+    switch (lpPit->x42) {
+    case 0:
+        disp_menu(1, lpPit);
+        DispFrameList(pfl_menu_data + game_w.x1DC * 0x18, 0, lpPit->x43);
+        break;
+    case 1:
+        switch (lpPit->x43) {
+        case 0:
+            disp_monster_list(1, lpPit);
+            break;
+        case 1:
+            disp_mix_list(1, lpPit);
+            break;
+        }
+        break;
+    }
+}
+#else
 void Pit_disp_data(void) {
     switch (lpPit->x42) {
     case 0:
@@ -1779,6 +1800,7 @@ void Pit_disp_data(void) {
         break;
     }
 }
+#endif
 
 /* 0x1333B0 */
 void disp_mix_list(int sw, PIT_W *p) {
@@ -1808,6 +1830,237 @@ void disp_mix_list(int sw, PIT_W *p) {
     font_print_uf(lit_4949);
 }
 
+#ifdef VERSION_MHG
+/* G's hunting log (main 0x125CE0-0x126440, agent A 15 Oct 2026, from G's asm; not byte-checked). G replaced the
+ * monster list page with a log: three pages of six monster species (the kinds sub_main 0x4B7920 lists), each with
+ * the number hunted (User_data+0xD76, summed over the species' kinds) and the biggest size (User_data+0xD10, the
+ * largest of the kinds, in cm = value x the kind's base size / 100) with a silver / gold crown at the monster's
+ * thresholds; circle opens one monster's page (the MH1 page: number, name, picture, text, plus hunted / size).
+ * The records are written at quest end (result_prog, src/main/reward/f_reward.c G block). */
+typedef struct HLOG_ROW {           /* monster_data in G (0x5278D0), 30 rows of 0xC bytes */
+    u8 no;                          /* 0x0 monster list bit */
+    u8 u, v;                        /* 0x1 picture in texture 0x11B (G 0x142) */
+    u8 kind;                        /* 0x3 */
+    s16 crown[2];                   /* 0x4 silver / gold size thresholds (-1: none) */
+    char *text;                     /* 0x8 */
+} HLOG_ROW;
+extern HLOG_ROW hlog_monster_data[30];      /* config/mhg/pc_data.txt */
+extern char *hlog_str[12];                  /* sub_main 0x527C30: titles, formats, labels */
+extern s16 hlog_pos[2][6];                  /* main 0x25DFA0: count / size / crown positions, page and list */
+extern u8 hlog_msg_frame[];                 /* main 0x25E880 */
+extern u8 hlog_btn_icon[];                  /* main 0x2EBE98 */
+extern s16 hlog_crown[2][6];                /* main 0x25E890: {dx, dy, w, h, u, v} silver, gold */
+extern f32 em_base_size[52];                /* sub_main 0x4FEF60: cm at size 100 */
+extern char *enemy_name[];
+extern u16 System_timer;
+void PutButtonICON(void *, int);
+f32 flSin(f32);
+int Monster_list_chk(int);
+extern char *hunt_group_tbl[];              /* sub_main 0x4FEE90: per kind its species' kinds, 0xFF-terminated */
+extern u8 User_data[];
+#define em_species_grp(k) ((u8 *)hunt_group_tbl[(k) & 0xFF])
+#define UDB User_data
+
+static int hlog_kind_ok(int kind)           /* sub_main 0x4B7920: the kinds with a size record (as f_quest.c) */
+{
+    switch ((s16)kind) {
+    case 0x21: case 0x1F: case 0x1C: case 0x1B: case 0x2C: case 0x1A: case 0x30: case 0x16:
+    case 0x2E: case 0x15: case 0x27: case 0x14: case 0x2F: case 0x11: case 0x2D: case 0x0F:
+    case 0x2B: case 0x0E: case 0x31: case 0x29: case 0x0B: case 0x08: case 0x26: case 0x06:
+    case 0x25: case 0x2A: case 0x01:
+        return 1;
+    }
+    return 0;
+}
+
+static int hlog_hunted(int kind)            /* sub_main 0x4C8870 */
+{
+    u8 *l = em_species_grp(kind);
+    int sum = 0;
+    for (; *l != 0xFF; l++)
+        sum = (sum + *(u16 *)(UDB + 0xD76 + *l * 2)) & 0xFFFF;
+    return sum >= 10000 ? 9999 : sum;
+}
+
+static int hlog_record(int kind, u8 *best)  /* sub_main 0x4C87C0: the biggest size of the species' kinds */
+{
+    u8 *l = em_species_grp(kind);
+    int max = 0, v;
+    for (; *l != 0xFF; l++) {
+        v = *(u16 *)(UDB + 0xD10 + *l * 2);
+        if (max < v) {
+            max = v;
+            if (best)
+                *best = *l;
+        }
+    }
+    return max;
+}
+
+static int hlog_crown_draw(HLOG_ROW *m, int x, int y, int size)   /* main 0x126340: 0 none, 1 silver, 2 gold */
+{
+    PFLPS2 q;
+    s16 *c;
+    int g;
+    u32 a;
+
+    if ((s16)size < m->crown[0])
+        return 0;
+    g = (s16)size >= m->crown[1];
+    c = hlog_crown[g];
+    SetFilterMode(0);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    SetTrnslMode(4, 5);
+    q.s[0] = (s16)(s32)(0.8f * (f32)x) + c[0];
+    q.s[1] = y + c[1];
+    q.s[2] = c[2];
+    q.s[3] = c[3];
+    q.uv[0] = c[4];
+    q.uv[1] = c[5];
+    q.uv[2] = c[4] + 0x14;
+    q.uv[3] = c[5] + 0x14;
+    q.col = -1;
+    flps0008(&q);
+    SetTrnslMode(4, 1);
+    a = ((s8)(s32)(127.0f * flSin(0.0000958738f * (f32)(((System_timer & 0x3F) << 10) & 0xFFFF))) + 0x7F) & 0xFF;
+    if (!g)
+        a >>= 1;
+    q.col = (a << 24) | 0xFFFFFF;
+    flps0008(&q);
+    return g + 1;
+}
+
+static void hlog_counts(HLOG_ROW *m, int list, int y)     /* main 0x126160 */
+{
+    s16 *p = hlog_pos[list & 0xFF];
+    int n, rec, c;
+    u8 best = m->kind;
+    f32 cm;
+
+    font_set_palette(0);
+    n = hlog_hunted(m->kind) & 0xFFFF;
+    flfntLocate(p[0], (s16)(y + p[1]));
+    font_print("%d", n);
+    flfntLocate(p[2], (s16)(y + p[3]));
+    if (n == 0) {
+        font_print_uf(" - - -");
+        return;
+    }
+    rec = hlog_record(m->kind, &best) & 0xFFFF;
+    cm = (f32)rec * em_base_size[best] / 100.0f;
+    c = hlog_crown_draw(m, p[4], (s16)(y + p[5]), rec) & 0xFFFF;
+    if (c > 0)
+        font_set_palette(c == 1 ? 0xB : 7);
+    font_print("%4.1f", (double)cm);
+}
+
+static HLOG_ROW *hlog_next(HLOG_ROW *m)    /* main 0x126100: this or the next row with a log entry */
+{
+    for (;;) {
+        if (hlog_kind_ok(m->kind) == 1)
+            return m;
+        if (m->no >= 0x1D)
+            return 0;
+        m++;
+    }
+}
+
+/* 0x125CE0 */
+void disp_monster_list(int sw, PIT_W *p) {
+    PFLPS2 q;
+    HLOG_ROW *m;
+    char title[0x40];
+    int one, skip, i, y;
+
+    if (lpPit->hlog_page & 0x80) {
+        DispFrameList(pf_monster_list_base, hlog_str[0], -1);
+        one = 1;
+    } else {
+        sprintf(title, hlog_str[7], lpPit->hlog_page + 1);
+        DispFrameList(pf_monster_list_base, title, -1);
+        one = 0;
+    }
+    if ((u32)(one & 0xFFFF) < Monster_list_num()) {
+        DispFrameListOptionArrow(pf_monster_list_base);
+    }
+    flfntSetSize(0x12, 0x12);
+    if (lpPit->x82 < 0) {
+        flfntLocate(0x167, 0x52);
+        font_print_sp(hlog_str[3]);
+        return;
+    }
+    if (lpPit->hlog_page & 0x80) {
+        m = &hlog_monster_data[lpPit->x82];
+        font_set_palette(3);
+        flfntLocate(0x167, 0x52);
+        font_print(hlog_str[1], lpPit->x82 + 1);
+        flfntLocate(0x167, 0x66);
+        font_print_sp(hlog_str[2], enemy_name[m->kind]);
+        flfntLocate(0x167, 0xD2);
+        font_print_uf(m->text);
+        if (hlog_kind_ok(m->kind) == 1) {
+            font_set_palette(5);
+            font_print_strings(0x1DA, 0x84, &hlog_str[8], 0x14);
+            hlog_counts(m, 0, 0x98);
+        }
+        SetTrnslMode(4, 5);
+        SetFilterMode(1);
+        reload_tex(1, 0x157);
+        SetTextureStage(0x157);
+        q.s[0] = 0x125;
+        q.s[2] = 0x50;
+        q.s[1] = 0x80;
+        q.s[3] = 0x48;
+        *(u32 *)&q.uv[0] = 0x380008;
+        *(u32 *)&q.uv[2] = 0xB80088;
+        q.col = -1;
+        flps0008(&q);
+        SetFilterMode(0);
+        reload_tex(1, 0x11B);
+        SetTextureStage(0x11B);
+        q.s[0] = 0x134;
+        q.s[2] = 0x33;
+        q.s[1] = 0x84;
+        q.s[3] = 0x40;
+        q.uv[0] = m->u;
+        q.uv[1] = m->v;
+        q.uv[2] = m->u + 0x33;
+        q.uv[3] = m->v + 0x33;
+        q.col = -1;
+        flps0008(&q);
+        DispFrameMessage(hlog_msg_frame, hlog_str[4]);
+    } else {
+        m = hlog_monster_data;
+        skip = lpPit->hlog_page * 6;            /* the page's first log entry */
+        for (i = 0x1E; i > 0; i--, m++) {
+            if (hlog_kind_ok(m->kind) == 1) {
+                if (skip == 0)
+                    break;
+                skip--;
+            }
+        }
+        for (i = 6, y = 0x52; i > 0 && m < hlog_monster_data + 30; i--, y += 0x2C) {
+            m = hlog_next(m);
+            if (m == 0)
+                break;
+            flfntLocate(0x167, (s16)y);
+            if (Monster_list_chk(m->no) == 1) {
+                font_print_sp(hlog_str[2], enemy_name[m->kind]);
+                font_set_palette(5);
+                flfntLocate(0x167, (s16)(y + 0x13));
+                font_print_sp(hlog_str[5]);
+                hlog_counts(m, 1, y);
+            } else {
+                font_print_sp(hlog_str[6]);
+            }
+            m++;
+        }
+        DispFrameMessage(hlog_msg_frame, hlog_str[0]);
+    }
+    PutButtonICON(hlog_btn_icon, 1);
+}
+#else
 /* 0x133550 */
 void disp_monster_list(int sw, PIT_W *p) {
     PFLPS2 q;
@@ -1859,6 +2112,7 @@ void disp_monster_list(int sw, PIT_W *p) {
     flfntLocate(0x167, 0x52);
     font_print_sp(lit_4987);
 }
+#endif
 
 /* 0x1337A0 */
 void Pit_disp_menu_equipment(void) {

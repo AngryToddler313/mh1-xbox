@@ -6,3 +6,9 @@ src/main/emw/emu02.c
 src/main/emw/ems01.c
 # the ud file: G's armour (0x20) and gun (0x18) rows (ud_nm.c ARMOR_SZ / GUN_SZ)
 src/main/ud/f_ud.c
+# the pause menu's data pages: G's hunting log (Menu_data_mv, menu_data_monster_sub, Pit_disp_data, disp_monster_list;
+# the G code is in menu_nm.c / menu_disp_nm.c)
+src/main/menu/menu27.c
+src/main/menu/menu32.c
+src/main/menu/menu33.c
+src/main/menu/menu_dmon.c

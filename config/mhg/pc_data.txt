@@ -267,3 +267,13 @@ shell03_atk_sel_tbl = 0x006C2700; // size:0x40     # 17 attack-data numbers, the
 rate_tbl2 = 0x006C2760; // size:0x38               # + 0x20: the knives' {forward, up} table
 item_chr_tbl_0067ADC0 = 0x006C27A0; // size:0x22   # model per arg (knives 0x90)
 eft12_smoke_col = 0x0067B240; // size:0x10          # white, dung brown, green, poison purple
+# G's hunting log (pause menu, agent A 15 Oct 2026; src/main/menu/menu_disp_nm.c G block)
+[sub_main]
+hlog_monster_data = 0x005278D0; // size:0x168 allptr  # 30 rows {no, u, v, kind, s16 crown[2], text}
+hlog_str = 0x00527C30; // size:0x30 allptr           # titles, formats, labels (0x527C50.. a NULL-ended list)
+em_base_size = 0x004FEF60; // size:0xD0             # f32 per kind: cm at size 100
+[main]
+hlog_pos = 0x0025DFA0; // size:0x18                 # {count x, y, size x, y, crown x, y} for one monster's page and the list
+hlog_msg_frame = 0x0025E880; // size:0x10
+hlog_crown = 0x0025E890; // size:0x18               # silver, gold {dx, dy, w, h, u, v}
+hlog_btn_icon = 0x002EBE98; // size:0x10 allptr

@@ -809,6 +809,55 @@ void Menu_data_i(void) {
     PitMenu.x12 = 0;
 }
 
+#ifdef VERSION_MHG
+/* G (main 0x11C200): the hunting log is the first page (it opens on one monster's page), the mix list the second */
+int Menu_data_mv(int sw) {
+    int a;
+
+    switch (lpPit->x42) {
+    case 0:
+        PitMenu.x10 = 1;
+        ListSelect(&lpPit->x43, sw, 2);
+        PitMenu.x12 = lpPit->x43;
+        a = sw & 0xFFFF;
+        if (!(a & 0x40) && (a & 0x20)) {
+            switch (lpPit->x43) {
+            case 0:
+                lpPit->x82 = Monster_list_search(lpPit->x82, 0);
+                lpPit->hlog_page = (s8)0x80;
+                break;
+            case 1:
+                lpPit->x68 = Item_preparation_list_search(&lpPit->x81, 0, &lpPit->x6C, &lpPit->x6E);
+                break;
+            }
+            sw = (u16)(sw & 0x8000);
+            lpPit->x42++;
+            se_req(7, 0x13, 0);
+        } else {
+            break;
+        }
+    case 1:
+        if ((u16)sw & 0x40) {
+            sw = (u16)(sw & 0xFFBF);
+            PitMenu.x10 = 1;
+            PitMenu.x11 = 2;
+            PitMenu.x12 = lpPit->x43;
+            lpPit->x42 = 0;
+            se_req(7, 0x14, 0);
+        } else {
+            switch (lpPit->x43) {
+            case 0:
+                menu_data_monster_sub(sw);
+                break;
+            case 1:
+                menu_data_mix_sub(sw);
+                break;
+            }
+        }
+    }
+    return (u16)((u16)sw & 0x8040);
+}
+#else
 int Menu_data_mv(int sw) {
     int a;
 
@@ -854,6 +903,7 @@ int Menu_data_mv(int sw) {
     }
     return (u16)((u16)sw & 0x8040);
 }
+#endif
 
 void menu_data_mix_sub(int sw) {
     int a = sw & 0xFFFF;
@@ -879,6 +929,42 @@ void menu_data_mix_sub(int sw) {
     PitMenu.x12 = 0xFFFF;
 }
 
+#ifdef VERSION_MHG
+/* G (main 0x11C490): circle (0x200) switches between the log's pages and one monster's page; left / right turn
+ * the page (0-2) or step through the monsters in the list (User_data+0xC98 bits) */
+void menu_data_monster_sub(int sw) {
+    int a = sw & 0xFFFF;
+    s8 m;
+
+    PitMenu.x10 = 0;
+    if (FLD32(*User_data, 0xC98) == 0) {
+        lpPit->x82 = -1;
+        return;
+    }
+    if (lpPit->hlog_page & 0x80) {
+        if (a & 0x200) {
+            lpPit->hlog_page &= 0x7F;
+            se_req(7, 0x11, 0);
+        } else if (a & 0xC00) {
+            m = Monster_list_search(lpPit->x82, (a & 0x800) ? -1 : 1);
+            if (m != lpPit->x82) {
+                lpPit->x82 = m;
+                se_req(7, 0x17, 0);
+            }
+        }
+    } else if (a & 0x200) {
+        lpPit->hlog_page |= 0x80;
+        se_req(7, 0x11, 0);
+    } else if (a & 0xC00) {
+        if (a & 0x800) {
+            lpPit->hlog_page = lpPit->hlog_page == 0 ? 2 : lpPit->hlog_page - 1;
+        } else {
+            lpPit->hlog_page = lpPit->hlog_page >= 2 ? 0 : lpPit->hlog_page + 1;
+        }
+        se_req(7, 0x17, 0);
+    }
+}
+#else
 void menu_data_monster_sub(int sw) {
     int a;
     s8 m;
@@ -897,6 +983,7 @@ void menu_data_monster_sub(int sw) {
         lpPit->x82 = -1;
     }
 }
+#endif
 
 void Menu_status_i(void) {
     lpPit->x43 = 0;
