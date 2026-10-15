@@ -281,7 +281,7 @@ static int gsk_ammo_first(u8 *eq)
 }
 
 /* G 0x4CD270: which ammo kinds the skills allow (bit masks per ammo group) */
-static int gsk_gun_mask(PLW *pl)
+int gskill_gun_mask(PLW *pl)
 {
     int m = 0;
 
@@ -337,7 +337,7 @@ static int gsk_usable(PLW *pl, int i)
                 return 0;
             }
         }
-        m = *(s32 *)((u8 *)Get_equip_data_ptr((u8 *)pl + 0x35E) + 0x14) | gsk_gun_mask(pl);
+        m = *(s32 *)((u8 *)Get_equip_data_ptr((u8 *)pl + 0x35E) + 0x14) | gskill_gun_mask(pl);
         switch (k) {
         case 0x26:
             return (m & 0x7) != 0;
@@ -387,8 +387,10 @@ static int gsk_any_special(PLW *pl)
     return 0;
 }
 
-/* G 0x223640 (via 0x223610 with all colours 0): the worn skills, one per line, greyed out when the weapon cannot use them */
-static void gsk_list(PLW *pl, int x, int y)
+/* G 0x223640: the worn skills of pl, one per line from y + 0x14, greyed out when the weapon cannot use them; cols[i] is the colour
+ * of line i (0 plain; 4 / 0xF better, 2 / 0xE worse than the compared gear: the equip preview), with a marker at 2 and 0xE */
+void PutArrow(s16, s16, s16, s16, int, int);
+void gskill_list_c(PLW *pl, int x, int y, s16 *cols)
 {
     int i;
     s16 yy;
@@ -402,11 +404,70 @@ static void gsk_list(PLW *pl, int x, int y)
     }
     yy = y + 0x14;
     for (i = 0; i < 5 && pl->skill[i] != 0; i++) {
-        font_set_palette(gsk_usable(pl, i) == 1 ? 0 : 9);
+        font_set_palette(gsk_usable(pl, i) == 1 ? cols[i] : 9);
         flfntLocate(x, yy);
         font_print_uf(gskill_name[pl->skill[i]]);
+        if (cols[i] == 0xE || cols[i] == 2) {
+            PutArrow(x - 8, yy, 8, 0x12, 0xC0D0D0D0, 0);
+        }
         yy += 0x14;
     }
+}
+
+/* G 0x223610: the same with every colour plain */
+void gskill_list(PLW *pl, int x, int y)
+{
+    s16 cols[5] = { 0, 0, 0, 0, 0 };
+
+    gskill_list_c(pl, x, y, cols);
+}
+
+/* G lobby 0x558920: the skills the hunter would have with piece e (a 6-byte equipment entry; its id is the one to put on, 0 = take
+ * the piece off), coloured against the skills worn now; a weapon entry shows the worn skills as they are */
+extern void Skill_set_PL(PLW *);
+s8 sub_main_func_004EF8E0(PLW *pl, u8 id);
+void gskill_preview(PLW *pl, u8 *e, int x, int y)
+{
+    static PLW tmp;
+    s16 cols[5] = { 0, 0, 0, 0, 0 };
+    PLW *show = pl;
+    int i;
+
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    if (e != NULL && e[1] != 6 && e[1] != 7) {
+        s8 mine, sim;
+        u8 id, v;
+
+        memcpy((u8 *)&tmp + 0x35E, (u8 *)pl + 0x35E, 6);
+        memcpy((u8 *)&tmp + 0x352, (u8 *)pl + 0x352, 6);
+        ((u8 *)&tmp)[0x352 + e[1]] = (u8)*(u16 *)(e + 2);
+        Skill_set_PL(&tmp);
+        for (i = 0; i < 5; i++) {
+            id = tmp.skill_src[i];
+            if (id == 0) {
+                break;
+            }
+            sim = sub_main_func_004EF8E0(&tmp, id);
+            v = sub_main_func_004F0020(pl, id);
+            if (v == 0) {
+                if (sim > 0) {
+                    cols[i] = 0xE;
+                } else if (sim < 0) {
+                    cols[i] = 2;
+                }
+            } else if (v != tmp.skill[i]) {
+                mine = sub_main_func_004EF8E0(pl, id);
+                if (mine < sim) {
+                    cols[i] = 4;
+                } else if (sim < mine) {
+                    cols[i] = 0xF;
+                }
+            }
+        }
+        show = &tmp;
+    }
+    gskill_list_c(show, x, y, cols);
 }
 
 /* G 0x223AD0: one skill page (page 0-2): the nine rows with the points of each piece and the total */
@@ -573,13 +634,13 @@ void PlayerStatusWindow(u8 *pl, int tab)
         return;
     case 1:
         PlayerEquipmentWindow((PLW *)pl);
-        gsk_list((PLW *)pl, 0x132, 0x126);
+        gskill_list((PLW *)pl, 0x132, 0x126);
         return;
     case 2:
     case 3:
     case 4:
         gsk_page((PLW *)pl, 0x132, 0x3E, t - 2);
-        gsk_list((PLW *)pl, 0x132, 0x126);
+        gskill_list((PLW *)pl, 0x132, 0x126);
         return;
     }
 }

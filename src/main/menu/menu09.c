@@ -90,6 +90,10 @@ int Menu_equipment_mv(int sw) {
     PLW *pl = lpPit->pl;
     u8 sel;
     int job;
+#ifdef VERSION_MHG
+    u8 ent[6];
+    u8 *menu_equip_get_equip_g(u8 *, u8, PLW *);
+#endif
 
     sel = lpPit->x43;
     ListSelect(&sel, sw, 6);
@@ -97,6 +101,19 @@ int Menu_equipment_mv(int sw) {
         lpPit->x43 = sel;
         lpPit->x44 = 0;
     }
+#ifdef VERSION_MHG
+    /* G (main 0x11C830): the pages of the selected piece: a weapon 2 (a gun 4), armour 3 */
+    if (menu_equip_get_equip_g(ent, lpPit->x43, pl) != 0) {
+        lpPit->x45 = 3;
+        if (lpPit->x43 == 0) {
+            lpPit->x45 = 2;
+            if ((job = Get_weapon_job2(FLD8(*pl, 0x35F), FLD16(*pl, 0x360)) & 0xFF) == 1 || job == 5) {
+                lpPit->x45 = 4;
+            }
+        }
+        PageSelect(&lpPit->x44, sw, lpPit->x45);
+    }
+#else
     if (menu_equip_get_equip(lpPit->x43) != 0) {
         lpPit->x45 = 2;
         if (lpPit->x43 == 0 && ((job = Get_weapon_job2(FLD8(*pl, 0x35F), FLD16(*pl, 0x360)) & 0xFF) == 1 || job == 5)) {
@@ -104,6 +121,7 @@ int Menu_equipment_mv(int sw) {
         }
         PageSelect(&lpPit->x44, sw, lpPit->x45);
     }
+#endif
     return sw;
 }
 #endif

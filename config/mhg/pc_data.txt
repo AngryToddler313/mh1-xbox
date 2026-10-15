@@ -359,3 +359,15 @@ gstat_sub = 0x00527CF0; // size:0x14                 # help text of each status 
 gstat_str = 0x00527D10; // size:0x50                 # status page formats (title with page count, rank, points, money, equipment lines)
 gskill_name = 0x00528B70; // size:0x2B0              # skill names (172 ids; the MH1-named Skill_name table is cut at 54)
 gskill_cat = 0x00528E20; // size:0x108               # skill kind names
+# equipment windows (G main 0x224D90 etc., src/main/menu/equip_g.c; agent C, 15 Oct 2026): label lists, formats, ammo and element names;
+# the tables MH1's sizes cut (weapon_exp / armor_exp: G has 460 weapon rows and more armour, slash_bar_color: six bands)
+[main]
+gequip_skillpos = 0x002B0450; // size:0x14 noptr    # {dx, dy} of the five skill slots of an armour piece
+gequip_ammo = 0x002B02F0; // size:0x154 noptr        # 17 ammo kinds of 0x14 bytes: format, three level bytes, four masks
+gequip_arrow = 0x002B0490; // size:0x18 noptr        # Put_PageArrow: two rows of text x, arrow x, arrow x, arrow width, two icon x
+slash_bar_color = 0x002B0470; // size:0x18 noptr     # the six bands of the sharpness bar (MH1 has four)
+weapon_exp = 0x002A9F50; // size:0x1CB0
+armor_exp = 0x002ABC00; // size:0x44A0
+[sub_main]
+gslash_rows = 0x00515160; // size:0x1E0 noptr      # the sharpness band lengths (cumulative shorts); Pl_slash_tbl points into them. The pointer scan took 0x006E0050 at +0 for a pointer
+gequip_str = 0x00527D60; // size:0x190               # label lists, wearable types, formats, ammo and element names (index 0 = G 0x527D60)

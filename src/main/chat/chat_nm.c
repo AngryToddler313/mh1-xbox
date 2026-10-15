@@ -1467,6 +1467,7 @@ void PrintPlayerJob(void *pl) {
     font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
 }
 
+#ifndef VERSION_MHG    /* G: src/main/menu/equip_g.c (G's equipment windows) */
 typedef struct EQD { u8 be; u8 kind; u16 id; } EQD;
 u8 EquipmentDescriptionWindowA_s(EQD *, s16, s16, int, u8 *, int);
 u8 EquipmentDescriptionWindowA(EQD *, int, int, int, u8 *, int);
@@ -2050,6 +2051,8 @@ void Put_PageArrow(int x, int y, int a, u8 b) {
     flfntLocate_i(x, y);
     font_print(lit_4368, a & 0xFF, b & 0xFF);
 }
+
+#endif
 
 extern u8 lit_4374[];
 extern u8 setumei_shousai_4372[8];
