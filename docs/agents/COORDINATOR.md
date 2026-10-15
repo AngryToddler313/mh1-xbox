@@ -98,18 +98,21 @@ always been a struct field type or a lost field.
 As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
 screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
 bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
-G round 4 (14 Oct afternoon, weekly usage reset; owner: keep going). Main: G 16.1%, hunts use
-G's own tables (HP, ammo, skills, sharpness, rewards), G camera layout.
-- A (Opus): every G offline quest loads/plays (map-6 freeze in kind 30 cmd 0x2C, kind 40, a G
-  all-quests test, carts, pause-menu monster list).
-- B (Opus): Monster Hunter G on the Xbox (VERSION=mhg Xbox build, xemu hidden, memory budget).
-- C (Sonnet): more G functions (main/sub_main; Skill_set_PL, camera wall/hide, pl_snd01).
-- D (Sonnet): G village usable (NPC talk, quest counter, shops, forge, item box).
-- E (Sonnet): G in English on the PC (load the table, quest text, box layout, coverage).
-- F: AC97 codec fix unmerged; loader server serves build/xbox/f_test.xbe for the owner's test.
-Asked the owner (14 Oct): Xbox warm-relaunch sound test; play G on PC; OK to download the MHG
-English Remix and check its terms; online for G (own server only, or PS2 servers with permission);
-a DHCP reservation for the Xbox.
+State 15 Oct 2026 (all merged and pushed unless noted). Two agents at a time (OOM rule, BRIEF.md).
+- G on the PC: title -> new game -> Kokoto village (shops, forge, item box, elder, quest counter) ->
+  all 98 offline quests pass tools/test_all_quests_g.sh; G items, hunting log, revivals, event demos.
+  G ~19.8% matched. English: G 47%, MH1 76% official US text (tools/text_map.py, build/text/).
+- G on the Xbox: installed on the owner's console through the loader's HTTP data install
+  (tools/xbox_serve.py --data dist/xbox/MHG; the server picks up a changed dist/xbox/MHG). Pad fixed;
+  owner's hands-on test of G on hardware still to come.
+- Extras: debug menu (Back+R3 / F9: level select, inventory, toggles), Xbox settings menu (Back+L3),
+  prototype gunner HUD from cockpit2.apx (F10/settings -> HUD), docs/FINDS.md (curiosities, prototypes),
+  owner launchers tools/play_g.sh + desktop icons, RT_FILEDEF debug switch.
+- Owner decisions pending: English for G-only text — owner's idea: base it on Monster Hunter Freedom (US
+  PSP, localization of Portable = G content; needs the owner's ULUS-10084 image) with MH1 US for online text,
+  own translation in Freedom's style for the rest; to discuss later. Online for G (own server only vs PS2
+  servers). Keyboard+mouse on Xbox via the RetroKM dongle as a composite device (docs/xbox.md).
+- Xbox: 192.168.1.165 (DHCP), laptop 192.168.1.166. The loader server runs in data mode for G.
 Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
 loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame
 during game2 steps 3-6 (fixes the old-area frame after a load) and an own AC97 driver

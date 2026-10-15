@@ -949,3 +949,12 @@ G's shifted layout only on the PS2 build. G quest 10 without test aids: Rathian 
 damage per hit, not won by the script in 900 s. Still zero in G: Shell_data, St_data, Equip_Bonus,
 em_hp_vital_tbl, monster_data. C: f_pl registered (40 of 41 parts; pl_mv004 jump-table order).
 Next: G camera layout (C's notes), those zero tables, quest failure and a G-only monster quest.
+
+## 2026-10-14/15: G playable on the PC, installed on the Xbox
+
+See docs/agents/COORDINATOR.md "State 15 Oct" for the summary. Highlights: G village and all 98 offline
+quests on the PC; G 19.8% matched; G 47% official English; G installed on the real Xbox through the
+loader's HTTP data install (FTP to Evolution X stalls on big files); Xbox sound after warm relaunch fixed
+(own AC97 driver, owner confirmed); debug menu, Xbox settings menu, prototype gunner HUD from cockpit2.apx;
+prototypes/demo surveyed (docs/FINDS.md). OOM crashes: wiping build/raw before a G rebuild made wibo
+loop (BRIEF.md rules).
