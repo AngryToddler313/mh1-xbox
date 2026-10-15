@@ -1372,3 +1372,9 @@ Restored by finding each stub's bytes inside the file's registered G range. c_ra
 VERSION=mhg 7 OK (each alone, with `ulimit -v 3000000`; peak child RSS 420 MB, splat 300-420 MB per module).
 The 5.6 GB python was not reproduced by rebuild.sh, build.py (also with a missing .inc), splat or the PC builds (all < 450 MB); a bad merge of main.yaml/sub_main.yaml
 (registered set21/setwork2 whole AND main's _pN split) makes splat stop with "segments out of order", not loop. Keep the ulimit cap on every build.
+
+## G village status (end of this run)
+- Works (hidden runs, build/D/g/): village entry, bed save, intro camera, item shop buy, quest counter (accept -> start hand-off to A's path).
+- Weapon/armour/process shops: tags now use G's shop_default_tag_00610A68+1 (GTAG in lb_arm/lb_sh1a/lb_sh1c/lb_by47/49/54/129); crash gone, buy/sell menu shows. Buy list and sell list NOT verified (my pad scripts did not get past the menu; the tools/gvil.sh pad names are ddown/dup, not down).
+- Item box "no item" text: `item_str` added to config/mhg/pc_names.txt (0x501AD0), untested (the build was killed by the OOM before I could re-run). Main now has item_list_title for the "(null)" header.
+- Open: forge (slot 10), item box tidy/3-digit editor, G lb_basic_master/lb_check_status (elder first meeting needs RT_EVENT_SET=1), cat kitchen, farm, sell, quantity picker, final verification set (clean G rebuild 7 OK, MH1 rebuild 5 OK, test_quest_loop.sh).
