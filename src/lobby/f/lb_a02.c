@@ -19,10 +19,13 @@ extern u8 D_3E54FB[];
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_chat_receipt(u8 *msg) {
     Chat_log_add(Lb_get_plID() & 0xFF, msg);
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_get_plID(u8 *mac) {
     int i = 0;
     LBCOMMER *c = lbCommer;
@@ -33,3 +36,4 @@ int Lb_get_plID(u8 *mac) {
     } while (i < 8);
     return 0xFF;
 }
+#endif

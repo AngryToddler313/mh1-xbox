@@ -131,6 +131,7 @@ void SetTrnslMode(int, int);
 void SetOpeMode(int);
 void Eft_rendope_set(int);
 /* Builds a scale / rotation / translation matrix: flags & 0xE picks the rotation axes (8 = X, 4 = Y, 2 = Z, 0xE = all). */
+#if !defined(G_PART)
 void make_mat_srt(f32 *scale, f32 *rot, f32 *pos, int flags, void *mat) {
     f32 px = pos[0];
     f32 py = pos[1];
@@ -153,7 +154,9 @@ void make_mat_srt(f32 *scale, f32 *rot, f32 *pos, int flags, void *mat) {
     }
     flmatSetTrans(mat, px, py, pz);
 }
+#endif
 /* Draws a clay model with a transform and an alpha (flags & 1: only alpha, else white + alpha). */
+#if !defined(G_PART) || G_PART == 1
 int eft_trans_sub(f32 alpha, s32 *clay, int mtx, int flags, int mat) {
     if (clay == 0) {
         return 0;
@@ -175,6 +178,8 @@ int eft_trans_sub(f32 alpha, s32 *clay, int mtx, int flags, int mat) {
     clay_attr_reset();
     return 1;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 int eft_trans_sub_col(s32 *clay, int mtx, u32 col, int flags, int mat) {
     if (clay == 0) {
         return 0;
@@ -192,6 +197,8 @@ int eft_trans_sub_col(s32 *clay, int mtx, u32 col, int flags, int mat) {
     clay_attr_reset();
     return 1;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 int eft_trans_sub_opa(s32 *clay, int mtx, int mat) {
     if (clay == 0) {
         return 0;
@@ -207,6 +214,8 @@ int eft_trans_sub_opa(s32 *clay, int mtx, int mat) {
     clay_attr_reset();
     return 1;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void Eft_rendope_set(int flags) {
     u16 f = flags;
 
@@ -226,9 +235,13 @@ void Eft_rendope_set(int flags) {
         break;
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 int Niku_ok_ck(void) {
     return game_w.meat_num < 3;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 int Kaeru_ck(s32 owner) {
     EFTL *e;
     s16 i;
@@ -240,3 +253,4 @@ int Kaeru_ck(s32 owner) {
     }
     return 0;
 }
+#endif

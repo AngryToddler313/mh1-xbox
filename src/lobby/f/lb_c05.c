@@ -13,13 +13,17 @@
 
 
 
+#if !defined(G_PART)
 void Lb_put_msg_type2(s16 *p) {
     flfntLocate(p[0], p[1]);
     font_print(lit_429_00664C38, *(s32 *)(p + 2));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_put_msg2(int a0, int a1, char *msg) {
     flfntLocate();
     font_print(lit_429_00664C38, msg);
     strlen_sp(msg);
 }
+#endif

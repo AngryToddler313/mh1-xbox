@@ -54,6 +54,7 @@ void lb_armor_init();
 int Lb_put_armorIcon_k();
 int shop_armor2_stack_k();
 int value_result_k();
+#if !defined(G_PART)
 s32 shop_process_after() {
     struct { s8 x0; s8 id; s16 num; s32 x4; } st;
     PLW *pl;
@@ -163,7 +164,9 @@ s32 shop_process_after() {
     }
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 s32 shop_armor2_stack(int kind, int id) {
     s32 ai;
     s32 idx;
@@ -221,7 +224,9 @@ s32 shop_armor2_stack(int kind, int id) {
     }
     return idx;
 }
+#endif
 
+#if !defined(G_PART)
 s32 shop_armor2_question() {
     s32 key;
     s32 k;
@@ -305,21 +310,27 @@ s32 shop_armor2_question() {
     }
     return 2;
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s32 value_result(s32 v, s32 op)
 {
 #include "value_result.inc"
 }
 #endif
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void lb_process_drawHelp()
 {
 #include "lb_process_drawHelp.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void lb_armor2_listItem(int x, int y, int z, s16 n) {
     u16 kind;
     u16 id;
@@ -348,7 +359,9 @@ void lb_armor2_listItem(int x, int y, int z, s16 n) {
     }
     Lb_put_armorIcon_a5(x, y, z, kind, id);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_materialItem(y, id, need)
 int y;
 int id;
@@ -378,7 +391,9 @@ int need;
         font_print(&lit_1287_006555F0, ((s32 *)&item_str)[u], (s16)num, (s16)id, (s16)need);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_materialBase() {
     LB_SHOPITEM *it;
 
@@ -389,7 +404,9 @@ void Lb_put_materialBase() {
     flfntLocate(0x160, 0xD6);
     font_print(lit_1225_006555D0, it->name);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_armorIcon(int x, int y, int z, int kind, int id) {
     int icon;
     int k;
@@ -430,7 +447,9 @@ void Lb_put_armorIcon(int x, int y, int z, int kind, int id) {
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void armor_shop2_trans() {
     int temp_a1;
 
@@ -444,9 +463,12 @@ void armor_shop2_trans() {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_armor_init() {
     lbShop.tag = (shop_armor00_tag);
     lbShop.x17 = 2;
 }
+#endif
 

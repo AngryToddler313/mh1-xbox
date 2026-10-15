@@ -130,7 +130,7 @@ void pl_to_normal_b(PLW *pl, int st, int blend, int tm) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void pl_sw_set(void) {
     if (Online_ck() == 0) {
         sw_set_sub(0);
@@ -140,7 +140,7 @@ void pl_sw_set(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static void sw_set_sub(int no) {
     PLW *pl = &player_work[no];
     PLSW *sw = &pl->sw;

@@ -39,6 +39,7 @@ static void shell10_d(SHLW *sh);
 static void shell10_e(SHLW *sh);
 static void shell10_trans(PRIM *pr);
 
+#if !defined(G_PART)
 void Shell10_set(f32 *pos, int arg, int stg, PLW *pl) {
     SHLW *sh;
 
@@ -60,7 +61,9 @@ void Shell10_set(f32 *pos, int arg, int stg, PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void shell10_move(SHLW *sh) {
     switch (sh->mode) {
     case 0:
@@ -89,7 +92,9 @@ static void shell10_move(SHLW *sh) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void shell10_i(SHLW *sh) {
     sh->mode++;
     sh->be_flag = 1;
@@ -114,7 +119,9 @@ static void shell10_i(SHLW *sh) {
     }
     shell10_e(sh);
 }
+#endif
 
+#if !defined(G_PART)
 static void shell10_m(SHLW *sh) {
     if (++sh->char0 > 9000) {
         sh->xB = 0;
@@ -133,7 +140,9 @@ static void shell10_m(SHLW *sh) {
         add_prim(ot1, sh->prim, 0x20, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell10_d(SHLW *sh) {
     sh->xB = 0;
     sh->mode = 6;
@@ -142,14 +151,18 @@ static void shell10_d(SHLW *sh) {
         release_prim2(sh->prim_no);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell10_e(SHLW *sh) {
     if (sh->x07 != 0) {
         game_w.shl10_num--;
     }
     push_shell_work(sh);
 }
+#endif
 
+#if !defined(G_PART)
 static void disp_sub(CLAY *cl, FLMAT *mat, s32 m) {
     flSetRenderState(0x1A, (u32)mat);
     if (cl != 0 && cl->handle != -1) {
@@ -159,7 +172,9 @@ static void disp_sub(CLAY *cl, FLMAT *mat, s32 m) {
     }
     clay_attr_reset();
 }
+#endif
 
+#if !defined(G_PART)
 static void shell10_trans(PRIM *pr) {
     FLMAT mat;
     SHLW *sh = pr->owner;
@@ -176,3 +191,4 @@ static void shell10_trans(PRIM *pr) {
         }
     }
 }
+#endif

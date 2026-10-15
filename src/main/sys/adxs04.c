@@ -80,16 +80,22 @@ void str_init(void);
 /* ===== 0x00100E20-0x00101E38: card work reset, effect work pool (eft_work: 0x80 entries of 0x40 bytes) ===== */
 extern u8 card_w[];
 extern u8 card_w2[];
+#if !defined(G_PART)
 void Card_task(void) {
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void init_card_w(void) {
     memset(card_w, 0, 0x84);
     memset(card_w2, 0, 0x84);
     system_w[0x3C] = 0;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 int save_file_req(void) {
     return 1;
 }
+#endif
 typedef struct EFTL {
     u8 used;            /* 0x00 */
     u8 on;              /* 0x01 */
@@ -120,6 +126,7 @@ int get_start_heap();
 int get_heap_ptr(int);
 void set_used_heap(int, int);
 void clr_used_heap(int, int);
+#if !defined(G_PART) || G_PART == 1
 void init_eft_work(void) {
     int i;
     EFTL *e;
@@ -134,7 +141,9 @@ void init_eft_work(void) {
     game_w.meat_num = 0;
     eft_ctr = 0x80;
 }
+#endif
 void push_eft_work(EFTL *e);
+#if !defined(G_PART) || G_PART == 1
 void clr_eft_work(void) {
     EFTL *e = eft_w_top;
 
@@ -150,6 +159,8 @@ void clr_eft_work(void) {
         } while (e != 0);
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 EFTL *pull_eft_work(int n) {
     int pos;
     EFTL *e;
@@ -176,6 +187,8 @@ EFTL *pull_eft_work(int n) {
     set_used_heap(pos, n);
     return e;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 EFTL *pull_eft_work2(int n) {
     int pos;
     EFTL *e;
@@ -214,6 +227,8 @@ EFTL *pull_eft_work2(int n) {
     set_used_heap(pos, n);
     return e;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void push_eft_work(EFTL *e) {
     if (e->prev == 0) {
         eft_w_top = e->next;
@@ -230,6 +245,8 @@ void push_eft_work(EFTL *e) {
     e->prim_no = 0;
     e->prim = 0;
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void move_eft(void) {
     EFTL *e = eft_w_top;
 
@@ -242,6 +259,8 @@ void move_eft(void) {
         } while (e != 0);
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void trans_eft(void) {
     EFTL *e = eft_w_top;
 
@@ -254,6 +273,8 @@ void trans_eft(void) {
         } while (e != 0);
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void trans_eft_up(void) {
     EFTL *e = eft_w_top;
 
@@ -266,11 +287,13 @@ void trans_eft_up(void) {
         } while (e != 0);
     }
 }
+#endif
 typedef struct EKEY3 { f32 t; f32 v[3]; } EKEY3;
 /* time + vector key (terminated by t == -1) */
 typedef struct EKEY1 { f32 t; f32 v; } EKEY1;
 /* time + scalar key */
 /* Linear interpolation of a keyed vector track at time t (keys sorted by time, end marker t = -1). */
+#if !defined(G_PART) || G_PART == 1
 void eft_vec_linear(f32 t, EKEY3 *k, f32 *out) {
     f32 a;
 
@@ -293,6 +316,8 @@ void eft_vec_linear(f32 t, EKEY3 *k, f32 *out) {
         }
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void eft_alpha_linear(f32 t, EKEY1 *k, f32 *out) {
     f32 a;
 
@@ -311,6 +336,7 @@ void eft_alpha_linear(f32 t, EKEY1 *k, f32 *out) {
         }
     }
 }
+#endif
 typedef struct ERGBA { s32 frame; u32 col; } ERGBA;
 void flmatMakeScale(void *, f32, f32, f32);
 void flmatRotX33(void *, f32);

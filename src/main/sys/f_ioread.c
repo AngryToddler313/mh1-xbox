@@ -178,7 +178,7 @@ int ACRMain(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void MakeMediaVersion(void) {
     char delim[5] = " :\t\n";
     char date[0x20];

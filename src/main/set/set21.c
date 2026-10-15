@@ -50,7 +50,7 @@ static void set21_d(SETW *sw);
 static void set21_e(SETW *sw);
 static void set21_trans(PRIM *pr);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void Set21_set(EMW *em, int arg) {
     SETW *sw = pull_set_work(1);
 
@@ -63,7 +63,7 @@ void Set21_set(EMW *em, int arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void set21_pos_get(SETW *sw, EMW *em) {
     f32 a[3];
     f32 b[3];
@@ -124,7 +124,7 @@ static void set21_st_ang_get(s16 *ang, s16 n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static void set21_rate_init(SETW *sw, SET21_RATE *r) {
     f32 pos[3];
     s16 ang;
@@ -138,7 +138,7 @@ static void set21_rate_init(SETW *sw, SET21_RATE *r) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void set21_rate_add(SETW *sw, SET21_RATE *r) {
     sw->pos[0] += r->v[0];
     sw->pos[1] += r->v[1];
@@ -188,7 +188,7 @@ static void set21_i(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void set21_m(SETW *sw) {
     SET21_RATE *r = sw->u.work;
     EMW *em = (EMW *)sw->x34;

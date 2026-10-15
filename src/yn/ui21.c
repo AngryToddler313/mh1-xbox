@@ -332,6 +332,7 @@ typedef struct YMSG {
 } YMSG;
 
 
+#if !defined(G_PART)
 void yn_id_pw_font_sub(void) {
     u8 sp50[0x40];
     u8 sp10[0x40];
@@ -368,7 +369,9 @@ void yn_id_pw_font_sub(void) {
     }
     yn_printf(0x115, 0xFC, sp50);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void yn_ipadrs_font_sub(u8 *arg0, int arg1, int arg2) {
     u8 buf[0x40];
     u8 o;
@@ -403,3 +406,4 @@ void yn_ipadrs_font_sub(u8 *arg0, int arg1, int arg2) {
     d[-2] = 0;
     yn_printf(arg1, arg2, buf);
 }
+#endif

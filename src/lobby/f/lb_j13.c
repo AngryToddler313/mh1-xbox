@@ -34,6 +34,7 @@ void pl_sleeping();
 
 
 
+#if !defined(G_PART)
 void lb_pl_mv095(PLW *pl, s8 m) {
     u8 s;
     s = pl->x05;
@@ -67,7 +68,9 @@ void lb_pl_mv095(PLW *pl, s8 m) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_mv096(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -89,3 +92,4 @@ void lb_pl_mv096(PLW *pl) {
         break;
     }
 }
+#endif

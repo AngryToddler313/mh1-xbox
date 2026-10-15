@@ -39,6 +39,7 @@ void flfntInit();
 int strcmp();
 char *strcpy();
 
+#if !defined(G_PART)
 void To_ReqCancelWait(int a, int b, int c) {
     int s;
     s = (s8)a;
@@ -57,9 +58,12 @@ go:
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int SetNextURL(char *url, int b, int c) {
     memset(bsSys->meta, 0, 0x100);
     strcpy(bsSys->meta, url);
     return BsUrlSet(bsUrl, bsSys->meta);
 }
+#endif

@@ -16,10 +16,13 @@
 
 
 
+#if !defined(G_PART)
 static s8 check_sender1() {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_pl_pos(PLW *pl) {
     LBPKPOS p;
     s8 t = lb_sys.x85 - 1;
@@ -40,7 +43,9 @@ void Lb_send_pl_pos(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_pl_warp(PLW *pl) {
     LBPKPOS p;
     p.x = pl->pos[0];
@@ -48,15 +53,21 @@ void Lb_send_pl_warp(PLW *pl) {
     p.ang = *(u16 *)&pl->ang_y;
     lb_send_data(0xA, 2, &p);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_send_pl_chidori_off(void) {
     lb_send_data(0, 6, 0);
 }
+#endif
 
+#if !defined(G_PART)
 static s8 check_sender0() {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_pl_status(PLW *pl) {
     LBSTAT p;
     u8 c;
@@ -100,21 +111,30 @@ void Lb_send_pl_status(PLW *pl) {
         lb_send_data(0x10, 1, &p);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_stage(void) {
     lb_send_data(2, 3, D_3F3404);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_commer(void) {
     u8 buf[0x18];
     memcpy(buf, my_user_handle, 0x10);
     lb_send_data(0x10, 0x10, buf);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Lb_send_chair_req(u8 *p) {
     lb_send_data(2, 4, *(s32 *)(p + 0x878));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Lb_send_chair_release(void) {
     lb_send_data(1, 9, &lb_sys.x66);
 }
+#endif

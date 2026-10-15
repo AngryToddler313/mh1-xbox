@@ -40,6 +40,7 @@ void npcPigEXIT();
 void npcPigWALK();
 void npcPigWALK2();
 void lb_npc_pig_move();
+#if !defined(G_PART)
 void Lb_npc_move_sub(em)
 EMW *em;
 {
@@ -103,7 +104,9 @@ EMW *em;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void npcMvFOOTWORK(em, kind)
 EMW *em;
 s8 kind;
@@ -136,7 +139,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvWALK(em, kind)
 EMW *em;
 s8 kind;
@@ -201,7 +206,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvENJOY(em, kind)
 EMW *em;
 s8 kind;
@@ -227,7 +234,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvTALK(em, kind)
 EMW *em;
 s8 kind;
@@ -255,7 +264,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvWARP(em)
 EMW *em;
 {
@@ -271,7 +282,9 @@ EMW *em;
     *(VEC3 *)em->pos = *(VEC3 *)r->pos;
     Lb_act_set(em, 0, 0, i);
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvDOWN(em, kind)
 EMW *em;
 s8 kind;
@@ -302,7 +315,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvTOPL(em)
 EMW *em;
 {
@@ -511,7 +526,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvBOARD(em, kind)
 EMW *em;
 s8 kind;
@@ -538,7 +555,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvSHOP(em, kind)
 EMW *em;
 s8 kind;
@@ -566,7 +585,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvBEER(em)
 EMW *em;
 {
@@ -629,7 +650,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void npcMvDRUNKDOWN(em)
 EMW *em;
 {
@@ -642,7 +665,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void npcMvTOPL2(em)
 EMW *em;
 {
@@ -658,7 +683,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void npcMvRANDWAIT(em)
 EMW *em;
 {
@@ -675,7 +702,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvWALL(em)
 EMW *em;
 {
@@ -700,7 +729,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcMvKEGA(em, kind)
 EMW *em;
 s8 kind;
@@ -727,7 +758,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void npc_move_common(em)
 EMW *em;
 {
@@ -821,7 +854,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_npc_bar_move(em)
 EMW *em;
 {
@@ -893,7 +928,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_npc_mother_move(em)
 EMW *em;
 {
@@ -971,7 +1008,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_npc_father_move(em)
 EMW *em;
 {
@@ -1096,7 +1135,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_npc_old_material(em)
 EMW *em;
 {
@@ -1167,7 +1208,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_npc_old_mix(em)
 EMW *em;
 {
@@ -1274,14 +1317,18 @@ EMW *em;
         break;
     }
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void lb_npc_old_guild()
 {
 #include "lb_npc_old_guild.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void npcCatSLEEP(em)
 EMW *em;
 {
@@ -1298,7 +1345,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcCatFOOTWORK(em)
 EMW *em;
 {
@@ -1335,7 +1384,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcCatRUN(em)
 EMW *em;
 {
@@ -1376,7 +1427,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void npcCatKYORO(em)
 EMW *em;
 {
@@ -1399,7 +1452,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void npcCatHELLO(em)
 EMW *em;
 {
@@ -1432,7 +1487,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcCatWAITER(em)
 EMW *em;
 {
@@ -1645,7 +1702,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void lb_npc_cat_move(em)
 EMW *em;
 {
@@ -1676,7 +1735,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void npcPigFOOTWORK(em, kind)
 EMW *em;
 s8 kind;
@@ -1692,7 +1753,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigSLEEP(em, kind)
 EMW *em;
 s8 kind;
@@ -1731,7 +1794,9 @@ s8 kind;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigTOPL(em)
 EMW *em;
 {
@@ -1776,7 +1841,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigATACK(em)
 EMW *em;
 {
@@ -1827,7 +1894,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigJOY(em)
 EMW *em;
 {
@@ -1869,7 +1938,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigEXIT(em)
 EMW *em;
 {
@@ -1900,7 +1971,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigWALK(em)
 EMW *em;
 {
@@ -1966,7 +2039,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void npcPigWALK2(em)
 EMW *em;
 {
@@ -2018,7 +2093,9 @@ EMW *em;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_npc_pig_move(em)
 EMW *em;
 {
@@ -2055,4 +2132,5 @@ EMW *em;
         break;
     }
 }
+#endif
 

@@ -97,6 +97,7 @@ void flvecApplyMat33_2();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void Eft25_set_pos(f32 scale, int pos, int type, int arg) {
     E25 *e;
     e = pull_eft_work(1);
@@ -112,7 +113,9 @@ void Eft25_set_pos(f32 scale, int pos, int type, int arg) {
         flvecCopy(e->pos, pos);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void eft25_move(E25 *e) {
     u8 st;
     st = e->state;
@@ -130,3 +133,4 @@ void eft25_move(E25 *e) {
         eft25_e(e);
     }
 }
+#endif

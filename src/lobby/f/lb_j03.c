@@ -18,6 +18,7 @@ void pl_sleeping();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_mv063(PLW *pl) {
     u8 s;
     if (PLU8(pl, 0x8EC) != 0) {
@@ -41,7 +42,9 @@ void lb_pl_mv063(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_mv064(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -73,7 +76,9 @@ void lb_pl_mv064(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_mv065(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -91,3 +96,4 @@ void lb_pl_mv065(PLW *pl) {
         break;
     }
 }
+#endif

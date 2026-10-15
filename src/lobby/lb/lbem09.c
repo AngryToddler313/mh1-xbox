@@ -12,15 +12,20 @@ void Eft13_set_em_scl(EMW *, int, f32, int);
 void Eft25_set();
 void eft01_set();
 
+#if !defined(G_PART)
 void move_default_0053DD00(void) {
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void sound_call_0053DD10(EMW *em, int frame, int se) {
     if (em_frame_check(em, (f32)frame, 0) != 0) {
         Npc_se_req(em, se, (u8 *)em + 0xAC, 2);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void ef_move_sub_0053DD70(EMW *em, LBEFW *w) {
     switch (em->char0) {
     case 0x3E9:
@@ -121,7 +126,9 @@ void ef_move_sub_0053DD70(EMW *em, LBEFW *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em09_effect_move_0053E2E0(EMW *em) {
     LBEFW *w = (LBEFW *)em->ex;
 
@@ -134,10 +141,15 @@ void em09_effect_move_0053E2E0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em09_local_init_0053E330(EMW *em) {
     eft01_set(em, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void dummy_em_prog_0053E340(void) {
 }
+#endif

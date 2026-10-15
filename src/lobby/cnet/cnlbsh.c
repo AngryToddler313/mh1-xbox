@@ -7,6 +7,7 @@ typedef struct { s16 a, b, c; } CPLACE3;
 
 typedef struct { s8 val; u8 pad[6]; } R7;
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_LogoutLobbyServer(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
@@ -16,14 +17,18 @@ int cnLBS_LogoutLobbyServer(int arg0) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int __cnet_SendSet_Logout(void) {
     int cmd = SetSendCommand(&send_work, 2) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void _cnet_RecvFromLbs_AnswerLogOut(void) {
     CNET_RES res;
 
@@ -37,7 +42,9 @@ void _cnet_RecvFromLbs_AnswerLogOut(void) {
         __cnetSub_Return_BgProcess(res, 1, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_ShutDownLobbyServer(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
@@ -47,14 +54,18 @@ int cnLBS_ShutDownLobbyServer(int arg0) {
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int __cnet_SendSet_ShutDown(void) {
     int cmd = SetSendCommand(&send_work, 4) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void _cnet_RecvFromLbs_AnswerShutDown(void) {
     CNET_RES res;
 
@@ -68,42 +79,58 @@ void _cnet_RecvFromLbs_AnswerShutDown(void) {
         __cnetSub_Return_BgProcess(res, 1, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_Get_ServerMessage(char *d) {
     strcpy(d, CNWP(0x378C0));
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void _cnet_RecvFromLbs_RequestLineCheck(void) {
     __cnet_SendSet_LineCheck();
     CNW(s16, 0x10) = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void __cnet_SendSet_LineCheck(void) {
     SetSendCommand(&send_work, 1);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_RecvFromLbs_NoticeShutDown(void) {
     __cnet_Recv_ServerMessage();
     _cnetEvent_JumpCallBack(2, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_RecvFromLbs_NoticeShutDownOpponent(void) {
     _cnetEvent_JumpCallBack(6, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_RecvFromLbs_NoticeMatchCancel(void) {
     __cnet_Recv_ServerMessage();
     _cnetEvent_JumpCallBack(7, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_RecvFromLbs_NoticeLobbyFull(void) {
     __cnet_Recv_ServerMessage();
     _cnetEvent_JumpCallBack(8, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GetRecvData8(dst, src)
 u8 *dst;
 u8 *src;
@@ -111,7 +138,9 @@ u8 *src;
     *dst = *src;
     return (int)(src + 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GetRecvData16(dst, src)
 u8 *dst;
 u8 *src;
@@ -120,7 +149,9 @@ u8 *src;
     dst[0] = src[1];
     return (int)(src + 2);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GetRecvData32(dst, src)
 u8 *dst;
 u8 *src;
@@ -131,7 +162,9 @@ u8 *src;
     dst[0] = src[3];
     return (int)(src + 4);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GetRecvDataString(dst, src)
 char *dst;
 u8 *src;
@@ -145,7 +178,9 @@ u8 *src;
     dst[m] = 0;
     return (int)(src + (m + 2));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GetRecvDataOption(dst, src, len)
 void *dst;
 u8 *src;
@@ -154,7 +189,9 @@ u16 len;
     memcpy(dst, src, len);
     return (int)(src + len);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GetRecvDataOption3(dst, maxlen, src)
 void *dst;
 u16 maxlen;
@@ -173,65 +210,85 @@ u8 *src;
     }
     return (int)(src + (t + 2));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_ServerMessage(void) {
     memset(CnetSys_w.srvmsg, 0, 0x300);
     GetRecvDataOption3(CnetSys_w.srvmsg, 0x300, recv_work);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_Byte(a0)
 void *a0;
 {
     GetRecvData8(a0, recv_work);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_Word(a0)
 void *a0;
 {
     GetRecvData16(a0, recv_work);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_Long(a0)
 void *a0;
 {
     GetRecvData32(a0, recv_work);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_ByteString(a0, a1)
 void *a0;
 void *a1;
 {
     GetRecvDataString(a1, GetRecvData8(a0, recv_work));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_ByteByte(a0, a1)
 void *a0;
 void *a1;
 {
     GetRecvData8(a1, GetRecvData8(a0, recv_work));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_WordByte(a0, a1)
 void *a0;
 void *a1;
 {
     GetRecvData8(a1, GetRecvData16(a0, recv_work));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_WordWord(a0, a1)
 void *a0;
 void *a1;
 {
     GetRecvData16(a1, GetRecvData16(a0, recv_work));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_WordLong(a0, a1)
 void *a0;
 void *a1;
 {
     GetRecvData32(a1, GetRecvData16(a0, recv_work));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void __cnet_Recv_ByteByteString(a0, a1, a2)
 void *a0;
 void *a1;
@@ -239,7 +296,9 @@ void *a2;
 {
     GetRecvDataString(a2, GetRecvData8(a1, GetRecvData8(a0, recv_work)));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u16 SetSendCommand(w, cmd)
 SEND_WORK *w;
 int cmd;
@@ -268,7 +327,9 @@ int cmd;
     w->x0C = 0;
     return seq_no;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Mcs_SetSendCommand(w, cmd)
 SEND_WORK *w;
 int cmd;
@@ -289,28 +350,36 @@ int cmd;
     w->x0C = 0;
     memcpy(&w->seq_h, recv_header + 6, 2);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendCategory(w, v)
 SEND_WORK *w;
 s8 v;
 {
     w->cat = v;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendResult(w, v)
 SEND_WORK *w;
 s8 v;
 {
     w->x0C = v;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendCommandLen(w)
 SEND_WORK *w;
 {
     w->len_h = (int)w->len >> 8;
     w->len_l = w->len;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendData8(w, v)
 SEND_WORK *w;
 s8 v;
@@ -319,7 +388,9 @@ s8 v;
     w->total += 1;
     w->len += 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendData16(w, v)
 SEND_WORK *w;
 int v;
@@ -334,7 +405,9 @@ int v;
     w->total += 2;
     w->len += 2;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendData32(w, v)
 SEND_WORK *w;
 u32 v;
@@ -348,7 +421,9 @@ u32 v;
     w->total += 4;
     w->len += 4;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void SetSendStringData(w, src, len)
 SEND_WORK *w;
 void *src;
@@ -358,7 +433,9 @@ u16 len;
     w->total += len;
     w->len += len;
 }
+#endif
 
+#if !defined(G_PART)
 void SetSendStringData2(w, src, len)
 SEND_WORK *w;
 char *src;
@@ -372,7 +449,9 @@ int len;
     SetSendData16(w, n & 0xFFFF);
     SetSendStringData(w, buf, len);
 }
+#endif
 
+#if !defined(G_PART)
 void SetSendEncodeStringData(w, src, len)
 SEND_WORK *w;
 char *src;
@@ -386,13 +465,17 @@ int len;
     SetSendData16(w, n & 0xFFFF);
     SetSendStringData(w, buf, len);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Write_Socket(w)
 u16 *w;
 {
     CpInetTcpSend(CnetSys_w.sock, (u8 *)w + 4, (*w + 0xC) << 16 >> 16);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int lbs_encode_ex(out, in, key, len, extra)
 u8 *out;
 u8 *in;
@@ -414,7 +497,9 @@ int extra;
     }
     return sum & 0x7FFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static int write_col_numeric(buf, val, n)
 char *buf;
 int val;
@@ -430,7 +515,9 @@ int n;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static int read_col_numeric(str, n)
 char *str;
 int n;
@@ -450,7 +537,9 @@ int n;
     }
     return v;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 int mmbbc_encode(out, str, seq)
 char *out;
 char *str;
@@ -469,3 +558,4 @@ int seq;
     out[10] = 0;
     return 0;
 }
+#endif

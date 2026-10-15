@@ -26,6 +26,7 @@ static void bs_page_status_flag_set();
 static u8 *bs_route_current_page_status();
 char *BsRouteCurrent();
 int BsUrlFileExtensionGet();
+#if !defined(G_PART) || G_PART == 1
 BSNODE *bs_request_queue_add(BSNODE *head, char *url) {
     BSNODE *p;
     BSNODE *n;
@@ -43,7 +44,9 @@ BSNODE *bs_request_queue_add(BSNODE *head, char *url) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void bs_request_queue_free_node(BSNODE *head, BSNODE *node) {
     BSNODE *last;
     BSNODE *p;
@@ -72,7 +75,9 @@ void bs_request_queue_free_node(BSNODE *head, BSNODE *node) {
         memset(&node->x108, 0, 2);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void bs_request_cache_clear(BSNODE *arg0) {
     bs_request_queue_free_node(&BcRequest_head, arg0);
     F(s8, arg0, 0x10C) = 0;
@@ -84,7 +89,9 @@ void bs_request_cache_clear(BSNODE *arg0) {
     F(s8, arg0, 0x125) = 0;
     F(s8, arg0, 0x124) = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 BSNODE *bs_route_queue_add(BSNODE *arg0, char *arg1) {
     BSNODE *temp_v0;
     BSNODE *var_s0;
@@ -106,7 +113,9 @@ loop_1:
     var_s0->used = 1;
     return var_s0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static BSNODE *bs_route_queue_forward(BSNODE *head, BSNODE *p) {
     BSNODE *n;
     if (head->next == p) {
@@ -120,7 +129,9 @@ static BSNODE *bs_route_queue_forward(BSNODE *head, BSNODE *p) {
         head = n;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static BSNODE *bs_route_queue_back(BSNODE *head, BSNODE *p) {
     BSNODE *n;
     n = p->next;
@@ -132,15 +143,19 @@ static BSNODE *bs_route_queue_back(BSNODE *head, BSNODE *p) {
     }
     return p;
 }
+#endif
 
 /* original bytes: build/raw/bs_route_queue_free_reverse.inc (config/c_rawfuncs.txt); near-match C is in lb_am.c */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+#if !defined(G_PART)
 asm BSNODE *bs_route_queue_free_reverse()
 {
 #include "bs_route_queue_free_reverse.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 BSNODE *bs_route_queue_free_after(BSNODE *arg0, BSNODE *arg1) {
     BSNODE *var_a1;
 
@@ -152,7 +167,9 @@ loop_1:
     }
     return var_a1;
 }
+#endif
 
+#if !defined(G_PART)
 void bs_route_commit(BSNODE *head, BSNODE *req, void *c) {
     s8 k;
     k = req->x10C;
@@ -173,7 +190,9 @@ void bs_route_commit(BSNODE *head, BSNODE *req, void *c) {
         return;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void bs_page_status_flag_set(u8 *p, int bit, int on) {
     u8 m;
     if (on != 0) {
@@ -183,11 +202,15 @@ static void bs_page_status_flag_set(u8 *p, int bit, int on) {
         p[1] &= ~m;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static s32 bs_page_status_flag_get(u8 *arg0, s32 arg1) {
     return F(u8, arg0, 1) & (arg1 & 0xFFFF) & 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 BSNODE *bs_cache_queue_check(BSNODE *head, char *url) {
     BSNODE *p;
     BSNODE *prev;
@@ -221,7 +244,9 @@ BSNODE *bs_cache_queue_check(BSNODE *head, char *url) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 BSNODE *bs_cache_queue_get_last(arg0)
 BSNODE *arg0;
 {
@@ -243,7 +268,9 @@ loop_2:
     }
     return var_v0;
 }
+#endif
 
+#if !defined(G_PART)
 void bs_cache_queue_free_node(BSNODE *head, BSNODE *node) {
     BSNODE *last;
     BSNODE *p;
@@ -272,7 +299,9 @@ void bs_cache_queue_free_node(BSNODE *head, BSNODE *node) {
         memset(&node->x108, 0, 2);
     }
 }
+#endif
 
+#if !defined(G_PART)
 BSNODE *bs_cache_queue_get(BSNODE *head, char *url) {
     BSNODE *s0;
     BSNODE *p;
@@ -298,13 +327,17 @@ BSNODE *bs_cache_queue_get(BSNODE *head, char *url) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void bs_source_cache_clear(BSNODE *arg0) {
     bs_cache_queue_free_node(&BcSource_head, arg0);
     memset((void *)F(s32, arg0, 0x10C), 0, 0x8000);
     F(s32, arg0, 0x110) = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void bs_image_cache_clear(BSNODE *n) {
     u32 h;
     bs_cache_queue_free_node(&BcImage_head, n);
@@ -321,6 +354,7 @@ void bs_image_cache_clear(BSNODE *n) {
     n->x118 = 0;
     n->x11A = 0;
 }
+#endif
 
 typedef struct BCSRC {      /* html source cache node, 0x114 bytes */
     struct BCSRC *next;     /* 0x000 */
@@ -345,6 +379,7 @@ extern u8 BsCacheImageBuf[0x4000];
 extern u8 BsCacheSourceBuf[0x18000];
 void BsUrlBaseClear();
 void BsRequestPostClear();
+#if !defined(G_PART)
 void BsCacheInitialize(void) {
     int i;
 
@@ -380,11 +415,15 @@ void BsCacheInitialize(void) {
     BsUrlBaseClear();
     BsRequestPostClear();
 }
+#endif
 
+#if !defined(G_PART)
 void BsCacheCleanup(void) {
     bs_cache_queue_image_free_all(&BcImage_head);
 }
+#endif
 
+#if !defined(G_PART)
 char *BsRouteForward(void) {
     BSNODE *n;
     BSNODE *r;
@@ -406,12 +445,16 @@ char *BsRouteForward(void) {
     }
     return n->url;
 }
+#endif
 
+#if !defined(G_PART)
 int BsRouteForwardCheck(void) {
     BSNODE *c = BcRoute_cur;
     return c != bs_route_queue_forward(&BcRoute_head, c);
 }
+#endif
 
+#if !defined(G_PART)
 char *BsRouteBack(void) {
     BSNODE *n;
     BSNODE *r;
@@ -433,16 +476,22 @@ char *BsRouteBack(void) {
     }
     return n->url;
 }
+#endif
 
+#if !defined(G_PART)
 int BsRouteBackCheck(void) {
     BSNODE *c = BcRoute_cur;
     return c != bs_route_queue_back(&BcRoute_head, c);
 }
+#endif
 
+#if !defined(G_PART)
 static u8 *bs_route_current_page_status() {
     return &BcRoute_cur->x108;
 }
+#endif
 
+#if !defined(G_PART)
 char *BsRouteReload(void) {
     BSNODE *r;
     u8 c;
@@ -458,7 +507,9 @@ char *BsRouteReload(void) {
     BcCurrentPage[0] = 5;
     return BcRoute_cur->url;
 }
+#endif
 
+#if !defined(G_PART)
 s32 BsRouteReloadCheck(void) {
     if (bs_page_status_flag_get(bs_route_current_page_status(), 1) != 0) {
         return 0;
@@ -466,11 +517,15 @@ s32 BsRouteReloadCheck(void) {
     bs_page_status_flag_get(bs_route_current_page_status(), 2);
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 char *BsRouteCurrent(void) {
     return BcRoute_cur->url;
 }
+#endif
 
+#if !defined(G_PART)
 void BsRequestHtmlGetCached(char **a) {
     u8 c;
     BSNODE *r;
@@ -485,7 +540,9 @@ void BsRequestHtmlGetCached(char **a) {
     r->x109 = 0;
     BcCurrentPage[0] = 1;
 }
+#endif
 
+#if !defined(G_PART)
 void BsRequestHtmlPost(char **a) {
     u8 c;
     BSNODE *r;
@@ -503,12 +560,14 @@ void BsRequestHtmlPost(char **a) {
     bs_page_status_flag_set(&r->x108, 1, 1);
     BcCurrentPage[0] = 2;
 }
+#endif
 
 /* original bytes: build/raw/BsRequestPostAdd.inc (config/c_rawfuncs.txt) */
 u32 strlen();
 char *strncpy();
 void KanjiSjis2EucEx();
 int BsUrlEncode();
+#if !defined(G_PART)
 int BsRequestPostAdd(char *name, char *val) {
     char buf[0x100];
     int n;
@@ -547,10 +606,14 @@ int BsRequestPostAdd(char *name, char *val) {
     }
     return n;
 }
+#endif
 
+#if !defined(G_PART)
 void BsRequestPostClear(void) {
     memset(BsCachePost, 0, 0x1000);
 }
+#endif
+#if !defined(G_PART)
 int BsRequestImage(char **a) {
     int v;
     BSNODE *r;
@@ -571,8 +634,10 @@ int BsRequestImage(char **a) {
     }
     return v;
 }
+#endif
 
 /* original bytes: build/raw/bs_cache_request_html_core.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 BSNODE *bs_cache_request_html_core(char *url, int mode, u8 *st) {
     BSNODE *n;
 
@@ -616,8 +681,10 @@ BSNODE *bs_cache_request_html_core(char *url, int mode, u8 *st) {
     n->used = 3;
     return n;
 }
+#endif
 
 /* original bytes: build/raw/bs_cache_request_image_core.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 BSNODE *bs_cache_request_image_core(char *url, int mode, u8 *st) {
     BSNODE *n;
 
@@ -643,7 +710,9 @@ BSNODE *bs_cache_request_image_core(char *url, int mode, u8 *st) {
     n->used = 3;
     return n;
 }
+#endif
 
+#if !defined(G_PART)
 void bs_cache_queue_image_free_all(BSNODE *arg0) {
     BSNODE *var_a0;
 
@@ -655,6 +724,7 @@ void bs_cache_queue_image_free_all(BSNODE *arg0) {
         } while (var_a0 != 0);
     }
 }
+#endif
 
 /* original bytes: build/raw/bs_cache_request_create_texture.inc (config/c_rawfuncs.txt) */
 typedef struct BCIMGN {
@@ -670,6 +740,7 @@ typedef struct BCIMGN {
 } BCIMGN;
 int flCreateTextureFromPNG_mem_err();
 int flCreateTextureFromBMP_mem_err();
+#if !defined(G_PART)
 int bs_cache_request_create_texture(BCIMGN *n) {
     int r;
     BCIMGN *last;
@@ -709,6 +780,7 @@ int bs_cache_request_create_texture(BCIMGN *n) {
         return 0;
     }
 }
+#endif
 
 /* original bytes: build/raw/bs_request_check_task_http.inc (config/c_rawfuncs.txt) */
 typedef struct BSTASK {
@@ -763,6 +835,7 @@ typedef struct BSREQ {
     s32 size;               /* 0x120 */
     s8 x124, x125;          /* 0x124 error kind, result */
 } BSREQ;
+#if !defined(G_PART)
 void bs_request_check_task_http(BSREQ *r) {
     BSTASK *t;
 
@@ -839,8 +912,10 @@ void bs_request_check_task_http(BSREQ *r) {
         break;
     }
 }
+#endif
 
 /* original bytes: build/raw/bs_request_set_task_core.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 void bs_request_set_task_core(BSTASK *t, char *a, s8 b, char *c, char *d, s8 e, u8 *f, s32 g, char *url, s32 h, s32 i,
                               s32 j, s32 k, s8 post, u8 *l, s8 m) {
     t->x00 = 1;
@@ -881,8 +956,10 @@ void bs_request_set_task_core(BSTASK *t, char *a, s8 b, char *c, char *d, s8 e, 
     t->x34 = m;
     t->x35 = 0;
 }
+#endif
 
 /* original bytes: build/raw/bs_request_set_task_html.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 void bs_request_set_task_html(BSNODE *r) {
     char url[0x100];
     BSNODE *c;
@@ -921,8 +998,10 @@ void bs_request_set_task_html(BSNODE *r) {
         break;
     }
 }
+#endif
 
 /* original bytes: build/raw/bs_request_set_task_image.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 void bs_request_set_task_image(BSNODE *r) {
     char url[0x100];
     BSNODE *c;
@@ -957,9 +1036,11 @@ void bs_request_set_task_image(BSNODE *r) {
         break;
     }
 }
+#endif
 
 /* original bytes: build/raw/BsRequestTask.inc (config/c_rawfuncs.txt) */
 int HttpTaskPullCheck(void);
+#if !defined(G_PART)
 void BsRequestTask(void) {
     BSREQ *r;
 
@@ -994,6 +1075,7 @@ void BsRequestTask(void) {
         }
     }
 }
+#endif
 
 /* original bytes: build/raw/BsRequestCheck.inc (config/c_rawfuncs.txt) */
 /* the current page as BsRequestCheck hands it out (BcCurrentPage, 0x14 bytes) */
@@ -1012,6 +1094,7 @@ extern char BsCacheTmpUrlstr[];
 void HttpTaskPush(BSTASK *t);
 char *BsStrtblGet(int kind, int idx);
 void CpInetHttpResolvCacheInitialize(void);
+#if !defined(G_PART)
 void **BsRequestCheck(char **purl) {
     BSREQ *r;
     BCSRC *c;
@@ -1176,7 +1259,9 @@ void **BsRequestCheck(char **purl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void BsRequestCancelHtml(void) {
     switch (BcCurrentPage[0]) {
     case 2:
@@ -1195,7 +1280,9 @@ void BsRequestCancelHtml(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void BsRequestCancelAll(void) {
     BSNODE *n;
     n = &BcRequest_head;
@@ -1222,6 +1309,7 @@ void BsRequestCancelAll(void) {
         }
     }
 }
+#endif
 
 
 extern char *bs_strtbl_html[];
@@ -1231,6 +1319,7 @@ extern char *bs_strtbl_mmbb_dialog[];
 extern char *bs_strtbl_mmbb_ng_msg[];
 extern char *bs_strtbl_cap_dialog[];
 extern char *bs_strtbl_err_dialog[2];
+#if !defined(G_PART)
 char *BsStrtblGet(int kind, int idx) {
     switch (kind) {
     case 2:
@@ -1250,4 +1339,5 @@ char *BsStrtblGet(int kind, int idx) {
     }
     return 0;
 }
+#endif
 

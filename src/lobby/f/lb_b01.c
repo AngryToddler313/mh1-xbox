@@ -9,6 +9,7 @@
 
 
 
+#if !defined(G_PART)
 int Lb_check_money(u32 n) {
     LBQUEST *q;
     s32 fee;
@@ -25,19 +26,25 @@ int Lb_check_money(u32 n) {
     cnWrap_SoundRequest(8);
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 LBQUEST *get_quest_info(void) {
     s32 *p = (s32 *)mission_area;
     return (LBQUEST *)(*p + (int)p);
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_get_quest_str(int n) {
     u8 *qi = (u8 *)get_quest_info();
     int base = mission_area;
     int v = *(s32 *)(*(s32 *)(qi + 0x18) + base + n * 4);
     return v + base;
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_get_quest_str2(int n) {
     LBQUEST *q = lb_quest_all[mhRule.quest];
     if (mhRule.quest >= 0xC8) {
@@ -45,7 +52,9 @@ int Lb_get_quest_str2(int n) {
     }
     return *(s32 *)(*(s32 *)((u8 *)q + 0x18) + n * 4);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_back_money(void) {
     u16 n = *(u16 *)0x3F33DC;
     LBQUEST *q;
@@ -57,7 +66,9 @@ void Lb_back_money(void) {
     Gold_add(q->fee);
     cnWrap_SoundRequest(8);
 }
+#endif
 
+#if !defined(G_PART)
 void lb_guild_end(void) {
     CW8(CW_OFS(0x2C08)) = 1;
     ((u8 *)&lb_sys)[LBSYS_OFS(0x87)] = 0x14;
@@ -67,3 +78,4 @@ void lb_guild_end(void) {
     Lbc_init_network_work(1);
     NPCZoomInCameraCancel();
 }
+#endif

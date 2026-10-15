@@ -7,35 +7,48 @@ typedef struct { s16 a, b, c; } CPLACE3;
 
 typedef struct { s8 val; u8 pad[6]; } R7;
 
+#if !defined(G_PART) || G_PART == 1
 void cnLBS_Get_LoginWarningMessage(CNET_H1004 *d) {
     *d = CnetSys_w.warnmsg;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_Answer_LoginWarningMessage(void) {
     __cnet_SendAns_WarningMessage();
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void __cnet_SendAns_WarningMessage(int arg0) {
     SetSendCommand(&send_work, 0x14);
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int cnLBS_Send_LoginFinish(void) {
     __cnet_SendSet_LoginFinish();
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_RecvFromLbs_AnswerBillEstimate(void) {
 
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void _cnet_RecvFromLbs_AnswerUserBinary(void) {
     _cnet_Return_CallBack(0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int cnLBS_Read_TopInformation(cb)
 int cb;
 {
@@ -57,15 +70,20 @@ int cb;
     }
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int cnLBS_Get_TopInformation(CNET_B1004 *d) {
     *d = CnetSys_w.topinfo;
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int __cnet_SendReq_TopInformation(void) {
     int cmd = SetSendCommand(&send_work, 0x1F) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
+#endif

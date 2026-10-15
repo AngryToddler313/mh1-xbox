@@ -16,11 +16,14 @@
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_send_myChair(void) {
     lb_send_data(1, 0x11, &lb_sys.x66);
     Lb_send_data_to_myself(1, 0x11, &lb_sys.x66);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_trade_start(PLW *pl) {
     LBPKTRD t;
     memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
@@ -28,7 +31,9 @@ void Lb_send_trade_start(PLW *pl) {
     t.num = pl->work906;
     lb_send_data(0xE, 0xC, &t);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_trade_startTU(PLW *pl, int a1) {
     LBPKTRD t;
     memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
@@ -36,7 +41,9 @@ void Lb_send_trade_startTU(PLW *pl, int a1) {
     t.num = pl->work906;
     lb_send_dataTU(0xE, 0xC, &t, a1);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_send_item_request(int a0, PLW *pl) {
     LBPKTRD t;
     memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
@@ -44,3 +51,4 @@ void Lb_send_item_request(int a0, PLW *pl) {
     t.num = pl->work906;
     lb_send_dataTU(0xE, 0xD, &t, a0);
 }
+#endif

@@ -4,7 +4,7 @@
 
 void set12_move(SETW *sw);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void set12_set(int se0, int se1, int arg, f32 *pos, s16 timer) {
     SETW *sw;
 
@@ -57,7 +57,7 @@ void set12_i(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void set12_m(SETW *sw) {
     if ((u16)sw->timer != 0xFFFF) {
         if (--sw->timer <= 0) {

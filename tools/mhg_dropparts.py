@@ -4,6 +4,7 @@
 --sections: parts whose object has data sections (.data .sdata .sbss .bss .rodata .lit*): they would add a second copy of
             the file's tables to the module. Needs the objects of a VERSION=mhg build.
 --cdiff:    parts that tools/mhg_cdiff.py reports as differing from G's bytes (reads its output from stdin).
+--since REV: only consider parts whose list line is not in config/mhg/c_files.txt of git revision REV (the new ones).
 Prints what it dropped. The part files stay in src/mhg; only the list line goes.
 """
 import os, re, subprocess, sys
@@ -29,9 +30,15 @@ def data_sections(name):
 def main():
     lines = open(LIST).read().split('\n')
     drop = set()
+    old = None
+    if '--since' in sys.argv:
+        rev = sys.argv[sys.argv.index('--since') + 1]
+        old = set(subprocess.run(['git', 'show', '%s:config/mhg/c_files.txt' % rev], cwd=ROOT, capture_output=True, text=True).stdout.split('\n'))
     if '--sections' in sys.argv:
         for l in lines:
             p = l.split()
+            if old is not None and l in old:
+                continue
             if len(p) == 4 and re.search(r'_p\d+$', p[3]):
                 b = data_sections(p[3])
                 if b:

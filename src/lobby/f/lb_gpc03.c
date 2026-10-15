@@ -52,6 +52,7 @@ void Lb_send_chat();
 
 
 /* collect pointers to the distinct chat-log speakers (other than me / the system id) into list; returns the count */
+#if !defined(G_PART)
 u32 Plaza_log_id_chk(u8 **list) {
     u8 *e;
     int left;
@@ -81,13 +82,17 @@ u32 Plaza_log_id_chk(u8 **list) {
     }
     return n;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Plaza_ReibunEdit_i(void) {
     *(s16 *)&reibun_edit = 0;
     reibun_edit.b2 = 0;
     reibun_edit.sel = 0;
 }
+#endif
 
+#if !defined(G_PART)
 int Plaza_ReibunEdit_mv(int arg) {
     s8 r;
     int pad;
@@ -116,3 +121,4 @@ int Plaza_ReibunEdit_mv(int arg) {
     }
     return pad;
 }
+#endif

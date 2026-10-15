@@ -135,7 +135,7 @@ void kbd_yn_kigou_kakutei(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void kouhogun_table_set(int n) {
     int o = n << 8;
     int w = n * 0x101;
@@ -151,7 +151,7 @@ void kouhogun_table_set(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void yn_kouho_work_set(int a, int b) {
     s8 *p;
     int v;

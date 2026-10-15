@@ -119,6 +119,7 @@ int inflateInit2_();
 int ItemboxWindowX(f32, int, int);
 int ItemboxWindowCursorX(f32, int, int, int);
 
+#if !defined(G_PART)
 void Lb_ItemBox_init(void) {
     ib = (u8 *)&item_box;
     F(s32, ib, IBO(4)) = 0;
@@ -128,7 +129,9 @@ void Lb_ItemBox_init(void) {
     F(u8 *, ib, 0xC) = (u8 *)player_work + game_w.master * 0xA00;
 #endif
 }
+#endif
 
+#if !defined(G_PART)
 s32 Lb_ItemBox_open(void) {
     F(s32, ib, IBO(4)) = 0;
     F(s16, ib, IBO(2)) = 0;
@@ -141,8 +144,10 @@ s32 Lb_ItemBox_open(void) {
     se_req(7, 0x11, 0, 0xFF);
     return 1;
 }
+#endif
 
 
+#if !defined(G_PART)
 s32 Lb_ItemBox_mv(int arg0) {
     s32 s0;
     u8 *a;
@@ -200,16 +205,20 @@ s32 Lb_ItemBox_mv(int arg0) {
     F(s8, ib, IBO(0)) = 1;
     return 1;
 }
+#endif
 
 
 /* original bytes: build/raw/itembox_cursor_mv.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+#if !defined(G_PART)
 asm void itembox_cursor_mv()
 {
 #include "itembox_cursor_mv.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 s32 itembox_stock(s32 pad) {
     u16 left;
     u8 *w;
@@ -266,16 +275,20 @@ s32 itembox_stock(s32 pad) {
     }
     return pad;
 }
+#endif
 
 
 /* original bytes: build/raw/itembox_pickup.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+#if !defined(G_PART)
 asm int itembox_pickup()
 {
 #include "itembox_pickup.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 s32 itembox_equipchange(s32 pad) {
     u8 *e2;
     int r;
@@ -493,8 +506,10 @@ set4:
     }
     return pad;
 }
+#endif
 
 
+#if !defined(G_PART)
 s32 itembox_sortup(s32 pad) {
     SW4 tmp4;
     SW6 tmp6;
@@ -578,7 +593,9 @@ s32 itembox_sortup(s32 pad) {
     }
     return pad;
 }
+#endif
 
+#if !defined(G_PART)
 void yes_no_select(pad)
 u16 pad;
 {
@@ -596,15 +613,19 @@ u16 pad;
         se_req(7, 0x16, 0);
     }
 }
+#endif
 
 /* original bytes: build/raw/itembox_sellout.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+#if !defined(G_PART)
 asm int itembox_sellout()
 {
 #include "itembox_sellout.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 static int u_item_chk(int a) {
     u16 id;
     id = D_3C7184[a & 0xFF].id;
@@ -613,8 +634,10 @@ static int u_item_chk(int a) {
     }
     return D_3396D5[id * 0x10] != 0xFF ? 1 : 0;
 }
+#endif
 
 
+#if !defined(G_PART)
 static int u_equip_chk(int a) {
     u8 *u;
     int v;
@@ -628,8 +651,10 @@ static int u_equip_chk(int a) {
     }
     return 1;
 }
+#endif
 
 
+#if !defined(G_PART)
 static int item_kosuu_sel_chk() {
     int a0;
     u8 *p;
@@ -648,8 +673,10 @@ static int item_kosuu_sel_chk() {
     }
     return *(s16 *)(p + UDO(0x1C6)) != 1 ? 1 : 0;
 }
+#endif
 
 
+#if !defined(G_PART)
 static int pick_kosuu_sel_chk() {
     u8 *v;
     int i;
@@ -661,8 +688,10 @@ static int pick_kosuu_sel_chk() {
     v = (u8 *)(i + (int)u);
     return (D_3396D3[*(u16 *)(v + UDO(0x37C)) * 0x10] - *(s16 *)(v + UDO(0x37E))) >= 2;
 }
+#endif
 
 
+#if !defined(G_PART)
 void kosuu_select(int pad, int c) {
     int a3;
     int a0;
@@ -722,9 +751,11 @@ void kosuu_select(int pad, int c) {
         p[0x1C] = 1;
     }
 }
+#endif
 
 
 
+#if !defined(G_PART)
 u8 *sortup_idx_chk(int a) {
     u8 *u;
     int v;
@@ -747,10 +778,12 @@ u8 *sortup_idx_chk(int a) {
     }
     return v == UDEQ(u, 0) ? (u + UDEQO(0)) : 0;
 }
+#endif
 
 
 
 /* number / page selection sub-state shared by the item box tabs (returns the pad with consumed bits cleared, 0x40 = cancel) */
+#if !defined(G_PART)
 s32 ib_select_sub(s32 pad) {
     s32 p;
     u8 *w;
@@ -806,8 +839,10 @@ s32 ib_select_sub(s32 pad) {
 done:
     return pad;
 }
+#endif
 
 /* original bytes: build/raw/equip_ok_chk.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 int equip_ok_chk(u8 *e) {
   int r;
   int new_var[2];
@@ -831,27 +866,35 @@ int equip_ok_chk(u8 *e) {
   }
   return 1;
 }
+#endif
 
 
+#if !defined(G_PART) || G_PART == 1
 int ItemboxWindow(a, b)
 int a;
 int b;
 {
     return ItemboxWindowX(306.0f, a, b);
 }
+#endif
 
 /* original bytes: build/raw/ItemboxWindowX.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+#if !defined(G_PART)
 asm int ItemboxWindowX(f32 base, int cur, int flags)
 {
 #include "ItemboxWindowX.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 int ItemboxWindowCursor(int a, int b, int c) {
     return ItemboxWindowCursorX(306.0f, a, b, c);
 }
+#endif
 
+#if !defined(G_PART)
 int ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
     IBSPR r;
     int i;
@@ -876,11 +919,13 @@ int ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
     r.z = 0;
     flps0008(&r);
 }
+#endif
 
 
 /* flps0008 textured icon */
 
 
+#if !defined(G_PART)
 int disp_itembox_cmd(int a) {
     if (!(a & 0xFF)) {
         *(s32 *)(frame_itembox_cmd + 0x10) = 0xA9182;
@@ -889,18 +934,22 @@ int disp_itembox_cmd(int a) {
     }
     return DispFrameList(frame_itembox_cmd, 0, F(u8, ib, IBO(2)));
 }
+#endif
 
 /* original bytes: build/raw/Disp_lb_item_box.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+#if !defined(G_PART)
 asm int Disp_lb_item_box()
 {
 #include "Disp_lb_item_box.inc"
 }
 #endif
+#endif
 
 /* flps0008 textured icon */
 
 
+#if !defined(G_PART) || G_PART == 2
 int item_explanation(a, b, c)
 int a;
 int b;
@@ -912,8 +961,10 @@ int c;
         Put_shousai();
     }
 }
+#endif
 
 /* amount selector: two-digit number with up/down arrows */
+#if !defined(G_PART)
 int kosuu_disp_sub(void) {
     s8 buf[8];
     u8 *w;
@@ -939,8 +990,10 @@ int kosuu_disp_sub(void) {
         }
     }
 }
+#endif
 
 /* selling price (value + two-byte full-width digits) and the yes/no label */
+#if !defined(G_PART)
 int selling_price_disp_sub(void) {
     u16 wide[16];
     s8 txt[16];
@@ -975,10 +1028,13 @@ int selling_price_disp_sub(void) {
     flfntLocate(0x1B0, 0x18E);
     font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
 }
+#endif
 
+#if !defined(G_PART)
 int yes_no_disp_sub(void) {
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x1B0, 0x18E);
     return font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
 }
+#endif
 

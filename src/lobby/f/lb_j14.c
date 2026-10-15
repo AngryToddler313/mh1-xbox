@@ -34,6 +34,7 @@ void pl_sleeping();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_mv097(PLW *pl) {
     u8 s;
     if (pl->id != game_w.master) {
@@ -68,7 +69,9 @@ void lb_pl_mv097(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_mv098(PLW *pl) {
     u16 r;
     int t;
@@ -102,7 +105,9 @@ void lb_pl_mv098(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void lb_pl_mv099(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -126,3 +131,4 @@ void lb_pl_mv099(PLW *pl) {
         break;
     }
 }
+#endif

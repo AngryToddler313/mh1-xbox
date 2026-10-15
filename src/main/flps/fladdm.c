@@ -198,14 +198,14 @@ static asm u32 *PS2SHADER_ADD_LIGHTCOL1(f32 s, void *dst, void *a)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 static asm u32 *PS2SHADER_ADD_UVSCROLL(void *dst)
 {
 #include "PS2SHADER_ADD_UVSCROLL.inc"
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static asm u32 *PS2SHADER_FLMATRIX_COPY(void *dst, u32 mask)
 {
 #include "PS2SHADER_FLMATRIX_COPY.inc"

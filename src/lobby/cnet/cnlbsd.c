@@ -7,11 +7,14 @@ typedef struct { s16 a, b, c; } CPLACE3;
 
 typedef struct { s8 val; u8 pad[6]; } R7;
 
+#if !defined(G_PART) || G_PART == 1
 int cnLBS_Get_AllocationProgressCount(u16 *arg0) {
     *arg0 = CNW(u16, 0x1032);
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_CallBack_Result_Rule_NumOfRule(CNET_RES res) {
     if (res.val == 0) {
         CnetSys_w.burst[5].res = 1;
@@ -19,7 +22,9 @@ void _cnet_CallBack_Result_Rule_NumOfRule(CNET_RES res) {
     }
     CnetSys_w.burst[5].res = 2;
 }
+#endif
 
+#if !defined(G_PART)
 void _cnet_CallBack_Result_RoomRuleCaption(void) {
     CNET_RES r;
 
@@ -27,3 +32,4 @@ void _cnet_CallBack_Result_RoomRuleCaption(void) {
     r.id = 0xB;
     CnetSys_w.burst[5].cb(r, &r);
 }
+#endif

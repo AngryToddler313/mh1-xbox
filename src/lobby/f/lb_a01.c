@@ -19,6 +19,7 @@ extern u8 D_3E54FB[];
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void lb_trade_start(s8 id, u8 *data) {
     PLW *pl = &player_work[id];
     LBTRADE t;
@@ -30,7 +31,9 @@ void lb_trade_start(s8 id, u8 *data) {
         Lb_Pl_act_set2(pl, 0, 0x2D, 0x10);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_trade_check(int a0, u8 *data) {
     PLW *pl = &player_work[game_w.master];
     LBTRADE t;
@@ -43,3 +46,4 @@ void lb_trade_check(int a0, u8 *data) {
     }
     Lb_send_item_result(a0, 1);
 }
+#endif

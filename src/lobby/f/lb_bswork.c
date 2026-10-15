@@ -33,6 +33,7 @@ int BsTextureAdd(u32 h);
 s32 BsTextureGet(int arg0);
 void BsTextureLoad(int a, u8 *p);
 
+#if !defined(G_PART) || G_PART == 1
 void BsWorkInitAll(void) {
     int i;
     BSWK **h;
@@ -68,7 +69,9 @@ void BsWorkInitAll(void) {
         } while (n-- != 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static BSWK *bs_pul_wk(void) {
     BSWK *n;
     n = Bs_work_free_head;
@@ -77,13 +80,17 @@ static BSWK *bs_pul_wk(void) {
     }
     return n;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void bs_psh_wk(BSWK *w) {
     memset(w, 0, 0x70);
     w->next = Bs_work_free_head;
     Bs_work_free_head = w;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 BSWK *BsWorkPull(int line, int tail) {
     BSWK *w;
     BSWK *p;
@@ -116,7 +123,9 @@ BSWK *BsWorkPull(int line, int tail) {
     p->next = w;
     return w;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void BsWorkPush(BSWK *w) {
     BSWK *p;
     BSWK *n;
@@ -141,7 +150,9 @@ void BsWorkPush(BSWK *w) {
     }
     bs_psh_wk(w);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void BsWorkMove(int line) {
     BSWK *n;
     BSWK *w;
@@ -156,7 +167,9 @@ void BsWorkMove(int line) {
         } while (n != 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void BsWorkTrans(int line) {
     BSWK *n;
     BSWK *w;
@@ -171,7 +184,9 @@ void BsWorkTrans(int line) {
         } while (n != 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void BsTextureFreeAll(void) {
     int i;
     s32 *p;
@@ -201,7 +216,9 @@ void BsTextureFreeAll(void) {
     Bs_tex_handle_ptr = 0;
     flCompact();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int BsTextureAdd(u32 h) {
     if (Bs_tex_handle_ptr == 24) {
         return -1;
@@ -210,7 +227,9 @@ int BsTextureAdd(u32 h) {
     Bs_tex_handle_ptr++;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s32 BsTextureGet(int arg0) {
     int i;
 
@@ -220,7 +239,9 @@ s32 BsTextureGet(int arg0) {
     }
     return Bs_tex_handle[i];
 }
+#endif
 
+#if !defined(G_PART)
 void BsTextureLoad(int a, u8 *p) {
     u8 st;
     switch (a) {
@@ -246,3 +267,4 @@ void BsTextureLoad(int a, u8 *p) {
         }
     }
 }
+#endif

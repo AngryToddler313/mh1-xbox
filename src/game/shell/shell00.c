@@ -20,6 +20,7 @@ static void shell00_e(SHLW *sh);
 
 void flvecCopy(void *, void *);
 
+#if !defined(G_PART)
 void shell00_set(PLW *pl, int arg) {
     SHLW *sh = pull_shell_work(0);
 
@@ -40,7 +41,9 @@ void shell00_set(PLW *pl, int arg) {
         ((EMW *)pl)->x19 = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void shell00_move(SHLW *sh) {
     switch (sh->mode) {
     case 0:
@@ -71,7 +74,9 @@ static void shell00_move(SHLW *sh) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void shell00_i(SHLW *sh) {
     PLW *pl = &player_work[sh->em_no];
     u8 atk = 0;
@@ -149,7 +154,9 @@ static void shell00_i(SHLW *sh) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void cont_add(SHLW *sh) {
     PLW *pl = &player_work[sh->em_no];
 
@@ -157,7 +164,9 @@ static void cont_add(SHLW *sh) {
         sh->x61++;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell00_m(SHLW *sh) {
     PLW *pl = &player_work[sh->em_no];
 
@@ -189,12 +198,17 @@ static void shell00_m(SHLW *sh) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell00_d(SHLW *sh) {
     sh->mode = 6;
     sh->be_flag = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell00_e(SHLW *sh) {
     push_shell_work(sh);
 }
+#endif

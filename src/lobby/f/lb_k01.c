@@ -18,6 +18,7 @@ void Lb_Pl_act_set2();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_chat00(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -40,7 +41,9 @@ void lb_pl_chat00(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_chat01(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -59,7 +62,9 @@ void lb_pl_chat01(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_chat02(PLW *pl) {
     int t;
     u8 s;
@@ -89,7 +94,9 @@ void lb_pl_chat02(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void lb_pl_chat03(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -112,3 +119,4 @@ void lb_pl_chat03(PLW *pl) {
         }
     }
 }
+#endif

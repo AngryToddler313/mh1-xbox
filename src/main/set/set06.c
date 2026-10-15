@@ -28,7 +28,7 @@ static void set06_d(SETW *sw);
 static void set06_e(SETW *sw);
 static void set06_trans(PRIM *pr);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Set06_set(int arg) {
     SETW *sw = pull_set_work(0);
 

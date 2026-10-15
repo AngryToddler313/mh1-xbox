@@ -9,6 +9,7 @@ typedef struct BTN { UV a, b; } BTN;
 extern BTN lb_button_tbl[];
 void flps0008();
 
+#if !defined(G_PART) || G_PART == 1
 s32 Lb_put_button(s32 x, s32 y, s32 idx) {
     IBICON q;
     BTN *b = &lb_button_tbl[idx];
@@ -26,7 +27,9 @@ s32 Lb_put_button(s32 x, s32 y, s32 idx) {
     flps0008(&q);
     return (s16)((s16)x + (b->b.u - b->a.u));
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_icon(int a, s16 b, u32 c, int d) {
     IBICON q;
     BTN *t;
@@ -87,3 +90,4 @@ void Lb_put_icon(int a, s16 b, u32 c, int d) {
     q.uv1 = t->b;
     flps0008(&q);
 }
+#endif

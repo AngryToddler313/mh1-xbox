@@ -151,6 +151,7 @@ static void npc_chr_sub();
 void npc_mk();
 static void npc_effect_move();
 
+#if !defined(G_PART)
 static void npc_trans(arg)
 u8 *arg;
 {
@@ -215,7 +216,9 @@ u8 *arg;
     clay_attr_reset();
     flSetRenderState(0x60, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void npc_init_sub(p)
 NPCW *p;
 {
@@ -230,7 +233,9 @@ NPCW *p;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void npc_init(p)
 NPCW *p;
 {
@@ -320,7 +325,9 @@ NPCW *p;
     }
     World_calc(p);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void npc_move(p)
 NPCW *p;
 {
@@ -398,18 +405,24 @@ NPCW *p;
     GetGroundHitStatusAreaEm(p, &p->posx, (u8 *)p + 0x70C, &p->gy, (u8 *)p + 0x7E4);
     p->posy = p->gy;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void npc_die(p)
 NPCW *p;
 {
     p->step++;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void npc_erase(void)
 {
     push_em_work();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int npc_mv(p)
 NPCW *p;
 {
@@ -440,7 +453,9 @@ NPCW *p;
     World_calc(p);
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void npc_chr_sub(p)
 NPCW *p;
 {
@@ -459,7 +474,9 @@ NPCW *p;
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void npc_mk(p)
 NPCW *p;
 {
@@ -474,9 +491,12 @@ NPCW *p;
     flmatCopy((u8 *)p + 0x60, &b);
     flCalcTransSI(B32(mdl, 0x24), &b);
 }
+#endif
 
+#if !defined(G_PART)
 static void npc_effect_move(p)
 NPCW *p;
 {
     (*(void (**)())((u8 *)p->prog + 0xC))(p);
 }
+#endif

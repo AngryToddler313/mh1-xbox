@@ -39,6 +39,7 @@ void random_stack();
 void lb_process_decide();
 s32 item_to_stack(s32 arg0, s32 arg1);
 int lb_process_use_item_k();
+#if !defined(G_PART) || G_PART == 1
 s32 lb_armor2_sel2Prog() {
     if (lbShop.key & 0x20) {
         if (lbShop.x78 == 0) {
@@ -73,21 +74,27 @@ s32 lb_armor2_sel2Prog() {
 block_16:
     return 2;
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm s32 lb_process_kyoukaListProg()
 {
 #include "lb_process_kyoukaListProg.inc"
 }
 #endif
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void lb_process_use_item(int n)
 {
 #include "lb_process_use_item.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void random_stack() {
     u8 *tbl;
     int id;
@@ -129,7 +136,9 @@ void random_stack() {
     lbShop.tbl[lbShop.cur * 2] = id;
     lbShop.tbl[lbShop.cur * 2 + 1] = qty;
 }
+#endif
 
+#if !defined(G_PART)
 void lb_process_decide() {
     u8 buf[6];
     s32 id;
@@ -158,7 +167,9 @@ void lb_process_decide() {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 s32 item_to_stack(s32 arg0, s32 arg1) {
     s32 var_s0;
     u16 temp_v0;
@@ -200,4 +211,5 @@ s32 item_to_stack(s32 arg0, s32 arg1) {
     }
     return var_s0;
 }
+#endif
 

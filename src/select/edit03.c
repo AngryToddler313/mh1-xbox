@@ -55,18 +55,25 @@ void cont_trans(TSKH *tk);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void ed_decide_se(void) {
     se_req(7, 0x13, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void ed_decide_se2(void) {
     se_req(1, 0x73, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void ed_cancel_se(void) {
     se_req(7, 0x14, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void waku_disp(f32 x, f32 y, f32 w, f32 h, f32 t) {
     SPR4 s;
     f32 x2 = x + w;
@@ -83,7 +90,9 @@ void waku_disp(f32 x, f32 y, f32 w, f32 h, f32 t) {
     s.col = 0xFF010101;
     flps0004(&s);
 }
+#endif
 
+#if !defined(G_PART)
 void disp_edinfo(u8 *w) {
     int len;
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
@@ -118,7 +127,9 @@ void disp_edinfo(u8 *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int name_str_check(u8 *w0) {
     EDIT_W *w = (EDIT_W *)w0;
     s16 i;
@@ -140,7 +151,9 @@ loop:
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void disp_check(u8 *w, s16 mode) {
     u8 f;
     flfntSetSize(0x14, 0x14);
@@ -186,7 +199,9 @@ void disp_check(u8 *w, s16 mode) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void disp_save_info(void *unused, u16 mode) {
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
     flfntSetSize(0x14, 0x14);
@@ -200,7 +215,9 @@ void disp_save_info(void *unused, u16 mode) {
         Disp_button(1.0f, 1, 0x132, 0x17E, 8);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void disp_mc(u8 *w, s16 flag) {
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
     flfntSetSize(0x14, 0x14);
@@ -215,3 +232,4 @@ void disp_mc(u8 *w, s16 flag) {
     }
     font_print_ex(0x96, 0x168, 0, lit_504_0053B8A0);
 }
+#endif

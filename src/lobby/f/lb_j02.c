@@ -7,6 +7,7 @@
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_mv045(PLW *pl) {
     u8 s;
     PLU8(pl, 0x90B) = 1;
@@ -26,7 +27,9 @@ void lb_pl_mv045(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_mv046(PLW *pl) {
     int t;
     u8 s;
@@ -56,7 +59,9 @@ void lb_pl_mv046(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_mv047(PLW *pl) {
     u8 s;
     PLU8(pl, 0x90B) = 1;
@@ -76,7 +81,9 @@ void lb_pl_mv047(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void lb_pl_mv048(PLW *pl) {
     u8 s;
     PLU8(pl, 0x90B) = 1;
@@ -95,7 +102,9 @@ void lb_pl_mv048(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_pl_mv051(PLW *pl) {
     u8 s;
     if (pl->id != game_w.master) {
@@ -119,3 +128,4 @@ void lb_pl_mv051(PLW *pl) {
         }
     }
 }
+#endif

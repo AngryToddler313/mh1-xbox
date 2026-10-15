@@ -139,21 +139,26 @@ int disp_status_k();
 int flfntLocate_k();
 int font_print_double_k();
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int Lb_addChatMember()
 {
 #include "Lb_addChatMember.inc"
 }
 #endif
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void Lb_clearChatMember()
 {
 #include "Lb_clearChatMember.inc"
 }
 #endif
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void Lb_clearChatID(id)
 u8 *id;
 {
@@ -172,7 +177,9 @@ u8 *id;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_clearChatList() {
     s8 i = 0;
     u8 *a = (u8 *)chatIDList;
@@ -187,7 +194,9 @@ void Lb_clearChatList() {
         b += 0x10;
     } while (i < 7);
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_ReibunEdit() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -204,7 +213,9 @@ void plaza_ReibunEdit() {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_checkChatLog() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -224,16 +235,20 @@ void plaza_checkChatLog() {
         break;
     }
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_capcomPage()
 {
 #include "plaza_capcomPage.inc"
 }
 #endif
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void plaza_logOut(a)
 LB_NETW *a;
 {
@@ -293,7 +308,9 @@ LB_NETW *a;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_chatMain(a)
 LB_NETW *a;
 {
@@ -322,7 +339,9 @@ LB_NETW *a;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void tl_exit_sub_menu(silent)
 int silent;
 {
@@ -342,7 +361,9 @@ int silent;
     pNet->sel = 0xE;
     pNet->x0D = 1;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_new_mail(x, y)
 int x;
 int y;
@@ -386,7 +407,9 @@ int y;
         p += 0x9A;
     } while (i < 8);
 }
+#endif
 
+#if !defined(G_PART)
 void Lbs_plaza_trans(a)
 u8 *a;
 {
@@ -427,9 +450,11 @@ u8 *a;
         box.y += 0x16;
     } while (i < 0xB);
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void put_plaza_menu(a)
 LB_NETW *a;
 {
@@ -452,7 +477,9 @@ LB_NETW *a;
         } while (p[0] != 2);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void put_titles(a, b, c)
 int a;
 int b;
@@ -461,13 +488,17 @@ int c;
     flfntSetSize(0x12, 0x12);
     font_print_double_k(a, b, 1, 5, c);
 }
+#endif
 
+#if !defined(G_PART)
 void put_titles2(a)
 u8 *a;
 {
     put_titles(*(s16 *)a, *(s16 *)(a + 2), *(int *)(a + 4));
 }
+#endif
 
+#if !defined(G_PART)
 void put_mainWindow(x, y)
 int x;
 int y;
@@ -480,7 +511,9 @@ int y;
     Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
     Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
 }
+#endif
 
+#if !defined(G_PART)
 void put_mainWindowTex(x, y)
 int x;
 int y;
@@ -493,12 +526,15 @@ int y;
     Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
     Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_enterLobbyTrans()
 {
 #include "plaza_enterLobbyTrans.inc"
 }
+#endif
 #else
 /* PC build (ONLINE=1): the plaza's lobby list (7 lobbies a page: name, users) or the member list of the chosen
  * lobby; agent C's reading of the asm (wip/plaza_enterLobbyTrans_tu.c), the lobby count is ClassInfo+6 (lhu at
@@ -580,6 +616,7 @@ void plaza_enterLobbyTrans(int x, int y)
 }
 #endif
 
+#if !defined(G_PART)
 void plaza_movePlazaTrans(a)
 LB_NETW *a;
 {
@@ -629,15 +666,19 @@ LB_NETW *a;
     } while (i < 7);
     Put_page_num_p5(sx + 0x12C, y, a->x24, 2, 0);
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART) || G_PART == 1
 int Lb_get_cursor_col() {
     f32 a = 0.0000958738f * (f32)(u32)(u16)((System_timer & 0x3F) << 10);
 
     return (((s8)(int)(80.0f * flSin(a)) + 0x9F) << 24) | 0xFF00;
 }
+#endif
 
+#if !defined(G_PART)
 void Put_page_num(int x, int y, int page, s16 pages, int flag) {
     char buf[0x20];
     char buf2[0x20];
@@ -681,19 +722,24 @@ void Put_page_num(int x, int y, int page, s16 pages, int flag) {
         }
     }
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_checkFriendTrans()
 {
 #include "plaza_checkFriendTrans.inc"
 }
 #endif
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int disp_status()
 {
 #include "disp_status.inc"
 }
+#endif
 #else
 /* PC: written from the asm of 0x59AE60 (not compared with check.py; agent B, 10 Oct 2026). A hunter's status card
  * (my status, a friend, a search result): title, page number, then for pages 0 / 1 the handle, the id, the weapon kind
@@ -798,6 +844,7 @@ int disp_status(int x0, int y0, int id, int handle, int mini_, int page_, int pa
 #endif
 
 
+#if !defined(G_PART)
 void put_member_info(x, y, name, col, info, flag)
 int x;
 int y;
@@ -835,34 +882,44 @@ s8 flag;
         }
     }
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_searchMemberTrans()
 {
 #include "plaza_searchMemberTrans.inc"
 }
 #endif
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_mailBoxTrans()
 {
 #include "plaza_mailBoxTrans.inc"
 }
 #endif
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void plaza_checkMyStatusTrans() {
     disp_status_k(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_setMyCommentTrans()
 {
 #include "plaza_setMyCommentTrans.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void lb_put_comment(x, y, c, f)
 int x;
 int y;
@@ -876,14 +933,18 @@ s8 f;
     KinshiYogo_chk(c);
     Put_comment(x, (s16)((s16)y - 0x16), 0x16, c);
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int plaza_setChatModeTrans()
 {
 #include "plaza_setChatModeTrans.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void put_mail_input_square(a, x, y)
 LB_NETW *a;
 int x;
@@ -988,7 +1049,9 @@ int y;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_disp_mail(int a, s16 x, s16 y)
 {
     char buf[0x80];
@@ -1037,9 +1100,11 @@ void plaza_disp_mail(int a, s16 x, s16 y)
     }
     font_set_palette(0);
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void plaza_chatTrans() {
     s16 idx;
 
@@ -1060,12 +1125,15 @@ void plaza_chatTrans() {
     flfntSetSize(0x16, 0x16);
     font_print_double_k(0x22E, 0x33, 1, 0, tl_etc[3 + idx]);
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void plaza_trans_ot0()
 {
 #include "plaza_trans_ot0.inc"
 }
+#endif
 #else
 /* PC build (ONLINE=1): agent C's near-match (wip/plaza_trans_ot0_tu_2diff.c: one register differs from 0x598... asm) */
 extern u8 D_3A27D6[];
@@ -1171,6 +1239,7 @@ LB_NETW *a;
 }
 #endif
 
+#if !defined(G_PART)
 void Lb_on_dialog() {
     LB_NETW *n;
     u8 *r;
@@ -1205,9 +1274,11 @@ void Lb_on_dialog() {
         }
     }
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void plaza_trans_ot1(a)
 u8 *a;
 {
@@ -1221,7 +1292,9 @@ u8 *a;
         pNet->x0C = 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void put_main_cursor(int n) {
     R12 a = lit_3380;
     R12 b = lit_3382;
@@ -1235,7 +1308,9 @@ void put_main_cursor(int n) {
         Put_F(&a);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void put_main_cursor2(int x, int y, s32 n) {
     R12 a = lit_3397;
     s16 t = x;
@@ -1255,27 +1330,36 @@ void put_main_cursor2(int x, int y, s32 n) {
         Put_F(&a);
     }
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void Get_PlazaName(dst)
 char *dst;
 {
     sprintf(dst, lit_193_0065DBE8, Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
 }
+#endif
 
+#if !defined(G_PART)
 void Get_LobbyName(dst)
 char *dst;
 {
     sprintf(dst, lit_193_0065DBE8, Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
 }
+#endif
 
+#if !defined(G_PART)
 void Lbs_load() {
     load_pit();
     load_texlist(*(int *)0x3876A8, 0x14D, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void Lbc_release() {
     release_texture(0x118, 0x15);
 }
+#endif
 

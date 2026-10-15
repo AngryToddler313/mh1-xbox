@@ -247,7 +247,7 @@ void DemoCameraCancel(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 s8 DemoCameraCheck(void) {
     return CameraWork.sl[4].d.demo.state;
 }

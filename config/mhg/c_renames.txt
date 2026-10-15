@@ -2,6 +2,7 @@
 build/mhg/src/mhg/main/game/f_game_p1.c.o .rodata .data
 build/mhg/src/main/load/mkmap.c.o .rodata .data
 build/mhg/src/main/font/dsp01.c.o .rodata .data
+build/mhg/src/mhg/main/fl/clay05_p1.c.o .rodata .data
 build/mhg/src/main/fl/flrs05.c.o .rodata .data
 build/mhg/src/main/sound/bgm01.c.o .rodata .data
 build/mhg/src/mhg/main/cam/camd_p4.c.o .rodata .data
@@ -21,6 +22,7 @@ build/mhg/src/main/pl/plx06.c.o .rodata .data
 build/mhg/src/main/pl/pl72.c.o .rodata .data
 build/mhg/src/main/eft/eft13e.c.o .rodata .data
 build/mhg/src/mhg/main/hit/hit_1.c.o .rodata .data
+build/mhg/src/mhg/main/pl/pl_snd01_p2.c.o .rodata .data
 build/mhg/src/main/net/netsyn01.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p3.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p4.c.o .rodata .data
@@ -65,10 +67,15 @@ build/mhg/src/game/shell/shell02.c.o .rodata .data
 build/mhg/src/game/shell/shell03.c.o .rodata .data
 build/mhg/src/game/shell/shell04.c.o .rodata .data
 build/mhg/src/game/shell/shell05.c.o .rodata .data
+build/mhg/src/mhg/game/shell/shell06b_p1.c.o .rodata .data
+build/mhg/src/mhg/game/shell/shell06b_p2.c.o .rodata .data
+build/mhg/src/mhg/game/shell/shell10_p1.c.o .rodata .data
 build/mhg/src/game/shell/shell11.c.o .rodata .data
 build/mhg/src/game/shell/shell12.c.o .rodata .data
 build/mhg/src/game/shell/shell13.c.o .rodata .data
+build/mhg/src/mhg/game/shell/shell14_p2.c.o .rodata .data
 build/mhg/src/game/shell/shell15.c.o .rodata .data
+build/mhg/src/mhg/game/shell/shell00_p1.c.o .rodata .data
 build/mhg/src/game/shell/shell17.c.o .rodata .data
 build/mhg/src/game/shell/shell18.c.o .rodata .data
 build/mhg/src/game/shell/shell19.c.o .rodata .data

@@ -4,6 +4,7 @@ extern u8 * pNet;
 extern u8 * lbmw;
 extern char lb_menu_w[];
 
+#if !defined(G_PART)
 void Lb_pl_status_t(u8 *arg0) {
     void *temp_v1;
 
@@ -11,10 +12,13 @@ void Lb_pl_status_t(u8 *arg0) {
     temp_v1 = pNet;
     Lb_PlayerStatus((u8 *)&lb_player + (F(u8, temp_v1, 8) * 0x38), F(u8, temp_v1, 3));
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_Menu_Init(void) {
     lbmw = (u8 *)&lb_menu_w;
     F(s8, lbmw, 4) = 0;
     F(s8, lbmw, 5) = 0;
     F(s8, lbmw, 0xA) = 0;
 }
+#endif

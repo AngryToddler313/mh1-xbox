@@ -62,9 +62,12 @@ typedef struct PL01EX {
 } PL01EX;
 
 
+#if !defined(G_PART)
 void pl_local_init(void) {
 }
+#endif
 
+#if !defined(G_PART)
 void pl01_effect_move(PLW *pl) {
     u8 *ex = (u8 *)pl + 0x444;
 
@@ -78,25 +81,33 @@ void pl01_effect_move(PLW *pl) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void sound_call_0024A2A0(PLW *pl, int frame, int se) {
     if (frame_check((f32)frame, pl, 0) != 0) {
         Pl_se_req2_com(pl, se, 0, pl->pos, 1, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void sound_call_h(PLW *pl, int frame, int se) {
     if (frame_check((f32)frame, pl, 0) != 0) {
         Pl_se_req2_com(pl, se, 0, pl->pos, 3, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void sound_call2(PLW *pl, int frame, int se) {
     if (pl->work7ED == 0 && GW8(0x1DC) == 0 && frame_check((f32)frame, pl, 0) != 0) {
         Pl_se_req2(pl, se, 0, pl->pos, 1, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void wall_sd_req(f32 frame, PLW *pl, int base)
 {
   s16 mat;
@@ -124,13 +135,17 @@ void wall_sd_req(f32 frame, PLW *pl, int base)
     se_req2(7, (base * 2) + (((u16) ran_suu(1)) & 1), mat, pl->pos, 1, 0);
   }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void ashi_sd_req_0024A510(f32 frame, PLW *pl, int base) {
     if ((Pl_stg_ck(pl) & 0xFF) && frame_check(frame, pl, 0) != 0) {
         se_req2(7, base * 2 + ((u16)ran_suu(1) & 1), PU8(pl, 0x70D), pl->pos, 1, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void ashi_eft_req(f32 frame, PLW *pl, int p, s16 kind) {
     if (frame_check(frame, pl, 0) != 0) {
         switch (kind) {
@@ -164,18 +179,24 @@ void ashi_eft_req(f32 frame, PLW *pl, int p, s16 kind) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void yoroi_sd_req(f32 frame, PLW *pl, int idx) {
     if ((Pl_stg_ck(pl) & 0xFF) && frame_check(frame, pl, 0) != 0) {
         armor_sd_req(pl, idx);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void move_default_0024A750(PLW *pl, struct PL01EX *w) {
     parts_chg(pl, 0x12, 0);
     parts_chg(pl, 0xE, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
 {
     s16 i;
@@ -2554,3 +2575,4 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         break;
     }
 }
+#endif

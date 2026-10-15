@@ -8,6 +8,7 @@ void capcom_logo(void);
 void title_disp(int a);
 void opening_demo(void);
 
+#if !defined(G_PART)
 void Demo_task(STASK *t) {
     switch (t->step) {
     case 0:
@@ -21,9 +22,11 @@ void Demo_task(STASK *t) {
         break;
     }
 }
+#endif
 
 extern char lit_105_0053B300[];
 
+#if !defined(G_PART)
 void demo_task_sub(STASK *t) {
     DEMO_W *d = &demo_w;
     switch (demo_w.mode) {
@@ -100,9 +103,11 @@ void demo_task_sub(STASK *t) {
         break;
     }
 }
+#endif
 
 extern char lit_112_0053B350[], lit_113_0053B370[];
 
+#if !defined(G_PART)
 void violence_logo(void) {
     SPR s;
     reload_tex(1, 6);
@@ -122,7 +127,9 @@ void violence_logo(void) {
     font_print_double2(0x63, 0xF0, 1, 0, lit_113_0053B370);
     font_draw();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void capcom_logo(void) {
     SPR s;
     SetFilterMode(0);
@@ -148,7 +155,9 @@ void capcom_logo(void) {
     flps0008(&s);
     SetFilterMode(1);
 }
+#endif
 
+#if !defined(G_PART)
 void middle_logo(int n) {
     SPR s;
     int tex;
@@ -168,7 +177,9 @@ void middle_logo(int n) {
     flps0008(&s);
     SetFilterMode(1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void c_disp(s16 x, s16 y) {
     SPR s;
     reload_tex(1, 8);
@@ -184,6 +195,7 @@ void c_disp(s16 x, s16 y) {
     s.u = 0;
     Put_2TF(&s);
 }
+#endif
 
 extern char lit_163_0053B3A0[];
 extern char lit_164_0053B3D0[];
@@ -193,6 +205,7 @@ extern char lit_165_0053B3F0[];
 /* G's title_disp (select 0x544420, read from G's code): the title art is one 512x512 texture page drawn
  * 512x448 (MH1: a 256x256 page, u/v 1..0xFE, 640 wide unless system_w.x31), and the one-line menu is
  * shown for x1A 0/2/4 at x 0x5F / 0x73 (MH1: 0/2/3 at 0x6C / 0x80). */
+#if !defined(G_PART)
 void title_disp(int a) {
     SPR s;
     u8 m;
@@ -227,6 +240,7 @@ void title_disp(int a) {
         break;
     }
 }
+#endif
 #else
 void title_disp(int a) {
     SPR s;
@@ -269,6 +283,7 @@ void title_disp(int a) {
 
 #endif
 
+#if !defined(G_PART)
 void opening_demo(void) {
     switch (demo_w.step) {
     case 0:
@@ -318,3 +333,4 @@ void opening_demo(void) {
     }
     trans();
 }
+#endif

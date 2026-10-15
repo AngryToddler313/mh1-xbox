@@ -72,3 +72,8 @@ PROVIDE(soncho_no_oshie = 0x0066E230);
 PROVIDE(em_hagi_type_tbl = 0x006D5D50); /* G: 4 pointers to per-kind carve tables (Em_hagi_point_set) */
 PROVIDE(Snd_steft_tbl_g = 0x00289020); /* G's sound effect table base (the symbol file's Snd_steft_tbl is 6 bytes higher) */
 PROVIDE(cw_client_g = 0x006DEC10); /* G's client work (MH1 D_6DD7E0) for dcon_task_init */
+
+/* second names of MH1 objects (config/lobby_aliases.txt) that the shared lobby C uses */
+PROVIDE(CnetWork_c9 = 0x006F08A0);
+PROVIDE(CnetWork_c18 = 0x006F08A0);
+PROVIDE(ClassInfo_c74 = 0x006DEC00);

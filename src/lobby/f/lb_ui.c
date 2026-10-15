@@ -66,6 +66,7 @@ void DispSceneTitle();
 void DispSceneSubTitle();
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void Lb_eat()
 {
     u8 *pl;
@@ -128,30 +129,42 @@ void Lb_eat()
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 asm void lb_eat_set()
 {
 #include "lb_eat_set.inc"
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void Lb_eat_to_bell() {
     LBS8(6) = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_eat_to_rcpt() {
     LBS8(6) = 3;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_eat_to_eat() {
     LBS8(6) = 4;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_eat_to_end() {
     LBS8(6) = 5;
 }
+#endif
 
+#if !defined(G_PART)
 int event_eat_rcpt(w)
 LB_NETW *w;
 {
@@ -282,7 +295,9 @@ LB_NETW *w;
     }
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 void event_eat_trans_ot0(a)
 u8 *a;
 {
@@ -362,9 +377,11 @@ u8 *a;
         }
     }
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void event_eat_set_msg() {
     char sp10[0x100];
     s16 v;
@@ -407,13 +424,17 @@ void event_eat_set_msg() {
         set01_set2_use_mem(sp10);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void event_eat_trans_ot1(a)
 u8 *a;
 {
     font_set_stack_no(*(int *)(a + 0x18));
 }
+#endif
 
+#if !defined(G_PART)
 void SetDialogData_HTML(arg0)
 int arg0;
 {
@@ -421,14 +442,18 @@ int arg0;
     dialogData.html = 1;
     set_dialog_square(0x1F4, 0x17C);
 }
+#endif
 
+#if !defined(G_PART)
 void SetDialogYesNo(v)
 s8 v;
 {
     dialogData.yesno = v;
     pNet->yesno = v;
 }
+#endif
 
+#if !defined(G_PART)
 void SetDialogData(id, kind)
 int id;
 s8 kind;
@@ -482,14 +507,18 @@ s8 kind;
         set_dialog_square(maxw * 10 + 0x3C, lines * 20 + 0x3C);
     }
 }
+#endif
 
+#if !defined(G_PART)
 asm void set_dialog_square()
 {
 #include "set_dialog_square.inc"
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void SetSceneTitle(a, b)
 int a;
 int b;
@@ -497,7 +526,9 @@ int b;
     pSceneTitle = text_lobby_msg[a];
     pSceneTitle = pSceneTitle + b;
 }
+#endif
 
+#if !defined(G_PART)
 void SetSceneSubTitle(a, b, c)
 int a;
 int b;
@@ -508,13 +539,17 @@ char *c;
     pSceneSubTitle = pSceneSubTitle + b;
     strcpy(pSceneSubTitle->s, c);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void SetSceneSubTitleColor(c)
 int c;
 {
     subTitleCol = c;
 }
+#endif
 
+#if !defined(G_PART)
 void SetHelpLineMsg(a, b)
 int a;
 int b;
@@ -524,7 +559,9 @@ int b;
     *(int *)(helpLineStr + 8) = 0;
     *(u8 **)helpLineStr = *(u8 **)helpLineStr + b * 8;
 }
+#endif
 
+#if !defined(G_PART)
 void draw_dialog_square(void) {
     DLGSPR sp;
     DLGSPR *t;
@@ -582,12 +619,16 @@ void draw_dialog_square(void) {
     sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * tw));
     Put_sprite_rotate(&sp, 2);
 }
+#endif
 
+#if !defined(G_PART)
 asm int Draw_menu_square()
 {
 #include "Draw_menu_square.inc"
 }
+#endif
 
+#if !defined(G_PART)
 void DispDialogData() {
     char buf[0x80];
     char *p;
@@ -695,9 +736,11 @@ void DispDialogData() {
         }
     }
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 void DispSceneTitle() {
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
@@ -709,7 +752,9 @@ void DispSceneTitle() {
         font_print_double(pSceneTitle->x, pSceneTitle->y, 1, 0, pSceneTitle->s);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void DispSceneSubTitle() {
     flfntSetSize(0x12, 0x12);
     if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + CW_OFS(0x2BFE)) != 0) {
@@ -720,4 +765,5 @@ void DispSceneSubTitle() {
     Draw_menu_square(0xD4, 0x44, 0xC0, 0x20, 1, subTitleCol);
     font_print_double(pSceneSubTitle->x, pSceneSubTitle->y, 1, 0, pSceneSubTitle->s);
 }
+#endif
 

@@ -13,6 +13,7 @@ void Eft25_set();
 void eft01_set();
 void sound_call_0053E7E0(EMW *em, int frame, int se);
 
+#if !defined(G_PART)
 void em04_effect_move_0053E790(EMW *em) {
     LBEFW *w = (LBEFW *)em->ex;
 
@@ -25,12 +26,17 @@ void em04_effect_move_0053E790(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void sound_call_0053E7E0(EMW *em, int frame, int se) {
     if (em_frame_check(em, (f32)frame, 0) != 0) {
         Npc_se_req(em, se, (u8 *)em + 0xAC, 2);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void dummy_em_prog_0053E840(void) {
 }
+#endif

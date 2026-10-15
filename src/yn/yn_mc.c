@@ -23,6 +23,7 @@ s32 McActResult(void);
 
 s32 yn_mc_error_conv(s32);
 
+#if !defined(G_PART)
 s32 yn_mc_format(YN_MC *w) {
     switch (w->state) {
     case 0:
@@ -47,15 +48,21 @@ s32 yn_mc_format(YN_MC *w) {
         return -2;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void yn_mc_set_current(YN_MC *w, s8 slot) {
     w->slot = slot;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s8 yn_mc_get_current(YN_MC *w) {
     return w->slot;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s32 yn_mc_ynfile_check(YN_MC *w) {
     switch (w->state) {
     case 0:
@@ -83,10 +90,14 @@ s32 yn_mc_ynfile_check(YN_MC *w) {
         return -2;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void yn_mc_gmfile_current_set(void) {
 }
+#endif
 
+#if !defined(G_PART)
 s32 yn_mc_gmfile_check(YN_MC *w) {
     switch (w->state) {
     case 0:
@@ -114,11 +125,15 @@ s32 yn_mc_gmfile_check(YN_MC *w) {
         return -2;
     }
 }
+#endif
 
+#if !defined(G_PART)
 s32 yn_mc_gmfile_save(void) {
     return -1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s32 yn_mc_error_conv(s32 e) {
     switch (e) {
     case 0:
@@ -139,3 +154,4 @@ s32 yn_mc_error_conv(s32 e) {
         return -3;
     }
 }
+#endif

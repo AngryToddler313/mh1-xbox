@@ -74,15 +74,20 @@ int lb_mix_checkItemMake_k();
 int lb_mix_makeMixList_k();
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_mix_init_member(EMW *pl) {
     lbShop.x1B = 0;
     Lb_shop_tag_init();
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void lb_mix_init() {
     lbShop.tag = shop_default_tag_00610A68;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_mix() {
     EMW *pl = player_work[*(u8 *)0x3F34C1].x3B0;
     LB_NPCW *npc = (LB_NPCW *)pl->ex;
@@ -142,7 +147,9 @@ void Lb_mix() {
     }
     Lb_shop_talk();
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_mix_item_checkMax(s32 id, s8 qty) {
     short cnt = Ud_item_num_ck3(id);
     int i;
@@ -174,7 +181,9 @@ int Lb_mix_item_checkMax(s32 id, s8 qty) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int lb_mix_select() {
     switch (lbShop.mode) {
     case 0:
@@ -195,7 +204,9 @@ int lb_mix_select() {
     shop_tex_rotate[7] &= 0xFFFFFF;
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void lb_mix_put_itemDetail() {
     int have = 0;
     int t;
@@ -268,18 +279,22 @@ void lb_mix_put_itemDetail() {
     }
     }
 }
+#endif
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
+#if !defined(G_PART)
 int lb_mix_checkItemMake(LB_MIXDATA *m, int result) {
     int ok = Ud_item_num_ck3(*(u16 *)(m->rec + 2)) > 0;
     if (!ok) return 0;
     if (Ud_item_num_ck(*(u16 *)m) == 0) return 0;
     return Ud_item_num_ck(*(u16 *)m->rec) != 0;
 }
+#endif
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
+#if !defined(G_PART)
 int lb_mix_makeMixList(s8 mode) {
     int num;
     u8 *rt;
@@ -331,9 +346,11 @@ int lb_mix_makeMixList(s8 mode) {
     } while (no < 0x147);
     return num;
 }
+#endif
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
+#if !defined(G_PART)
 void lb_mix_tag_decide() {
     UD_ITEM *it = User_data[0].item;
     int i;
@@ -392,7 +409,9 @@ void lb_mix_tag_decide() {
     if (cnt % 7 != 0) pages++;
     lbShop.x6D = pages;
 }
+#endif
 
+#if !defined(G_PART)
 int lb_mix_item_select() {
     s16 kk;
     int i;
@@ -455,16 +474,20 @@ int lb_mix_item_select() {
     else shop_tex_rotate[7] |= 0xFF000000;
     return 2;
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm void lb_mix_decide()
 {
 #include "lb_mix_decide.inc"
 }
 #endif
+#endif
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
+#if !defined(G_PART) || G_PART == 2
 void lb_mix_listIcon(int x, int y, int z, s16 n) {
     int v;
 
@@ -477,15 +500,20 @@ void lb_mix_listIcon(int x, int y, int z, s16 n) {
     }
     Lb_put_itemIcon(x, y, z, v);
 }
+#endif
 
+#if !defined(G_PART)
 int CheckItemPrice(id, qty)
 u16 id;
 s16 qty;
 {
     return *(s32 *)0x3C6FE0 >= qty * Item_data[id].buy;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_shop_init() {
     memset(&lbShop, 0, LBSHOP_SIZE);
 }
+#endif
 

@@ -20,6 +20,7 @@ int Online_ck();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
 int SoftKeyboard_alive_check();
+#if !defined(G_PART)
 void Lb_Pl_act_set(pl, a, b, flags)
 PLW *pl;
 u8 a;
@@ -66,7 +67,9 @@ send:
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 int ck_pl_send(PLW *pl) {
     player_work[0].id = 0;
     player_work[1].id = 1;
@@ -85,7 +88,9 @@ int ck_pl_send(PLW *pl) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_pl_to_normal(PLW *pl, int st, int blend, int tm) {
     lb_pl_to_normal_clr();
     pl->work4E0 = 0;
@@ -100,7 +105,9 @@ void Lb_pl_to_normal(PLW *pl, int st, int blend, int tm) {
     }
     lb_action_timer_calc(pl, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_to_normal_clr(PLW *pl) {
     pl->work04 = 0;
     pl->work2F4 = 0;
@@ -141,7 +148,9 @@ void lb_pl_to_normal_clr(PLW *pl) {
     pl->work724[3] = 0;
     pl->work72C[3] = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_to_normal_clr2(PLW *pl) {
     pl->vel[0] = 0.0f;
     pl->vel[1] = 0.0f;
@@ -151,7 +160,9 @@ void lb_pl_to_normal_clr2(PLW *pl) {
     pl->acc[2] = 0.0f;
     pl->act_flag &= 0x104;
 }
+#endif
 
+#if !defined(G_PART)
 void lb_to_normal(PLW *pl, int blend, int tm) {
     pl->act_tm0 = tm;
     pl->act_tm1 = tm;
@@ -165,7 +176,9 @@ void lb_to_normal(PLW *pl, int blend, int tm) {
         Lb_send_pl_status(pl);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void lb_action_timer_calc(PLW *pl, int flag) {
     s16 b = pl->blend0;
     s16 t = pl->act_tm0;
@@ -183,14 +196,18 @@ static void lb_action_timer_calc(PLW *pl, int flag) {
         pl->work3D0 += (b - t) & 0xFF;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Lb_act_ck(PLW *pl, int a, int b) {
     if (pl->flag14 == (u8)a && pl->flag15 == (u8)b) {
         return 1;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 Lb_stick_pow_get(PLW *pl) {
     u8 r = 0;
     u8 c;
@@ -222,11 +239,15 @@ u8 Lb_stick_pow_get(PLW *pl) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int Lb_stick_dir_set(PLW *pl, int no) {
     return (pl->sw.ang[no] + (Get_view_dir() & 0xFFFF)) & 0xFFFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void Lb_Pl_basic_flagset(PLW *pl, int a) {
     int t = a & 0xFF;
     int f = a & 0xFFFF;
@@ -248,7 +269,9 @@ void Lb_Pl_basic_flagset(PLW *pl, int a) {
     lb_pl_flag_clr(pl, 1);
     lb_pl_flag_clr(pl, 2);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_Pl_adj_calc(PLW *pl, int n) {
     if (!(flvecCalcDistance(pl->pos, &pl->work800) < 800.0f)) {
         pl->work818 = 0;
@@ -262,14 +285,18 @@ void Lb_Pl_adj_calc(PLW *pl, int n) {
         pl->work814 = (pl->work808 - pl->pos[2]) / (f32)n;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_Em_adj_calc(PLW *pl, s16 n) {
     F(s16, pl, 0x468) = n;
     F(f32, pl, 0x45C) = (F(f32, pl, 0x934) - pl->pos[0]) / (f32)n;
     F(f32, pl, 0x460) = (F(f32, pl, 0x938) - pl->pos[1]) / (f32)n;
     F(f32, pl, 0x464) = (F(f32, pl, 0x93C) - pl->pos[2]) / (f32)n;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void Lb_Pl_pos_adj(PLW *pl) {
     s16 t = pl->work818;
     if (t != 0) {
@@ -281,7 +308,9 @@ void Lb_Pl_pos_adj(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_Em_pos_adj(PLW *pl) {
     u16 t = F(u16, pl, 0x468);
     u8 *p = (u8 *)pl + 0x444;
@@ -294,7 +323,9 @@ void Lb_Em_pos_adj(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void lb_pl_flag_clr(PLW *pl, int f) {
     if (!(f & 0x80000000)) {
         pl->act_flag = pl->act_flag & ~f;
@@ -302,7 +333,9 @@ void lb_pl_flag_clr(PLW *pl, int f) {
         pl->work394 = pl->work394 & ~(f & 0x7FFFFFFF);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void Lb_pl_flag_set(PLW *pl, int f) {
     if (!(f & 0x80000000)) {
         pl->act_flag = pl->act_flag | f;
@@ -310,7 +343,9 @@ void Lb_pl_flag_set(PLW *pl, int f) {
         pl->work394 = pl->work394 | (f & 0x7FFFFFFF);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void Lb_St_unique_adr_set(PLW *pl) {
     u8 *p;
     f32 z;
@@ -347,7 +382,9 @@ void Lb_St_unique_adr_set(PLW *pl) {
     Lb_put_unique_act_hint(pl, -1);
     pl->fish878 = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 int lb_ck_unique_act(int a0, u8 *p) {
     switch (F(u16, p, 2)) {
     case 7:
@@ -355,7 +392,9 @@ int lb_ck_unique_act(int a0, u8 *p) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_unique_act_hint(pl, a)
 PLW *pl;
 int a;
@@ -487,7 +526,9 @@ int a;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_Pl_stg_ck(PLW *pl) {
     u8 s = pl->stg;
     if (s != game_w.stage) {
@@ -501,7 +542,9 @@ int Lb_Pl_stg_ck(PLW *pl) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void Lb_hit_stop_calc(PLW *pl) {
     u8 a = pl->work409;
     if (a != 0) {
@@ -511,7 +554,9 @@ void Lb_hit_stop_calc(PLW *pl) {
     }
     if (pl->x40A != 0) pl->x40A--;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_act_set(pl, a, b)
 PLW *pl;
 u8 a;
@@ -564,4 +609,5 @@ send:
         }
     }
 }
+#endif
 

@@ -25,6 +25,7 @@ int shop_select_items();
 int shop_select_tag();
 void Lb_shop_trans2(int arg0);
 void Lb_shop_trans_sub(int arg0);
+#if !defined(G_PART)
 int Lb_shop_move() {
     int r;
 
@@ -177,7 +178,9 @@ call24:
     }
     return 2;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int shop_end_ck() {
     if (lbShop.key & 0x20) {
         if (lbShop.x78 == 0) return 0;
@@ -202,14 +205,18 @@ int shop_end_ck() {
     }
     return 2;
 }
+#endif
 
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int shop_select_items()
 {
 #include "shop_select_items.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int shop_select_tag() {
     if (lbShop.key & 0x20) {
         lbShop.wait = 6;
@@ -232,7 +239,9 @@ int shop_select_tag() {
     lbShop.x1B = 1;
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_shop_trans2(int arg0) {
     u16 v;
 
@@ -289,7 +298,9 @@ void Lb_shop_trans2(int arg0) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_shop_trans_sub(int arg0) {
     if ((lbShop.x15 >= 5) && (lbShop.x84 == 0)) {
         if ((lbShop.x8E != 0) && (lbShop.x8E != 3)) {
@@ -311,4 +322,5 @@ block_6:
         }
     }
 }
+#endif
 

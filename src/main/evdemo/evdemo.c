@@ -235,7 +235,7 @@ EVD *d;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void EvDemoMove(void)
 {
     int i;
@@ -271,7 +271,7 @@ void EvDemoMove(void)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 int check000(s)
 EVSLOT *s;
 {

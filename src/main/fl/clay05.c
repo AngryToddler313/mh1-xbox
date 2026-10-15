@@ -89,6 +89,7 @@ extern int flTextureStage[2];
 void flPS2SetMaterialData_sub();
 void flPS2SetMaterialData_sub_mult();
 
+#if !defined(G_PART) || G_PART == 1
 f32 flPS2HalfColorSub(u32 c, int mode) {
     f32 f = 0.0f;
 
@@ -113,7 +114,9 @@ f32 flPS2HalfColorSub(u32 c, int mode) {
     }
     return f;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2MakeMaterialDmaData(CLAYT *c, int n, int mode, u32 *buf, u8 *idx) {
     int i;
     s32 *tbl;
@@ -135,6 +138,7 @@ void flPS2MakeMaterialDmaData(CLAYT *c, int n, int mode, u32 *buf, u8 *idx) {
     buf[6] = 0;
     buf[7] = 0;
 }
+#endif
 
 #define BW(o) (*(u32 *)(buf + (o)))
 #define BF(o) (*(f32 *)(buf + (o)))
@@ -147,6 +151,7 @@ void flPS2MakeMaterialDmaData(CLAYT *c, int n, int mode, u32 *buf, u8 *idx) {
     BW(0x38) = 0xE;                                        \
     BW(0x3C) = 0
 
+#if !defined(G_PART) || G_PART == 1
 static void flPS2SetMaterialData(u32 addr, void *b0, u32 mode, int idx) {
     FLMATR *m;
 
@@ -307,7 +312,9 @@ static void flPS2SetMaterialData(u32 addr, void *b0, u32 mode, int idx) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2RetouchMaterialTexData(int n, int mode, u8 *buf, int *tex) {
     int i;
     int step;
@@ -348,7 +355,9 @@ void flPS2RetouchMaterialTexData(int n, int mode, u8 *buf, int *tex) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2SetMaterialData_sub(int tex, long *a, long *b, long *c, long *d, long *e, long *f) {
     if (tex != 0) {
         flPS2SetTextureRegister(tex, a, b, c, d, e, f, flSystemRenderOperation);
@@ -373,7 +382,9 @@ void flPS2SetMaterialData_sub(int tex, long *a, long *b, long *c, long *d, long 
         f[1] = 0x36;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2SetMaterialData_sub_mult(int tex, long *a, long *b, long *c, long *d, long *e, long *f, int tex2, long *q1, long *q2,
                                    long *q3, long *q4, long *q5) {
     if (tex != 0) {
@@ -421,7 +432,9 @@ void flPS2SetMaterialData_sub_mult(int tex, long *a, long *b, long *c, long *d, 
         q5[1] = 0x37;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2ClayMakeTextureList(CLAYT *c, int unused) {
     int i;
     int j;
@@ -443,7 +456,9 @@ void flPS2ClayMakeTextureList(CLAYT *c, int unused) {
     next:;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2ClayRetouchMaterialTag(void) {
     int i;
     CLAYT *c;
@@ -455,7 +470,9 @@ void flPS2ClayRetouchMaterialTag(void) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void flPS2ClayRetouchMaterialTag_sub(CLAYT *c) {
     u8 *old;
     u8 *b;
@@ -496,14 +513,17 @@ void flPS2ClayRetouchMaterialTag_sub(CLAYT *c) {
         } while (r != 0);
     }
 }
+#endif
 
 /* original bytes: build/raw/flExecuteClay.inc (config/c_rawfuncs.txt); the C below is a near-match (12 instructions off,
  * scheduling only: the original copies the temp-buffer result into its register in the delay slot of the next call), used by the PC build */
 #ifdef __MWERKS__
+#if !defined(G_PART)
 asm int flExecuteClay(int h)
 {
 #include "flExecuteClay.inc"
 }
+#endif
 #else
 int flExecuteClay(int h) {
     CLAYT *c;

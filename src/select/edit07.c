@@ -57,6 +57,7 @@ void cont_trans(TSKH *tk);
 
 /* Name filter: copy str to out (n+1 bytes incl. terminator), upper-case it and fold look-alike
    characters (@ -> A, $/5 -> S, </( -> C, !/1 -> I, 2 -> Z, 0 -> O). */
+#if !defined(G_PART) || G_PART == 1
 void cmn_mongon_check_filter(s8 *out, s8 *str, int n) {
     int i = 0;
     s8 *src;
@@ -82,7 +83,9 @@ void cmn_mongon_check_filter(s8 *out, s8 *str, int n) {
         } while (n >= i);
     }
 }
+#endif
 
+#if !defined(G_PART)
 int cmn_mongon_look(s8 *a) {
     s8 c = *a;
     if (c == 0) {
@@ -94,7 +97,9 @@ int cmn_mongon_look(s8 *a) {
     cmn_mongon_look_sub(a, check_mongon);
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int cmn_mongon_look_sub(s8 *str, s8 *tbl) {
     s8 buf[0x60];
     int len = strlen(str);
@@ -109,3 +114,4 @@ int cmn_mongon_look_sub(s8 *str, s8 *tbl) {
     }
     return 0;
 }
+#endif

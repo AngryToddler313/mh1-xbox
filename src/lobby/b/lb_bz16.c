@@ -2,6 +2,7 @@
 #include "lobby_f.h"
 extern u8 * lbmw;
 
+#if !defined(G_PART)
 void lb_menu_init(void) {
     F(s32, lbmw, 0) = 0;
     *(s8 *)0x39DAD0 = 1;
@@ -9,13 +10,17 @@ void lb_menu_init(void) {
     *(s16 *)0x39DAD2 = (s16) F(u8, lbmw, 4);
     *(s8 *)0x39DADC = 0;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_menu_exit(void) {
     F(s8, lbmw, 5) = 0;
     F(s32, lbmw, 0) = 0;
     *(s8 *)0x39DAD0 = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s32 Lb_menu_move(void) {
     if (F(u8, lbmw, 5) == 0) {
         Lb_menu_exit();
@@ -24,3 +29,4 @@ s32 Lb_menu_move(void) {
     F(s16, lbmw, 6) = Get_sw2(0);
     return 0;
 }
+#endif

@@ -19,6 +19,7 @@ extern u8 D_3E54FB[];
 
 
 
+#if !defined(G_PART)
 void lb_set_chair(int a0, u8 *p) {
     u8 me;
     if (p[0] == 0) {
@@ -39,11 +40,15 @@ void lb_set_chair(int a0, u8 *p) {
         Lb_send_chair_release(&player_work[me]);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void lb_recv_myChair(u8 *p) {
     lb_sys.chair_mask = lb_sys.chair_mask | (1 << *p);
 }
+#endif
 
+#if !defined(G_PART)
 void lb_send_my_status(int a0) {
     Lb_send_stage();
     if (game_w.stage == 0x4D || game_w.stage == 0x4C) {
@@ -53,9 +58,12 @@ void lb_send_my_status(int a0) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void lb_chidori_off(s8 id) {
     PLW *pl = &player_work[id];
     PLU8(pl, 0x8EC) = 0;
     PLU8(pl, 0x90F) = 0;
 }
+#endif

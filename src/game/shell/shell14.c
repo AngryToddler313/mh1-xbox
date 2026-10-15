@@ -45,6 +45,7 @@ static void shell14_d(SHLW *sh);
 static void shell14_e(SHLW *sh);
 static void shell14_trans(PRIM *pr);
 
+#if !defined(G_PART) || G_PART == 1
 void shell14_set(EMW *em, int arg) {
     SHLW *sh;
 
@@ -61,7 +62,9 @@ void shell14_set(EMW *em, int arg) {
         sh->x09 = 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void shell14_pos_get(SHLW *sh, EMW *em) {
     VEC3 a, b;
 
@@ -74,7 +77,9 @@ static void shell14_pos_get(SHLW *sh, EMW *em) {
     sh->ang[1] = em->ang[1];
     sh->ang[2] = em->ang[2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell14_move(SHLW *sh) {
     switch (sh->mode) {
     case 0:
@@ -103,14 +108,18 @@ static void shell14_move(SHLW *sh) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell14_i00(SHLW *sh) {
     sh->xB = 0;
     sh->x7E = 340;
     sh->char0 = 30;
     sh->rate[0] = 0.0f;
 }
+#endif
 
+#if !defined(G_PART)
 static void shell14_m00(SHLW *sh) {
     EMW *em = sh->owner;
 
@@ -173,7 +182,9 @@ static void shell14_m00(SHLW *sh) {
     }
     shell14_pos_get(sh, em);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void shell14_i(SHLW *sh) {
     sh->mode++;
     sh->be_flag = 1;
@@ -189,7 +200,9 @@ static void shell14_i(SHLW *sh) {
     }
     push_shell_work(sh);
 }
+#endif
 
+#if !defined(G_PART)
 static void shell14_m(SHLW *sh) {
     shell14_m00(sh);
     if (sh->prim != 0) {
@@ -197,7 +210,9 @@ static void shell14_m(SHLW *sh) {
         add_prim(ot1, sh->prim, 0x20, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void shell14_d(SHLW *sh) {
     sh->xB = 0;
     sh->mode = 6;
@@ -206,11 +221,15 @@ static void shell14_d(SHLW *sh) {
         release_prim(sh->prim_no);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void shell14_e(SHLW *sh) {
     push_shell_work(sh);
 }
+#endif
 
+#if !defined(G_PART)
 static void shell14_trans(PRIM *pr) {
     FLMAT mat;
     SHLW *sh;
@@ -238,3 +257,4 @@ static void shell14_trans(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif

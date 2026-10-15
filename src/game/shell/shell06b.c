@@ -56,6 +56,7 @@ int Pl_silencer_ck(void *);
 void Pl_se_req2(void *, int, int, VEC3 *, int, int);
 void Eft18_set2(f32 *, s16, int);
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_hit(SHLW *sh) {
     f32 t[3];
     f32 d[3];
@@ -157,7 +158,9 @@ draw:
         add_prim(ot1, sh->prim, 0x20, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_trans_sub(PRIM *pr) {
     FLMAT m;
     FLMAT m0;
@@ -215,7 +218,9 @@ void shell06_trans_sub(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_move(SHLW *sh) {
     switch (sh->mode) {
     case 0:
@@ -244,7 +249,9 @@ void shell06_move(SHLW *sh) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_i(SHLW *sh) {
     shell06_init_sub(sh);
     sh->prim_no = get_prim();
@@ -258,7 +265,9 @@ void shell06_i(SHLW *sh) {
         push_shell_work(sh);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_m(SHLW *sh) {
     SH06W *w = SH06_W(sh);
     SH06P *p = &shell06_param_tbl[sh->arg];
@@ -280,7 +289,9 @@ void shell06_m(SHLW *sh) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_d(SHLW *sh) {
     SH06W *w = SH06_W(sh);
 
@@ -294,11 +305,15 @@ void shell06_d(SHLW *sh) {
         shell06_eft_d(sh);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_e(SHLW *sh) {
     push_shell_work(sh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_trans(PRIM *pr) {
     SHLW *sh = pr->owner;
 
@@ -306,13 +321,17 @@ void shell06_trans(PRIM *pr) {
         shell06_trans_sub(pr);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void shell06_get_weaopn_data(SH06W *w, PLW *pl) {
     w->atk_rate = pl->atk_rate;
     w->ammo = pl->wpn_ammo;
     w->grow = Gun_Grow_Up_DATA[Gun_data[pl->wpn_kind].grow_no] + (w->ammo & 0xF);
 }
+#endif
 
+#if !defined(G_PART)
 void shell06_change_atck_data(SHLW *sh) {
     SH06W *w = SH06_W(sh);
     u16 v;
@@ -327,7 +346,9 @@ void shell06_change_atck_data(SHLW *sh) {
         sh->x62 = v;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int shell06_time_ck(SHLW *sh) {
     SH06W *w = SH06_W(sh);
     SH06P *p = &shell06_param_tbl[sh->arg];
@@ -363,7 +384,9 @@ int shell06_time_ck(SHLW *sh) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void shell06_atck_data_calc(SHLW *sh) {
     SH06W *w = SH06_W(sh);
     s16 *mark;
@@ -401,7 +424,9 @@ void shell06_atck_data_calc(SHLW *sh) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void sleeve_trans(SHLW *sh) {
     FLMAT m;
     MDLW *md;
@@ -432,23 +457,31 @@ void sleeve_trans(SHLW *sh) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u16 calc_rand(u16 a, u16 b, u16 c, u16 d) {
     return (a + b * c) >> d;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 f32 rand_sub(u16 seed, u16 bits) {
     u16 s = 16 - bits;
 
     return 1.5625e-5f * (f32)((seed & (u16)(0xFFFF >> s)) << s);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 f32 rand_sub2(u16 seed, u16 bits) {
     u16 s = 16 - bits;
 
     return 1.5625e-5f * (f32)(s16)(((seed & (u16)(0xFFFF >> s)) << s) - 0x8000);
 }
+#endif
 
+#if !defined(G_PART)
 void shell06_se_req(SHLW *sh, s16 kind) {
     s16 v;
 
@@ -495,7 +528,9 @@ void shell06_se_req(SHLW *sh, s16 kind) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void shell06_eft_i(SHLW *sh) {
     SH06W *w = SH06_W(sh);
     SH06E *e;
@@ -516,7 +551,9 @@ void shell06_eft_i(SHLW *sh) {
     }
     shell06_eft_m(sh);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void shell06_eft_m(SHLW *sh) {
     f32 v[3];
     SH06W *w = SH06_W(sh);
@@ -542,7 +579,9 @@ void shell06_eft_m(SHLW *sh) {
         add_prim(ot0, e->prim, 0x40, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void shell06_eft_d(SHLW *sh) {
     SH06E *e = SH06_W(sh)->eft;
 
@@ -550,7 +589,9 @@ void shell06_eft_d(SHLW *sh) {
         release_prim(e->prim_no);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void shell06_eft_t(PRIM *pr) {
     FLMAT m;
     FLMAT m0;
@@ -603,3 +644,4 @@ void shell06_eft_t(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif

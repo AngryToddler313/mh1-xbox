@@ -17,6 +17,7 @@ u16 ran_suu(int);
 void release_prim(s16);
 
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
+#if !defined(G_PART)
 static void shell09_set_com(SHLW *sh);     /* defined in the G block */
 #endif
 static void shell09_move(SHLW *sh);
@@ -44,8 +45,10 @@ static void shell09_set_com(SHLW *sh) {
     }
 }
 #endif
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 void Shell09_set(VEC3 *pos, int arg, int stg) {
     SHLW *sh;
 
@@ -59,8 +62,10 @@ void Shell09_set(VEC3 *pos, int arg, int stg) {
     }
 }
 #endif
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 void Shell09_set_pl(PLW *pl, VEC3 *pos, int arg) {
     SHLW *sh;
 
@@ -82,7 +87,9 @@ void Shell09_set_pl(PLW *pl, VEC3 *pos, int arg) {
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Shell09_set_em(EMW *em, VEC3 *pos, int arg) {
     SHLW *sh;
 
@@ -97,7 +104,9 @@ void Shell09_set_em(EMW *em, VEC3 *pos, int arg) {
         shell09_set_com(sh);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Shell09_set_pl2(PLW *pl, VEC3 *pos, int arg, int stg) {
     SHLW *sh;
 
@@ -112,8 +121,10 @@ void Shell09_set_pl2(PLW *pl, VEC3 *pos, int arg, int stg) {
         shell09_set_com(sh);
     }
 }
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 static void shell09_kaze_oto_set(SHLW *sh) {
     SHLW *nw;
     int arg;
@@ -152,7 +163,9 @@ static void shell09_kaze_oto_set(SHLW *sh) {
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 static void shell09_move(SHLW *sh) {
     switch (sh->mode) {
     case 0:
@@ -181,8 +194,10 @@ static void shell09_move(SHLW *sh) {
         break;
     }
 }
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 static void shell09_se_req(SHLW *sh) {
     if (sh->stg == game_w.stage) {
         switch (sh->arg) {
@@ -207,8 +222,10 @@ static void shell09_se_req(SHLW *sh) {
     }
 }
 #endif
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 static void shell09_i(SHLW *sh) {
     sh->mode++;
     sh->be_flag = 1;
@@ -257,8 +274,10 @@ static void shell09_i(SHLW *sh) {
     sh->prim = 0;
 }
 #endif
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 static void shell09_m(SHLW *sh) {
     if ((sh->arg == 1 || sh->arg == 4) && sh->x61 <= 0) {
         shell09_kaze_oto_set(sh);
@@ -276,8 +295,10 @@ static void shell09_m(SHLW *sh) {
     }
 }
 #endif
+#endif
 
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#if !defined(G_PART)
 static void shell09_d(SHLW *sh) {
     if ((sh->arg == 1 || sh->arg == 4) && sh->mode == 3) {
         shell09_kaze_oto_set(sh);
@@ -290,10 +311,13 @@ static void shell09_d(SHLW *sh) {
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void shell09_e(SHLW *sh) {
     push_shell_work(sh);
 }
+#endif
 
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
 /* PS2 Monster Hunter G's shell09 (blast areas) for the PC (agent A, 15 Oct 2026; written from G game.bin

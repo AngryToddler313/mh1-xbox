@@ -45,6 +45,7 @@ void lb_armor_listItem(int arg0, int arg1, int arg2, s16 arg3);
 void armor_shop_trans();
 int Lb_get_armor_num_k();
 int Lb_put_job_limit_k();
+#if !defined(G_PART)
 void armor_set_myArmor() {
     u8 *pl;
 
@@ -60,7 +61,9 @@ void armor_set_myArmor() {
     Lb_set_mini_data((u8 *)&lbCommer[*(u16 *)(pl + 0xC)] + 0x1C);
     Lb_set_mini_data((u8 *)cw + *(u16 *)(pl + 0xC) * 0x2FC + 0x1346);
 }
+#endif
 
+#if !defined(G_PART)
 void lb_armor_tag_decide00() {
     int i;
     EQREC *r;
@@ -113,7 +116,9 @@ void lb_armor_tag_decide00() {
     lbShop.x6D = 0xA;
     lbShop.x84 = 1;
 }
+#endif
 
+#if !defined(G_PART)
 void lb_armor_tag_decide01() {
     EQB q;
     LB_SHOPITEM *sl;
@@ -159,7 +164,9 @@ void lb_armor_tag_decide01() {
     lbShop.x6D = pages;
     lbShop.x84 = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 s32 lb_armor_select() {
     switch (F(s8, &lbShop, LBSHOP_OFS(0x19))) {       /* irregular */
     case 0:
@@ -172,7 +179,9 @@ s32 lb_armor_select() {
         return 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 s32 lb_armor_itemBuy() {
     s32 id;
     s32 qty;
@@ -201,13 +210,17 @@ s32 lb_armor_itemBuy() {
     cnWrap_SoundRequest(0);
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 s32 lb_armor_itemSell() {
     Lb_make_mySrcEquip(*(s16 *)((char *)lbShop.tbl + lbShop.cur * 8));
     cnWrap_SoundRequest(0);
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 lb_armor_sel2Prog() {
     if (lbShop.key & 0x20) {
         if (lbShop.x78 == 0) {
@@ -239,7 +252,9 @@ s32 lb_armor_sel2Prog() {
 block_16:
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 void lb_armor_decide() {
     EQK q;
     int new_var;
@@ -287,7 +302,9 @@ void lb_armor_decide() {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 s32 shop_armor_question() {
     s32 id;
     s32 kind;
@@ -356,13 +373,17 @@ s32 shop_armor_question() {
     }
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 void shop_armor_put_shopHelp() {
     Lb_put_shopYesNo();
 }
+#endif
 
 /* number of stocked armor pieces (6-byte records at D_3C7004_c10) with the given kind (u8 at +1) and id (u16 at +2) */
 
+#if !defined(G_PART)
 s32 Lb_get_armor_num(s32 a, s32 b) {
     int cnt;
     int i;
@@ -378,7 +399,9 @@ s32 Lb_get_armor_num(s32 a, s32 b) {
     }
     return cnt;
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_job_limit(u16 kind, s16 id) {
     EQB q;
     u8 b;
@@ -429,7 +452,9 @@ void Lb_put_job_limit(u16 kind, s16 id) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_my_job() {
     font_set_palette(5);
     flfntSetSize(0x12, 0x12);
@@ -440,7 +465,9 @@ void Lb_put_my_job() {
         font_print(lit_551_00655880, my_job_str[1]);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_armor_put_itemDetail() {
     int name;
     int kind;
@@ -497,14 +524,18 @@ void lb_armor_put_itemDetail() {
         EquipmentCompareWindow(lbShop.x54, lbShop.x5A, 0x126, 0x3C, *(u8 *)&lbShop.x6E);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void lb_armor_listItem(int arg0, int arg1, int arg2, s16 arg3) {
     int p;
 
     p = (int)lbShop.tbl + (arg3 + lbShop.x6C * 7) * 8;
     Lb_put_armorIcon(arg0, arg1, arg2, *(s16 *)p, *(s16 *)(p + 4));
 }
+#endif
 
+#if !defined(G_PART)
 void armor_shop_trans() {
     u8 *e;
 
@@ -518,4 +549,5 @@ void armor_shop_trans() {
         break;
     }
 }
+#endif
 
