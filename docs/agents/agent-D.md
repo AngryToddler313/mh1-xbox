@@ -1410,3 +1410,7 @@ GB6 triage (village/lobby; docs/survey/mhg_cov_g.txt is over-approximate: its ma
 - Still open, probably noticeable: Lb_equip_set (G rewrote it; used by the box's equip-change), lb_armor_put_itemDetail / equip description
   windows (GN7), Lb_make_quest_tbl (MH1 copy; G's Lb_make_quest_tbl_local is the one called), lb_npc_trans 0.78, DispDialogData 0.70, Disp_lb_item_box 0.71.
   The rest of the lobby list is plaza/online code (lbc_*, Lbs_*, CallBack_*) that offline G does not reach in play.
+Windows G (verified from a clean clone, `./mh1 windows disc/mhg`, then `wine cmd /c play.bat data` with MH_ARGS="--shot ..." gave the same
+title picture as Linux): two host fixes were needed that the MH1 Windows build also needed (rt_hud_gun.c's RECT clashed with windows.h,
+viewer.c lacked a rt_font_set_draw declaration). A hidden G run needs `--play --boot` (plain `--shot` without it crashes in
+Em_data_com_adrs_get: no quest loaded; same on Linux). With `--shot` the exe does not look for the data folder: pass it (`data`).
