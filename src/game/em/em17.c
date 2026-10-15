@@ -276,6 +276,33 @@ void em17_atk_act_set(EMW *em, u16 no, u16 arg) {
     em_act_set2(em, 3, no, arg);
 }
 
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+void em17_init(EMW *em);
+/* G game 0x606800: the start point of a returning monster (kinds 0x16 / 0x30 on stage 64, the others on
+ * stage 90; by type em+0x1B), then em17_init and x839 = 1 */
+static void em17_revive_init(EMW *em)
+{
+    if (em->kind == 0x16 || em->kind == 0x30) {
+        em->stg = 64;
+        if (em->type == 2) {
+            EMG_PLACE(em, 0x3D2E, 3881.19995f, 636.599976f, 6862.3999f);
+        } else {
+            EMG_PLACE(em, 0x57C, 13333.0996f, 1291.19995f, 4873.10010f);
+        }
+    } else {
+        em->stg = 90;
+        if (em->type == 1) {
+            EMG_PLACE(em, 0x8A76, 11948.9004f, 1010.0f, 15923.7998f);
+        } else {
+            EMG_PLACE(em, 0xDA3D, 15949.7002f, 1010.0f, 7225.7998f);
+        }
+    }
+    em17_init(em);
+    em->x839 = 1;
+}
+#endif
+
 void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -307,6 +334,13 @@ void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 4:
     case 5:
     case 6:
+#ifdef VERSION_MHG      /* G em17_act_set (game 0x604C30): its die act is 4 */
+        if ((u16)kind == 5 && no == 4 && Quest_enemy_revival_ck(em) == 1) {
+            Quest_enemy_revival_set(em);
+            em_status_init(em);
+            em17_revive_init(em);
+        }
+#endif
         em->act_spd = 1.0f;
         em_act_set2(em, kind, no, arg);
         break;

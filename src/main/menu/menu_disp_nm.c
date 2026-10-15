@@ -263,6 +263,100 @@ void quest_condition_print(u8 unused) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x11E4D0: the item command list has three commands (discard / hand over / hand in a quest item) in five
+ * variants of item_cmd_str (3 string pointers each, 0xC bytes); G keeps that frame at 0x25E5A0 (D_0025E5A0, message
+ * pointer at +0xC, colour at +0x10) and the older two-line item_cmd_frame for the hand-over confirmation.
+ * func_0011A730 (G 0x11A730): the item can be handed in: not in a net room, same quest as the one running, not
+ * cleared yet, and the item is one of the four delivery items of quest_w. */
+extern u8 D_0025E5A0[];
+extern char *D_002EC5D8[];
+extern u8 D_0035ED34, D_0035ED4F, D_0035ED5F;
+int Quest_clear_ck(int);
+void font_print_sp(void *, ...);
+void disp_item_list_present_g(void *pit, void *p);
+
+int func_0011A730(u16 id) {
+    int i;
+    if (D_0035ED5F != 0) {
+        return 0;
+    }
+    if (D_0035ED4F != D_0035ED34) {
+        return 0;
+    }
+    if (Quest_clear_ck(1) != 0) {
+        return 0;
+    }
+    for (i = 0; i < 4; i++) {
+        if (*(s16 *)(quest_w + 0x1C + i * 2) == id) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void Pit_disp_item_list(void) {
+    int col, sel;
+    int v;
+    PLW *pl = lpPit->pl;
+
+    switch (lpPit->x48) {
+    case 0:
+        if (((u8 *)lpPit)[0x93] != 0) {
+            sel = 0x10;
+            col = 0;
+            flfntSetSize(0x12, 0x12);
+            flfntLocate(0x1B0, 0x18E);
+            font_print_sp(D_002EC5D8[lpPit->yn]);
+        } else {
+            sel = ((u8 *)lpPit)[0x95] != 0 ? 8 : 0x28;
+            col = 0xA9182;
+        }
+        break;
+    case 1:
+        sel = 0;
+        if (Item_ok_chk((int)pl, lpPit) == 1) {
+            v = 0;
+            if (item_present_chk(pl) != 1) {
+                v = 1;
+            }
+            if (func_0011A730(*(u16 *)((u8 *)pl + 0x828 + lpPit->x49 * 4)) != 1) {
+                v += 2;
+            }
+        } else {
+            v = 4;
+        }
+        *(void **)(D_0025E5A0 + 0xC) = (u8 *)item_cmd_str + v * 0xC;
+        *(s32 *)(D_0025E5A0 + 0x10) = 0xA9182;
+        DispFrameList(D_0025E5A0, 0, lpPit->x4A);
+        col = 0x808080;
+        break;
+    case 2:
+    case 3:
+        sel = 0;
+        switch (lpPit->x4A) {
+        case 0:
+            *(s32 *)(D_0025E5A0 + 0x10) = 0x808080;
+            DispFrameList(D_0025E5A0, 0, lpPit->x4A);
+            DispFrameList(item_yn_frame, 0, lpPit->yn);
+            break;
+        case 1:
+            disp_item_list_present((int)pl, lpPit, &lpPit->x4A);
+            break;
+        case 2:
+            if (lpPit->x4B == 1) {
+                DispFrameList(item_cmd_frame, 0, lpPit->yn);
+            } else if (lpPit->x4B == 0) {
+                disp_item_list_present((int)pl, lpPit, &lpPit->x4A); /* G 0x11E770: hand-in item list (not ported) */
+            }
+            break;
+        }
+        col = 0x808080;
+        break;
+    }
+    ItemListWindow(lpPit->x49, col, sel);
+}
+#else
 /* 0x12C310 */
 void Pit_disp_item_list(void) {
     int col, sel;
@@ -306,6 +400,7 @@ void Pit_disp_item_list(void) {
     }
     ItemListWindow(lpPit->x49, col, sel);
 }
+#endif
 
 /* 0x12C4A0 */
 void disp_item_list_present(int unused, void *unused2, void *unused3) {

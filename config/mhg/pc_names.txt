@@ -24,3 +24,6 @@ lobby D_005E7800 0x5E7800     # quest story data (12 bytes, then the triples at 
 lobby D_005E7810 0x5E7810     # triples of quest numbers (a, b, c), 0xFFFF terminated
 lobby D_005FBA80 0x5FBA80     # G 0x559B40: buckets of quest rows (thousands), each 1000 row pointers
 main item_str 0x501AD0         # G 0x501AD0: table of the "no item" name pointers (MH1 0x33AB40)
+main item_list_title 0x002EC640  # G Pit_disp_item_list family: pointers to the two list titles (アイテム / 調合); found by matching MH1's two strings' G twins (data_map.txt had it only as low); without it the item list title printed "(null)"
+sub_main item_cmd_str 0x005263C0  # G Pit_disp_item_list (0x11E4D0): five variants of three command strings (捨てる / 渡す / 納品する), stride 0xC (MH1: three variants of two, stride 8)
+sub_main equip_exp_str_sw_attr 0x00527EA0  # the seven element names (火 水 雷 龍 毒 麻痺 睡眠) as pointers; data_map.txt's low guess 0x527E10 is the format-string block

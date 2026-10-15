@@ -3,9 +3,11 @@
 
     tools/disc_files.py check   DISC [--quick]
     tools/disc_files.py extract DISC DEST [--files NAME,...]
+    tools/disc_files.py game    DISC          prints mh1 or mhg (which of the two supported discs it is)
 
 DISC is a .iso (2048-byte sectors, or 2352-byte raw sectors) of the Japanese disc (SLPM-65495), or a folder
-holding the files already extracted from it. `check` verifies every needed file by size and CRC32; `extract`
+holding the files already extracted from it. The Japanese Monster Hunter G disc (SLPM-65869) is accepted too
+(its Xbox build: ./mh1 xbox, docs/mhg.md). `check` verifies every needed file by size and CRC32; `extract`
 copies them into DEST (a file that is already there with the right size and CRC32 is kept). Nothing of
 Capcom's is stored in this repository: the table below holds only sizes and checksums (the same numbers as
 src/pc/install.c uses). Exit status 0 = fine, 1 = wrong or damaged disc, 2 = usage / file problem.
@@ -25,6 +27,20 @@ WANT = [
     ('SLPM_654.95', 5648908, 0xCF1A62C0, True),
     ('SYSTEM.CNF', 76, 0x9CF85397, False),
 ]
+
+# Monster Hunter G (Japan, SLPM-65869; VERSION=mhg): the files its PC / Xbox builds read
+WANT_G = [
+    ('AFS_DATA.AFS', 150759424, 0xE397237C, True),
+    ('AFS00.AFS', 926939136, 0x434FA486, True),
+    ('AFS01.AFS', 25186304, 0x3AFA8E6F, True),
+    ('SLPM_658.69', 2029336, 0xB25E8415, True),
+    ('SYSTEM.CNF', 77, 0x71A2CE13, False),
+]
+# game -> (boot file, files, name)
+GAMES = {
+    'mh1': ('SLPM_654.95', WANT, 'the Japanese Monster Hunter disc (SLPM-65495)'),
+    'mhg': ('SLPM_658.69', WANT_G, 'the Japanese Monster Hunter G disc (SLPM-65869)'),
+}
 
 # boot ids of other discs, for a helpful message when the wrong one is given (SYSTEM.CNF: BOOT2 = cdrom0:\SLxx_nnn.nn)
 OTHER = {
@@ -153,16 +169,24 @@ def identify(s, iso):
     return None
 
 
+def which_game(s):
+    """'mh1' / 'mhg' by the boot file on the disc, else None"""
+    for g, (boot, _, _) in GAMES.items():
+        if boot in s.files:
+            return g
+    return None
+
+
 def wrong_disc_message(s, iso):
     boot = identify(s, iso)
-    if boot and boot != 'SLPM_654.95':
+    if boot and boot not in ('SLPM_654.95', 'SLPM_658.69'):
         what = 'a different PS2 game or region'
         for pre, d in OTHER.items():
             if boot.startswith(pre):
                 what = d
         return ('This disc boots %s, which is %s. The port needs the Japanese Monster Hunter for PS2 '
-                '(boot file SLPM_654.95, product code SLPM-65495). The US / European releases and '
-                'Monster Hunter G are different games for this purpose.' % (boot, what))
+                '(boot file SLPM_654.95, product code SLPM-65495) or the Japanese Monster Hunter G (SLPM_658.69). '
+                'The US / European releases are different games for this purpose.' % (boot, what))
     if not any(n.startswith(('SLPM_', 'SLUS_', 'SLES_', 'SCPS_')) for n in s.files):
         return ('This does not look like a PS2 disc image (no boot file such as SLPM_654.95 in its root). '
                 'Use the .iso of the Japanese Monster Hunter disc, or a folder with its files.')
@@ -183,11 +207,13 @@ def crc_of(s, iso, name, quick=False, progress=True):
 
 
 def verify(s, iso, names=None):
-    """raise DiscError unless every wanted file is present with the known size and CRC32"""
-    if 'SLPM_654.95' not in s.files:
+    """raise DiscError unless every wanted file is present with the known size and CRC32; returns the game"""
+    game = which_game(s)
+    if not game:
         raise DiscError(wrong_disc_message(s, iso) or 'SLPM_654.95 is not on this disc: it is not the Japanese '
                         'Monster Hunter (SLPM-65495).')
-    for name, size, crc, req in WANT:
+    want, label = GAMES[game][1], GAMES[game][2]
+    for name, size, crc, req in want:
         if names and name not in names:
             continue
         if name not in s.files:
@@ -195,29 +221,29 @@ def verify(s, iso, names=None):
                 raise DiscError('%s is missing from the disc.' % name)
             continue
         if s.files[name][0] != size:
-            raise DiscError('%s has the wrong size (%d bytes, expected %d). This is not the Japanese '
-                            'Monster Hunter disc (SLPM-65495), or the image is damaged / modified.'
-                            % (name, s.files[name][0], size))
-    for name, size, crc, req in WANT:
+            raise DiscError('%s has the wrong size (%d bytes, expected %d). This is not %s, '
+                            'or the image is damaged / modified.' % (name, s.files[name][0], size, label))
+    for name, size, crc, req in want:
         if names and name not in names:
             continue
         if name in s.files and crc_of(s, iso, name) != crc:
             raise DiscError('%s has the right size but a wrong checksum: the image is damaged or modified '
                             '(a re-dump or a patched / translated image does not work). Dump the disc again.' % name)
+    return game
 
 
 def cmd_check(path, names=None):
     s, iso = open_source(path)
     print('%s: %s, files found: %s' % (path, s.kind, ', '.join(s.names()[:8]) + (', ...' if len(s.files) > 8 else '')))
-    verify(s, iso, names)
-    print('OK: the Japanese Monster Hunter disc (SLPM-65495); all needed files match.')
+    game = verify(s, iso, names)
+    print('OK: %s; all needed files match.' % GAMES[game][2])
 
 
 def cmd_extract(path, dest, names=None):
     s, iso = open_source(path)
-    verify(s, iso, names)               # first: nothing is written for a wrong disc
+    game = verify(s, iso, names)        # first: nothing is written for a wrong disc
     os.makedirs(dest, exist_ok=True)
-    for name, size, crc, req in WANT:
+    for name, size, crc, req in GAMES[game][1]:
         if names and name not in names:
             continue
         if name not in s.files:
@@ -258,6 +284,12 @@ def main(argv):
     try:
         if len(argv) >= 3 and argv[1] == 'check':
             cmd_check(argv[2], names)
+        elif len(argv) >= 3 and argv[1] == 'game':
+            s, iso = open_source(argv[2])
+            g = which_game(s)
+            if not g:
+                raise DiscError(wrong_disc_message(s, iso) or 'not a supported Monster Hunter disc')
+            print(g)
         elif len(argv) >= 4 and argv[1] == 'extract':
             cmd_extract(argv[2], argv[3], names)
         else:

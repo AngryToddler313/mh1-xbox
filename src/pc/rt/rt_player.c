@@ -24,9 +24,12 @@
 #include "pl.h"
 #include "fl.h"
 #include "frame.h"
+#include "rt_dbg.h"
+#include "version.h"
 
 #include <math.h>
 #include <stdio.h>
+static int goto_no_path;     /* RT_PL_GOTO: the last goal had no path (a stage list goes on to the next) */
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,7 +40,7 @@ void pl_init(int mode);
 void rt_pad_tick(void);
 void hit_chk_init(void);
 extern u8 Ken_data[][0x18];
-extern u8 Gun_data[][0x14];
+extern u8 Gun_data[][GUN_ROW];
 extern u8 Battle_type[];
 extern u8 User_data[];
 
@@ -46,13 +49,17 @@ static int pl_ticks, quest_base;    /* player ticks of the run; at the current q
 
 /* Weapon: Ken_data id (sword type 6) or Gun_data id (type 7). Default:
  * Ken 156, the first sword-and-shield (job 4) in the table. RT_WEAPON=id
- * picks another sword (e.g. 1 = the first great sword, job 0). */
+ * picks another sword (e.g. 1 = the first great sword, job 0), RT_WEAPON=gN
+ * the Gun_data row N (a bowgun, e.g. g2; MH1 has 26 rows, G 78). */
 void rt_player_game_init(int no)
 {
     PLW *pl = &player_work[no];
-    int wid = getenv("RT_WEAPON") ? atoi(getenv("RT_WEAPON")) : 156;
-    int type = 6;
-    if (wid < 0 || wid >= 234) wid = 156;
+    const char *we = getenv("RT_WEAPON");
+    int gun = we && (we[0] == 'g' || we[0] == 'G');
+    int wid = we ? atoi(we + gun) : 156;
+    int type = gun ? 7 : 6;
+    if (gun && (wid < 0 || wid >= (rt_ver_mhg() ? 78 : 26))) gun = 0, type = 6, wid = 156;
+    if (!gun && (wid < 0 || wid >= 234)) wid = 156;
     /* init_pl_work's offline master path (Set_userdata) [read from the asm] */
     pl->be_flag = 1;
     pl->id = (u16)no;
@@ -60,7 +67,7 @@ void rt_player_game_init(int no)
     PF(pl, u8, 0x35E) = 0;
     PF(pl, u8, 0x35F) = (u8)type;
     pl->wpn_kind = (u16)wid;
-    pl->work34C = Ken_data[wid][0];
+    pl->work34C = gun ? Gun_data[wid][0] : Ken_data[wid][0];
     pl->kind = Battle_type[pl->work34C];
     if (rt_ver_mhg()) {     /* G keeps the equipment at User_data+0xC74 (G Get_equip_value 0x4C6BF0) */
         PF(User_data, u8, 0xC75) = (u8)type;
@@ -102,6 +109,13 @@ void rt_player_game_init(int no)
                 break;
             q++;
         }
+        if (pl->kind == 1 || pl->kind == 5) {   /* a gunner: load from the new pouch as pl_init does (f_pl.c) */
+            u16 Pl_shell_set(PLW *, int, int);
+            void Shell_type_set(PLW *, int);
+            pl->work88E = Pl_shell_set(pl, 0, 2);
+            pl->work8BC = pl->work88E < 20 ? pl->item[pl->work88E].num : 0;
+            Shell_type_set(pl, 0);
+        }
     }
     {   /* Set_userdata copies the user's pouch (User_data+0x37C) to the
          * hunter; without save data the user's pouch starts as the one
@@ -135,6 +149,23 @@ int rt_tick_count(void) { return pl_ticks; }
 /* the tick the test aids count: player ticks of the run, or with RT_AID_PER_QUEST=1 of the
  * current quest (from rt_player_game_init), so the same aids repeat in every quest of a soak */
 static int aid_tick(void) { return pl_ticks - quest_base; }
+/* RT_PL_TARGET "kA,B,..": the first of these kinds with a living monster anywhere (quests with several bosses:
+ * a boss off the hunter's stage waits, unhurt, so they are fought one after the other); else the first */
+static int target_kind(const char *s)
+{
+    extern u8 em_work[];
+    const char *q;
+    int i;
+    for (q = s + 1; q; q = strchr(q, ',') ? strchr(q, ',') + 1 : NULL) {
+        int k = atoi(q);
+        for (i = 0; i < 20; i++) {
+            u8 *e = em_work + 0xA10 * i;
+            if (e[0] && e[2] == k && *(s16 *)(e + 0x302) > 0)
+                return k;
+        }
+    }
+    return atoi(s + 1);
+}
 int rt_test_target(void)
 {
     const char *s = getenv("RT_PL_TARGET");
@@ -142,7 +173,7 @@ int rt_test_target(void)
     if (s && s[0] == 'k') {     /* "kN": the nearest living monster of kind N on the hunter's stage */
         extern u8 em_work[];
         PLW *p = &player_work[game_w.master];   /* the local hunter (co-op: not always slot 0) */
-        int kind = atoi(s + 1), i;
+        int kind = target_kind(s), i;
         float best = -1;
         int pass, none = 0;
         for (pass = 0; pass < 2 && best < 0; pass++) {      /* living first, then a dead one still lying there (carving) */
@@ -194,17 +225,19 @@ void rt_player_tick(int no)
         if (tg[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
             p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(tg + 0xAC));
     }
-    if (getenv("RT_PL_WARP_EM")) {  /* test aid: at ticks "t1,t2-t3,..", next to monster 0's carve point (or its first body volume), facing it */
+    if (getenv("RT_PL_WARP_EM") || rt_dbg.warp_em_slot >= 0) {  /* test aid: at ticks "t1,t2-t3,..", next to monster 0's carve point (or its
+                                         * first body volume), facing it; the debug menu's "warp to monster" (rt_dbg.c) asks for one slot once */
         static int tk;
         extern u8 em_work[], StiEM_data[];
         extern u8 *em_body_tbl[];
         int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph);
         u16 Em_Calc_angY(f32 *a, f32 *b);
         const char *s = getenv("RT_PL_WARP_EM");
-        u8 *tg = em_work + 0xA10 * rt_test_target();
-        int hit = 0;
+        u8 *tg = em_work + 0xA10 * (rt_dbg.warp_em_slot >= 0 ? rt_dbg.warp_em_slot : rt_test_target());
+        int hit = rt_dbg.warp_em_slot >= 0;
+        rt_dbg.warp_em_slot = -1;
         tk = aid_tick();
-        for (; *s; s++) {       /* "t" or a range "t1-t2" (every tick in it) */
+        for (; s && *s; s++) {       /* "t" or a range "t1-t2" (every tick in it) */
             int a = atoi(s), b = a;
             const char *dash = strchr(s, '-'), *comma = strchr(s, ',');
             if (dash && (!comma || dash < comma))
@@ -388,11 +421,11 @@ void rt_player_tick(int no)
             /* "tick,f" with RT_PL_TARGET=kN: follow the monster, goal = the stage a living monster of kind N is on now
              * (large monsters walk between areas) */
             extern u8 em_work[];
-            int kind = atoi(getenv("RT_PL_TARGET") + 1), i;
+            int kind = target_kind(getenv("RT_PL_TARGET")), i;
             goal = -1;
             for (i = 0; i < 20 && goal < 0; i++) {
                 u8 *e = em_work + 0xA10 * i;
-                if (e[0] && e[2] == kind && *(s16 *)(e + 0x302) > 0 && e[0x736] < 0x58)
+                if (e[0] && e[2] == kind && *(s16 *)(e + 0x302) > 0 && e[0x736] < 0x60)
                     goal = e[0x736];
             }
         } else {   /* "tick,stageA,stageB,...": with RT_PL_TARGET=kN, go on to the next stage once no living monster of kind N is
@@ -401,6 +434,11 @@ void rt_player_tick(int no)
             const char *g = getenv("RT_PL_GOTO"), *tt = getenv("RT_PL_TARGET");
             int n = 0, i;
             extern u8 em_work[];
+            if (goto_no_path) {     /* the exits lead nowhere near this goal (G jungle 74 has no way in): the next one */
+                goto_no_path = 0;
+                idx++;
+                fprintf(stderr, "rt_player: tick %d goal unreachable, next goal\n", tk);
+            }
             for (i = 0, g = strchr(g, ','); g; g = strchr(g + 1, ','), i++)
                 ;
             if (idx >= i)       /* past the last stage: start over (stages restock when re-entered) */
@@ -425,15 +463,15 @@ void rt_player_tick(int no)
         }
         if (tk >= t0 && goal >= 0 && p->stg != goal && p->x738 == 0 && tk - last > 30) {
             void *Stage_mv_data_get(int st, int pl);
-            static s16 prev[0x58];
-            int q[0x58], qh = 0, qt = 0, st, nx = -1;
+            static s16 prev[0x60];
+            int q[0x60], qh = 0, qt = 0, st, nx = -1;
             memset(prev, 0xFF, sizeof prev);
             prev[p->stg] = p->stg;
             q[qt++] = p->stg;
             while (qh < qt && prev[goal] < 0) {         /* breadth first over the exit lists */
                 u8 *m = Stage_mv_data_get(st = q[qh++], 0);
                 for (; m && *(u16 *)m != 0xFFFF; m += 0x34)
-                    if (*(u16 *)m < 0x58 && prev[*(u16 *)m] < 0) {
+                    if (*(u16 *)m < 0x60 && prev[*(u16 *)m] < 0) {
                         prev[*(u16 *)m] = (s16)st;
                         q[qt++] = *(u16 *)m;
                     }
@@ -480,6 +518,7 @@ void rt_player_tick(int no)
             } else if (tk - last > 300) {
                 fprintf(stderr, "rt_player: tick %d no path from stage %d to %d\n", tk, p->stg, goal);
                 last = tk;
+                goto_no_path = 1;
             }
         }
     }
@@ -558,8 +597,11 @@ void rt_player_tick(int no)
             memcpy((u8 *)p + 0x60, &m, sizeof m);    /* 0x60-0x9F, as flmatCopy */
         }
     }
-    if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
-        PF(&player_work[no], s16, 0x302) = 100;
+    if (getenv("RT_PL_GOD") || rt_dbg.god) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA);
+                                                    * the debug menu's "can't faint" */
+        PF(&player_work[no], s16, 0x302) = getenv("RT_PL_GOD") && rt_ver_mhg() ? 30000 : 100;  /* test aid on G: a high-rank hit takes more than 100 in one
+                                                                            * tick (quest 9's Rathian carted a GOD hunter); Pl_vital_calc
+                                                                            * clamps it to the maximum after the hit */
         PF(&player_work[no], s16, 0x7AA) = 0;
     }
     if (getenv("RT_PL_TRACE")) {
@@ -755,6 +797,7 @@ void rt_hit_check(void)
         for (k = 0; k < 8; k++)
             PF(e, s16, 0x766 + 2 * k) = (s16)(PF(e, s16, 0x766 + 2 * k) * m);
     }
+    rt_dbg_hits();              /* the debug menu's damage multiplier / one-hit kills: every monster hit this tick (rt_dbg.c) */
     if (tr < 0) tr = getenv("RT_HIT_DM") != NULL;
     if (tr > 1 || (tr && getenv("RT_HIT_DM")[0] == '2')) {   /* RT_HIT_DM=2: live shells each tick */
         extern u8 *shell_w_top;

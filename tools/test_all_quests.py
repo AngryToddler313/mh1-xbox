@@ -10,11 +10,19 @@ condition program, the monsters per stage and the start stage's spots. The plan 
   - hunt goals (op 2 kind/count): RT_PL_GOTO walks the area exits to the stage with most monsters of that kind,
     RT_PL_TARGET=kN + RT_PL_WARP_EM + RT_DMG_MUL + RT_PL_GOD fight and carve, a repeating pad script attacks.
 PASS = quest clear (D5 3), reward list printed, money counted, village (game mode 6) entered afterwards, no crash.
+G mode (G=1, tools/test_all_quests_g.sh; build/mhg/pc/mhview_g on disc/mhg, always hidden): the G offline quests
+(village 00001-00050 = 1-50, training 10001-10048), PASS = the monster(s) spawn, quest clear (D5 3) with the same aids, reward
+screen with its list, no crash; then a second run with RT_QUEST_TIME (the quest's time left) idles in the camp: the quest
+must fail on time-out (x06 6), no crash. The village after the reward screen and the money are not checked for G
+(G's village is not ported yet: docs/mhg.md section 5).
 usage: test_all_quests.py [quest ...]   (default: all)"""
 import os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXE = os.path.join(ROOT, os.environ.get('BIN', 'build/pc/mhview')); RUN = os.environ.get('RUN', '').split(); DISC = os.path.join(ROOT, 'disc/mh1')
-OUT = os.path.join(ROOT, 'build/show/allq'); os.makedirs(OUT, exist_ok=True)
+G = os.environ.get('G') == '1'
+EXE = os.path.join(ROOT, os.environ.get('BIN', 'build/mhg/pc/mhview_g' if G else 'build/pc/mhview')); RUN = os.environ.get('RUN', '').split()
+DISC = os.path.join(ROOT, 'disc/mhg' if G else 'disc/mh1')
+OUT = os.path.join(ROOT, 'build/show/allq_g' if G else 'build/show/allq'); os.makedirs(OUT, exist_ok=True)
+G_QUESTS = list(range(1, 51)) + list(range(10001, 10049))     # G offline: village 00xxx, training 10xxx (quest_file_tbl groups 0, 4)
 # quest_local_tbl rows (main 0x387D18.., 0x357758..): 1 star .. 5 stars (hex numbers)
 LEVELS = {1: [0x83, 0x84, 0x85, 0x86, 0x87], 2: [0x88, 0x8D, 0x8E, 0x8F, 0x8A],
           3: [0x89, 0x94, 0x91, 0x92, 0x93, 0x90, 0x95, 0x98],
@@ -26,9 +34,16 @@ EGGS = {145: (40, 11400, 12100, None),      # item -> (stage, x, z) of the nest 
         146: (49, 9500, 11000, -109)}         # pick id 36 on stage 49 (RT_SPOT_TRACE lists the items each pick id gives)
 SKIP = {}
 KNOWN = {}
+if G:
+    EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests; other carried
+                                                # items: the nest the dry run's RT_PICK_ALL lists (one item at 100%)
+    SKIP = {}
+    KNOWN = {10048: 'Lao-Shan: G Em_Dmg_Sys keeps kinds 7/50 at >= 1000 hp off stage 12; on the PC it walks to stage 28 and stays (G em07_main/init and the quest event demo not ported)'}
 
 def run(q, env, inp, secs, tag):
     e = dict(os.environ, RT_NOMOVIE='1', RT_QUEST_TRACE='1', **env)
+    if G:
+        e.setdefault('MH1_SAVE_DIR', os.path.join(OUT, 'card'))     # never the owner's ~/.local/share/mhgpc
     log = os.path.join(OUT, '%s.log' % tag)
     t0 = time.time()
     try:
@@ -41,7 +56,7 @@ def run(q, env, inp, secs, tag):
     return rc, open(log, errors='replace').read(), time.time() - t0
 
 def plan(q):
-    rc, d, _ = run(q, {'RT_QEM_DUMP': '1', 'RT_SPOT_TRACE': '1'}, 'idle*30', 1, 'dry%d' % q)
+    rc, d, _ = run(q, dict({'RT_QEM_DUMP': '1', 'RT_SPOT_TRACE': '1'}, **({'RT_PICK_ALL': '1'} if G else {})), 'idle*30', 1, 'dry%d' % q)
     m = re.search(r'type (\d+) reward (\d+) fee (\d+) program: (.*)', d)
     ops = [tuple(map(int, t.split('/'))) for t in m.group(4).split()] if m else []
     start = int(re.search(r'start stage (\d+)', d).group(1)) if 'start stage' in d else None
@@ -58,7 +73,18 @@ def plan(q):
         stages.setdefault(int(mk.group(2)), []).append(int(mk.group(1)))
     boss = int(mk.group(1)) if mk else -1
     spot = re.search(r'stage %s spot kind 21 at (\d+) \S+ (\d+) r \d+ ang (\w+)' % start, d) if start is not None else None
-    return dict(waves=waves, boss=boss, reward=int(m.group(2)) if m else None, ops=ops, start=start, items=items, hunts=hunts, stages=stages,
+    nests = {}                      # G: carried item -> (stage, x, z, y) of a point that gives it at 100% (RT_PICK_ALL)
+    best = {}
+    nest_kind = {}
+    stages_here = {int(x) % 100 for x in re.findall(r'stage (\d+) kinds:', d)}
+    for st, it, x, y, z, ch, kd in re.findall(r'nest stage (\d+) item (\d+) at (-?\d+) (-?\d+) (-?\d+) r \d+ chance (\d+) kind (\d+)', d):
+        # the point most likely to give it, on this quest's map (a stage with a monster list; the pick lists cover every map)
+        score = int(ch) + (1000 if int(st) in stages_here else 0)
+        if score > best.get(int(it), 0):
+            best[int(it)] = score
+            nests[int(it)] = (int(st), int(x), int(z), int(y))
+            nest_kind[int(it)] = (int(kd), int(ch))
+    return dict(nests=nests, nest_kind=nest_kind, waves=waves, boss=boss, reward=int(m.group(2)) if m else None, ops=ops, start=start, items=items, hunts=hunts, stages=stages,
                 spot=spot.groups() if spot else None, rc=rc)
 
 def test(q):
@@ -69,32 +95,43 @@ def test(q):
     ev = ''
     note = []
     t_hunt = 60      # (warps to the monster start at 900 at the earliest: intro demos freeze the hunter)
-    eggs = {k: v for k, v in p['items'].items() if k in EGGS}
+    if G:
+        egg_at = dict(EGGS)         # the quest map's own nest first (items 512.. are the carried ones)
+        egg_at.update({k: v for k, v in p['nests'].items() if k >= 512})
+    else:
+        egg_at = EGGS
+    eggs = {k: v for k, v in p['items'].items() if k in egg_at}
     if eggs:
         # egg quests: the egg is a carried "hold" item (one at a time): pick it at the nest, walk it to the camp, deliver it.
         # Each trip: GOTO the nest stage, warp onto the pick point + circle, GOTO the camp, warp to the box + circle.
         # The nest's monster is slain first (a hit makes the hunter drop the egg: it breaks, the item is gone).
         (item, n), = eggs.items()
-        st, x, z, y = EGGS[item]
+        st, x, z, y = egg_at[item]
         if st is None:
             return 'SKIP', 'egg item %d: nest pick point not found' % item, p
         ev, gotos, warps = [], [], []
         t = 0
-        for i in range(n):
+        mine = G and p['nest_kind'].get(item, (0, 0))[0] == 3     # G's carried ores: a mining point, pickaxe + square
+        trips = n + 3 if mine else n          # one swing per trip (a second swing loses the carried ore); spare trips for misses
+        for i in range(trips):
             base = 150 + i * 3600
-            gotos += ['%d,%d' % (base, st), '%d,%d' % (base + 1300, p['start'])]
+            gotos += ['%d,%d' % (base, st), '%d,%d' % (base + (2000 if mine else 1300), p['start'])]
             warps += ['%d,%d,%d%s' % (base + 700, x, z, ',0,%d' % y if y is not None else ''), '%d,%s,%s,%s' % (base + 3300, p['spot'][0], p['spot'][1], p['spot'][2])]
-            ev += [(base + 720, 'circle*2'), (base + 3320, 'circle*2'), (base + 3380, 'circle*2'), (base + 3440, 'circle*2')]
+            ev += [(base + 3320, 'circle*2'), (base + 3380, 'circle*2'), (base + 3440, 'circle*2')]
+            # mining gives other items too (the ore at its chance)
+            ev += [(base + 720, 'square*2')] if mine else [(base + 720, 'circle*2')]
         env['RT_PL_GOTO'] = '99999,0'
         env['RT_PL_GOTO2'] = ';'.join(gotos)
         env['RT_PL_WARP'] = ';'.join(warps)
         kinds = sorted({k for d in (p['stages'], p['waves']) for ks in d.values() for k in ks} | ({p['boss']} if p['boss'] >= 0 else set()))
         env['RT_PL_SLAY'] = '300,' + ','.join(map(str, kinds))      # nothing may knock the hunter down on the way (the egg would break)
         note.append('egg %d x%d: nest stage %d, %d trips' % (item, n, st, n))
+        if G and p['nest_kind'].get(item, (0, 0))[0] == 3:
+            env['RT_PL_ITEMS'] = '114:10'       # a mining point (G's carried ores): pickaxes (114) in the pouch
         egg_ev = ev
     else:
         egg_ev = None
-    rest = {k: v for k, v in p['items'].items() if k not in EGGS}
+    rest = {k: v for k, v in p['items'].items() if k not in egg_at}
     if rest:
         if not p['spot']:
             return 'FAIL', 'no delivery box spot on start stage %s' % p['start'], p
@@ -103,9 +140,13 @@ def test(q):
         env['RT_PL_WARP'] = '100,%s,%s,%s' % (x, z, a)
         note.append('items %s' % env['RT_PL_ITEMS'])
         t_hunt = 700
-    secs = 300 if not eggs else 150 + 3600 * 3 // 30 + 100
+    secs = 300 if not eggs else (150 + 3600 * trips) // 30 + 100
     if p['hunts']:
         kind = max(p['hunts'], key=lambda k: p['hunts'][k])
+        listed = {k for d in (p['stages'], p['waves']) for ks in d.values() for k in ks}
+        extra = [k for k in p['hunts'] if k != p['boss'] and k not in listed]     # more bosses (not in the stage lists, e.g. G 10047)
+        if G and p['boss'] in p['hunts'] and extra:
+            kind = p['boss']
         need = p['hunts'][kind]
         cand = {s: ks.count(kind) for s, ks in p['stages'].items() if kind in ks}
         wave = {s: ks.count(kind) for s, ks in p['waves'].items() if kind in ks}    # appear when program op 32 fires
@@ -114,7 +155,7 @@ def test(q):
         order, tot = [], 0                # most monsters first until the quest's count is reached
         for s in sorted(cand, key=lambda s: (-cand[s], s)):
             order.append(s); tot += cand[s]
-            if tot >= need: break
+            if tot >= need and not G: break     # (G: every stage; some cannot be walked to, e.g. jungle 74)
         if tot < need and not wave:       # e.g. the count of a large monster, or small ones that respawn: kill what is there
             note.append('(%d wanted, %d in the stage lists)' % (need, tot))
         order += sorted(wave)      # then the second wave's stages (wraps around)
@@ -123,7 +164,13 @@ def test(q):
                    RT_PL_TARGET='k%d' % kind, RT_PL_WARP_EM='%d-90000' % (max(t_hunt + 40, 900) if kind == p['boss'] else t_hunt + 40), RT_DMG_MUL='40')
         note.append('hunt kind %d x%d on stage(s) %s%s' % (kind, need, '+'.join('%d(%d)' % (s, cand.get(s, wave.get(s, 0))) for s in order), ' (follows the monster)' if kind == p['boss'] else ''))
         secs = 1500
-        if kind == p['boss']:
+        if G and kind == p['boss'] and need > 1:    # a boss that comes back (G revival: 1800 + 150 ticks between kills)
+            secs += 100 * need
+        if kind == p['boss'] and G and extra:      # the other bosses are followed and fought one after the other
+            env['RT_PL_TARGET'] = 'k%d,%s' % (kind, ','.join(map(str, extra)))   # (a boss off the hunter's stage cannot be slain)
+            env['RT_PL_SLAY'] = '8000,%s' % ','.join(map(str, [kind] + extra))
+            note.append('then bosses %s' % '+'.join(map(str, extra)))
+        elif kind == p['boss']:
             env['RT_PL_SLAY'] = '8000'       # a boss that stays out of reach (Rathalos aloft) is brought down after 8000 ticks
         elif p['boss'] >= 0:                 # the quest's main monster must die too (quest_enemy_ck): slay it from the start
             env['RT_PL_SLAY'] = '300,%d' % p['boss']
@@ -144,6 +191,8 @@ def test(q):
         inp = 'idle*60' + (',circle*2,idle*58' * (t_hunt // 60) if rest else '') + cyc * n
     rc, d, dt = run(q, env, inp, secs, 'q%d' % q)
     clear = re.search(r'D5 3', d) is not None
+    if G:
+        return g_result(q, p, rc, d, dt, clear, note, secs)
     rew = re.search(r'tick \d+ mode 5 step', d)     # the reward screen (its item list may be empty, e.g. 150)
     gold = re.findall(r'money \+\d+ -> (\d+)', d)
     vill = 'rt_village: tick' in d and d.find('rt_village: tick') > d.find(' mode 5 step') > 0
@@ -158,8 +207,43 @@ def test(q):
     elif not vill: why.append('reward ok, village not entered')
     return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s, %.0fs' % ('; '.join(note), dt), p
 
+def g_result(q, p, rc, d, dt, clear, note, secs):
+    """G: spawn + clear + reward screen, then a time-out run that must fail the quest."""
+    why = []
+    crash = rc not in (0, None) or 'Segmentation' in d or 'Assertion' in d
+    spawned = max([int(n) for n in re.findall(r'^rt_flow: tick \d+ .* monsters (\d+)', d, re.M)] or [0])   # large monsters
+    if not spawned and ('(carve point' in d or 'takes a lethal hit' in d):    # the warp aid / slay aid found a living monster
+        spawned = 1
+    if crash: why.append('crash/exit %s' % rc)
+    if not spawned and p['hunts']: why.append('no monster spawned')
+    if not clear:
+        last = [l for l in d.splitlines() if l.startswith('rt_flow: tick')]
+        why.append('no quest clear in %ds (last: %s)' % (secs, last[-1][9:90] if last else '-'))
+    elif not re.search(r'tick \d+ mode 5 step', d): why.append('clear but no reward screen')
+    elif 'rt_flow: rewards:' not in d: why.append('reward screen without a reward list')
+    # time-out: the quest's time set to 20 s, the hunter idles in the camp
+    rc2, d2, _ = run(q, {'RT_QUEST_TIME': '600'}, 'idle*2400', 60, 'q%d_to' % q)
+    if rc2 not in (0, None) or 'Segmentation' in d2: why.append('time-out run: crash/exit %s' % rc2)
+    elif not re.search(r'x06 6', d2): why.append('no quest failure on time-out')
+    return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s (%d monsters), %.0fs' % ('; '.join(note), spawned, dt), p
+
+def g_carts(q=9, kind=11):
+    """G: three faints fail the quest. No GOD and no warp: the hunter walks to the monster's stage (RT_PL_GOTO f)
+    and swings; RT_PL_HP keeps his vital at 5 so the monster's own hits faint him. PASS = two returns to the camp,
+    then the quest fails (x06 6) with time left, no crash."""
+    hp = ','.join('%d:5' % t for t in range(400, 30000, 200))
+    inp = 'idle*60' + ',cam_u*2,idle*30' * 900
+    rc, d, dt = run(q, {'RT_PL_GOTO': '60,f', 'RT_PL_TARGET': 'k%d' % kind, 'RT_PL_HP': hp}, inp, 1000, 'q%d_carts' % q)
+    camp = len(re.findall(r'st_model_load\(21\)', d))
+    fail = re.search(r'x06 6 time (\d+)', d)
+    why = []
+    if rc not in (0, None) or 'Segmentation' in d: why.append('crash/exit %s' % rc)
+    if camp != 2: why.append('%d returns to the camp (want 2)' % camp)
+    if not fail or int(fail.group(1)) <= 0: why.append('no quest failure with time left')
+    return ('PASS' if not why else 'FAIL'), '; '.join(why) or 'carts: 2 camp returns, failed on the third (time left %s), %.0fs' % (fail.group(1), dt)
+
 if __name__ == '__main__':
-    qs = [int(a) for a in sys.argv[1:]] or [q for lv in sorted(LEVELS) for q in LEVELS[lv]]
+    qs = [int(a) for a in sys.argv[1:]] or (G_QUESTS if G else [q for lv in sorted(LEVELS) for q in LEVELS[lv]])
     star = {q: lv for lv in LEVELS for q in LEVELS[lv]}
     bad = 0
     for q in qs:
@@ -173,6 +257,10 @@ if __name__ == '__main__':
         elif r == 'PASS' and q in KNOWN:
             why += ' (now passes: drop it from KNOWN)'
         print('%-5s quest %3d %s %s' % (r, q, tag, why), flush=True)
+        bad += r == 'FAIL'
+    if G and not sys.argv[1:]:
+        r, why = g_carts()
+        print('%-5s carts  quest   9 %s' % (r, why), flush=True)
         bad += r == 'FAIL'
     print('%d quests FAILED' % bad if bad else 'no unexpected failures (%d quests, %d skipped, known failures listed above)' % (len(qs), sum(q in SKIP for q in qs)))
     sys.exit(1 if bad else 0)

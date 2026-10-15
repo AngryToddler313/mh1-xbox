@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "xbox_title.h"
 
 #define ENV_MAX 64
 static char buf[8192];
@@ -24,7 +25,7 @@ void xbox_log_note(const char *msg);
 /* the first env.txt found in the data folders; E: must be mounted */
 void xbox_env_load(void)
 {
-    static const char *const paths[] = { "D:\\data\\env.txt", "E:\\Games\\MH1\\data\\env.txt" };
+    static const char *const paths[] = { "D:\\data\\env.txt", XBOX_GAME_DIR "\\data\\env.txt" };
     FILE *f = NULL;
     size_t n;
     char *s;

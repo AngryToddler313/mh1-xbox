@@ -421,7 +421,8 @@ int Pl_master_ck(PLW *);
  * kind at +0xC75, id +0xC76, options +0xC78; armour ids leg +0xC7A, head +0xC7B, body, arm, waist +0xC7E)
  * for the master hunter, else from the player work (+0x35E..; leg +0x352, head +0x354 .. waist +0x357).
  * Kinds: 0 attack, 1 defence, 2-5 the four resistances (armour s8 +9..+0xC), 6-12 the sword's bytes
- * +0xB..+0x11. G also takes the player work when the G-only main 0x12D170 says so (not ported: 0). */
+ * +0xB..+0x11. G also takes the player work when the G-only main 0x12D170 says so (always 0 in the shipped game: rt_quest.c). */
+int func_0012D170(void);
 s16 Get_equip_value(PLW *pl, u8 kind) {
     u8 *e;
     u8 type, head, body, arm, waist, leg;
@@ -430,7 +431,7 @@ s16 Get_equip_value(PLW *pl, u8 kind) {
     int i;
     u8 *a[5];
 
-    if (Pl_master_ck(pl) == 0) {
+    if (func_0012D170() == 1 || Pl_master_ck(pl) == 0) {
         e = (u8 *)pl + 0x35E;
         leg = ((u8 *)pl)[0x352];
         head = ((u8 *)pl)[0x354];

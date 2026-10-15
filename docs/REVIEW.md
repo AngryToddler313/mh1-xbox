@@ -12,6 +12,17 @@ obvious workarounds.
 
 ## Open
 
+### Prototype gunner HUD from the unused cockpit2 mock-up (14 Oct 2026, agent F)
+- **Dropped:** nothing; the HUD_ANCHOR one-liners for disp_pl_vital and disp_item in rt_2d.c became small functions
+  that first ask rt_hud_gun.c (unchanged behaviour with the option off, the default).
+- **Now:** `hud = prototype gunner` (F10 menu / mh1pc.ini / --hud) draws a sword gauge, an ammo wheel and an item wheel
+  from cockpit2.apx for bowgun users (docs/pc.md "Prototype gunner HUD").
+- **Design choices for the owner to judge:** health scale 150 = full blade slot, stamina 150 = full hilt slot; the
+  wheel shows next two / previous two types; baked text, icons and digits blacked out and redrawn with the game's font
+  and icons (crag shot keeps the baked yellow pouch); names in the mock-up's green; tabs and the bottom gauge unused;
+  "Restore display defaults" also sets the HUD back to original; the original bullet row (disp_cannon) is kept.
+- **Revert:** this commit (git log --grep "prototype gunner HUD").
+
 ### G on the PC: EMW in MH1's layout, stage-timer lists expanded (14 Oct 2026, agent A)
 - **Dropped:** the G -8 shift of EMW's tail (include/em.h `_pad960`) and of EM_FIELD (em_cmd.h) in the PC
   build (kept for MWCC); the raw 0xA03/0xA04 reads (hit_nm.c, em_cmd 0x71); pc_data's per-stage imports of
@@ -421,6 +432,21 @@ obvious workarounds.
   rate 0 (every hit 1), zero ammo tables, crashes when the hunter was hit or the Rathian changed area.
 - **To revert:** revert the commit "G hunts: G's own tables ...".
 
+### G quest sweep: G-only code paths replacing MH1 ones on the PC (14 Oct 2026, agent A)
+- **Dropped / replaced (all under VERSION_MHG or G-only test aids; MH1 behaviour unchanged):**
+  - f_pl.c search_act_set / item_action_set / tool wear: MH1's pickaxe and bug net ids 0x83-0x88 -> G's 112-117
+    (PICKAXE0 / BUGNET0 macros; MH1 values unchanged).
+  - em20_act_set (em20_nm.c) and em20 die00-02 (em20_ai_nm.c): MH1's code -> G's revival version (carcass
+    1800 ticks, revival countdown, die act 3).
+  - RT_PL_GOD on G keeps vital at 30000 (MH1 still 100): a G-rank hit took more than 100 in one tick.
+  - func_0012D1B0 stand-in (always 0) -> reads game_w 0x2F4; func_0012D170 written (game_w 0x2F3 && 0x2C0).
+  - mhg_pcmeta: scan pointer words inside em command programs (names em*_main_cmdNN / content_x / sub_contents_x)
+    are dropped (one false word made kind 37's program loop); `noptr` pc_data objects; a pointer run that a
+    pointer word points at is kept (em29's command list).
+- **Why:** each was a G quest that hung, crashed or could not be cleared on the PC (tools/test_all_quests_g.sh).
+- **To revert:** revert the agent-A commits "G sweep: ...", "G: em03/em04 program entries ...",
+  "G em20 ...", "mhg_pcmeta: ..." on branch agent-A.
+
 ## nxdk's AC97 driver replaced by our own (agent F, 13 Oct 2026)
 - **What:** src/pc/xbox/xbox_ac97.c defines XAudioInit/Play/Pause/ProvideSamples, so nxdk's hal/audio.c
   is no longer linked. **Why:** its callbacks waited on S/PDIF too and stalled for good (silent after a
@@ -443,3 +469,44 @@ obvious workarounds.
 - **Not changed, seen on the way (not caused by the table, same without one):** the item window's title shows
   "(null)" (G title pointer not set), and the character-creation help box shows junk bytes.
 - **To revert:** the hook is the `rt_text_quest_g` block in afs_entry; the tool changes are in tools/text_map.py only.
+
+### G on the Xbox: memory fixes in shared runtime code (14 Oct 2026, agent B)
+- **Dropped:** the G-only collision area sizes in rt_hit.c (256 / 512 KB, "not measured yet"); the whole-image
+  .bss shadow as the only answer for a pointer into .bss with no sized symbol (rt_mem.c rt_bss_shadow); the
+  worst-case output buffer of fmt_mwo_unpack (melt.c) kept for the life of the overlay.
+- **Now:** one size for both games (96 / 192 KB: G's lwg parts have the same largest files); a shadow block for the
+  gap between the named symbols around the address (whole block only when a gap is over 256 KB or a whole block
+  exists already); the unpacked overlay is realloc'd to its real size.
+- **Why:** G on the Xbox had 7 MB free in the village (MH1 16.5 MB); after these, 15.5-16.5 MB. MH1 PC tests
+  (quest loop, progression, urgent) and the MH1 xemu quest loop pass.
+- **To revert:** revert the commit "G on the Xbox: ...".
+
+## Debug menu for testers (agent E, 14 Oct 2026)
+- **What:** an in-game debug menu on every build (src/pc/dbgmenu.c, src/pc/rt/rt_dbg.c; docs/pc.md "Debug menu",
+  docs/PLAYING.md "Debug menu for testers"). Choices made without the owner, each easy to change:
+  - the combo **Back + R3** (the game uses neither for this; F10's settings menu is Back + L3) and **F9** on the PC;
+  - **on by default**, off only in a build made with `MH1_RELEASE=1` (nothing builds that way yet: a release package
+    script should set it); mh1pc.ini `debug_menu`, `--debug-menu`, RT_DEBUG_MENU override;
+  - it draws with the game's own font (Japanese names as the game has them) rather than the F10 menu's 5x7 font, so it
+    also works on the Xbox;
+  - buttons held when it closes are kept from the game until released;
+  - G's `item_str` imported at 523 entries (config/mhg/pc_data.txt; it was MH1's 327).
+- **Refactors (no behaviour change, checked with test_quest_loop / test_menu):** rt_village.c `rt_village_leave` (the
+  village exit that Local_main's end did inline) and `rt_world_reset` (the clears at the start of rt_village_enter);
+  viewer.c `read_pad` replaces the three copies of "script or controller" in the tick loop; rt_player.c's RT_PL_GOD /
+  RT_PL_WARP_EM blocks also run for the menu's switches; nothing dropped.
+- **To revert:** revert the commits "Debug menu ..." on agent-E (four commits); test_dbgmenu.sh and dbg_keys.py go with them.
+
+## G round 6: items, revival, stage tables (agent A, 14 Oct 2026)
+- **Dropped:** the comment/decision that the four 92-stage tables stay at MH1 size (config/mhg/pc_data.txt) and quest
+  10030 from the G sweep's KNOWN list. **Now:** the tables at G size with the new `allptr` pc_data flag
+  (tools/mhg_pcmeta.py) so their sub_main-bss pointers are converted; 10030 passes (quest command 0x2F added).
+- **Choice:** G's item code (item_action_set, Basic_item_set, Fue_item_set and the item acts) is written as
+  VERSION_MHG blocks beside MH1's in the same functions, not as separate files; the em01/em15/em17 G revival uses a
+  new shared header include/em_revive_g.h (em20 keeps its own copy from round 5; folding it in is a possible tidy-up).
+- **Choice:** G's food-bonus random call (ran_suu with a pointer as the stream, see FINDS) uses its own LCG state on the
+  PC instead of copying the stray write.
+- **Not done:** G's em07 (Lao-Shan) main/init/quest event demo; shell03 (thrown items) G kinds 11-15 run MH1's C;
+  eft12 G edits (smoke colours of G's kind 6).
+- **To revert:** the commits "G PC: item use ported from G ...", "G quest program command 0x2F ...", "G PC: the
+  92-stage tables at G size ..." on agent-A.

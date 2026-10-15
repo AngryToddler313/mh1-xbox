@@ -8,7 +8,7 @@
 # 240 ticks later. Test aids reach the Xbox through D:\data\env.txt (xbox_env.c).
 # E: of xemu's disk image is formatted first (tools/xbox_fatx.py; the save is deleted).
 # Screenshots: build/show/xloop/run1_*.png, run2_*.png; game logs (serial port and the
-# game's stderr from E:) next to them. About 10 minutes.
+# game's stderr from E:) next to them. About 10-14 minutes (the screenshot list runs to 780 s: on a loaded laptop xemu needs more than 480 s to reach the bed save).
 #   usage: tools/xemu_quest_loop.sh [--gfx null|nv2a]   (default nv2a)
 #   RECORD=1 also records each run to build/show/xloop/run1.mp4, run2.mp4 (run_xemu.sh --record)
 cd "$(dirname "$0")/.."
@@ -39,7 +39,7 @@ run() {     # run N INPUT ENV "times"
     cp xbox_files/xemu_debug.txt $OUT/serial$1.txt
     tools/xbox_fatx.py get xbox_files/hdd.img Games/MH1/mh1log.txt $OUT/stderr$1.txt
 }
-run 1 $OUT/input1.txt $OUT/env1.txt "60 120 180 240 300 360 420 480"
+run 1 $OUT/input1.txt $OUT/env1.txt "60 120 180 240 300 360 420 480 540 600 660 720 780"
 grep -E "quest 131 (START|CLEAR)|money \+|back in the village" $OUT/serial1.txt $OUT/stderr1.txt | sed 's/^[^:]*://'
 run 2 $D/continue.txt $OUT/env2.txt "60 90 120"
 if grep -q "money 1550" $OUT/stderr2.txt; then echo "xemu loop OK: CONTINUE has 1550z (see $OUT)"; else echo "xemu loop FAILED (see $OUT)"; exit 1; fi

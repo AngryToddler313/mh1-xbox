@@ -434,6 +434,22 @@ void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
     em_act_set2(em, 3, no, arg);
 }
 
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+void em01_init(EMW *em);
+/* G game 0x590920: em01_init and the start point of a returning monster (kinds 1, 0x25, 0x2A at one point,
+ * the others at another; the stage is Quest_enemy_revival_set's) */
+static void em01_revive_init(EMW *em)
+{
+    em01_init(em);
+    if (em->kind == 1 || em->kind == 0x2A || em->kind == 0x25) {
+        EMG_PLACE(em, 0x8A76, 11948.9004f, 1010.0f, 15923.7998f);
+    } else {
+        EMG_PLACE(em, 0x4861, 3743.19995f, 1010.0f, 11415.0f);
+    }
+}
+#endif
+
 void em01_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -454,6 +470,9 @@ void em01_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 4:
     case 5:
     case 6:
+#ifdef VERSION_MHG      /* G em01_act_set (game 0x5A64D0): die act 3 brings the monster back */
+        EMG_ACT_REVIVE(em, kind, no, em01_revive_init);
+#endif
         em->act_spd = 1.0f;
         em_act_set2(em, kind, no, arg);
         break;

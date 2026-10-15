@@ -153,7 +153,8 @@ static void audio_feed(void)
     int16_t out[32 * 2 * 64];
     int room, n;
     int live = mv.driving;
-    sfd_audio_fill(mv.s, 1 << 15);
+    if (sfd_video_backlog(mv.s) <= (1u << 20))
+        sfd_audio_fill(mv.s, 1 << 15);
     if (!sfd_audio_rate(mv.s))
         return;
     if (!live) {
@@ -166,6 +167,12 @@ static void audio_feed(void)
             mv.dropped += n;
         return;
     }
+    /* A game that runs far below real time (xemu on a loaded laptop: under 1 frame/s) decodes 4 video frames a tick
+     * while the audio clock runs on in real time: reading the file ahead for the audio then piled up the video
+     * stream until malloc failed (fatal 0x1E in memcpy, free memory 17 -> 5 MB in 20 s). With more than 1 MB of
+     * video waiting, leave the audio queue alone: it runs dry, the clock stops and the video catches up. */
+    if (sfd_video_backlog(mv.s) > (1u << 20))
+        return;
     for (room = audio_stream_free(AUDIO_STREAM_MOVIE) - AUDIO_RATE / 2; room >= 32 * 64; room -= 32 * 64) {
         sfd_audio_fill(mv.s, 1 << 15);
         n = sfd_audio_pull(mv.s, out, 32 * 64);

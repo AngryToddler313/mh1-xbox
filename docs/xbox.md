@@ -1194,6 +1194,81 @@ from the dashboard when nxNetInit starts it again (like the dumper's hang after 
 nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
 before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).
 
+## Keyboard and mouse on the Xbox (research, agent E, 14 Oct 2026; nothing built)
+
+Why: the PC's F8 bug reporter, F9 debug menu typing, the name entry and a free camera want a keyboard and mouse; on
+the Xbox the debug menu works with the pad alone (Back + R3, docs/pc.md "Debug menu"). Read from nxdk's sources
+(~/xboxdev/nxdk) and the RetroKM docs; no firmware, nxdk or game change was made. Statements marked [checked] were
+read in the files named; [memory] is general knowledge not checked here; [design] is a proposal.
+
+**What nxdk has today**
+- USB host stack (lib/usb, libusbohci): the core (hub.c, ohci.c, usb_core.c) and the Xbox XID driver
+  (libusbohci_xbox/xid_driver.c, usbh_xbox.c) are always built. HID, CDC, audio, video and mass storage are built only
+  with NXDK_USB_ENABLE_HID / _CDC / ... set (lib/usb/Makefile) [checked]. Our link uses nxdk_usb.lib, which today has no
+  HID driver (src_hid has no objects) [checked: Makefile; the object list from the research pass].
+- The HID driver (libusbohci/src_hid/hid_driver.c, hid_core.c): hid_probe takes any interface of class 3 with an
+  interrupt endpoint and records subclass / protocol (boot keyboard 1/1, boot mouse 1/2). API in inc/usbh_lib.h:
+  usbh_hid_init, usbh_install_hid_conn_callback, usbh_hid_set_protocol(hdev, 0 = boot), usbh_hid_set_idle,
+  usbh_hid_start_int_read(hdev, ep, callback). The callback gets the raw report and the transfer is resubmitted; there is
+  no report parser and no key or mouse layer: we decode the 8-byte boot keyboard report and the mouse report ourselves.
+  The callback runs in the OHCI interrupt's DPC (usbh_xbox.c): it may only copy into a buffer.
+- inc/usbh_hid.h has `#define HID_DBGMSG sysprintf` switched on [checked], which ends in debugPrint: every HID probe or
+  error would print on the screen. A HID-enabled nxdk_usb.lib has to be built with that line commented out.
+- SDL2 on nxdk: SDL_config_xbox.h has the XID joystick driver and the video driver only, and
+  src/video/xbox/SDL_xbevents.c XBOX_PumpEvents does nothing [checked]: SDL never produces keyboard or mouse events on
+  the Xbox. SDL's joystick driver (src/joystick/xbox/SDL_xboxjoystick.c) is what starts the USB stack (usbh_core_init,
+  usbh_xid_init) and polls the hubs each update.
+
+**Route 1 (the owner's preference): the RetroKM Xbox pad dongle as one composite USB device**
+The Atom S3R dongle (MULTI KM/xboxpad, TinyUSB on the ESP32-S3; descriptors in xboxpad/src/xidpad.c, one XID interface
+today, a custom TinyUSB class driver in src/xid_usb.cpp) would offer three interfaces on one device:
+- IF0: XID 0x58 / 0x42, EP1 IN + EP2 OUT, 32 bytes, 4 ms: as now, first [design];
+- IF1: HID 3 / 1 / 1 (boot keyboard), EP3 IN, 8 bytes, 10 ms, the standard boot report descriptor;
+- IF2: HID 3 / 1 / 2 (boot mouse), EP4 IN, 4 bytes (buttons, dx, dy, wheel), 10 ms.
+Our stack can take that: usb_core.c parses every interface of the configuration and asks each registered driver's probe
+per interface (first taker wins), xid_probe matches the interface class 0x58 / subclass 0x42 only (xid_driver.c line 97)
+and not the VID/PID [checked]; limits MAX_UDEV_DRIVER 8, MAX_HUB_DEVICE 8, CONFIG_HID_MAX_DEV 8 are enough [research pass]. The device
+class stays 0 (per interface), the VID/PID can stay the Controller S's. RetroKM already forwards the laptop's keyboard
+and mouse to its agents over TCP 24850 (common/rkm_proto.h: RKM_KEY with HID usage codes, RKM_MOVEREL, RKM_BUTTON,
+RKM_WHEEL; the hub grabs the USB keyboard and trackball through evdev); the dongle announces RKM_CAP_PAD only today and
+would add RKM_CAP_KEYS / RKM_CAP_REL and turn those messages into the two HID reports. The usage codes are already the
+boot keyboard's key codes.
+Unknowns, to test on the real console: what the dashboard / Evolution X (XAPI's own USB stack, linked into each XBE
+[memory]) does with a pad that has two extra HID interfaces: ignore them (expected [memory]: XAPI drivers match by
+interface class; the Communicator is a multi-interface device too), or refuse the device. The game itself uses nxdk's
+stack, not XAPI, so inside the game it should work once HID is built in.
+
+**Route 2: a hub with separate devices.** hub.c is a full hub class driver (registered in usbh_core_init; the config
+comments count four Controller S pads with their internal hub), so a keyboard and a mouse behind a hub on a pad port
+(through a pad-port-to-USB adapter) should enumerate in nxdk the same way [checked: driver present; not run]. On the
+dongle side a hub means extra hardware; the composite device is simpler.
+
+**Route 3: keyboard and mouse over the network from the laptop.** nxdk's lwIP (lib/net/nforceif/include/lwipopts.h)
+has NO_SYS 0, LWIP_UDP, LWIP_SOCKET and LWIP_NETCONN on [research pass]; src/pc/xbox/xnet_http.c already uses lwIP
+sockets, but only the network loader links the network stack (NXDK_NET), not the game. Sketch [design]: the game opens a
+UDP port (e.g. 24855) and reads it without blocking once per tick; the laptop (a RetroKM "xbox-net" agent) sends one
+datagram per change or every 8 ms: magic u16, sequence u16, a 256-bit key bitmap of HID usages, mouse dx / dy since the
+last datagram, buttons, wheel. Each datagram carries the whole key state, so a lost one heals itself; older sequences are
+dropped; no datagram for 500 ms releases every key. Latency: under 1 ms on a cable, 2-20 ms with jitter over the laptop's
+Wi-Fi: fine for menus and typing, jittery for mouse look. Costs: the network stack's memory and thread in the game, and
+two known problems in docs/xbox.md (nxNetInit hanging when the NIC is still live from the loader, the stack freezing
+after a few connections).
+
+**How the game would read them [design].** One small module (src/pc/xbox/kbm_xbox.c) behind kbm_init / kbm_poll(keys,
+dx, dy, buttons, wheel), filled by the HID callbacks (route 1 / 2) or the UDP reader (route 3). Simplest hook: turn its
+changes into SDL_PushEvent (SDL_KEYDOWN / KEYUP with the scancode = HID usage, SDL_TEXTINPUT for printable keys,
+SDL_MOUSEMOTION / BUTTON / WHEEL): viewer.c's event loop, the F8 / F9 / F10 menus and pad_event (name entry) then work
+unchanged; pad_read's keyboard part reads SDL_GetKeyboardState, which pushed events do not fill, so pad_sdl.c would take
+the key state from kbm under #ifdef XBOX (its key table is already in SDL scancodes = HID usages). The mouse camera
+code needs relative motion only (no SDL relative mode, which asserts on nxdk). For route 1 / 2: build nxdk_usb.lib with
+NXDK_USB_ENABLE_HID=y and HID_DBGMSG off, call usbh_hid_init after SDL's joystick init, and in the connect callback
+set_protocol(0), set_idle(0), start_int_read.
+
+**Risks to test on hardware:** the dashboard with a three-interface pad; TinyUSB on the S3 with the XID app driver next
+to two HID interfaces (3 IN + 1 OUT endpoints: check them against the S3's endpoint limit) and OTA updates still working; the nxdk HID driver on
+connect / disconnect and its DPC callback racing the game thread; the USB memory pool (MEM_POOL_UNIT_NUM 96, 512 KB) with
+the extra pipes; power from a pad port with the dongle's Wi-Fi on; for route 3 the nxNetInit hang and the game's memory.
+
 ## Later idea: 5.1 surround (owner, 13 Oct 2026; not started)
 
 - PC: SDL can open a 5.1 device directly. Xbox: the console's own Dolby Digital path is the APU's
@@ -1378,3 +1453,145 @@ owner to test on hardware (Back + Start, relaunch from the loader without a powe
   the cold-reset bit (real hardware). xemu's S/PDIF DMA never moves (PICB stays 2048): the reason nxdk's
   driver, which waited on it, was silent there. Untested guess for hardware: the dashboard's DirectSound
   (XLaunchXBE(NULL) on quit) leaves the APU driving the AC-link; a power cycle resets it.
+
+## Monster Hunter G on the Xbox (agent B, 14 Oct 2026)
+
+**Build.** `tools/build_pc_mhg.sh` (G's PC build in build/mhg/pctree), then
+`python3 tools/build_xbox.py --version mhg --gfx nv2a` (or `--gfx null`): the same steps as MH1 run inside
+build/mhg/pctree (its build/pc holds G's objects and recorded commands), the front end gets -DVERSION_MHG,
+output build/mhg/xbox[/nv2a]/default.xbe + mhg.iso. 803 objects, links with no undefined symbols (first try).
+`./mh1 xbox DISC` with the G disc does all of it and makes dist/xbox/MHG (XBE + data/: AFS_DATA.AFS,
+AFS00.AFS, AFS01.AFS, SLPM_658.69, ~1.1 GB); tools/disc_files.py knows G's files (sizes + CRC32, checked
+on the folder and on the .iso; `disc_files.py game DISC` prints mh1 / mhg); `./mh1 linux|windows` refuse a
+G disc for now. tools/xbox_install.sh sends a folder holding SLPM_658.69 to E:\Games\MHG.
+xemu: `tools/run_xemu.sh --version mhg --gfx nv2a --data disc/mhg ...` (or VERSION=mhg).
+
+**Identity, so MH1 and G install side by side** (src/pc/xbox/xbox_title.h, VERSION_MHG block): title id
+4D480002 "Monster Hunter G" (MH1: 4D480001), saves in E:\UDATA\4D480002\4D48000200000001 holding G's PS2
+save folder BISLPM-65869MHG (78032-byte save, checked in xemu after a new game), game folder E:\Games\MHG
+(data in E:\Games\MHG\data). The XBE looks for its disc files in D:\data first, but only when that folder
+holds its own program file (SLPM_654.95 / SLPM_658.69), so a G XBE started by the MH1 network loader
+(D: = E:\Games\MH1, MH1's files) skips to E:\Games\MHG\data. The log is mh1log.txt in the folder of the
+running XBE when that is on E: (XeImageFileName; the loader starts E:\Games\MH1\mh1.xbe and sends that
+file), else in the game folder; the loader's test script/env (E:\Games\MH1\data\input.txt, env.txt) are
+read from D:\data as before, also by G.
+
+**How far G gets in xemu** (hidden, nv2a, scripted; build/mhg/xb/x3 and x4):
+- power-on -> ACCESS / logos -> title -> NEW GAME -> character creation (name TEST) -> save to E: ->
+  village intro (stage 87 -> house 86) -> out to Kokoto village (87), walking (tools/pc_scripts/newgame.txt
+  + `@village1,idle*1500,down*100,idle*10,square*3,...`, env RT_NOMOVIE=1 RT_NAME=TEST). Pictures match
+  the G PC build.
+- A quest from the village is not possible yet on G (the quest counter's Lb_make_quest_tbl_local is a G
+  stand-in, agent D). With the test aid `RT_ARGS=--quest 10` (+ RT_QUEST_STAGE=1 RT_EM_HP=30 RT_DMG_MUL=40
+  RT_PL_GOD=1 RT_PL_WARP_EM=90-9000 RT_PL_TARGET=0:0): Rathian nest -> kill -> CLEAR (t2062) -> reward screen
+  (t2406) -> village (t2916) -> house: the same ticks as the G PC build.
+
+**Memory (free physical KB, "alive" / "stage a -> b" lines).** First G run: village 7.2 MB free, 3.4 MB at
+the village's first load. Two G-only costs found and fixed (shared code, MH1 unchanged or better):
+- fmt_mwo_unpack (melt.c) kept its worst-case output buffer (8x the packed size): G's overlays are packed
+  (MH1's are not), and game.bin / sub_main.bin stay loaded, so ~6.5 MB were never used. Shrunk to the
+  unpacked size (realloc).
+- rt_bss_shadow: a pointer into .bss with no sized symbol got a block for the whole .bss of its image.
+  G's symbols are generated and leave many small .sbss objects unnamed, so G made the whole main .bss
+  (1.7 MB) plus sub_main / game.bin blocks (~2.2 MB in all). Now a block covers only the gap between the
+  named symbols around the address (14 gaps, a few KB to 27 KB), unless a whole block already exists.
+- G collision areas back to MH1's 96 / 192 KB (G's largest lwg parts are the same files: 81204 / 164352).
+After: title ~19.8 MB, character screen/save 14-16 MB, first village load low point 10.6 MB, village
+15.5-16.5 MB, quest 10 (Rathian nest) 20.8 MB, village after the quest 17.7 MB. (MH1 in the same xemu,
+quest 10: 22.9 MB; MH1's village 16.5 MB, docs above.) PC tracked heap in the village: G 17.7 MB, MH1 17.6 MB.
+Still G-only: rt_meta.c's 1.5 MB of .rdata (G's 31,500 symbols with names for the data import 1.0 MB,
+MH1->G address maps 0.35 MB, pointer words 0.15 MB); the loaded image is 9.3 MB (MH1 7.9 MB). Only data
+symbols and the names the import asks for are needed at run time: the next trim if G runs short.
+
+**Frame time.** xemu (software GL on this loaded laptop, not a measure of the Xbox): quest 10 Rathian
+nest G 8.1 fps, logic 22-25 ms/tick, draw ~115 ms/frame; MH1 in the same scene and session 7.6 fps, logic
+24-28 ms, draw 115-157 ms: G costs the same as MH1 there. G village 24 fps in xemu.
+
+**For the owner on hardware.** Copy G's disc files to E:\Games\MHG\data (FTP, ~1.1 GB; `./mh1 xbox` with
+the G disc + tools/xbox_install.sh, or any FTP program). Then either install dist/xbox/MHG as its own game
+(shows as "Monster Hunter G"), or serve the G XBE through the existing loader
+(`tools/xbox_serve.py --xbe build/mhg/xbox/nv2a/default.xbe`): it runs from E:\Games\MH1, finds G's files
+in E:\Games\MHG\data and its log reaches the server as usual. Check: boot to the title, NEW GAME, character
+creation, save (E:\UDATA\4D480002 next to MH1's 4D480001), the village; the free-memory numbers in the
+log ("alive" lines); frame rate in the village. Not testable yet: a quest from the village (G quest counter).
+
+### Installing game data through the loader (agent B, 14 Oct 2026)
+
+**Why.** Copying G's folder (dist/xbox/MHG: default.xbe 4.8 MB, data/SLPM_658.69 2 MB, AFS01.AFS 24 MB,
+AFS_DATA.AFS 144 MB, AFS00.AFS 884 MB) to the owner's Xbox over Evolution X's FTP kept failing: transfers
+stall or abort at random points (curl 55 / 426), no passive mode, no SIZE (so no resume), and a half-written
+file stays locked until the Xbox restarts. Small files always get through. So the big files now go through
+our own network loader over HTTP, and FTP is only needed once for the small loader.
+
+**How it works.**
+- Laptop: `tools/xbox_serve.py --data dist/xbox/MHG` (or `dist/xbox/MH1`, or a bare folder of the four disc
+  files). At start it reads the folder once and computes a CRC32 for each file and for each 4 MB chunk
+  (about 10 s for G). `/version` then ends in a `DATA` line; `GET /manifest` gives
+  `MH1DATA <folder> <chunk> <files>` and per file `F <size> <crc32> <path>` + `C <chunk crc32s>`;
+  `GET /data/<path>` answers `Range: bytes=N-` with 206 and streams the file in 1 MB pieces (never the
+  whole file in memory). Only the listed files are reachable. The target folder is MHG when the folder holds
+  SLPM_658.69, else MH1. For G the folder's default.xbe is installed too (E:\Games\MHG\default.xbe, so G
+  shows as its own game) and no build is served (`/version` "none"); for MH1 the folder's default.xbe is
+  served as the build (mh1.xbe), never written over the loader (the loader refuses a manifest that tries).
+- Xbox (src/pc/xbox/loader/install.c, xh_get_range in ../xnet_http.c): on `DATA` the loader fetches the
+  manifest before the usual build check. Per file: if `E:\Games\<folder>\mh1data.txt` already lists it with
+  the same size and CRC it is skipped without reading. Otherwise the file on the disk (FTP leftovers, a cut
+  copy, an older file) is read chunk by chunk and kept up to the first chunk whose CRC is wrong; the download
+  starts there with a Range request. Each 4 MB chunk is checked in memory and then written with one
+  WriteFile (the pdclib 1 KB fwrite lesson). A dropped connection or 10 s without data: "connection lost at
+  N MB, resuming in 3 s", again from the last good chunk; it gives up after 20 tries in a row without
+  progress (about 2 minutes). A finished file is read back and checked once more, then added to
+  mh1data.txt. The screen shows one line per file (Checking / Copying N / M MB and the speed / OK).
+- After that: for G, with no build served, "Starting E:\Games\MHG\default.xbe in 5 s" and G runs. For MH1
+  the loader carries on as usual (downloads the build, starts mh1.xbe). If something could not be finished:
+  "Install not finished. Start Monster Hunter again to go on from here." and the dashboard after 60 s; the
+  next start goes on from the last good chunk.
+- The trigger is the server: started with --data, every loader start checks the data (a few seconds when all
+  is recorded in mh1data.txt); without --data nothing changes. No pad input needed.
+
+**Tested in xemu** (hidden, test loader `make -C src/pc/xbox/loader OUTPUT_DIR=../../../../build/xbox/loader_test
+XH_HOST='\"10.0.2.2\"' XH_PORT=8792`, server on port 8792, `tools/run_xemu.sh --xbe
+build/xbox/loader_test/default.xbe --net`):
+- a 47 MB folder of random bytes: all files arrive, byte-identical (read back with tools/xbox_fatx.py get);
+- the real dist/xbox/MHG over the fake one (wrong files already there, same names): server killed during
+  AFS_DATA.AFS at 56 MB and restarted 15 s later: the loader retried and went on at 56 MB; xemu then killed
+  (power off) during AFS00.AFS at 88 MB on screen; the next start skipped the four recorded files, found
+  84 MB of AFS00.AFS good on the disk (the last chunks had not reached the disk image) and went on from
+  there (resumed at 592 MB after a second power-off); the last start read AFS00.AFS back (884 MB, CRC
+  434fa486 as on the laptop), recorded it and started E:\Games\MHG\default.xbe: G booted from
+  D:\data = E:\Games\MHG\data (AFS_DATA.AFS opened, SLPM_658.69 loaded). default.xbe, SLPM_658.69,
+  AFS01.AFS and AFS_DATA.AFS read back from the disk image byte-identical (tools/xbox_fatx.py get; don't
+  do that for AFS00.AFS: xbox_fatx.py holds the whole file in memory and that run ran the laptop out of
+  memory). mh1data.txt is rewritten from the current manifest each start (stale lines drop out; changed
+  after the test run, built, not rerun);
+- xemu needs more than the 1.5 GB `ulimit -v` cap (it fails at "cannot set up guest memory" even at 3 GB;
+  ran at 6 GB);
+- xemu's NAT network gives 1.0-2.8 MB/s (so ~10 minutes for G there); the real Xbox on a wired LAN should be
+  faster, not measured.
+Not tested: the real Xbox (Evolution X launching the loader; the network freezes noted above were never
+reproduced in xemu).
+
+**Owner, to install G:**
+1. Install the new loader once over FTP (two small files): `tools/xbox_upload.sh --loader` (asks for the
+   FTP login; it rebuilds the loader first).
+2. `./mh1 xbox disc/mhg` if dist/xbox/MHG is not there yet, then `tools/xbox_serve.py --data dist/xbox/MHG`
+   and leave it running.
+3. On the Xbox start "Monster Hunter" (E:\Games\MH1). It installs G into E:\Games\MHG and starts it. If it
+   stops ("Install not finished"), just start Monster Hunter again: it goes on where it stopped. The leftover
+   FTP files in E:\Games\MHG do not need deleting (good chunks are kept, the rest is overwritten; the
+   FTP server's lock ends when the dashboard starts the loader).
+4. Afterwards serve builds as before (`tools/xbox_serve.py`, without --data); G is also in the games list as
+   "Monster Hunter G".
+
+**Owner's first try (14 Oct 2026): stayed on the Evolution X screen, the server got no request.**
+Rechecked in xemu with exactly what `xbox_upload.sh --loader` builds (default address; the built XBE differs
+from the one in the main checkout only in 6 timestamp bytes), E:\Games\MH1\loader.txt pointing at a test
+server, and E:\Games\MHG holding a half install like the owner's (default.xbe, SLPM_658.69, AFS01.AFS complete,
+AFS_DATA.AFS 60 MB, AFS00.AFS 50 MB, empty mh1data.txt; set up with the new `tools/xbox_fatx.py put`): the
+loader screen comes up, /version and /manifest arrive 1 s after DHCP, the first three files are checked OK and
+AFS_DATA.AFS resumes. Nothing before the loader's screen touches the network or E:\Games\MHG (it sets the
+video mode first, then mounts E:), so "stays on the Evolution X screen" means the XBE did not start at all.
+Candidates, not confirmed: the FTP upload of the loader ended early without an error (xbox_upload.sh now reads
+the size back from the listing and fails if it differs), or the half-copied G XBE (E:\Games\MHG\default.xbe,
+listed as "Monster Hunter G") was started instead of "Monster Hunter", or a file still locked by a stalled FTP
+transfer (restart the Xbox before trying).

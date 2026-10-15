@@ -13,6 +13,9 @@
  * The laptop is found at the address in E:\Games\MH1\loader.txt
  * ("192.168.1.166:8765" when the file is missing). Only our own build files
  * travel this way; there is no login.
+ * When the laptop runs tools/xbox_serve.py --data FOLDER, /version ends in a "DATA" line and
+ * the loader first installs that game folder (install.c: E:\Games\MHG or the MH1 data),
+ * resuming where it stopped; a finished G folder is then started.
  */
 #include <hal/debug.h>
 #include <hal/video.h>
@@ -26,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../xnet_http.h"
+#include "install.h"
 
 extern struct netif *g_pnetif;
 
@@ -124,7 +128,7 @@ int main(void)
     unsigned long ldt;
     const unsigned char *ld;
     int after_game, n;
-    char *log, *ver, *have, *xbe;
+    char *log, *ver, *have, *xbe, *data, game[64];
 
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
@@ -156,8 +160,23 @@ int main(void)
         debugPrint("The laptop does not answer.\n");
         launch_game();
     }
+    data = strstr(ver, "\nDATA");
+    ver[strcspn(ver, "\n")] = 0;
+    if (data) {
+        int r = install_data(game, sizeof game);
+        if (r < 0) {
+            debugPrint("Back to the dashboard in 60 s.\n");
+            Sleep(60000);
+            launch(NULL);
+        }
+        if (r > 0 && !strcmp(ver, "none")) {      /* G's folder done and no build to test: start G */
+            debugPrint("Starting %s in 5 s.\n", game);
+            Sleep(5000);
+            launch(game);
+        }
+    }
     have = read_file(GAME_VER, &n);
-    if (!have || strcmp(have, ver)) {
+    if (strcmp(ver, "none") && (!have || strcmp(have, ver))) {
         DWORD t0 = GetTickCount(), t1;
         debugPrint("Downloading build %s ...\n", ver);
         if ((xbe = xh_http("GET", "/mh1.xbe", NULL, 0, &n)) != NULL) {

@@ -3378,6 +3378,11 @@ u8 *em_cmd_rnd32(EMW *em, u8 *p) {
     case 8:
     case 9:
     case 10:
+#ifdef VERSION_MHG      /* G (game.bin 0x58CD90): entries 11-13 too */
+    case 11:
+    case 12:
+    case 13:
+#endif
         p += 2;
         for (;;) {
             p = cmd_end_search(em, p, 0x80, 0xFF);
@@ -4561,6 +4566,11 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
         case 0x8:
         case 0x9:
         case 0xA:
+#ifdef VERSION_MHG      /* G (game.bin 0x58EFA8): entries 0xB-0xD too (quest 89's kind 18 program) */
+        case 0xB:
+        case 0xC:
+        case 0xD:
+#endif
             var_a1 += 2;
             break;
         case 0xFF:
