@@ -110,8 +110,8 @@ State 15 Oct 2026 (all merged and pushed unless noted). Two agents at a time (OO
   owner launchers tools/play_g.sh + desktop icons, RT_FILEDEF debug switch.
 - Owner decisions pending: English for G-only text — owner's idea: base it on Monster Hunter Freedom (US
   PSP, localization of Portable = G content; needs the owner's ULUS-10084 image) with MH1 US for online text,
-  own translation in Freedom's style for the rest; to discuss later. Online for G (own server only vs PS2
-  servers). Keyboard+mouse on Xbox via the RetroKM dongle as a composite device (docs/xbox.md).
+  own translation in Freedom's style for the rest; to discuss later. Online plan decided 15 Oct: our own
+  server + our own open PS2 patches, PS2/PC/Xbox together (docs/DECISIONS.md). Keyboard+mouse on Xbox via the RetroKM dongle as a composite device (docs/xbox.md).
 - Xbox: 192.168.1.165 (DHCP), laptop 192.168.1.166. The loader server runs in data mode for G.
 Owner confirmed on the real Xbox (13 Oct afternoon): opening correct with sound, bed Save? box,
 loading map on area changes (faster), rumble. Agent F (unmerged, agent-F 05a2dc6f): black frame

@@ -117,6 +117,19 @@ Kept as a fallback for any file that resists matching.
 - Possible exchange: our symbol-backed MH1/G names for shared engine code; our platform layer.
 - Our repo: MIT license for the project's own code (owner, 15 Oct 2026; LICENSE).
 
+**Online: our own server and our own open PS2 patches, PS2 + PC + Xbox together.** (owner, 15 Oct 2026)
+- The MH Oldschool route (connecting original discs, skipping DNAS) uses closed-source exploits, so we do our
+  own thing. Most players use patched copies anyway, PS2 included.
+- PS2 parity: from our byte-matching rebuild, build patched PS2 executables (DNAS skipped, our server's
+  address, small fixes), delivered as a patch tool applied to the player's own disc image (no Capcom bytes in
+  the repo). DNAS is a defunct online check; skipping it is what revival servers do (owner's call, made).
+- In-hunt parity: our PC/Xbox co-op speaks net_peer frames while the PS2 speaks the original mcsls records
+  (docs/server.md, milestone S7): our ports switch to the original in-hunt protocol (preferred) or the
+  server translates, so PS2, PC and Xbox can hunt together.
+- Order, after G's single player is solid: 1) MH1 PS2 patch (DNAS skip + server address) against our
+  server; 2) in-hunt protocol parity; 3) G (its online code isn't ported yet).
+- Still never connect to the MH Oldschool public server without its operators' permission.
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)
