@@ -897,6 +897,12 @@ again:
             quest_w.x14F = p->a;
             i++;
             break;
+#ifdef VERSION_MHG
+        case 0x2F:      /* G (sub_main 0x4B9040): the section the time-out jumps to (like 0x1B, no message) */
+            quest_w.x0A = p->a;
+            i++;
+            break;
+#endif
         case 0x25:
             game_w.x0D5 = 5;
             quest_w.x06 = 5;

@@ -38,8 +38,7 @@ if G:
     EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests; other carried
                                                 # items: the nest the dry run's RT_PICK_ALL lists (one item at 100%)
     SKIP = {}
-    KNOWN = {10030: 'the 20th Kut-Ku does not come back after 19 revivals (op 36/47 at 18 kills not looked at)',
-             10048: 'Ashen Lao-Shan: hp floors at 1000 on stage 14 (the siege areas are not walked; slay aid cannot finish it)'}
+    KNOWN = {10048: 'Ashen Lao-Shan: hp floors at 1000 on stage 14 (the siege areas are not walked; slay aid cannot finish it)'}
 
 def run(q, env, inp, secs, tag):
     e = dict(os.environ, RT_NOMOVIE='1', RT_QUEST_TRACE='1', **env)
