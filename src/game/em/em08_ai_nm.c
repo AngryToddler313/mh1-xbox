@@ -130,6 +130,7 @@ int em_pl_pos_set(EMW *, u8, f32 *);
 f32 flvecCalcDistance(f32 *, f32 *);
 void Eft17_set(EMW *, int, int, int);
 void Shell08_set_ang(EMW *, s16, u8, u8, u16, u16);
+void Eft17_set_ang(EMW *em, s16 joint, int arg, u16 ang);
 int ran_suu();
 void em_action_timer_calc(EMW *, int);
 f32 flSqrt(f32);
@@ -2485,6 +2486,57 @@ static void em_atk02_0059F2F0(EMW *em, EM08W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G game 0x5CA620 / 0x5CA900 (MH1's two acts are empty: straight back to swimming): Cephadrome's new spreads, motion
+ * 0x74 / 0x75, three sand shots (Shell08 kind 7, Eft17 sprays) at +40, 0 and -40 degrees (0x5CA900 fires them and the
+ * later sprays the other way round; the sprays at the shots keep +40 / 0 / -40 in both),
+ * and sand sprays and two sand splashes along the motion; back to swimming at its end. Written from G's asm (agent A). */
+static void em_atk_spread_g(EMW *em, int mot, int a0, int a2)  /* a0 / a2: the shots' and sprays' first / last angle */
+{
+    static const f32 spray_t[6] = { 126.0f, 166.0f, 196.0f, 130.0f, 170.0f, 200.0f };
+    static const f32 shot_t[3] = { 122.0f, 162.0f, 192.0f };
+    int ang[3], i;
+
+    ang[0] = a0;
+    ang[1] = 0;
+    ang[2] = a2;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em_char_set(em, mot, 0, 0);
+        em->x388 = 4;
+        break;
+    case 1:
+        for (i = 0; i < 3; i++) {
+            if (em_frame_check(em, shot_t[i], 0)) {
+                Eft17_set_ang(em, 0x22, 0xC, i == 0 ? 0x1C72 : i == 2 ? 0xE38F : 0);   /* the same in both */
+                Shell08_set_ang(em, 0x22, 7, 0, 0x11C7, ang[i]);
+            }
+        }
+        if (em_frame_check(em, 38.0f, 0))
+            swim_eff_set2_005A7120(8.0f, em);
+        if (em_frame_check(em, 230.0f, 0))
+            swim_eff_set2_005A7120(8.0f, em);
+        for (i = 0; i < 6; i++)
+            if (em_frame_check(em, spray_t[i], 0))
+                Eft17_set_ang(em, 0x22, 0xC, ang[i % 3]);
+        if (em->x194 == 0) {
+            em->x05++;
+            em08_to_swim(em);
+        }
+        break;
+    }
+}
+
+static void em_atk03_0059F3E0(EMW *em, EM08W *w) {
+    em_atk_spread_g(em, 0x74, 0x1C72, 0xE38F);
+}
+
+static void em_atk04_0059F3F0(EMW *em, EM08W *w) {
+    em_atk_spread_g(em, 0x75, 0xE38F, 0x1C72);
+}
+#else
 static void em_atk03_0059F3E0(EMW *em, EM08W *w) {
     em08_to_swim(em);
 }
@@ -2492,6 +2544,7 @@ static void em_atk03_0059F3E0(EMW *em, EM08W *w) {
 static void em_atk04_0059F3F0(EMW *em, EM08W *w) {
     em08_to_swim(em);
 }
+#endif
 
 static void em_atk05_0059F400(EMW *em, EM08W *w) {
 

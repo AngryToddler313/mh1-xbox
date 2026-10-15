@@ -139,7 +139,15 @@ static void em_dmg01_00604F20(EMW *em, EM21W *w);
 static void em_dmg02_00604FB0(EMW *em, EM21W *w);
 static void em_dmg03_00605040(EMW *em, EM21W *w);
 static void em_dmg04_006050D0(EMW *em, EM21W *w);
+#ifdef VERSION_MHG
+/* G (game 0x632AC0): the part-break flinch takes its motion choice from the caller: damage act 5 passes 1, the new act
+ * 23 (part 3) passes 0. MH1 read em->x07, which em21_main set to 1 for part 3: G swapped the two (same motions) */
+static void em_dmg05_006051D0(EMW *em, EM21W *w, int flag);
+#define DMG05_ALT flag
+#else
 static void em_dmg05_006051D0(EMW *em, EM21W *w);
+#define DMG05_ALT em->x07
+#endif
 static void em_dmg06_00605370(EMW *em, EM21W *w);
 static void em_dmg07_006054D0(EMW *em, EM21W *w);
 static void em_dmg08_00605630(EMW *em, EM21W *w);
@@ -195,6 +203,26 @@ void em21_local_init(EMW *em) {
 
 #ifdef VERSION_MHG
 void sub_main_func_004DC5D0(EMW *em, int part);
+#endif
+/* G sets em->x388 (the monster's land / water state: 0 land, 4 swimming, 2 and 1 in between) through game 0x62DB60,
+ * which also picks the AI's distance set (em_range_set: the flag -> set 1, 4 -> set 2, else set 0): G's Plesioth
+ * chooses its moves with the water distances while it swims. MH1 only stores x388. 63 acts (written from G's asm:
+ * the value and flag of each call, agent A 15 Oct 2026) */
+#ifdef VERSION_MHG
+void em_range_set(EMW *em, s8 no);
+static void em21_x388_g(EMW *em, int v, int flag)       /* game 0x62DB60 */
+{
+    em->x388 = v;
+    if (flag & 0xFF)
+        em_range_set(em, 1);
+    else if ((v & 0xFF) == 4)
+        em_range_set(em, 2);
+    else
+        em_range_set(em, 0);
+}
+#define EM21_X388(em, v, flag) em21_x388_g(em, v, flag)
+#else
+#define EM21_X388(em, v, flag) ((em)->x388 = (v))
 #endif
 void em21_init(EMW *em) {
 #ifdef VERSION_MHG
@@ -350,7 +378,7 @@ static void em_act01_00600570(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         if (em->char0 != 0x3E9) {
             em_char_set2(em, 0x3E9, 0, 0, 0);
@@ -378,7 +406,7 @@ static void em_act02_00600650(EMW *em, EM21W *w) {
     switch (temp_a2) {                              /* irregular */
     case 0:
         em->x05 = temp_a2 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         em_char_set(em, 0x19, 0, 0);
         break;
@@ -404,7 +432,7 @@ static void em_act04_00600700(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         em_char_set(em, 0x79, 0, 0);
         break;
@@ -440,7 +468,7 @@ static void em_act05_006007F0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x26, 0, 0);
         em_range_set(em, 1);
@@ -477,7 +505,7 @@ static void em_act06_00600900(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
@@ -504,7 +532,7 @@ static void em_act07_006009D0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x3E, 0, 0);
         break;
     case 1:
@@ -526,7 +554,7 @@ static void em_act08_00600A50(EMW *em, EM21W *w) {
     switch (temp_v1) {                              /* irregular */
     case 0:
         em->x05 = temp_v1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x61, 0, 0);
         em_range_set(em, 1);
@@ -566,7 +594,7 @@ static void em_act10_00600B90(EMW *em, EM21W *w) {
     switch (temp_v1) {                              /* irregular */
     case 0:
         em->x05 = temp_v1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x61, 0, 0);
         em_range_set(em, 1);
@@ -604,7 +632,7 @@ static void em_act12_00600CD0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x26, 0, 0);
         em_range_set(em, 1);
@@ -641,7 +669,7 @@ static void em_act13_00600DE0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
@@ -669,7 +697,7 @@ static void em_act14_00600EB0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 1;
+        EM21_X388(em, 1, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x4B, 0, 0);
         em_range_set(em, 1);
@@ -713,7 +741,7 @@ static void em_act15_00601000(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x7C, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
@@ -741,7 +769,7 @@ static void em_act16_006010D0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x4B, 0, 0);
         em_range_set(em, 1);
@@ -785,7 +813,7 @@ static void em_act17_00601220(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x7C, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
@@ -815,7 +843,7 @@ static void em_act18_006012F0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 1);
         em->x3F4 = 0;
         em_char_set(em, 0x20, 0, 0);
         em_range_set(em, 1);
@@ -862,7 +890,7 @@ static void em_act19_00601440(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x21, 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
@@ -889,7 +917,7 @@ static void em_act20_00601510(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x3E, 0, 0);
         Em_Mahi_End(em);
         break;
@@ -914,7 +942,7 @@ static void em_mv00_006015A0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 3, 0, 0);
         break;
     case 1:
@@ -959,7 +987,7 @@ static void em_mv01_00601700(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 4, 0, 0);
         break;
     case 1:
@@ -1006,7 +1034,7 @@ static void em_mv02_00601870(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a3 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
         if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
@@ -1069,7 +1097,7 @@ static void em_mv03_00601AC0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0xA, 0, 0);
         break;
     case 1:
@@ -1112,7 +1140,7 @@ static void em_fly00_00601C20(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x64, 0, 0);
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         break;
     case 1:
         if ((em->x8C3 == 0) && (em->x194 == 0)) {
@@ -1132,7 +1160,7 @@ static void em_fly01_00601CB0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x64, 0, 0);
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em->stay_tm = em21_stay_timer_tbl[em->stg];
         em->runaway_tm = em21_runaway_timer_tbl[em->stg];
         break;
@@ -1163,7 +1191,7 @@ static void em_fly03_00601D90(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a0 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
         if ((temp_v1 <= 0x2AA8) || (temp_v1 >= 0xD558)) {
@@ -1225,7 +1253,7 @@ static void em_fly04_00602030(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x65, 0, 0);
         em_rate_clear(em);
         em->adj_z = 5.0f;
@@ -1295,7 +1323,7 @@ static void em_fly05_00602280(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x67, 0, 0);
         em_rate_clear(em);
         em->adj_z = 30.0f;
@@ -1346,7 +1374,7 @@ static void em_fly06_00602450(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x6E, 0, 0);
         em21_fly_adjy2_init(em, 0);
         break;
@@ -1368,7 +1396,7 @@ static void em_fly07_006024F0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x68, 0, 0);
         em_rate_clear(em);
         em->adj_z = 20.0f;
@@ -1410,7 +1438,7 @@ static void em_fly08_00602640(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x69, 0, 0);
         em_rate_clear(em);
         em->adj_z = 20.0f;
@@ -1457,7 +1485,7 @@ static void em_fly09_00602780(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a2 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
         if ((temp_v1 <= 0x2AA8) || (temp_v1 >= 0xD558)) {
@@ -1528,7 +1556,7 @@ static void em_fly10_00602A70(EMW *em, EM21W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x67, 0, 0);
         em->x05 += 1;
         em->x07 = 0;
@@ -1593,7 +1621,7 @@ static void em_fly11_00602CC0(EMW *em, EM21W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x67, 0, 0);
         em->x05 += 1;
         em->x07 = 0;
@@ -1658,7 +1686,7 @@ static void em_fly12_00602F10(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x72, 0, 0);
         em->work08 = 0x84;
         em_rate_clear(em);
@@ -1690,7 +1718,7 @@ static void em_fly13_00603000(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x73, 0, 0);
         em->work08 = 0x84;
         em_rate_clear(em);
@@ -1725,7 +1753,7 @@ static void em_fly14_006030F0(EMW *em, EM21W *w) {
     case 0x0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_rate_clear(em);
         em_char_set(em, 0x77, 0, 0);
         em->adj_y = 130.0f;
@@ -1795,7 +1823,7 @@ static void em_fly15_006033A0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x79, 0, 0);
         em_rate_clear(em);
         em->pos[1] = em->x7E4;
@@ -1822,7 +1850,7 @@ static void em_fly16_00603460(EMW *em, EM21W *w) {
     case 0x0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x78, 0, 0);
         em_rate_clear(em);
         break;
@@ -1899,7 +1927,7 @@ static void em_fly17_00603720(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x64, 0, 0);
         em->x8B9 = 0;
         em->work08 = 0x78;
@@ -1945,7 +1973,7 @@ static void em_fly18_006038C0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x84, 0, 0);
         em->x8B9 = 1;
         em->x87C = (u8) em->x617;
@@ -2175,7 +2203,7 @@ static void em_fly21_00604110(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_char_set(em, 0x83, 0, 0);
         Em_Mahi_End(em);
         break;
@@ -2198,7 +2226,7 @@ static void em_fly22_006041A0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a2 + 1;
         em->x3F4 = 0;
-        em->x388 = 2;
+        EM21_X388(em, 2, 0);
         em_rate_clear(em);
         em_char_set(em, 0x77, 0, 0);
         em->work08 = 0x96;
@@ -2241,7 +2269,7 @@ static void em_fly23_00604340(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x762 = 0;
         em_char_set(em, 0x4B, 0, 0);
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x8BD = 1;
         em->x9EA = 0;
         em->x959 = 0;
@@ -2276,7 +2304,7 @@ static void em_fly24_00604440(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em->x88B = 1;
         Em_Sleep_End(em);
         em_char_set(em, 0x83, 0, 0);
@@ -2298,7 +2326,7 @@ static void em_fly25_006044D0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em->x88B = 1;
         Em_Sleep2_End(em);
         em_char_set(em, 0x83, 0, 0);
@@ -2320,7 +2348,7 @@ static void em_atk00_00604560(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x24, 0, 0);
         break;
     case 1:
@@ -2340,7 +2368,7 @@ static void em_atk01_006045E0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x2F, 0, 0);
         break;
     case 1:
@@ -2362,7 +2390,7 @@ static void em_atk02_006046C0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         em_char_set(em, 0x2B, 0, 0);
         em_action_timer_calc(em, 0);
@@ -2393,7 +2421,7 @@ static void em_atk03_006047B0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x74, 0, 0);
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         break;
     case 1:
         if (em_frame_check(em, 0, 114.0f) != 0) {
@@ -2419,7 +2447,7 @@ static void em_atk04_006048C0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x75, 0, 0);
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         break;
     case 1:
         if (em_frame_check(em, 0, 114.0f) != 0) {
@@ -2445,7 +2473,7 @@ static void em_atk05_006049D0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x70, 0, 0);
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         break;
     case 1:
         if (em_frame_check(em, 0, 118.0f) != 0) {
@@ -2477,7 +2505,7 @@ static void em_atk06_00604AE0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x6C, 0, 0);
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_rate_clear(em);
         em->adj_z = 100.0f;
         em->adj_y = 100.0f;
@@ -2557,7 +2585,7 @@ static void em_atk07_00604DC0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x88, 0, 0);
         break;
     case 1:
@@ -2664,7 +2692,7 @@ static void em_dmg04_006050D0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_cmd_reset(em);
         em_char_set(em, 0x4B, 0, 0);
         break;
@@ -2690,7 +2718,11 @@ static void em_dmg04_006050D0(EMW *em, EM21W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+static void em_dmg05_006051D0(EMW *em, EM21W *w, int flag) {
+#else
 static void em_dmg05_006051D0(EMW *em, EM21W *w) {
+#endif
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2699,19 +2731,19 @@ static void em_dmg05_006051D0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_cmd_reset(em);
-        em_char_set(em, (s16)((em->x07 != 0) ? 0x45 : 0x4A), 0, 0);
+        em_char_set(em, (s16)((DMG05_ALT != 0) ? 0x45 : 0x4A), 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
             em->work08 = 0;
-            em_char_set(em, (s16)((em->x07 != 0) ? 0x46 : 0x4B), 0, 0);
+            em_char_set(em, (s16)((DMG05_ALT != 0) ? 0x46 : 0x4B), 0, 0);
         }
         break;
     case 2:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            em_char_set(em, (s16)((em->x07 != 0) ? 0x81 : 0x80), 0, 0);
+            em_char_set(em, (s16)((DMG05_ALT != 0) ? 0x81 : 0x80), 0, 0);
             return;
         }
         break;
@@ -2719,7 +2751,7 @@ static void em_dmg05_006051D0(EMW *em, EM21W *w) {
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
             em->work08 = 0;
-            em_char_set(em, (s16)((em->x07 != 0) ? 0x47 : 0x7C), 0, 0);
+            em_char_set(em, (s16)((DMG05_ALT != 0) ? 0x47 : 0x7C), 0, 0);
             return;
         }
         break;
@@ -2745,7 +2777,7 @@ static void em_dmg06_00605370(EMW *em, EM21W *w) {
         em->x3F4 = 0;
         em_cmd_reset(em);
         em_char_set(em, 0x7E, 0, 0);
-        em->x388 = 2;
+        EM21_X388(em, 2, 0);
         em->x3C0[0] = 0.0f;
         em->x3C0[1] = -10.0f;
         em->x3C0[2] = 0.0f;
@@ -2789,7 +2821,7 @@ static void em_dmg07_006054D0(EMW *em, EM21W *w) {
         em->x05 = temp_a2 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x4B, 0, 0);
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_cmd_reset(em);
         Em_Mahi_Start(em);
         break;
@@ -2872,7 +2904,7 @@ static void em_dmg09_00605770(EMW *em, EM21W *w) {
         em->x88B = 0;
         em_cmd_reset(em);
         em_char_set(em, 0x7E, 0, 0);
-        em->x388 = 2;
+        EM21_X388(em, 2, 0);
         em->x3C0[0] = 0.0f;
         em->x3C0[1] = -10.0f;
         em->x3C0[2] = 0.0f;
@@ -2935,7 +2967,7 @@ static void em_dmg11_00605970(EMW *em, EM21W *w) {
     switch (temp_v1) {                              /* irregular */
     case 0:
         em->x05 = temp_v1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         em_cmd_reset(em);
         em_char_set(em, 0x4C, 0, 0);
@@ -3038,7 +3070,7 @@ static void em_dmg14_00605CA0(EMW *em, EM21W *w) {
     switch (temp_v1) {                              /* irregular */
     case 0:
         em->x05 = temp_v1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x61, 0, 0);
         Em_Mahi_Start(em);
         em->x8BD = 1;
@@ -3079,7 +3111,7 @@ static void em_dmg15_00605DC0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a2 + 1;
         em->x3F4 = 0;
-        em->x388 = 4;
+        EM21_X388(em, 4, 0);
         em_rate_clear(em);
         em_char_set(em, 0x7E, 0, 0);
         em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
@@ -3174,7 +3206,7 @@ static void em_dmg16_006060F0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em_char_set(em, 0x79, 0xC, 0);
         em_cmd_reset(em);
         break;
@@ -3342,7 +3374,7 @@ static void em_dmg19_00606600(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
@@ -3376,7 +3408,7 @@ static void em_dmg20_00606700(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
+        EM21_X388(em, 0, 0);
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
@@ -3411,7 +3443,7 @@ void em_dmg21(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x7C, 0, 0);
-        em->x388 = 1;
+        EM21_X388(em, 1, 0);
         em_cmd_reset(em);
         Em_Mahi_End(em);
         break;
@@ -4057,7 +4089,11 @@ static void em_move04_00607A60(EMW *em, EM21W *w) {
         em_dmg04_006050D0(em, w);
         break;
     case 5:
+#ifdef VERSION_MHG
+        em_dmg05_006051D0(em, w, 1);
+#else
         em_dmg05_006051D0(em, w);
+#endif
         break;
     case 6:
         em_dmg06_00605370(em, w);
@@ -4110,6 +4146,11 @@ static void em_move04_00607A60(EMW *em, EM21W *w) {
     case 22:
         em_dmg22(em, w);
         break;
+#ifdef VERSION_MHG
+    case 23:                                        /* G game 0x635E90: the part 3 flinch */
+        em_dmg05_006051D0(em, w, 0);
+        break;
+#endif
     }
 }
 
@@ -4363,12 +4404,19 @@ void em21_main(EMW *em) {
                 break;
             default:
                 if (em->hagi[(u8)em->x38E].cnt >= 2) {
+#ifdef VERSION_MHG
+                    if ((u8)em->x38E == 3)          /* G game 0x636AF0: part 3 has its own damage act 23 */
+                        em21_act_set(em, 4, 23, 2);
+                    else
+                        em21_act_set(em, 4, 5, 2);
+#else
                     em21_act_set(em, 4, 5, 2);
                     if ((u8)em->x38E != 3) {
                         em->x07 = 0;
                     } else {
                         em->x07 = 1;
                     }
+#endif
                 } else {
                     em21_act_set(em, 4, 1, 2);
                 }

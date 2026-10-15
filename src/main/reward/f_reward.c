@@ -2,7 +2,9 @@
  * First part, 0x290E80-0x291D2C: lookup of the "key quest" and "movie add"
  * tables, the result screen backdrop/frame drawing, the check that unlocks a
  * bonus movie after a quest, the result step machine (result_prog) and the
- * money payout (gold_init/gold_main). Meanings are guesses. */
+ * money payout (gold_init/gold_main). Meanings are guesses.
+ * The G PC build does not compile this file, f_reward2.c or f_reward3.c: G rewrote the result module, and its
+ * version is src/main/reward/f_reward_g.c (the G MWCC build still takes the functions that match G, G_PART). */
 #include "g_alias.h"
 #include "reward.h"
 
@@ -159,53 +161,6 @@ int movie_add_check(GAME_W *t, int go)
 }
 #endif
 
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
-/* G's hunting records (sub_main 0x4F4D00-0x4F4D94 and 0x4F44F0, agent A 15 Oct 2026, from G's asm): at the end of a
- * quest that was not abandoned or failed, each kind's kills this quest (quest_w.x1D4, Quest_enemy_die) are added to
- * User_data+0xD76 (capped 9999) and a bigger size than the kind's record (quest_w.x16C) becomes the record at
- * User_data+0xD10; x1D4 / x16C are then left holding the old record / the species' best (for the result screens).
- * Quest 3003 with event flag 0x2B: killing a Lao-Shan (7 / 50) sets event flag 0x1F. The pause menu's hunting
- * log reads the records (src/main/menu/menu_disp_nm.c). */
-extern char *hunt_group_tbl[];
-void Event_flag_set(int);
-int Event_flag_ck(int);
-#define UD16(o) (*(u16 *)((u8 *)&User_data + (o)))
-#define QW16(o) (*(s16 *)((u8 *)&quest_w + (o)))     /* G quest_w: x16C / x1D4 per kind (include/quest.h) */
-static void result_hunt_records_g(void)
-{
-    int k, best;
-    u16 old;
-    u8 *l;
-
-    for (k = 0; k < 0x33; k++) {
-        if (QW16(0x1D4 + k * 2) <= 0)
-            continue;
-        if (quest_w.no == 0xBBB && Event_flag_ck(0x2B) && ((u8 *)&game_w)[0x1F0] != 0 && (k == 7 || k == 0x32))
-            Event_flag_set(0x1F);
-        UD16(0xD76 + k * 2) += (u16)QW16(0x1D4 + k * 2);
-        if (UD16(0xD76 + k * 2) >= 10000)
-            UD16(0xD76 + k * 2) = 9999;
-    }
-    for (k = 1; k < 0x33; k++) {                        /* sub_main 0x4F44F0 */
-        old = UD16(0xD10 + k * 2);
-        QW16(0x1D4 + k * 2) = old;
-        if (old < (u16)QW16(0x16C + k * 2)) {
-            UD16(0xD10 + k * 2) = (u16)QW16(0x16C + k * 2);
-            if (QW16(0x1D4 + k * 2) == 0)
-                QW16(0x1D4 + k * 2) = 1;
-        }
-        QW16(0x16C + k * 2) = 0;
-    }
-    for (k = 1; k < 0x33; k++) {
-        best = 0;
-        for (l = (u8 *)hunt_group_tbl[k]; *l != 0xFF; l++)
-            if (best < (u16)QW16(0x1D4 + *l * 2))
-                best = (u16)QW16(0x1D4 + *l * 2);
-        QW16(0x16C + *(u8 *)hunt_group_tbl[k] * 2) = best;
-    }
-}
-#endif
-
 #if !defined(G_PART)
 void result_prog(void)
 {
@@ -247,9 +202,6 @@ void result_prog(void)
                 Pl_item_stack(pl, pl->item[i].id, (s16)-pl->item[i].num);
             }
         }
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
-        result_hunt_records_g();
-#endif
         if (Quest_clear_ck(1) == 1) {
             if (Online_ck() == 1) {
                 if (Quest_f_dra_ck((u8)quest_w.no) == 0) {
