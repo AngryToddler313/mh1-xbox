@@ -108,6 +108,15 @@ Kept as a fallback for any file that resists matching.
   (`sound_call_005A3D10`), so shared C links unchanged. G-only functions are
   `func_XXXXXXXX` (main) / `<module>_func_XXXXXXXX` until named.
 
+**MH2 (Dos) later builds on the community mh2-decomp.** (owner, 15 Oct 2026)
+- https://github.com/Batenkaitos-dev/mh2-decomp: MH2 NTSC-J 1.04, all 12,551 Capcom functions
+  byte-matching (stripped game: its function names are AI guesses), no PC port. When MH2's turn comes,
+  start from it and port it onto our engine instead of decompiling again.
+- Its repo has no license yet (the author's stated intent is collaboration): reading it and using facts
+  (names, offsets, behaviour) is fine; copying its code needs a license or the author's go-ahead first.
+- Possible exchange: our symbol-backed MH1/G names for shared engine code; our platform layer.
+- Our own repo has no LICENSE file either (owner to choose).
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)
