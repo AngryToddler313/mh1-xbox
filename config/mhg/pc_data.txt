@@ -260,3 +260,10 @@ equip_set_tbl = 0x004FF1D0; // size:0x10 allptr
 # game 0x54A5D0); src/main/evdemo/evdemo.c (G EvDemoInitialize)
 [game]
 evdemo_g_tbl = 0x00678280; // size:0x130
+# G's thrown items (agent A, 15 Oct 2026): shell03 (src/game/shell/shell03.c G block) has 17 args (G adds 11 poison smoke,
+# 12-15 knives, 16 a second placed bomb); eft12 (smoke clouds) has a 4th smoke colour (the poison smoke's purple)
+[game]
+shell03_atk_sel_tbl = 0x006C2700; // size:0x40     # 17 attack-data numbers, then at +0x20 17 "keep xB" bytes
+rate_tbl2 = 0x006C2760; // size:0x38               # + 0x20: the knives' {forward, up} table
+item_chr_tbl_0067ADC0 = 0x006C27A0; // size:0x22   # model per arg (knives 0x90)
+eft12_smoke_col = 0x0067B240; // size:0x10          # white, dung brown, green, poison purple
