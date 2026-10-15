@@ -1209,6 +1209,16 @@ static void move_default_0058E4F0(EMW *em) {
 
 /* Sound and effect script per animation: sound_call(em, frame, se) plays
  * the sound code se once when the animation reaches frame. */
+/* G: the sound part is sub_main 0x4ECD00 (the same calls, kind 32's own call in 0x3F7); the Eft13 dust moved to a
+ * second script (sub_main 0x4EDAA0, same frames and sizes) that sub_main 0x4EDCD0 runs only while the slot-2 overlay is
+ * number 2 (func_001F19C0(2), main 0x1F19C0 = the byte Load_overlay stores; Load_overlay(2, 2) is in the gallery's event
+ * scenes, sub_main 0x4A9250): no dust in G's quests. */
+#ifdef VERSION_MHG
+int func_001F19C0();
+#define G_DUST ((func_001F19C0(2) & 0xFF) == 2)
+#else
+#define G_DUST 1
+#endif
 void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it */
     if (em->char0 != w->anim) {
         w->anim = em->char0;
@@ -1308,18 +1318,23 @@ void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it
         sound_call_0058F430(em, 68, 13);
         sound_call_0058F430(em, 36, 20);
         sound_call_0058F430(em, 74, 16);
-        if (em_frame_check(em, 0, 66.0f)) {
+        if (G_DUST && em_frame_check(em, 0, 66.0f)) {
             Eft13_set_em_scl(em, 6, 0.7f, 3);
         }
         break;
     case 0x3F7:
+#ifdef VERSION_MHG
+        if (em->kind == 0x20) {         /* G (sub_main 0x4ED548): kind 32 has its own call */
+            sound_call_0058F430(em, 20, 8);
+        } else
+#endif
         sound_call_0058F430(em, 10, 14);
         sound_call_0058F430(em, 24, 19);
         sound_call_0058F430(em, 36, 19);
-        if (em_frame_check(em, 0, 16.0f)) {
+        if (G_DUST && em_frame_check(em, 0, 16.0f)) {
             Eft13_set_em_scl(em, 4, 2.0f, 3);
         }
-        if (em_frame_check(em, 0, 30.0f)) {
+        if (G_DUST && em_frame_check(em, 0, 30.0f)) {
             Eft13_set_em_scl(em, 17, 3.5f, 3);
         }
         break;
@@ -1329,7 +1344,7 @@ void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it
         sound_call_0058F430(em, 14, 19);
         sound_call_0058F430(em, 12, 13);
         sound_call_0058F430(em, 98, 18);
-        if (em_frame_check(em, 0, 10.0f) || em_frame_check(em, 0, 14.0f)) {
+        if (G_DUST && (em_frame_check(em, 0, 10.0f) || em_frame_check(em, 0, 14.0f))) {
             Eft13_set_em_scl(em, 6, 1.2f, 3);
             Eft13_set_em_scl(em, 9, 1.2f, 3);
         }
@@ -1367,7 +1382,7 @@ void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it
     case 0x427:
         sound_call_0058F430(em, 16, Code_Make(5, 4, 6, 4));
         sound_call_0058F430(em, 14, 17);
-        if (em_frame_check(em, 0, 2.0f)) {
+        if (G_DUST && em_frame_check(em, 0, 2.0f)) {
             Eft13_set_em_scl(em, 2, 0.8f, 7);
         }
         break;
@@ -1393,7 +1408,7 @@ void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it
         sound_call_0058F430(em, 96, Code_Make(3, 4, 6, 4));
         sound_call_0058F430(em, 124, Code_Make(5, 4, 6, 4));
         sound_call_0058F430(em, 180, Code_Make(0, 4, 1, 4));
-        if (em_frame_check(em, 0, 34.0f)) {
+        if (G_DUST && em_frame_check(em, 0, 34.0f)) {
             Eft13_set_em_scl(em, 2, 1.0f, 6);
         }
         break;

@@ -299,7 +299,15 @@ void em07_hagi_clr(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+void sub_main_func_004DC5D0(EMW *em, int part);
+#endif
 void em07_init(EMW *em) {
+#ifdef VERSION_MHG
+    /* G em07_init: parts 2/3 get the level bonus of em_dur_init / em_dur_set */
+    sub_main_func_004DC5D0(em, 2);
+    sub_main_func_004DC5D0(em, 3);
+#endif
     EM07W *w = (EM07W *)em->ex;
 
     if (quest_w.no == 0) {

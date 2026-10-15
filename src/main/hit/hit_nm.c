@@ -838,8 +838,9 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
     dmg += (s32)poison;
     c->dm_val[eb->part & 7] += dmg;
     if (getenv("RT_HIT_TRACE")) {   /* PC test log: one line per blade/shot hit on a monster */
-        printf("hit: em kind %d part %d zone %d meat %d/%d/%d pow %d pw %.1f rate %.3f sharp %.3f dmg %d ailment %.1f\n",
-               c->kind, eb->part, eb->num, meat->v[1], meat->v[2], meat->v[3], sh->pow, pw, rate, sharp, dmg, poison);
+        printf("hit: em kind %d part %d zone %d meat %d/%d/%d pow %d pw %.1f rate %.3f sharp %.3f dmg %d ailment %.1f shell %d/%d ail %02X/%d\n",
+               c->kind, eb->part, eb->num, meat->v[1], meat->v[2], meat->v[3], sh->pow, pw, rate, sharp, dmg, poison,
+               ((u8 *)sh)[2], ((u8 *)sh)[3], sh->ailment, sh->ailment_val);
     }
     dm_value_add(c, sh);
     c->x7AE += sh->x74;

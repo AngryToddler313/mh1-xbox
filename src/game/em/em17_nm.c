@@ -219,7 +219,16 @@ void em17_local_init(EMW *em) {
     eft01_set((PLW *) em, 0);
 }
 
+#ifdef VERSION_MHG
+void sub_main_func_004DC5D0(EMW *em, int part);
+#endif
 void em17_init(EMW *em) {
+#ifdef VERSION_MHG
+    /* G em17_init: parts 3/4/8 get the level bonus of em_dur_init / em_dur_set */
+    sub_main_func_004DC5D0(em, 3);
+    sub_main_func_004DC5D0(em, 4);
+    sub_main_func_004DC5D0(em, 8);
+#endif
     EM17W *w = (EM17W *)em->ex;
     s16 temp_v0;
     u8 temp_a0;

@@ -74,6 +74,13 @@ void em_mahi_eff_set(EMW *, int);
 void pl_flag_set(EMW *, int);
 void pl_flag_clr(EMW *, int);
 void Shell11_set(EMW *, int);
+/* shell11 kind: G's shell11_i takes its attack entry as the kind itself (MH1: kind + 1) and the callers
+   pass G's numbers; G (game 0x615220..0x6178D0): MH1's kind + 1, except 14 / 15 (same numbers in G) */
+#ifdef VERSION_MHG
+#define SH11(a) ((a) >= 14 ? (a) : (a) + 1)
+#else
+#define SH11(a) (a)
+#endif
 void flvecRotY(f32 *, f32);
 void flvecCopy(f32 *, f32 *);
 void flmatGetTrans(f32 *, void *);
@@ -373,7 +380,7 @@ static void em_fly02(EMW *em, s16 x) {
             em->x05++;
             em->x388 = 2;
             em19_fly_adjy2(em);
-            Shell11_set(em, 7);
+            Shell11_set(em, SH11(7));
         }
         break;
     case 2:
@@ -668,11 +675,11 @@ static void em_atk01(EMW *em) {
         }
         if (!(em->type & 1)) {
             if (frame_check(em, 0, 34.0f) != 0) {
-                Shell11_set(em, 6);
+                Shell11_set(em, SH11(6));
             }
         } else {
             if (frame_check(em, 0, 34.0f) != 0) {
-                Shell11_set(em, 0xB);
+                Shell11_set(em, SH11(0xB));
             }
         }
         break;
@@ -692,7 +699,7 @@ static void em_atk02(EMW *em) {
             em->x05++;
             em->x388 = 2;
             em19_fly_adjy2(em);
-            Shell11_set(em, 7);
+            Shell11_set(em, SH11(7));
         }
         break;
     case 2:
@@ -722,7 +729,7 @@ static void em_atk03(EMW *em) {
         em->x388 = 0;
         em->x05++;
         em_char_set(em, 9, 0, 0);
-        Shell11_set(em, 0xA);
+        Shell11_set(em, SH11(0xA));
         break;
     case 1:
         if (w->tgt != 0) {
@@ -761,11 +768,11 @@ static void em_atk04(EMW *em) {
         }
         if (!(em->type & 1)) {
             if (frame_check(em, 0, 34.0f) != 0) {
-                Shell11_set(em, 0xE);
+                Shell11_set(em, SH11(0xE));
             }
         } else {
             if (frame_check(em, 0, 34.0f) != 0) {
-                Shell11_set(em, 0xF);
+                Shell11_set(em, SH11(0xF));
             }
         }
         break;
@@ -1353,7 +1360,7 @@ static void ef_move_sub(EMW *em, EM19W *w) {
         sound_call(em, 0x24, 0, 0);
         sound_call(em, 4, 5, 0);
         if (frame_check(em, 0, 12.0f) != 0) {
-            Shell11_set(em, 5);
+            Shell11_set(em, SH11(5));
         }
         break;
     case 0x3F3:

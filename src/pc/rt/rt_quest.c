@@ -119,23 +119,19 @@ void game_func_005B7010(EMW *em)
 {
     eft01_set(em, 0);
 }
-/* sub_main 0x4EDCD0 (em04's effect move, kinds 4/5/32): step 0 -> 1, then the sound/effect script
- * sub_main 0x4ECD00 and, when the gp option byte func_001F19C0(2) is 2, the effect script 0x4EDAA0. G's
- * scripts are not ported: MH1's em04 script (ef_move_sub_0058E500, em04_nm.c) stands in for the first (sounds by
- * frame; G edited it), the second (Eft13 dust) is left out. */
+/* sub_main 0x4EDCD0 (em04's effect move, kinds 4/5/32): step 0 -> 1, then the sound script sub_main 0x4ECD00 and,
+ * when the slot-2 overlay is number 2 (func_001F19C0(2): only G's gallery event scenes), the Eft13 dust script
+ * 0x4EDAA0. Both are ef_move_sub_0058E500 in em04_nm.c (its VERSION_MHG parts: kind 32's sound, dust behind G_DUST). */
 struct EM04W;
 void ef_move_sub_0058E500(EMW *em, struct EM04W *w);
 void sub_main_func_004EDCD0(EMW *em)
 {
     u8 *w = (u8 *)em + 0x444;
-    static int said;
     switch (*w) {
     case 0:
         *w = 1;
         break;
     case 1:
-        if (!said++)
-            rt_log_standin("sub_main_func_004ECD00 (G em04 sound script: MH1's)");
         ef_move_sub_0058E500(em, (struct EM04W *)w);
         break;
     }
