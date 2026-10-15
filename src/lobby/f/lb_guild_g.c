@@ -953,7 +953,7 @@ void lb_guild_talk(void)                              /* 0x55D410 */
             strcpy(GSTR(0x6533E0), *(char **)(ent + 4));      /* guildStr */
             p = strrchr(GSTR(0x6533E0), 0x24);
             if (p != NULL) {
-                sprintf(p, GSTR(0x664CB0), guildPrice);
+                Lb_num_to_str(guildPrice, p);          /* G 0x5935A0 (fixed 15 Oct: the old sprintf read its format from a made-up address and printed nothing) */
                 strcat(GSTR(0x6533E0), strrchr(*(char **)(ent + 4), 0x24) + 1);
             }
             PIT_B = NPC_Message(GSTR(0x6533E0), PIT_X0, *(u16 *)ent, PIT_X9);

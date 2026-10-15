@@ -1519,15 +1519,23 @@ set4:
         *(s16 *)0x39DAD2 = 0x12;
         switch (F(u8, w, IBO(6))) {
         case 0:
+#ifdef VERSION_MHG
+            /* G (lobby 0x553E38): no Lb_equip_set (G dropped it); step 0 just moves on */
+            F(u8, w, IBO(6)) = F(u8, w, IBO(6)) + 1;
+#else
             if (!(F(u8, w, IBO(1)) & 1)) {
                 F(u8, w, IBO(6)) = F(u8, w, IBO(6)) + 1;
             } else {
                 Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, u, w + IBO(6));
                 F(u8, ib, IBO(6)) = 2;
             }
+#endif
             break;
         case 1:
             armor_set_myArmor(2, w, w + IBO(6));
+#ifdef VERSION_MHG
+            Skill_set_PL(&player_work[game_w.master]);     /* G 0x553E74: the worn gear's skills are recalculated here */
+#endif
             F(u8, ib, IBO(6)) = F(u8, ib, IBO(6)) + 1;
             break;
         case 2:

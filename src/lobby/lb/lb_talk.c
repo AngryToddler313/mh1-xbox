@@ -365,6 +365,22 @@ static void lb_msg_g(int i)
         *((u8 *)&lb_sys + 0x7D) = 0x5A;
     }
 }
+/* lobby 0x58DC30: the banner's prompt, drawn from its prim once the 90 ticks are over */
+extern char *lb_banner_close_str;
+void Lb_put_button(int, int, int);
+static s16 banner_t = -1;
+static void banner_prim(void)
+{
+    if (banner_t == 0) {
+        flfntSetSize(0x12, 0x12);
+        reload_tex(1, 0x180);
+        SetTextureStage(0x180);
+        Lb_put_button(0xBC, 0x132, 1);
+        font_set_palette(0);
+        flfntLocate(0xD2, 0x134);
+        font_print(lb_banner_close_str);
+    }
+}
 /* G's story events (lobby 0x544760, mode 49 on the PS2, 47 here): the elder and the village's story NPCs talk (the row chosen in
  * lb_talk_init by lb_sys+4) and the talk ends with the reward of that story point: zenny, items, stored equipment, event / extra
  * flags. The mode 48 banner (the hunter's registration card shown for 90 ticks, lobby 0x58DCC0) is shortened to its result. */
@@ -456,8 +472,19 @@ void Lb_event_story(void) {
                 ((u8 *)&User_data)[0xC23] = 1;
                 Lbc_SendMiniData();
             }
+            /* the banner of mode 48 (lobby 0x58DCC0): 90 ticks, then the "close" button until key 0x40. G draws the registration card
+             * and its sparkles only on stage 0x4D (not the village), so in Kokoto the banner is just this wait and prompt */
+            if (banner_t < 0) {
+                banner_t = 0x5A;
+            } else if (banner_t > 0) {
+                banner_t--;
+            }
+            Lbc_set_prim(banner_prim, 0, 0);
+            if (banner_t != 0 || !(Get_sw2(0) & 0x40))
+                return;
+            banner_t = -1;
             npc->x2E = 0;
-            Event_flag_set(4);                          /* the banner of mode 48 (shortened) */
+            Event_flag_set(4);
             Lb_put_set01(0xF);
             lb_sys.x68 = 0;
             lb_sys.x6C = 0;

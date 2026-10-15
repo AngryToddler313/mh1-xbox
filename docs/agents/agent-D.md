@@ -1414,3 +1414,10 @@ Windows G (verified from a clean clone, `./mh1 windows disc/mhg`, then `wine cmd
 title picture as Linux): two host fixes were needed that the MH1 Windows build also needed (rt_hud_gun.c's RECT clashed with windows.h,
 viewer.c lacked a rt_font_set_draw declaration). A hidden G run needs `--play --boot` (plain `--shot` without it crashes in
 Em_data_com_adrs_get: no quest loaded; same on Linux). With `--shot` the exe does not look for the data folder: pass it (`data`).
+
+## G village, second pass (agent D, 15 Oct 2026)
+Agent C ported the equipment detail windows (src/main/menu/equip_g.c); I checked them in the weapon shop (square key = detail, hidden run). My own work:
+Lb_put_shopYesNo (the table was read through a D_ name: use real symbol names, the PC treats D_<hex> as an MH1 address), the elder's fee number (Lb_num_to_str),
+the box's equip-change flow (no Lb_equip_set in G), the banner wait. Details and the items left as they are (lb_npc_trans, DispDialogData, Disp_lb_item_box,
+with the reasons) are in docs/RELEASE_G.md section 7. Pad names for hidden runs: circle / cross / square (detail) / triangle / ddown / r1; the shop's list is at
+about tick 165 of tools/gvil_ev.py with circles every 30 from 45.

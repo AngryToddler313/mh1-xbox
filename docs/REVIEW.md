@@ -671,3 +671,10 @@ obvious workarounds.
   in a run. **To revert:** the commit "G PC: timers and gathering ...".
 - **Added:** config/mhg/pc_data.txt G tables (gstat_*, gskill_*, gequip_*, gslash_rows; weapon_exp / armor_exp / slash_bar_color / stage_camera_data_ex at G's size). gslash_rows is `noptr`: the
   pointer scan took the sharpness lengths 0x50, 0x6E (= 0x006E0050) for a pointer and the relocation overwrote them.
+
+## G village, second pass (agent D, 15 Oct 2026)
+- **Dropped:** G's Lb_put_shopYesNo read its table through `D_2EC5D8` and G's func_0012BDD0 (lb_by44.c); **now** `yes_or_no` + font_print_sp. **Why:** the PC
+  reads the hex of a D_ name as an MH1 address, so the yes / no line printed nothing. **Revert:** the commit "G village: yes/no line, fee text, banner wait".
+- **Dropped:** the sprintf with a made-up format address in lb_guild_g.c lb_guild_talk (fee number in the elder's sentence); **now** Lb_num_to_str(guildPrice, p) as G.
+- **Dropped:** for G the box's equip-change called Lb_equip_set (MH1 only; G removed it); **now** G's two steps (armor_set_myArmor, then Skill_set_PL).
+- **Changed (G):** the story banner (mode 48) now waits its 90 ticks and then the "close" button (key 0x40), as G; before, it ended at once.

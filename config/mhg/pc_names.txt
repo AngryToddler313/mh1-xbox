@@ -33,3 +33,4 @@ sub_main D_528550 0x528550   # G disp_mode_menu: the sub-menu's two-line help pe
 sub_main lit_843_00386A40 0x537880 +   # G disp_reward (sub_main 0x4F8720) reads its "time left %3d" format through the cell at 0x5262BC (gptr_005262BC); the same text as lit_473
 sub_main lit_1001_00386A58 0x537B40 +  # G reward_itembox (0x4F8990) reads "%s <infinity>" (item type 0xFF) through the cell at 0x5262C0; zero-filled until now: the reward screen's item line was blank
 sub_main lit_1002_00386A60 0x537B48 +  # G reward_itembox: "%s x%d" (name and count) through the cell at 0x5262C4 (G's lit_4893 is the same string)
+lobby lb_banner_close_str 0x636EA4  # pointer cell: the banner's "close" label (G lobby 0x58DC30 prints it)
