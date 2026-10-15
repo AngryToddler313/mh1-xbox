@@ -855,12 +855,21 @@ s32 itembox_sortup(s32 pad) {
                         tmp6 = ((SW6 *)(u + 0x44))[IBCURW(w)];
                         ((SW6 *)(u + 0x44))[IBCURW(w)] = ((SW6 *)(u + 0x44))[F(IBCT, w, IBO(0xA))];
                         ((SW6 *)(u + 0x44))[F(IBCT, w, IBO(0xA))] = tmp6;
+#ifdef VERSION_MHG
+                        if (i1 != 0) {
+                            *(u16 *)i1 = *(u16 *)p10;
+                        }
+                        if (i2 != 0) {
+                            *(u16 *)i2 = IBCURW(ib);
+                        }
+#else
                         if (i1 != 0) {
                             *i1 = *p10;
                         }
                         if (i2 != 0) {
                             *i2 = IBCURW(ib);
                         }
+#endif
                     }
                     F(u8, ib, IBO(6)) = 0;
                     se_req(7, 0x26, 0);
