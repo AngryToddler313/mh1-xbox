@@ -17,7 +17,9 @@
 
 #define NULL ((void *)0)
 #define UD_WARE_N(u) ((1 + (((u8 *)(u))[0xC97] & 1) + ((((u8 *)(u))[0xC97] >> 1) & 1)) * 100)   /* G: 100 / 200 / 300 stored items */
-extern u8 g_lb_base[] __asm__("lb_sys");            /* G 0x6548F0 */
+extern u8 lb_sys[];                                 /* G 0x6548F0 */
+#define g_lb_base lb_sys    /* not an asm label: __asm__("lb_sys") skips the "_" prefix of win32 names and the
+                             * Xbox link failed with "undefined symbol: lb_sys" (14 Oct 2026) */
 #define GL(a) ((u8 *)g_lb_base + ((a) - 0x6548F0))  /* any address of the lobby overlay's data / bss */
 #define GS8(a) (*(s8 *)GL(a))
 #define GU8(a) (*(u8 *)GL(a))

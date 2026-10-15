@@ -1595,3 +1595,18 @@ Candidates, not confirmed: the FTP upload of the loader ended early without an e
 the size back from the listing and fails if it differs), or the half-copied G XBE (E:\Games\MHG\default.xbe,
 listed as "Monster Hunter G") was started instead of "Monster Hunter", or a file still locked by a stalled FTP
 transfer (restart the Xbox before trying).
+
+**G on the owner's Xbox: no pad; G Xbox link (agent B, 14 Oct 2026).** G installed through the loader ran but
+ignored the controller (even Back + Start): viewer.c's "G runs are always hidden" rule (for agents' PC runs)
+also applied on the Xbox, and hidden means pad_set_headless (no real controller). Now PC only
+(`#if defined(VERSION_MHG) && !defined(XBOX)`, the coordinator's fix). Checked in xemu (G nv2a, no script):
+the log says `boot: window 640x480` (no "hidden") and `controller: "Original Xbox Controller"`; before, no
+controller line. No other G-only switch touches the pad (pad_sdl.c is shared; the other MHG hide rule at the
+command line is already PC only).
+The G Xbox link failed after agent D's village work with "undefined symbol: lb_sys": lb_guild_g.c named it
+through an asm label (`extern u8 g_lb_base[] __asm__("lb_sys")`), which skips win32's "_" prefix; the PC
+(ELF) has no prefix so it linked there. Now a plain `extern u8 lb_sys[]` + #define. No other asm labels of that
+kind in src/ (grep `__asm__("`); the link has no other undefined names.
+tools/xbox_serve.py --data now makes the manifest again when a file in the folder changes size or time (checked
+at each /version and /manifest), so a new G XBE copied into dist/xbox/MHG goes out without a server restart
+(a server started before this change needs one restart).

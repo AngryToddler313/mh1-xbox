@@ -54,6 +54,13 @@ def version():
     return v
 
 
+def data_fresh():
+    """the folder changed since the manifest was made (a new default.xbe copied in): make it again"""
+    if DATA['dir'] and any(os.path.getsize(f) != n or os.path.getmtime(f) != t for f, n, t in DATA['stamp']):
+        print('== the data folder changed: checksums again')
+        load_data(DATA['src'])
+
+
 def load_data(src):
     """the manifest of a game folder: G or MH1 by its program file; data/ subfolder or the bare disc files"""
     src = os.path.abspath(src)
@@ -73,6 +80,7 @@ def load_data(src):
         set_xbe(xbe if game == 'MH1' and os.path.exists(xbe) else '')   # itself, so it goes in as mh1.xbe);
         # for G no build, so the loader starts G once its folder is complete
     out = [b'MH1DATA %s %d %d' % (game.encode(), CHUNK, len(files))]
+    files_new = {}
     for rel, f in files:
         size, crc, chunks = 0, 0, []
         print('checksums: %s ...' % f, end=' ')
@@ -88,8 +96,11 @@ def load_data(src):
         print('%d bytes, crc %08x' % (size, crc))
         out.append(b'F %d %08x %s' % (size, crc, rel.encode()))
         out.append(b'C ' + b' '.join(b'%08x' % c for c in chunks))
-        DATA['files'][rel] = (f, size)
+        files_new[rel] = (f, size)
+    DATA['files'] = files_new
     DATA['dir'] = game
+    DATA['src'] = src
+    DATA['stamp'] = [(f, n, os.path.getmtime(f)) for f, n in DATA['files'].values()]
     DATA['manifest'] = b'\n'.join(out) + b'\n'
 
 
@@ -111,6 +122,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        if self.path in ('/version', '/manifest'):
+            data_fresh()
         if self.path == '/version':
             self.reply(version().encode(), 'text/plain')
         elif self.path == '/test':
