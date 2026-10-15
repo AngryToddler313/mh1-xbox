@@ -115,7 +115,7 @@ Kept as a fallback for any file that resists matching.
 - Its repo has no license yet (the author's stated intent is collaboration): reading it and using facts
   (names, offsets, behaviour) is fine; copying its code needs a license or the author's go-ahead first.
 - Possible exchange: our symbol-backed MH1/G names for shared engine code; our platform layer.
-- Our own repo has no LICENSE file either (owner to choose).
+- Our repo: MIT license for the project's own code (owner, 15 Oct 2026; LICENSE).
 
 ## Rejected
 

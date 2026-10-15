@@ -155,3 +155,8 @@ scripts.
 
 The repository holds tools, original code and patches only. Builds require
 the user's own disc image for all data.
+
+## License
+
+The project's own code, tools and docs are MIT licensed (see LICENSE). No Capcom code or data is
+included or covered; builds need the player's own disc. Third-party parts keep their own licenses.
