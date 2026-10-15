@@ -2879,22 +2879,22 @@ int main(int argc, char **argv)
         if (weapon.game && pl.game && play)
             weapon_pose(light_hunter(lp));
 
-        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw" (or "kKIND,...", "tKIND,..." its cut tail): free camera on monster slot */
-            float p[3], d = 1500, hh = 600, yw = 0;
+        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw" (or "kKIND,...", "tKIND,..." its cut tail): free camera on monster slot, optional 5th value pitch */
+            float p[3], d = 1500, hh = 600, yw = 0, pit = 99;
             int a, sl = 0;
             const char *ce = getenv("RT_CAM_EM");
             int on_tail = ce[0] == 't';             /* "tN,...": that monster's cut-off tail */
             if (ce[0] == 'k' || on_tail) {    /* "kN,...": the first live monster of kind N on this stage */
                 extern uint8_t em_work[];
                 int kd = 0, j;
-                sscanf(ce + 1, "%d,%f,%f,%f", &kd, &d, &hh, &yw);
+                sscanf(ce + 1, "%d,%f,%f,%f,%f", &kd, &d, &hh, &yw, &pit);
                 for (j = 0; j < 20; j++)
                     if (em_work[0xA10 * j] && em_work[0xA10 * j + 2] == kd && em_work[0xA10 * j + 0x736] == (uint8_t)rt_game_stage()) {
                         sl = j;
                         break;
                     }
             } else {
-                sscanf(getenv("RT_CAM_EM"), "%d,%f,%f,%f", &sl, &d, &hh, &yw);
+                sscanf(getenv("RT_CAM_EM"), "%d,%f,%f,%f,%f", &sl, &d, &hh, &yw, &pit);
             }
             rt_monster_get(sl, p, &a);
             if (on_tail) {
@@ -2907,7 +2907,7 @@ int main(int argc, char **argv)
             cam[1] = p[1] + hh;
             cam[2] = p[2] + cosf(yw) * d;
             cam[3] = yw;
-            cam[4] = -atan2f(hh - 250.0f, d);
+            cam[4] = pit < 90 ? pit : -atan2f(hh - 250.0f, d);   /* optional 5th value: pitch (rad, negative = down) */
             game_cam = 0;
         }
         /* the view of this frame, from the camera the ticks above left

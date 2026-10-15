@@ -282,6 +282,15 @@ lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The
     There is no em40_amh/em40_tex: G's model table points kind 40 at em01_amh (the Rathian), the same placeholder
     as kind 0 and kind 51, and its effect model at em08's. Kind 51 likewise has its own em51_tbl.bin (39 motions,
     32 bones) and no model.
+- **Footage** (agent F, 15 Oct 2026; videos in build/cats/, not committed). felyne.mp4 (kind 9, white, pickaxe), melynx.mp4 (kind 23,
+  dark, spiked club; quest 1's own cats) and higeruu.mp4 (kind 40 with the Felyne body) are 20 s clips at 30 fps, hidden runs
+  of quest 1 (`RT_QUEST_STAGE=1`, `RT_PL_GOD=1`, hunter warped next to the cats with `RT_PL_WARP`, camera `RT_CAM_EM=kKIND,dist,height,yaw,pitch`,
+  one `RT_SHOTS` frame per tick, ffmpeg). Kind 9 there is `RT_QEM_KIND=23:9`; kind 18 is the Felynes that pull the carting
+  cart. cats_side_by_side.mp4 is the 2x2 grid. Kind 40 stands, scratches, wanders, runs up and swings like kind 9 but never steals.
+- **Someruu (kind 51) has no code.** [checked: G's per-kind init switch (em_init_sub, sub_main 0x4E8FE0) tests the kind against 51 and
+  jumps through a 16-entry table for 35-50 only; the per-kind pointer table at sub_main 0x520800 gives kind 51 the same default
+  row as kind 0] Only its name, em51_tbl.bin (39 motions, 32 bones, a bigger creature than the Felyne) and a few table rows exist,
+  so there is nothing to port or film; the 2x2 tile shows a text card. [em_move's table for 51 not read; same 16-entry shape]
 - **Not Yian Garuga.** [checked] No ガルルガ string anywhere in PS2 G (SLPM and all overlays) or in Wii G's main.dol; the
   skeleton, code, tables and name all point at a Felyne-type creature. BUT in Monster Hunter Portable (PSP) the
   monster name list has イャンガルルガ (Yian Garuga) **in slot 40**, right after Gypceros (39) and before Rathalos (41),

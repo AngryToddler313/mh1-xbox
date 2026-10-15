@@ -1466,7 +1466,7 @@ Fixes (all PC side; PS2 rebuild all five OK):
     Eft15_set3, Eft02_set3; a0-left-over calls fixed in the drafts.
   - Quest event demos (evdemo.c) were NOPs: first-encounter monsters (Kut-Ku
     148, Cephadrome 154, Monoblos 171) wait for game_w+0x21F and never woke.
-- Test aids: `RT_CAM_EM=slot,dist,height,yaw` (free camera on a monster),
+- Test aids: `RT_CAM_EM=slot,dist,height,yaw[,pitch]` (free camera on a monster),
   `RT_PROF=1` (host ms per game tick and per drawn frame), the monster trace
   shows act/sub/step.
 
