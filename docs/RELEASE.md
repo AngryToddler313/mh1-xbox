@@ -117,7 +117,7 @@ Code found while auditing:
   only 33% because it was re-laid out for English); 2067 of 2156 shared data files byte-identical; English is plain
   ASCII in the same places as the JP text plus the quest files (120 of 153 quests line up by number); a redrawn font;
   the US adds the Dual Swords weapon class, 9 items and quest numbers 178-193 (159 quest files vs 153). Its script is the base for G's English.
-- **PS2 Monster Hunter G**: now the project's main release (owner, 13 Oct); its survey and bring-up belong to another
+- **PS2 Monster Hunter G**: now the project's main release (owner, 13 Oct); its release checklist is docs/RELEASE_G.md. Its survey and bring-up belong to another
   agent. Earlier numbers: docs/survey/mhg_vs_mh1.md. tools/carry_match.py mhg measures the same
   carry-over for G (50.9% of matched bytes on 13 Oct).
 

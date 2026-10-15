@@ -329,3 +329,7 @@ G on the Xbox (14 Oct 2026, agent B): `python3 tools/build_xbox.py --version mhg
 tools/build_pc_mhg.sh; own title id / save / folder (E:\Games\MHG); in xemu new game -> save -> village and
 `RT_ARGS=--quest 10` -> reward -> village. Memory and what to test on hardware: docs/xbox.md "Monster Hunter G
 on the Xbox".
+
+Release checklist for G (15 Oct 2026, agent A): docs/RELEASE_G.md (criteria a player notices, every known gap by impact
+with lane and evidence, a coverage run of the whole offline game); the reward screen's item line, CONTINUE, the elder's
+quest lists and the em12 revival points were fixed with it.

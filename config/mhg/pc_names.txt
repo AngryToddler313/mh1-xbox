@@ -27,3 +27,9 @@ sub_main item_cmd_str 0x005263C0  # G Pit_disp_item_list (0x11E4D0): five varian
 sub_main equip_exp_str_sw_attr 0x00527EA0  # the seven element names (火 水 雷 龍 毒 麻痺 睡眠) as pointers; data_map.txt's low guess 0x527E10 is the format-string block
 lobby shop_armor00_tag 0x636A5C  # G lb_armor_init (0x54E670) stores shop_default_tag_00610A68+4: the item shop tab pair 買う/売る, which the armour shop also shows first
 lobby lb_ibox_str 0x6364C0   # G ItemboxWindowX (lobby 0x555850): string pointers; [3] the infinity sign, [4] the multiplication sign shown after an item name
+main D_002EC668 0x2EC668     # G disp_mode_menu (omake.c, VERSION_MHG): pointer to the CONTINUE sub-menu's button-label format; without it a zero BSS stand-in
+sub_main D_528538 0x528538   # G disp_mode_menu: CONTINUE sub-menu rows (= game_menu_msg in G's symbol view); the zero stand-in crashed the game menu whenever a save was on the card (strlen(NULL))
+sub_main D_528550 0x528550   # G disp_mode_menu: the sub-menu's two-line help per row (= game_menu_msg2)
+sub_main lit_843_00386A40 0x537880 +   # G disp_reward (sub_main 0x4F8720) reads its "time left %3d" format through the cell at 0x5262BC (gptr_005262BC); the same text as lit_473
+sub_main lit_1001_00386A58 0x537B40 +  # G reward_itembox (0x4F8990) reads "%s <infinity>" (item type 0xFF) through the cell at 0x5262C0; zero-filled until now: the reward screen's item line was blank
+sub_main lit_1002_00386A60 0x537B48 +  # G reward_itembox: "%s x%d" (name and count) through the cell at 0x5262C4 (G's lit_4893 is the same string)

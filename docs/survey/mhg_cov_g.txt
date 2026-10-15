@@ -1,0 +1,1033 @@
+# G PC coverage, 15 Oct 2026 (agent A): tools/cov_report_g.py over a COV=1 G build; runs listed in docs/RELEASE_G.md section 3.
+# Names and addresses only. Regenerate: COV=1 tools/build_pc_mhg.sh, run with RT_COV=FILE, python3 tools/cov_report_g.py FILE
+functions entered: 4635
+  edited     821
+  identical  1976
+  missing    78
+  pc-only    1488
+  rewritten  32
+  shape      240
+
+G-CHANGED: entered, G twin missing/rewritten/edited/shape, no G marker in the PC body (945)
+class      sim  mh1size name                              G twin              source
+missing   0.00   39760 ef_move_sub_0024A790                                  src/main/pl/pl_snd01.c
+missing   0.00    3096 Game_task                                             src/pc/rt/rt_boot.c
+missing   0.00    1460 result_disp                                           src/main/reward/f_reward3.c
+missing   0.00    1120 Lb_menu_move_Core                                     build/pc/abs/lb__lb_by151.abs.c
+missing   0.00     736 plaza_selectMenu                                      build/pc/abs/lb__lbui_nm.abs.c
+missing   0.00     704 shop_armor_question                                   build/pc/abs/lb__lb_by163.abs.c
+missing   0.00     664 Item_preparation_list_num                             src/main/item/item_nm.c
+missing   0.00     476 Init_task                                             src/select/select00.c
+missing   0.00     468 em_move02_005A28C0                                    build/pc/abs/em08_ai_nm.abs.c
+missing   0.00     440 movie_start                                           src/pc/rt/rt_movie.c
+missing   0.00     404 sk_init_mode                                          build/pc/abs/sk_all.c
+missing   0.00     396 lbc_in_lobby_03_00                                    build/pc/abs/lb__lb_cli.abs.c
+missing   0.00     372 set06_trans                                           src/main/set/set06.c
+missing   0.00     332 Menu_chatcnfg_mv                                      src/main/menu/menu12.c
+missing   0.00     312 em_act10_0059B300                                     build/pc/abs/em08_ai_nm.abs.c
+missing   0.00     284 Lb_addChatMember                                      build/pc/abs/lb__lbui_nm.abs.c
+missing   0.00     276 flfntDrawAll                                          src/pc/rt/rt_font.c
+missing   0.00     272 Omake_task                                            build/pc/abs/omake.patch.c
+missing   0.00     260 Stage_Hate_Add                                        build/pc/abs/em_core_nm.patch.c
+missing   0.00     248 init_item_work                                        src/main/item/item01.c
+missing   0.00     240 em_act11_0059B440                                     build/pc/abs/em08_ai_nm.abs.c
+missing   0.00     236 movie_request                                         src/pc/rt/rt_movie.c
+missing   0.00     224 sort_sub                                              src/main/sprite/trans2.c
+missing   0.00     224 flfntCreate                                           src/pc/rt/rt_font.c
+missing   0.00     208 em_act13_0059B640                                     build/pc/abs/em08_ai_nm.abs.c
+missing   0.00     196 plaza_chatTrans                                       src/lobby/lb/lbuis.c
+missing   0.00     196 movie_add_ck                                          src/main/reward/f_reward.c
+missing   0.00     196 Gunner_wasure_ck                                      src/main/ud/ud_nm.c
+missing   0.00     192 lb_pl_mv094                                           build/pc/abs/lb__lb_j.abs.c
+missing   0.00     164 Lb_pl_status_m                                        src/lobby/b/lb_by07.c
+missing   0.00     160 movie_server                                          src/pc/rt/rt_movie.c
+missing   0.00     156 flfntCacheFlush                                       src/pc/rt/rt_font.c
+missing   0.00     152 kyusyu_char_set2_005E64A0                             build/pc/abs/em17_nm.abs.c
+missing   0.00     148 Lb_guild_check_requireF                               build/pc/abs/lb__lb_n.abs.c
+missing   0.00     144 Lb_equip_set                                          build/pc/abs/lb__lb_e.patch.c
+missing   0.00     132 wyvern_kill_cnt_up                                    src/main/ud/ud_nm.c
+missing   0.00     128 cnLBS_Set_RoomRule                                    build/pc/rt_gen.c
+missing   0.00     124 em_atk31_005B97B0                                     build/pc/abs/em14_nm.abs.c
+missing   0.00     116 nwSetEff_FreeDialog                                   build/pc/rt_gen.c
+missing   0.00     108 player_name_print                                     src/main/menu/menu01.c
+missing   0.00     104 lbc_in_lobby_00                                       build/pc/abs/lb__lb_cli.abs.c
+missing   0.00      80 init_reibun_sub                                       src/main/chat/chat_nm.c
+missing   0.00      80 move_item                                             src/main/item/item01.c
+missing   0.00      76 lm_mail_box_i                                         build/pc/rt_gen.c
+missing   0.00      76 lbc_top_menu_06                                       build/pc/abs/lb__lb_cli.abs.c
+missing   0.00      68 hk_key_f1                                             src/main/tu/hk_all.c
+missing   0.00      68 omake_check                                           build/pc/abs/omake.patch.c
+missing   0.00      68 hk_key_f2                                             src/main/tu/hk_all.c
+missing   0.00      60 em14_local_area_move_init                             src/game/em/em14_area.c
+missing   0.00      60 em15_local_area_move_init                             src/game/em/em14_horm.c
+missing   0.00      60 em17_local_area_move_init                             src/game/em/em17_horm.c
+missing   0.00      60 em01_local_area_move_init                             src/game/em/em_modechg.c
+missing   0.00      60 em27_local_area_move_init                             src/game/em/em27_area.c
+missing   0.00      60 em08_local_area_move_init                             src/game/em/em08_area.c
+missing   0.00      56 kb_input_ck_enter                                     src/main/font/gfs_nm.c
+missing   0.00      36 lbc_top_menu                                          build/pc/abs/lb__lb_cli.abs.c
+missing   0.00      36 NPCZoomInCameraRequest                                src/main/cam/camd.c
+missing   0.00      36 lobby_client_logout                                   build/pc/abs/lb__lb_cli.abs.c
+missing   0.00      28 lm_place_mv                                           build/pc/rt_gen.c
+missing   0.00      20 ADXM_Unlock                                           build/pc/rt_gen.c
+missing   0.00      12 Lbc_release                                           build/pc/abs/lb__lbuiu.abs.c
+missing   0.00      12 cnLbc_EraseDialog                                     build/pc/rt_gen.c
+missing   0.00      12 Lb_pl_sw_set                                          build/pc/abs/lb__lb_c.abs.c
+missing   0.00       8 check_sender1                                         build/pc/abs/lb__lb_d.c
+missing   0.00       8 Card_task                                             src/pc/rt/rt_boot.c
+missing   0.00       8 lb_basic_com_ck                                       build/pc/abs/lb__lb_z01.patch.c
+missing   0.00       8 pl_local_init                                         src/main/pl/pl_snd01.c
+missing   0.00       8 point_cam_hit                                         src/main/cam/camd.c
+missing   0.00       8 BsParseCancel                                         src/lobby/f/lb_z42.c
+missing   0.00       8 dummy_em_prog_0058F490                                src/game/em/em04c.c
+missing   0.00       8 em10_local_init_0053DCE0                              build/pc/abs/lb__lbem10.abs.c
+rewritten 0.00    1104 em_die04_006118F0                 game     0x0063FF80 src/game/em/em27_nm.c
+rewritten 0.00     408 em17_to_normal                    game     0x006069B0 build/pc/abs/em17_nm.abs.c
+rewritten 0.00     384 act_dist_select_005DA5C0          game     0x00606940 build/pc/abs/em17_nm.abs.c
+rewritten 0.00     288 em14_to_normal                    game     0x005E0F50 build/pc/abs/em14_nm.abs.c
+rewritten 0.00     192 set06_m                           sub_main 0x004E1530 src/main/set/set06.c
+rewritten 0.00      52 eft05_d                           game     0x0056C100 src/game/eft/eft05_nm.c
+rewritten 0.00      20 movie_reset                       main     0x001E42B0 src/pc/rt/rt_movie.c
+rewritten 0.35     172 Lb_put_shopYesNo                  lobby    0x00549FB0 src/lobby/b/lb_by44.c
+rewritten 0.40     520 eft05_m                           game     0x0056BE00 src/game/eft/eft05_nm.c
+rewritten 0.41     224 Put_receive_mark                  main     0x00222800 src/main/chat/chat_nm.c
+rewritten 0.41     120 em20_local_area_move_init         game     0x00618260 src/game/em/em19_move.c
+rewritten 0.42      84 Quest_clear_bit_set               sub_main 0x004C74D0 src/main/ud/ud_nm.c
+rewritten 0.42      72 roll_move                         select   0x005466A0 src/select/edit_nm.c
+rewritten 0.45     664 disp_check                        select   0x005456D0 src/select/edit_nm.c
+rewritten 0.46    3808 ef_move_sub_0058E500              game     0x00648610 src/game/em/em04_nm.c
+rewritten 0.46      88 Ud_stock_item_num_ck3             sub_main 0x004C5C10 src/main/ud/ud_nm.c
+rewritten 0.47      76 Quest_clear_bit_ck                sub_main 0x004C7550 src/main/ud/ud_nm.c
+rewritten 0.48      80 Lb_get_armor_num                  lobby    0x0054FC70 src/lobby/b/lb_by58.c
+rewritten 0.50     460 eft05_i                           game     0x0056BBC0 src/game/eft/eft05_nm.c
+edited    0.50     340 lbc_login_finish_after            lobby    0x0057C1A0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.50      24 SoftKeyboard_init                 main     0x00208E70 build/pc/abs/sk_all.c
+edited    0.50       8 check_sender0                     lobby    0x0059A820 build/pc/abs/lb__lb_d.c
+edited    0.51     356 disp_lm_room_member               lobby    0x00596810 build/pc/rt_gen.c
+edited    0.51      60 Lb_put_msg_type2                  lobby    0x005934C0 build/pc/abs/lb__lb_c.abs.c
+edited    0.53     424 Disp_NPC_message                  main     0x00222BC0 src/pc/rt/rt_2d.c
+edited    0.53      52 em_move06_0058A310                game     0x005B69A0 src/game/em/em03.c
+edited    0.54     420 lb_chatMemberCheck                lobby    0x0057FA20 build/pc/abs/lb__lbui_nm.abs.c
+edited    0.54     348 sword_zokusei                     main     0x002260C0 src/main/chat/chat_nm.c
+edited    0.54     212 disp_mc                           select   0x00545B00 src/select/edit_nm.c
+edited    0.54      72 SetHelpLineMsg                    lobby    0x0059F720 build/pc/abs/lb__lbui_nm.abs.c
+edited    0.54      64 em10_msg_set                      game     0x005D83E0 src/game/em/em10_nm.c
+edited    0.55     636 Disp_NowLoading2                  main     0x0012D700 src/main/font/dsp02.c
+edited    0.56      80 Warehouse_search_space            sub_main 0x004C75D0 src/main/ud/ud_nm.c
+edited    0.56      76 pl01_effect_move                  sub_main 0x004A9150 src/main/pl/pl_snd01.c
+edited    0.57     112 Warehouse_equip_stack             sub_main 0x004C7650 src/main/ud/ud_nm.c
+edited    0.57      32 font_stack_reset                  main     0x0012B480 src/main/font/fontst2_nm.c
+edited    0.58    1520 Lb_make_quest_tbl                 lobby    0x0055FA40 src/lobby/f/lb_v17.c
+edited    0.58     912 lb_put_sprite                     lobby    0x00592860 build/pc/abs/lb__lb_ag.patch.c
+edited    0.58     352 PatchLoadinDNAS_Main              main     0x00237C70 src/pc/rt/rt_boot.c
+edited    0.58     232 disp_save_info                    select   0x005459E0 src/select/edit_nm.c
+edited    0.58     148 em07_item_set                     game     0x005BAF40 build/pc/abs/em07_ai_nm.abs.c
+edited    0.58     100 load_bin_req                      main     0x001005B0 src/pc/rt/rt_flow.c
+edited    0.59     272 flfntDraw                         main     0x001D5B20 src/pc/rt/rt_font.c
+edited    0.59     268 mc_copy_opt_only                  main     0x0022B260 build/pc/abs/mccomb.patch.c
+edited    0.59     220 Lb_send_pl_pos                    lobby    0x0059A660 build/pc/abs/lb__lb_d.c
+edited    0.59     164 enemy_mark_chk                    main     0x00119330 src/main/menu/menu01.c
+edited    0.59     104 Lb_Pl_stg_ck                      lobby    0x00568420 src/lobby/f/lb_h.c
+edited    0.60     548 cam_plEX_zoom                     main     0x001DC250 src/main/cam/camd.c
+edited    0.60     456 disp_savesel_moji                 main     0x0022AC70 src/main/mc/mcdisp_nm.c
+edited    0.60     444 Lb_send_pl_status                 lobby    0x0059A840 build/pc/abs/lb__lb_d.c
+edited    0.60      56 lb_armor_listItem                 lobby    0x00550270 src/lobby/b/lb_by60.c
+edited    0.61     424 set04_trans                       game     0x0064FF60 src/game/set/set04.c
+edited    0.61      60 Lb_send_pl_warp                   lobby    0x0059A7A0 build/pc/abs/lb__lb_d.c
+edited    0.61      56 To_TopMenu                        lobby    0x0057DA60 build/pc/abs/lb__lb_cli.abs.c
+edited    0.62      48 Load_userdata                     sub_main 0x004C4BE0 src/main/ud/udmisc_nm.c
+edited    0.63    5080 equip_exp_core                    main     0x00224D90 src/main/chat/chat_nm.c
+edited    0.63     324 lb_process_tag_decide01           lobby    0x0054AF40 build/pc/abs/lb__lb_by80.abs.c
+edited    0.63      92 Get_LobbyName                     lobby    0x00579B30 build/pc/abs/lb__lbuiu.abs.c
+edited    0.64     404 lobby_return_to_lobby             lobby    0x0057CCF0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.64     148 strlen_sp                         main     0x0012C5D0 src/pc/rt/rt_font.c
+edited    0.64     128 mkTexture                         main     0x0010F140 src/pc/rt/rt_2d.c
+edited    0.64     120 movie_exit                        main     0x001E3E00 src/pc/rt/rt_movie.c
+edited    0.65    3564 eft20_pos_set                     sub_main 0x004DA770 src/main/eft/eft20_nm.c
+edited    0.65     964 armor_create_model                main     0x00115170 src/pc/rt/rt_pl.c
+edited    0.65     184 ck_pl_send                        lobby    0x00567550 build/pc/abs/lb__lb_g.patch.c
+edited    0.65     100 hk_key_u_cursor                   main     0x0020FF10 src/main/tu/hk_all.c
+edited    0.65      72 Lb_send_chair_status              lobby    0x0059ADC0 build/pc/abs/lb__lb_n.abs.c
+edited    0.66     320 set06_i                           sub_main 0x004E12C0 src/main/set/set06.c
+edited    0.67    6920 ms_net_patch_set                  main     0x002130B0 build/pc/rt_gen.c
+edited    0.67     712 disp_savesel                      main     0x0022A710 src/main/mc/mcdisp_nm.c
+edited    0.67      40 Omake_flag_set                    sub_main 0x004C6770 src/main/ud/ud_nm.c
+edited    0.67      16 http_test_19                      lobby    0x005A1C90 src/lobby/f/lb_z10.c
+edited    0.67      12 NPCZoomInCameraCancel             main     0x001DC140 src/main/cam/camd.c
+edited    0.67       8 shop_armor_put_shopHelp           nethttp  0x00A06240 src/lobby/b/lb_by46.c
+edited    0.68     564 font_sp_ck                        main     0x0012B9C0 src/pc/rt/rt_font.c
+edited    0.68     480 em_atk07_005DE800                 game     0x0060A480 build/pc/abs/em17_nm.abs.c
+edited    0.68     456 lb_member_outCheck                lobby    0x00566600 build/pc/rt_gen.c
+edited    0.68     332 result_init                       sub_main 0x004F6880 src/main/reward/f_reward2.c
+edited    0.68     184 lbc_text_lobby_trans              lobby    0x0057A120 build/pc/abs/lb__lb_cli.abs.c
+edited    0.69     604 Lb_PlayerStatus                   lobby    0x0059DE40 build/pc/abs/lb__lb_aa.abs.c
+edited    0.69     240 em_act01_005B59C0                 game     0x005E1160 build/pc/abs/em14_nm.abs.c
+edited    0.69     152 Lb_put_chat                       lobby    0x0059D800 build/pc/abs/lb__lb_ad.abs.c
+edited    0.70    1312 DispDialogData                    lobby    0x005A02B0 src/lobby/b/lb_by180.c
+edited    0.70     180 em27_act_set                      game     0x00642030 src/game/em/em27.c
+edited    0.70     136 em02_fly_adjy2_init               game     0x005A98F0 src/game/em/em02.c
+edited    0.70     112 sound_call_sub_005CBA30           game     0x005F7800 build/pc/abs/em15_nm.abs.c
+edited    0.70     112 sound_call_sub_005F75F0           game     0x00624810 build/pc/abs/em20_ai_nm.abs.c
+edited    0.70     112 sound_call_sub_005A3CA0           game     0x005CEC10 build/pc/abs/em08_ai_nm.abs.c
+edited    0.70     112 sound_call_sub_005E1F80           game     0x0060E3C0 build/pc/abs/em17_nm.abs.c
+edited    0.70     104 Fade_busy_ck                      main     0x001021B0 src/main/fade/fade_nm.c
+edited    0.70      64 Lb_get_quest_str                  lobby    0x00559D50 build/pc/abs/lb__lb_b.abs.c
+edited    0.71    1464 Disp_lb_item_box                  lobby    0x005577B0 build/pc/abs/lb__lb_ib.abs.c
+edited    0.71     584 lm_member_trans                   lobby    0x0058C460 build/pc/rt_gen.c
+edited    0.71     328 Equip_idx_renew                   sub_main 0x004C7790 src/main/ud/ud_nm.c
+edited    0.71     104 option_init                       main     0x001175E0 src/main/option/option01.c
+edited    0.71      28 Omake_flag_ck                     sub_main 0x004C6790 src/main/ud/ud_nm.c
+edited    0.72     340 Ud_u_item_stack                   sub_main 0x004C5F20 src/main/ud/ud_nm.c
+edited    0.72     264 Get_equip_bit                     sub_main 0x004C8430 src/main/ud/ud_nm.c
+edited    0.72     192 CheckItemPrice_005AFEE0           lobby    0x00589750 build/pc/abs/lb__lbshop2_nm.abs.c
+edited    0.72      72 TransReset                        main     0x0012E5F0 src/main/weapon/trans.c
+edited    0.72      64 Init_reibun                       main     0x002275A0 src/main/chat/chat_nm.c
+edited    0.73     972 font_print_sp                     main     0x0012BE70 src/pc/rt/rt_font.c
+edited    0.73     540 NextStage_Dir_Set                 game     0x0058F820 build/pc/abs/em_cmd_nm.abs.c
+edited    0.73     288 em07_hagi_set                     game     0x005BB0A0 build/pc/abs/em07_ai_nm.abs.c
+edited    0.73      84 GameTrans                         main     0x0012E760 src/main/weapon/trans.c
+edited    0.74     952 slash_level_bar                   main     0x00226950 src/main/chat/chat_nm.c
+edited    0.74     492 opening_demo                      select   0x00544560 src/select/demo.c
+edited    0.74     456 EquipmentCompareWindowA           main     0x002266C0 src/main/chat/chat_nm.c
+edited    0.74     400 Equip_ok_ck                       sub_main 0x004C82C0 src/main/ud/ud_nm.c
+edited    0.74     392 pl_dm015                          game     0x0055F010 build/pc/abs/f_pl.c
+edited    0.74     376 St_pick_ck2                       sub_main 0x004CB500 src/main/pl/plx10.c
+edited    0.74     288 em_act01_005DAAD0                 game     0x00606B90 build/pc/abs/em17_nm.abs.c
+edited    0.74     288 load_bin                          main     0x00100470 src/pc/rt/rt_snd.c
+edited    0.74     180 em16_to_normal                    game     0x005FCA00 src/game/em/em16_nm.c
+edited    0.74     152 Warehouse_equip_out               sub_main 0x004C7970 src/main/ud/ud_nm.c
+edited    0.74     136 skill_hp_calc_00134FF0            sub_main 0x004F1220 build/pc/abs/f_pl.c
+edited    0.74     104 sk_palette_cursor_set             main     0x0020BE30 build/pc/abs/sk_all.c
+edited    0.74      72 disp_itembox_cmd                  lobby    0x00557740 build/pc/abs/lb__lb_ib.abs.c
+edited    0.74      36 Lb_get_player_id                  lobby    0x0058EBE0 src/lobby/b/lb_bz19.c
+edited    0.75    1892 set19_trans                       game     0x00657860 src/game/set/set19.c
+edited    0.75     528 eft09_m                           game     0x0056E3D0 src/game/eft/eft09.c
+edited    0.75     204 To_EnterPlaza2Lobby               lobby    0x0057E450 build/pc/abs/lb__lb_cli.abs.c
+edited    0.75      16 NPCZoomInCameraCheck              main     0x001DC150 src/main/cam/camd.c
+edited    0.75      16 init_ran_suu                      main     0x0012AE10 src/pc/rt/rt_game.c
+edited    0.76     196 Lb_put_icon_free                  lobby    0x005932B0 build/pc/abs/lb__lb_e.patch.c
+edited    0.76     184 trans_result_1                    sub_main 0x004F3CC0 src/main/reward/f_reward.c
+edited    0.76     176 em_act26_005DC010                 game     0x006080F0 build/pc/abs/em17_nm.abs.c
+edited    0.76     136 Eft05_set                         game     0x0056CA10 src/game/eft/eft05_nm.c
+edited    0.76     132 Lb_put_status                     lobby    0x00593220 build/pc/abs/lb__lb_e.patch.c
+edited    0.76      56 Lb_send_commer                    lobby    0x0059AD30 build/pc/abs/lb__lb_d.c
+edited    0.77    2620 Pl_damage_sub                     game     0x0066D300 src/game/pl/pl_damageb.c
+edited    0.77    1344 set13_i                           sub_main 0x004E6050 src/main/set/set13.c
+edited    0.77     556 Lb_check_newCommer                lobby    0x00566990 src/lobby/f/lb_gab01.c
+edited    0.77     424 SoftKeyboard_set                  main     0x00208EE0 src/pc/rt/rt_menu.c
+edited    0.77     192 em_act14_005DB510                 game     0x00607580 build/pc/abs/em17_nm.abs.c
+edited    0.77     132 Pit_disp_receive_mes              main     0x00222730 src/pc/rt/rt_2d.c
+edited    0.77     132 middle_logo                       select   0x005442F0 src/select/demo.c
+edited    0.77     104 Get_hunter_status                 sub_main 0x004C5160 src/main/ud/udmisc_nm.c
+edited    0.77      84 lm_friend_list_i                  lobby    0x0058CE30 build/pc/rt_gen.c
+edited    0.78     968 lb_npc_trans                      lobby    0x0058FCE0 build/pc/abs/lb__lb_village_nm.abs.c
+edited    0.78     712 lb_armor_put_itemDetail           lobby    0x0054FED0 src/lobby/b/lb_by162.c
+edited    0.78     524 lb_armor_decide                   lobby    0x0054F6C0 build/pc/abs/lb__lb_by84.abs.c
+edited    0.78     268 lb_member_inCheck                 lobby    0x00566810 build/pc/rt_gen.c
+edited    0.78     260 em_move03_005D3660                game     0x005FF660 src/game/em/em16_nm.c
+edited    0.78     192 Lb_cockpit_move                   lobby    0x00591800 build/pc/abs/lb__lb_e.patch.c
+edited    0.78     128 em_dur_init                       sub_main 0x004DC6A0 src/main/em/emsrch.c
+edited    0.79    2864 eft13_t                           sub_main 0x004D3300 src/main/eft/eft13b.c
+edited    0.79     948 em08_init                         game     0x005C5E80 build/pc/abs/em08_ai_nm.abs.c
+edited    0.79     692 flps0008                          main     0x001413F0 src/pc/rt/rt_2d.c
+edited    0.79     688 Lb_shop                           lobby    0x00587EA0 build/pc/abs/lb__lbshop2b.abs.c
+edited    0.79     516 disp_option_menu                  main     0x00117D80 src/main/option/option01.c
+edited    0.79     408 em_dmg05_0059FE40                 game     0x005CB620 build/pc/abs/em08_ai_nm.abs.c
+edited    0.79     352 trans                             main     0x0012E7E0 src/pc/rt/rt_boot.c
+edited    0.79     168 em_atk06_0060F860                 game     0x0063DEA0 src/game/em/em27_nm.c
+edited    0.79     168 em_atk04_005D2500                 game     0x005FE490 src/game/em/em16_nm.c
+edited    0.79     120 Lb_get_comment                    lobby    0x0056C2B0 build/pc/abs/lb__lbuii.patch.c
+edited    0.79      76 eft13_se_req                      sub_main 0x004D43B0 src/main/eft/eft13b.c
+edited    0.80    7584 shell08_m                         game     0x00660E00 src/game/shell/shell08_nm.c
+edited    0.80    1844 stage_spr_disp                    sub_main 0x004A6740 src/main/stage/f_stage_nm.c
+edited    0.80     964 em15_init                         game     0x005EE200 build/pc/abs/em15_nm.abs.c
+edited    0.80     848 shop_armor2_question              lobby    0x0054D1F0 build/pc/abs/lb__lb_by138.abs.c
+edited    0.80     376 all_reset                         main     0x0012CA40 src/pc/rt/rt_boot.c
+edited    0.80     308 item_theft_005EC560               game     0x00618FD0 build/pc/abs/em20_ai_nm.abs.c
+edited    0.80     280 Get_equip_data_ptr                sub_main 0x004CDEF0 src/main/pl/pl71.c
+edited    0.80     260 QuestClearCameraRequest           main     0x001E0DB0 src/main/cam/camq0.c
+edited    0.80     224 Shell10_set                       game     0x00666440 src/game/shell/shell10.c
+edited    0.80     132 em_move03_005AA670                game     0x005D5A10 src/game/em/em09_nm.c
+edited    0.80      72 eft09_set                         game     0x0056E940 src/game/eft/eft09.c
+edited    0.80      28 lb_armor_init                     lobby    0x0054E670 src/lobby/b/lb_by49.c
+edited    0.80      28 lb_process_init                   lobby    0x0054A250 src/lobby/b/lb_by47.c
+edited    0.80      16 Lbs_InRoomCheck                   lobby    0x00583170 build/pc/abs/lb__lb_cli.abs.c
+edited    0.81    1196 SoftKeyboard_move                 main     0x00209390 src/pc/rt/rt_menu.c
+edited    0.81     844 em21_init                         game     0x0062D620 build/pc/abs/em21_nm.abs.c
+edited    0.81     728 Lb_armor_shop                     lobby    0x0054E690 build/pc/abs/lb__lbarm01.abs.c
+edited    0.81     600 game3                             main     0x00103400 src/main/game/f_game.c
+edited    0.82     944 Pl_model_id_set                   main     0x00114B60 src/pc/rt/rt_pl.c
+edited    0.82     788 em27_init                         game     0x0063B770 src/game/em/em27a.c
+edited    0.82     508 em02_atk_act_set                  game     0x005A91D0 src/game/em/em02.c
+edited    0.82     368 ChatLogAdd_Q                      main     0x002219C0 src/main/chat/chat_nm.c
+edited    0.82     328 em16_init2                        game     0x005FC900 src/game/em/em16_nm.c
+edited    0.82     228 Pl_item_charge                    sub_main 0x004F0B60 build/pc/abs/f_pl.c
+edited    0.82     180 Pl_poison_add                     game     0x0066CCE0 src/game/pl/pl_damage.c
+edited    0.82     112 poison_stock_set                  game     0x00583920 build/pc/abs/em_taisei.abs.c
+edited    0.82      88 em_dur_set                        sub_main 0x004DC740 src/main/em/emsrch_nm.c
+edited    0.83     432 job_special_com_ck                game     0x0054BC30 build/pc/abs/f_pl.c
+edited    0.83     416 Set_userdata                      sub_main 0x004C4D30 src/main/ud/udmisc_nm.c
+edited    0.83     340 em_area_move_init                 game     0x00547300 build/pc/abs/em_core_nm.patch.c
+edited    0.83     296 key_mask_check                    main     0x0020C1D0 build/pc/abs/sk_all.c
+edited    0.83     288 set04_m                           game     0x0064FD90 src/game/set/set04.c
+edited    0.83     220 CallBack_Result_Plaza_ReadLobbyAllocation2 lobby    0x0057D010 build/pc/abs/lb__lb_cli.abs.c
+edited    0.83     212 pl_guard_ck                       game     0x0066CF50 src/game/pl/pl_damage_nm.c
+edited    0.83     144 u_equip_chk                       lobby    0x00554E50 build/pc/abs/lb__lb_ay.abs.c
+edited    0.83     144 Now_equip_ck                      sub_main 0x004C7C90 src/main/ud/ud_nm.c
+edited    0.83      76 Disp_name_or_id                   main     0x0021E800 src/main/chat/chat_nm.c
+edited    0.84    2992 em08_main                         game     0x005CDFD0 build/pc/abs/em08_ai_nm.abs.c
+edited    0.84    1144 shop_process_after                lobby    0x0054CA40 build/pc/abs/lb__lb_by153.abs.c
+edited    0.84     908 em16_init                         game     0x005FC520 src/game/em/em16_nm.c
+edited    0.84     696 NPC_Message                       main     0x00220AB0 src/main/chat/chat_nm.c
+edited    0.84     348 CallBack_Event_LobbyCommer        lobby    0x00587320 build/pc/abs/lb__lb_cli.abs.c
+edited    0.84     292 Share_item_conv                   sub_main 0x004B6A60 build/pc/abs/f_quest.c
+edited    0.84     208 Lb_put_job                        lobby    0x00593100 src/lobby/f/lb_ag01.c
+edited    0.84     176 hk_key_backspace                  main     0x0020EBE0 src/main/tu/hk_all.c
+edited    0.84     128 lb_pl_mv000                       lobby    0x00593D50 src/lobby/f/lb_i.c
+edited    0.84     124 stage_fog_set                     sub_main 0x004A0DB0 src/main/sprite/putspr2.c
+edited    0.85    3316 DispFrameMessageA                 main     0x0021F2F0 src/main/chat/dispframe_nm.c
+edited    0.85    2664 cam_sub_std                       main     0x001D9D60 src/main/cam/cam_nm.c
+edited    0.85    2368 pl_init_sub                       sub_main 0x004F13E0 build/pc/abs/f_pl.c
+edited    0.85    1628 em17_init                         game     0x006060F0 build/pc/abs/em17_nm.abs.c
+edited    0.85    1584 stage_set_set                     sub_main 0x004A0E50 src/main/stage/stage_set.c
+edited    0.85    1120 lb_process_set_weaponList         lobby    0x0054A6F0 build/pc/abs/lb__lb_by154.abs.c
+edited    0.85     892 em14_init                         game     0x005E0B90 build/pc/abs/em14_nm.abs.c
+edited    0.85     732 disp_item_list_present            main     0x0011E830 src/main/menu/menu_disp_nm.c
+edited    0.85     516 ib_select_sub                     lobby    0x00555240 build/pc/abs/lb__lb_ib.abs.c
+edited    0.85     328 pl_chr_sub                        sub_main 0x004F2570 src/main/pl/pl49.c
+edited    0.85     260 em_act14_005A8F90                 game     0x005D4100 src/game/em/em09_nm.c
+edited    0.85     196 Lbs_request_enter_lobby2          lobby    0x0057F120 build/pc/abs/lb__lb_cli.abs.c
+edited    0.85     184 Warehouse_equip                   sub_main 0x004C78B0 src/main/ud/ud_nm.c
+edited    0.85     120 Menu_snd_load                     main     0x00129640 src/pc/rt/rt_snd.c
+edited    0.85      96 Get_hunter_rank                   sub_main 0x004C50E0 src/main/ud/udmisc_nm.c
+edited    0.85      64 cnLBS_Get_RoomExplain             lobby    0x005BB910 build/pc/rt_gen.c
+edited    0.86    2720 eft13_set_pos_em                  sub_main 0x004D59D0 src/main/eft/eft13_nm.c
+edited    0.86    1628 eft04_i                           game     0x005689E0 src/game/eft/eft04_nm.c
+edited    0.86    1112 ef_move_sub_0053D830              lobby    0x005503C0 build/pc/abs/lb__lbem10.abs.c
+edited    0.86     984 set01_trans                       sub_main 0x004C47E0 src/main/set/set01.c
+edited    0.86     908 gold_disp                         sub_main 0x004F5D40 src/main/reward/f_reward2.c
+edited    0.86     856 kbd_Disp_KouhoGun                 main     0x0020D510 src/main/sk/cmd_nm.c
+edited    0.86     704 set01_i                           sub_main 0x004C43A0 src/main/set/set01.c
+edited    0.86     676 lb_pl_mv076                       lobby    0x00595600 build/pc/abs/lb__lb_j.abs.c
+edited    0.86     584 light_init                        main     0x0010DEF0 src/main/model/light_init_nm.c
+edited    0.86     480 lb_pl_move_sub                    lobby    0x00593820 src/lobby/f/lb_i.c
+edited    0.86     364 Lb_put_itemIcon                   lobby    0x00588940 src/lobby/b/lb_by159.c
+edited    0.86     348 Lb_pl_move                        lobby    0x00593710 src/lobby/f/lb_i.c
+edited    0.86     328 Lb_put_job_limit                  lobby    0x0054FD10 src/lobby/b/lb_by126.c
+edited    0.86     240 armor_set_myArmor                 lobby    0x0054E9E0 src/lobby/b/lb_by82.c
+edited    0.86     204 Lbc_SendMail                      lobby    0x005865A0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.86     152 sound_call_005A3D10               game     0x005CECB0 build/pc/abs/em08_ai_nm.abs.c
+edited    0.86     152 sound_call_parts_005F76C0         game     0x00624910 build/pc/abs/em20_ai_nm.abs.c
+edited    0.86     152 sound_call_parts_005E2090         game     0x0060E500 build/pc/abs/em17_nm.abs.c
+edited    0.86     152 sound_call_parts_005CBB00         game     0x005F7900 build/pc/abs/em15_nm.abs.c
+edited    0.86      84 sk_yn_kigou_func                  main     0x00210D30 src/main/tu/hk_all.c
+edited    0.86      80 u_item_chk                        lobby    0x00554DF0 build/pc/abs/lb__lb_ay.abs.c
+edited    0.87    1852 Lb_stage_load                     lobby    0x0059C370 build/pc/abs/lb__lb_gq01.abs.c
+edited    0.87     648 Ud_item_stack                     sub_main 0x004C55B0 src/main/ud/ud_nm.c
+edited    0.87     540 lbc_game_ready_00                 lobby    0x00583B00 build/pc/abs/lb__lb_cli.abs.c
+edited    0.87     416 Pit_mv_lb                         main     0x00119C20 build/pc/abs/menu_nm.abs.c
+edited    0.87     244 em_fly00_0056A000                 game     0x00593DE0 src/game/em/em01_ai_nm.c
+edited    0.87     208 lb_pl_chat06                      lobby    0x005998B0 src/lobby/f/lb_k.c
+edited    0.87     196 sk_get_key_code                   main     0x00208DC0 build/pc/abs/sk_all.c
+edited    0.87     160 eft06_set_com                     sub_main 0x004D18F0 src/main/eft/eft06b.c
+edited    0.87     108 em_move06_005837B0                game     0x005AF520 src/game/em/em02_ai_nm.c
+edited    0.87      44 flCompact                         main     0x0013B140 src/pc/rt/rt_flow.c
+edited    0.88    2356 em01_main                         game     0x0059E7C0 src/game/em/em01_ai_nm.c
+edited    0.88    2196 GetWallHitBitPl                   main     0x001049E0 src/main/hit/f_sphr.c
+edited    0.88    1700 timer_calc_sub_pl                 sub_main 0x004F1BA0 src/main/pl/pl_nm.c
+edited    0.88    1612 em20_init                         game     0x00618310 build/pc/abs/em20_ai_nm.abs.c
+edited    0.88    1560 kbd_disp_input                    main     0x00210D90 src/main/tu/hk_all.c
+edited    0.88    1264 set14_m                           game     0x00653BE0 src/game/set/set14.c
+edited    0.88     912 shell00_i                         game     0x00669260 src/game/shell/shell00.c
+edited    0.88     756 disp_timer                        main     0x001231A0 src/main/menu/menu_disp_nm.c
+edited    0.88     620 Lb_shop_trans2                    lobby    0x005494E0 src/lobby/b/lb_by139.c
+edited    0.88     500 em09_init                         game     0x005D3050 src/game/em/em09_init.c
+edited    0.88     496 Get_atk_value                     sub_main 0x004C6980 src/main/ud/ud_nm.c
+edited    0.88     488 em04_init                         game     0x005B7FB0 src/game/em/em04_init.c
+edited    0.88     440 Disp_button                       main     0x0012DBA0 src/main/font/disp2_nm.c
+edited    0.88     340 fish_type_set                     game     0x00581C90 src/game/eft/eft23.c
+edited    0.88     340 pl_light_change                   main     0x0010E6D0 src/main/model/light_nm.c
+edited    0.88     144 tl_menu_cursor_up                 lobby    0x005691F0 build/pc/abs/lb__lb_uif.abs.c
+edited    0.88     108 hk_key_muhenkan                   main     0x00210270 src/main/tu/hk_all.c
+edited    0.88      96 UseItemChk                        main     0x0021DBD0 src/pc/rt/rt_menu.c
+edited    0.88      68 Put_shousai                       main     0x00227080 src/main/chat/chat_nm.c
+edited    0.88      60 CallBack_Event_System_ShutDown    lobby    0x00586860 build/pc/abs/lb__lb_cli.abs.c
+edited    0.88      32 cam_init_sub_playerEX             main     0x001DBE30 src/main/cam/camc.c
+edited    0.89    2688 eft13_m                           sub_main 0x004D2570 src/main/eft/eft13_nm.c
+edited    0.89    2556 trans_box                         main     0x00124ED0 src/main/menu/menu_disp_nm.c
+edited    0.89    1396 pl_attack                         game     0x0055D370 build/pc/abs/f_pl.c
+edited    0.89    1388 eft13_set_sub_em                  sub_main 0x004D5320 src/main/eft/eft13_nm.c
+edited    0.89    1016 pl_mv071                          game     0x00554280 build/pc/abs/f_pl.c
+edited    0.89     524 Set_equip_idx                     sub_main 0x004C7A80 src/main/ud/ud_nm.c
+edited    0.89     456 user_data_copy                    select   0x00544850 src/select/edit_nm.c
+edited    0.89     232 Set20_set                         game     0x006582A0 src/game/set/set20_nm.c
+edited    0.89     188 CallBack_Result_RuleAllocation    lobby    0x005820F0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.89     156 em_act12_005DB3A0                 game     0x00607400 build/pc/abs/em17_nm.abs.c
+edited    0.89     132 em_move05_00607C10                game     0x0060D700 build/pc/abs/em21_nm.abs.c
+edited    0.89     128 Lb_clearChatID                    lobby    0x0059D8F0 src/lobby/lb/lbuin.c
+edited    0.89     116 em_atk04_00581480                 game     0x00647630 src/game/em/em02_ai_nm.c
+edited    0.89     104 lb_process_tag_decide00           lobby    0x0054A670 src/lobby/b/lb_by54.c
+edited    0.89      76 chat_log_name                     main     0x00221EB0 src/main/chat/chat_nm.c
+edited    0.89      60 cnWrap_InitWork                   lobby    0x005C0BB0 build/pc/rt_gen.c
+edited    0.89      36 flfntInit                         main     0x001D56C0 src/pc/rt/rt_font.c
+edited    0.90    2940 eft02_t                           sub_main 0x004C2A70 src/main/eft/eft02.c
+edited    0.90    2120 Menu_mix_mv                       main     0x0011B8B0 build/pc/abs/menu_nm.abs.c
+edited    0.90    1844 em17_main                         game     0x0060D850 build/pc/abs/em17_nm.abs.c
+edited    0.90    1668 GetWallHitBit2                    main     0x001059E0 src/main/hit/f_sphr.c
+edited    0.90    1556 em01_init                         game     0x00590330 src/game/em/em01_ai_nm.c
+edited    0.90    1328 basic_atack_ck                    game     0x0054CCE0 build/pc/abs/f_pl.c
+edited    0.90     716 Pit_init                          main     0x00118D00 build/pc/abs/menu_nm.abs.c
+edited    0.90     700 CallBack_Result_LoginLobbyServer  lobby    0x0057C4B0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.90     644 em19_init                         game     0x006140E0 src/game/em/em19_init.c
+edited    0.90     476 disp_slash_level                  main     0x00123E10 src/main/menu/menu_slash.c
+edited    0.90     408 fish_com_ck                       game     0x00554B50 build/pc/abs/f_pl.c
+edited    0.90     400 senko_ck                          game     0x00542C80 build/pc/abs/em_core_nm.patch.c
+edited    0.90     332 cont_trans                        select   0x00548930 src/select/edit_nm.c
+edited    0.90     316 em_dmg08_005C9630                 game     0x005F4F90 build/pc/abs/em15_nm.abs.c
+edited    0.90     256 cmd_kakutei_all                   main     0x00210A30 src/main/tu/hk_all.c
+edited    0.90     248 lb_check_target                   lobby    0x00568BF0 build/pc/abs/lb__lb_gac03.patch.c
+edited    0.90     224 Ud_item_num_ck3                   sub_main 0x004C59A0 src/main/ud/ud_nm.c
+edited    0.90     184 em14_sasari_ck                    game     0x005EE0A0 src/game/em/em14_horm.c
+edited    0.90     116 Lb_put_my_job                     lobby    0x0054FE50 build/pc/abs/lb__lb_by59.abs.c
+edited    0.90      80 CallBack_Result_Lobby_SetRoomRule lobby    0x005823A0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.90      36 fade_reset                        main     0x001024A0 src/main/fade/fade_nm.c
+edited    0.91   15152 trans_stage                       sub_main 0x004A22C0 src/main/stage/trans_stage.c
+edited    0.91    7500 em_material_sub                   sub_main 0x004EA930 build/pc/rt_gen.c
+edited    0.91    3148 set14_trans                       game     0x00654260 src/game/set/set14.c
+edited    0.91    1896 Draw_menu_square                  lobby    0x0059FB50 build/pc/abs/lb__lbui_nm.abs.c
+edited    0.91     932 lb_process_select                 lobby    0x0054B8A0 src/lobby/b/nm/lb_process_select.c
+edited    0.91     868 HitWallPlayer                     main     0x0010CDC0 src/main/hit/f_sphr.c
+edited    0.91     848 lb_process_set_armorList          lobby    0x0054ABC0 build/pc/abs/lb__lb_by154.abs.c
+edited    0.91     608 disp_item                         main     0x00120ED0 src/main/menu/menu29.c
+edited    0.91     428 lb_process_use_item               lobby    0x0054C430 src/lobby/b/nm/lb_process_use_item.c
+edited    0.91     396 em_atk26_005F3CE0                 game     0x006207F0 build/pc/abs/em20_ai_nm.abs.c
+edited    0.91     288 em_cmd_flag_set                   game     0x00585F30 build/pc/abs/em_cmd_nm.abs.c
+edited    0.91     272 em_cmd_flag_clear                 game     0x00586080 build/pc/abs/em_cmd_nm.abs.c
+edited    0.91     252 em14_act_set                      game     0x005ED510 src/game/em/em14.c
+edited    0.91     252 Eft02_set3                        sub_main 0x004C3830 src/main/eft/eft02b.c
+edited    0.91     180 violence_logo                     select   0x00544120 src/select/demo.c
+edited    0.91     124 lb_check_chair                    lobby    0x00559850 build/pc/abs/lb__lb_a.patch.c
+edited    0.91      92 WyvernAreaMove                    main     0x00124BB0 src/main/menu/menu16.c
+edited    0.91      88 Lb_put_itemRare                   lobby    0x005888E0 build/pc/abs/lb__lb_bz01.patch.c
+edited    0.91      64 lb_armor_itemSell                 lobby    0x0054F550 src/lobby/b/lb_by57.c
+edited    0.91      44 Start_item_data_adrs_get          sub_main 0x004B3970 src/main/quest/qstb03.c
+edited    0.91      40 Softkey_free_1                    main     0x00208D90 build/pc/abs/sk_all.c
+edited    0.92    2376 weapon_joint_calc                 main     0x0012F2A0 src/main/weapon/weapon_nm.c
+edited    0.92    2164 GetWallHitBitEm                   main     0x001051D0 src/main/hit/f_sphr.c
+edited    0.92    1548 player_trans                      main     0x00132B00 src/pc/rt/rt_pl.c
+edited    0.92    1504 lb_process_kyoukaListProg         lobby    0x0054BDD0 src/lobby/b/nm/lb_process_kyoukaListProg.c
+edited    0.92    1380 em_eye_search_set                 game     0x00542640 build/pc/abs/em_core_nm.patch.c
+edited    0.92    1052 em03_main                         game     0x005B3BF0 src/game/em/em03.c
+edited    0.92     960 Lb_process_shop                   lobby    0x0054A270 build/pc/abs/lb__lb_by144.abs.c
+edited    0.92     668 demo_task_sub                     select   0x00543E30 src/select/demo.c
+edited    0.92     624 pl_dm_value_sub                   game     0x0054AC70 build/pc/abs/f_pl.c
+edited    0.92     620 em_die02_005CA340                 game     0x005F5F90 build/pc/abs/em15_nm.abs.c
+edited    0.92     464 mc_sel_ck                         main     0x0022BD50 build/pc/abs/mccomb_nm.patch.c
+edited    0.92     384 Lb_put_icon                       lobby    0x00592F70 src/lobby/f/lb_ag02.c
+edited    0.92     288 make_mat_srt                      main     0x00101960 src/pc/rt/rt_eft.c
+edited    0.92     248 gold_init                         sub_main 0x004F5980 src/main/reward/f_reward.c
+edited    0.92     208 pl_to_normal_b                    sub_main 0x004EE800 src/main/pl/pl_normal2.c
+edited    0.92     204 load_texlist                      main     0x0010EE80 src/pc/rt/rt_2d.c
+edited    0.92     196 lb_member_changeCheck             lobby    0x00566730 build/pc/rt_gen.c
+edited    0.92     192 em_dmg03_005706E0                 game     0x0059ACD0 src/game/em/em01_ai_nm.c
+edited    0.92     144 Lb_cursorUD                       lobby    0x0059D2B0 build/pc/abs/lb__lb_z04.abs.c
+edited    0.92     144 em_fly00_00601C20                 game     0x0062F3B0 build/pc/abs/em21_nm.abs.c
+edited    0.92     100 set01_set2_sub                    sub_main 0x004C4040 src/main/set/set01.c
+edited    0.92      96 TransSet                          main     0x0012E670 src/main/weapon/trans.c
+edited    0.92      88 cnLbc_CheckInFloorOrder           lobby    0x005867F0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.93    7032 eft16_m                           game     0x00577210 src/game/eft/eft16.c
+edited    0.93    4316 eft20_i                           sub_main 0x004D6990 src/main/eft/eft20_nm.c
+edited    0.93    4264 set13_m                           sub_main 0x004E6730 src/main/set/set13_nm.c
+edited    0.93    2864 eft04_m                           game     0x00569220 src/game/eft/eft04_nm.c
+edited    0.93    2152 k_HitEmCamera                     main     0x001E05A0 src/main/cam/camr5_nm.c
+edited    0.93    1924 eft13_i                           sub_main 0x004D1CC0 src/main/eft/eft13_nm.c
+edited    0.93    1808 em16_main                         game     0x00602D00 src/game/em/em16_nm.c
+edited    0.93    1692 lb_process_drawHelp               lobby    0x0054D620 src/lobby/b/nm/lb_process_drawHelp.c
+edited    0.93    1528 Pit_mv                            main     0x00119590 build/pc/abs/menu_nm.abs.c
+edited    0.93    1036 round_init                        main     0x00103E60 src/pc/rt/rt_flow.c
+edited    0.93     940 em03_init                         game     0x005B37D0 src/game/em/em03.c
+edited    0.93     860 lbc_login_id_select               lobby    0x0057AEF0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.93     696 em19_main                         game     0x006172B0 src/game/em/em19b.c
+edited    0.93     656 Lb_check_receipt                  lobby    0x00558B80 build/pc/rt_gen.c
+edited    0.93     632 npcMvWALK                         lobby    0x005605F0 build/pc/abs/lb__lbnpc_nm.patch.c
+edited    0.93     544 set19_i                           game     0x00657580 src/game/set/set19.c
+edited    0.93     520 lb_pl_turn_sub                    lobby    0x00593AA0 build/pc/abs/lb__lb_village_nm.abs.c
+edited    0.93     452 em_move03_00573C20                game     0x0059E300 src/game/em/em01_ai_nm.c
+edited    0.93     400 sk_board_ptr_replace              main     0x0020BEA0 build/pc/abs/sk_all.c
+edited    0.93     336 eft26_t                           sub_main 0x004DC210 build/pc/abs/eft26.abs.c
+edited    0.93     332 Fade_task                         main     0x00102030 src/main/fade/fade_nm.c
+edited    0.93     316 set_event_npc                     lobby    0x005909D0 src/lobby/b/lb_by116.c
+edited    0.93     296 pl_at050                          game     0x0055B650 build/pc/abs/f_pl.c
+edited    0.93     224 em_act01_00600570                 game     0x0062DCB0 build/pc/abs/em21_nm.abs.c
+edited    0.93     216 em_atk01_006045E0                 game     0x00631E60 build/pc/abs/em21_nm.abs.c
+edited    0.93     160 em_fly06_00602450                 game     0x0062FC00 build/pc/abs/em21_nm.abs.c
+edited    0.93     148 trans_pit_2_lb                    main     0x00127020 src/main/menu/menu18.c
+edited    0.94   16828 ef_move_sub_005E21D0              game     0x0060E660 build/pc/abs/em17_nm.abs.c
+edited    0.94    3100 set13_trans                       sub_main 0x004E79C0 src/main/set/set13_nm.c
+edited    0.94    2484 em20_main                         game     0x00623A80 build/pc/abs/em20_ai_nm.abs.c
+edited    0.94    1568 set09_i07                         game     0x0064D220 src/game/set/set09.c
+edited    0.94    1224 Em_Master_Change                  game     0x00548340 src/game/em/em_master_nm.c
+edited    0.94    1064 ef_move_sub_0053E360              lobby    0x00551010 src/lobby/lb/lb_em04_nm.c
+edited    0.94    1020 Pl_item_stack                     sub_main 0x004CBAA0 src/main/pl/pl_nm.c
+edited    0.94     952 em04_main                         game     0x005BA930 src/game/em/em04b.c
+edited    0.94     664 pl_shell_sel                      game     0x0054B1C0 build/pc/abs/f_pl.c
+edited    0.94     628 eft01_m                           sub_main 0x004C17E0 src/main/eft/eft01.c
+edited    0.94     568 snd_joint_load                    main     0x001291E0 src/pc/rt/rt_flow.c
+edited    0.94     492 MoveAndTransSet                   lobby    0x005CA400 src/lobby/f/lb_z107.c
+edited    0.94     456 em01_to_normal                    game     0x00590B90 src/game/em/em01_ai_nm.c
+edited    0.94     436 em_atk20                          game     0x00598FA0 src/game/em/em01_ai_nm.c
+edited    0.94     344 Get_equip_kaitori                 sub_main 0x004CE240 src/main/pl/pl71.c
+edited    0.94     336 Get_equip_price                   sub_main 0x004CE110 src/main/pl/pl71.c
+edited    0.94     336 Get_equip_name                    sub_main 0x004CE370 src/main/pl/pl71.c
+edited    0.94     336 Get_equip_rare                    sub_main 0x004CE4A0 src/main/pl/pl71.c
+edited    0.94     336 disp_savesel_waku                 main     0x0022AB10 src/main/mc/mcdisp_nm.c
+edited    0.94     312 armor_model_free                  main     0x00115380 build/pc/rt_gen.c
+edited    0.94     272 Lb_npc_mv                         lobby    0x00590E10 build/pc/abs/lb__lb_by71.patch.c
+edited    0.94     264 pl_to_normal                      sub_main 0x004EE6D0 src/main/pl/pl_normal2.c
+edited    0.94     256 enemy_mk                          sub_main 0x004DD5B0 src/main/em/emmk01.c
+edited    0.94     244 Lb_set_mini_data                  lobby    0x0058B8C0 build/pc/abs/lb__lb_village_nm.abs.c
+edited    0.94     192 em_fly15_006033A0                 game     0x00630BA0 build/pc/abs/em21_nm.abs.c
+edited    0.94     152 Lb_put_icon_free2                 lobby    0x00593380 build/pc/abs/lb__lb_e.patch.c
+edited    0.94     144 Lb_reset                          lobby    0x0059CCA0 src/lobby/f/lb_z133.c
+edited    0.94     140 player_name_id_print              main     0x00119430 src/main/menu/menu01.c
+edited    0.94     132 refreshPage                       lobby    0x005D05D0 src/lobby/f/lb_z58.c
+edited    0.94     128 Bdora_hp_ck                       game     0x00549B20 src/game/em/em_master_nm.c
+edited    0.94     120 Plaza_chat_log_add                main     0x00221940 src/main/chat/chat_nm.c
+edited    0.94      68 user_data_clr                     main     0x0022B6C0 build/pc/abs/mccomb.patch.c
+edited    0.94      64 em_herb_set                       sub_main 0x004BA2A0 build/pc/abs/f_quest.c
+edited    0.95    3420 quest_condition_prog              sub_main 0x004B8260 build/pc/abs/f_quest_nm.c
+edited    0.95    2512 eft13_set_pos                     sub_main 0x004D46B0 src/main/eft/eft13c.c
+edited    0.95    1772 Lb_shop_move                      lobby    0x00547BD0 src/lobby/lb/lbshp.c
+edited    0.95    1712 mlCalcTransEM                     sub_main 0x004DCE60 src/main/em/emmk01.c
+edited    0.95    1684 em27_main                         game     0x006407A0 src/game/em/em27a.c
+edited    0.95    1268 em07_main                         game     0x005BEB80 build/pc/abs/em07_ai_nm.abs.c
+edited    0.95    1064 em09_main                         game     0x005D66C0 src/game/em/em09c.c
+edited    0.95     652 em_fly03_0056A450                 game     0x00594270 src/game/em/em01_ai_nm.c
+edited    0.95     652 em_demo00_00592950                game     0x005BE4B0 build/pc/abs/em07_ai_nm.abs.c
+edited    0.95     592 em07_init                         game     0x005BB3C0 build/pc/abs/em07_ai_nm.abs.c
+edited    0.95     528 enemy_mv                          sub_main 0x004EA570 src/main/emw/emu03.c
+edited    0.95     504 em20_material_sub                 game     0x0062A0B0 build/pc/abs/em20_ai_nm.abs.c
+edited    0.95     460 set00_i                           game     0x00652020 src/game/set/set00.c
+edited    0.95     424 em_die_rev_0058DD70               game     0x005BA550 src/game/em/em04_nm.c
+edited    0.95     408 Eft16_set_impact                  game     0x0057A090 src/game/eft/eft16.c
+edited    0.95     408 lb_eat_set                        lobby    0x00551770 build/pc/abs/lb__lbui_nm.abs.c
+edited    0.95     376 pl_init                           sub_main 0x004F0F00 build/pc/abs/f_pl.c
+edited    0.95     368 em_work_serch2                    sub_main 0x004B8060 build/pc/abs/f_quest.c
+edited    0.95     336 uki_serch                         game     0x005809D0 src/game/eft/eft23.c
+edited    0.95     320 em_act10_00600B90                 game     0x0062E310 build/pc/abs/em21_nm.abs.c
+edited    0.95     316 lb_armor_itemBuy                  lobby    0x0054F400 src/lobby/b/lb_by83.c
+edited    0.95     300 hk_cursor_mv                      main     0x0020F9D0 src/main/tu/hk_all.c
+edited    0.95     264 save_data_sub                     main     0x0022B740 build/pc/abs/mccomb.patch.c
+edited    0.95     256 em_fly23_00604340                 game     0x00631B80 build/pc/abs/em21_nm.abs.c
+edited    0.95     240 system_w_set                      main     0x001100D0 src/main/sys/f_ioread.c
+edited    0.95     212 trans_pit_2                       main     0x00126E90 src/main/menu/menu18.c
+edited    0.95     172 lb_mix_listIcon                   lobby    0x00547980 build/pc/abs/lb__lbmixd.abs.c
+edited    0.95     164 lb_shop_listIcon                  lobby    0x00588AC0 src/lobby/lb/lbshop2c.c
+edited    0.95     156 fade_set                          main     0x001023F0 src/main/fade/fade_nm.c
+edited    0.95     152 Lb_player_load                    lobby    0x00566E50 build/pc/abs/lb__lb_f.abs.c
+edited    0.95     144 set17_i                           game     0x006567E0 src/game/set/set17_nm.c
+edited    0.95      88 Em_data_com_adrs_get              sub_main 0x004B3860 src/main/quest/qstb03.c
+edited    0.95      76 trans_result_2                    sub_main 0x004F3DE0 src/main/reward/f_reward.c
+edited    0.96    4600 eft20_m                           sub_main 0x004D7C30 src/main/eft/eft20_nm.c
+edited    0.96    4584 ef_move_sub_005AB750              game     0x005D6C90 src/game/em/em09c.c
+edited    0.96    4556 shell08_i                         game     0x0065FB00 src/game/shell/shell08.c
+edited    0.96    2988 em14_main                         game     0x005E7330 build/pc/abs/em14_nm.abs.c
+edited    0.96    2368 basic_com_ck                      game     0x0054E540 build/pc/abs/f_pl.c
+edited    0.96    2172 em15_main                         game     0x005F6BF0 build/pc/abs/em15_nm.abs.c
+edited    0.96    1836 player_info_sub                   main     0x00122A90 src/main/menu/menu_disp_nm.c
+edited    0.96    1564 disp_whole_map                    main     0x00120180 src/main/menu/menu_disp_nm.c
+edited    0.96    1340 eft16_i                           game     0x00576C60 src/game/eft/eft16.c
+edited    0.96     712 set10_m                           game     0x00652960 src/game/set/set10.c
+edited    0.96     572 pl_mv093                          game     0x00554760 build/pc/abs/f_pl.c
+edited    0.96     492 em29_init                         game     0x00642530 src/game/em/em29.c
+edited    0.96     452 ItemStockRequest                  main     0x0011CD30 build/pc/abs/menu10.patch.c
+edited    0.96     440 em_act21_005EDC90                 game     0x0061A790 build/pc/abs/em20_ai_nm.abs.c
+edited    0.96     400 Lb_act_set                        lobby    0x00568540 src/lobby/f/lb_h.c
+edited    0.96     360 item_sel_sub                      sub_main 0x004F38A0 build/pc/abs/f_pl.c
+edited    0.96     324 em_fly07_006024F0                 game     0x0062FCB0 build/pc/abs/em21_nm.abs.c
+edited    0.96     300 Lb_gh_board_trans                 lobby    0x0058D560 build/pc/abs/lb__lb_by123.abs.c
+edited    0.96     276 em_move03_006105E0                game     0x0063EC70 src/game/em/em27a.c
+edited    0.96     272 em01_fly_adjy2_init               game     0x005A85F0 src/game/em/em01.c
+edited    0.96     272 CardAtld11                        main     0x0022C600 build/pc/abs/mccomb.patch.c
+edited    0.96     228 Info_control                      sub_main 0x004C3E20 src/main/set/set01.c
+edited    0.96     216 Pl_item_num_ck3                   sub_main 0x004CC010 src/main/pl/pl_itemck.c
+edited    0.96     216 shell16_m                         game     0x00659FA0 src/game/shell/shell16.c
+edited    0.96     204 user_data_copy2                   main     0x0022B5F0 build/pc/abs/mccomb.patch.c
+edited    0.96     200 em20_dmg_to_normal                game     0x00618E60 build/pc/abs/em20_ai_nm.abs.c
+edited    0.96     192 set01_set                         sub_main 0x004C3F80 src/main/set/set01.c
+edited    0.96     180 Pl_item_get_se                    sub_main 0x004CDD50 src/main/pl/pl74.c
+edited    0.96     180 pull_enemy_work                   main     0x001354E0 src/pc/rt/rt_pl.c
+edited    0.96     164 CardCmsv08                        main     0x0022DE10 build/pc/abs/mccomb.patch.c
+edited    0.96     164 put_mainWindow                    lobby    0x00573C40 build/pc/abs/lb__lbui_nm.abs.c
+edited    0.96     144 ot_init                           main     0x0012B300 src/pc/rt/rt_flow.c
+edited    0.96     108 armor_shop_trans                  lobby    0x005502E0 src/lobby/b/lb_by62.c
+edited    0.96     104 equip_idx_ck                      sub_main 0x004C7A10 src/main/ud/ud_nm.c
+edited    0.96     104 http_test_14                      nethttp  0x00A084B0 src/lobby/f/lb_t.c
+edited    0.96     104 item_blank_ck                     game     0x0054AF50 build/pc/abs/f_pl.c
+edited    0.96      96 Lbc_connect                       lobby    0x0057A030 build/pc/abs/lb__lb_cli.abs.c
+edited    0.96      96 Stage_unique_data_get             sub_main 0x004B37E0 src/main/quest/qstb06.c
+edited    0.96      96 Stage_item_data_get               sub_main 0x004B3780 src/main/quest/qstb06.c
+edited    0.97   22680 ef_move_sub_00574EE0              game     0x0059F7D0 src/game/em/em01_ai_nm.c
+edited    0.97    4848 eft06_m                           sub_main 0x004CFA30 src/main/eft/eft06_nm.c
+edited    0.97    2816 eft15_m                           game     0x00575320 src/game/eft/eft15.c
+edited    0.97    1684 DispSoftkeyboard                  main     0x0020B020 build/pc/abs/sk_all.c
+edited    0.97    1564 ex_atk_ck                         game     0x0054C520 build/pc/abs/f_pl.c
+edited    0.97    1136 game2                             main     0x00102F80 src/main/game/f_game.c
+edited    0.97    1116 lb_pl_normal                      lobby    0x00597130 src/lobby/f/lb_o.c
+edited    0.97     964 body_hit_sub_new                  sub_main 0x004C9700 src/main/pl/pl_nm.c
+edited    0.97     924 stage_m                           sub_main 0x004A1E70 src/main/stage/f_stageb.c
+edited    0.97     924 net_send_sys                      sub_main 0x004FAE40 src/pc/rt/rt_quest.c
+edited    0.97     836 Lb_check_target                   lobby    0x00568CE0 build/pc/abs/lb__lb_village_nm.abs.c
+edited    0.97     820 em12_init                         game     0x005DADF0 src/game/em/em12_nm.c
+edited    0.97     792 Sel_menu_disp                     main     0x001EF870 build/pc/abs/omake.patch.c
+edited    0.97     788 pl_mv028                          game     0x00551500 build/pc/abs/f_pl.c
+edited    0.97     720 eft22_t                           game     0x0057FDF0 src/game/eft/eft22_nm.c
+edited    0.97     612 lb_put_shopList                   lobby    0x00549BF0 src/lobby/b/lb_by137.c
+edited    0.97     588 eft21_t                           game     0x0057EB70 src/game/eft/eft21.c
+edited    0.97     580 Disp_help_mess                    main     0x00220760 src/main/chat/chat_nm.c
+edited    0.97     580 Lb_npc_move_sub                   lobby    0x00560210 build/pc/abs/lb__lbnpc_nm.patch.c
+edited    0.97     564 shell22_se_req                    game     0x0066C070 src/game/shell/shell22_nm.c
+edited    0.97     548 lbc_login_users_personal_data     lobby    0x0057B2A0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.97     472 hk_key_f6                         main     0x0020F310 src/main/tu/hk_all.c
+edited    0.97     440 set20_i                           game     0x00658400 src/game/set/set20_nm.c
+edited    0.97     412 set01_set2_use_mem                sub_main 0x004C4160 src/main/set/set01.c
+edited    0.97     396 shell17_i                         game     0x00669A60 src/game/shell/shell17.c
+edited    0.97     388 stage_i                           sub_main 0x004A1A40 build/pc/abs/f_stage.patch.c
+edited    0.97     384 set09_i                           game     0x006491B0 src/game/set/set09.c
+edited    0.97     356 em_dmg09_00605770                 game     0x00633080 build/pc/abs/em21_nm.abs.c
+edited    0.97     352 shell11_i                         game     0x00666B80 src/game/shell/shell11.c
+edited    0.97     340 station_em_set                    sub_main 0x004B7DA0 build/pc/abs/f_quest.c
+edited    0.97     336 to_normal                         sub_main 0x004EE4A0 src/main/pl/normal_char_set.c
+edited    0.97     308 em_move00_005A90A0                game     0x005D42D0 src/game/em/em09_nm.c
+edited    0.97     300 Lb_Pl_act_set                     lobby    0x00567410 build/pc/abs/lb__lb_g.patch.c
+edited    0.97     160 shell15_m                         game     0x00668F30 src/game/shell/shell15.c
+edited    0.97     160 shell13_m                         game     0x00667F50 src/game/shell/shell13.c
+edited    0.97     160 shell05_m                         game     0x0065C370 src/game/shell/shell05.c
+edited    0.97     152 font_print_ex                     main     0x0012B610 src/pc/rt/rt_font.c
+edited    0.97     152 user_load                         select   0x00546600 src/select/edit_nm.c
+edited    0.97     140 font_print                        main     0x0012B580 src/pc/rt/rt_font.c
+edited    0.97     136 Reibun_Edit_Start                 main     0x00227650 src/main/chat/chat_nm.c
+edited    0.97     132 CallBack_GetDate                  lobby    0x00581BE0 build/pc/abs/lb__lb_cli.abs.c
+edited    0.97     132 Tuto_flag_set                     game     0x0066DFC0 src/game/tuto/tutorial.c
+edited    0.97     128 em_boss_work_set                  game     0x00548FA0 src/game/em/em_master_nm.c
+edited    0.97     120 PatchInitCS                       main     0x002378E0 build/pc/rt_gen.c
+edited    0.97     116 cnLBS_Read_RoomJoinUser           lobby    0x005AE2A0 build/pc/rt_gen.c
+edited    0.97     112 Pl_item_idx_calc                  sub_main 0x004CBA20 src/main/pl/pl63.c
+edited    0.97     112 Lb_player_release                 lobby    0x00566F00 build/pc/abs/lb__lb_f.abs.c
+edited    0.97      72 yes_no_disp_sub                   lobby    0x005581E0 build/pc/abs/lb__lb_ib.abs.c
+edited    0.98   20468 ef_move_sub_005F7800              game     0x00624A70 build/pc/abs/em20_ai_nm.abs.c
+edited    0.98   13192 ef_move_sub_005CBC40              game     0x005F7A60 build/pc/abs/em15_nm.abs.c
+edited    0.98    4060 em_cmd_ck                         game     0x00584780 build/pc/abs/em_cmd_nm.abs.c
+edited    0.98    3336 em21_main                         game     0x00635F90 build/pc/abs/em21_nm.abs.c
+edited    0.98    1876 eft06_i                           sub_main 0x004CEAC0 src/main/eft/eft06.c
+edited    0.98    1824 net_send_em                       sub_main 0x004F9800 src/pc/rt/rt_em.c
+edited    0.98    1396 lb_process_make_kyoukaList        lobby    0x0054B340 build/pc/abs/lb__lb_by155.abs.c
+edited    0.98    1388 em01_move_act_set                 game     0x005A56E0 src/game/em/em01.c
+edited    0.98    1376 eft01_t                           sub_main 0x004C1D20 src/main/eft/eft01.c
+edited    0.98     928 sit_com_ck                        game     0x0054C160 build/pc/abs/f_pl.c
+edited    0.98     812 Quest_net_sub                     sub_main 0x004BA2F0 build/pc/abs/f_quest_nm.c
+edited    0.98     788 Eft16_set                         game     0x00579CB0 src/game/eft/eft16.c
+edited    0.98     784 em20_fly_act_set                  game     0x0062A8F0 src/game/em/em20.c
+edited    0.98     736 pl_damage                         game     0x0055FCC0 build/pc/abs/f_pl.c
+edited    0.98     676 Em_Hate_Ck                        game     0x00545290 build/pc/abs/em_core_nm.patch.c
+edited    0.98     652 trade_get_ck_005D0750             lobby    0x00594430 build/pc/abs/lb__lb_l.abs.c
+edited    0.98     652 stage_se_move                     sub_main 0x004A1BD0 src/pc/rt/rt_snd.c
+edited    0.98     624 trade_get_ck_00139680             game     0x0054E2C0 build/pc/abs/f_pl.c
+edited    0.98     596 shop_armor2_stack                 lobby    0x0054CFA0 build/pc/abs/lb__lb_by131.abs.c
+edited    0.98     504 shell19_i                         game     0x0066A290 src/game/shell/shell19.c
+edited    0.98     504 set05_i                           game     0x00650480 src/game/set/set05_nm.c
+edited    0.98     484 cnWrap_SoundRequest               lobby    0x005C0F40 src/lobby/b/lb_bz98.c
+edited    0.98     472 shell13_i                         game     0x00667D80 src/game/shell/shell13.c
+edited    0.98     472 shell15_i                         game     0x00668D60 src/game/shell/shell15.c
+edited    0.98     404 em_fly22_006041A0                 game     0x006319E0 build/pc/abs/em21_nm.abs.c
+edited    0.98     384 CardCmsv                          main     0x0022E090 build/pc/abs/mccomb.patch.c
+edited    0.98     376 Em_Yobi_Ck                        game     0x00548890 src/game/em/em_master_nm.c
+edited    0.98     376 shell05_i                         game     0x0065C200 src/game/shell/shell05.c
+edited    0.98     368 shell02_i                         game     0x0065A790 src/game/shell/shell02.c
+edited    0.98     356 Lb_shop_init_member               lobby    0x00587C70 build/pc/abs/lb__lbshop2.abs.c
+edited    0.98     336 shell23_i                         game     0x0066CA40 src/game/shell/shell23.c
+edited    0.98     336 shell18_i                         game     0x00669EC0 src/game/shell/shell18.c
+edited    0.98     336 shell01_i                         game     0x0065A3B0 src/game/shell/shell01.c
+edited    0.98     336 lb_npc_move                       lobby    0x00590C50 build/pc/abs/lb__lb_by136.patch.c
+edited    0.98     264 eft09_i                           game     0x0056E230 src/game/eft/eft09.c
+edited    0.98     256 em_atk03_005D2400                 game     0x005FE380 src/game/em/em16_nm.c
+edited    0.98     252 lb_armor2_listItem                lobby    0x0054DDB0 src/lobby/b/lb_by134.c
+edited    0.98     248 trans_shell                       main     0x00128470 build/pc/rt_gen.c
+edited    0.98     240 shell11_m                         game     0x00666CE0 src/game/shell/shell11.c
+edited    0.98     240 CardCmsv09                        main     0x0022DEC0 build/pc/abs/mccomb.patch.c
+edited    0.98     240 item_return                       game     0x005D3840 src/game/em/em09_nm.c
+edited    0.98     232 shell21_m                         game     0x0066AD20 src/game/shell/shell21.c
+edited    0.98     232 shell23_m                         game     0x0066CB90 src/game/shell/shell23.c
+edited    0.98     228 Pl_item_erase                     sub_main 0x004CC240 src/main/pl/pl66.c
+edited    0.98     224 shell20_m                         game     0x0066A930 src/game/shell/shell20.c
+edited    0.98     216 lb_send_data                      lobby    0x0059B140 build/pc/abs/lb__lb_n.abs.c
+edited    0.98     212 Lb_check_hotel                    lobby    0x0059D160 build/pc/abs/lb__lb_ad.abs.c
+edited    0.98     208 shell01_m                         game     0x0065A500 src/game/shell/shell01.c
+edited    0.98     204 set_viewproj                      main     0x00134F50 src/pc/rt/rt_menu.c
+edited    0.98     200 equip_ok_chk                      lobby    0x005554A0 build/pc/abs/lb__lb_tu_ib.abs.c
+edited    0.98     192 shell18_m                         game     0x0066A010 src/game/shell/shell18.c
+edited    0.98     192 lb_pl_chat09                      lobby    0x00599BA0 src/lobby/f/lb_k.c
+edited    0.98     176 set01_set2                        sub_main 0x004C40B0 src/main/set/set01.c
+edited    0.98     176 Em_data_st_adrs_get               sub_main 0x004B38C0 src/main/quest/qstb03.c
+edited    0.98     168 Info_stack_ck                     sub_main 0x004C3D80 src/main/set/set01.c
+edited    0.98     164 shell00_set                       game     0x00669020 src/game/shell/shell00.c
+edited    0.98     120 flFlip                            main     0x0014EBD0 src/pc/rt/rt_flow.c
+edited    0.99   17280 ef_move_sub_005BCD40              game     0x005E84B0 build/pc/abs/em14_nm.abs.c
+edited    0.99   11084 ef_move_sub_005A3E50              game     0x005CEE10 build/pc/abs/em08_ai_nm.abs.c
+edited    0.99    6320 shell08_trans                     game     0x00662FA0 src/game/shell/shell08_nm.c
+edited    0.99    3952 ef_move_sub_005B4190              game     0x005DFA90 src/game/em/em12_nm.c
+edited    0.99    3752 eft17_i00                         game     0x00563BF0 src/game/eft/eft17.c
+edited    0.99    2276 em_cmd_end_command                game     0x0058D330 build/pc/abs/em_cmd_nm.abs.c
+edited    0.99    2144 pl_move_sub                       game     0x00562CA0 src/main/pl/pl_nm.c
+edited    0.99    1632 em_ride_sub                       sub_main 0x004DD780 src/main/em/emride_nm.c
+edited    0.99    1524 Lb_player_trans                   main     0x00133410 src/pc/rt/rt_pl.c
+edited    0.99    1316 hit_shl_shl_ck                    sub_main 0x004DEF00 src/main/hit/hit.c
+edited    0.99    1288 pl_item_trans_sub                 main     0x0012FF90 src/main/weapon/weapon3_nm.c
+edited    0.99    1228 lb_npc_init                       lobby    0x00590500 build/pc/abs/lb__lb_village_nm.abs.c
+edited    0.99    1160 item_stock_mv                     main     0x0011CF10 build/pc/abs/menu_nm.abs.c
+edited    0.99     944 Pit_disp_pit_effect               main     0x001274E0 src/main/menu/menu34.c
+edited    0.99     900 point_cam_sub                     main     0x001DD040 src/main/cam/cam_nm.c
+edited    0.99     856 disp_edit_spr                     select   0x00545040 src/select/edit_nm.c
+edited    0.99     848 lb_shop_item_select               lobby    0x00588F80 src/lobby/b/lb_by143.c
+edited    0.99     820 lb_pl_mv001                       lobby    0x00593DD0 build/pc/abs/lb__lb_j.abs.c
+edited    0.99     780 pl_dm002                          game     0x0055E030 build/pc/abs/f_pl.c
+edited    0.99     772 pl_dm005                          game     0x0055E580 build/pc/abs/f_pl.c
+edited    0.99     760 ef_move_sub_005C49F0              lobby    0x00591380 src/lobby/b/lb_vs01.c
+edited    0.99     752 em_atk05_005D25B0                 game     0x005FE590 src/game/em/em16_nm.c
+edited    0.99     752 em_atk02_005D2110                 game     0x005FE080 src/game/em/em16_nm.c
+edited    0.99     752 em_atk06_005D28A0                 game     0x005FE890 src/game/em/em16_nm.c
+edited    0.99     712 disp_item_sub_normal              main     0x00121120 src/main/menu/menu29.c
+edited    0.99     708 shell_hit_ck                      sub_main 0x004DF410 src/main/hit/hit.c
+edited    0.99     656 gold_main                         sub_main 0x004F5AA0 src/main/reward/f_reward.c
+edited    0.99     632 stage_mv_ck                       sub_main 0x004A1690 build/pc/abs/f_stage.patch.c
+edited    0.99     620 em_dmg07_005B9ED0                 game     0x005E5590 build/pc/abs/em14_nm.abs.c
+edited    0.99     608 disp_item_icon                    main     0x001225C0 src/main/menu/menu_disp_nm.c
+edited    0.99     580 em_die02_00611450                 game     0x0063FAE0 src/game/em/em27_nm.c
+edited    0.99     580 em_die01_00611200                 game     0x0063F890 src/game/em/em27_nm.c
+edited    0.99     580 em_die03_006116A0                 game     0x0063FD30 src/game/em/em27_nm.c
+edited    0.99     572 em_die00_00610FC0                 game     0x0063F650 src/game/em/em27_nm.c
+edited    0.99     564 em_die00_00589EA0                 game     0x005B63E0 src/game/em/em03.c
+edited    0.99     560 set09_i00                         game     0x00649650 src/game/set/set09.c
+edited    0.99     556 npcPigATACK                       lobby    0x005647C0 build/pc/abs/lb__lbnpc_nm.patch.c
+edited    0.99     552 pl_horm_sub                       game     0x00563760 build/pc/abs/f_pl.c
+edited    0.99     468 mc_yn_ck                          main     0x0022BB70 build/pc/abs/mccomb.patch.c
+edited    0.99     456 quest_item_ck2                    sub_main 0x004B9CD0 build/pc/abs/f_quest_nm.c
+edited    0.99     424 shell19_m                         game     0x0066A480 src/game/shell/shell19.c
+edited    0.99     384 em18_init                         game     0x00613440 src/game/em/em18_init.c
+edited    0.99     360 em17_act_act_set                  game     0x00604370 src/game/em/em17.c
+edited    0.99     344 em_dmg03_00581FA0                 game     0x005AD8C0 src/game/em/em02_ai_nm.c
+edited    0.99     344 CardCmsv02                        main     0x0022D640 build/pc/abs/mccomb.patch.c
+edited    0.99     340 Lb_set_player                     lobby    0x00566C30 build/pc/abs/lb__lb_village_nm.abs.c
+edited    0.99     308 lb_process_decide                 lobby    0x0054C760 src/lobby/b/lb_by81.c
+edited    0.99     304 shell02_m                         game     0x0065A900 src/game/shell/shell02.c
+edited    0.99     280 char_make_init                    select   0x00544720 src/select/edit_nm.c
+edited    0.99     272 shell17_m                         game     0x00669BF0 src/game/shell/shell17.c
+edited    1.00    3636 ef_move_sub_0058A9C0              game     0x005B7110 src/game/em/em03.c
+edited    1.00    3556 ef_move_sub_00617E60              game     0x00646210 src/game/em/em33.c
+edited    1.00    2624 eft14_m00                         game     0x00573640 src/game/eft/eft14.c
+edited    1.00    1660 em12_main                         game     0x005DF350 src/game/em/em12_nm.c
+edited    1.00     912 enemy_trans                       main     0x00133E30 src/pc/rt/rt_em.c
+edited    1.00     112 Get_weapon_id                     sub_main 0x004CDFE0 src/main/pl/pl71.c
+shape     1.00    3624 em_die04_005D4810                 game     0x00600820 src/game/em/em16_nm.c
+shape     1.00    2464 cmd_target_kind_set               game     0x00545A00 build/pc/abs/em_core_nm.patch.c
+shape     1.00    2288 target_kind_set                   game     0x005463A0 build/pc/abs/em_core_nm.patch.c
+shape     1.00    2188 npcMvTOPL                         lobby    0x00560C30 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00    1800 set05_m                           game     0x00650680 src/game/set/set05_nm.c
+shape     1.00    1628 DispFrameListA                    main     0x0021EAB0 src/main/chat/chat_nm.c
+shape     1.00    1604 set09_m04                         game     0x0064B850 src/game/set/set09.c
+shape     1.00    1448 em15_fly_act_set                  game     0x005FB430 src/game/em/em15.c
+shape     1.00    1404 em_demo01_005720E0                game     0x0059C6E0 src/game/em/em01_ai_nm.c
+shape     1.00    1240 shell12_m                         game     0x006670F0 src/game/shell/shell12.c
+shape     1.00    1196 bgm_server                        main     0x001D7900 src/main/sound/bgm_nm.c
+shape     1.00    1188 lb_npc_father_move                lobby    0x00562310 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00    1092 disp_pachinger                    main     0x00123FE0 src/main/menu/menu_disp_nm.c
+shape     1.00    1040 Ed_player_trans                   main     0x00133A20 src/pc/rt/rt_pl.c
+shape     1.00    1012 em_cmd_ground_area_move           game     0x005898C0 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00     976 player_on_map                     main     0x0011FC90 src/main/menu/menu_disp_nm.c
+shape     1.00     912 em08_fly_act_set                  game     0x005D25F0 src/game/em/em08.c
+shape     1.00     864 body_hit                          sub_main 0x004CA160 src/main/pl/pl_nm.c
+shape     1.00     856 lb_npc_item_trans                 lobby    0x0058F870 build/pc/abs/lb__lb_vs02.abs.c
+shape     1.00     812 gage_disp                         main     0x001239C0 src/main/menu/menu_gage.c
+shape     1.00     756 Em_Kehai_Hate_Add                 game     0x00545640 build/pc/abs/em_core_nm.patch.c
+shape     1.00     756 Quest_next_em_clr                 sub_main 0x004B5800 build/pc/abs/f_quest.c
+shape     1.00     748 Put_page_num                      lobby    0x00574460 src/lobby/b/nm/Put_page_num.c
+shape     1.00     744 stage_bgm_set                     main     0x001D82B0 src/main/sound/bgm_nm.c
+shape     1.00     732 em_fly34                          game     0x005F3F60 build/pc/abs/em15_nm.abs.c
+shape     1.00     732 em_fly33                          game     0x005F3C80 build/pc/abs/em15_nm.abs.c
+shape     1.00     732 em_type_act_set                   game     0x00544770 build/pc/abs/em_core_nm.patch.c
+shape     1.00     724 disp_pl_vital                     main     0x001236E0 src/main/menu/menu_disp_nm.c
+shape     1.00     716 em_fly31                          game     0x005F37D0 build/pc/abs/em15_nm.abs.c
+shape     1.00     716 search_act_set                    game     0x0054BE90 build/pc/abs/f_pl.c
+shape     1.00     660 em_demo00_005F55D0                game     0x00622160 build/pc/abs/em20_ai_nm.abs.c
+shape     1.00     652 em_fly27                          game     0x005F3070 build/pc/abs/em15_nm.abs.c
+shape     1.00     620 eft04_type0_0_init                game     0x0056B4A0 src/game/eft/eft04_nm.c
+shape     1.00     612 disp_name                         main     0x0011D710 src/main/menu/menu_ftime.c
+shape     1.00     600 event000                          game     0x0054A820 src/main/evdemo/evdemo.c
+shape     1.00     600 set09_m11                         game     0x0064EC40 src/game/set/set09.c
+shape     1.00     568 em_fly23_005DE080                 game     0x0060A1A0 build/pc/abs/em17_nm.abs.c
+shape     1.00     560 disp_cannon                       main     0x00124430 src/main/menu/menu_gunmes.c
+shape     1.00     556 Lb_npc_mk                         lobby    0x00590FF0 build/pc/abs/lb__lb_village_nm.abs.c
+shape     1.00     548 npcMvBEER                         lobby    0x00561600 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     540 em_die03_005D45F0                 game     0x00600600 src/game/em/em16_nm.c
+shape     1.00     540 em_die02_005D43D0                 game     0x006003E0 src/game/em/em16_nm.c
+shape     1.00     520 em_create_model                   main     0x001154C0 src/pc/rt/rt_quest.c
+shape     1.00     520 set09_i11                         game     0x0064EA30 src/game/set/set09.c
+shape     1.00     516 em_escape_action_ck               game     0x00547760 build/pc/abs/em_core_nm.patch.c
+shape     1.00     508 set09_i01                         game     0x00649D50 src/game/set/set09.c
+shape     1.00     476 set09_i04                         game     0x0064B670 src/game/set/set09.c
+shape     1.00     476 set15_move_fb                     game     0x00655B70 src/game/set/set15.c
+shape     1.00     468 em_fly32                          game     0x005F3AA0 build/pc/abs/em15_nm.abs.c
+shape     1.00     468 em_demo01_005D6000                game     0x00602010 src/game/em/em16_nm.c
+shape     1.00     456 ground_point_search               game     0x005A6610 src/game/em/em01.c
+shape     1.00     444 em_fly02_005D1D60                 game     0x005FDCD0 src/game/em/em16_nm.c
+shape     1.00     440 npcCatRUN                         lobby    0x005633B0 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     412 item_to_stack                     lobby    0x0054C8A0 src/lobby/b/lb_by130.c
+shape     1.00     412 npcCatFOOTWORK                    lobby    0x00563210 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     412 flfntPrintf                       main     0x001D5980 src/pc/rt/rt_font.c
+shape     1.00     408 set15_move_select2                game     0x006559D0 src/game/set/set15.c
+shape     1.00     400 em_work_set                       main     0x00135350 src/pc/rt/rt_em.c
+shape     1.00     396 snd_joint_load_pl                 main     0x00129460 src/pc/rt/rt_flow.c
+shape     1.00     392 eft26_m                           sub_main 0x004DC030 build/pc/abs/eft26.abs.c
+shape     1.00     388 em_fly24_005C7440                 game     0x005F2CE0 build/pc/abs/em15_nm.abs.c
+shape     1.00     388 em_dmg04_00610C00                 game     0x0063F2A0 src/game/em/em27_nm.c
+shape     1.00     388 em_dmg03_00610A70                 game     0x0063F110 src/game/em/em27_nm.c
+shape     1.00     372 em_dmg03_005D3AB0                 game     0x005FFAC0 src/game/em/em16_nm.c
+shape     1.00     372 em_dmg04_005D3C30                 game     0x005FFC40 src/game/em/em16_nm.c
+shape     1.00     368 em_die01_00606E20                 game     0x006350B0 build/pc/abs/em21_nm.abs.c
+shape     1.00     368 em_status_ck                      main     0x001D7790 src/main/sound/bgm_nm.c
+shape     1.00     364 PutButtonICON                     main     0x0021E860 src/main/chat/chat_nm.c
+shape     1.00     360 release_enemy_model               main     0x001158F0 src/pc/rt/rt_quest.c
+shape     1.00     356 em_fly26                          game     0x005F2F00 build/pc/abs/em15_nm.abs.c
+shape     1.00     352 em_hate_suu_set                   game     0x005481E0 build/pc/abs/em_core_nm.patch.c
+shape     1.00     348 CardCmsv05                        main     0x0022DB00 build/pc/abs/mccomb.patch.c
+shape     1.00     336 em_cmd_boss_atk_ck                game     0x00589430 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00     332 em_fly28                          game     0x005F3300 build/pc/abs/em15_nm.abs.c
+shape     1.00     332 lb_put_shopHelp                   lobby    0x00549E60 src/lobby/b/lb_by76.c
+shape     1.00     320 em_act29_005EE410                 game     0x0061AF20 build/pc/abs/em20_ai_nm.abs.c
+shape     1.00     320 em_cmd_boss_same_stage_ck         game     0x0058A270 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00     320 em_act29_005C47F0                 game     0x005F0090 build/pc/abs/em15_nm.abs.c
+shape     1.00     320 em_act31_005692B0                 game     0x00593090 src/game/em/em01_ai_nm.c
+shape     1.00     320 cmd_henkan                        main     0x0020C840 src/main/sk/cmd_nm.c
+shape     1.00     316 em_revival00_00612170             game     0x006404E0 src/game/em/em27_nm.c
+shape     1.00     312 pl_light_ck                       sub_main 0x004EEB90 src/main/pl/plx11.c
+shape     1.00     308 em_ninshiki_ck                    game     0x0054B690 build/pc/abs/f_pl.c
+shape     1.00     304 em_dmg18_005DFAC0                 game     0x0060BF50 build/pc/abs/em17_nm.abs.c
+shape     1.00     304 em_dmg13_00605B70                 game     0x00633490 build/pc/abs/em21_nm.abs.c
+shape     1.00     300 kosuu_disp_sub                    lobby    0x00557FC0 build/pc/abs/lb__lb_ib.abs.c
+shape     1.00     296 em_dmg12_005F4C40                 game     0x006217D0 build/pc/abs/em20_ai_nm.abs.c
+shape     1.00     296 em_dmg13_005F4D70                 game     0x00621900 build/pc/abs/em20_ai_nm.abs.c
+shape     1.00     296 em_dmg12_005C99A0                 game     0x005F5340 build/pc/abs/em15_nm.abs.c
+shape     1.00     296 em_dmg13_00571050                 game     0x0059B650 src/game/em/em01_ai_nm.c
+shape     1.00     296 set_se_type                       lobby    0x005903D0 src/lobby/b/lb_by122.c
+shape     1.00     284 bar_disp                          main     0x00123CF0 src/main/menu/menu_disp_nm.c
+shape     1.00     284 em_hinshi_ck                      game     0x00547970 build/pc/abs/em_core_nm.patch.c
+shape     1.00     276 set09_m07                         game     0x0064D910 src/game/set/set09.c
+shape     1.00     276 npcMvTALK                         lobby    0x00560990 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     276 em_dmg14_005C9C00                 game     0x005F55A0 build/pc/abs/em15_nm.abs.c
+shape     1.00     272 em_pl_pos_set                     game     0x00547650 build/pc/abs/em_core_nm.patch.c
+shape     1.00     268 lbc_game_ready_04                 lobby    0x00583F00 build/pc/abs/lb__lb_cli.abs.c
+shape     1.00     268 em_fly16_0056BC40                 game     0x00595AA0 src/game/em/em01_ai_nm.c
+shape     1.00     268 em_cmd_boss_work_ck               game     0x00589320 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00     268 em_cmd_tenjo_ck                   game     0x0058BA20 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00     268 em_cmd_sensor_ck                  game     0x00589210 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00     264 set01_m                           sub_main 0x004C46A0 src/main/set/set01.c
+shape     1.00     260 lb_set_npc                        lobby    0x00590B40 src/lobby/b/lb_by135.c
+shape     1.00     256 em_egg_ck                         game     0x00547A90 build/pc/abs/em_core_nm.patch.c
+shape     1.00     256 shell08_type1_impact_pos          game     0x00665030 src/game/shell/shell08c.c
+shape     1.00     252 mkmapTexture                      main     0x0010F210 src/main/load/mkmap.c
+shape     1.00     252 Lb_load_player_all                lobby    0x00566B30 src/lobby/f/lb_ab01.c
+shape     1.00     248 em_dmg19_00571650                 game     0x0059BC50 src/game/em/em01_ai_nm.c
+shape     1.00     244 disp_item_sub_select_ex           main     0x00122320 src/main/menu/menu30.c
+shape     1.00     236 npcMvDOWN                         lobby    0x00560B40 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     232 em_atk06_005F24F0                 game     0x0061F000 build/pc/abs/em20_ai_nm.abs.c
+shape     1.00     232 em_atk06_005B9020                 game     0x005E4760 build/pc/abs/em14_nm.abs.c
+shape     1.00     232 Start_item_init                   main     0x0012D270 src/main/font/disp2_nm.c
+shape     1.00     228 disp_map                          main     0x00120DE0 src/main/menu/menu_disp_nm.c
+shape     1.00     224 Set05_set                         game     0x00650310 src/game/set/set05_nm.c
+shape     1.00     224 stage_load                        main     0x00103B70 src/pc/rt/rt_flow.c
+shape     1.00     224 edit_create_model                 main     0x00115C20 build/pc/rt_gen.c
+shape     1.00     220 st_model_load                     main     0x00104560 src/pc/rt/rt_flow.c
+shape     1.00     216 dakuten_ck                        main     0x0020AC80 build/pc/abs/sk_all.c
+shape     1.00     216 pull_set_work                     main     0x00127ED0 src/pc/rt/rt_game.c
+shape     1.00     216 load_eft                          main     0x00103CB0 build/pc/rt_gen.c
+shape     1.00     212 camp_disp_sub                     main     0x0011F6C0 src/main/menu/menu_maru.c
+shape     1.00     204 Em_Unko_Smoke_Ck                  game     0x00547FC0 build/pc/abs/em_core_nm.patch.c
+shape     1.00     200 Lb_shop_trans_sub                 lobby    0x00549760 src/lobby/b/lb_by51.c
+shape     1.00     200 encode_data_002814E0              main     0x0022AF50 build/pc/abs/mccomb.patch.c
+shape     1.00     196 Set_equip_data                    sub_main 0x004C4C60 src/main/ud/udmisc_nm.c
+shape     1.00     196 load_shadow                       main     0x00103D90 build/pc/rt_gen.c
+shape     1.00     196 npcMvENJOY                        lobby    0x005608C0 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     192 disp_others_info                  main     0x001229D0 src/main/menu/menu_disp_nm.c
+shape     1.00     192 CardCmsv07                        main     0x0022DD50 build/pc/abs/mccomb.patch.c
+shape     1.00     192 em_hinshi_end2                    game     0x00549110 src/game/em/em_master_nm.c
+shape     1.00     188 em_atk01_005C8AF0                 game     0x005F4390 build/pc/abs/em15_nm.abs.c
+shape     1.00     188 set09_set_sub3                    game     0x00648F90 src/game/set/set09.c
+shape     1.00     184 disp_mark                         sub_main 0x004F3BC0 src/main/reward/f_reward.c
+shape     1.00     180 em_range_set                      game     0x00545940 build/pc/abs/em_core_nm.patch.c
+shape     1.00     176 cnLBS_ConditionSearchUser         lobby    0x005E6090 build/pc/rt_gen.c
+shape     1.00     176 eft04_d                           game     0x00569EE0 src/game/eft/eft04_nm.c
+shape     1.00     172 ListSelect                        main     0x0021D860 src/main/menu/pit04.c
+shape     1.00     172 PageSelect                        main     0x0021D910 src/main/menu/pit04.c
+shape     1.00     172 em_effect_pull                    sub_main 0x004DDDF0 src/pc/rt/rt_flow.c
+shape     1.00     168 em_demo05_005D6530                game     0x00602540 src/game/em/em16_nm.c
+shape     1.00     168 set12_set                         sub_main 0x004F0940 src/main/set/set12.c
+shape     1.00     168 set09_set_sub                     game     0x00648EE0 src/game/set/set09.c
+shape     1.00     168 decode_data                       main     0x0022B020 build/pc/abs/mccomb_nm.patch.c
+shape     1.00     164 trans_pit_0                       main     0x00126C90 src/main/menu/menu18.c
+shape     1.00     164 reward_cursor_mv                  sub_main 0x004F85C0 src/main/reward/f_rewardb.c
+shape     1.00     164 wyvn_efct_ripple                  main     0x00124C10 src/main/menu/menu22.c
+shape     1.00     156 set21_pos_get                     sub_main 0x004E1C50 src/main/set/set21.c
+shape     1.00     152 CardCmsv12                        main     0x0022D470 build/pc/abs/mccomb.patch.c
+shape     1.00     152 Sansai_talk_ck                    sub_main 0x004CDC80 src/main/pl/plx01.c
+shape     1.00     148 npcMvKEGA                         lobby    0x00561A40 build/pc/abs/lb__lbnpc_nm.patch.c
+shape     1.00     148 yure_move                         main     0x00111EB0 src/pc/rt/rt_main.c
+shape     1.00     140 set12_m                           sub_main 0x004F0AA0 src/main/set/set12.c
+shape     1.00     140 em_act10_005D1180                 game     0x005FD0F0 src/game/em/em16_nm.c
+shape     1.00     136 em_sleep_ck                       game     0x00547D10 build/pc/abs/em_core_nm.patch.c
+shape     1.00     136 em_hungry_ck                      game     0x00547B90 build/pc/abs/em_core_nm.patch.c
+shape     1.00     136 em_thirst_ck                      game     0x00547C80 build/pc/abs/em_core_nm.patch.c
+shape     1.00     132 em_fly25_005C75D0                 game     0x005F2E70 build/pc/abs/em15_nm.abs.c
+shape     1.00     128 set17_m                           game     0x00656880 src/game/set/set17_nm.c
+shape     1.00     124 hit_chk_init                      sub_main 0x004DDFF0 src/main/hit/hit.c
+shape     1.00     124 lbc_matching_failed_02            lobby    0x00584190 build/pc/abs/lb__lb_cli.abs.c
+shape     1.00     120 Pit_shot_ok_chk                   main     0x0021E200 src/pc/rt/rt_menu.c
+shape     1.00     112 CardCmsv10                        main     0x0022DFB0 build/pc/abs/mccomb.patch.c
+shape     1.00     104 clr_pl_work                       sub_main 0x004F0E30 build/pc/abs/f_pl.c
+shape     1.00     100 shell08_d                         game     0x00662E80 src/game/shell/shell08b.c
+shape     1.00     100 push_em_work_all                  main     0x001352E0 src/main/emw/emw01.c
+shape     1.00     100 ashi_sd_req_005C4980              lobby    0x00591310 src/lobby/b/lbsnd03.c
+shape     1.00      96 clr_set_work                      main     0x00127E70 src/pc/rt/rt_game.c
+shape     1.00      96 Ud_item_num_ck                    sub_main 0x004C5880 src/main/ud/ud_nm.c
+shape     1.00      96 Disp_back                         main     0x0012E060 src/main/font/disp2_nm.c
+shape     1.00      92 PitWork_init                      main     0x00118CA0 src/main/menu/menu02.c
+shape     1.00      92 Set04_set                         game     0x0064FAC0 src/game/set/set04.c
+shape     1.00      88 Lb_check_pl_load                  lobby    0x005665A0 build/pc/abs/lb__lb_e.patch.c
+shape     1.00      88 gp_ck                             game     0x00548ED0 src/game/em/em_master_nm.c
+shape     1.00      88 cam_sub_playerEX                  main     0x001DBE50 src/main/cam/camc.c
+shape     1.00      88 font_set_stack_no                 main     0x0012C950 src/main/font/gfs_nm.c
+shape     1.00      88 pl_move                           game     0x00562B80 build/pc/abs/f_pl.c
+shape     1.00      80 gp_ptr_ck                         game     0x00548F30 src/game/em/em_master_nm.c
+shape     1.00      80 move_set                          main     0x00128050 src/pc/rt/rt_main.c
+shape     1.00      80 Lb_Em_pos_adj                     lobby    0x00567D40 src/lobby/f/lb_h.c
+shape     1.00      80 net_SetMenu_SelectHandleName      lobby    0x005BA480 build/pc/rt_gen.c
+shape     1.00      80 Ud_item_search_space              sub_main 0x004C5A90 src/main/ud/ud_nm.c
+shape     1.00      76 em10_effect_move_0053DC90         lobby    0x00550950 build/pc/abs/lb__lbem10.abs.c
+shape     1.00      76 lb_npc_ef_move                    lobby    0x00591690 src/lobby/b/lb_by23.c
+shape     1.00      76 em_tsuushin_set                   game     0x005490B0 src/game/em/em_master_nm.c
+shape     1.00      76 cnetGet_Login_UserMiniData        lobby    0x005AF3C0 build/pc/rt_gen.c
+shape     1.00      72 font_draw                         main     0x0012B4D0 src/main/font/fontst2_nm.c
+shape     1.00      72 Equip_icon_color_rare             main     0x0021E9D0 src/main/chat/chat_nm.c
+shape     1.00      72 lm_member_list_i                  lobby    0x0058BF40 build/pc/rt_gen.c
+shape     1.00      72 Set06_set                         sub_main 0x004E11E0 src/main/set/set06.c
+shape     1.00      72 cam_init_sub_pchngr               main     0x001DB790 src/main/cam/camp.c
+shape     1.00      72 cnetGet_Login_UserHandle          lobby    0x005AF370 build/pc/rt_gen.c
+shape     1.00      68 cpn_GetCNData                     lobby    0x005C0E80 build/pc/abs/lb__lb_bz05.abs.c
+shape     1.00      64 map_move                          main     0x0011D3E0 src/main/menu/menu11.c
+shape     1.00      64 CallBack_Result_Match_Logout      lobby    0x00584010 build/pc/abs/lb__lb_cli.abs.c
+shape     1.00      64 CallBack_Event_RoomName           lobby    0x00587670 build/pc/abs/lb__lb_cli.abs.c
+shape     1.00      64 cnLBS_MatchStart                  lobby    0x005B0A60 build/pc/rt_gen.c
+shape     1.00      60 set07_set                         game     0x00651200 src/game/set/set07.c
+shape     1.00      60 set16_set                         game     0x006561E0 src/game/set/set16.c
+shape     1.00      60 sk_conv_init                      main     0x0020C5B0 src/main/sk/cmd_nm.c
+shape     1.00      60 Set19_set                         game     0x006574B0 src/game/set/set19.c
+shape     1.00      60 Set10_set                         game     0x006527E0 src/game/set/set10.c
+shape     1.00      60 set14_set                         game     0x00653570 src/game/set/set14.c
+shape     1.00      60 set09_set                         game     0x00648E40 src/game/set/set09.c
+shape     1.00      60 Set18_set                         game     0x00656CA0 src/game/set/set18.c
+shape     1.00      56 get_em_local                      main     0x001DC900 src/main/cam/camd.c
+shape     1.00      56 Get_hit_id                        sub_main 0x004E11A0 src/pc/rt/rt_pl.c
+shape     1.00      56 em_cmd_boss_pl_target_set         game     0x0058B9E0 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00      52 em_cmd_mind_move_end              game     0x00587590 build/pc/abs/em_cmd_nm.abs.c
+shape     1.00      52 set00_set                         game     0x00651F50 src/game/set/set00.c
+shape     1.00      52 Info_Initialization               sub_main 0x004C3D40 src/main/set/set01.c
+shape     1.00      48 lb_monster_list_check             lobby    0x00589470 src/lobby/b/lb_bz02.c
+shape     1.00      48 em15_to_tenjo                     game     0x005EE840 build/pc/abs/em15_nm.abs.c
+shape     1.00      48 em_escape_mind_set                game     0x00547240 build/pc/abs/em_core_nm.patch.c
+shape     1.00      40 SoftkeyTextureSet                 main     0x002278C0 src/main/sk/sk20.c
+shape     1.00      32 font_set_palette                  main     0x0012C9B0 src/main/font/gfs_nm.c
+shape     1.00      20 cnLBS_Init_LobbyBgBurstProcess    lobby    0x005E1450 build/pc/rt_gen.c
+shape     1.00      20 init_game_work                    main     0x0012CDB0 src/main/font/gfs_nm.c
+shape     1.00      20 Lb_shop_init                      lobby    0x00547BB0 src/lobby/b/lb_by89.c
+shape     1.00      20 SetDialogYesNo                    lobby    0x0059F3F0 src/lobby/lb/lbuic.c
+shape     1.00      20 CameraWorkInit                    main     0x001D9700 src/main/cam/cam.c
+shape     1.00      20 flfntSetSize                      main     0x001D5870 src/pc/rt/rt_font.c
+shape     1.00      16 Lbs_CheckMatchingFlag             lobby    0x00585110 build/pc/abs/lb__lb_cli.abs.c
+shape     1.00      16 em_hungry_end                     game     0x005491D0 src/game/em/em_master_nm.c
+shape     1.00      12 flfntSetZ                         main     0x001D58B0 src/pc/rt/rt_font.c
+shape     1.00      12 flfntSetHalftype                  main     0x001D5960 src/pc/rt/rt_font.c
+
+ZERO-FILLED G tables (74) and the entered functions that read them
+set19_s67_pos_tbl            RAN: set19_i set19_trans
+set19_s73_s75_pos_tbl        RAN: set19_i set19_trans
+atck_data_no                 not reached
+eft12_bone_col               not reached  (also eft12_t02)
+eft12_meat_col               not reached  (also eft12_t02)
+eft12_st21_set_pos           not reached  (also eft12_i02)
+eft16_neck_tbl               RAN: eft16_m  (also Eft16_set_ex)
+lit_425_002E85F0             not reached
+lit_638_002E8610             not reached
+stage_hit_data_f             not reached
+em_hp_vital_tbl              not reached
+stage_hate_add_tbl           RAN: Stage_Hate_Add
+Equip_Bonus                  not reached
+questName                    not reached
+lit_826_003581F8             not reached  (also game4)
+frame_mixed_item             not reached  (also Pit_disp_item_mix)
+lb_sendpl_list               not reached  (also lb_disp_chat_cnfg_sendpl)
+lit_136_00358B70             not reached  (also lb_disp_chat_cnfg_sendpl)
+lit_2128                     not reached  (also Pit_disp_quest)
+lit_2242                     not reached  (also font_print_Bdragon)
+lit_2331                     RAN: quest_condition_print
+lit_2542                     not reached  (also Pit_disp_item_mix)
+lit_2546                     not reached  (also Pit_disp_item_mix)
+lit_3181_00383570            RAN: chat_log_name
+lit_3440                     RAN: rt_real_Disp_NPC_message
+lit_3441                     RAN: rt_real_Disp_NPC_message
+lit_3514                     not reached
+lit_3588_003837D0            not reached  (also PlayerStatusWindow)
+lit_3591                     not reached  (also PlayerStatusWindow)
+lit_3594                     not reached  (also PlayerStatusWindow)
+lit_3659                     RAN: trans_box  (also disp_shell_name)
+lit_4156                     RAN: equip_exp_core
+lit_4157                     RAN: equip_exp_core
+lit_4158                     RAN: equip_exp_core
+lit_4159                     RAN: equip_exp_core
+lit_4160                     RAN: equip_exp_core
+lit_4161                     RAN: equip_exp_core
+lit_4162                     RAN: equip_exp_core
+lit_4163                     RAN: equip_exp_core
+lit_4164                     RAN: equip_exp_core
+lit_4165                     RAN: equip_exp_core
+lit_4166                     RAN: equip_exp_core
+lit_4168                     RAN: equip_exp_core
+lit_4169                     RAN: equip_exp_core
+lit_4170                     RAN: equip_exp_core
+lit_4171                     RAN: equip_exp_core
+lit_4173                     RAN: equip_exp_core
+lit_4221                     RAN: sword_zokusei
+lit_4222                     RAN: sword_zokusei
+lit_4948                     not reached  (also disp_mix_list disp_monster_list)
+lv123str                     RAN: equip_exp_core
+monster_data                 not reached  (also disp_monster_list)
+nfcol_tbl                    not reached  (also font_set font_set2)
+nfrvcol_tbl                  not reached  (also font_set font_set2)
+pf_chat_cnfg                 not reached  (also Pit_disp_chat_cnfg)
+pf_lb_chcnfg_sendpl          not reached  (also lb_disp_chat_cnfg_sendpl)
+pfl_menu_data                not reached  (also Pit_disp_data)
+q_sendpl_list                not reached  (also lb_disp_chat_cnfg_sendpl)
+sort_no                      RAN: sort_sub  (also trans_sprite_sort)
+spr_sort_flag                RAN: sort_sub  (also trans_sprite_sort)
+spr_sort_num                 RAN: sort_sub  (also trans_sprite_sort)
+str_3166                     not reached  (also rt_real_Pit_disp_chat)
+lit_676_003869E0             not reached  (also add_disp)
+movie_add_tbl                RAN: movie_add_ck
+st49_pos_tbl_0065BBC0        RAN: em_die_rev_005B2B70
+st51_pos_tbl_0065BC20        RAN: em_die_rev_005B2B70
+st53_pos_tbl_0065BC80        RAN: em_die_rev_005B2B70
+em14_act_add                 RAN: em_act01_005B59C0
+em17_act_add                 RAN: act_dist_select_005DA5C0 em_act01_005DAAD0
+map4_trade_nm                not reached  (also talk_move)
+map4_trade_sp                not reached  (also talk_move)
+moji_tbl_abn_h_yn            not reached
+moji_tbl_abn_h_id            not reached
+moji_tbl_num_h_ol            not reached

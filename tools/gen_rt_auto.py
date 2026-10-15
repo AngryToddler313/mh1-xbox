@@ -131,7 +131,9 @@ def main():
         m = re.match(r"^D_([0-9A-Fa-f]{6,8})$", n)
         if not m:
             continue
-        va = hexva(n, m.group(1))
+        # G: a D_ name that G's symbol view places (config/mhg/pc_names.txt, data_map.txt) is at that G address;
+        # its hex part is then a G address, not an MH1 one (D_002EC668 had been aliased into MH1's weapon_model_data)
+        va = main_s[n][0] if G and n in main_s else hexva(n, m.group(1))
         if va is None or va >= OVL:
             continue        # lobby.bin: an alias into rt_lb_mem below
         for a, size, k, img in sized:

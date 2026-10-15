@@ -442,8 +442,6 @@ void Lb_put_2TF();
  * Lb_move_common (the walking loop), exit, event. lb_sys+LBSYS_OFS(0x68) = 32: a quest
  * was accepted (return 1), 37: leave (return -1). */
 #ifdef VERSION_MHG
-void rt_log_standin(const char *name);
-#define G_STANDIN(n) do { static int o_; if (!o_++) rt_log_standin(n); } while (0)
 extern void (*vs_square_func_227[])();
 void vs_square(void) {
     vs_square_func_227[M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(3))]();    /* G's own copy; lb_gaf01.c (MH1 layout) is not linked */
@@ -564,7 +562,7 @@ void vs_square_init_init(void) {
     switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
         if (Online_ck() == 0) {
-            G_STANDIN("G village: Lb_make_quest_tbl_local (G rebuilt the quest tables; MH1's crashes on them)");
+            Lb_make_quest_tbl_local();     /* G's (src/lobby/f/lb_guild_g.c); was a stand-in until 15 Oct 2026: the elder's lists stayed empty ("1 / 0") */
             Q_camera_init();
         }
         M2C_FIELD(cw, s8 *, CW_OFS(0x2C08)) = 0;

@@ -12,6 +12,16 @@ obvious workarounds.
 
 ## Open
 
+### G release audit fixes (15 Oct 2026, agent A)
+- **Dropped:** the G stand-in for Lb_make_quest_tbl_local in lb_village_nm.c's G vs_square_init_init (and its G_STANDIN
+  macro); **now** G's own builder (src/lobby/f/lb_guild_g.c) runs at village entry. **Why:** the elder's lists were empty.
+- **Changed (G PC only):** tools/gen_rt_auto.py: a `D_xxxxxx` name that G's symbol view places (pc_names.txt /
+  data_map.txt) gets that G address instead of its hex part read as an MH1 address (two names moved: D_002EC668,
+  D_004FEA50). tools/mhg_pcmeta.py: a pc_names.txt line ending in `+` adds a second name at an address instead of
+  renaming the one there. **Why:** CONTINUE crashed in the game menu; the reward screen's item line was blank.
+- **Changed (MH1 and G):** tools/build_pc.sh aliases flfntLocate_i to flfntLocate (was a no-op stand-in).
+- **To revert:** the commit "G release checklist (docs/RELEASE_G.md) ...".
+
 ### G round 7: hunting log, thrown items, Lao-Shan (15 Oct 2026, agent A)
 - **Dropped (G PC build only):** the matched MH1 menu27.c / menu32.c / menu33.c / menu_dmon.c (tools/pc_g_exclude.txt);
   **now** G's hunting log (G blocks in menu_nm.c / menu_disp_nm.c), with G's order of the data pages (log first).

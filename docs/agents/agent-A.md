@@ -894,3 +894,25 @@ All G code below is PC-only (`#if VERSION_MHG && !__MWERKS__`, or nm / PC files)
 - Open: em07_init's G calls (sub_main 0x4DC5D0: em+0x7D4 status-immunity bits?, game 0x549FE0 char set); point_cam_sub
   case 25 (G sets demo x66 instead of point_cam_hit); G result_prog's other changes (0x4F4900 etc.); the poison
   knife's ailment value on hit not checked.
+
+## G round 8: release checklist for G, coverage, five player-visible fixes (15 Oct 2026)
+
+docs/RELEASE_G.md (criteria, gaps by player impact, coverage) and docs/survey/mhg_cov_g.txt (generated list).
+- **tools/cov_report_g.py**: a COV=1 G build's coverage mapped to docs/survey/mhg_map.csv; lists entered functions whose
+  G twin is missing/rewritten/edited/shape and whose PC body is not a G version (no G marker in the body, not in the G
+  branch of an `#if` on VERSION_MHG), plus the zero-filled G tables entered functions read (objdump -dr of the .o files).
+- **CONTINUE crash**: omake.c's G disp_mode_menu reads D_528538 / D_528550 / D_002EC668; the first two were zero arrays,
+  the third was aliased by gen_rt_auto.py into MH1's weapon_model_data (its hex read as an MH1 address). Now in
+  pc_names.txt, and gen_rt_auto.py takes a D_ name's G address from G's symbol view when it has one. Only D_002EC668 and
+  D_004FEA50 changed in the generated aliases (diffed); D_004FEA50 (G story-gate quest list) was page_tab+0x1140 before.
+- **Elder lists**: G's vs_square_init_init now calls Lb_make_quest_tbl_local (lb_guild_g.c) instead of a stand-in
+  (it predates agent D's G version): "1 / 0" -> "1 / 5".
+- **Reward screen**: reward_itembox / disp_reward formats (lit_1001/1002/843) were zero; G reads them through cells at
+  0x5262BC..0x5262C8. pc_names.txt lines ending in `+` add a name beside an existing one (mhg_pcmeta.add_hand_names).
+- **em12 revival points** st49/51/53_pos_tbl (G 0x69D5F0/650/6B0, pc_data.txt); **flfntLocate_i** aliased (build_pc.sh).
+- Build note: a COV=1 build leaves instrumented objects behind: build_pc.sh does not recompile when only the flags change,
+  and the next plain build links them (gen_rt_auto turns __cyg_profile_func_enter/exit into stand-ins; the nxdk link
+  fails on them). After a coverage run: delete each build/mhg/pctree/build/pc/cmd/X.sh that holds -finstrument-functions
+  and its X.o, then build again.
+- Seen, not mine (in RELEASE_G.md with lanes): EXTRA (omake) row crash (omake_str / check_bit_no), elder fee number missing
+  from the talk text, equip_exp_core strings zero, set19 position tables, em14/em17 G act selection (GN6, mine, open).

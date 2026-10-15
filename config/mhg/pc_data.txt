@@ -89,6 +89,9 @@ em12_scale_tbl = 0x0069D540; // size:0x2C
 em29_type_tbl = 0x006BAFC0; // size:0x54
 st45_pos_tbl = 0x0069D570; // size:0x78
 st56_pos_tbl = 0x0069D710; // size:0x78
+st49_pos_tbl_0065BBC0 = 0x0069D5F0; // size:0x60   # em12 (Cephalos) revival points on stages 49/51/53: em_die_rev (identical in G, game 0x5DE420) reads them; were zero-filled
+st51_pos_tbl_0065BC20 = 0x0069D650; // size:0x60
+st53_pos_tbl_0065BC80 = 0x0069D6B0; // size:0x60
 [sub_main]
 enemy_name = 0x00527A40; // size:0xD0           # (quest_condition_print, disp_monster_list)
 [sub_main]

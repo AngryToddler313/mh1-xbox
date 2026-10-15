@@ -267,22 +267,24 @@ def eval_mh1():
 def add_hand_names(gsyms):
     """config/mhg/pc_names.txt: G addresses of MH1 data names that tools/mhg_map.py did not find,
     found by hand (`module name 0xADDR  # how`): the PC build would otherwise make the name a
-    function stand-in and the game C would read code bytes as data."""
+    function stand-in and the game C would read code bytes as data. A name at an address that already
+    has one replaces it, unless the line ends in `+` (`module name 0xADDR +`: added beside it)."""
     path = P("config/mhg/pc_names.txt")
     if not os.path.exists(path):
         return
     n = 0
     for l in open(path):
         l = l.split("#", 1)[0].split()
-        if len(l) != 3:
+        if len(l) not in (3, 4) or (len(l) == 4 and l[3] != "+"):
             continue
         m, name, a = l[0], l[1], int(l[2], 16)
+        beside = len(l) == 4    # `+`: a second name for the same G object (G merged two MH1 strings), keep the first
         for mm in gsyms:
             if mm != m:
                 gsyms[mm] = [e for e in gsyms[mm] if e[2] != name]
         lst = [e for e in gsyms[m] if e[2] != name]
         k = [i for i, e in enumerate(lst) if e[0] == a]
-        if k:
+        if k and not beside:
             a0, sz, _old, isf = lst[k[0]]
             lst[k[0]] = (a0, sz, name, isf)
         else:
