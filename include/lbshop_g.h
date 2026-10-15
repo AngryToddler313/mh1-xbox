@@ -34,7 +34,7 @@ typedef struct LB_SHOP {
     s16 x6C;                           /* G +0x78 (from 0x654840) */
     s16 x6D;                           /* G +0x7A (from 0x654840) */
     s16 xG7C;                          /* G +0x7C (from 0x654840): cleared with the page by the sell list (lb_armor_tag_decide00); use unknown */
-    u8 _pad7E[0x2];
+    s16 xG7E;                          /* G +0x7E (from 0x654840): number of detail pages of the list's item (3 or 4) */
     u16 key;                           /* G +0x80 (from 0x654840) */
     s8 step;                           /* G +0x82 (from 0x654840) */
     s8 x15;                            /* G +0x83 (from 0x654840) */

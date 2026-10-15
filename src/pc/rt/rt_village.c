@@ -340,18 +340,20 @@ int rt_village_tick(void)
 #else
 #define LBS(o) lbShop[o]
 #endif
-        static int last = -1;
+        static int last = -1, lastk = -1, lastc = -1;
 #ifdef VERSION_MHG
 #define LBW(o) (*(s32 *)(lbShop + ((o) == 0x80 ? 0x78 : (o) == 0x74 ? 0x70 : (o) == 0x64 ? 0x64 : (o) == 0x50 ? 0x50 : 0x4C)))
 #else
 #define LBW(o) (*(s32 *)(lbShop + (o)))
 #endif
         int v = LBS(0x14) | LBS(0x15) << 8 | LBS(0x19) << 16 | LBS(0x1B) << 24;
-        if (v != last)
+        if (v != last || (u32)*(u16 *)(lbShop + LBSHOP_OFS(0x8C)) != (u32)lastk || LBW(0x74) != lastc)
             fprintf(stderr, "rt_village: tick %d shop step %d sub %d mode %d x1B %d x68 %d | count %d cur %d tbl %08x help %d list %08x key %04x item0 price %d state %d name %.12s\n", tick, (s8)LBS(0x14),
                     (s8)LBS(0x15), (s8)LBS(0x19), LBS(0x1B), *(s32 *)(lb_sys + LBSYS_OFS(0x68)), LBW(0x80), LBW(0x74), LBW(0x64), LBW(0x4C),
                     (u32)LBW(0x50), (u32)*(u16 *)(lbShop + LBSHOP_OFS(0x8C)), LBW(0x50) ? *(s32 *)LBW(0x50) : 0, LBW(0x50) ? *(s16 *)((u8 *)LBW(0x50) + 0x24) : 0, LBW(0x50) ? (char *)LBW(0x50) + 4 : "");
         last = v;
+        lastk = *(u16 *)(lbShop + LBSHOP_OFS(0x8C));
+        lastc = LBW(0x74);
     }
     if (r == 1 || r == -1) {
         rt_village_leave();

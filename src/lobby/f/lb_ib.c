@@ -1478,6 +1478,273 @@ typedef struct IBICON { s16 x, y, w, h; s32 color; s16 u0, v0, u1, v1; } IBICON;
 
 /* item box window: the slot grid (100 pouch slots or 64 equipment slots), the cursor and the name/price line.
    cur = cursor slot (negative: none), flags: 4 help, 8 equipment grid, 0x10 dimmed, 0x20 gold, 0x40 price, 0x80/0x100/0x200 equipment modes */
+#ifdef VERSION_MHG
+/* G (lobby 0x555850, written from G's code for the PC): the item box and the equipment box are 10 x 10 grids of 100 slots per
+ * page (pages = the box's expansions + 1, selected by the cursor index / 100), icons 25 x 25 for both, the page colour comes from
+ * a table at lb_item_box_base + 0x20, the item text has the owned amount ("name x N", the amount coloured at the maximum) and
+ * no category prefix, a page indicator sits above the grid (lobby 0x556750), the gold frame is drawn here.
+ * flags 0x400: the "tidy" view (lobby 0x558230): the entries merged and sorted, shown instead of the stored order. */
+extern char *lb_ibox_str[];                     /* G 0x6364C0: [3] = the infinity sign, [4] = the multiplication sign */
+extern char lit_1928[];
+void *memset(void *, int, unsigned);
+void *memcpy(void *, const void *, unsigned);
+void PutArrow();
+void flfntSetSize();
+void SetFilterMode();
+u8 ib_tidy_buf[0x708] __attribute__((aligned(4)));
+static int ib_stock_n(void) { return (1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1)) * 100; }
+
+/* the merged and sorted copy of the box (equip == 0: items, stacked up to each item's maximum, by id; else the stored
+ * equipment in use, by kind/id order of storage), a pointer to the entries (4 or 6 bytes each) */
+u8 *ib_tidy_view(int equip) {
+    int n = ib_stock_n(), i, j, m = 0;
+    memset(ib_tidy_buf, 0, sizeof ib_tidy_buf);
+    if (!equip) {
+        u16 *t = (u16 *)ib_tidy_buf;
+        for (i = 0; i < n; i++) {
+            u16 id = *(u16 *)(User_data + 0x74C + 4 * i);
+            int num = *(s16 *)(User_data + 0x74E + 4 * i);
+            int mx;
+            if (id == 0)
+                continue;
+            mx = ((u8 *)Item_data)[id * ITEM_ROW + 3];
+            for (j = 0; j < m && num > 0 && mx != 0xFF; j++)
+                if (t[2 * j] == id && (s16)t[2 * j + 1] < mx) {
+                    int room = mx - (s16)t[2 * j + 1];
+                    int mv = num < room ? num : room;
+                    t[2 * j + 1] += mv;
+                    num -= mv;
+                }
+            while (num > 0 && m < n) {
+                int mv = (mx != 0xFF && num > mx) ? mx : num;
+                t[2 * m] = id;
+                t[2 * m + 1] = mv;
+                m++;
+                num -= mv;
+            }
+        }
+        for (i = 1; i < m; i++) {       /* insertion sort by id, the fuller stack first */
+            u16 a = t[2 * i], b = t[2 * i + 1];
+            for (j = i - 1; j >= 0 && (t[2 * j] > a || (t[2 * j] == a && (s16)t[2 * j + 1] < (s16)b)); j--) {
+                t[2 * j + 2] = t[2 * j];
+                t[2 * j + 3] = t[2 * j + 1];
+            }
+            t[2 * j + 2] = a;
+            t[2 * j + 3] = b;
+        }
+    } else {
+        for (i = 0; i < n; i++)
+            if (User_data[0x44 + 6 * i] != 0) {
+                memcpy(ib_tidy_buf + 6 * m, User_data + 0x44 + 6 * i, 6);
+                m++;
+            }
+    }
+    return ib_tidy_buf;
+}
+
+static void ib_page_bar(int base, int y, int page, int pages, int flags, int alpha)
+{
+    /* lobby 0x556750 (style 0): the "n/m" page number with an arrow at each side, drawn when the box has more than one page */
+    u8 *row = (u8 *)lb_item_box_base + 0x30;
+    int col = (flags & 0x410) ? (int)0xA0606060 : (int)0xFF20FF28;
+    if (pages < 2)
+        return;
+    if (row[0x12] != 0) {
+        *(s16 *)(lb_item_box_base + 0x60) = (s16)base;
+        *(s16 *)(lb_item_box_base + 0x62) = (s16)(y + 2);
+        DispFrameMessageA(lb_item_box_base + 0x60, 0, alpha);
+    }
+    PutArrow(base, y, *(s16 *)(row + 0xC), 0x12, col, 1);
+    PutArrow((s16)(base + *(s16 *)(row + 0xE)), y, *(s16 *)(row + 0xC), 0x12, col, 0);
+    flfntSetSize(0x12, 0x12);
+    flfntLocate((s16)(base + *(s16 *)(row + 0x10)), y);
+    font_print("%d/%d", page + 1, pages);
+}
+
+void ItemboxWindowX(int cur, int flags, f32 base) {
+    IBQUAD q;
+    IBICON ic;
+    char text[0x40];
+    int equip = (flags & 8) != 0;
+    int dim = flags & 0x10;
+    int alpha = dim ? 0x60 : 0xFF;
+    int tidy = flags & 0x400;
+    int page, curp, idx, i, k, price = -1, col, full, norm;
+    f32 x0;
+    u8 *data, *d;
+    u8 *e;
+
+    data = tidy ? ib_tidy_view(equip) : (equip ? User_data + 0x44 : User_data + 0x74C);
+    if (tidy && cur >= 0)
+        cur = (s16)cur % 100;
+    page = (s16)cur / 100;
+    curp = (s16)cur % 100;
+    *(s16 *)lb_item_box_base = base;
+    DispFrameMessageA(lb_item_box_base, 0, alpha);
+    SetFilterMode(1);
+    reload_tex(1, 0x118);       /* G 0x13F: the PC keeps MH1's numbers */
+    SetTextureStage(0x118);
+    x0 = 153.0f + base;
+    for (i = 0; i < 100; i++) {
+        s16 xx = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10)) + 3;
+        q.x = xx;
+        q.x2 = 20.48f + (f32)xx;
+        q.y = i / 10 * 0x19 + 0x3D;
+        q.y2 = q.y + 0x15;
+        q.color = (alpha << 24) | (*(u32 *)(lb_item_box_base + 0x20 + 4 * page) & 0xFFFFFF);
+        if (equip && !tidy && Now_equip_ck(User_data, (s16)(page * 100 + i)) == 1)
+            q.color = (alpha << 24) | 0x1078D4;
+        flps0004(&q);
+    }
+    ic.w = 0x19;
+    ic.h = 0x19;
+    if (!equip) {
+        u16 *p = (u16 *)(data + page * 400);
+        for (i = 0; i < 100; i++, p += 2) {
+            u8 *r;
+            int cat;
+            if (*p == 0)
+                continue;
+            r = (u8 *)Item_data + *p * ITEM_ROW;
+            cat = r[5];
+            if (cat == 0xFF)
+                continue;
+            k = cat + 1;
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10));
+            ic.y = i / 10 * 0x19 + 0x3B;
+            ic.u0 = ((k & 7) << 5) + 1;
+            ic.v0 = ((k >> 3) << 5) + 1;
+            ic.u1 = ((k & 7) << 5) + 0x1F;
+            ic.v1 = ((k >> 3) << 5) + 0x1F;
+            ic.color = item_col_tbl[r[6]];
+            ic.color = (ic.color & 0xFFFFFF) | (alpha << 24);
+            flps0008(&ic);
+        }
+    } else {
+        int mode80 = flags & 0x80, mode100 = flags & 0x100, mode200 = flags & 0x200;
+        e = data + page * 600;
+        for (i = 0; i < 100; i++, e += 6) {
+            int rare, now;
+            if (e[0] == 0)
+                continue;
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10));
+            ic.y = i / 10 * 0x19 + 0x3B;
+            Get_equip_icon_uv(e, &ic.u0, &ic.u1);
+            rare = Get_equip_rare(e[1], *(u16 *)(e + 2)) & 0xFF;
+            now = !tidy ? (Now_equip_ck(User_data, (s16)(page * 100 + i)) == 1) : 0;
+            if (mode80) {
+                if (now) {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                    flps0008(&ic);
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                    ic.color = (alpha << 24) | 0x909010;
+                } else {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                }
+            } else if (mode100) {
+                int kd = (e[1] != 6 && e[1] != 7);
+                ic.color = Equip_icon_color_rare(rare, alpha, kd);
+                if (now) {
+                    flps0008(&ic);
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                    ic.color = (alpha << 24) | (kd ? 0x808010 : 0xFFFF00);
+                }
+            } else if (mode200) {
+                ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                if (now) {
+                    if (e[1] == 6 || e[1] == 7) {
+                        ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                        flps0008(&ic);
+                        ic.color = (alpha << 24) | 0x808010;
+                    } else {
+                        flps0008(&ic);
+                        ic.color = (alpha << 24) | 0xFFFF00;
+                    }
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                } else if (equip_ok_chk(e) == 0) {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                }
+            } else {
+                ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                if (now) {
+                    flps0008(&ic);
+                    ic.u0 = 0xC0; ic.v0 = 0xE0; ic.u1 = 0xE0; ic.v1 = 0x100;
+                    ic.color = (alpha << 24) | 0xFFFF00;
+                }
+            }
+            flps0008(&ic);
+        }
+    }
+    if ((s16)cur >= 0) {
+        if (!tidy) {        /* the cursor (lobby 0x555570): a square that pulses */
+            f32 sn = flSin(0.0000958738f * (f32)(u16)((System_timer & 0x1F) << 11));
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(curp % 10));
+            ic.y = curp / 10 * 0x19 + 0x3B;
+            ic.u0 = 0; ic.v0 = 0; ic.u1 = 0x20; ic.v1 = 0x20;
+            ic.color = (alpha << 24) | ((((s8)(108.0f * sn) + 0x8C) & 0xFF) << 16) | ((((s8)(6.0f * sn) + 0xF8) & 0xFF) << 8) | (((s8)(38.0f * sn) + 0xD6) & 0xFF);
+            flps0008(&ic);
+        }
+        flfntSetSize(0x12, 0x12);
+        full = dim ? 13 : 2;
+        norm = dim ? 10 : 0;
+        font_set_palette(norm);
+        ib_page_bar((int)base, 27, page, ib_stock_n() / 100, flags, alpha);
+        idx = (s16)cur;
+        if (!equip) {
+            d = data + idx * 4;
+            if (*(u16 *)d == 0) {
+                sprintf(text, lit_1923_00668480, item_str[0]);
+                price = -1;
+            } else {
+                u16 id = *(u16 *)d;
+                int mx = ((u8 *)Item_data)[id * ITEM_ROW + 3], n = *(s16 *)(d + 2);
+                if (mx == 0xFF) {
+                    sprintf(text, lit_1923_00668480 + 8, item_str[id], lb_ibox_str[3]);
+                } else if (mx == 1) {
+                    sprintf(text, lit_1923_00668480, item_str[id]);
+                } else if (n >= mx) {
+                    sprintf(text, lit_1923_00668480 + 0x10, item_str[id], lb_ibox_str[4], full, n, norm);
+                } else {
+                    sprintf(text, lit_1923_00668480 + 0x28, item_str[id], lb_ibox_str[4], n);
+                }
+                price = *(s32 *)((u8 *)Item_data + id * ITEM_ROW + 0x10);
+            }
+        } else {
+            e = data + idx * 6;
+            if (e[0] == 0) {
+                sprintf(text, lit_1923_00668480, item_str[0]);
+                price = -1;
+            } else {
+                sprintf(text, lit_1923_00668480, Get_equip_name(e[1], *(u16 *)(e + 2)));
+                price = Get_equip_kaitori(e[1], *(u16 *)(e + 2));
+            }
+        }
+        if (!tidy) {
+            flfntLocate(5.0f + base, 0x13F);
+            font_print(lit_1923_00668480, text);      /* G's func_0012BDD0: format, then print */
+            if ((flags & 0x40) && price >= 0) {
+                flfntSetSize(0x18, 0x12);
+                flfntLocate(198.0f + base, 0x13F);
+                font_print(lit_1928, price);
+                flfntSetSize(0x12, 0x12);
+            }
+            if (flags & 4) {
+                if (!equip) {
+                    Disp_help_mess(1, (u16)(*(u16 *)(User_data + 0x74C + idx * 4) + 0x18));
+                } else if (User_data[0x44 + idx * 6] != 0) {
+                    EquipmentDescriptionWindow(User_data + 0x44 + idx * 6, (int)base, 184, flags & 3, 0);
+                }
+            }
+        }
+    }
+    if (flags & 0x20) {
+        *(s16 *)(lb_item_box_base + 0x10) = 144.0f + base;
+        DispFrameMessageA(lb_item_box_base + 0x10, 0, alpha);
+        flfntSetSize(25, 20);
+        font_print_ex((int)(180.0f + base), 27, 0, lit_1928, *(s32 *)(User_data + 0x20));
+    }
+}
+#else
 void ItemboxWindowX(int cur, int flags, f32 base) {
     IBQUAD q;
     IBICON ic;
@@ -1714,3 +1981,4 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         Lb_put_gold();
     }
 }
+#endif
