@@ -1,12 +1,6 @@
 /* lb_arm - one translation unit 0x0053C520-0x0053D7CC (lbtu3). */
 #include "lobby_s.h"
 #include "lbsys_g.h"
-#ifdef VERSION_MHG
-extern s32 shop_default_tag_00610A68[];
-#define GTAG(x) ((s32 *)(shop_default_tag_00610A68 + 1))
-#else
-#define GTAG(x) (x)
-#endif
 extern char User_data[];
 extern char my_user_id[];
 typedef struct { u8 x0; u8 kind; u16 id; u16 x4; } EQREC;
@@ -80,7 +74,7 @@ void lb_armor_tag_decide00() {
         lbShop.x16 = 1;
         lbShop.x8F = 1;
         lbShop.f38 = (void *)shop_armor_question_o;
-        lbShop.tag = GTAG((s32 *)shop_armor01_tag);
+        lbShop.tag = ((s32 *)shop_armor01_tag);
         lbShop.f28 = (void *)lb_armor_tag_decide01_o;
         return;
     }

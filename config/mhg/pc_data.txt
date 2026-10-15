@@ -233,3 +233,13 @@ ground_tbl_add = 0x005239C0; // size:0x170 allptr
 st_sun_rgba_tbl = 0x005246C0; // size:0x170 allptr
 [main]
 pl_light_tbl2 = 0x00257D20; // size:0x170 allptr
+
+# Shop tables (agent D, G village): main's armor_shop_tbl is 18 groups of two pointers (shop 0/1; the group is picked by the story
+# level and job, lb_armor_tag_decide01), pointing into lobby's armor lists (weapons at tblA, armour at tblB: 0x1060 bytes).
+[main]
+armor_shop_tbl = 0x002EEE80; // size:0x90
+# Shop tab names (G keeps them in main's .data, not in .sdata as MH1 does): 武器/防具 (the armour shop's second menu) and the
+# workshop's first menu (their pointers into lobby.bin come from config/mhg/pc_main_lobby.txt); G's own symbol shop_process01_tag is right.
+[main]
+shop_armor01_tag = 0x002EF040; // size:0x8
+shop_process00_tag = 0x002EF050; // size:0x8

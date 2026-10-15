@@ -69,6 +69,9 @@ def main():
             out.append(cand)
         else:
             miss.append((loc, n))
+    # words the name matching cannot find (their MH1 twins have no G name), found by reading G's shop code (agent D):
+    # plazaMenuTbl, armor_shop_tbl (18 pairs), the tab-name tables hint_tbl .. friend_entry_str (strings / arrays in lobby.bin)
+    out += list(range(0x2EEE70, 0x2EEE78, 4)) + list(range(0x2EEE80, 0x2EEF14, 4)) + [0x2EF02C] + list(range(0x2EF038, 0x2EF080, 4))
     with open(os.path.join(ROOT, "config/mhg/pc_main_lobby.txt"), "w") as f:
         f.write("# G main data words that point into lobby.bin (tools/mhg_main_lobby.py): G addresses\n")
         for a in sorted(set(out)):
