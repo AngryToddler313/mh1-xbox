@@ -1836,7 +1836,7 @@ void disp_mix_list(int sw, PIT_W *p) {
  * the number hunted (User_data+0xD76, summed over the species' kinds) and the biggest size (User_data+0xD10, the
  * largest of the kinds, in cm = value x the kind's base size / 100) with a silver / gold crown at the monster's
  * thresholds; circle opens one monster's page (the MH1 page: number, name, picture, text, plus hunted / size).
- * The records are written at quest end (result_prog, src/main/reward/f_reward.c G block). */
+ * The records are written at quest end (result_prog, src/main/reward/f_reward_g.c). */
 typedef struct HLOG_ROW {           /* monster_data in G (0x5278D0), 30 rows of 0xC bytes */
     u8 no;                          /* 0x0 monster list bit */
     u8 u, v;                        /* 0x1 picture in texture 0x11B (G 0x142) */
@@ -1929,6 +1929,12 @@ static int hlog_crown_draw(HLOG_ROW *m, int x, int y, int size)   /* main 0x1263
     q.col = (a << 24) | 0xFFFFFF;
     flps0008(&q);
     return g + 1;
+}
+
+/* main 0x126320: a crown by row number (the quest result's record screen, src/main/reward/f_reward_g.c) */
+int func_00126320(int row, int x, int y, int size)
+{
+    return hlog_crown_draw(&hlog_monster_data[row & 0xFFFF], x, y, size);
 }
 
 static void hlog_counts(HLOG_ROW *m, int list, int y)     /* main 0x126160 */

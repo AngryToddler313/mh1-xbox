@@ -642,3 +642,18 @@ obvious workarounds.
 - **Dropped:** MH1's poison_stock_set on the G PC; **now** G's (no poison build-up past tolerance - 1 while poisoned, stock emptied when poison starts).
 - **Added:** part durability level bonus (G em_dur_init / em_dur_set, EMW 0x7D4 carved as dur_lv_bits in include/em.h), point_cam_sub case 25
   (demo wall-clip flag), shell08_i kinds 8 / 12.
+
+## G quest result module (agent A, 15 Oct 2026, GN17 / GN11 / GN13)
+- **Dropped:** on the G PC build, MH1's f_reward.c / f_reward2.c / f_reward3.c (result_prog, the money and point screens, movie_add_ck with
+  MH1's zero movie table, result_disp) and the G block result_hunt_records_g in f_reward.c; **now** src/main/reward/f_reward_g.c, G's
+  whole module from sub_main 0x4F3A50-0x4F7FDC: 20 steps (reward list, money, sale of the five G quest items, online points, record /
+  training / gallery movie / gallery title announcements, error). tools/build_pc.sh swaps the files for VERSION=mhg; MH1 and the PS2
+  builds are unchanged. **To revert:** the commit "G: the quest result module as G (GN17)".
+- **Dropped:** func_0012D170 / func_0012D1B0 in src/pc/rt/rt_quest.c read game_w+0x2F3 / +0x2C0 / +0x2F4 (past the host's game_w) and
+  tested the second byte the wrong way; **now** system_w+0x43 / +0x10 / +0x44 as G's asm (1 = 0x43 set, network flag 0x10 clear). In test
+  runs the old code returned 1 (the pouch went back to its departure state after every quest, no item sale). It also feeds Get_equip_value,
+  Pl_item_charge, the quest judge and the reward list: check those with the owner if anything changes there.
+- **Choice:** G's reward list draws a frozen copy of the last game frame behind it (main 0x12EAF0, a GS copy); the PC draws the plain backdrop.
+  G 0x12AE80 (a random number saved to User_data+0xD0A after each quest) is not ported: no reader found and the PC's Rnd_w has two channels.
+- **Added:** Set_userdata (udmisc_nm.c, G) keeps the pouch at departure (G 0x32C1C0) for the special ends 7 / 8; func_00126320
+  (menu_disp_nm.c, a hunting-log crown by row) for the record screen.

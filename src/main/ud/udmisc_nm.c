@@ -103,6 +103,12 @@ void Set_equip_data(EQPL *pl, EQUD *u) {
 
 typedef struct UDN { u8 pad[8]; s8 name[0x12]; } UDN;
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G keeps a copy of the master's pouch from the start of a quest (sub_main 0x32C1C0); the quest result puts it back
+ * after the special ends 7 / 8 (src/main/reward/f_reward_g.c) */
+u8 ud_pouch_backup[0x50];
+int Pl_master_ck(PLW *);
+#endif
 void Set_userdata(PLW *pl) {
     s16 i;
     s16 j;
@@ -116,6 +122,10 @@ void Set_userdata(PLW *pl) {
     for (j = 0; j < 20; j++) {
         pl->item[j].id = u[0].item[j].id;
         pl->item[j].num = u[0].item[j].num;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        if (Pl_master_ck(pl) == 1)          /* G sub_main 0x4C4E54: the master's pouch at departure (G 0x32C1C0) */
+            memcpy(ud_pouch_backup + j * 4, &pl->item[j], 4);
+#endif
     }
     PLB(pl, 0x8D3) = UDB(u, UD_EQ0 + 0xB);
     PLB(pl, 0x34C) = Get_weapon_id(u->item + 20);

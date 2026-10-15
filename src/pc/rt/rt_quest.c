@@ -87,18 +87,20 @@ void func_535D20(EMW *em, int kind, int no) { em_act_set(em, kind, (u16)no); }
  * from the asm: a training quest listed in quest_size_flag_tbl {event flag, ?, quest} allows random
  * monster sizes only once its event flag is set; any other quest allows them). */
 int func_66E180(void) { return Tutorial_quest_ck(); }
-/* main 0x12D170 / 0x12D1B0 (G-only, written from the asm): game_w bytes (G layout) 0x2F3 && 0x2C0, and 0x2F4.
- * Only the GAME MENU's mode_sel_end (main 0x1EF060) writes them: by the choice at its work+0x15, 0 -> 0x2C0 = 1,
- * 0x2F3 = 0; 1 -> both 0; 2.. -> 0x2C0 = 0, 0x2F3 = 1; its fourth entry (task sub_main 0x4A9960) sets 0x2F4 and
- * clears both. So 0x12D170 is 0 in every path of the shipped game (callers: game0, game10, quest judging,
- * the reward list, Get_equip_value, Pl_item_charge, player_init0, result_prog). */
+/* main 0x12D170 / 0x12D1B0 (G-only, written from the asm): system_w bytes 0x43 and 0x10 (G 0x35F013 / 0x35EFE0; this
+ * read game_w+0x2F3 / +0x2C0 before, the same G addresses but past the end of the host's game_w, and tested 0x10 the
+ * wrong way round: in test runs it returned 1 from whatever followed game_w, so the quest result put the pouch back
+ * and skipped the item sale; agent A, 15 Oct 2026). 0x12D170 is 1 when 0x43 is set and the network flag 0x10 is not;
+ * the earlier note here: G's GAME MENU end (mode_sel_end, main 0x1EF060) sets 0x43 for its choices 2.., which the PC
+ * does not port, so 0x12D170 stays 0 on the PC [inferred]. Its callers treat 1 as a practice mode: the pouch comes back
+ * after the quest, no money on a failed quest, no item sale (result_prog), loadout from the hunter (Get_equip_value). */
 int func_0012D170(void)
 {
-    return PU8(&game_w, 0x2F3) != 0 && PU8(&game_w, 0x2C0) != 0;
+    return PU8(&system_w, 0x43) != 0 && PU8(&system_w, 0x10) == 0;
 }
 int func_0012D1B0(void)
 {
-    return PU8(&game_w, 0x2F4) != 0;
+    return PU8(&system_w, 0x44) != 0;
 }
 int Event_flag_ck(int);
 extern s16 quest_size_flag_tbl[];

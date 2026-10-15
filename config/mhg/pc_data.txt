@@ -26,7 +26,7 @@ em_cmd4_tbl = 0x005028B0; // size:0xD0
 em_cmd5_tbl = 0x00502980; // size:0xD0
 em_cmd6_tbl = 0x00502A50; // size:0xD0          # x2E 10
 sun_pos_tbl = 0x005243E0; // size:0x170 noimport # per stage (G 92 stages): G's stage_set_set copies it into stage_work+0xC8 (sub_main 0x4A0E50)
-quest_size_flag_tbl = 0x00526000; // size:0x70           # {event flag, ?, quest} training quests whose sizes need the flag (sub_main_func_004F3B00)
+quest_size_flag_tbl = 0x00526000; // size:0x70           # {event flag, gallery flag, quest}: training quests whose sizes need the flag (sub_main_func_004F3B00); the quest result's gallery titles (f_reward_g.c)
 quest_rnd_host = 0x00541E30; // size:0x10           # the host's 15 random bytes (online)
 quest_size_lim = 0x00541E40; // size:0xA            # size limits in use (Quest_start copies quest_size_lim_def)
 [game]
@@ -343,3 +343,20 @@ McardMsgTbl = 0x002B0B40; // size:0xFC
 # quest-clear bit numbers (src/main/ud/ud_nm.c Quest_clear_bit_set / _ck; G sub_main 0x4C7470): the quest numbers in bit order
 [sub_main]
 quest_bit_tbl = 0x004FECA0; // size:0x1EC noptr
+# G's quest result module (src/main/reward/f_reward_g.c, sub_main 0x4F3A50-0x4F7FDC), agent A 15 Oct 2026
+[sub_main]
+result_frame = 0x00525F84; // size:0x8 allptr         # the record screen's two frames (G's card_list_frame_tbl [5] [6])
+result_item_ids = 0x00525F90; // size:0xA noptr       # the five quest items handed in and sold at quest end (0x4F4900)
+movie_add_tbl_g = 0x00525FC0; // size:0x3C noptr      # {quest, gallery flag, movie text} x10 (0x4F42A0; MH1's movie_add_tbl is 4-byte rows)
+train_tbl = 0x00526070; // size:0x7C noptr            # 12-byte rows {kind, training, u16 quest, u8 kills[5]}, 0xFF ends (0x4F4780)
+hlog_list_row = 0x00526100; // size:0x23 noptr        # species kind -> hunting log row, 0xFF none (0x4F3ED0)
+result_rank_mul = 0x00526130; // size:0x10 noptr      # online: point factor by levels below the hunter rank (result_init)
+result_rank_lv = 0x00526140; // size:0x20 noptr       # online: quest level per hunter rank (result_init)
+movie_add_str_tbl = 0x005261A0; // size:0x54 allptr   # 6 movie names then 15 gallery titles (MH1: 10 movie names)
+result_msg = 0x00526200; // size:0x28 allptr          # announcement texts (update / GALLERY / added / training / record / length / end)
+result_str = 0x00526240; // size:0x7C allptr          # money, points and error screen texts
+result_str2 = 0x005262CC; // size:0xC allptr          # sale title, low-rank cut, time left
+result_sale_fmt = 0x00537390; // size:0x18 noptr      # one sold item: name, count, price
+train_name = 0x00528A10; // size:0x28 allptr          # the ten monster training names
+[main]
+train_job_map = 0x002EC5B8; // size:0x8 noptr         # training bit -> weapon class name (menu_stat_job_str)
