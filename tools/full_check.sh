@@ -9,7 +9,7 @@ fail=0
 step() {  # step NAME CMD...
     local n=$1; shift
     local cap=1500000
-    case $n in test_save) cap=unlimited ;; esac
+    case $n in test_save) cap=unlimited ;; test_ps2_patch) cap=3000000 ;; esac   # ASan; wibo (PS2 compiler)
     if (ulimit -v $cap; "$@") > "build/check/$n.log" 2>&1; then echo "ok   $n"; else echo "FAIL $n (build/check/$n.log)"; fail=1; fi
 }
 (ulimit -v 3000000; tools/rebuild.sh) > build/check/rebuild.log 2>&1
