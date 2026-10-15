@@ -76,12 +76,12 @@ extern EFT_MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
 extern FLMAT rview_matY;
 extern PLW player_work[];
-extern void *eft12_data[2];
+extern void *eft12_data[2];             /* G: 4 key lists, pair 2/3 for arg 6 */
 extern s16 rotz77[4];
 extern s16 meat_dmg_tbl[4];
 extern f32 scale77[4];
 extern f32 eft12_st21_set_pos[1][4];
-extern u8 eft12_smoke_col[3][4];
+extern u8 eft12_smoke_col[3][4];        /* G: 4 colours (pc_data size 0x10) */
 extern u8 eft12_bone_col[4][4];
 extern u8 eft12_meat_col[4][4];
 extern u8 eft12_sp_bone_col[4][4];
@@ -181,7 +181,14 @@ static void eft12_i(EFTW *ew) {
     case 1:
         eft12_i01(ew);
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 2:             /* G (game 0x56FE70): the spit set down on stage 21 is gone */
+    default:
+        eft12_e(ew);
+        break;
+#else
     case 2:
+#endif
     case 3:
         eft12_i02(ew);
         break;
@@ -189,6 +196,9 @@ static void eft12_i(EFTW *ew) {
         eft12_i03(ew);
         break;
     case 5:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6:
+#endif
         eft12_i04(ew);
         break;
     }
@@ -210,6 +220,9 @@ static void eft12_m(EFTW *ew) {
         eft12_m03(ew);
         break;
     case 5:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6:
+#endif
         eft12_m04(ew);
         break;
     }
@@ -233,6 +246,9 @@ static void eft12_t(PRIM *pr) {
         eft12_t03(ew, pr);
         break;
     case 5:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6:
+#endif
         eft12_t04(ew, pr);
         break;
     }
@@ -812,6 +828,7 @@ static void eft12_t03(EFTW *ew, PRIM *pr) {
     }
 }
 
+#if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
 static void eft12_i04(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 i;
@@ -837,7 +854,48 @@ static void eft12_i04(EFTW *ew) {
     }
     eft12_m(ew);
 }
+#else
+static void eft12_i04(EFTW *ew) {     /* G 0x571830: arg 6 is one puff (no sound) */
+    EFT12_PIECE *p = ew->work;
+    s16 i, n;
 
+    ew->work14 = 0;
+    ew->timer = 0;
+    ew->u0A.joint = 0;
+    if (ew->arg != 6) {
+        eft12_se_req(ew, 0);
+        n = 6;
+    } else {
+        n = 1;
+    }
+    for (i = 0; i < n; i++, p++) {
+        p->prim_no = get_prim();
+        if (p->prim_no != -1) {
+            p->no = i;
+            if (ew->arg != 6) {
+                p->lag = -i * 5;
+                p->rot = ran_suu(1);
+            } else {
+                p->lag = 0;
+                p->rot = ran_suu(1);
+                p->drot = ((u16)ran_suu(1) & 0x1FF) - 0x100;
+                p->fade = 0.15f;
+                p->size = (f32)(1.6 + (double)(0.6f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF))));
+            }
+            flvecCopy(p->pos, ew->pos);
+            p->prim = get_prim_ptr(p->prim_no);
+            p->prim->owner = ew;
+            p->prim->no = i;
+            p->prim->trans = eft12_t;
+        } else {
+            p->prim = 0;
+        }
+    }
+    eft12_m(ew);
+}
+#endif
+
+#if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
 static void eft12_m04(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 i;
@@ -892,7 +950,80 @@ static void eft12_m04(EFTW *ew) {
         p++;
     }
 }
+#else
+static void eft12_m04(EFTW *ew) {     /* G 0x571A50: arg 6 lives 60 ticks on key pair 2/3 (eft12_data) */
+    EFT12_PIECE *p = ew->work;
+    s16 i, n, end, last, k;
 
+    if (ew->arg != 6) {
+        n = 6;
+        end = 126;
+        last = 21;
+        if (ew->timer < 90 && ew->timer % 20 == 0) {
+            eft12_se_req(ew, 1);
+        }
+    } else {
+        n = 1;
+        end = 60;
+        last = 60;
+    }
+    if (++ew->timer > end) {
+        ew->mode++;
+        ew->be_flag = 0;
+        return;
+    }
+    for (i = 0; i < n; i++) {
+        k = ew->arg == 6 ? 2 : 0;
+        if (++p->lag <= 0) {
+            p++;
+            continue;
+        }
+        if (p->lag == 1) {
+            if (ew->arg == 5) {
+                if (ew->timer < 50) {
+                    p->size = 4.0f + 4.0f * ((f32)ew->timer / 50.0f);
+                } else {
+                    p->size = 8.0f;
+                }
+                if (ew->timer < 90) {
+                    p->fade = 1.0f;
+                } else {
+                    p->fade = 1.0f - (f32)(ew->timer - 90) / 15.0f;
+                    if (p->fade < 0.0f) {
+                        p->fade = 0.0f;
+                    }
+                }
+                p->rot = ran_suu(1);
+                p->drot = 0.5f + 65536.0f * (0.002f * (f32)(((u16)ran_suu(1) & 0x3FF) - 0x200)) / 360.0f;
+                flvecCopy(p->pos, ew->pos);
+            }
+        } else if (p->lag > last) {
+            if (ew->arg == 5 && ew->timer < 105) {
+                p->lag = -9;
+                p->no += 6;
+            }
+            p++;
+            continue;
+        }
+        eft_vec_linear(p->lag, ((void **)eft12_data)[k], p->scale);
+        eft_alpha_linear(p->lag, ((void **)eft12_data)[k + 1], &p->alpha);
+        p->alpha *= p->fade;
+        if (ew->arg != 6) {
+            p->pos[1] += 40.0f * p->size / 21.0f;
+        } else {
+            p->pos[1] += p->size * (0.5f + 0.00025f * (f32)((u16)ran_suu(1) & 0x3FF));
+        }
+        p->rot += p->drot;
+        if (p->prim != 0) {
+            flvecCopy(p->prim->pos, p->pos);
+            add_prim(ot0, p->prim, 0x40, 0);
+        }
+        p++;
+    }
+}
+#endif
+
+#if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
 static void eft12_t04(EFTW *ew, PRIM *pr) {
     f32 sc[3];
     f32 rot[3];
@@ -927,6 +1058,44 @@ static void eft12_t04(EFTW *ew, PRIM *pr) {
         flSetRenderState(0x6C, 1);
     }
 }
+#else
+void eft_trans_sub_col(CLAY *, FLMAT *, u32, u16, void *);
+static void eft12_t04(EFTW *ew, PRIM *pr) {   /* G 0x571ED0: arg 5 coloured by its colour number (eft12_smoke_col: 4 in
+                                               * G, the 4th the poison smoke's purple), arg 6 white with model 74 */
+    f32 sc[3];
+    f32 rot[3];
+    FLMAT m;
+    EFT12_PIECE *p = &((EFT12_PIECE *)ew->work)[pr->no];
+    EFT_MDLW *mw = eft_mdlw[0];
+    MATERIAL *mats;
+    CLAY *cl;
+    u32 col;
+    u8 a;
+
+    if (mw != 0 && mw->flag != 0) {
+        mats = mw->mat;
+        flSetRenderState(0x60, 0);
+        flSetRenderState(0x6C, 0);
+        sc[0] = p->size * p->scale[0];
+        sc[1] = p->size * p->scale[1];
+        sc[2] = p->size * p->scale[2];
+        rot[2] = DEG2RAD(ANG2DEG(p->rot));
+        make_mat_srt(sc, rot, pr->pos, 2, &m);
+        a = 255.0f * p->alpha;
+        if (ew->arg != 6) {
+            col = ((u32)a << 24) | (eft12_smoke_col[ew->stg][0] << 16) | (eft12_smoke_col[ew->stg][1] << 8) |
+                  eft12_smoke_col[ew->stg][2];
+            cl = &mw->clay[72];
+        } else {
+            col = ((u32)a << 24) | 0xFFFFFF;
+            cl = &mw->clay[74];
+        }
+        flmatMul33_2(&m, &rview_mat);
+        eft_trans_sub_col(cl, &m, col, 0, mats);
+        flSetRenderState(0x6C, 1);
+    }
+}
+#endif
 
 static void eft12_d(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
@@ -948,6 +1117,11 @@ static void eft12_d(EFTW *ew) {
     case 5:
         n = 6;
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6:
+        n = 1;
+        break;
+#endif
     }
     for (i = 0; i < n; i++, p++) {
         if (p->prim != 0) {
@@ -985,6 +1159,9 @@ static EFTW *eft12_pull_work(s16 arg) {
     case 3:
     case 4:
     case 5:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6:
+#endif
         return pull_eft_work(1);
     default:
         return pull_eft_work(0);
@@ -1072,6 +1249,16 @@ void eft12_set(PLW *pl, s16 arg) {
                 flmatRotXYZ33(&egg->mat, rx, ry, rz);
                 flmatMul33_2(&egg->mat, &jm);
                 break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            case 6:     /* G 0x5726F0: a puff between the hands (joints 14 and 18), 15 up */
+                get_joint_pos(pl, 0xE, ew->pos);
+                get_joint_pos(pl, 0x12, v);
+                ew->pos[0] = 0.5f * (ew->pos[0] + v[0]);
+                ew->pos[1] = 0.5f * (ew->pos[1] + v[1]);
+                ew->pos[2] = 0.5f * (ew->pos[2] + v[2]);
+                ew->pos[1] += 15.0f;
+                break;
+#endif
             default:
                 flvecCopy(ew->pos, pl->pos);
                 break;

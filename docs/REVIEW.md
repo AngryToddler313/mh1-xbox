@@ -12,6 +12,20 @@ obvious workarounds.
 
 ## Open
 
+### G round 7: hunting log, thrown items, Lao-Shan (15 Oct 2026, agent A)
+- **Dropped (G PC build only):** the matched MH1 menu27.c / menu32.c / menu33.c / menu_dmon.c (tools/pc_g_exclude.txt);
+  **now** G's hunting log (G blocks in menu_nm.c / menu_disp_nm.c), with G's order of the data pages (log first).
+  MH1 builds unchanged. **Revert:** the commit "G PC: the pause menu's hunting log and its records".
+- **Dropped (G PC):** MH1's shell03 / shell09 / eft12 i04-t04 C for G (the G blocks replace them under
+  `VERSION_MHG && !__MWERKS__`): shell09's atck_data_no lookup (an empty work area on the G PC) is gone for G.
+  **Revert:** the commit "G PC: G's thrown items and smoke".
+- **Dropped:** the MH1 EvDemoInitialize (MH1 quest numbers) on the G PC; **now** G's (G quest numbers + per-kind
+  demos). G quests' event demos now run on the PC (they never did): the Kut-Ku / Lao-Shan first-sight demos stop the
+  hunter and the quest clock as on the PS2. **Revert:** the commit "G PC: Lao-Shan quests play out".
+- **Choice:** test_all_quests.py (G) gives the time-out run 150 s instead of 60 (a quest's event demo stops the quest
+  clock) and lets the Lao-Shan hunter wait on stage 12 (60000 ticks) instead of fighting it from the start.
+- **Choice (PC):** rt_2d.c load_pit loads G's filedef_sys 7 into MH1's slot 0x11B for G (G loads it into 0x142).
+
 ### Prototype gunner HUD from the unused cockpit2 mock-up (14 Oct 2026, agent F)
 - **Dropped:** nothing; the HUD_ANCHOR one-liners for disp_pl_vital and disp_item in rt_2d.c became small functions
   that first ask rt_hud_gun.c (unchanged behaviour with the option off, the default).

@@ -353,16 +353,21 @@ void Put_mini_sight(f32 scale, s16 ofs, int col) {
     }
 }
 
+#ifdef VERSION_MHG
+#define MLIST_OFS 0xC98     /* G keeps the monster list bits at User_data+0xC98 (main 0x220540: 0x32CEA8) */
+#else
+#define MLIST_OFS 0x3F0
+#endif
 void Add_to_Monster_list(int n) {
-    F32(&User_data, 0x3F0) |= 1 << (n & 0xFF);
+    F32(&User_data, MLIST_OFS) |= 1 << (n & 0xFF);
 }
 
 int Monster_list_chk(int n) {
-    return (F32(&User_data, 0x3F0) & (1 << (n & 0xFF))) != 0;
+    return (F32(&User_data, MLIST_OFS) & (1 << (n & 0xFF))) != 0;
 }
 
 int Monster_list_num(void) {
-    u32 v = F32(&User_data, 0x3F0);
+    u32 v = F32(&User_data, MLIST_OFS);
     v = (v & 0x15555555) + ((v & 0x2AAAAAAA) >> 1);
     v = (v & 0x33333333) + ((v & 0xCCCCCCCC) >> 2);
     v = (v & 0x0F0F0F0F) + ((v & 0xF0F0F0F0) >> 4);
@@ -374,7 +379,7 @@ s8 Monster_list_search(s8 cur, char dir)
 {
   int n;
   u32 f;
-  f = *((u32 *) (((u8 *) (&User_data)) + 0x3F0));
+  f = *((u32 *) (((u8 *) (&User_data)) + MLIST_OFS));
   if (f != 0)
   {
     if (cur < 0)

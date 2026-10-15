@@ -142,3 +142,16 @@ Agents: when you trip over something curious, add a short entry here in the same
   these, so the US build came from a later Japanese source than the JP disc we have. [checked: string pools of the three discs]
 - **The US quest-result table keeps a few Japanese debug lines** (a failed-mission line, a "test 3" entry). [checked]
 - **MH1 US has a dual-sword tutorial page and a bug-collecting / mining / bug-net / pickaxe block:** G's tutorial list has the same pages, MH1 JP does not. [checked]
+
+## Monster Hunter G round 7 (15 Oct 2026, agent A)
+
+- **Start-only areas.** G's jungle stage 74 (a shore with a fishing spot) has exits to 73 and 75 but no area leads into
+  it: a G quest starts there by the random start-area roll (3 in 100: game.bin 0x6D5DB0 lists {10: camp 67, 25: 44, 22: 70,
+  20: 73, 20: 75, 3: 74}); once left, it cannot be walked back into. [checked: exit lists of all 13 jungle stages and the
+  start lists] Two other maps' start lists end the same way with a 3% stage 7 (the map starting at camp 50) and stage 8 (camp
+  61). [guess: those two stages' exits not dumped]
+- **The Lao-Shan's route.** Unattended in a G fortress quest the Lao-Shan waits on stage 14 for its demo, walks
+  14 -> 30 -> 28, rams the gate on 28 until it breaks (a game_w flag; the gate object hides by it, from its comment: not looked at), then 11 -> 12, where
+  it can at last die (below 1000 hp it cannot die anywhere else). About 58000 ticks (32 min). [checked on the PC]
+- **em17's revival points are fixed**: a returning em17 monster of kind 0x16 / 0x30 always comes back on
+  stage 64, kinds 17 / 47 on stage 90, whatever the quest's map. [checked: game 0x606800]

@@ -201,7 +201,11 @@ void load_pit(void)
         mkTexture(7, 0x119, 0);
         mkTexture(5, 0x11A, 0);
     }
+#ifdef VERSION_MHG
+    mkTexture(7, 0x11B, 0);     /* G load_pit (main 0x21D7D0): the monster pictures are filedef_sys 7 (G mem_tex 0x142) */
+#else
     mkTexture(8, 0x11B, 0);
+#endif
     mkTexture(4, 0x11C, 0);
 }
 

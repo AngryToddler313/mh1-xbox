@@ -31,10 +31,10 @@ typedef struct EFT_MDLW {
 extern EFT_MDLW *eft_mdlw[5];
 extern u8 shell03_tbl[4];
 extern s32 shell03_body_tbl[2];
-extern s8 shell03_atk_sel_tbl[11];
+extern s8 shell03_atk_sel_tbl[11];       /* G: 17 args, then at +0x20 a per-arg "keep xB" byte (pc_data size 0x40) */
 extern f32 rate_tbl1[3][2];
-extern f32 rate_tbl2[3][2];
-extern s16 item_chr_tbl_0067ADC0[11];
+extern f32 rate_tbl2[3][2];              /* G: + 0x20 a third table, for the knives (pc_data size 0x38) */
+extern s16 item_chr_tbl_0067ADC0[11];    /* G: 17 args (pc_data size 0x22) */
 
 u8 Pl_stg_ck(PLW *);
 void pl_atck_data_set_shl(SHLW *, void *, int, u8 *);
@@ -69,13 +69,13 @@ static void shell03_d(SHLW *sh);
 static void shell03_e(SHLW *sh);
 static void shell03_trans(PRIM *pr);
 
-/* G: original bytes (build/mhg/raw/shell03_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 asm void shell03_set(PLW *pl, int arg, int x07)
 {
 #include "shell03_set.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 void shell03_set(PLW *pl, int arg, int x07) {
     SHLW *sh;
 
@@ -140,13 +140,13 @@ static void shell03_move(SHLW *sh) {
     }
 }
 
-/* G: original bytes (build/mhg/raw/shell03_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_i.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_i(SHLW *sh)
 {
 #include "shell03_i.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_i(SHLW *sh) {
     sh->mode++;
     sh->be_flag = 1;
@@ -180,13 +180,13 @@ static void shell03_i(SHLW *sh) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/shell03_i00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_i00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_i00(SHLW *sh)
 {
 #include "shell03_i00.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_i00(SHLW *sh) {
     PLW *pl = sh->owner;
     f32 (*tbl)[2];
@@ -219,13 +219,13 @@ static void shell03_i00(SHLW *sh) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/shell03_i01.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_i01.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_i01(SHLW *sh)
 {
 #include "shell03_i01.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_i01(SHLW *sh) {
     PLW *pl = sh->owner;
     f32 v[3];
@@ -245,13 +245,13 @@ static void shell03_i01(SHLW *sh) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/shell03_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_m.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_m(SHLW *sh)
 {
 #include "shell03_m.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_m(SHLW *sh) {
     switch (sh->arg) {
     case 4:
@@ -268,13 +268,13 @@ static void shell03_m(SHLW *sh) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/shell03_m00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_m00.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_m00(SHLW *sh)
 {
 #include "shell03_m00.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_m00(SHLW *sh) {
     PLW *pl = sh->owner;
     f32 h;
@@ -326,13 +326,13 @@ static void shell03_m00(SHLW *sh) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/shell03_m01.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_m01.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_m01(SHLW *sh)
 {
 #include "shell03_m01.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_m01(SHLW *sh) {
     if (++sh->char0 >= 75) {
         if (sh->stg == game_w.stage) {
@@ -373,13 +373,13 @@ static void shell03_m01(SHLW *sh) {
 }
 #endif
 
-/* G: original bytes (build/mhg/raw/shell03_d.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_d.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_d(SHLW *sh)
 {
 #include "shell03_d.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_d(SHLW *sh) {
     sh->xB = 0;
     sh->mode = 6;
@@ -398,13 +398,13 @@ static void shell03_e(SHLW *sh) {
     push_shell_work(sh);
 }
 
-/* G: original bytes (build/mhg/raw/shell03_trans.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+/* G: original bytes (build/mhg/raw/shell03_trans.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version, the PC G code is at the end */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void shell03_trans(PRIM *pr)
 {
 #include "shell03_trans.inc"
 }
-#else
+#elif !defined(VERSION_MHG)    /* G on the PC: the G block at the end of the file */
 static void shell03_trans(PRIM *pr) {
     FLMAT mat;
     SHLW *sh = pr->owner;
@@ -418,6 +418,302 @@ static void shell03_trans(PRIM *pr) {
         mt = mw->mat;
         flmatMakeTrans(&mat, pr->pos[0], pr->pos[1], pr->pos[2]);
         if (sh->arg != 4) {
+            flmatRotXYZ33(&mat, DEG2RAD(ANG2DEG((s32)(u16)(sh->char0 << 11))), 0.0f, 0.0f);
+        }
+        cl = &mw->clay[item_chr_tbl_0067ADC0[sh->arg]];
+        flSetRenderState(0x1A, (u32)&mat);
+        if (cl != 0 && cl->handle != -1) {
+            for (i = 0; i < cl->mat_num; i++) {
+                m = &mt[cl->mat_no[i]];
+                m->col[0] = 1.0f;
+                m->col[1] = 1.0f;
+                m->col[2] = 1.0f;
+                flSetRenderState((u8)(i + 0x3A), (u32)m);
+            }
+            clay_attr_set(cl->attr);
+            flExecuteClay(cl->handle, 0);
+        }
+        clay_attr_reset();
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* PS2 Monster Hunter G's shell03 for the PC (agent A, 15 Oct 2026; written from G game.bin 0x65AA90-0x65B888, not
+ * byte-checked). G adds args 11 (poison smoke bomb: a smoke cloud and Shell09 kind 19), 12-15 (throwing knives:
+ * plain, poison, sleep, paralysis: a flat fast throw, turned about Y instead of tumbling) and 16 (a second placed
+ * bomb, pl50: bigger blast, Shell09 kind 20). Skills: 80 (throwing: x1.5 range, the flash bomb bursts at 8 ticks
+ * instead of 13: x06 = 2) and 83 (bomber: x06 = 1, passed to Shell09_set). */
+void Shell09_set_g(VEC3 *, int, int, int);
+s32 Pl_Skill_ck(PLW *, int);
+
+void shell03_set(PLW *pl, int arg, int x07) {
+    SHLW *sh;
+
+    if (arg == 4 || arg == 16 || Pl_stg_ck(pl) != 0) {
+        sh = pull_shell_work(0);
+        if (sh != 0) {
+            sh->type = 3;
+            sh->arg = arg;
+            sh->x07 = x07;
+            sh->move = shell03_move;
+            sh->em_no = pl->id;
+            sh->x7A = pl->x10;
+            sh->char0 = 0;
+            sh->owner = pl;
+            sh->xC8 = pl->ang[1];
+            sh->ang[0] = pl->ang[0];
+            sh->ang[1] = pl->ang[1];
+            sh->ang[2] = pl->ang[2];
+            sh->stg = pl->stg;
+            if (arg == 4 || arg == 16) {
+                sh->pos2.x = pl->pos[0];
+                sh->pos2.y = 21.0f + pl->pos[1];
+                sh->pos2.z = pl->pos[2];
+                sh->x09 = 1;
+            } else {
+                sh->pos2.x = pl->hand->pos[0];
+                sh->pos2.y = pl->hand->pos[1];
+                sh->pos2.z = pl->hand->pos[2];
+                sh->x09 = 0;
+            }
+        }
+    }
+}
+
+static void shell03_i(SHLW *sh) {
+    sh->mode++;
+    sh->be_flag = 1;
+    sh->trans = 0;
+    switch (sh->arg) {
+    case 4:
+    case 16:
+        shell03_i01(sh);
+        sh->prim_no = get_prim2();
+        if (sh->prim_no != -1) {
+            sh->prim = get_prim_ptr2(sh->prim_no);
+            sh->prim->owner = sh;
+            sh->prim->trans = shell03_trans;
+            shell03_m(sh);
+        } else {
+            push_shell_work(sh);
+        }
+        break;
+    default:
+        shell03_i00(sh);
+        sh->prim_no = get_prim();
+        if (sh->prim_no != -1) {
+            sh->prim = get_prim_ptr(sh->prim_no);
+            sh->prim->owner = sh;
+            sh->prim->trans = shell03_trans;
+            shell03_m(sh);
+        } else {
+            push_shell_work(sh);
+        }
+        break;
+    }
+}
+
+static void shell03_i00(SHLW *sh) {
+    PLW *pl = sh->owner;
+    f32 (*tbl)[2];
+    f32 v[3];
+    f32 out[3];
+
+    shell_flag_set(sh, 0);
+    pl_atck_data_set_shl(sh, pl, shell03_atk_sel_tbl[sh->arg], shell03_tbl);
+    sh->x88 = shell03_body_tbl[0];
+    sh->x8C = 0;
+    sh->stg = pl->stg;
+    if (shell03_atk_sel_tbl[0x20 + sh->arg] == 0) {
+        sh->xB = 0;
+    }
+    if (sh->arg >= 12 && sh->arg <= 15) {       /* knives: flat and fast, little gravity */
+        tbl = (f32 (*)[2])((u8 *)rate_tbl2 + 0x20);
+        sh->rate_g[1] = -0.04f;
+    } else {
+        tbl = pl->char0 == 0x1A1 ? rate_tbl1 : rate_tbl2;
+        sh->rate_g[1] = -0.8f;
+    }
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = tbl[sh->x07][0];
+    if (Pl_Skill_ck(pl, 80) == 1) {
+        v[2] *= 1.5f;
+        sh->x06 = 2;
+    } else {
+        sh->x06 = 0;
+    }
+    flvecApplyMat33(out, v, pl->rot);
+    sh->rate[0] = 2.0f * out[0];
+    sh->rate[2] = 2.0f * out[2];
+    sh->rate_g[0] = 0.0f;
+    sh->rate_g[2] = 0.0f;
+    sh->rate[1] = 2.0f * tbl[sh->x07][1];
+}
+
+static void shell03_i01(SHLW *sh) {
+    PLW *pl = sh->owner;
+    f32 v[3];
+
+    shell_flag_set(sh, 0);
+    pl_atck_data_set_shl(sh, pl, shell03_atk_sel_tbl[sh->arg], shell03_tbl);
+    sh->x88 = 0;
+    sh->x8C = shell03_body_tbl[0];
+    sh->xB = 0;
+    sh->x06 = Pl_Skill_ck(pl, 83) == 1 ? 1 : 0;
+    sh->x07 = 0;
+    sh->x7E = 75;
+    flvecCopy(v, &sh->pos2);
+    if (sh->stg == game_w.stage) {
+        Eft16_set_ex3(v, 0xD, 0x4B, 0xA, 1.0f);
+    }
+}
+
+static void shell03_m(SHLW *sh) {
+    switch (sh->arg) {
+    case 4:
+    case 16:
+        shell03_m01(sh);
+        break;
+    default:
+        shell03_m00(sh);
+        break;
+    }
+    if (sh->prim != 0) {
+        flvecCopy(sh->prim->pos, &sh->pos2);
+        add_prim(ot1, sh->prim, 0x20, 0);
+    }
+}
+
+static void shell03_m00(SHLW *sh) {
+    PLW *pl = sh->owner;
+    f32 h;
+
+    shell_rate_add_g(sh);
+    if (sh->arg == 1) {
+        sh->x61 = 0;
+    } else {
+        sh->x61 = 99;
+    }
+    h = GetGroundShellHit(&sh->pos2);
+    sh->char0++;
+    if (sh->arg == 9) {
+        if (sh->char0 >= 16) {
+            Shell09_set_pl(sh->owner, &sh->pos2, 13);
+            if (sh->stg == game_w.stage) {
+                Eft15_set2(&sh->pos2, 4, 0, 0.5f);
+            }
+            sh->mode++;
+            return;
+        }
+    } else if (sh->arg == 1) {
+        if (sh->char0 >= ((sh->x06 & 2) ? 8 : 13)) {
+            if (Pl_stg_ck(pl) != 0) {
+                Eft14_set3(&sh->pos2, 4, 1.0f, pl);
+                se_req2(1, 0x47, 0, &sh->pos2.x, 4, 0);
+            }
+            sh->mode++;
+            return;
+        }
+    }
+    if (sh->pos2.y <= h) {
+        sh->pos2.y = h;
+        switch (sh->arg) {
+        case 0:
+            eft12_set_sh(sh, 1, 0);
+            break;
+        case 5:
+            eft12_set_sh(sh, 1, 1);
+            break;
+        case 7:
+            if (sh->stg == game_w.stage) {
+                Eft12_set3(&sh->pos2, 0, 5, 2);
+            }
+            break;
+        case 11:            /* poison smoke: a cloud (eft12 kind 5 colour 3) and the poison area */
+            if (sh->stg == game_w.stage) {
+                Eft12_set3(&sh->pos2, 0, 5, 3);
+                Shell09_set_pl(sh->owner, &sh->pos2, 19);
+            }
+            break;
+        }
+        sh->mode++;
+    }
+}
+
+static void shell03_m01(SHLW *sh) {
+    if (++sh->char0 >= 75) {
+        if (sh->stg == game_w.stage) {
+            if (sh->arg == 16) {
+                eft14_set(&sh->pos2, 0, 1.5f);
+                Shell09_set_g(&sh->pos2, 20, sh->stg, sh->x06);
+            } else {
+                eft14_set(&sh->pos2, 0, 1.0f);
+                Shell09_set_g(&sh->pos2, 0, sh->stg, sh->x06);
+            }
+        }
+        sh->be_flag ^= 1;
+        sh->mode++;
+        return;
+    }
+    if (sh->char0 >= 55) {
+        sh->be_flag ^= 1;
+        return;
+    }
+    if (sh->x07 == 0) {
+        if (0.8f * sh->x7E > (f32)(55 - sh->char0)) {
+            sh->be_flag ^= 1;
+            if (55 - sh->char0 > 2) {
+                sh->x07 = 2;
+            }
+        }
+    } else if (--sh->x07 == 0) {
+        sh->be_flag ^= 1;
+        sh->x7E = 55 - sh->char0;
+    }
+    if (sh->stg == game_w.stage) {
+        if (sh->char0 == 1) {
+            se_req2(1, 0x24, 0, &sh->pos2.x, 1, 0);
+        }
+        if (sh->char0 != 0 && sh->char0 % 15 == 0) {
+            se_req2(1, 0x25, 0, &sh->pos2.x, 1, 0);
+        }
+        if (sh->char0 & 1) {
+            Eft02_set2(0xC000, 0, 2, &sh->pos2);
+        }
+    }
+}
+
+static void shell03_d(SHLW *sh) {
+    sh->xB = 0;
+    sh->mode = 6;
+    sh->be_flag = 0;
+    if (sh->prim != 0) {
+        if (sh->x09 == 1) {
+            release_prim2(sh->prim_no);
+        } else {
+            release_prim(sh->prim_no);
+        }
+    }
+}
+
+static void shell03_trans(PRIM *pr) {
+    FLMAT mat;
+    SHLW *sh = pr->owner;
+    EFT_MDLW *mw = eft_mdlw[0];
+    MATERIAL *mt;
+    MATERIAL *m;
+    CLAY *cl;
+    s32 i;
+
+    if (sh->stg == game_w.stage && mw != 0 && mw->flag != 0) {
+        mt = mw->mat;
+        flmatMakeTrans(&mat, pr->pos[0], pr->pos[1], pr->pos[2]);
+        if (sh->arg == 4 || sh->arg == 16) {
+        } else if (sh->arg >= 12 && sh->arg < 16) {     /* knives point along the throw */
+            flmatRotXYZ33(&mat, 0.0f, DEG2RAD(ANG2DEG((f32)sh->xC8)), 0.0f);
+        } else {
             flmatRotXYZ33(&mat, DEG2RAD(ANG2DEG((s32)(u16)(sh->char0 << 11))), 0.0f, 0.0f);
         }
         cl = &mw->clay[item_chr_tbl_0067ADC0[sh->arg]];

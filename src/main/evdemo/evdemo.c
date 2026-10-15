@@ -89,7 +89,81 @@ void demo_bgm_set();
 void stage_bgm_set();
 void func_63AFA0();
 
-#if !defined(G_PART)
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G's event demos for the PC (agent A, 15 Oct 2026; written from G game.bin 0x54A310 / 0x54A5D0 / 0x54AA80, not
+ * byte-checked). G picks the demo by G quest number, and before that by the quest's monster kinds (game 0x54A5D0:
+ * the Lao-Shan demo, kind 7 / 50, flags 24 / 35, stage 14; kinds 2 / 36 flags 27 / 36). evdemo_g_tbl is G's
+ * run of 19 demo entries (0x678280, config/mhg/pc_data.txt); the MH1 names evdemo_03.. point into it. */
+extern EVD evdemo_g_tbl[19];
+s32 *Em_data_com_adrs_get(s32 *p, int which);
+static int evdemo_g_kinds(u8 *k)       /* G sub_main 0x4B5DA0: the quest's monster kinds (mission list 0) */
+{
+    extern u8 quest_w[];
+    s32 *mis = *(s32 **)(quest_w + 0x78);
+    s32 *l0 = Em_data_com_adrs_get(mis, 0);
+    int n = 0;
+
+    if (l0 == 0 || Em_data_com_adrs_get(mis, 1) == 0)
+        return 0;
+    for (; *l0 != -1 && n < 32; l0++)
+        k[n++] = (u8)*l0;
+    return n;
+}
+
+static int evdemo_g_kind_demo(EVENT_DEMO *e)     /* G game 0x54A5D0 */
+{
+    u8 k[32];
+    int n, i;
+
+    Event_flag_clear(0x18);
+    Event_flag_clear(0x23);
+    Event_flag_clear(0x1B);
+    Event_flag_clear(0x24);
+    n = evdemo_g_kinds(k);
+    for (i = 0; i < n; i++) {
+        switch (k[i]) {
+        case 7:  evdemo_init_sub(&e->slot[0], &evdemo_g_tbl[8]);  return 7;
+        case 50: evdemo_init_sub(&e->slot[0], &evdemo_g_tbl[9]);  return 50;
+        case 2:  evdemo_init_sub(&e->slot[0], &evdemo_g_tbl[10]); return 2;
+        case 36: evdemo_init_sub(&e->slot[0], &evdemo_g_tbl[11]); return 36;
+        }
+    }
+    return 0;
+}
+
+void EvDemoInitialize(void)
+{
+    EVENT_DEMO *e = &event_demo;
+    int t = -1, t1 = -1;
+
+    game_w.info_stop = 0;
+    event_demo.state = 0;
+    *(int *)&e->slot[1] = 0;
+    *(int *)&e->slot[0] = 0;
+    if ((u16)evdemo_g_kind_demo(e) != 0)
+        return;
+    switch (game_w.quest) {         /* entry numbers in evdemo_g_tbl (0 = G's evdemo_03 .. 18) */
+    case 10006: t = 0; break;
+    case 10014: t = 1; break;
+    case 10010: t = 2; t1 = 13; break;
+    case 10032: t = 3; break;
+    case 10005: t = 4; break;
+    case 10015: t = 5; break;
+    case 10022: t = 6; break;
+    case 10041: t = 7; break;
+    case 10001: t = 12; break;
+    case 10028: t = 14; break;
+    case 10035: t = 15; break;
+    case 10043: t = 16; break;
+    case 10046: t = 17; break;
+    case 10008: t = 18; break;
+    }
+    if (t >= 0)
+        evdemo_init_sub(&e->slot[0], &evdemo_g_tbl[t]);
+    if (t1 >= 0)
+        evdemo_init_sub(&e->slot[1], &evdemo_g_tbl[t1]);
+}
+#elif !defined(G_PART)
 void EvDemoInitialize(void)
 {
     EVENT_DEMO *e = &event_demo;
@@ -296,7 +370,12 @@ u8 id;
     }
     e = em_work;
     for (n = 20; n != 0; n--) {
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        extern u8 *em_species_tbl[];    /* G 0x54AA80: id is a species (sub_main 0x4C8910) */
+        if (e->x0 != 0 && *em_species_tbl[e->x2] == id) {
+#else
         if (e->x0 != 0 && e->x2 == id) {
+#endif
             DemoCameraRequest(cam, e);
             return;
         }
