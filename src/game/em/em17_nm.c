@@ -6,6 +6,7 @@
 #include "plf.h"
 #include "quest.h"
 #include "em17.h"
+int Event_flag_ck();
 
 typedef struct STAGE_DATA {
     u8 _pad00[0x10];
@@ -364,6 +365,20 @@ static void act_dist_select_005DA5C0(EMW *em) {
 
     temp_a1 = em->x734;
     temp_a2 = M2C_FIELD(em, u8 *, 0x735);
+#ifdef VERSION_MHG
+    /* G act_dist_select (game 0x606940): only mode 3 (the mode em17_init sets); G dropped MH1's
+       em17_act_add / rail tables */
+    (void)w; (void)p; (void)k; (void)temp_a2;
+    if (temp_a1 == 3) {
+        em->x839 = 1;
+        if (em->x388 == 0) {
+            em17_act_set(em, 0, 1, 0);
+        } else {
+            em17_act_set(em, 2, 2, 0);
+        }
+    }
+    return;
+#endif
     switch (temp_a1) {
     case 0:
         if (em->x8C3 == 0) {
@@ -402,6 +417,11 @@ static void act_dist_select_005DA5C0(EMW *em) {
 }
 
 void em17_to_normal(EMW *em, s16 a, s16 b) {
+#ifdef VERSION_MHG
+    /* G em17_to_normal (game 0x6069B0) is a jump to act_dist_select */
+    act_dist_select_005DA5C0(em);
+    return;
+#endif
     if (em->x734 != 0) {
         act_dist_select_005DA5C0(em);
         return;
@@ -435,10 +455,12 @@ void em17_to_normal(EMW *em, s16 a, s16 b) {
 }
 
 void em17_to_fly(EMW *em, int flag) {
+#ifndef VERSION_MHG     /* G (game 0x6069C0) dropped the mode test, as MH1's em14_to_fly */
     if (em->x734 != 3) {
         act_dist_select_005DA5C0(em);
         return;
     }
+#endif
     em->x839 = 1;
     em->act_spd = 1.0f;
     switch (flag & 0xFF) {
@@ -515,6 +537,14 @@ static void em_act01_005DAAD0(EMW *em, EM17W *w) {
         }
         break;
     case 2:
+#ifdef VERSION_MHG
+        /* G (game 0x606B90): no em17_act_add search */
+        if (em->x8C3 == 0 && em->x194 == 0) {
+            em->x05 += 1;
+            act_dist_select_005DA5C0(em);
+        }
+        break;
+#endif
         if (em->x8C3 == 0) {
             temp_a0 = em->x734;
             if (temp_a0 == 1 || temp_a0 == 2 || temp_a0 == 3) {
@@ -4163,14 +4193,29 @@ block_63:
         }
         break;
     case 11:                                        /* switch 1 */
+#ifdef VERSION_MHG
+        /* G (game 0x60DD00): not during acts 4/12, 13, 17-20 nor in mode 2 */
+        if (!(em->mode == 4 && (em->x15 == 0xC || em->x15 == 0xD || (em->x15 >= 0x11 && em->x15 <= 0x14)))
+            && em->x388 != 2) {
+            em17_act_set(em, 4, 4, 2);
+        }
+#else
         em17_act_set(em, 4, 4, 2);
+#endif
         break;
     case 12:                                        /* switch 1 */
         pl_flag_clr((PLW *) em, 0x20000);
         temp_a0_5 = em->kind;
+#ifdef VERSION_MHG
+        /* G (game 0x60DDF4): the subspecies kinds 47 / 48 too */
+        if ((temp_a0_5 == 0x11 || temp_a0_5 == 0x2F) && (em->hagi[6].cnt == 2)) {
+            Quest_enemy_hagi_set(em, 0x10);
+        } else if ((temp_a0_5 == 0x16 || temp_a0_5 == 0x30) && (em->hagi[6].cnt == 1)) {
+#else
         if ((temp_a0_5 == 0x11) && (em->hagi[6].cnt == 2)) {
             Quest_enemy_hagi_set(em, 0x10);
         } else if ((temp_a0_5 == 0x16) && (em->hagi[6].cnt == 1)) {
+#endif
             Quest_enemy_hagi_set(em, 0x20);
         }
         if (em->x388 == 2) {
@@ -4213,6 +4258,14 @@ block_63:
         }
         break;
     }
+#ifdef VERSION_MHG
+    /* G (game 0x60DFB0): quest 10043's demo stop on stage 59, as em14's on 53 */
+    if ((quest_w.no == 10043) && (em->stg == 0x3B) && (Event_flag_ck(0x17) == 0)) {
+        if ((game_w.info_stop == 1) && (em->mode != 6)) {
+            em17_act_set(em, 6, 0, 1);
+        }
+    } else
+#endif
     switch (em->x734) {
     case 3:
         if (em->x839 != 0) {
