@@ -57,6 +57,13 @@ void em_cmd_ck(EMW *);
 void Em_se_req2(EMW *, int, int, f32 *, int, int);
 void flmatGetTrans(f32 *, void *);
 void Shell11_set(EMW *, int);
+/* shell11 kind: G's shell11_i takes its attack entry as the kind itself (MH1: kind + 1) and the callers
+   pass G's numbers; G (game 0x5DFD58..0x5E043C): every Cephalos call passes MH1's kind + 1 */
+#ifdef VERSION_MHG
+#define SH11(a) ((a) + 1)
+#else
+#define SH11(a) (a)
+#endif
 void Eft13_set_em(EMW *, int, int);
 void Eft20_set(f32, EMW *, int, int);
 void em_sleep_eff_set(EMW *, int, f32 *, f32);
@@ -1874,7 +1881,7 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
         sound_call_005B5150(em, 0x28, 3, 6);
         sound_call_005B5150(em, 0x26, 2, 0xA);
         if (em_frame_check(em, 40.0f, 0) != 0) {
-            Shell11_set(em, 0xC);
+            Shell11_set(em, SH11(0xC));
             break;
         }
         break;
@@ -1935,10 +1942,10 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
         sound_call_005B5150(em, 0xD2, 2, 0xA);
         if (em_frame_check(em, 30.0f, 0) != 0) {
             if (em->kind == 12) {
-                Shell11_set(em, 0);
+                Shell11_set(em, SH11(0));
                 break;
             }
-            Shell11_set(em, 8);
+            Shell11_set(em, SH11(8));
             break;
         }
         break;
@@ -1978,7 +1985,7 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
         break;
     case 0x40C:
         if (em_frame_check(em, 20.0f, 0) != 0) {
-            Shell11_set(em, 1);
+            Shell11_set(em, SH11(1));
         }
         sound_call_005B5150(em, 0x1A, 0xE, 0x14);
         sound_call_005B5150(em, 0x1A, 0x14, 0x10);
@@ -1991,9 +1998,9 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
     case 0x40D:
         if (em_frame_check(em, 24.0f, 0) != 0) {
             if (em->kind == 12) {
-                Shell11_set(em, 2);
+                Shell11_set(em, SH11(2));
             } else {
-                Shell11_set(em, 9);
+                Shell11_set(em, SH11(9));
             }
         }
         sound_call_005B5150(em, 0x14, 7, 0x10);

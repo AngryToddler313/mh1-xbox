@@ -77,6 +77,9 @@ next:
 }
 #endif
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+void sub_main_func_004DC5F0(EMW *em, int part, int base);
+#endif
 /* Sets up the nine durability slots (EMW+0x304, 8 bytes each: on, no, 0, 0, hp s16, 0) from em_dur_tbl[type]. */
 #if !defined(G_PART)
 void em_dur_init(EMW *em) {
@@ -94,6 +97,9 @@ void em_dur_init(EMW *em) {
             slot[0x306] = 0;
             slot[0x307] = 0;
             *(s16 *)(slot + 0x308) = *t;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            sub_main_func_004DC5F0(em, i, *t);      /* G (sub_main 0x4DC6A0): level bonus, PC only */
+#endif
             slot[0x30A] = 0;
         } else {
             slot[0x304] = 0;

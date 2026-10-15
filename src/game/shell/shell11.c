@@ -86,7 +86,13 @@ static void shell11_i(SHLW *sh) {
     sh->trans = shell11_trans;
     shell_flag_set(sh, 0x20);
     sh->xB4 = 0;
+#ifdef VERSION_MHG
+    /* G (game 0x666BE0): attack entry arg, not arg + 1 (G's shell11_tbl list has no leading entry);
+       MH1's +1 gave every G swing (Aptonoth, kind 40) the next kind's attack data, often none */
+    pl_atck_data_set_shl(sh, em, sh->arg, shell11_tbl);
+#else
     pl_atck_data_set_shl(sh, em, sh->arg + 1, shell11_tbl);
+#endif
     sh->x88 = shell11_body_tbl[sh->body];
     sh->x8C = 0;
     sh->stg = em->stg;

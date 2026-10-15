@@ -232,7 +232,7 @@ typedef struct EMW {
     s16 x7D0;           /* 0x7D0 */
     u8 x7D2;            /* 0x7D2 */
     u8 taisei;          /* 0x7D3 */
-    u8 _pad7D4[0x7D6 - 0x7D4];
+    u16 dur_lv_bits;    /* 0x7D4 G: parts whose durability grows with the level (em*_init, sub_main 0x4DC5D0) */
     u8 x7D6;            /* 0x7D6 2 while dying (em19) */
     u8 _pad7D7[0x7D8 - 0x7D7];
     f32 x7D8;           /* 0x7D8 */

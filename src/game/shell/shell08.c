@@ -189,11 +189,20 @@ void shell08_i(SHLW *sh) {
     shell_flag_set(sh, 0x200);
     sh->xB4 = 0;
     sh->stg = em->stg;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    /* G (game 0x65FB6C): kind 8 gets neither attack data nor hit bodies; kind 12 ignores x07 */
+    if (sh->arg != 8) {
+        pl_atck_data_set_shl(sh, em, (sh->arg == 12 ? 0 : sh->x07) + shell08_atk_no[sh->arg], shell08_tbl);
+        sh->x88 = shell08_body_tbl[sh->body];
+        sh->x8C = 0;
+    }
+#else
     if (sh->arg != 8) {
         pl_atck_data_set_shl(sh, em, sh->x07 + shell08_atk_no[sh->arg], shell08_tbl);
     }
     sh->x88 = shell08_body_tbl[sh->body];
     sh->x8C = 0;
+#endif
     w->x00 = 0;
     w->x01 = 0;
     w->x36 = 0;

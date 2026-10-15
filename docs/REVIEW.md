@@ -626,3 +626,19 @@ obvious workarounds.
 - **Dropped:** Omake_flag_set / _ck's MH1 s16 at option_w+0xFCC on the G PC (ud_nm.c is the copy the G PC build links); **now** G's u32 at +0x2C4C.
 - **Dropped:** MH1's Disp_button on the G PC (disp2_nm.c); **now** G's (the O / X prompts and L1 / R1 icons come from G's sheet; Disp_button_col takes the colour).
 - **Added, not a replacement:** `RT_OMAKE=0x7FF` (test aid: opens omake flags), the gallery pictures in build/C/gb2/.
+
+## G monster AI, em04 sounds, shell attacks (agent A, 15 Oct 2026, GN6 / GN15 / GM2)
+- **Dropped:** on the G PC build, MH1's em14/em17 move choice outside mode 3 (em14_to_normal / em17_to_normal / act_dist_select / em_act01
+  searched em14_act_add / em17_act_add / em17_rail_* tables, zero on the G PC); **now** G's versions (to_normal = act_dist_select, mode 3 only;
+  em_act01 waits for the motion and calls it). Plus G's em14_main / em17_main / em08_main reactions (em08_main is a whole G copy). MH1 unchanged.
+  **To revert:** the commits "G: em14/em17 choose acts with G's code (GN6)" and "G: em08_main (Plesioth...".
+- **Dropped:** the stand-in note `sub_main_func_004ECD00 (G em04 sound script: MH1's)` in rt_quest.c; **now** ef_move_sub_0058E500 (em04_nm.c)
+  is G's script on the G build: kind 32's own sound in motion 0x3F7, and the Eft13 dust only when func_001F19C0(2) == 2 (G's overlay-slot
+  byte; only the gallery event scenes load overlay 2 into slot 2, so G's quests show no em04 dust and neither does the port now).
+  **Choice:** func_001F19C0 stays a stand-in (returns 0) on the PC; if someone implements it, dust follows G automatically.
+- **Dropped:** shell11_i's MH1 `arg + 1` attack entry on the G PC; **now** G's `arg`, with the callers (em12 Cephalos, em19 Vespoid/Hornetaur)
+  passing G's kind numbers (SH11 macro; em19 14/15 unchanged as in G). Kind 40's swing now does damage. **To revert:** the commit "G: em04 sound/dust
+  scripts, part durability level bonus...".
+- **Dropped:** MH1's poison_stock_set on the G PC; **now** G's (no poison build-up past tolerance - 1 while poisoned, stock emptied when poison starts).
+- **Added:** part durability level bonus (G em_dur_init / em_dur_set, EMW 0x7D4 carved as dur_lv_bits in include/em.h), point_cam_sub case 25
+  (demo wall-clip flag), shell08_i kinds 8 / 12.

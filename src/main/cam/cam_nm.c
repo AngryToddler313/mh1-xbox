@@ -823,9 +823,14 @@ s32 point_cam_sub(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
             cmd_cam_move(cw, cs, d);
             break;
         case 25:
+#ifdef VERSION_MHG
+            d->x66 = 1;     /* G (main 0x1DD350): the eye is kept out of walls from here on (camd.c) */
+            break;
+#else
             if (point_cam_hit(cw, cs, d) == 0) {
                 break;
             }
+#endif
         default:
         case 23:
             return 1;

@@ -933,3 +933,25 @@ docs/RELEASE_G.md (criteria, gaps by player impact, coverage) and docs/survey/mh
   10033 10038 10042 10044 28 33 (subspecies quests, after the act-set fix) all PASS.
 - Open: G shell11_i (index and table edited) not ported, so kind 40's swing (and G Aptonoth hits) use MH1's data on
   the PC; the kind-40 hit does no damage.
+
+## G round 9: em14/em17/em08 move choice, em04 sounds, durability bonus, shell attacks (15 Oct 2026)
+
+All PC-only G code (`#ifdef VERSION_MHG` in *_nm.c / PC files, or `VERSION_MHG && !__MWERKS__` in registered files); the PS2 builds keep their bytes.
+- **GN6**: G's em14_to_normal / em17_to_normal are `j act_dist_select`; G's act_dist_select only handles mode 3 (both inits set mode 3, so
+  MH1's mode 0-2 paths with em*_act_add / rail tables were dead in practice but read zero tables). em_act01 (both) waits for x194 in every mode.
+  em17_to_fly lost the mode test. em14_main / em17_main: case 11 guards, kinds 43 / 47 / 48 in part-break reactions, demo stops of 10041 / 10043
+  (G quest numbers, game_w.info_stop = G 0x1F5). em08_main: a whole G copy (no trap / sleep2 / x9EA reactions, swim stagger by depth, part 3 -> 4/20).
+- Test: scratch script acthunt.sh (god, follow + warp to the boss every tick, attack pad cycle, RT_EM_TRACE, now with `kind N` at the line end):
+  act sequences per monster; every act returns to 0/1 through em_cmd_ck (no freeze).
+- **GN15**: decoded G 0x4ECD00 with a small register simulator over the asm (calls Code_Make / sound_call per case): same calls as MH1 except
+  kind 32 in motion 0x3F7 and no Eft13; the dust moved to 0x4EDAA0, run only when func_001F19C0(2) == 2. func_001F19C0(i) = the byte
+  Load_overlay(value, slot) stores for slot i (Arrangement+3+i in G's symbol view); Load_overlay(2, 2) only in the gallery's event scenes.
+- **Durability bonus**: sub_main 0x4DC5D0 sets EMW 0x7D4 bits (em*_init), 0x4DC5F0 adds base x (0.33 + 0.08 (lv-9)/3) to a marked part
+  at level 9+ (em_dur_init and em_dur_set). Offline G quests are level 2-7 (scan of 30 quests), so it shows after revivals / online.
+- **shell11**: G passes kind+1 from its callers and indexes the attack list by kind; table at G 0x2EEA48 is a pointer cell to the list
+  (pl_atck_data_set_shl stores the table, shl2 reads entry idx * 24). Lesson: when a G shell's index changes, compare every caller's
+  argument in both games (objdump grep of `jal Shell11_set` with the a1 load before it).
+- **Poison knife**: G entry (shell03 arg 13 -> atk_sel 6) has ailment bit 2, value 50; dm_value_add adds it to EMW 0x7BC. Hidden hits not
+  achieved with the warp aid (the hunter stands inside the body or the boss flies / burrows); thrown knives fly straight (traced, trace removed).
+- G result module (sub_main 0x4F3A50-0x4F8030) mapped: 20-step result_prog, item hand-in (0x4F4900, five G item ids), crown/record and
+  hunting-log announcements (0x4F4620 / 0x4F4780), gallery unlocks (0x4F41B0), new result screens. Not ported (RELEASE_G GN17).

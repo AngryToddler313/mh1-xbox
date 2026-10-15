@@ -212,7 +212,16 @@ void em14_local_init(EMW *em) {
 
 void eft09_set(EMW *);
 
+#ifdef VERSION_MHG
+void sub_main_func_004DC5D0(EMW *em, int part);
+#endif
 void em14_init(EMW *em) {
+#ifdef VERSION_MHG
+    /* G em14_init: parts 3/4/8 get the level bonus of em_dur_init / em_dur_set */
+    sub_main_func_004DC5D0(em, 3);
+    sub_main_func_004DC5D0(em, 4);
+    sub_main_func_004DC5D0(em, 8);
+#endif
     EM14W *w = (EM14W *)em->ex;
     s16 hp;
     u8 temp_a0;
@@ -297,6 +306,12 @@ static void act_dist_select_005B5650(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G em14_to_normal (game 0x5E0F50) is a jump to act_dist_select: G dropped MH1's mode 0 path (em14_act_add) */
+void em14_to_normal(EMW *em, s16 a, s16 b) {
+    act_dist_select_005B5650(em);
+}
+#else
 void em14_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x734 != 0) {
         act_dist_select_005B5650(em);
@@ -323,6 +338,7 @@ void em14_to_normal(EMW *em, s16 a, s16 b) {
     em->x3F4 = 0;
     em14_act_set(em, 0, 1, 0);
 }
+#endif
 
 void em14_to_swim(EMW *em) {
     em->act_spd = 1.0f;
@@ -403,6 +419,14 @@ static void em_act01_005B59C0(EMW *em, EM14W *w) {
         em_char_set(em, 1, 0, 0);
         break;
     case 1:
+#ifdef VERSION_MHG
+        /* G (game 0x5E1160): no em14_act_add search, every mode waits for the motion's end */
+        if (em->x8C3 == 0 && em->x194 == 0) {
+            em->x05 += 1;
+            act_dist_select_005B5650(em);
+        }
+        (void)temp_a0; (void)temp_a2;
+#else
         if (em->x8C3 == 0) {
             temp_a0 = em->x734;
             if (temp_a0 == 1 || temp_a0 == 2 || temp_a0 == 3) {
@@ -418,6 +442,7 @@ static void em_act01_005B59C0(EMW *em, EM14W *w) {
                 }
             }
         }
+#endif
         break;
     }
 }
@@ -3768,6 +3793,11 @@ void em14_main(EMW *em) {
         break;
     case 15:
     case 16:
+#ifdef VERSION_MHG
+        if (em->x8B6 != 0) {        /* G (game 0x5E75A8): not while x8B6 is set */
+            break;
+        }
+#endif
         if (em->x388 == 4) {
             if (!M4(6)) {
                 em14_act_set(em, 4, 6, 2);
@@ -3827,7 +3857,14 @@ void em14_main(EMW *em) {
         }
         break;
     case 11:                                        /* switch 2 */
+#ifdef VERSION_MHG
+        /* G (game 0x5E7AC0): not during acts 4/6, 13, 14, 17, 18 nor in mode 2 */
+        if (!M4(6) && !M4(0xD) && !M4(0xE) && !M4(0x11) && !M4(0x12) && em->x388 != 2) {
+            em14_act_set(em, 4, 4, 2);
+        }
+#else
         em14_act_set(em, 4, 4, 2);
+#endif
         break;
     case 12:                                        /* switch 2 */
         pl_flag_clr((PLW *) em, 0x20000);
@@ -3844,7 +3881,11 @@ void em14_main(EMW *em) {
                 em14_act_set(em, 4, 0, 2);
                 break;
             case 6:                                 /* switch 4 */
+#ifdef VERSION_MHG
+                if (em->kind == 0xE || em->kind == 0x2B) {  /* G: kind 43 (subspecies) too */
+#else
                 if (em->kind == 0xE) {
+#endif
                     temp_v1_4 = w->x1A;
                     if ((temp_v1_4 == 0 && em->hagi[temp_a0_4].cnt > 0) || (temp_v1_4 == 1 && em->hagi[temp_a0_4].cnt >= 2)) {
                         em14_act_set(em, 4, 7, 2);
@@ -3866,7 +3907,9 @@ void em14_main(EMW *em) {
                 break;
             default:                                /* switch 4 */
                 if (em->hagi[temp_a0_4].cnt >= 2) {
+#ifndef VERSION_MHG     /* G (game 0x5E7D40) sets the act once */
                     em14_act_set(em, 4, 5, 2);
+#endif
                     if ((u8) em->x38E != 3) {
                         em14_act_set(em, 4, 5, 2);
                     } else {
@@ -3887,8 +3930,14 @@ void em14_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    /* G (game 0x5E7DE8): the same demo stop, G quest number 10041 */
+    if ((quest_w.no == 10041) && (em->stg == 0x35) && (Event_flag_ck(0x12) == 0)) {
+        if ((game_w.info_stop == 1) && (em->mode != 6)) {
+#else
     if ((quest_w.no == 0xAB) && (em->stg == 0x35) && (Event_flag_ck(0x12) == 0)) {
         if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
+#endif
             em14_act_set(em, 6, 0, 1);
         }
     } else {

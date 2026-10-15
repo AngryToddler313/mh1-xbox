@@ -242,7 +242,15 @@ void em08_local_init(EMW *em) {
     eft01_set((PLW *) em, 0);
 }
 
+#ifdef VERSION_MHG
+void sub_main_func_004DC5D0(EMW *em, int part);
+#endif
 void em08_init(EMW *em) {
+#ifdef VERSION_MHG
+    /* G em08_init: parts 3/4 get the level bonus of em_dur_init / em_dur_set */
+    sub_main_func_004DC5D0(em, 3);
+    sub_main_func_004DC5D0(em, 4);
+#endif
     EM08W *w = (EM08W *)em->ex;
     u8 t;
 
@@ -4325,6 +4333,193 @@ static void em_move06_005A2D90(EMW *em, EM08W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* PS2 Monster Hunter G's em08_main (game 0x5CDFD0, agent A 15 Oct 2026, written from the asm, not byte-checked).
+ * Against MH1: no hunger/thirst/sleep checks for variant (EMW 0x1B) 1 or while x8B6 is set; the trap (3/4) and
+ * second sleep (7) results start no act; no x9EA paralysis act; a hit while swimming (mode 2) staggers 5/2 under
+ * the water surface and 5/5 above it; part 3 broken with 2+ hits: act 4/20 (MH1 4/5 + x07); act 10 answers
+ * only acts 5, 14, 18; the demo stop is G quest 10022. */
+#define G08_M(m, a) (em->mode == (m) && em->x15 == (a))
+void em08_main(EMW *em) {
+    EM08W *w = (EM08W *)em->ex;
+    u8 dmg[4];
+    u8 flag = 0;
+    u8 k;
+
+    em_mode_timer_sub(em);
+    em_no_floor_ck(em);
+    if (em->x8C2 != 1 && em->x8B6 == 0 && em->kind == 8 && em->type != 1) {
+        em_hinshi_ck(em, 0.1f);
+        em_thirst_ck(em);
+        em_sleep_ck(em);
+    }
+    switch (Em_Dmg_Sys(em, dmg) & 0xFF) {
+    case 1:
+    case 2:
+        if (em->x9EA != 0) {
+            em08_act_set(em, 5, 1, 2);
+        } else {
+            switch (em->x388) {
+            case 1:
+            case 4:
+                em08_act_set(em, 5, 2, 2);
+                break;
+            case 2:
+                if (em->pos[1] < em->x7E4) {
+                    em08_act_set(em, 5, 2, 2);
+                } else {
+                    em08_act_set(em, 5, 5, 2);
+                }
+                break;
+            default:
+                em08_act_set(em, 5, 0, 2);
+                break;
+            }
+        }
+        break;
+    case 15:
+        if (em->x388 == 4) {
+            em08_act_set(em, 4, 0x11, 2);
+        }
+        break;
+    case 5:
+        if (!G08_M(4, 6) && !G08_M(4, 0x11)) {
+            em08_act_set(em, 4, 6, 2);
+        }
+        break;
+    case 6:
+        flag = 1;
+        if (!G08_M(4, 0xB) && !G08_M(4, 6) && !G08_M(4, 7) && em->x388 == 1) {
+            em_mahi_dmg_timer_set(em);
+            em08_act_set(em, 4, 7, 2);
+        } else if (!G08_M(4, 0xB) && !G08_M(4, 6) && !G08_M(4, 7) && em->x388 == 0) {
+            em_mahi_dmg_timer_set(em);
+            em08_act_set(em, 4, 0xB, 2);
+        } else if (!G08_M(4, 0xF) && !G08_M(4, 6) && !G08_M(4, 0x11) && em->x388 == 4) {
+            em_mahi_dmg_timer_set(em);
+            em08_act_set(em, 4, 0x11, 2);
+        }
+        break;
+    case 8:
+        if (!G08_M(4, 6) && !G08_M(4, 0x11) && em->x388 == 4) {
+            em08_act_set(em, 4, 0x11, 2);
+        } else if (!G08_M(0, 0xE) && !G08_M(4, 6) && em->x388 == 1) {
+            em_sleep_dmg_timer_set(em);
+            em08_act_set(em, 0, 0xE, 2);
+        } else if (!G08_M(0, 5) && !G08_M(4, 6) && em->x388 == 0) {
+            em_sleep_dmg_timer_set(em);
+            em08_act_set(em, 0, 5, 2);
+        }
+        break;
+    case 10:
+        switch (em->x15) {
+        case 5:
+            em08_act_set(em, 0, 6, 2);
+            em->x839 = 0;
+            break;
+        case 14:
+            em08_act_set(em, 0, 0xF, 2);
+            em->x839 = 0;
+            break;
+        case 18:
+            em08_act_set(em, 0, 0x13, 2);
+            em->x839 = 0;
+            break;
+        }
+        break;
+    case 12:
+        flag = 1;
+        switch (em->x388) {
+        case 0:
+        case 3:
+            k = em->x38E;
+            switch (k) {
+            case 0:
+            case 7:
+                em08_act_set(em, 4, 0, 2);
+                break;
+            case 5:
+            case 6:
+                em08_act_set(em, 4, 2, 2);
+                break;
+            case 1:
+            case 2:
+                em08_act_set(em, 4, 3, 2);
+                break;
+            default:
+                if (em->hagi[k].cnt < 2) {
+                    em08_act_set(em, 4, 1, 2);
+                } else if (k == 3) {
+                    em08_act_set(em, 4, 0x14, 2);
+                } else {
+                    em08_act_set(em, 4, 5, 2);
+                }
+                break;
+            }
+            break;
+        case 1:
+            em08_act_set(em, 4, 4, 2);
+            break;
+        case 2:
+            em08_act_set(em, 4, 6, 2);
+            break;
+        case 4:
+            em08_act_set(em, 4, 0x11, 2);
+            break;
+        }
+        break;
+    case 13:
+        flag = 1;
+        if (em->x388 != 2) {
+            em08_act_set(em, 4, 0, 2);
+            em->x839 = 0;
+        }
+        break;
+    case 14:
+        flag = 1;
+        break;
+    }
+    if (flag && em->x94E == 0) {
+        em->x88B = 1;
+    }
+    if (quest_w.no == 10022 && em->stg == 0x38 && Event_flag_ck(0x11) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            if (em->kind == 8) {
+                em08_act_set(em, 6, 0, 1);
+            } else {
+                em08_act_set(em, 6, 1, 1);
+            }
+        }
+    } else if (em->x839 != 0) {
+        em_cmd_ck(em);
+        em->x839 = 0;
+    }
+    em08_main_sub(em, w);
+    if (em->x6FF != 0) {
+        em08_main_sub(em, w);
+        em->x6FF = 0;
+    }
+    if (em->x7E9 != 0 && game_w.stage == em->stg) {
+        if (em->x388 == 4) {
+            if (!(em->pos[1] <= em->x7E4 - em->x7E0)) {
+                em->pos[1] = em->x7E4 - em->x7E0;
+            }
+            if (!(em->x5AC < em->x7E4 - 1000.0f)) {
+                em->x5AC = em->x7E4 - 1000.0f;
+            }
+            if (em->pos[1] < em->x5AC) {
+                em->pos[1] = em->x5AC;
+            }
+        }
+        if (em->x388 == 0) {
+            em->x5AC = em->x7E4;
+            if (em->pos[1] < em->x7E4) {
+                em->pos[1] = em->x7E4;
+            }
+        }
+    }
+}
+#else
 void em08_main(EMW *em) {
     EM08W *w = (EM08W *)em->ex;
     u8 dmg[4];
@@ -4560,6 +4755,8 @@ void em08_main(EMW *em) {
         }
     }
 }
+
+#endif
 
 void em08_main_sub(EMW *em, EM08W *w) {
     em->mode_old = em->mode;
