@@ -1190,7 +1190,7 @@ u32 rgb;
 }
 #endif
 
-#if OMAKE_PART == 0
+#if OMAKE_PART == 0 && !defined(VERSION_MHG)   /* G has no such menu: its Omake_task (main 0x1180F0) is NETWORK OPTIONS, src/main/omake/omake_g.c */
 static int omake_check(i)
 int i;
 {

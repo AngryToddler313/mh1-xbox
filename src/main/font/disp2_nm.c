@@ -80,6 +80,55 @@ void Disp_back(void) {
     Put_2TF(&q);
 }
 
+#ifdef VERSION_MHG
+/* G (main 0x12DBA0): the button icons come from G's own sheet (G texture slot 0x180; the PC keeps MH1's slot numbers, 0x157,
+ * which its all_reset fills with G's file); kinds 20 / 21 (the decide / cancel buttons) are its cells 0 / 1; the colour is a
+ * parameter. Every G caller but one goes through G 0x12DD90, which passes -1: the
+ * plain name is that wrapper (4 arguments), the colour version is Disp_button_col. */
+void Disp_button_col(f32 scale, int kind, int x, int y, int col) {
+    PUT_2TF q;
+    f32 w;
+    s16 k = kind;
+    s16 c = kind;
+
+    if (k == 8 || k == 9) {
+        w = 32.0f;
+    } else {
+        w = 24.0f;
+    }
+    if (k == 20) {
+        c = 0;
+    } else if (k == 21) {
+        c = 1;
+    }
+    SetFilterMode(0);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    q.x0 = x;
+    q.y0 = y;
+    q.x1 = w * scale;
+    q.y1 = 24.0f * scale;
+    q.col = col;
+    if (c == 9) {
+        q.uv0.a = 0xE0;
+    } else {
+        q.uv0.a = (c % 10) * 24;
+    }
+    q.uv0.b = (c / 10) * 24;
+    q.uv1.a = q.uv0.a + (s16)w + 1;
+    if (c == 0x12 || c == 0x11 || c == 0x13) {
+        q.uv1.b = q.uv0.b + 0x18;
+    } else {
+        q.uv1.b = q.uv0.b + 0x19;
+    }
+    Put_2TF(&q);
+    SetFilterMode(1);
+}
+
+void Disp_button(f32 scale, int kind, int x, int y) {
+    Disp_button_col(scale, kind, x, y, -1);
+}
+#else
 void Disp_button(f32 scale, int kind, int x, int y) {
     PUT_2TF q;
     f32 w;
@@ -113,6 +162,8 @@ void Disp_button(f32 scale, int kind, int x, int y) {
     Put_2TF(&q);
     SetFilterMode(1);
 }
+
+#endif
 
 void Put_comment(int x, int y, int dy, char *msg) {
     char buf[0x64];

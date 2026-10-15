@@ -31,6 +31,14 @@
 #include <time.h>
 
 extern u8 sfd_tbl[];
+#ifdef VERSION_MHG
+extern u8 gal_movie_files[];   /* G's movie table (main 0x2A0DE0, 12 entries; MH1's sfd_tbl has 9), config/mhg/pc_data.txt */
+#define MOVIE_TBL gal_movie_files
+#define MOVIE_MAX 11
+#else
+#define MOVIE_TBL sfd_tbl
+#define MOVIE_MAX 8
+#endif
 extern u8 system_w[];
 extern u8 adx_vol_tbl[], adx_cnfvol_tbl[];
 extern u8 demo_w[];
@@ -60,7 +68,7 @@ static struct {
 } mv;
 
 static double wall_s(void) { return (double)time(NULL); }   /* trace only: whole seconds */
-static const u8 *tbl(int no) { return sfd_tbl + 16 * no; }
+static const u8 *tbl(int no) { return MOVIE_TBL + 16 * no; }
 static u32 rd32(const u8 *p) { return p[0] | p[1] << 8 | p[2] << 16 | (u32)p[3] << 24; }
 static u32 rd16(const u8 *p) { return p[0] | p[1] << 8; }
 
@@ -97,7 +105,7 @@ int movie_start(int no)
     const fmt_afs *afs = rt_snd_afs00();
     const u8 *t;
     rt_movie_stop();
-    if (getenv("RT_NOMOVIE") || !afs || no < 0 || no > 8) {
+    if (getenv("RT_NOMOVIE") || !afs || no < 0 || no > MOVIE_MAX) {
         rt_log("movie %d not played (%s)", no, getenv("RT_NOMOVIE") ? "RT_NOMOVIE" : !afs ? "AFS00.AFS not found" : "no such movie");
         return -1;
     }

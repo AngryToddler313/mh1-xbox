@@ -343,11 +343,19 @@ int Event_flag_ck(int n) {
 
 extern u8 option_w[];
 void Omake_flag_set(int n) {
+#ifdef VERSION_MHG
+    *(u32 *)(option_w + 0x2C4C) |= 1 << n;     /* G: a 32-bit flag word (as f_ud.c, which the G PC build leaves out) */
+#else
     *(s16 *)(option_w + 0xFCC) |= (s16)(1 << n);
+#endif
 }
 
 int Omake_flag_ck(int n) {
+#ifdef VERSION_MHG
+    return (*(u32 *)(option_w + 0x2C4C) & (1 << n)) != 0;
+#else
     return (*(s16 *)(option_w + 0xFCC) & (1 << n)) != 0;
+#endif
 }
 
 void Set_mini_data_to_pl(s8 *key, u8 *pl) {

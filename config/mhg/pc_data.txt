@@ -280,3 +280,62 @@ hlog_pos = 0x0025DFA0; // size:0x18                 # {count x, y, size x, y, cr
 hlog_msg_frame = 0x0025E880; // size:0x10
 hlog_crown = 0x0025E890; // size:0x18               # silver, gold {dx, dy, w, h, u, v}
 hlog_btn_icon = 0x002EBE98; // size:0x10 allptr
+# GAME MENU, NETWORK OPTIONS (G main 0x1180F0, src/main/omake/omake_g.c; agent C, 15 Oct 2026)
+[main]
+option_w = 0x0035BD60; // size:0x2E80 noptr   # G's option block runs to edit_w (0x35EBE0): network options at +0x2A10, the gallery's flags at +0x2C4C.. (the MH1-sized 0x1200 let Omake_flag_set write past the array)
+net_opt_frame = 0x0025D6C0; // size:0x10 noptr   # the help box of NETWORK OPTIONS (DispFrameMessageA)
+net_opt_valtbl = 0x0025D6D0; // size:0x14        # per row: pointer to the value names
+net_opt_val1 = 0x002EC690; // size:0x8           # row 1 (auto-select "same connection as before"): OFF / ON
+net_opt_cnt = 0x002EBE68; // size:0x8 noptr      # number of values of each row
+[sub_main]
+net_opt_msg = 0x00528FA0; // size:0x38          # row names [0..4], help texts [8..12]
+net_opt_val0 = 0x00528FD8; // size:0xC           # row 0 (NET file auto-load): manual / card slot 1 / card slot 2
+# G's menu title sprites: nine titles (MH1 seven); the pointer table, the counts and the two new strips (NETWORK OPTIONS 7, GALLERY 6/8)
+menu_str_07 = 0x002A12D0; // size:0x20 noptr
+menu_str_08 = 0x002A12F0; // size:0x24 noptr
+menu_str_num = 0x002A1320; // size:0x12 noptr
+menu_str_00349330 = 0x002A1340; // size:0x24
+# GAME MENU, GALLERY (G's omake, sub_main 0x4A9960; src/main/omake/omake_g.c; agent C, 15 Oct 2026)
+[main]
+PIT_TEX = 0x0025D0E0; // size:0x14 noptr           # G reads [4] (the gallery sheet), MH1's list had 3
+gal_cnt = 0x002EC1E0; // size:0x8 noptr             # cells per page
+gal_scale = 0x002EC1E8; // size:0x8 noptr           # cell scale per style
+gal_yoff = 0x002EC1F0; // size:0x4 noptr
+gal_rows = 0x002EC1F8; // size:0x1C noptr           # cells per row, four pages
+gal_lr_pos = 0x002EC214; // size:0x8 noptr          # where the "play" and "back" labels go
+gal_movie_files = 0x002A0DE0; // size:0xC0 noptr    # G's movie table (16 bytes each: AFS00 entry, format, ...), read by rt_movie.c
+[sub_main]
+gal_scene_tbl = 0x004FD100; // size:0x78 noptr      # 15 event scenes {number, frames, descriptor in the game overlay}
+gal_movie_tbl = 0x004FD180; // size:0x30 noptr      # 12 movies {unlock bit, movie}
+gal_desc_scene = 0x004FD1B0; // size:0x60 noptr
+gal_desc_movie = 0x004FD210; // size:0x50 noptr
+gal_frame = 0x004FD260; // size:0x12 noptr
+gal_list0 = 0x004FD280; // size:0x24 noptr
+gal_list1 = 0x004FD2B0; // size:0x20 noptr
+gal_list2 = 0x004FD2D0; // size:0x1C noptr
+gal_list3 = 0x004FD2F0; // size:0xC noptr
+gal_page = 0x004FD300; // size:0x10
+gal_rowlen_tbl = 0x004FD310; // size:0x10
+gal_nrows = 0x004FD320; // size:0x10 noptr
+gal_cells0 = 0x004FD330; // size:0x24 noptr
+gal_cells1 = 0x004FD360; // size:0x20 noptr
+gal_cells2 = 0x004FD380; // size:0x1C noptr
+gal_cells3 = 0x004FD3A0; // size:0xC noptr
+gal_cells3b = 0x004FD3B0; // size:0xC noptr
+gal_pos_all = 0x004FD3C0; // size:0x10
+gal_pos = 0x004FD3D0; // size:0x10
+gal_curve_a = 0x004FD3E0; // size:0x40 noptr
+gal_curve_b = 0x004FD420; // size:0x30 noptr
+gal_corner_a = 0x004FD450; // size:0x10 noptr
+gal_corner_b = 0x004FD460; // size:0x10 noptr
+gal_movie_names = 0x00528570; // size:0x30
+gal_locked_str = 0x005285A0; // size:0x10
+gal_scene_names = 0x005285B0; // size:0x40
+gal_lr_str = 0x005285F0; // size:0x10
+gal_staff_lines = 0x0050A740; // size:0xEC0           # the staff roll's lines of text and logos, 30 pages
+gal_staff_pages = 0x0050B600; // size:0x78
+logo_tbl = 0x0050B6B0; // size:0x140 noptr             # {u, v, w, h, texture - 0x111} per logo (MH1's table is shorter)
+gal_end_msg = 0x0052D4E0; // size:0x18 noptr
+# memory card messages: G's list has 63 entries (MH1 51); the 0xCC the symbol view gave read past the host array at entry 51 (the OPTIONS / GALLERY save crashed)
+[main]
+McardMsgTbl = 0x002B0B40; // size:0xFC
