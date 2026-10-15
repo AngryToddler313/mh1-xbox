@@ -866,9 +866,9 @@ int rt_monster_tick(int no)
                 (unsigned)PS32(em, 0x74C), PU16(em, 0x7EA), em->kind);
 #ifdef VERSION_MHG
     if (getenv("RT_EM_TRACE"))      /* G's monster state: size %, level, hit-zone table, scale */
-        printf("em%d: G size %d lv %d meat %d scale %.2f dur %d/%d/%d/%d/%d/%d/%d/%d/%d bits %X\n", no, em->size, em->lv,
+        printf("em%d: G size %d lv %d meat %d scale %.2f dur %d/%d/%d/%d/%d/%d/%d/%d/%d bits %X range %d x388 %d\n", no, em->size, em->lv,
                em->meat_no, em->scale[0], PS16(em, 0x308), PS16(em, 0x310), PS16(em, 0x318), PS16(em, 0x320), PS16(em, 0x328),
-               PS16(em, 0x330), PS16(em, 0x338), PS16(em, 0x340), PS16(em, 0x348), em->dur_lv_bits);
+               PS16(em, 0x330), PS16(em, 0x338), PS16(em, 0x340), PS16(em, 0x348), em->dur_lv_bits, em->range_no, PU8(em, 0x388));
 #endif
     {
         /* the world matrix at EMW+0x60, as enemy_mk (0x10AEB0) builds it in trans():
