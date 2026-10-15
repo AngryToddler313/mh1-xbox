@@ -102,7 +102,11 @@ typedef struct CNET_CSEARCH {   /* condition search result (0x1CC4 bytes) */
 typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
 typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
 typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
+#ifdef MHG_PS2
+typedef struct CNET_W5D4 { s32 w[0x1C1]; } CNET_W5D4;   /* G: 0x704 bytes */
+#else
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
+#endif
 typedef struct CNET_T3 { u8 a, b, c; } CNET_T3;
 typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
     u8 flags;           /* 0x00 which parts have been received */
@@ -228,7 +232,7 @@ typedef struct CNET_SYS {
     u8 gsport[2];  /* 0x33928 game server port bytes */
     u8 _pad3392A[0x6];
     CNET_W5D4 matchinfo;  /* 0x33930 match information */
-    u8 _pad33F04[0x3D6];
+    u8 _pad34034[0x2A6];
     CNET_CHAT chat;  /* 0x342DA chat message being received */
     CNET_B308 chatbin;  /* 0x343FA chat binary */
     char srvmsg[0x300];  /* 0x34702 server message */

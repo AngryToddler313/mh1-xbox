@@ -1,6 +1,6 @@
 # G (Monster Hunter G) layout of CnetSys_w, as an override of config/lbnet_fields.txt (tools/lbfields.py).
 # G's CnetSys_w starts at 0x006FA760 (the symbol file says 0x006FA808 = +0xA8, which is where the socket fields sit).
-# Line: NAME GOFFSET [DIM [SIZE]]   DIM replaces the array count of the field (SIZE: its new byte size when the element size differs).
+# Line: NAME GOFFSET [DIM [SIZE]] | [=SIZE]   DIM replaces the array count of the field (SIZE: its new byte size when the element size differs).
 # Found by pairing accesses of MH1 and G twins (tools/mhg_fields.py) and from the G asm; a field not listed here is
 # placed after the end of the G struct (its G offset is unknown, functions that use it do not match in G).
 # [checked] = read in G code, [paired] = tools/mhg_fields.py votes only, [guess] = continued from a neighbour.
@@ -58,7 +58,7 @@ resttime 0x3391C
 last_id 0x3391E
 gsaddr 0x33920
 gsport 0x33928
-matchinfo 0x33930
+matchinfo 0x33930 =0x704
 chat 0x342DA
 chatbin 0x343FA
 srvmsg 0x34702

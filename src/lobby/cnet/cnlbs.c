@@ -117,10 +117,10 @@ void __cnet_Recv_SearchUser(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 88
 void _cnet_RecvFromLbs_RequestAdminMessage(void) {
     GetRecvDataString(CNWP(0x30900), GetRecvDataString(CNWP(0x308EC), &recv_work));
-    _cnetEvent_JumpCallBack(4, 0);
+    CNEVT(4, 4);
 }
 #endif
 
@@ -514,12 +514,12 @@ int cnLBS_Read_PlazaAllocation(int unused, int val, int cb) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 79
 int cnLBS_Read_PlazaCount(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceCount(0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceCount(GV(0, 1));
         return slot;
     }
     return -1;
@@ -542,12 +542,12 @@ void _cnet_RecvFromLbs_AnswerPlazaNumOfPlaza(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 80
 int cnLBS_Read_PlazaName(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceName(0, arg0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceName(GV(0, 1), arg0);
         return slot;
     }
     return -1;
@@ -581,12 +581,12 @@ void _cnet_RecvFromLbs_AnswerPlazaName(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 81
 int cnLBS_Read_PlazaJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceJoinUser(0, arg0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceJoinUser(GV(0, 1), arg0);
         return slot;
     }
     return -1;
@@ -614,12 +614,12 @@ void _cnet_RecvFromLbs_BothPlazaJoinUser(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 82
 int cnLBS_Read_PlazaStatus(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(0, arg0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(GV(0, 1), arg0);
         return slot;
     }
     return -1;
@@ -650,19 +650,19 @@ void _cnet_RecvFromLbs_BothPlazaStatus(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 83
 int cnLBS_Read_PlazaExplain(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExplain(0, arg0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExplain(GV(0, 1), arg0);
         return slot;
     }
     return -1;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 84
 void _cnet_RecvFromLbs_BothPlazaExplain(void) {
     char buf[0x108];
     u16 id;
@@ -673,7 +673,7 @@ void _cnet_RecvFromLbs_BothPlazaExplain(void) {
         strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + CNOE(0x40C4), buf);
         CnetSys_w.plaza[id - 1].flags |= 8;
     }
-    _cnet_Return_CallBack(0x11);
+    _cnet_Return_CallBack(GV(0x11, 0x17));
 }
 #endif
 
@@ -695,10 +695,10 @@ int arg1;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 85
 void _cnet_RecvFromLbs_AnswerPlazaEntry(void) {
     if (CNW(s8, 0xFEC) == 0) {
-        __cnet_SetEntryFloorInfo(0);
+        __cnet_SetEntryFloorInfo(GV(0, 1));
     }
     _cnet_Return_CallBack(0);
 }
@@ -739,12 +739,12 @@ int cnLBS_Read_LobbyAllocation(int unused, int val, int cb) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 86
 int cnLBS_Read_LobbyCount(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceCount(1);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceCount(GV(1, 2));
         return slot;
     }
     return -1;
@@ -839,12 +839,12 @@ void _cnet_RecvFromLbs_BothLobbyJoinUser(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 87
 int cnLBS_Read_LobbyStatus(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(1, arg0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(GV(1, 2), arg0);
         return slot;
     }
     return -1;

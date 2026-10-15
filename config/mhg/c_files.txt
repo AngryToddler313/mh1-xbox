@@ -1780,3 +1780,14 @@ lobby 0x005E1CF0 0x005E1D14 mhg/lobby/cnet/cnlbsh_p6
 lobby 0x005E1D20 0x005E1D44 mhg/lobby/cnet/cnlbsh_p7
 lobby 0x005E6160 0x005E632C mhg/lobby/cnet/cnlbs_p63
 lobby:rodata 0x00646EF0 0x00646F0C mhg/lobby/cnet/cnlbs_p63
+lobby 0x005ABF40 0x005ABFA8 mhg/lobby/cnet/cnlbs_p79
+lobby 0x005AC010 0x005AC084 mhg/lobby/cnet/cnlbs_p80
+lobby 0x005AC170 0x005AC1E4 mhg/lobby/cnet/cnlbs_p81
+lobby 0x005AC2A0 0x005AC314 mhg/lobby/cnet/cnlbs_p82
+lobby 0x005AC3E0 0x005AC454 mhg/lobby/cnet/cnlbs_p83
+lobby 0x005AC460 0x005AC4F4 mhg/lobby/cnet/cnlbs_p84
+lobby 0x005ADD60 0x005ADD94 mhg/lobby/cnet/cnlbs_p85
+lobby 0x005BB400 0x005BB468 mhg/lobby/cnet/cnlbs_p86
+lobby 0x005BB5D0 0x005BB644 mhg/lobby/cnet/cnlbs_p87
+lobby 0x005E6010 0x005E6050 mhg/lobby/cnet/cnlbs_p88
+lobby 0x005B1610 0x005B1644 mhg/lobby/cnet/cnlbsg_p44

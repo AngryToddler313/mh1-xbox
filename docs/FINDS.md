@@ -251,3 +251,7 @@ May, Aug, demo), and cockpit2 stays in filedef_sys **slot 3** everywhere, even i
 slots (slots 9-13 the per-language loading screens, 14-18 the per-language HUD atlases; map slots moved 16 -> 24). The xb
 files are in no build's table. US/May/Aug use softkey1_e in slot 4, the demo softkey1_pal. [checked: tables read at US
 0x217974, May 0x214344, Aug 0x216B74, demo 0x1DD194 (file offsets); no loader looked at]
+
+**G's lobby client protocol** (cnet, lobby.bin): the command numbers of the lobby server requests are renumbered against MH1 (about +30 for the user
+data group, +41 for mail / admin, unrelated for the room group), the notice event ids shifted by up to 6, member lists hold 10 members (MH1 8) and the
+lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The room count became a byte. [checked: G asm of the cnet request functions]

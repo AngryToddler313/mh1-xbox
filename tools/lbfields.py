@@ -67,7 +67,9 @@ for off, ty, name, cm, sz, dim in rows:
         a = g[b]
         goff = int(a[0], 0)
         nm, nsz = name, sz
-        if len(a) > 1:
+        if len(a) > 1 and a[1].startswith('='):
+            nsz = int(a[1][1:], 0)          # the type is a different size in G (the include/lbnet.h typedef changes too)
+        elif len(a) > 1:
             nd = int(a[1].strip('[]'), 0)
             if len(a) > 2:
                 nsz = int(a[2], 0)

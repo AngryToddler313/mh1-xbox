@@ -696,7 +696,7 @@ int __cnet_SendReq_MatchRejection(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 44
 int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
     *d = CnetSys_w.matchinfo;
     return 0;
