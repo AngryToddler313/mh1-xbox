@@ -601,3 +601,14 @@ obvious workarounds.
 - **Choice:** the settings combo is also taken from each game tick's pad (menu_tick_pad), so the combo's buttons never reach the
   game and scripted runs can open it; buttons held at close are hidden from the game until released (before, cross on "Close"
   reached the game).
+
+## G on the PC for players (agent D, 15 Oct 2026, GB3)
+- **Dropped:** the `./mh1 linux|windows` refusal of a G disc ("Xbox only for now"); **now** `./mh1 linux|windows|xbox DISC` detects the
+  game from the disc (tools/disc_files.py) and builds G into dist/linux/MHG, dist/windows/MHG, dist/xbox/MHG. **To revert:** the commit "G: mh1
+  builds the G disc for Linux and Windows".
+- **Choice:** the packaged play.sh / play.bat for G set MH1_SHOW=1 so a player gets a window; the program's own hidden default for G
+  (viewer.c) is unchanged, so agent and test runs stay hidden. Win G is tools/build_win.sh VERSION=mhg (tree build/winmhg) packaged by
+  VERSION=mhg tools/package_win.sh (mhgpc-win32-*.zip, play_g.bat -> play.bat).
+- **Dropped:** src/pc/install.c's MH1-only constants; **now** one table per game (VERSION_MHG: G's four files, SLPM_658.69, data folder
+  mhgpc/data), so dragging a G ISO onto mhview_g.exe installs it.
+- **Dropped:** Lb_put_shopYesNo's MH1 two-string version in the G build (lb_by44.c); **now** G's message table D_2EC5D8 by the answer state.

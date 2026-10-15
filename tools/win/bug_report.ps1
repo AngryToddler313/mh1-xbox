@@ -1,6 +1,6 @@
 # bug_report.ps1 - see bug_report.bat. Nothing is uploaded; the zip stays on your disk.
 $WithSave = ($args -contains '--with-save') -or ($args -contains '-WithSave')
-$base = if ($env:MH1_SAVE_DIR) { Split-Path -Parent $env:MH1_SAVE_DIR } else { Join-Path $env:APPDATA 'mh1pc' }
+$base = if ($env:MH1_SAVE_DIR) { Split-Path -Parent $env:MH1_SAVE_DIR } else { Join-Path $env:APPDATA $(if ($env:MH1_APPNAME) { $env:MH1_APPNAME } else { 'mh1pc' }) }
 $logs = if ($env:MH1_LOG_DIR) { $env:MH1_LOG_DIR } else { Join-Path $base 'logs' }
 $reports = Join-Path (Split-Path -Parent $logs) 'reports'
 $card = if ($env:MH1_SAVE_DIR) { $env:MH1_SAVE_DIR } else { Join-Path $base 'memcard0' }

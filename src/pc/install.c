@@ -22,6 +22,23 @@
 #include <windows.h>
 #endif
 
+/* the known files of the Japanese disc this build plays: MH1 (SLPM-65495), or Monster Hunter G (SLPM-65869, VERSION=mhg;
+ * the same numbers as tools/disc_files.py) */
+#ifdef VERSION_MHG
+#define BOOT_FILE "SLPM_658.69"
+#define DISC_NAME "Monster Hunter G (SLPM-65869)"
+static const struct { const char *name; uint32_t size, crc; int required; } want[] = {
+    { "AFS_DATA.AFS", 150759424u, 0xE397237Cu, 1 },
+    { "AFS00.AFS", 926939136u, 0x434FA486u, 1 },
+    { "AFS01.AFS", 25186304u, 0x3AFA8E6Fu, 1 },
+    { "SLPM_658.69", 2029336u, 0xB25E8415u, 1 },
+    { "SYSTEM.CNF", 77u, 0x71A2CE13u, 0 },
+};
+#define APPDIR_DATA "mhgpc"
+#else
+#define BOOT_FILE "SLPM_654.95"
+#define DISC_NAME "Monster Hunter (SLPM-65495)"
+#define APPDIR_DATA "mh1pc"
 static const struct { const char *name; uint32_t size, crc; int required; } want[] = {
     { "AFS_DATA.AFS", 121866240u, 0x3BD5B15Au, 1 },
     { "AFS00.AFS", 775729152u, 0xE2312A4Du, 1 },
@@ -29,6 +46,7 @@ static const struct { const char *name; uint32_t size, crc; int required; } want
     { "SLPM_654.95", 5648908u, 0xCF1A62C0u, 1 },
     { "SYSTEM.CNF", 76u, 0x9CF85397u, 0 },
 };
+#endif
 #define NWANT (int)(sizeof want / sizeof want[0])
 
 int install_is_iso_name(const char *p)
@@ -51,7 +69,7 @@ int install_has_data(const char *dir)
     snprintf(p, sizeof p, "%s/AFS_DATA.AFS", dir);
     if (!exists(p))
         return 0;
-    snprintf(p, sizeof p, "%s/SLPM_654.95", dir);
+    snprintf(p, sizeof p, "%s/" BOOT_FILE, dir);
     return exists(p);
 }
 
@@ -74,13 +92,13 @@ static void user_dir(char *out, size_t n)
 {
 #ifdef MH1_WINDOWS
     const char *a = getenv("APPDATA");
-    snprintf(out, n, "%s/mh1pc/data", a && *a ? a : ".");
+    snprintf(out, n, "%s/" APPDIR_DATA "/data", a && *a ? a : ".");
 #else
     const char *x = getenv("XDG_DATA_HOME"), *h = getenv("HOME");
     if (x && *x)
-        snprintf(out, n, "%s/mh1pc/data", x);
+        snprintf(out, n, "%s/" APPDIR_DATA "/data", x);
     else
-        snprintf(out, n, "%s/.local/share/mh1pc/data", h ? h : ".");
+        snprintf(out, n, "%s/.local/share/" APPDIR_DATA "/data", h ? h : ".");
 #endif
 }
 
@@ -267,7 +285,7 @@ int install_from_iso(const char *isopath, const char *dest, int gui)
         }
         if (r != 0 && want[k].required) {
             fclose(iso.f);
-            snprintf(msg, sizeof msg, "%s is not in this image: it is not the Japanese Monster Hunter (SLPM-65495) disc.", want[k].name);
+            snprintf(msg, sizeof msg, "%s is not in this image: it is not the Japanese " DISC_NAME " disc.", want[k].name);
             return fail(msg);
         }
         if (r != 0) {
@@ -276,7 +294,7 @@ int install_from_iso(const char *isopath, const char *dest, int gui)
         }
         if (fl[k].size != want[k].size) {
             fclose(iso.f);
-            snprintf(msg, sizeof msg, "%s has the wrong size (%u, expected %u): not the Japanese Monster Hunter (SLPM-65495) disc.",
+            snprintf(msg, sizeof msg, "%s has the wrong size (%u, expected %u): not the Japanese " DISC_NAME " disc.",
                      want[k].name, (unsigned)fl[k].size, (unsigned)want[k].size);
             return fail(msg);
         }
@@ -351,7 +369,7 @@ int install_from_iso(const char *isopath, const char *dest, int gui)
     snprintf(p, sizeof p, "%s/installed.ok", dest);
     ok = fopen(p, "wb");
     if (ok) {
-        fprintf(ok, "mh1 data installed from a Japanese MH1 (SLPM-65495) disc image\n");
+        fprintf(ok, "data installed from a Japanese " DISC_NAME " disc image\n");
         for (k = 0; k < NWANT; k++)
             if (fl[k].size)
                 fprintf(ok, "%s %u crc32=%08X\n", want[k].name, (unsigned)fl[k].size, (unsigned)crc[k]);
