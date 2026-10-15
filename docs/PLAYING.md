@@ -1,9 +1,11 @@
-# Playing Monster Hunter on PC and original Xbox
+# Playing Monster Hunter and Monster Hunter G on PC and original Xbox
 
-This project runs the Japanese PlayStation 2 game **Monster Hunter** (2004) on a Linux PC, a Windows PC and the
-original Xbox. It is a fan-made port that uses code rebuilt (decompiled) from the game. It contains none of
-Capcom's game data, so **you need your own copy of the Japanese PS2 disc** (product code SLPM-65495). Monster
-Hunter is (c) CAPCOM. This project is not affiliated with Capcom.
+This project runs the Japanese PlayStation 2 games **Monster Hunter** (2004) and **Monster Hunter G** (2005) on a
+Linux PC, a Windows PC and the original Xbox. It is a fan-made port that uses code rebuilt (decompiled) from the
+games. It contains none of Capcom's game data, so **you need your own copy of the Japanese PS2 disc** (product
+code SLPM-65495 for Monster Hunter, SLPM-65869 for Monster Hunter G). Monster Hunter is (c) CAPCOM. This project
+is not affiliated with Capcom. Everything below applies to both games unless it says "G"; section "Monster Hunter G"
+lists what differs.
 
 It is a work in progress: the whole single-player game is playable (village, all offline quests, shops, forge,
 fishing, carving, the star-level progression), but expect rough edges (see "Known issues").
@@ -11,8 +13,9 @@ fishing, carving, the star-level progression), but expect rough edges (see "Know
 ## What you need
 
 * The disc as an **.iso file** (a dump of your own disc, 2048-byte sectors), or a folder holding the files copied
-  off it. Only the Japanese release works: US/EU Monster Hunter, Monster Hunter G and PSP versions are different
-  games. The tool checks the files by size and checksum and tells you if something is wrong.
+  off it. Only the Japanese releases of Monster Hunter and Monster Hunter G work: the US/EU Monster Hunter and the PSP
+  versions are different games. The tool checks the files by size and checksum and tells you if something is wrong.
+  Monster Hunter G's disc (SLPM-65869) is accepted as well; `./mh1` tells the two apart by itself.
 * About 1.5 GB of free disk space (the game files are about 925 MB) plus room for the build.
 * To build the game from this repository you need a Linux computer (Ubuntu or Debian is what it is tested on).
   Windows and Xbox versions are built on that Linux machine and copied over.
@@ -36,6 +39,10 @@ Run it in the repository folder. `DISC` is your .iso (or the folder with the dis
     ./mh1 windows DISC          # result: dist/windows/   copy the folder to the PC, run play.bat in it
     ./mh1 xbox    DISC          # result: dist/xbox/MH1/  copy to the Xbox as E:\Games\MH1
     ./mh1 check   DISC          # only check that the disc is the right one
+
+With a Monster Hunter G disc the same commands build G instead: `dist/linux/MHG/` (play with `play.sh`),
+`dist/windows/MHG/` (`play.bat`), `dist/xbox/MHG/` (see "Monster Hunter G" below). `--online` is not available
+for G.
 
 What it does, in order: checks the disc (a wrong region or a damaged dump is reported and nothing is built),
 checks that the build tools are there (and says what to install if not), builds the game, copies the needed disc
@@ -62,6 +69,10 @@ it copies the files out of the image itself.
 
 ### Xbox
 
+The recommended route is the loader's HTTP install (step 2, "If the FTP copy keeps stalling", works the same for G
+and is the one the owner's console needed): FTP is only used once for the small loader, the big files come over HTTP
+with resume and checksums. Copying every file by FTP is the fallback.
+
 1. **Where the files go.** On the Xbox hard disk, in `E:\Games\MH1`, exactly this:
 
        E:\Games\MH1\default.xbe
@@ -80,8 +91,8 @@ it copies the files out of the image itself.
    is interrupted. Some dashboards' FTP servers need active mode (the script's default; `XBOX_PASSIVE=1` switches).
    The data is 925 MB: a home Wi-Fi link can take most of an hour. Copy `default.xbe` last or first, it does not
    matter.
-   **If the FTP copy keeps stalling** (Evolution X's FTP server often drops big files part way and cannot
-   resume them), copy only the small network loader by FTP and let it fetch the data from your computer over
+   **Recommended: the loader's HTTP install** (Evolution X's FTP server often drops big files part way and cannot
+   resume them, so FTP is the fallback for the big files): copy only the small network loader by FTP and let it fetch the data from your computer over
    HTTP instead, with resume and checksums:
    - `tools/xbox_upload.sh --loader` (set `XBOX_IP=` to your Xbox's address first): puts the loader in
      `E:\Games\MH1` (it shows as **Monster Hunter**) plus `loader.txt` with this computer's address;
@@ -218,6 +229,39 @@ out). The save is checked first; a damaged or foreign file is refused, and an ex
 `.backups` folder first. Then choose CONTINUE. To take a hunter back to a PS2 or PCSX2: `mhview --export-save
 MyHunter.psu` (also .max, .cbs, .sps, .xps, or .ps2 for a new memory card image). Importing on the Xbox is not
 supported yet. A real PS2 save has not been tested by us (only generated ones), so keep your original.
+
+## Monster Hunter G
+
+G is the project's main target and a work in progress. `./mh1 linux|windows|xbox DISC` with the G disc builds it
+(first build 10 to 40 minutes), checks the disc's files by size and checksum, and puts them next to the program:
+
+    dist/linux/MHG/play.sh        dist/windows/MHG/play.bat        dist/xbox/MHG/ (E:\Games\MHG, below)
+
+`play.sh` / `play.bat` open a window for you (the G program stays hidden when it is started by test scripts; the
+play scripts say otherwise). `play.sh quest` starts G quest 10 (Rathian) directly, `play.sh easy` the same with a
+hunter who cannot faint. Saves are separate from Monster Hunter 1: Linux `~/.local/share/mhgpc/memcard0/`, Windows
+`%APPDATA%\mhgpc\memcard0\`, Xbox `E:\UDATA\` under G's own title id. You can also drag the G `.iso` onto
+`mhview_g.exe` (Windows) once to install its files. Xbox: files go to `E:\Games\MHG` (`default.xbe`,
+`data\AFS_DATA.AFS` 144 MB, `AFS00.AFS` 884 MB, `AFS01.AFS` 24 MB, `SLPM_658.69` 2 MB); use the loader's HTTP install
+with `tools/xbox_serve.py --data dist/xbox/MHG` as described above, FTP as the fallback; the loader (shown as
+Monster Hunter) installs G beside MH1.
+
+What works (checked in scripted, hidden runs, not yet by a full human play-through): title, NEW GAME, hunter
+creation, saving, CONTINUE, the village (Kokoto) with its shops, forge, item box and the elder's quests, all 98
+offline quests and the carts from start to reward, the debug menu and the settings menu (F10 on the PC, Back + L3 on
+the Xbox).
+
+What is still rough:
+* **Japanese text.** About half is English-capable (official English where it exists, see docs/text_coverage.md);
+  G-only weapons, armour, items and NPC lines are Japanese. A translation table can be loaded (docs/english.md).
+* The EXTRA row of the game menu is not done; equipment description windows (attack, sharpness bar, skill pages)
+  in shops and the box are incomplete; some monsters (Diablos, Gravios) still use Monster Hunter 1's move choice.
+* No online play (plaza, gathering hall, co-op) for G.
+* Movie gallery unlocks, a few sound effects and the soft keyboard's kanji conversion are missing.
+* Xbox frame rate and memory have only been measured in the emulator.
+
+Debug menu (F9 / Back + R3): as above; "Start a quest" lists G's quests by quest group; the Hunter rank rows are
+MH1 only. Details of what is open: docs/RELEASE_G.md.
 
 ## Playing with friends
 

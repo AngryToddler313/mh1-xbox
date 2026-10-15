@@ -1396,3 +1396,21 @@ Tools: `tools/gvil_ev.py TAG END_TICK "tick:pad,..." [W=x,z] [ENV=v]` (the timin
 - Elder: lb_talk_init G copy (rows by story / event flags), ck_talkEvent from G, lb_basic_master G kind dispatch (lb_village_nm.c), story events (mode 47) from G's
   lobby 0x544760, pointer tables for the counter's story tests (hunt_group_tbl, equip_set_tbl); the counter talk reads the NPC kind at +0xE (this port's NPC layout).
 - Not done: see docs/REVIEW.md "Not ported" (equipment description windows, skill pages, banner animation). The farm and the cat kitchen are not in G's village.
+
+## G for players + village triage (agent D, 15 Oct 2026)
+GB3: `./mh1 linux|windows|xbox DISC` accepts the G disc (tools/disc_files.py game: boot file SLPM_658.69 plus size+CRC32 of the four
+files). Linux: tools/build_pc_mhg.sh -> dist/linux/MHG/{mhview_g,play.sh,data/}. Windows: VERSION=mhg tools/build_win.sh (tree
+build/winmhg/tree, runs tools/mhg_pcmeta.py first) -> VERSION=mhg tools/package_win.sh (mhgpc-win32-*.zip; play_g.bat/bug_report_g.bat
+renamed to play.bat/bug_report.bat; G README). The G program is hidden unless MH1_SHOW=1 (viewer.c); the player scripts export it.
+src/pc/install.c is per game now (data folder mhgpc/data, G sizes).
+GB6 triage (village/lobby; docs/survey/mhg_cov_g.txt is over-approximate: its marker test misses UDO/IBO/LBSHOP_OFS/UD_WARE_N macros):
+- Ported: Lb_put_shopYesNo (G prints message table D_2EC5D8[answer state] with func_0012BDD0; MH1 had two fixed strings).
+- Looked at, nothing a player sees: Lb_get_armor_num (G only bounds the loop by the box count, sub_main 0x4C9250), Warehouse_search_space /
+  Warehouse_equip_stack (already G-sized through UD_WARE_N), Lb_put_msg_type2 (online chat only).
+- Still open, probably noticeable: Lb_equip_set (G rewrote it; used by the box's equip-change), lb_armor_put_itemDetail / equip description
+  windows (GN7), Lb_make_quest_tbl (MH1 copy; G's Lb_make_quest_tbl_local is the one called), lb_npc_trans 0.78, DispDialogData 0.70, Disp_lb_item_box 0.71.
+  The rest of the lobby list is plaza/online code (lbc_*, Lbs_*, CallBack_*) that offline G does not reach in play.
+Windows G (verified from a clean clone, `./mh1 windows disc/mhg`, then `wine cmd /c play.bat data` with MH_ARGS="--shot ..." gave the same
+title picture as Linux): two host fixes were needed that the MH1 Windows build also needed (rt_hud_gun.c's RECT clashed with windows.h,
+viewer.c lacked a rt_font_set_draw declaration). A hidden G run needs `--play --boot` (plain `--shot` without it crashes in
+Em_data_com_adrs_get: no quest loaded; same on Linux). With `--shot` the exe does not look for the data folder: pass it (`data`).

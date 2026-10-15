@@ -800,6 +800,7 @@ static void write_wav(const char *path, const int16_t *pcm, size_t frames)
 }
 
 /* main()'s state (file scope so the game tick can run as game_core) */
+void rt_font_set_draw(int on);      /* rt_font.c: text drawn by the game, not the host (Windows build: no implicit declarations) */
 static const char *disc = NULL, *shot = NULL, *install_iso = NULL, *install_dir = NULL;
 #ifndef XBOX
 /* PS2 saves given on the command line / dropped on the window (rt_save.c) */

@@ -3,27 +3,32 @@
 # mhview.exe, SDL2.dll, play.bat, bug_report.bat (+ .ps1), README.txt and the licenses. Nothing is
 # uploaded or published. Run tools/build_win.sh first. The script REFUSES to zip when a file is larger
 # than expected or is named like one of the game's disc files (a guard against shipping Capcom data).
+# VERSION=mhg packages Monster Hunter G (build/winmhg from VERSION=mhg tools/build_win.sh): mhgpc-win32-*.zip with
+# mhview_g.exe, play.bat (tools/win/play_g.bat), bug_report.bat (bug_report_g.bat) and a G README.
 set -e
 cd "$(dirname "$0")/.."
+if [ "$VERSION" = mhg ]; then WB=build/winmhg; EXE=mhview_g.exe; PFX=mhgpc; else WB=build/win; EXE=mhview.exe; PFX=mh1pc; fi
 W=${WINROOT:-$HOME/mh1win}
 SDLLIC=$(ls -d "$W"/SDL2-[0-9]* 2>/dev/null | grep -v '\.tar' | tail -1)/LICENSE.txt
-[ -f build/win/mhview.exe ] && [ -f build/win/SDL2.dll ] || { echo "run tools/build_win.sh first"; exit 1; }
+[ -f $WB/$EXE ] && [ -f $WB/SDL2.dll ] || { echo "run tools/build_win.sh first (VERSION=mhg for G)"; exit 1; }
 [ -f "$SDLLIC" ] || { echo "SDL2 license not found ($SDLLIC)"; exit 1; }
 HASH=$(git rev-parse --short=8 HEAD 2>/dev/null || echo nogit)
 git diff --quiet HEAD 2>/dev/null || { echo "note: the working tree has uncommitted changes (the build says so with a + in its log)"; }
-NAME=mh1pc-win32-$(date +%Y%m%d)-$HASH
+NAME=$PFX-win32-$(date +%Y%m%d)-$HASH
 S=build/release/$NAME
 rm -rf "$S"; mkdir -p "$S/licenses"
-cp build/win/mhview.exe "$S/mhview.exe"
+cp $WB/$EXE "$S/$EXE"
 LLVM=$(ls -d "$W"/llvm-mingw-*msvcrt* 2>/dev/null | grep -v '\.tar' | head -1)
-"$LLVM/bin/llvm-strip" --strip-all "$S/mhview.exe"   # no debug info / symbol table: smaller, no build paths (the crash report uses its own table)
-cp build/win/SDL2.dll build/win/play.bat build/win/bug_report.bat build/win/bug_report.ps1 "$S/"
+"$LLVM/bin/llvm-strip" --strip-all "$S/$EXE"   # no debug info / symbol table: smaller, no build paths (the crash report uses its own table)
+cp $WB/SDL2.dll $WB/bug_report.ps1 "$S/"
+if [ "$VERSION" = mhg ]; then cp $WB/play_g.bat "$S/play.bat"; cp $WB/bug_report_g.bat "$S/bug_report.bat"
+else cp $WB/play.bat $WB/bug_report.bat "$S/"; fi
 # no debug info in a release: it holds the build machine's paths (crash backtraces use the
 # program's own symbol table, rt_host_symname, which stripping keeps)
 STRIP=$(ls "$W"/llvm-mingw-*/bin/llvm-strip 2>/dev/null | head -1)
 [ -n "$STRIP" ] || { echo "llvm-strip not found in $W"; exit 1; }
-"$STRIP" --strip-debug "$S/mhview.exe"
-if strings "$S/mhview.exe" "$S/SDL2.dll" | grep -q "$HOME"; then echo "REFUSED: build paths in the binaries"; exit 1; fi
+"$STRIP" --strip-debug "$S/$EXE"
+if strings "$S/$EXE" "$S/SDL2.dll" | grep -q "$HOME"; then echo "REFUSED: build paths in the binaries"; exit 1; fi
 cp third_party/libmpeg2/COPYING "$S/licenses/libmpeg2-COPYING.txt"
 cp "$SDLLIC" "$S/licenses/SDL2-LICENSE.txt"
 cat > "$S/licenses/NOTICE-GPL.txt" <<'EOT'
@@ -33,6 +38,47 @@ it the source code of this port is available under the GPL: https://github.com/i
 (the src/pc/ part and the build scripts; the game data is NOT included and stays Capcom's).
 SDL2 is under the zlib license (SDL2-LICENSE.txt).
 EOT
+if [ "$VERSION" = mhg ]; then
+cat > "$S/README.txt" <<'EOT'
+Monster Hunter G (PS2, Japan) - PC test build for Windows
+==========================================================
+
+THIS IS A TEST BUILD of a work in progress. It runs the original game's logic (decompiled from the Japanese
+PS2 game Monster Hunter G) on your PC. Most of the game is Japanese text; no online play; some effects and
+equipment screens are not done. Please report what you find (see "Bug reports").
+
+What you need
+  Your own disc image of the Japanese Monster Hunter G for PS2 (SLPM-65869), as a .iso file. The game's data
+  is NOT part of this download and never will be.
+
+First start (once)
+  Drag your .iso file onto mhview_g.exe (or onto play.bat). The program reads the ISO itself and copies the
+  game files it needs (about 1.1 GB) next to mhview_g.exe in the folder "data" (or, if that folder is not
+  writable, into %APPDATA%\mhgpc\data). Afterwards the ISO is not needed any more. A wrong disc or a damaged
+  image is detected (sizes and checksums are compared) and reported. Monster Hunter 1's disc is a different game.
+
+Playing
+  play.bat                   from power-on: logos, title, new hunter / continue, Kokoto village
+  play.bat quest             straight into quest 10 (Rathian)      play.bat easy      same, hunter cannot faint
+  Keyboard: W/A/S/D move, arrow keys attack, K roll (cross), L sheathe (circle = confirm in menus),
+  J item (square), I triangle, E guard, Q camera reset, Z/C L2/R2, T/F/G/H d-pad, Enter = Start (pause menu),
+  Backspace = Select, Esc quits. Xbox-style controllers work. In menus B (circle) confirms, A cancels.
+  Saves: %APPDATA%\mhgpc\memcard0 (separate from Monster Hunter 1; save in your house's bed, load with CONTINUE).
+  Display options (Alt+Enter fullscreen, --size, --widescreen, --vsync ...) work as in the Monster Hunter 1
+  build: put them after the name in play.bat's line, or set MH_ARGS=... before running play.bat.
+
+Bug reports
+  Press F8 in the game (or hold Back/View and press Start on a controller), click the broken things, type what is
+  wrong, press Enter. A report folder is saved in %APPDATA%\mhgpc\reports; nothing is sent anywhere. After a
+  problem run bug_report.bat (it makes mh1_bug_report_<date>.zip) and attach it at
+  https://github.com/itsbigcforme67/mh1-xbox/issues/new?template=bug_report.md
+
+Credits and legal
+  Monster Hunter is (c) CAPCOM CO., LTD. This project is not affiliated with, endorsed by or sponsored by
+  Capcom. The program is built from C code reconstructed (decompiled) from the Japanese PS2 game; none of
+  the game's data is included, so it needs your own copy of the game. See the licenses folder.
+EOT
+else
 cat > "$S/README.txt" <<'EOT'
 Monster Hunter (PS2, Japan) - PC test build for Windows
 =======================================================
@@ -103,6 +149,7 @@ Credits and legal
   the game's data (models, textures, sound, movies, text) is included, so it needs your own copy of the
   game. See the licenses folder (libmpeg2 is GPL, SDL2 is zlib).
 EOT
+fi
 # ---- guard: no home directory or user name in any file (build paths in debug info, scripts ...)
 ME=$(id -un)
 if grep -rl -a -e "$ME" "$S" >/dev/null 2>&1; then

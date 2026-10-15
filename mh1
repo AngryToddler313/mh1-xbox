@@ -1,13 +1,13 @@
 #!/bin/sh
 # mh1 - from "I have this repository and my disc image" to a game you can play.
 #
-#   ./mh1 linux   DISC [--out DIR] [--online] [--setup]     PC build for this Linux machine  -> dist/linux/
-#   ./mh1 windows DISC [--out DIR] [--online] [--setup]     PC build for Windows (cross-built here) -> dist/windows/
-#   ./mh1 xbox    DISC [--out DIR] [--setup]                original Xbox: XBE + data folder  -> dist/xbox/MH1/
-#                                                           (a Monster Hunter G disc: dist/xbox/MHG/, Xbox only for now)
+#   ./mh1 linux   DISC [--out DIR] [--online] [--setup]     PC build for this Linux machine  -> dist/linux/  (G: dist/linux/MHG/)
+#   ./mh1 windows DISC [--out DIR] [--online] [--setup]     PC build for Windows (cross-built here) -> dist/windows/  (G: dist/windows/MHG/)
+#   ./mh1 xbox    DISC [--out DIR] [--setup]                original Xbox: XBE + data folder  -> dist/xbox/MH1/  (G: dist/xbox/MHG/)
 #   ./mh1 check   DISC                                      only check the disc
 #
-# DISC is your own disc image of the JAPANESE Monster Hunter for the PlayStation 2 (SLPM-65495): the .iso file,
+# DISC is your own disc image of the JAPANESE Monster Hunter (SLPM-65495) or Monster Hunter G (SLPM-65869) for the
+# PlayStation 2; the game is detected from the disc. The .iso file,
 # or a folder with the files already copied off it. The disc is checked first (size and checksum of every file
 # the port reads), then the build tools are checked, then the game is built and the disc's files are copied next
 # to it. Nothing of the game's data is in this repository or in any build; the output folders hold your copy
@@ -25,10 +25,10 @@ die() { echo "mh1: $*" >&2; exit 1; }
 say() { echo "== $*"; }
 
 TARGET=$1; [ $# -gt 0 ] && shift
-DISC=""; OUT=""; ONLINE_BUILD=""; SETUP=""
+DISC=""; OUT=""; OUT_GIVEN=""; ONLINE_BUILD=""; SETUP=""
 while [ $# -gt 0 ]; do
     case "$1" in
-        --out) [ $# -ge 2 ] || die "--out needs a folder"; OUT=$2; shift ;;
+        --out) [ $# -ge 2 ] || die "--out needs a folder"; OUT=$2; OUT_GIVEN=1; shift ;;
         --online) ONLINE_BUILD=1 ;;
         --setup) SETUP=1 ;;
         -h|--help) TARGET=help ;;
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
 done
 case "$TARGET" in
     linux|windows|xbox|check) ;;
-    ""|help|-h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    ""|help|-h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown target '$TARGET'. Use: linux, windows, xbox or check (./mh1 --help)" ;;
 esac
 [ -n "$DISC" ] || die "give your disc image: ./mh1 $TARGET /path/to/Monster-Hunter-Japan.iso"
@@ -60,9 +60,11 @@ say "checking the disc (the checksum pass reads about 1 GB, 5 to 60 seconds)"
 python3 tools/disc_files.py check "$DISC" || die "stopping: the disc is not usable (see above). Nothing was built."
 [ "$TARGET" = check ] && exit 0
 GAME=$(python3 tools/disc_files.py game "$DISC") || die "cannot tell which game the disc is"
-if [ "$GAME" = mhg ] && [ "$TARGET" != xbox ]; then
-    die "this is the Monster Hunter G disc. G is only packaged for the Xbox so far (./mh1 xbox DISC); its PC
-build is still a work in progress (docs/mhg.md)."
+if [ "$GAME" = mhg ]; then
+    [ -z "$ONLINE_BUILD" ] || die "--online is not available for Monster Hunter G (no online play yet, docs/RELEASE_G.md)"
+    # G goes in its own folder (dist/linux/MHG, dist/windows/MHG, dist/xbox/MHG) unless --out says otherwise
+    [ -n "$OUT_GIVEN" ] || { OUT=$OUT/MHG; [ "$TARGET" != xbox ] || OUT=${OUT%/MHG}; }
+    say "this is the Japanese Monster Hunter G disc: building the G version (a work in progress)"
 fi
 
 # ---------------------------------------------------------------- 2. tools
@@ -152,6 +154,31 @@ copy_data() {   # copy_data DEST [files]
 case "$TARGET" in
 linux)
     need_linux_tools
+    if [ "$GAME" = mhg ]; then
+        say "building Monster Hunter G for Linux (first build: 10 to 30 minutes)"
+        sh tools/build_pc_mhg.sh > build/mhg_linux_build.log 2>&1 || { tail -20 build/mhg_linux_build.log; die "the G build failed; full log: build/mhg_linux_build.log"; }
+        mkdir -p "$OUT"
+        cp build/mhg/pc/mhview_g "$OUT/mhview_g"
+        [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
+        cat > "$OUT/play.sh" <<'EOS'
+#!/bin/sh
+# Start Monster Hunter G (see PLAYING.md). Extra options go to the game, e.g. ./play.sh --fullscreen
+#   ./play.sh quest   straight into quest 10 (Rathian)      ./play.sh easy   same, the hunter cannot faint
+cd "$(dirname "$0")"
+export MH1_SHOW=1       # a player gets a window (G runs by agents and tests are hidden by default)
+case "$1" in
+    quest) shift; exec ./mhview_g --play --quest 10 "$@" ;;
+    easy)  shift; RT_PL_GOD=1 exec ./mhview_g --play --quest 10 "$@" ;;
+esac
+exec ./mhview_g --play --boot "$@"
+EOS
+        chmod +x "$OUT/play.sh"
+        say "copying the game files from your disc to $OUT/data (about 1.1 GB)"
+        mkdir -p "$OUT/data"
+        python3 tools/disc_files.py extract "$DISC" "$OUT/data" --files "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_658.69" || die "copying the disc files failed"
+        say "done. Play with:  $OUT/play.sh"
+        exit 0
+    fi
     say "building the game for Linux (first build: 10 to 30 minutes)"
     sh tools/build_pc.sh > build/mh1_linux_build.log 2>&1 || { tail -20 build/mh1_linux_build.log; die "the build failed; full log: build/mh1_linux_build.log"; }
     if [ -n "$ONLINE_BUILD" ]; then
@@ -174,6 +201,22 @@ EOS
     ;;
 windows)
     need_win_tools
+    if [ "$GAME" = mhg ]; then
+        say "building Monster Hunter G for Windows (first build: 15 to 40 minutes)"
+        VERSION=mhg sh tools/build_win.sh > build/mhg_win_build.log 2>&1 || { tail -20 build/mhg_win_build.log; die "the G build failed; full log: build/mhg_win_build.log"; }
+        say "packaging"
+        VERSION=mhg sh tools/package_win.sh > build/mhg_win_package.log 2>&1 || { tail -20 build/mhg_win_package.log; die "packaging failed; log: build/mhg_win_package.log"; }
+        PKG=$(ls -dt build/release/mhgpc-win32-*/ | head -1)
+        PKG=${PKG%/}
+        rm -rf "$OUT"; mkdir -p "$OUT"
+        cp -r "$PKG"/. "$OUT"/
+        [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
+        say "copying the game files from your disc to $OUT/data (about 1.1 GB)"
+        mkdir -p "$OUT/data"
+        python3 tools/disc_files.py extract "$DISC" "$OUT/data" --files "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_658.69" || die "copying the disc files failed"
+        say "done. Copy the folder $OUT to the Windows PC (any place you can write to) and run play.bat in it."
+        exit 0
+    fi
     say "building the game for Windows (first build: 15 to 40 minutes)"
     sh tools/build_win.sh > build/mh1_win_build.log 2>&1 || { tail -20 build/mh1_win_build.log; die "the build failed; full log: build/mh1_win_build.log"; }
     if [ -n "$ONLINE_BUILD" ]; then
