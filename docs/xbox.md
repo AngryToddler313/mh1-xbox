@@ -1582,3 +1582,16 @@ reproduced in xemu).
    FTP server's lock ends when the dashboard starts the loader).
 4. Afterwards serve builds as before (`tools/xbox_serve.py`, without --data); G is also in the games list as
    "Monster Hunter G".
+
+**Owner's first try (14 Oct 2026): stayed on the Evolution X screen, the server got no request.**
+Rechecked in xemu with exactly what `xbox_upload.sh --loader` builds (default address; the built XBE differs
+from the one in the main checkout only in 6 timestamp bytes), E:\Games\MH1\loader.txt pointing at a test
+server, and E:\Games\MHG holding a half install like the owner's (default.xbe, SLPM_658.69, AFS01.AFS complete,
+AFS_DATA.AFS 60 MB, AFS00.AFS 50 MB, empty mh1data.txt; set up with the new `tools/xbox_fatx.py put`): the
+loader screen comes up, /version and /manifest arrive 1 s after DHCP, the first three files are checked OK and
+AFS_DATA.AFS resumes. Nothing before the loader's screen touches the network or E:\Games\MHG (it sets the
+video mode first, then mounts E:), so "stays on the Evolution X screen" means the XBE did not start at all.
+Candidates, not confirmed: the FTP upload of the loader ended early without an error (xbox_upload.sh now reads
+the size back from the listing and fails if it differs), or the half-copied G XBE (E:\Games\MHG\default.xbe,
+listed as "Monster Hunter G") was started instead of "Monster Hunter", or a file still locked by a stalled FTP
+transfer (restart the Xbox before trying).

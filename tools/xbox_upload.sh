@@ -32,6 +32,13 @@ rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj
 me=$(ip -4 route get "$XBOX" | sed -n 's/.* src \([0-9.]*\).*/\1/p')
 lt=$(mktemp); printf '%s:8765\n' "$me" > "$lt"
 put build/xbox/loader/default.xbe default.xbe
+# Evolution X's FTP can end a transfer early without an error: compare the size it lists
+have=$(curl -sS "${AUTH[@]}" "$URL/" 2>/dev/null | tr -d '\r' |
+	awk '$NF == "default.xbe" && NF >= 9 && $1 ~ /^-/ { s = $5 } $NF == "default.xbe" && NF == 4 { s = $3 } END { print s }')
+want=$(stat -c %s build/xbox/loader/default.xbe)
+if [ -z "$have" ]; then echo "   (could not read the size back; the listing gave nothing)"
+elif [ "$have" != "$want" ]; then echo "   default.xbe is $have bytes on the Xbox, should be $want: run this again"; exit 1
+else echo "   default.xbe: $have bytes, complete"; fi
 put "$lt" loader.txt; rm -f "$lt"
 if [ "$1" = --data ]; then
 	for f in AFS00.AFS AFS01.AFS AFS_DATA.AFS SLPM_654.95; do
