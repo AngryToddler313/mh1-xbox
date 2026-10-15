@@ -1961,3 +1961,19 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   open list: RELEASE_G.md section 6.
 - **Tests.** Hidden runs: tools/pc_scripts-style pad scripts, `START` then 200 idle ticks puts the cursor on CONTINUE (row 1), 3 downs = NETWORK OPTIONS, 1 down = GALLERY; `RT_OMAKE=0xFFFF` opens the
   gallery entries. Needs a card with a hunter (newgame.txt run first with MH1_SAVE_DIR set).
+
+
+## G main lane round 2 (15 Oct 2026): status pages, equipment windows, camera, timers (PC build, VERSION_MHG only)
+- **Status pages (src/main/menu/status_g.c).** G's pause-menu STATUS has 5 pages: 1 status (name at y 0x52, ID only online at 0x66, job, rank "%2d" + title "[%s]" at 0x18C, points, money, HP,
+  stamina/3, attack = (u16 atk * job_atk_adj_tbl[job] / 100) with G's table of percentages, defence, four resistances, comment at User_data+0xC9C), 2 equipment (+ the worn skills), 3-5 skill pages
+  built into a sorted 27-row table (16 bytes: key, flags, kind, 5 piece points, total, colours; built by Menu_status_i, `gskill_build`). Formats come from G's own pointer cells (0x527D10..): never use
+  the MH1 literal names (lit_3587.. are different strings or pointer cells in G). The PS2 printf accepts "%3+d" (sign after width); glibc does not: the port writes "%+3d".
+- **Equipment windows (src/main/menu/equip_g.c).** Page flags a3: bits 0-2 page, 8 grey (not wearable), 0x10 an extra page, 0x40 / 0x80 arrow variants; a weapon has 2 pages (gun 4), armour 3.
+  t0 = the compared entry (6 bytes {be, kind, id, w4}); t1 = frame alpha (the PC callers pass 5 arguments: 0xB2). G texture 0x13F / 0x141 = PC mem_tex 0x118 / 0x11A (G - 0x27).
+  A table the pointer scan mistakes for pointers corrupts the image: mark data (lengths, colours) `noptr` in pc_data.txt (gslash_rows).
+- **Wall functions.** Checked with an opcode-sequence compare (mnemonic + callee, registers and immediates masked): GetWallHitBit2/Em/Pl differ from MH1's only by two out-of-line search helpers
+  (func_00106000 / 00106050: "is this polygon already in the list") and register/stack choices. Only HitWallPlayer changed behaviour.
+- **Camera.** G's CAMD_STD offsets are in cam.h (G); cam_sub_std's helpers: func_001DACA0 (water camera trigger, reads CameraWork.pl), func_001DAC00 (x5F7), func_001DAE60 (eye lift: needs func_0010AE00,
+  a ground line test of 2 KB: not ported, the lift stays 0). stage_camera_data_ex has entries of 0x1C bytes in G (0x80 total).
+- **Not done (main lane):** disp_savesel / disp_savesel_moji (save slot contents), trans_stage (+450 instructions), Pl_item_stack, pl_move_sub, body_hit_sub_new, Put_receive_mark, k_HitEmCamera,
+  QuestClearCameraRequest, NPCZoomInCamera*, the HUD bits (disp_timer ...), the effect lane (eft13* / eft20*).
