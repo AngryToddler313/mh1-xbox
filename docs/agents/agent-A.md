@@ -955,3 +955,23 @@ All PC-only G code (`#ifdef VERSION_MHG` in *_nm.c / PC files, or `VERSION_MHG &
   achieved with the warp aid (the hunter stands inside the body or the boss flies / burrows); thrown knives fly straight (traced, trace removed).
 - G result module (sub_main 0x4F3A50-0x4F8030) mapped: 20-step result_prog, item hand-in (0x4F4900, five G item ids), crown/record and
   hunting-log announcements (0x4F4620 / 0x4F4780), gallery unlocks (0x4F41B0), new result screens. Not ported (RELEASE_G GN17).
+
+## G round 10: the quest result module, Plesioth / Cephadrome G moves, poison knife (15 Oct 2026)
+
+- **f_reward_g.c** (PC only, VERSION_MHG): G's whole result module (sub_main 0x4F3A50-0x4F7FDC) written from gdraft drafts read against
+  `mhg_fdiff.py -g` listings (m2c dropped call arguments and merged jump-table cases: check `case 0` of every gold/sale/point display:
+  it is the footer only). tools/build_pc.sh swaps f_reward.c / f_reward2.c / f_reward3.c for it (G only). G strings and tables through
+  pc_data.txt allptr tables (result_msg / result_str / result_str2 / movie_add_str_tbl at G size 0x54); G's result_w is a host static.
+- **func_0012D170 bug** (rt_quest.c): it read game_w+0x2F3 / +0x2C0 (past the host's game_w) and tested the second byte the wrong way;
+  G's code reads system_w+0x43 / +0x10 (1 = 0x43 set, network off). It returned 1 in test runs: pouch restored after each quest,
+  no item sale. Lesson: a G helper that reads "game_w+0x2xx" past G's 0x240-byte game_w is reading another object; take the name from
+  G's symbol view (system_w here).
+- Shots (hidden, RT_SHOTS with tools/test_all_quests_g.sh): build/A/gn17/1_reward_list .. 7_gallery_title.png. RT_PL_ITEMS="145:3,178:2"
+  with quest 10 shows the sale; quest 10015 shows record + training + gallery title; quest 10043 the ecology movie.
+- **em21 (Plesioth)**: game 0x62DB60 replaces `x388 = v` in 63 acts and picks em_range_set (scratch rng2.py found each call's value and
+  flag by following li/move to a1/a2 from the function start: the flag is often a leftover `li a2,1` from a case compare). Part-3 damage
+  act 23. **em08 is Cephadrome**, not Plesioth (round 9's note was wrong; G's symbol view gives G addresses MH1 names like BsDummyTask,
+  which made fly07/10/16 look rewritten). em08 atk03/04 ported.
+- **Poison knife**: tools/test_activities.py's pinned-Rathian setup with mhview_g (scratch knife.py): one knife hits (hp -4), stock +50,
+  tolerance 200, decays 10 a step; later knives miss once the Rathian turns to attack.
+- Open: em21 die case 4 (game 0x60CF20), the quest-10035 stage-54 demo (em21_main -> 0x60C280), em21/em08 init char-set (0x549FE0).

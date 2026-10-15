@@ -312,3 +312,12 @@ lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The
 - Found on the way [checked]: the PC imported G's em_parts_num (motion layers per kind) at 40 entries, so kinds 40-51
   read past it, and its em_type_act_set had no G kinds 35-50, so the command programs of all G subspecies set no
   acts on the PC; both fixed (config/mhg/pc_data.txt, em_core_nm.c).
+
+## G's quest result oddities (agent A, 15 Oct 2026)
+- **Plesioth's swapped flinch** [checked: G asm game 0x632AC0 / 0x636AF0 vs MH1 0x6051D0 / 0x608840]: in MH1 a break of
+  part 3 plays the flinch motions 0x45.. and other parts 0x4A..; G moved part 3 to a new damage act 23 that passes the
+  opposite flag, so the two motion sets are swapped in G. Whether that was a fix or a slip is not known.
+- **The quest-score line** [checked: G asm sub_main 0x4F5D40]: the result screen's title reads "クエストスコア：" followed by the
+  hunter's name (online: the network handle); there is no score number anywhere in the code.
+- **Cephadrome's unused-in-MH1 attack slots** [checked: asm]: MH1's em08 atk03 / atk04 are 8-byte stubs that only return to
+  swimming; G fills both with three-way sand spreads (motions 0x74 / 0x75), which suggests the slots were reserved in MH1.
