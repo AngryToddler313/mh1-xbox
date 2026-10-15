@@ -1333,6 +1333,11 @@ static void em_atk04_00591E10(EMW *em) {
         break;
     case 1:
         if (em_frame_check(em, 210.0f, 0) != 0) {
+#ifdef VERSION_MHG
+            if (em->x8C3 == 0) {        /* G 0x5BD9A8: the hit on the fortress is seen by em command 0x2B sub 5 */
+                ((EM07W *)em->ex)->x18 = 2;
+            }
+#endif
             toride_eff_set(em);
         }
         if (em->x194 == 0) {
@@ -1353,7 +1358,14 @@ static void em_atk05_00591EC0(EMW *em) {
         break;
     case 1:
         if (em_frame_check(em, 210.0f, 0) != 0) {
+#ifdef VERSION_MHG
+            if (em->x8C3 == 0) {        /* G 0x5BDA78 */
+                ((EM07W *)em->ex)->x18 = 3;
+            }
+            game_w.flag1B3 |= 1;           /* G game_w+0x189: the gate on stage 28 is broken (set04 hidden) */
+#else
             *(u8 *)0x3F35A3 |= 1;
+#endif
             toride_eff_set(em);
         }
         if (em->x194 == 0) {
@@ -1752,7 +1764,11 @@ static void em_demo00_00592950(EMW *em) {
         }
         break;
     case 7:
+#ifdef VERSION_MHG
+        if (Event_flag_ck(em->kind == 7 ? 0x18 : 0x23) == 1) {     /* G 0x5BE700: kind 50 has flag 35 */
+#else
         if (Event_flag_ck(0x18) == 1) {
+#endif
             em->x05++;
             em07_to_normal(em);
         }
@@ -1954,10 +1970,19 @@ void em07_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    /* G (game 0x5BEB80): no quest-number test; on stage 14 the monster waits for its event demo (flag 24 for
+     * kind 7, 35 for kind 50: G EvDemoInitialize's per-kind demo, src/main/evdemo/evdemo.c) */
+    if (1) {
+        switch (em->stg) {
+        case 14:
+            if (Event_flag_ck(em->kind == 7 ? 0x18 : 0x23) == 0) {
+#else
     if (quest_w.no == 0x65 || quest_w.no == 0x6B || quest_w.no == 0xB8 || quest_w.no == 0xCE) {
         switch (em->stg) {
         case 14:
             if (Event_flag_ck(0x18) == 0) {
+#endif
                 if (game_w.info_stop == 1 && em->mode != 6) {
                     em07_act_set(em, 6, 0, 0);
                 }

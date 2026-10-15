@@ -255,3 +255,8 @@ kakou_tbl = 0x005129B0; // size:0x23C0             # upgrade table by weapon id,
 [sub_main]
 hunt_group_tbl = 0x004FEE90; // size:0x340 allptr
 equip_set_tbl = 0x004FF1D0; // size:0x10 allptr
+# G's event-demo entries (agent A, 15 Oct 2026): 19 x {stage, flag, camera, species, kind, se, bgm0, bgm1, check, event};
+# the MH1 names evdemo_03..24 point into it. Entries 8-11 are G's per-kind demos (Lao-Shan kind 7 / 50, kinds 2 / 36:
+# game 0x54A5D0); src/main/evdemo/evdemo.c (G EvDemoInitialize)
+[game]
+evdemo_g_tbl = 0x00678280; // size:0x130

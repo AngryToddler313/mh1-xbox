@@ -38,7 +38,7 @@ if G:
     EGGS = {515: EGGS[145], 516: EGGS[146]}     # G's wyvern egg / herbivore egg (MH1 145 / 146), same nests; other carried
                                                 # items: the nest the dry run's RT_PICK_ALL lists (one item at 100%)
     SKIP = {}
-    KNOWN = {10048: 'Lao-Shan: G Em_Dmg_Sys keeps kinds 7/50 at >= 1000 hp off stage 12; on the PC it walks to stage 28 and stays (G em07_main/init and the quest event demo not ported)'}
+    KNOWN = {}
 
 def run(q, env, inp, secs, tag):
     e = dict(os.environ, RT_NOMOVIE='1', RT_QUEST_TRACE='1', **env)
@@ -170,6 +170,12 @@ def test(q):
             env['RT_PL_TARGET'] = 'k%d,%s' % (kind, ','.join(map(str, extra)))   # (a boss off the hunter's stage cannot be slain)
             env['RT_PL_SLAY'] = '8000,%s' % ','.join(map(str, [kind] + extra))
             note.append('then bosses %s' % '+'.join(map(str, extra)))
+        elif kind == p['boss'] and G and kind in (7, 50):
+            # Lao-Shan: G's Em_Dmg_Sys keeps it at >= 1000 hp off stage 12; it walks the fortress (14 -> 30 -> 28, breaks
+            # the gate, 11 -> 12, ~58000 ticks unattended). The hunter waits on stage 12 and fights it there.
+            env.update(RT_PL_GOTO='60,12', RT_PL_WARP_EM='60000-90000', RT_PL_SLAY='60000')
+            secs = 2700
+            note.append('Lao-Shan: waits on stage 12')
         elif kind == p['boss']:
             env['RT_PL_SLAY'] = '8000'       # a boss that stays out of reach (Rathalos aloft) is brought down after 8000 ticks
         elif p['boss'] >= 0:                 # the quest's main monster must die too (quest_enemy_ck): slay it from the start
@@ -221,8 +227,9 @@ def g_result(q, p, rc, d, dt, clear, note, secs):
         why.append('no quest clear in %ds (last: %s)' % (secs, last[-1][9:90] if last else '-'))
     elif not re.search(r'tick \d+ mode 5 step', d): why.append('clear but no reward screen')
     elif 'rt_flow: rewards:' not in d: why.append('reward screen without a reward list')
-    # time-out: the quest's time set to 20 s, the hunter idles in the camp
-    rc2, d2, _ = run(q, {'RT_QUEST_TIME': '600'}, 'idle*2400', 60, 'q%d_to' % q)
+    # time-out: the quest's time set to 20 s, the hunter idles in the camp (150 s: a quest's event demo, e.g. the
+    # Lao-Shan's ~70 s one, stops the quest clock while it runs)
+    rc2, d2, _ = run(q, {'RT_QUEST_TIME': '600'}, 'idle*5000', 150, 'q%d_to' % q)
     if rc2 not in (0, None) or 'Segmentation' in d2: why.append('time-out run: crash/exit %s' % rc2)
     elif not re.search(r'x06 6', d2): why.append('no quest failure on time-out')
     return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s (%d monsters), %.0fs' % ('; '.join(note), spawned, dt), p
