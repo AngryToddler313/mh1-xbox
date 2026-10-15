@@ -371,3 +371,6 @@ armor_exp = 0x002ABC00; // size:0x44A0
 [sub_main]
 gslash_rows = 0x00515160; // size:0x1E0 noptr      # the sharpness band lengths (cumulative shorts); Pl_slash_tbl points into them. The pointer scan took 0x006E0050 at +0 for a pointer
 gequip_str = 0x00527D60; // size:0x190               # label lists, wearable types, formats, ammo and element names (index 0 = G 0x527D60)
+# follow camera (G main 0x1D9D60, src/main/cam/cam_nm.c; agent C, 15 Oct 2026): the stage camera entries are 0x1C bytes (MH1 symbol is one entry)
+[main]
+stage_camera_data_ex = 0x00289AA0; // size:0x80 noptr

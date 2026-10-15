@@ -864,6 +864,368 @@ u8 GetWallHitLine(f32 *, f32 *, f32 *, s32);
 void PointToPoint(f32 *, f32 *, f32 *);
 f32 flvecCalcLength(f32 *);
 
+#ifdef VERSION_MHG
+/* G (main 0x1D9D60, PC build): the follow camera. Differences from MH1: the pad (right / left, 0xC00) turns the camera before the
+ * reset-behind checks and the wall turn is a smooth 1/8 per frame; angle 1/4 (MH1 1/6), target height 1/2 (MH1 1/4), the field of view
+ * eases to its wanted value; the stage tables stage_camera_data_ex (0x1C bytes per entry) for the water camera (func_001DACA0) and the
+ * x5F7 states (func_001DAC00); a camera farther than 700 from the target jumps to its wanted place; the eye is raised by x2C while the
+ * view is blocked by a ridge (func_001DAE60: its ground line test func_0010AE00 is not ported, so x2C stays 0). */
+void SubVector(f32 *, f32 *, f32 *);
+#define GCAM_SCD(o) ((CAMCNFE *)((u8 *)&stage_camera_data_ex + (o)))   /* G's table: entries of 0x1C bytes (config/mhg/pc_data.txt: 0x80 bytes) */
+
+/* func_001DACA0: the hunter swimming deep (state 2 with the camera well below the surface) for 4 frames: the water camera entry */
+static int gcam_water(CAMD_STD *d, PLW *pl)
+{
+    int lvl = 0;
+
+    if (pl->flag14 == 2) {
+        d->x29 = 0;
+        return 0;
+    }
+    if (pl->st == 2) {
+        lvl = 1;
+        if (pl->pos[1] < *(f32 *)((u8 *)pl + 0x5A4) - 10.0f) {
+            lvl = 2;
+            if (!(pl->pos[1] <= 300.0f + GetGroundHit(pl->pos))) {
+                lvl = 3;
+            }
+        }
+    }
+    switch (d->x29) {
+    case 0:
+        if (lvl < 3) {
+            d->x2A = 4;
+            return 0;
+        }
+        d->x2A--;
+        if (d->x2A > 0) {
+            return 0;
+        }
+        d->x29++;
+        /* fall through */
+    case 1:
+        if (lvl & 1) {
+            d->x2A = 0xF;
+            return 1;
+        }
+        d->x2A--;
+        if (d->x2A > 0) {
+            return 1;
+        }
+        d->x29 = 0;
+        return 0;
+    default:
+        return 0;
+    }
+}
+
+/* func_001DAC00: x5F7 = 1 / 2 (the table entries 0 / 1 of stage_camera_data_ex + 0x20) while the hunter is in state 3 and the eye was raised by walls */
+static void gcam_x5F7(CAMW *cw, CAMD_STD *d)
+{
+    PLW *pl = cw->pl;
+
+    if (cw->x5F7 == 0) {
+        if (pl->st == 3 && !(d->hit_h <= 50.0f)) {
+            cw->x5F7 = 1;
+        }
+    } else {
+        cw->x5F7 = 1;
+        if (pl->st != 3) {
+            cw->x5F7 = 2;
+            if (d->hit_h < 75.0f) {
+                cw->x5F7 = 0;
+            }
+        }
+    }
+    if (cw->x5F7 != 0) {
+        d->hit_h = 0.0f;
+    }
+}
+
+/* func_001DAE60: the eye lift behind a ridge (see the header: always eases back to 0 here) */
+static f32 gcam_lift(CAMD_STD *d)
+{
+    d->x2C = d->x2C - 20.0f;
+    if (d->x2C < 0.0f) {
+        d->x2C = 0.0f;
+    }
+    return d->x2C;
+}
+
+void cam_sub_std(CAMW *cw, CAMS *cs) {
+    CAMD_STD *d;
+    PLW *pl;
+    CAMAREA *area;
+    CAMS *o2;
+    f32 in[3];
+    f32 o[3];
+    s32 a[3];
+    f32 hit[3];
+    f32 v[3];
+    FLMAT m;
+    f32 gnd;
+    f32 lim;
+    f32 g;
+    f32 len;
+    f32 t;
+    s32 diff, k, f, n;
+    u8 r;
+    u8 *p;
+
+    if (cw->cam_no != 0) {
+        cs->act = 0;
+        cs->step.b = 0;
+        return;
+    }
+    cs->act = 1;
+    d = &cs->d.std;
+    cw->x5FC = 1;
+    cw->x5F8 = 1.0f;
+    pl = cw->pl;
+    std_cam_sw_set_sub(cw, d);
+    flvecCopy(d->old, d->eye);
+    if (cw->reset != 0) {
+        d->wall = 0;
+        d->ang = pl->x3A8 + 0x7FFF + 1;
+    } else {
+        r = cs->req;
+        if (r != 0xFF) {
+            cs->req = 0xFF;
+            o2 = (CAMS *)((u8 *)cw + (r << 8) + 0x80);
+            d->ang = d->ang2 = 10430.378f * flArcTan2(o2->eye[0] - o2->tar[0], o2->eye[2] - o2->tar[2]);
+        } else if (cw->cam_old != 0) {
+            d->ang = d->ang2 = 10430.378f * flArcTan2(cw->eye[0] - cw->tar[0], cw->eye[2] - cw->tar[2]);
+        } else if (d->on & 0xC00) {
+            k = game_w.x0F == 2 ? -950 : 950;
+            if (d->on & 0x800) {
+                d->ang = d->ang + k;
+            }
+            if (d->on & 0x400) {
+                d->ang = d->ang - k;
+            }
+        } else if ((d->trg & 8) || pl->x8C8 != 0) {
+            d->ang = pl->ang[1] + 0x7FFF + 1;
+        } else if (d->wall != 0) {
+            s32 tt = (s16)(pl->ang[1] ^ 0x8000);
+            s32 aa = d->ang;
+            s32 v1 = tt - aa;
+
+            if ((u32)v1 < 0x8000) {
+                d->ang = aa + (s16)((s16)v1 >> 3);
+            } else {
+                d->ang = aa - (s16)((s16)(0x10000 - (s16)v1) >> 3);
+            }
+            d->wall = 0;
+        }
+    }
+    a[0] = 0;
+    a[1] = d->ang2;
+    a[2] = 0;
+    cpRotMatrix(a, (f32 *)&m);
+    d->fov_d = d->cnf->fov;
+    area = cw->area;
+    if (area->type != 0) {
+        d->cnf = &cam_cnf_chs;
+    } else {
+        d->cnf = &area->u.cnf;
+    }
+    if (gcam_water(d, pl) == 1) {
+        d->cnfe = GCAM_SCD(0x60);
+    } else if (cw->x5F7 != 0) {
+        d->cnfe = GCAM_SCD(0x20 + (cw->x5F7 - 1) * 0x1C);
+    } else if (pl->x714 != 0) {
+        d->cnfe = GCAM_SCD(0);
+    } else {
+        if (game_w.x0F == 0) {
+            if (d->trg & 0x1000) {
+                if (cw->zoom > 0) {
+                    cw->zoom--;
+                }
+            }
+            if (d->trg & 0x2000) {
+                if (cw->zoom < 3) {
+                    cw->zoom++;
+                }
+            }
+        } else {
+            if (d->trg & 0x2000) {
+                if (cw->zoom > 0) {
+                    cw->zoom--;
+                }
+            }
+            if (d->trg & 0x1000) {
+                if (cw->zoom < 3) {
+                    cw->zoom++;
+                }
+            }
+        }
+        if (pl->st == 1 && cw->zoom == 2) {
+            d->cnfe = &d->cnf->e[4];
+        } else {
+            d->cnfe = &d->cnf->e[cw->zoom];
+        }
+    }
+    in[0] = 0;
+    in[1] = d->cnfe->y;
+    in[2] = d->cnfe->z;
+    gnd = d->cnfe->gnd;
+    if (pl->x10 == 0) {
+        d->tar_d[1] = pl->pos[1] + d->cnfe->tar_y;
+    } else {
+        d->tar_d[1] = 140.0f + pl->pos[1];
+    }
+    if (pl->flag604 != 3 && pl->flag604 != 0) {
+        in[0] = 0;
+        in[1] = 400.0f;
+        in[2] = 400.0f;
+        d->tar_d[1] = 100.0f + pl->pos[1];
+    } else if (pl->flag604 != 0 || act_ck(pl, 0, 0x11) != 0 || act_ck(pl, 0, 0x1B) != 0 || act_ck(pl, 0, 0x1E) != 0 || act_ck(pl, 0, 0x3A) != 0) {
+        in[0] = 0;
+        in[1] = 20.0f;
+        in[2] = d->cnfe->z;
+        d->tar_d[1] = 30.0f + pl->pos[1];
+    }
+    flvecApplyMat33(o, in, (f32 *)&m);
+    lim = 100.0f;
+    d->tar_d[0] = pl->pos[0];
+    d->tar_d[2] = pl->pos[2];
+    d->tar[0] = pl->pos[0];
+    d->tar[2] = pl->pos[2];
+    d->eye_d[0] = d->tar_d[0] + o[0];
+    d->eye_d[1] = pl->pos[1] + o[1];
+    d->eye_d[2] = d->tar_d[2] + o[2];
+    g = GetGroundHit(d->tar_d);
+    if (-(g - d->gnd) < 100.0f) {
+        d->gflag = 0;
+        d->gnd = g;
+    } else {
+        switch (d->gflag) {
+        case 0:
+            d->gflag = 1;
+        case 1:
+            lim = 1000.0f;
+            break;
+        default:
+            d->gflag = 0;
+            d->gnd = g;
+            break;
+        }
+    }
+    g = GetGroundHit(d->eye_d);
+    if (g - d->eye_d[1] < lim) {
+        g = g + gnd;
+        if (!(g <= d->eye_d[1])) {
+            d->eye_d[1] = g;
+        } else {
+            d->gflag = -1;
+        }
+    }
+    diff = (u16)(d->ang - d->ang2);
+    if (diff >= 0x8001) {
+        d->ang2 = d->ang2 - (s16)((u16)(d->ang2 + 0x10000 - d->ang) >> 2);
+    } else {
+        d->ang2 = d->ang2 + (s16)(diff >> 2);
+    }
+    d->tar[1] = d->tar[1] + 0.5f * (d->tar_d[1] - d->tar[1]);
+    d->fov = d->fov + 0.5f * (d->fov_d - d->fov);
+    d->eye[1] = d->eye[1] + 0.125f * (d->eye_d[1] - d->eye[1]);
+    d->eye[0] = d->eye[0] + (d->eye_d[0] - d->eye[0]);
+    d->eye[2] = d->eye[2] + (d->eye_d[2] - d->eye[2]);
+    k_HitEmCamera(d->eye, d->old, 0);
+    k_HitWallCamera(d->eye, d->old, &d->hit_h);
+    SubVector(v, d->eye, d->tar);
+    if (v[0] * v[0] + v[1] * v[1] + v[2] * v[2] > 490000.0f) {
+        flvecCopy(d->eye, d->eye_d);
+        flvecCopy(d->old, d->tar_d);
+        k_HitEmCamera(d->eye, d->old, 0);
+        k_HitWallCamera(d->eye, d->old, &d->hit_h);
+    }
+    d->wall = GetWallHitLine(d->tar, d->eye, hit, game_w.gate_open != 0 ? 0xC009 : 9);
+    g = GetGroundHit(d->eye) + gnd;
+    if (!(g <= d->eye[1])) {
+        d->eye[1] = g;
+    }
+    if (d->x6E == 0) {
+        lim = 400.0f;
+    } else {
+        lim = 450.0f;
+        d->x6E = 0;
+    }
+    PointToPoint(v, d->tar, d->eye);
+    len = flvecCalcLength(v);
+    if (len < lim) {
+        f32 x2 = v[0] * v[0], y2 = v[1] * v[1], z2 = v[2] * v[2];
+        f32 ang = flArcCos(flSqrt((x2 + z2) / (z2 + (x2 + y2))));
+
+        if (v[1] < 0.0f) {
+            if (0.5890486f < ang) {
+                d->x6E = 1;
+                len = len * flSin(0.5890486f);
+                d->tar[1] = d->eye[1] - len;
+            }
+        } else if (0.36815539f < ang) {
+            d->x6E = 1;
+            len = len * flSin(0.36815539f);
+            d->tar[1] = d->eye[1] + len;
+        }
+    }
+    if (cw->area_chg != 0) {
+        f = 0xF;
+        if (area != NULL) {
+            p = area->blend;
+            if (p != NULL) {
+                n = 16;
+                do {
+                    if (p[0] == cw->area_old) {
+                        f = p[1];
+                        break;
+                    }
+                    p += 2;
+                    n--;
+                } while (n != 0);
+            }
+        }
+        if (f != 1 && f != 0) {
+            cs->step.b = 1;
+            cs->cnt = f - 1;
+            d->rate = 1.0f / (f32)f;
+        } else {
+            cs->step.b = 0;
+        }
+    }
+    gcam_x5F7(cw, d);
+    if (!(d->hit_h <= 30.0f)) {
+        d->hit_h = 30.0f;
+    }
+    flvecCopy(cs->eye, d->eye);
+    flvecCopy(cs->tar, d->tar);
+    cs->eye[1] += d->hit_h;
+    cs->eye[1] += gcam_lift(d);
+    switch (cs->step.b) {
+    case 0:
+        cs->roll = d->roll;
+        cs->fov = d->fov;
+        return;
+    case 1:
+        flvecCopy(cs->eye_f, cw->eye);
+        flvecCopy(cs->tar_f, cw->tar);
+        cs->roll_f = cw->roll;
+        cs->fov_f = cw->fov;
+        cs->step.b++;
+    case 2:
+        t = (f32)cs->cnt * d->rate;
+        cpInterVector(cs->eye, cs->eye_f, cs->eye, t);
+        cpInterVector(cs->tar, cs->tar_f, cs->tar, t);
+        cs->roll = cs->roll_f * t + d->roll * (1.0f - t);
+        cs->fov = cs->fov_f * t + d->fov * (1.0f - t);
+        cs->cnt--;
+        if (cs->cnt == 0) {
+            cs->step.b = 0;
+        }
+        return;
+    }
+}
+#else
 void cam_sub_std(CAMW *cw, CAMS *cs) {
     CAMD_STD *d;
     PLW *pl;
@@ -1134,6 +1496,7 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
         return;
     }
 }
+#endif
 
 /* cam_sub_stg (0x2206B0-0x220EDC): stage (fixed / rail / pan) camera. Written
  * from the m2c draft and the asm; not yet compared with check.py. */
