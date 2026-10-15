@@ -548,8 +548,21 @@ void poison_stock_set(EMW *em, int n) {
 
     if (n != 0 && em->poison_tol > 0) {
         em->x7BA = em->x7BA + n;
+#ifdef VERSION_MHG
+        /* G (game 0x583954): while poisoned the stock only builds up to tolerance - 1 (no decay reset);
+           reaching the tolerance empties the stock */
+        if (em->taisei & 4) {
+            if (em->x7BA >= em->poison_tol) {
+                em->x7BA = em->poison_tol - 1;
+            }
+            return;
+        }
+#endif
         em->x7BE = d->decay;
         if (em->x7BA >= em->poison_tol) {
+#ifdef VERSION_MHG
+            em->x7BA = 0;
+#endif
             em->taisei |= 4;
             em->x7C0 = d->add;
             em->x7BE = 0;
