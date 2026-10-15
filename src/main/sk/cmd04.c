@@ -1,13 +1,14 @@
 /* Soft keyboard conversion (0x00263D20-0x002640B8): comkan_init, sk_letlenB/U, cmd_dakuten/handakuten, sk_zenkaku_ck. See cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);

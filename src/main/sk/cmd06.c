@@ -1,13 +1,14 @@
 /* cmd06 - f_cmd 0x002633A0-0x00263554: Set_KouhoTable. Whole file in cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -96,19 +97,19 @@ void Set_KouhoTable(void)
   s8 *t;
   int j;
   s8 *q;
-  *((s32 *) (lpSKey + 0x144)) = 0;
-  *((s32 *) (lpSKey + 0x148)) = 0;
-  if ((*((s32 *) (lpSKey + 0x150))) != 0)
+  *((s32 *) (lpSKey + SKO(0x144))) = 0;
+  *((s32 *) (lpSKey + SKO(0x148))) = 0;
+  if ((*((s32 *) (lpSKey + SKO(0x150)))) != 0)
   {
     memset(kouho_work, 0, 0x10100);
     memset(kouhogun, 0, 0x300);
-    n = *((s32 *) (lpSKey + 0x150));
+    n = *((s32 *) (lpSKey + SKO(0x150)));
     cnt = n - 1;
     if (n > 3)
     {
       cnt = 2;
     }
-    if ((*((s8 *) (lpSKey + 0x36))) != 0)
+    if ((*((s8 *) (lpSKey + SKO(0x36)))) != 0)
     {
       i = 0;
       if (0 < (cnt + 1))
@@ -124,10 +125,10 @@ void Set_KouhoTable(void)
     }
     else
     {
-      strcpy(((char *) kouho_work) + 1, ((char *) lpSKey) + 0x458);
-      if ((*((s32 *) (lpSKey + 0x150))) > 1)
+      strcpy(((char *) kouho_work) + 1, ((char *) lpSKey) + SKO(0x458));
+      if ((*((s32 *) (lpSKey + SKO(0x150)))) > 1)
       {
-        kouho_work[0] = *((s32 *) (lpSKey + 0x14C));
+        kouho_work[0] = *((s32 *) (lpSKey + SKO(0x14C)));
       }
       i = 0;
       if (0 < cnt)
@@ -137,7 +138,7 @@ void Set_KouhoTable(void)
         do
         {
           t = kouho_work + (j + 0x101);
-          q[0x101] = apiask_21_NextKouho(t + 1, lpSKey + 0x558);
+          q[0x101] = apiask_21_NextKouho(t + 1, lpSKey + SKO(0x558));
           i++;
           j += 0x101;
           q += 0x101;

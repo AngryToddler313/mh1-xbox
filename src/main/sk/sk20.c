@@ -1,6 +1,7 @@
 /* sk20 - f_sk 0x0027BF80-0x0027C0AC: Reibun_print (prints a phrase cut to n characters, ending in an SJIS ellipsis when too long),
  * SoftkeyAppInit (empty), SoftkeyLoad, SoftkeyTextureSet, SetBlendingMode. */
 #include "types.h"
+#include "sk_g.h"
 #include "g_alias.h"
 
 void font_print_uf(char *);

@@ -353,14 +353,14 @@ static void sk_reibun_input(void) {
         cmd_kakutei_all();
         s = *(s32 *)(SKP(0xC) + 0xC);
         if (s == 0) {
-            se_req(7, 0x15, 0);
+            SK_SE(0x15);
             return;
         }
         strcpy(buf, (char *)s);
         n = kbd_insert(lpSKey + SKO(0x44), buf, SKU16(0x2A), SKU16(0x3A));
         SKU16(0x2A) = SKU16(0x2A) + n;
         SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
-        se_req(7, 0x16, 0);
+        SK_SE(0x16);
     }
 }
 #endif
@@ -408,7 +408,7 @@ void sk_zen_han_chg(void) {
         SKB(0x24) = x;
         SKB(0x25) = y;
     }
-    se_req(7, snd, 0);
+    SK_SE(snd);
 }
 #endif
 
@@ -421,7 +421,7 @@ void sk_backspace(int a, int b, void *c) {
 
     if (m != 0xC && m != 0xD && SKB(0x158) == 0 && SKB(0x44) == 0) {
         SKS8(0x32) = 1;
-        se_req(7, 0x14, 0);
+        SK_SE(0x14);
         return;
     }
     if (SKB(0x2F) == 0) {
@@ -451,7 +451,7 @@ void sk_backspace(int a, int b, void *c) {
                 }
 done:
                 SKS8(0x28) = 0;
-                se_req(7, 0x16, 0);
+                SK_SE(0x16);
             }
         }
     } else {
@@ -462,7 +462,7 @@ done:
             SKU16(0x2C) = 0;
             SKB(0x158) = 0;
         }
-        se_req(7, 0x16, 0);
+        SK_SE(0x16);
     }
 }
 #endif
@@ -472,15 +472,15 @@ done:
 void sk_speaking(int a, int b, void *c) {
     if (SKB(0x158) != 0) {
         cmd_kakutei_all();
-        se_req(7, 0x16, 0);
+        SK_SE(0x16);
         return;
     }
     SKS8(0x32) = 1;
     if (SKB(0x158) == 0 && SKB(0x44) == 0) {
-        se_req(7, 0x15, 0);
+        SK_SE(0x15);
         return;
     }
-    se_req(7, 0x18, 0);
+    SK_SE(0x18);
 }
 #endif
 
@@ -606,7 +606,7 @@ asm void DispSoftkeyboard(int scale)
 #if !defined(G_PART)
 void kbd_plt1_move(u8 *c, int a, void *b) {
     if (palette_ng_sub2(c[3], lpSKey + SKO(0x1F), lpSKey + SKO(0x1E)) != 0) {
-        se_req(7, 0x15, 0);
+        SK_SE(0x15);
         return;
     }
     SKS8(0x35) = 0;
@@ -649,7 +649,7 @@ void kbd_plt1_move(u8 *c, int a, void *b) {
         sk_daisyo_chg();
         break;
     }
-    se_req(7, 0x16, 0);
+    SK_SE(0x16);
 }
 #endif
 
@@ -824,7 +824,7 @@ void sk_daisyo_chg(void) {
         SKB(0x25) = y;
         sk_get_key_code();
     }
-    se_req(7, snd, 0);
+    SK_SE(snd);
 }
 #endif
 

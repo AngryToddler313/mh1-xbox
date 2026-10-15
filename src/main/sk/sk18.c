@@ -1,15 +1,16 @@
 /* sk18 - f_sk 0x002640C0-0x0026417C: kbdExecServer (reads the PS2 USB keyboard state into the soft keyboard work, keeps previous key / new press bytes). */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 u8 *getPS2KbData(void);
 
 void kbdExecServer(void) {
-    s8 *f = (s8 *)(lpSKey + 0x37);
+    s8 *f = (s8 *)(lpSKey + SKO(0x37));
     u8 *k;
 
     if (*f == 0) {

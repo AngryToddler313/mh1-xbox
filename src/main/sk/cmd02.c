@@ -107,7 +107,7 @@ void cmd_muhenkan(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void sk_henkan_sub(void) {
     if (sk_yn_check() == 1 && SKS8(0x36) == 0) {
         sk_speaking();
@@ -116,7 +116,7 @@ void sk_henkan_sub(void) {
     cmd_henkan();
     SKS32(0x150) = get_kouho_suu();
     Set_KouhoTable();
-    se_req(7, 0x16, 0);
+    SK_SE(0x16);
 }
 #endif
 
@@ -163,11 +163,16 @@ void yn_kouho_work_set(int a, int b) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void yn_kigou_inbuf_set(void) {
     memset(lpSKey + SKO(0x458), 0, 0x100);
+#ifdef VERSION_MHG
+    strncpy((char *)lpSKey + SKO(0x458), (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1, 0xFF);
+    strncpy((char *)lpSKey + SKO(0x158), (char *)lpSKey + SKO(0x458), 0xFF);
+#else
     strcpy((char *)lpSKey + SKO(0x458), (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
     strcpy((char *)lpSKey + SKO(0x158), (char *)lpSKey + SKO(0x458));
+#endif
 }
 #endif
 

@@ -1,13 +1,14 @@
 /* cmd05 - f_cmd 0x00263560-0x002636DC: cmd_prev_kouho. Whole file in cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -92,32 +93,32 @@ void cmd_prev_kouho(void)
   char w2[0x100];
   int a;
   int n;
-  if ((*((u8 *) (lpSKey + 0x2F))) != 0)
+  if (SK_ON(*((u8 *) (lpSKey + SKO(0x2F)))))
   {
-    *((s32 *) (lpSKey + 0x144)) = (*((s32 *) (lpSKey + 0x144))) - 1;
-    a = *((s32 *) (lpSKey + 0x144));
+    *((s32 *) (lpSKey + SKO(0x144))) = (*((s32 *) (lpSKey + SKO(0x144)))) - 1;
+    a = *((s32 *) (lpSKey + SKO(0x144)));
     if (a < 0)
     {
-      *((s32 *) (lpSKey + 0x144)) = (*((s32 *) (lpSKey + 0x150))) - 1;
-      n = *((s32 *) (lpSKey + 0x150));
-      *((s32 *) (lpSKey + 0x148)) = (n - 1) / 3;
-      Set_KouhoTableSub((*((s32 *) (lpSKey + 0x148))) * 3, 1);
+      *((s32 *) (lpSKey + SKO(0x144))) = (*((s32 *) (lpSKey + SKO(0x150)))) - 1;
+      n = *((s32 *) (lpSKey + SKO(0x150)));
+      *((s32 *) (lpSKey + SKO(0x148))) = (n - 1) / 3;
+      Set_KouhoTableSub((*((s32 *) (lpSKey + SKO(0x148)))) * 3, 1);
     }
     else
     {
       ;
-      if (a < ((*((s32 *) (lpSKey + 0x148))) * 3))
+      if (a < ((*((s32 *) (lpSKey + SKO(0x148)))) * 3))
       {
-        *((s32 *) (lpSKey + 0x148)) = (*((s32 *) (lpSKey + 0x148))) - 1;
-        Set_KouhoTableSub((*((s32 *) (lpSKey + 0x148))) * 3, 1);
+        *((s32 *) (lpSKey + SKO(0x148))) = (*((s32 *) (lpSKey + SKO(0x148)))) - 1;
+        Set_KouhoTableSub((*((s32 *) (lpSKey + SKO(0x148)))) * 3, 1);
       }
       else
       {
         apiask_20_PrevKouho(w1, w2);
       }
     }
-    memset(lpSKey + 0x458, 0, 0x100);
-    strcpy(((char *) lpSKey) + 0x458, (((char *) kouho_work) + (((*((s32 *) (lpSKey + 0x144))) % 3) * 0x101)) + 1);
-    *((s32 *) (lpSKey + 0x14C)) = (u8) kouho_work[((*((s32 *) (lpSKey + 0x144))) % 3) * 0x101];
+    memset(lpSKey + SKO(0x458), 0, 0x100);
+    strcpy(((char *) lpSKey) + SKO(0x458), (((char *) kouho_work) + (((*((s32 *) (lpSKey + SKO(0x144)))) % 3) * 0x101)) + 1);
+    *((s32 *) (lpSKey + SKO(0x14C))) = (u8) kouho_work[((*((s32 *) (lpSKey + SKO(0x144)))) % 3) * 0x101];
   }
 }

@@ -1,13 +1,14 @@
 /* SLPM_654.95 0x00262D10-0x00262E50: cmd_henkan .. cmd_henkan. See cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -87,7 +88,7 @@ extern ZK lit_913_0034E410;
 
 
 void cmd_henkan(void) {
-    u8 *p = lpSKey + 0x158;
+    u8 *p = lpSKey + SKO(0x158);
     s8 c;
 
     if (SKS8(0x36) != 0) {
@@ -108,8 +109,8 @@ void cmd_henkan(void) {
             }
             p += 2;
         }
-        Han2zen(lpSKey + 0x158, lpSKey + 0x258);
-        SKS32(0x150) = apiask_19_Henkan(lpSKey + 0x258, lpSKey + 0x458, lpSKey + 0x558);
+        Han2zen(lpSKey + SKO(0x158), lpSKey + SKO(0x258));
+        SKS32(0x150) = apiask_19_Henkan(lpSKey + SKO(0x258), lpSKey + SKO(0x458), lpSKey + SKO(0x558));
     }
     kata_kouho_set();
     SKS8(0x358) = 0;

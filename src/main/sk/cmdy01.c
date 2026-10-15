@@ -1,13 +1,14 @@
 /* SLPM_654.95 0x002636E0-0x00263908: cmd_next_kouho .. cmd_prev_bun. See cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -92,7 +93,7 @@ void cmd_next_kouho(void) {
     int a;
     int n;
 
-    if (SKB(0x2F) != 0) {
+    if (SK_ON(SKB(0x2F))) {
         SKS32(0x144) = SKS32(0x144) + 1;
         a = SKS32(0x144);
         if (a > SKS32(0x150) - 1) {
@@ -108,8 +109,8 @@ void cmd_next_kouho(void) {
                 apiask_21_NextKouho(w1, w2);
             }
         }
-        memset(lpSKey + 0x458, 0, 0x100);
-        strcpy((char *)lpSKey + 0x458, (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
+        memset(lpSKey + SKO(0x458), 0, 0x100);
+        strcpy((char *)lpSKey + SKO(0x458), (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
         SKS32(0x14C) = (u8)kouho_work[(SKS32(0x144) % 3) * 0x101];
     }
 }
@@ -119,15 +120,15 @@ void cmd_prev_bun(void) {
     int n;
     s16 x;
 
-    if (SKB(0x2F) != 0 && SKS8(0x358) != 0 && SKS8(0x36) == 0) {
-        apiask_25_FirstKakutei(SKS32(0x14C), line, lpSKey + 0x458, lpSKey + 0x558, &x);
-        apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
-        r = apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
+    if (SK_ON(SKB(0x2F)) && SKS8(0x358) != 0 && SKS8(0x36) == 0) {
+        apiask_25_FirstKakutei(SKS32(0x14C), line, lpSKey + SKO(0x458), lpSKey + SKO(0x558), &x);
+        apiask_35_PrevBunsetu(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
+        r = apiask_35_PrevBunsetu(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
         SKS32(0x150) = r;
         kata_kouho_set();
         if (r != 0) {
-            n = strlen((char *)lpSKey + 0x358);
-            lpSKey[(n - strlen((char *)lpSKey + 0x458)) + 0x358] = 0;
+            n = strlen((char *)lpSKey + SKO(0x358));
+            lpSKey[(n - strlen((char *)lpSKey + SKO(0x458))) + SKO(0x358)] = 0;
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
         }

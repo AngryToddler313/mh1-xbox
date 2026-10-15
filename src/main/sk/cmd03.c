@@ -1,13 +1,14 @@
 /* Soft keyboard conversion (0x00263910): cmd_next_bun. See cmd_nm.c. */
 #include "types.h"
+#include "sk_g.h"
 
 extern u8 *lpSKey;
-#define SKB(o) (*(u8 *)(lpSKey + (o)))
-#define SKS8(o) (*(s8 *)(lpSKey + (o)))
-#define SKU16(o) (*(u16 *)(lpSKey + (o)))
-#define SKS16(o) (*(s16 *)(lpSKey + (o)))
-#define SKS32(o) (*(s32 *)(lpSKey + (o)))
-#define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define SKB(o) (*(u8 *)(lpSKey + SKO(o)))
+#define SKS8(o) (*(s8 *)(lpSKey + SKO(o)))
+#define SKU16(o) (*(u16 *)(lpSKey + SKO(o)))
+#define SKS16(o) (*(s16 *)(lpSKey + SKO(o)))
+#define SKS32(o) (*(s32 *)(lpSKey + SKO(o)))
+#define SKP(o) (*(u8 **)(lpSKey + SKO(o)))
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -89,13 +90,13 @@ extern ZK lit_913_0034E410;
 void cmd_next_bun(void) {
     s16 x;
 
-    if (SKB(0x2F) != 0 && SKS8(0x558) != 0 && SKS8(0x36) == 0) {
-        apiask_25_FirstKakutei(SKS32(0x14C), line, lpSKey + 0x458, lpSKey + 0x558, &x);
-        apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
-        SKS32(0x150) = apiask_36_NextBunsetu(lpSKey + 0x458, lpSKey + 0x558);
+    if (SK_ON(SKB(0x2F)) && SKS8(0x558) != 0 && SKS8(0x36) == 0) {
+        apiask_25_FirstKakutei(SKS32(0x14C), line, lpSKey + SKO(0x458), lpSKey + SKO(0x558), &x);
+        apiask_35_PrevBunsetu(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
+        SKS32(0x150) = apiask_36_NextBunsetu(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
         kata_kouho_set();
         SKS32(0x150) = get_kouho_suu();
-        strcat((char *)lpSKey + 0x358, (char *)line);
+        strcat((char *)lpSKey + SKO(0x358), (char *)line);
         Set_KouhoTable();
     }
 }

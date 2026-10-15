@@ -77,3 +77,4 @@ PROVIDE(cw_client_g = 0x006DEC10); /* G's client work (MH1 D_6DD7E0) for dcon_ta
 PROVIDE(CnetWork_c9 = 0x006F08A0);
 PROVIDE(CnetWork_c18 = 0x006F08A0);
 PROVIDE(ClassInfo_c74 = 0x006DEC00);
+PROVIDE(kouho_work_g = 0x0041E020); /* G's conversion candidate buffers (the symbol file puts kouho_work at 0x40E000) */
