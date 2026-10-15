@@ -360,3 +360,35 @@ result_sale_fmt = 0x00537390; // size:0x18 noptr      # one sold item: name, cou
 train_name = 0x00528A10; // size:0x28 allptr          # the ten monster training names
 [main]
 train_job_map = 0x002EC5B8; // size:0x8 noptr         # training bit -> weapon class name (menu_stat_job_str)
+
+# pause menu STATUS pages (G main 0x222E50, src/main/menu/status_g.c; agent C, 15 Oct 2026): five pages, three of them skill pages.
+# G data the MH1 names (frame_status_*, Skill_name, hunter_appellation) size too small for.
+[main]
+gstat_frame_main = 0x002B01F0; // size:0x78          # 5 frames of 0x18 (the list pointer at +0xC is set from the code)
+gstat_frame_sub = 0x002B0270; // size:0x50           # 5 help-box frames of 0x10
+gskill_kinds = 0x002B02D0; // size:0xA noptr         # the five armour kinds {head 2, body 3, arm 4, waist 5, leg 0} as shorts
+gskill_ex3 = 0x002B02C0; // size:0x10 noptr          # skill kinds that never apply to a melee weapon, 0 ends
+gskill_ex1 = 0x002EC150; // size:0x8 noptr           # kinds that never apply to a gun
+gskill_ex2 = 0x002EC158; // size:0x8 noptr           # kinds that do not apply to bow / light gun jobs 2 and 6
+gskill_mark = 0x002EC650; // size:0x8                # the two marks of the 'which piece carries it' row
+[sub_main]
+gstat_appel = 0x00527B10; // size:0x80               # hunter titles (31 ranks; MH1's table is 21)
+gstat_sub = 0x00527CF0; // size:0x14                 # help text of each status page
+gstat_str = 0x00527D10; // size:0x50                 # status page formats (title with page count, rank, points, money, equipment lines)
+gskill_name = 0x00528B70; // size:0x2B0              # skill names (172 ids; the MH1-named Skill_name table is cut at 54)
+gskill_cat = 0x00528E20; // size:0x108               # skill kind names
+# equipment windows (G main 0x224D90 etc., src/main/menu/equip_g.c; agent C, 15 Oct 2026): label lists, formats, ammo and element names;
+# the tables MH1's sizes cut (weapon_exp / armor_exp: G has 460 weapon rows and more armour, slash_bar_color: six bands)
+[main]
+gequip_skillpos = 0x002B0450; // size:0x14 noptr    # {dx, dy} of the five skill slots of an armour piece
+gequip_ammo = 0x002B02F0; // size:0x154 noptr        # 17 ammo kinds of 0x14 bytes: format, three level bytes, four masks
+gequip_arrow = 0x002B0490; // size:0x18 noptr        # Put_PageArrow: two rows of text x, arrow x, arrow x, arrow width, two icon x
+slash_bar_color = 0x002B0470; // size:0x18 noptr     # the six bands of the sharpness bar (MH1 has four)
+weapon_exp = 0x002A9F50; // size:0x1CB0
+armor_exp = 0x002ABC00; // size:0x44A0
+[sub_main]
+gslash_rows = 0x00515160; // size:0x1E0 noptr      # the sharpness band lengths (cumulative shorts); Pl_slash_tbl points into them. The pointer scan took 0x006E0050 at +0 for a pointer
+gequip_str = 0x00527D60; // size:0x190               # label lists, wearable types, formats, ammo and element names (index 0 = G 0x527D60)
+# follow camera (G main 0x1D9D60, src/main/cam/cam_nm.c; agent C, 15 Oct 2026): the stage camera entries are 0x1C bytes (MH1 symbol is one entry)
+[main]
+stage_camera_data_ex = 0x00289AA0; // size:0x80 noptr

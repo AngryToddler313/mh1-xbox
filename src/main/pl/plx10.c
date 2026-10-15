@@ -7,6 +7,10 @@
 ST_ITEM *Stage_item_data_get(u8);
 u16 Item_get_ck(int);
 f32 flSqrt(f32);
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+u8 sub_main_func_004F0020(PLW *, int);
+int Pl_Skill_ck(PLW *, int);
+#endif
 
 int St_pick_ck2(PLW *pl) {
     ST_ITEM *d = Stage_item_data_get(pl->stg);
@@ -24,6 +28,32 @@ int St_pick_ck2(PLW *pl) {
             if (flSqrt(dx * dx + dz * dz) <= d->r) {
                 if (d->num > 0) {
                     r = Item_get_ck(d->id & 0x7FFF) & 0xFFFF;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                    /* G (sub_main 0x4CB500): the spot runs dry when a random 0-31 is at most 4 (the gathering skills lower it: 12 / 8 / 2 / 0) */
+                    if (r != 0 && r != 0xFFFF) {
+                        int lim = 4;
+
+                        if (sub_main_func_004F0020(pl, 22) & 0xFF) {
+                            if (Pl_Skill_ck(pl, 167) == 1) {
+                                lim = 0;
+                            } else if (Pl_Skill_ck(pl, 166) == 1) {
+                                lim = 2;
+                            } else if (Pl_Skill_ck(pl, 165) == 1) {
+                                lim = 8;
+                            } else if (Pl_Skill_ck(pl, 164) == 1) {
+                                lim = 12;
+                            }
+                        }
+                        if (d->num != 0xFF) {
+                            rn = ran_suu(1);
+                            if (lim < (rn & 0x1F)) {
+                                d->num--;
+                            } else {
+                                d->num = 0;
+                            }
+                        }
+                    }
+#else
                     if (r != 0 && r != 0xFFFF && d->num != 0xFF) {
                         rn = ran_suu(1);
                         if ((rn & 7) != 0 || Pl_Skill_ck(pl, 0x2F) == 1) {
@@ -32,6 +62,7 @@ int St_pick_ck2(PLW *pl) {
                             d->num = 0;
                         }
                     }
+#endif
                 } else {
                     return 0xFFFE;
                 }

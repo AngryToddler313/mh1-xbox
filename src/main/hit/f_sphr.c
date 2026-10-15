@@ -79,7 +79,8 @@ typedef struct HENT {
     u8 x59C;            /* 0x59C */
     u8 _pad59D[3];
     f32 old[3];         /* 0x5A0 */
-    u8 _pad5AC[0x604 - 0x5AC];
+    u8 _pad5AC[0x600 - 0x5AC];
+    f32 x600;           /* 0x600 monster base scale (G HitWallPlayer: the wall spheres use it for sizes 60-200 %) */
     u8 x604;            /* 0x604 non-zero: report the ground attribute b1 as 2 */
     u8 _pad605[0x70C - 0x605];
     GATTR gat;          /* 0x70C attribute of the ground under the entity (last frame) */
@@ -95,6 +96,8 @@ typedef struct HENT {
     u8 _pad7EA[0x95D - 0x7EA];
     u8 x95D;            /* 0x95D monster touches a wall whose kind has flag byte 1 set (GetWallHitBitEm) */
     u16 wmask;          /* 0x95E */
+    u8 _pad960[0xA02 - 0x960];
+    u16 size_pct;       /* 0xA02 (G 0x9F8: the PC keeps MH1's monster layout, see EMW in include/em.h) monster size in percent (60-200) */
 } HENT;
 
 void UnitNormalVectorCCW(f32 *, f32 *, f32 *, f32 *);
@@ -2457,6 +2460,7 @@ void HitWallPlayer(HENT *ent, int keep) {
     f32 m[16];
     f32 *p;
     f32 r;
+    f32 sx, sy, sz;
     u16 mask;
 
     if (!(keep & 0xFF)) {
@@ -2465,34 +2469,47 @@ void HitWallPlayer(HENT *ent, int keep) {
     if (ent->x4D4 != 0 && (Pl_stg_ck(ent) & 0xFF)) {
         ent->x59C = ent->x59C & 0xFE;
         p = push00[0];
+        sx = ent->scl[0];
+        sy = ent->scl[1];
+        sz = ent->scl[2];
         if (ent->mon != 0) {
             if (game_w.x1DC == 0) {
-                p = D_63FC50[ent->kind];
+                p = D_63FC50[ent->kind];     /* (the PC build names it em_hit_push_tbl: G's 52 kinds) */
+#ifdef VERSION_MHG
+                /* G (main 0x10CDC0): a monster of 60-200 % size uses its base scale on all three axes of the wall spheres */
+                if (ent->size_pct >= 60 && ent->size_pct <= 200) {
+                    sx = sy = sz = ent->x600;
+                }
+#endif
             } else {
                 p = D_6103A0[ent->kind];
             }
         }
         while (p[3] != -1.0f) {
-            r = p[3] * ent->scl[0];
+            r = p[3] * sx;
+#ifdef VERSION_MHG
+            if (ent->mon != 0 && (ent->kind == 7 || ent->kind == 50)) {
+#else
             if (ent->mon != 0 && ent->kind == 7) {
+#endif
                 ang.x = 0;
                 ang.y = ent->ang_y;
                 ang.z = 0;
                 cpRotMatrixYXZ2(&ang.x, m);
                 flvecApplyMat33(&o.x, p, m);
-                seg[0].x = ent->old[0] + o.x * ent->scl[0];
-                seg[0].y = ent->old[1] + o.y * ent->scl[1];
-                seg[0].z = ent->old[2] + o.z * ent->scl[2];
-                seg[1].x = ent->pos[0] + o.x * ent->scl[0];
-                seg[1].y = ent->pos[1] + o.y * ent->scl[1];
-                seg[1].z = ent->pos[2] + o.z * ent->scl[2];
+                seg[0].x = ent->old[0] + o.x * sx;
+                seg[0].y = ent->old[1] + o.y * sy;
+                seg[0].z = ent->old[2] + o.z * sz;
+                seg[1].x = ent->pos[0] + o.x * sx;
+                seg[1].y = ent->pos[1] + o.y * sy;
+                seg[1].z = ent->pos[2] + o.z * sz;
             } else {
-                seg[0].x = ent->old[0] + p[0] * ent->scl[0];
-                seg[0].y = ent->old[1] + p[1] * ent->scl[1];
-                seg[0].z = ent->old[2] + p[2] * ent->scl[2];
-                seg[1].x = ent->pos[0] + p[0] * ent->scl[0];
-                seg[1].y = ent->pos[1] + p[1] * ent->scl[1];
-                seg[1].z = ent->pos[2] + p[2] * ent->scl[2];
+                seg[0].x = ent->old[0] + p[0] * sx;
+                seg[0].y = ent->old[1] + p[1] * sy;
+                seg[0].z = ent->old[2] + p[2] * sz;
+                seg[1].x = ent->pos[0] + p[0] * sx;
+                seg[1].y = ent->pos[1] + p[1] * sy;
+                seg[1].z = ent->pos[2] + p[2] * sz;
             }
             if (ent->mon != 0) {
                 mask = EF(ent, u16, 0x95E);

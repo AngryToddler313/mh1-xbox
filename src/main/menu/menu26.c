@@ -186,3 +186,31 @@ u8 *menu_equip_get_equip(u8 no) {
     }
     return 0;
 }
+
+#ifdef VERSION_MHG
+/* G (main 0x11C720, PC build; G's name is menu_equip_get_equip): the six rows (weapon, head, body, arm, waist, leg) as a 6-byte equipment
+ * entry {1, kind, id, w4} made from the hunter's own work (pl+0x35E weapon, pl+0x352.. the armour ids); NULL for an empty slot */
+u8 *menu_equip_get_equip_g(u8 *out, u8 no, PLW *pl) {
+    static const u8 kinds[5] = { 2, 3, 4, 5, 0 };
+
+    *(u16 *)out = 0;
+    *(u16 *)(out + 4) = 0;
+    if (no == 0) {
+        *(u16 *)out = *(u16 *)((u8 *)pl + 0x35E);
+        *(u16 *)(out + 2) = *(u16 *)((u8 *)pl + 0x360);
+        *(u16 *)(out + 4) = *(u16 *)((u8 *)pl + 0x362);
+        out[0] = 1;
+        return out;
+    }
+    if (no > 5) {
+        return 0;
+    }
+    out[1] = kinds[no - 1];
+    *(u16 *)(out + 2) = ((u8 *)pl)[0x352 + out[1]];
+    if (*(u16 *)(out + 2) == 0) {
+        return 0;
+    }
+    out[0] = 1;
+    return out;
+}
+#endif

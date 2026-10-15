@@ -5,6 +5,9 @@
 #include "game.h"
 #include "plst.h"
 f32 flSqrt(f32);
+#ifdef VERSION_MHG
+u8 sub_main_func_004F0020(PLW *, int);
+#endif
 extern u8 Gun_data[][GUN_ROW];
 
 
@@ -38,6 +41,13 @@ void timer_calc_sub_pl(PLW *pl) {
     u8 temp_v1_8;
     u8 temp_v1_9;
 
+#ifdef VERSION_MHG
+    /* G (sub_main 0x4F1BA0): a new timer at +0x93E (the mega armor pill), a stamina drain state at +0x93D and the life-bar recovery
+     * interval from the skills (damage recovery speed) instead of MH1's fixed one */
+    if (*(s16 *)((u8 *)pl + 0x93E) != 0) {
+        *(s16 *)((u8 *)pl + 0x93E) -= 1;
+    }
+#endif
     temp_v0 = pl->work936;
     if (temp_v0 != 0) {
         pl->work936 = (u8) (temp_v0 - 1);
@@ -104,7 +114,11 @@ void timer_calc_sub_pl(PLW *pl) {
             pl->work6A9 = 0;
         }
     }
+#ifdef VERSION_MHG
+    if (pl_flag_ck(pl, 0x200) == 0 && pl->work93D == 0) {
+#else
     if (pl_flag_ck(pl, 0x200) == 0) {
+#endif
         temp_v1 = pl->flag14;
         if ((temp_v1 != 3) && (temp_v1 != 2)) {
             switch (temp_v1) {                      /* irregular */
@@ -126,9 +140,45 @@ void timer_calc_sub_pl(PLW *pl) {
             }
         }
     }
+#ifdef VERSION_MHG
+    if (pl->work93D != 0) {
+        Pl_stamina_calc(pl, -1);
+        if (pl->stamina <= 0 && pl->flag14 != 1) {
+            pl->work93D = 0;
+        }
+    }
+#endif
     Pl_stamina_reduce(pl);
     temp_a0 = pl->flag14;
     if ((temp_a0 != 2) && (temp_a0 != 3)) {
+#ifdef VERSION_MHG
+        if (((((s16)(Stage_env_ck(pl->stg))) != 1) || (pl->work918 != 0) || (Pl_Skill_ck(pl, 0x2C) == 1)) && (pl->x7BA == 0)) {
+            int step = 60;
+
+            if (sub_main_func_004F0020(pl, 7) & 0xFF) {
+                if (Pl_Skill_ck(pl, 0x1B) == 1) {
+                    step = 20;
+                }
+                if (Pl_Skill_ck(pl, 0x3C) == 1) {
+                    step = 15;
+                }
+                if (Pl_Skill_ck(pl, 0x3D) == 1) {
+                    step = 180;
+                }
+                if (Pl_Skill_ck(pl, 0x3E) == 1) {
+                    step = 240;
+                }
+            }
+            var_a1 = pl->work91C != 0 ? 2 : 1;
+            if (PU16(&game_w, 0x1E) % (s16)step == 0 && pl->vital < pl->vital_red) {
+                temp_s1 = (s16)(pl->vital_red - pl->vital);
+                if (temp_s1 < var_a1) {
+                    var_a1 = temp_s1;
+                }
+                Pl_vital_calc(pl, var_a1);
+            }
+        }
+#else
         if (((((s16)(Stage_env_ck(pl->stg))) != 1) || (Pl_Skill_ck(pl, 0x2D) != 0) || (pl->work918 != 0)) && (pl->x7BA == 0) && !(PU16(&game_w, 0x1E) & 0x3F) && (pl->vital < pl->vital_red)) {
             if ((Pl_Skill_ck(pl, 0x1B) == 1) || (pl->work91C != 0)) {
                 var_a1 = (s16)((pl->vital_red - pl->vital));
@@ -140,6 +190,7 @@ void timer_calc_sub_pl(PLW *pl) {
                 Pl_vital_calc(pl, 1);
             }
         }
+#endif
         temp_v1_4 = pl->x7AC;
         if (temp_v1_4 > 0) {
             pl->x7AC = (s16) (temp_v1_4 - 1);

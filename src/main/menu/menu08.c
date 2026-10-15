@@ -68,6 +68,36 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#ifdef VERSION_MHG
+/* G (main 0x11C620 / 0x11C660, PC build; the pages are in status_g.c): five pages (status, equipment, three skill pages), left / right turn them */
+void gskill_build(PLW *, PLW *);
+int gskill_pages(void);
+void Menu_status_i(void) {
+    gskill_build(lpPit->pl, 0);
+    lpPit->x43 = 0;
+    PitMenu.x10 = 0;                    /* G: D_002FF2A0 = 0 (its PitMenu.x10); no help line under the pages */
+}
+
+int Menu_status_mv(int sw) {
+    int a = sw & 0xFFFF;
+    u8 last = (u8)((gskill_pages() & 0xFF) + 1);
+
+    if (a & 0xC00) {
+        if (a & 0x400) {
+            lpPit->x43++;
+            if (last < lpPit->x43) {
+                lpPit->x43 = 0;
+            }
+        } else if (lpPit->x43 == 0) {
+            lpPit->x43 = last;
+        } else {
+            lpPit->x43--;
+        }
+        se_req(7, 0x11, 0);
+    }
+    return a & 0x8040;
+}
+#else
 void Menu_status_i(void) {
     lpPit->x43 = 0;
     PitMenu.x10 = 0;
@@ -80,3 +110,4 @@ int Menu_status_mv(int sw) {
     }
     return (u16)((u16)sw & 0x8040);
 }
+#endif

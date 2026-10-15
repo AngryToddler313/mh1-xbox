@@ -657,3 +657,17 @@ obvious workarounds.
   G 0x12AE80 (a random number saved to User_data+0xD0A after each quest) is not ported: no reader found and the PC's Rnd_w has two channels.
 - **Added:** Set_userdata (udmisc_nm.c, G) keeps the pouch at departure (G 0x32C1C0) for the special ends 7 / 8; func_00126320
   (menu_disp_nm.c, a hunting-log crown by row) for the record screen.
+
+## G main lane round 2 (agent C, 15 Oct 2026): status pages, equipment windows, camera, timers
+- **Dropped:** on the G PC build, MH1's PlayerStatusWindow / PlayerEquipmentWindow (chat_nm.c, now `#ifndef VERSION_MHG`) and MH1's two-page Menu_status_i / _mv (menu08.c);
+  **now** src/main/menu/status_g.c (G main 0x222E50 and the skill-page unit 0x223610-0x224410) and menu08.c's G branch. MH1 unchanged. **To revert:** the commit "G PC: the pause menu
+  STATUS pages as G has them".
+- **Dropped:** MH1's equipment windows on the G PC (chat_nm.c EquipmentDescriptionWindow(A), equip_exp_core, sword_zokusei, EquipmentCompareWindow(A), slash_level_bar, Put_PageArrow,
+  now `#ifndef VERSION_MHG`), the pause menu's MH1 menu_equip_get_equip (User_data offsets) in Pit_disp_menu_equipment / Menu_equipment_mv; **now** src/main/menu/equip_g.c plus the G branches in
+  menu09.c / menu26.c / menu41.c. **To revert:** the commit "G PC: G's equipment windows ...".
+- **Dropped:** HitWallPlayer's `scl[0..2]` for the wall spheres on the G PC; **now** G's: the base scale when the size is 60-200 %. **To revert:** the f_sphr.c hunk of that commit.
+- **Dropped:** MH1's cam_sub_std on the G PC (cam_nm.c `#ifndef VERSION_MHG`); **now** G's (see RELEASE_G.md section 6). **To revert:** the commit "G PC: the follow camera ...".
+- **Dropped:** MH1's life-bar recovery / stamina rules in timer_calc_sub_pl and the spot-depletion rule of St_pick_ck2 on the G PC; **now** G's (pl_nm.c, plx10.c, `#ifdef VERSION_MHG`). Not verified
+  in a run. **To revert:** the commit "G PC: timers and gathering ...".
+- **Added:** config/mhg/pc_data.txt G tables (gstat_*, gskill_*, gequip_*, gslash_rows; weapon_exp / armor_exp / slash_bar_color / stage_camera_data_ex at G's size). gslash_rows is `noptr`: the
+  pointer scan took the sharpness lengths 0x50, 0x6E (= 0x006E0050) for a pointer and the relocation overwrote them.

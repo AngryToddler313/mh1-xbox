@@ -365,7 +365,14 @@ void Pit_disp_menu_equipment(void) {
     int e;
     u32 v;
 
+#ifdef VERSION_MHG
+    u8 ent[6];
+    u8 *menu_equip_get_equip_g(u8 *, u8, PLW *);
+
+    e = (int)menu_equip_get_equip_g(ent, lpPit->x43, pl);
+#else
     e = menu_equip_get_equip(lpPit->x43);
+#endif
     DispFrameList(frame_status_main_002F0D70, lit_5012, -1);
     PlayerEquipmentWindow(pl);
     q.s[0] = 0x12C;
