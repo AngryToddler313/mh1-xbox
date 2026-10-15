@@ -130,6 +130,7 @@ int em_pl_pos_set(EMW *, u8, f32 *);
 f32 flvecCalcDistance(f32 *, f32 *);
 void Eft17_set(EMW *, int, int, int);
 void Shell08_set_ang(EMW *, s16, u8, u8, u16, u16);
+void Eft17_set_ang(EMW *em, s16 joint, int arg, u16 ang);
 int ran_suu();
 void em_action_timer_calc(EMW *, int);
 f32 flSqrt(f32);
@@ -2490,7 +2491,6 @@ static void em_atk02_0059F2F0(EMW *em, EM08W *w) {
  * 0x74 / 0x75, three sand shots (Shell08 kind 7, Eft17 sprays) at +40, 0 and -40 degrees (0x5CA900 fires them and the
  * later sprays the other way round; the sprays at the shots keep +40 / 0 / -40 in both),
  * and sand sprays and two sand splashes along the motion; back to swimming at its end. Written from G's asm (agent A). */
-void Eft17_set_ang(EMW *, int, int, int);
 static void em_atk_spread_g(EMW *em, int mot, int a0, int a2)  /* a0 / a2: the shots' and sprays' first / last angle */
 {
     static const f32 spray_t[6] = { 126.0f, 166.0f, 196.0f, 130.0f, 170.0f, 200.0f };
