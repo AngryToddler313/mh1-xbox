@@ -4,11 +4,15 @@
 cd "$(dirname "$0")/.." || exit 1
 mkdir -p build/check
 fail=0
+# memory caps per step (docs/agents/BRIEF.md): 1.5 GB for PC builds/tests, 3 GB for the PS2 rebuild (wibo),
+# none for test_save (AddressSanitizer). Don't run this script itself under a cap: a cap can't be raised again.
 step() {  # step NAME CMD...
     local n=$1; shift
-    if "$@" > "build/check/$n.log" 2>&1; then echo "ok   $n"; else echo "FAIL $n (build/check/$n.log)"; fail=1; fi
+    local cap=1500000
+    case $n in test_save) cap=unlimited ;; esac
+    if (ulimit -v $cap; "$@") > "build/check/$n.log" 2>&1; then echo "ok   $n"; else echo "FAIL $n (build/check/$n.log)"; fail=1; fi
 }
-tools/rebuild.sh > build/check/rebuild.log 2>&1
+(ulimit -v 3000000; tools/rebuild.sh) > build/check/rebuild.log 2>&1
 n=$(grep -cE '^[a-z]+ +OK ' build/check/rebuild.log)
 if [ "$n" = 5 ]; then echo "ok   rebuild (5 OK)"; else echo "FAIL rebuild ($n OK, build/check/rebuild.log)"; fail=1; fi
 step build_pc tools/build_pc.sh
