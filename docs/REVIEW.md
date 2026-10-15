@@ -685,3 +685,15 @@ obvious workarounds.
   code the PS2 online patch (tools/ps2_patch.py) puts into lobby.bin's internet_browser. **Why:** one copy, and the PC online
   tests exercise the PS2 patch's server table. Small differences: BsLbsInfo's name is copied with 0x20 bytes (was 0x40; the
   name is "Local test server"). **To revert:** the commit "PS2 online patch: ...".
+
+## G main lane round 3 (agent C, 15 Oct 2026): hunter moves and hits, camera ground test, save slots
+- **Dropped:** on the G PC build, the stand-in `gcam_lift` that eased the camera's eye lift (x2C) back to 0 for ever (the ground line test was missing); **now** G's func_0010AE00 as C in
+  src/main/hit/f_sphr.c (`#if VERSION_MHG && !__MWERKS__`, G only, the PS2 build keeps the original bytes) and func_001DAE60 in cam_nm.c. **To revert:** the cam_nm.c / f_sphr.c hunks of
+  the commit "G PC: the hunter's moves, body hits, camera ground test, save slots".
+- **Dropped:** MH1's per-push-sphere loop in k_HitEmCamera (camr5_nm.c) on the G PC; **now** G's: only push01[0], body entries flagged 4 skipped. MH1 unchanged.
+- **Dropped:** MH1's disp_savesel / _waku / _moji reading option_w with the 0x480 slot stride on the G PC (mcdisp_nm.c `#else` branch); **now** G's 0xE00 stride, G's strings (gsave_fmt) and the
+  4th / 5th arguments. The buffer mode of G (slots drawn from the card image in data_load_ptr) is not done: the PC keeps the slots in option_w.
+- **Dropped:** Default_reibun_set's MH1 offset 0xDB0 on the G PC (chat_nm.c): it wrote the chat phrases into G's second save slot; **now** +0x2A30.
+- **Dropped:** game_w+0xD1 reads in pl_move_sub (net position slot) and f_em_nm.c's em init (EB(0x88E)) on the G PC (the master byte lives at +0x3A there); **now** `game_w.master`.
+- **Changed:** rt_village.c called Set_userdata for the village hunter only with RT_POUCH; **now** always on the first visit (the name and equipment of the saved hunter, as init_pl_work does), and a
+  test hunter without a name gets RT_NAME.

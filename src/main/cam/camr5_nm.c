@@ -202,6 +202,38 @@ void k_HitEmCamera(f32 *cam) {
             } else {
                 body = D_610370[em->kind];
             }
+#ifdef VERSION_MHG
+            /* G (main 0x1E05A0): only the first push01 sphere is tried, and body entries flagged 4 are skipped */
+            pos[0] = cam[0] + (*pp)[0];
+            pos[1] = cam[1] + (*pp)[1];
+            pos[2] = cam[2] + (*pp)[2];
+            while (body->type != -1) {
+                if (body->flag & 4) {
+                    body++;
+                    continue;
+                }
+                if (body->type == 0x7D) {
+                    body_ptr_ck2((HCHR *)em, &body);
+                    continue;
+                }
+                t = hit_data_expand(em, body, &cap, &sph);
+                if (t == 0) {
+                    if (hit_sphr_sphr3(sph.c, pos, out, sph.r, (*pp)[3]) != 0) {
+                        PUSH_ACC(px, out[0]);
+                        PUSH_ACC(py, out[1]);
+                        PUSH_ACC(pz, out[2]);
+                    }
+                } else if (t == 1) {
+                    hit_cap_pk(&cap, &pk);
+                    if (hit_cap_sphr_m(&pk, pos, out, (*pp)[3]) != 0) {
+                        PUSH_ACC(px, out[0]);
+                        PUSH_ACC(py, out[1]);
+                        PUSH_ACC(pz, out[2]);
+                    }
+                }
+                body++;
+            }
+#else
             while ((*pp)[3] != -1.0f) {
                 pos[0] = cam[0] + (*pp)[0];
                 pos[1] = cam[1] + (*pp)[1];
@@ -240,6 +272,7 @@ void k_HitEmCamera(f32 *cam) {
                 }
                 pp++;
             }
+#endif
         }
     }
     if (px == 0.0f && py == 0.0f && pz == 0.0f) return;

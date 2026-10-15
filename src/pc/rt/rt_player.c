@@ -611,6 +611,9 @@ void rt_player_tick(int no)
                PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
                pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881, PF(pl, s16, 0x87E),
                PF(pl, s16, 0x918), PF(pl, s16, 0x91A), PF(pl, s16, 0x8C0), game_w.info_stop);
+#ifdef VERSION_MHG
+        printf("pl: g timers 93E %d 93D %d 940 %d vit %d\n", PF(pl, s16, 0x93E), PF(pl, s8, 0x93D), PF(pl, u8, 0x940), pl->vital);
+#endif
     }
 }
 

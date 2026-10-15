@@ -403,7 +403,8 @@ typedef struct PLW {
     s8    work937;           /* 0x937 */
     u8    skill_src[5];      /* 0x938 G: source of each active skill (Skill_set_PL) */
     s8    work93D;           /* 0x93D (G: Pl_status_set flag 0x40 for type 6) */
-    u8 _pad93E[3];
+    u8 _pad93E[2];
+    u8    work940;           /* 0x940 G: copy of work8F0 made by pl_move_sub, read by hit_mark_set_new */
     s8    skill_pts[5];      /* 0x941 G: points behind each active skill */
     u8 _pad946[0xBA];
 } PLW;

@@ -2527,3 +2527,88 @@ void HitWallPlayer(HENT *ent, int keep) {
 }
 #endif
 
+
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* func_0010AE00 (G main 0x10AE00, 2016 bytes, G only; the PC build has it as C, the PS2 build keeps the original bytes):
+ * ground line test from a to b. Walks the ground grid cells (cell size diorama_w.gcsx / gcsz) in the rectangle spanned by a and b, skips
+ * cells whose centre is farther than 1 cell diagonal + 1/10 cell each way from the segment, and returns 1 at the first polygon of a visited cell
+ * that the segment crosses (the crossing point in *out when it is nearer than |a-b|). Without a hit *out = b and the result is 0.
+ * Written from the asm, the 4th argument (always 9) is not read. Quirk kept: a polygon is compared only with the FIRST one remembered. */
+int func_0010AE00(f32 *a, f32 *b, f32 *out, int mode) {
+    f32 seg[6];           /* b, a: the segment FaceLinePos wants */
+    f32 dir[3];
+    f32 pc[3], q[3], hit[3];
+    f32 best, rad, diag, fx, fz, t, den;
+    s32 cx0, cz0, dx, dz, sx, sz, i, j, ax, az;
+    HPOLY *seen[20];
+    s32 nseen = 0;
+    int found = 0;
+    f32 len;
+    (void)mode;
+
+    best = flvecCalcDistance(a, b);
+    if (!GroundFieldInCheck(a)) return 0;
+    if (!GroundFieldInCheck(b)) return 0;
+    fx = (f32)diorama_w.gcsx;
+    fz = (f32)diorama_w.gcsz;
+    cx0 = (s32)(a[0] / fx);
+    cz0 = (s32)(a[2] / fz);
+    dx = (s32)(b[0] / fx) - cx0;
+    dz = (s32)(b[2] / fz) - cz0;
+    if (dx < 0) { sx = -1; dx = 1 - dx; } else { sx = 1; dx = dx + 1; }
+    if (dz < 0) { sz = -1; dz = 1 - dz; } else { sz = 1; dz = dz + 1; }
+    seg[0] = b[0]; seg[1] = b[1]; seg[2] = b[2];
+    seg[3] = a[0]; seg[4] = a[1]; seg[5] = a[2];
+    dir[0] = a[0] - b[0];
+    dir[1] = 0.0f;
+    dir[2] = a[2] - b[2];
+    len = flSqrt(dir[0] * dir[0] + dir[2] * dir[2]);
+    if (len > 0.0f) {
+        dir[0] /= len;
+        dir[2] /= len;
+    }
+    if (dir[0] == -0.0f) dir[0] = 0.0f;
+    if (dir[2] == -0.0f) dir[2] = 0.0f;
+    diag = flSqrt(fx * fx + (f32)(u32)(diorama_w.gcsz * diorama_w.gcsz));
+    rad = (f32)(diorama_w.gcsz / 10) + ((f32)(diorama_w.gcsx / 10) + diag);
+    ax = 0;
+    for (i = 0; i < dx; i++, ax += sx) {
+        az = 0;
+        for (j = 0; j < dz; j++, az += sz) {
+            HPOLY **list;
+            pc[0] = (f32)(diorama_w.gcsx >> 1) + fx * (f32)(cx0 + ax);
+            pc[1] = 0.0f;
+            pc[2] = (f32)(diorama_w.gcsz >> 1) + fz * (f32)(cz0 + az);
+            if (dir[0] == 0.0f && dir[2] == 0.0f) {
+                t = 0.0f;
+            } else {
+                den = dir[0] * dir[0] + dir[2] * dir[2];
+                t = (-dir[0] * (a[0] - pc[0]) - dir[2] * (a[2] - pc[2])) / den;
+            }
+            q[0] = a[0] + dir[0] * t;
+            q[1] = 0.0f;
+            q[2] = a[2] + dir[2] * t;
+            if (!(flvecCalcDistance(pc, q) <= rad)) continue;
+            list = (HPOLY **)GetGroundTblAdrs(pc);
+            if ((s32)list == -1 || (s32)list[0] == -1) continue;
+            for (; (s32)*list != -1; list++) {
+                HPOLY *f = *list;
+                if (nseen > 0 && f == seen[0]) continue;
+                if (FaceLinePos(seg, f->n, f->v[0], hit)) {
+                    if (!NormalClipFace(hit, f->v[0], f->n)) continue;
+                    found = 1;
+                    t = flvecCalcDistance(a, hit);
+                    if (!(best <= t)) {
+                        SetVector(out, hit[0], hit[1], hit[2]);
+                        best = t;
+                    }
+                }
+                if (nseen < 20) seen[nseen++] = f;
+                if (found) return 1;
+            }
+        }
+    }
+    SetVector(out, b[0], b[1], b[2]);
+    return 0;
+}
+#endif
