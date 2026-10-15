@@ -1977,3 +1977,20 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   a ground line test of 2 KB: not ported, the lift stays 0). stage_camera_data_ex has entries of 0x1C bytes in G (0x80 total).
 - **Not done (main lane):** disp_savesel / disp_savesel_moji (save slot contents), trans_stage (+450 instructions), Pl_item_stack, pl_move_sub, body_hit_sub_new, Put_receive_mark, k_HitEmCamera,
   QuestClearCameraRequest, NPCZoomInCamera*, the HUD bits (disp_timer ...), the effect lane (eft13* / eft20*).
+
+## G main lane round 3 (15 Oct 2026): pl_move_sub, body_hit_sub_new, camera ground test, save slots (PC build, VERSION_MHG only)
+- **pl_move_sub / body_hit_sub_new / Pl_item_stack** (src/main/pl/pl_nm.c). Compared with tools/mhg_fdiff.py (`-a` shows all lines, `-g` the G listing with branch targets). pl_move_sub: no work601 / work917 clears,
+  Pl_act_set instead of Pl_act_set2 (two calls), `work940 = 0` right after func_63A260 and `work940 = work8F0; if (flag12 == 0) work93D = 0` after the x40A block, flag14 == 6 skips the 0x3D camera toggle.
+  work940 is read by hit_mark_set_new (G 0x4DE2D0, 703 insns, skills 169 / 79: not ported). body_hit_sub_new: bit 4 of the body entry's flag byte (+8) skips the entry; the push ends with
+  `if (pos[1] < x5AC) pos[1] = x5AC`. Pl_item_stack differs only by three calls of sub_main 0x4C8EF0 (the item-book bit: User_data+0xDE8 bit n, n from a ladder at 0x4C8B10): nothing reads it, left out.
+  Hard offsets of MH1 game_w (0xD1) must be `game_w.master` (G 0x3A): found in pl_move_sub and f_em_nm.c.
+- **func_0010AE00** (G only, f_sphr.c): ground line test from a to b. Cells of diorama_w (gcsx / gcsz), the rectangle spanned by a and b, a cell is searched when its centre is within
+  diag + gcsx/10 + gcsz/10 of the segment (xz), its polygon list (GetGroundTblAdrs) is walked, FaceLinePos(segment{b, a}, n, v0, out) + NormalClipFace; the first crossing returns 1. The duplicate check only
+  looks at the first remembered polygon (kept). func_001DAE60 (cam_nm.c gcam_lift) uses it from the eye to the head joint 20 (get_joint_wmat + 48). Test aid: RT_GLINE=dist [RT_GLINE_H, RT_GLINE_DY] in rt_cam.c.
+- **k_HitEmCamera**: G has no push01 loop (only entry 0) and skips flagged body entries (camr5_nm.c).
+- **Save slots** (mcdisp_nm.c): G option_w slots are 0xE00 apart from +0x10: [0] exists, [1] sex, +8 name, +0x20 money, +0x24 flags (bit 0x10: has a rank), +0xC1C seconds played, +0xC23 rank.
+  Strings at G 0x2EA6B0 (gsave_fmt in pc_data.txt, noptr). Lesson: **a fresh card showed slot 2 as used**: Default_reibun_set (chat_nm.c) copied the chat phrases to option_w+0xDB0 (MH1), which is inside
+  G's second slot. A gdb hardware watchpoint on the byte found it in one go: `break rt_boot_init`, `watch ((unsigned char*)&option_w)[0xE10]`, continue (needs --shot and --time for hidden runs).
+  The G game menu's cursor starts on NEW GAME on a card without hunters: tools/pc_scripts/newgame.txt needs its `dup*2,idle*10,` removed for G.
+- **Village hunter's name**: rt_village.c now calls Set_userdata (name, pouch, equipment) on the first visit; scripted hunters get RT_NAME.
+- **trans_stage** looked at (not ported): 12 new blocks, about 720 instructions, per-stage clay draws (see RELEASE_G.md).

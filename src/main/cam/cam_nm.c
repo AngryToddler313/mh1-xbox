@@ -869,7 +869,7 @@ f32 flvecCalcLength(f32 *);
  * reset-behind checks and the wall turn is a smooth 1/8 per frame; angle 1/4 (MH1 1/6), target height 1/2 (MH1 1/4), the field of view
  * eases to its wanted value; the stage tables stage_camera_data_ex (0x1C bytes per entry) for the water camera (func_001DACA0) and the
  * x5F7 states (func_001DAC00); a camera farther than 700 from the target jumps to its wanted place; the eye is raised by x2C while the
- * view is blocked by a ridge (func_001DAE60: its ground line test func_0010AE00 is not ported, so x2C stays 0). */
+ * view is blocked by a ridge (func_001DAE60 / func_0010AE00, ported). */
 void SubVector(f32 *, f32 *, f32 *);
 #define GCAM_SCD(o) ((CAMCNFE *)((u8 *)&stage_camera_data_ex + (o)))   /* G's table: entries of 0x1C bytes (config/mhg/pc_data.txt: 0x80 bytes) */
 
@@ -942,10 +942,24 @@ static void gcam_x5F7(CAMW *cw, CAMD_STD *d)
     }
 }
 
-/* func_001DAE60: the eye lift behind a ridge (see the header: always eases back to 0 here) */
-static f32 gcam_lift(CAMD_STD *d)
+/* func_001DAE60: the eye lift behind a ridge. A ground line test (func_0010AE00, src/main/hit/f_sphr.c) from the eye to the hunter's head
+ * joint (20): when the ground blocks it and the ground at the eye is more than 150 above the ground at the target the lift grows by 20
+ * per frame up to 300, otherwise it eases back to 0 by 20 per frame. */
+int func_0010AE00(f32 *, f32 *, f32 *, int);
+FLMAT *get_joint_wmat(PLW *, int);
+static f32 gcam_lift(PLW *pl, CAMD_STD *d)
 {
-    d->x2C = d->x2C - 20.0f;
+    f32 hitp[3];
+    f32 *head = &(*get_joint_wmat(pl, 20))[3][0];
+
+    if (func_0010AE00(d->eye, head, hitp, 9) && GetGroundHit(d->eye) - GetGroundHit(d->tar) > 150.0f) {
+        d->x2C += 20.0f;
+        if (!(d->x2C <= 300.0f)) {
+            d->x2C = 300.0f;
+        }
+        return d->x2C;
+    }
+    d->x2C -= 20.0f;
     if (d->x2C < 0.0f) {
         d->x2C = 0.0f;
     }
@@ -1200,7 +1214,7 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
     flvecCopy(cs->eye, d->eye);
     flvecCopy(cs->tar, d->tar);
     cs->eye[1] += d->hit_h;
-    cs->eye[1] += gcam_lift(d);
+    cs->eye[1] += gcam_lift(pl, d);
     switch (cs->step.b) {
     case 0:
         cs->roll = d->roll;

@@ -339,25 +339,36 @@ void pl_move_sub(PLW *pl) {
     pl->work5A8 = pl->pos[2];
     pl->work608 = -1;
     pl->work60A = -1;
+#ifndef VERSION_MHG
     pl->work601 = 0;
+#endif
     pl->work3F4 = 0;
     pl->work8ED = 0;
     pl->work8F0 = 0;
+#ifndef VERSION_MHG
     pl->work917 = 0;
+#endif
     if (Pl_master_ck(pl) == 1) {
         if (act_ck(pl, 0, 9) == 0 && act_ck(pl, 0, 0x1B) == 0) pl->work937 = 0;
     } else {
         pl->work937 = 0;
     }
     func_63A260(pl);
+#ifdef VERSION_MHG
+    pl->work940 = 0; /* G (main 0x562CA0): the byte hit_mark_set_new tests; set from work8F0 below */
+#define PMS_ACT_SET Pl_act_set
+#else
+#define PMS_ACT_SET Pl_act_set2
+#endif
     switch (pl_status_ck(pl)) {
     case 1:
-        Pl_act_set2(pl, 2, 0x15, 0);
+        PMS_ACT_SET(pl, 2, 0x15, 0);
         break;
     case 2:
-        if (act_ck(pl, 2, 0x16) == 0 && act_ck(pl, 2, 0x18) == 0) Pl_act_set2(pl, 2, 0x16, 0);
+        if (act_ck(pl, 2, 0x16) == 0 && act_ck(pl, 2, 0x18) == 0) PMS_ACT_SET(pl, 2, 0x16, 0);
         break;
     }
+#undef PMS_ACT_SET
     Pl_atck_adj_calc(pl);
     Pl_def_adj_calc(pl);
     if (pl->x40A == 0) {
@@ -371,6 +382,10 @@ void pl_move_sub(PLW *pl) {
         pl_horm_sub(pl);
         if (pl->flag14 != 4) Pl_pos_adj(pl);
     }
+#ifdef VERSION_MHG
+    pl->work940 = pl->work8F0;
+    if (pl->flag12 == 0) pl->work93D = 0;
+#endif
     Pl_status_set(pl);
     pl->work8C4 = 0;
     pl->work908 = 0;
@@ -411,7 +426,11 @@ void pl_move_sub(PLW *pl) {
                 if (a == 0) {
                     u8 f = pl->flag15;
                     if (f != 0x6A && f != 0x69 && f != 0x68 && f != 0x67 && f != 0x1C) pl->pch_on ^= 1;
-                } else if (act_ck(pl, 1, 0x3D) == 0) {
+                } else if (
+#ifdef VERSION_MHG
+                    a != 6 &&
+#endif
+                    act_ck(pl, 1, 0x3D) == 0) {
                     pl->pch_on ^= 1;
                 }
             }
@@ -446,7 +465,7 @@ void pl_move_sub(PLW *pl) {
         if (pl->work739 == 0) add_prim(ot1, pl->work564, 0x20, 0);
         else add_prim(ot0, pl->work564, 0x40, 0);
         if (pl->work90E != 0) pl->work90E--;
-        if (pl->work90E == 0 && System_timer % 20 == PU8(&game_w, 0xD1)) net_send_pl(pl, 2, 0);
+        if (pl->work90E == 0 && System_timer % 20 == game_w.master) net_send_pl(pl, 2, 0);
     }
     }
 }
@@ -1275,6 +1294,12 @@ test:
             if (*rec == -1) {
                 goto done;
             }
+#ifdef VERSION_MHG
+            if (((u8 *)rec)[8] & 4) { /* G: body entries flagged 4 are switched off (broken parts) */
+                rec += 0x14;
+                goto test;
+            }
+#endif
             break;
         }
     }
@@ -1308,6 +1333,11 @@ done:
             pl->pos[2] += v[0][2];
             pl->work7EC = 1;
         }
+#ifdef VERSION_MHG
+        if (pl->pos[1] < pl->x5AC) { /* G: the push never sinks the hunter below the ground line */
+            pl->pos[1] = pl->x5AC;
+        }
+#endif
     }
 }
 

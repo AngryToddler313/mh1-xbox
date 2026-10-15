@@ -2192,7 +2192,11 @@ void *memcpy(void *, const void *, int);
 void Init_reibun(void);
 
 void Default_reibun_set(void) {
+    #ifdef VERSION_MHG
+    memcpy((u8 *)&option_w + 0x2A30, default_reibun, 0x21C);   /* G (main 0x227560): the chat phrases sit behind the three 0xE00 slots; MH1's 0xDB0 landed in G's second save slot */
+#else
     memcpy((u8 *)&option_w + 0xDB0, default_reibun, 0x21C);
+#endif
     Init_reibun();
 }
 

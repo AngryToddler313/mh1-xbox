@@ -150,9 +150,13 @@ void rt_village_enter(void)
                     if (*q++ != ',')
                         break;
                 }
-            if (getenv("RT_POUCH")) {
+            {   /* the village hunter takes name, pouch and equipment from the save, as init_pl_work does (the status page printed an empty name line) */
                 extern void Set_userdata(void *);
-                Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);      /* the village's player copy of the pouch (as the item box does) */
+                if (!User_data[8] && getenv("RT_NAME"))     /* a test hunter without a save: the name the scripts give (RT_NAME), as rt_online does */
+                    snprintf((char *)User_data + 8, 0x10, "%s", getenv("RT_NAME"));
+                Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);
+                if (getenv("RT_QUEST_TRACE"))
+                    fprintf(stderr, "rt_village: hunter name '%s' (save: '%s')\n", (char *)(player_work + 0xA00 * game_w[GWX(0xD1)] + 0x8D4), (char *)User_data + 8);
             }
             if ((q = getenv("RT_WARE")))
                 for (k = 0; k < 64 && sscanf(q, "%i:%i%n", &n, &id, &used) == 2; k++) {

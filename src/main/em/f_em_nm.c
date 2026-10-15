@@ -375,7 +375,7 @@ void em_init(EMW *em) {
 #endif
     em->x10 = 1;
     EB(0x1E) = 0;
-    EB(0x88E) = *((u8 *)&game_w + 0xD1);
+    EB(0x88E) = game_w.master;
     em_status_init(em);
     EH(0x2DC) = 0;
     EH(0x2DE) = 0;
