@@ -23,3 +23,4 @@ main D_0035EFEB 0x35EFEB      # G lb_select_quest: the "cannot take" dialog flag
 lobby D_005E7800 0x5E7800     # quest story data (12 bytes, then the triples at D_005E7810)
 lobby D_005E7810 0x5E7810     # triples of quest numbers (a, b, c), 0xFFFF terminated
 lobby D_005FBA80 0x5FBA80     # G 0x559B40: buckets of quest rows (thousands), each 1000 row pointers
+main item_str 0x501AD0         # G 0x501AD0: table of the "no item" name pointers (MH1 0x33AB40)

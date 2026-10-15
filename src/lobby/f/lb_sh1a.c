@@ -1,6 +1,12 @@
 /* lb_sh1a - one translation unit 0x00537C10-0x00539A90 (lbtu3). */
 #include "lobby_s.h"
 #include "lbsys_g.h"
+#ifdef VERSION_MHG
+extern s32 shop_default_tag_00610A68[];
+#define GTAG(x) ((s32 *)(shop_default_tag_00610A68 + 1))
+#else
+#define GTAG(x) (x)
+#endif
 extern f32 tagMoveY[];
 #define flfntLocate_a2 flfntLocate_hdr   /* lobby_a.h declares it K&R; the original caller sign-extends y */
 #undef flfntLocate_a2
@@ -302,7 +308,7 @@ int arg0;
 }
 
 void lb_process_init() {
-    lbShop.tag = shop_process00_tag;
+    lbShop.tag = GTAG(shop_process00_tag);
     lbShop.x17 = 2;
 }
 
@@ -403,10 +409,10 @@ void Lb_process_shop() {
 
 void lb_process_tag_decide00() {
     if (lbShop.mode == 0) {
-        lbShop.tag = shop_process01_tag;
+        lbShop.tag = GTAG(shop_process01_tag);
         lbShop.x17 = 2;
     } else {
-        lbShop.tag = shop_process01_tag + 2;
+        lbShop.tag = GTAG(shop_process01_tag + 2);
         lbShop.x17 = 5;
     }
     lbShop.x70 = 0;

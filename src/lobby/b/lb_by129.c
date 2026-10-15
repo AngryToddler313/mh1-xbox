@@ -2,6 +2,12 @@
 #include "lobby_s.h"
 typedef struct { u8 x0; u8 kind; u16 id; u16 x4; } EQREC;
 typedef struct { s32 kind; s32 id; } SHTBL;
+#ifdef VERSION_MHG
+extern s32 shop_default_tag_00610A68[];
+#define GTAG(x) ((s32 *)(shop_default_tag_00610A68 + 1))
+#else
+#define GTAG(x) (x)
+#endif
 extern EQREC D_3C7004[];
 extern SHTBL shopTbl[];
 extern char User_data[];
@@ -22,7 +28,7 @@ void lb_armor_tag_decide00(void) {
         lbShop.x16 = 1;
         lbShop.x8F = 1;
         lbShop.f38 = (void *)shop_armor_question;
-        lbShop.tag = (s32 *)shop_armor01_tag;
+        lbShop.tag = GTAG((s32 *)shop_armor01_tag);
         lbShop.f28 = (void *)lb_armor_tag_decide01;
         return;
     }
