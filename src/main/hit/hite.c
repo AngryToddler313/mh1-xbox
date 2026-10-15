@@ -109,4 +109,7 @@ void hit_hit_sub_pl(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
     c->dm_shl = sh;
     c->dm_type = sh->atk_type;
     c->dm_pow = sh->x68;
+#ifdef VERSION_MHG
+    c->x3EB |= sh->x65;
+#endif
 }

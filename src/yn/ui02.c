@@ -1,5 +1,8 @@
 /* ui02 - yn.bin screens and text 0x00539D70-0x00539DE8: yn_printf, yn_set_pal, yn_set_size, yn_set_z, yn_set_halftype, yn_get_halftype. Whole file in ui_strip_tmp.c. */
 #include "yn.h"
+#ifdef MHG_PS2 /* G prints through another function here */
+#define flfntPrintf func_0012BDD0
+#endif
 
 int ADXM_ShutdownThrd();
 int ADXPS2_LoadFcacheDvd();
@@ -300,7 +303,7 @@ typedef struct { s32 a; s32 b; } PR8;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 
 

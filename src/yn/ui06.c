@@ -300,7 +300,7 @@ typedef struct { s32 a; s32 b; } PR8;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 
 
@@ -342,5 +342,5 @@ void yn_scecom_reboot(void) {
     sceGsSyncVCallback(0);
     sceCdInit(5);
     sceSifExitCmd();
-    LoadExecPS2(lit_5387, 2, args);
+    LoadExecPS2(lit_5387, GV(2, 1), args);
 }

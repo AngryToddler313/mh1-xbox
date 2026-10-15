@@ -1,6 +1,7 @@
 /* menu29 - f_menu 0x0012E3E0-0x0012E908: disp_item (the item panel: count and name of the selected item; matched by
    agent B: the first two flag tests in one return, the table pointer as &Item_data[0][3] + id * 16, no width temp)
    and the item window (normal) */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -310,6 +311,7 @@ int Pl_shell_set(PLW *, u16, int);
 
 /* 0x12E640 */
 /* The item / ammo panel: the selected item's count and name under the item icons. */
+#if !defined(G_PART)
 void disp_item(void) {
     PLW *pl = lpPit->pl;
     u16 id;
@@ -353,15 +355,17 @@ void disp_item(void) {
         lpPit->x5C--;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void disp_item_sub_normal(void) {
     PFLPS3 q;
     PLW *pl = lpPit->pl;
     u8 c;
 
     DispFrameMessage(item_normal_base, 0);
-    reload_tex(1, 0x11A);
-    SetTextureStage(0x11A);
+    reload_tex(1, GSLOT(0x11A, 0x141));
+    SetTextureStage(GSLOT(0x11A, 0x141));
     q.s[0] = 0x14F;
     q.s[2] = 0x94;
     q.s[1] = 0x18A;
@@ -390,8 +394,8 @@ void disp_item_sub_normal(void) {
     }
     PutButtonICON(btn_item_sel_3262, 2);
     if (UseItemChk(pl, pl->work888) == 1) {
-        reload_tex(1, 0x118);
-        SetTextureStage(0x118);
+        reload_tex(1, GSLOT(0x118, 0x13F));
+        SetTextureStage(GSLOT(0x118, 0x13F));
         disp_item_icon(pl->work888, 0x185, 1, 0);
     }
     c = *((u8 *)pl + 2);
@@ -403,8 +407,8 @@ void disp_item_sub_normal(void) {
                 q.col = item_col_tbl[Item_data[pl->item[pl->work88E].id][6]];
             }
         }
-        reload_tex(1, 0x11A);
-        SetTextureStage(0x11A);
+        reload_tex(1, GSLOT(0x11A, 0x141));
+        SetTextureStage(GSLOT(0x11A, 0x141));
         q.s[0] = 0x14F;
         q.s[2] = 0x94;
         q.s[1] = 0x130;
@@ -414,3 +418,4 @@ void disp_item_sub_normal(void) {
         PutSpriteDiv3(&q, 0xC, 0xF);
     }
 }
+#endif

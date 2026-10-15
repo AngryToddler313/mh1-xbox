@@ -5,6 +5,13 @@
 #include "types.h"
 #include "game.h"
 #include "pl.h"
+#ifndef UD_SLOT
+#ifdef VERSION_MHG
+#define UD_SLOT 0xE00   /* saved hunter data per card slot (ud.h) */
+#else
+#define UD_SLOT 0x480
+#endif
+#endif
 
 /* select.bin sees these main-module globals with its own (partial) layouts; do not
  * include flow.h / f_game.h in the same file. */

@@ -205,8 +205,8 @@ void yn_proxy_wk_save();
 int yn_load_texfile();
 void yn_scecom_reboot();
 
-#define YS8(o) M2C_FIELD(ynw, s8 *, o)
-#define YU8(o) M2C_FIELD(ynw, u8 *, o)
+#define YS8(o) YNF(ynw, s8 *, o)
+#define YU8(o) YNF(ynw, u8 *, o)
 #define PAD (*(u16 *)0x3F3714)
 
 /* Auto connect: pick the saved network setting of the first memory card that has one. */
@@ -222,7 +222,7 @@ s32 yn_auto_connect(void) {
         YU8(0x1E) = 0;
         YU8(0x25) = 0;
     case 1:
-        if (yn_netcnf_pastproxy_check(ynw + 0xEC8, D_5310D0) < 0) {
+        if (yn_netcnf_pastproxy_check(ynw + YNO(0xEC8), D_5310D0) < 0) {
             return -4;
         }
         YS8(0x18) = YS8(0x18) + 1;
@@ -231,7 +231,7 @@ s32 yn_auto_connect(void) {
     case 2:
         r = yn_file_search();
         if (r == 1) {
-            n = yn_netcnf_pastdata_check(D_5306B0, ynw + 0x250, YS8(0x1C));
+            n = yn_netcnf_pastdata_check(D_5306B0, ynw + YNO(0x250), YS8(0x1C));
             if (n >= 0) {
                 off = n * 0x14;
                 if (M2C_FIELD(off + (int)ynw, s32 *, 0x254) < 0) {
@@ -261,11 +261,11 @@ s32 yn_auto_connect(void) {
             YU8(0x25) = f | 0x80;
         }
         YU8(0x25) = YU8(0x25) | ((1 << YU8(0x1E)) & 0xFF);
-        if (yn_netcnf_magicno_check(ynw + 0x1180) != 0) {
+        if (yn_netcnf_magicno_check(ynw + YNO(0x1180)) != 0) {
             YS8(0x18) = 4;
             YS8(0x46) = 0x1D;
             yn_log_sd(4);
-            yn_mc_init(ynw + 0x10D0);
+            yn_mc_init(ynw + YNO(0x10D0));
         } else {
             YS8(0x18) = 3;
         }
@@ -300,8 +300,8 @@ s32 yn_auto_connect(void) {
     return 0;
 }
 
-#define YS32(o) M2C_FIELD(ynw, s32 *, o)
-#define YU16(o) M2C_FIELD(ynw, u16 *, o)
+#define YS32(o) YNF(ynw, s32 *, o)
+#define YU16(o) YNF(ynw, u16 *, o)
 #define CURSOR_UD(o, n) \
     do { \
         if (pad & 0x2000) { \
@@ -362,7 +362,7 @@ s32 yn_select_provider(void) {
             M2C_FIELD(ynw + v, s8 *, 0xC) = 0;
             v += 5;
         } while (v < 0x10);
-        yn_mc_init(ynw + 0x10D0);
+        yn_mc_init(ynw + YNO(0x10D0));
         yn_proxy_wk_load();
     case 1: {
         u16 pad;
@@ -470,7 +470,7 @@ s32 yn_select_provider(void) {
         YS8(0x45) = 0x15;
         YS8(0x47) = 0x1E;
         YS8(0x48) = 0;
-        if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
+        if (yn_mc_device_check_all(ynw + YNO(0x10D0)) >= 0) {
             YU8(0x1D) = YU8(0x1D) | (((YU8(0x10D2) | YU8(0x10D3)) >> 1) & 3);
             if (YU8(0x1D) != 0) {
                 u8 *t3;
@@ -504,8 +504,8 @@ s32 yn_select_provider(void) {
             if (pad & 0x20) {
                 YS8(0x18) = st + 1;
                 yn_dec_sd();
-                yn_mc_set_current(ynw + 0x10D0, YS8(9));
-                yn_mc_gmfile_current_set(ynw + 0x10D0);
+                yn_mc_set_current(ynw + YNO(0x10D0), YS8(9));
+                yn_mc_gmfile_current_set(ynw + YNO(0x10D0));
             } else if (pad & 0x3000) {
                 s8 cur = YS8(9);
                 u8 f = YU8(0x1D);
@@ -531,7 +531,7 @@ s32 yn_select_provider(void) {
         break;
     }
     case 5:
-        r = yn_mc_gmfile_check(ynw + 0x10D0);
+        r = yn_mc_gmfile_check(ynw + YNO(0x10D0));
         if (r != -2) {
             r2 = r;
             yn_log_sd();
@@ -603,19 +603,19 @@ s32 yn_select_provider(void) {
             switch (YS8(0xE)) {
             case 0:
                 YS8(0x18) = 0xB;
-                yn_keyboard_init(1, ynw + 0xED0);
+                yn_keyboard_init(1, ynw + YNO(0xED0));
                 break;
             case 1:
                 YS8(0x18) = 0xC;
-                yn_port_init(ynw + 0xECC);
+                yn_port_init(ynw + YNO(0xECC));
                 break;
             case 2:
                 YS8(0x18) = 0xB;
-                yn_keyboard_init(1, ynw + 0xFD0);
+                yn_keyboard_init(1, ynw + YNO(0xFD0));
                 break;
             case 3:
                 YS8(0x18) = 0xC;
-                yn_port_init(ynw + 0xECE);
+                yn_port_init(ynw + YNO(0xECE));
                 break;
             }
         } else if (pad & 0x800) {
@@ -661,7 +661,7 @@ s32 yn_select_provider(void) {
         break;
     }
     case 9:
-        r = yn_mc_gmfile_save(ynw + 0x10D0);
+        r = yn_mc_gmfile_save(ynw + YNO(0x10D0));
         if (r != -2) {
             r2 = r;
             yn_log_sd();
@@ -709,7 +709,7 @@ s32 yn_select_provider(void) {
         pad = PAD;
         if (pad & 0x40) {
             YS8(0x18) = YS8(0x19);
-            *M2C_FIELD(ynw, u16 **, 0x3C) = YU16(0x3A);
+            *YNF(ynw, u16 **, 0x3C) = YU16(0x3A);
             YS8(0x38) = 0;
             yn_can_sd();
         } else if (pad & 0x20) {
@@ -733,7 +733,7 @@ s32 yn_select_provider(void) {
             yn_cur2_sd();
         } else {
             if ((pad | YS32(0x28)) & 0x3000) {
-                tp = M2C_FIELD(ynw, u16 **, 0x3C);
+                tp = YNF(ynw, u16 **, 0x3C);
                 d1 = YU16(0x40);
                 old = *tp;
                 dig = (s32)(old / d1) % 10;
@@ -814,7 +814,7 @@ s32 yn_select_provider(void) {
                     YS8(0x18) = 0x11;
                     YS8(0x46) = 0xB;
                     yn_dec_sd();
-                    yn_mc_init(ynw + 0x10D0);
+                    yn_mc_init(ynw + YNO(0x10D0));
                 } else {
                     YS8(0x18) = 2;
                     YS8(0x46) = 0;
@@ -827,7 +827,7 @@ s32 yn_select_provider(void) {
         break;
     }
     case 17:
-        r = yn_mc_format(ynw + 0x10D0);
+        r = yn_mc_format(ynw + YNO(0x10D0));
         switch (r) {
         case -2:
             break;
@@ -835,28 +835,28 @@ s32 yn_select_provider(void) {
             YS8(0x18) = 0xD;
             YS8(0x19) = 5;
             YS8(0x46) = 0xC;
-            yn_mc_init(ynw + 0x10D0);
+            yn_mc_init(ynw + YNO(0x10D0));
             yn_log_sd();
             break;
         default:
             YS8(0x18) = 0xD;
             YS8(0x19) = 2;
             YS8(0x46) = 0xD;
-            yn_mc_init(ynw + 0x10D0);
+            yn_mc_init(ynw + YNO(0x10D0));
             yn_log_sd();
             break;
         }
         break;
     case 18:
-        yn_strcpy(ynw + 0x1ACB4, yn_netcnf_search_usr_name(ynw + 0x1180, ynw + YS8(0xB) * 0x1340 + 0xAF00));
-        nm = (s8 *)(ynw + 0x1ACB4);
+        yn_strcpy(ynw + YNO(0x1ACB4), yn_netcnf_search_usr_name(ynw + YNO(0x1180), ynw + YS8(0xB) * 0x1340 + 0xAF00));
+        nm = (s8 *)(ynw + YNO(0x1ACB4));
         if (nm == 0 || *nm == 0) {
             YS8(0x18) = 0xF;
             YS8(0x46) = 0x33;
             yn_log_sd();
             break;
         }
-        if (yn_netcnf_magicno_check(ynw + 0x1180) != 0) {
+        if (yn_netcnf_magicno_check(ynw + YNO(0x1180)) != 0) {
             YS8(0x18) = 0xF;
             YS8(0x46) = 0x1D;
             yn_log_sd(0xF);
@@ -876,7 +876,7 @@ s32 yn_select_provider(void) {
             yn_log_sd(0xF);
             break;
         }
-        if (yn_netcnf_pastproxy_check(ynw + 0xEC8, D_5310D0) < 0) {
+        if (yn_netcnf_pastproxy_check(ynw + YNO(0xEC8), D_5310D0) < 0) {
             YS8(0x26) = 1;
         }
         if (yn_netcnf_pastdata_check(D_5306B0, ynw + YS8(0xB) * 0x14 + 0x250, 1) < 0) {

@@ -300,7 +300,7 @@ typedef struct { s32 a; s32 b; } PR8;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 
 
@@ -325,10 +325,10 @@ s32 yn_common_memcard_out(void) {
     u8 *temp_v0;
 
     temp_s0 = 0;
-    if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
+    if (yn_mc_device_check_all(ynw + YNO(0x10D0)) >= 0) {
         temp_v0 = ynw;
-        temp_s0 |= ((M2C_FIELD(temp_v0, u8 *, 0x10D2) | M2C_FIELD(temp_v0, u8 *, 0x10D3)) >> 1) & 3;
-        if (!(temp_s0 & (1 << yn_mc_get_current(temp_v0 + 0x10D0)))) {
+        temp_s0 |= ((YNF(temp_v0, u8 *, 0x10D2) | YNF(temp_v0, u8 *, 0x10D3)) >> 1) & 3;
+        if (!(temp_s0 & (1 << yn_mc_get_current(temp_v0 + YNO(0x10D0))))) {
             return 1;
         }
     }

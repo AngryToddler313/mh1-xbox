@@ -44,6 +44,9 @@ PROVIDE(NPCZoomInCameraRequest = 0x001DC0D0); /* G-only address of MH1 NPCZoomIn
 PROVIDE(D_63FA10 = 0x00672ED0); /* monster hit-body tables by kind (read in sub_main hit_calc_shl: lui 0x67, +11984) */
 PROVIDE(func_533A00 = 0x00542680); /* softreset's Tsk_Execute target (MH1 0x533A00): lui 0x54 / addiu 0x2680 in G's softreset */
 /* string pointer cells G code loads (include/g_alias.h GSTR) */
+PROVIDE(Equip_moji_color_rare_g = 0x0021EA20);
+PROVIDE(param_change_sub_g = 0x005462E0);
+PROVIDE(gptr_002EC620 = 0x002EC620); /* help text item level format */
 PROVIDE(gptr_002EC62C = 0x002EC62C); /* chat_log_name format */
 PROVIDE(gptr_00527ED4 = 0x00527ED4); /* Put_shousai text */
 PROVIDE(gptr_00528410 = 0x00528410); /* trade_get_ck message */

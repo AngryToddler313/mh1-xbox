@@ -1,5 +1,9 @@
 /* edit04 - select.bin character edit / controller screen 0x00535F30-0x00538028: ed_view_set, param_change_sub, param_change_sub2, param_change_00536280, user_load, roll_move (static: Edit_task and Cont_task rely on its register use), ed_color_sel, edit_trans, Edit_task, disp_cont_spr, cont_trans, Cont_task. Whole file in edit_nm.c. */
+#include "g_alias.h"
 #include "select.h"
+#ifdef MHG_PS2
+void param_change_sub_g();
+#endif
 
 
 typedef struct { u8 _p[0x24]; s8 name[0x12]; } UDC_SRC;
@@ -58,6 +62,7 @@ void cont_trans(TSKH *tk);
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void ed_view_set(PLW *pl, s16 mode, s16 flag) {
     EDIT_W *e = &edit_w;
     switch (mode) {
@@ -87,7 +92,9 @@ void ed_view_set(PLW *pl, s16 mode, s16 flag) {
         flvecCopy(lpView->at, e->at);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void param_change_sub(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
     if (btn & 0x800) {
         if (*p == 0) {
@@ -106,7 +113,9 @@ void param_change_sub(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
         se_req(7, se, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void param_change_sub2(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
     if (btn & 0x800) {
         if (*p > 0) {
@@ -125,7 +134,9 @@ void param_change_sub2(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void param_change_00536280(u8 *w) {
     u8 *pa = (u8 *)&player_work[0];
     u8 *pb = (u8 *)&player_work[1];
@@ -159,9 +170,11 @@ void param_change_00536280(u8 *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void user_load(void *unused, PLW *pl, s16 n) {
-    u8 *u = option_w + n * 0x480 + 0x10;
+    u8 *u = option_w + n * UD_SLOT + 0x10;
     if (*u != 0) {
         Set_equip_data(pl, u);
         if (pl->work011 == 0) {
@@ -171,7 +184,9 @@ void user_load(void *unused, PLW *pl, s16 n) {
         pl_chr_set2(pl, 0x32B, 0, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void roll_move(PLW *w, s16 unused) {
     if (*(volatile u16 *)&Psw[4] & 8) {
         w->ang[1] -= 0x400;
@@ -180,8 +195,20 @@ static void roll_move(PLW *w, s16 unused) {
         w->ang[1] += 0x400;
     }
 }
+#endif
 
-void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
+#ifdef MHG_PS2
+#define EDCS_PARAM int btn_raw
+#define EDCS_INIT u16 btn = btn_raw;   /* G keeps the untruncated pad word for the call below */
+#define EDCS_RAW btn_raw
+#else
+#define EDCS_PARAM u16 btn
+#define EDCS_INIT
+#define EDCS_RAW btn
+#endif
+#if !defined(G_PART)
+void ed_color_sel(EDIT_W *w, PLW *pl, EDCS_PARAM) {
+    EDCS_INIT
     u8 c[3];
     c[0] = w->col >> 16;
     c[1] = w->col >> 8;
@@ -206,7 +233,11 @@ void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
         param_change_sub2(w, w->x3E, c + w->x0[3], 0x100, 0x17);
         w->col = 0xFF000000 | (c[0] << 16) | (c[1] << 8) | c[2];
     } else {
+#ifdef MHG_PS2
+        param_change_sub_g(w, EDCS_RAW, &w->x3A, 0x10, 0x16, 0);   /* G passes a sixth argument here (same function) */
+#else
         param_change_sub(w, btn, &w->x3A, 0x10, 0x16);
+#endif
         if (Psw[2] & 0x20) {
             w->col = sample_col[w->x3A];
             ed_decide_se();
@@ -214,7 +245,9 @@ void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
     }
     pl->work5FC = w->col;
 }
+#endif
 
+#if !defined(G_PART)
 void edit_trans(TSKH *t) {
     STASK *s = t->work;
     u8 *e = (u8 *)&edit_w;
@@ -257,7 +290,9 @@ void edit_trans(TSKH *t) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Edit_task(STASK *t) {
     EDIT_W *e = &edit_w;
     u16 btn;
@@ -562,14 +597,18 @@ void Edit_task(STASK *t) {
         return;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void disp_cont_spr(void *unused) {
     flSetRenderState(0x6C, 0);
     Sel_back_disp(0xFF);
     flSetRenderState(0x6C, 1);
     Sel_menu_disp(5);
 }
+#endif
 
+#if !defined(G_PART)
 void cont_trans(TSKH *tk) {
     STASK *s = tk->work;
     u8 *e = (u8 *)&edit_w;
@@ -595,7 +634,9 @@ void cont_trans(TSKH *tk) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Cont_task(STASK *t) {
     u8 *op;
     u8 old;
@@ -649,7 +690,7 @@ void Cont_task(STASK *t) {
                 return;
             }
             e->x0[1] = 0xFF;
-            for (i = 0, op = option_w; i < 3; i++, op += 0x480, pl++) {
+            for (i = 0, op = option_w; i < 3; i++, op += UD_SLOT, pl++) {
                 if (op[0x10] == 0) {
                     pl->be_flag = 0;
                 } else {
@@ -661,7 +702,7 @@ void Cont_task(STASK *t) {
                     pl->x01 = 0;
                 }
             }
-            if (option_w[option_w[0xFCE] * 0x480 + 0x10] != 0) {
+            if (option_w[option_w[0xFCE] * UD_SLOT + 0x10] != 0) {
                 e->x0[1] = option_w[0xFCE];
             }
             ed_view_set(&player_work[e->x0[1]], 0, 0);
@@ -705,7 +746,7 @@ void Cont_task(STASK *t) {
                         e->x0[1]--;
                     }
                     cur = e->x0[1];
-                } while (option_w[cur * 0x480 + 0x10] == 0);
+                } while (option_w[cur * UD_SLOT + 0x10] == 0);
                 if (old != cur) {
                     cursor_se();
                     *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
@@ -723,7 +764,7 @@ void Cont_task(STASK *t) {
                         e->x0[1]++;
                     }
                     cur = e->x0[1];
-                } while (option_w[cur * 0x480 + 0x10] == 0);
+                } while (option_w[cur * UD_SLOT + 0x10] == 0);
                 if (old != cur) {
                     cursor_se();
                     *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
@@ -841,3 +882,4 @@ void Cont_task(STASK *t) {
         return;
     }
 }
+#endif

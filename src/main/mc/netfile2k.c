@@ -1,6 +1,7 @@
 /* netfile2k - SLPM_654.95 0x0028AB30-0x0028B204 (SaveNetFileBr): the same net settings file save as SaveNetFile_ForLobby
  * but for the bar/menu variant (dialogs through net_shot_ok_ck, remaining-time digits copied to net_common_w.x8D by
  * dialog_limit_disp mode 2). Step machine on net_common_w.x7C; returns 0 while running, 1 when saved, -1 when given up. */
+#include "g_alias.h"
 #include "netfile2.h"
 
 extern u8 CNFile[];
@@ -26,7 +27,7 @@ int SaveNetFileBr()
         if (Net_Icon_Data_Load(0) != 0) {
             net_common_w.x7D = 0;
             net_common_w.x7C = net_common_w.x7C + 1;
-            net_common_w.x7A = McActAvailSet((int)data_load_ptr + 0x12000);
+            net_common_w.x7A = McActAvailSet((int)data_load_ptr + GV(0x12000, 0x20000));
             McActSave0Set(net_common_w.x0D, data_load_ptr, 0);
         }
         break;
@@ -79,11 +80,11 @@ int SaveNetFileBr()
         break;
     case 6:
         net_common_w.x7C = s + 1;
-        net_common_w.timer = 300;
+        net_common_w.timer = GV(300, 150);
     case 7:
         t = net_common_w.timer - 1;
         net_common_w.timer = t;
-        if (t < 0xF1) {
+        if (t < GV(0xF1, 0x79)) {
             if (net_common_w.timer != 0) {
                 if (net_shot_ok_ck(2) != 0) {
                     goto close5A;

@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0014E680-0x0014E8D8: em_select .. em_select. See plsel_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 extern u8 select_w[];
@@ -81,32 +82,32 @@ void em_select(u8 *t) {
             }
         }
         if (pad & 0x400) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0x9C);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + GV(0x9C, 0xC0));
             v = *e;
-            if (v >= 0x22) {
+            if (v >= GV(0x22, 0x33)) {
                 *e = 0;
             } else {
                 *e = v + 1;
             }
         }
         if (pad & 0x800) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0x9C);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + GV(0x9C, 0xC0));
             v = *e;
             if (v <= 0) {
-                *e = 0x22;
+                *e = GV(0x22, 0x33);
             } else {
                 *e = v - 1;
             }
         }
         if (pad & 0x40) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0xA4);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + GV(0xA4, 0xC8));
             v = *e;
             if (v != 0) {
                 *e = v - 1;
             }
         }
-        if (pad & 0x220) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0xA4);
+        if (pad & GV(0x220, 0x20)) {
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + GV(0xA4, 0xC8));
             v = *e;
             if (v < 0xF) {
                 *e = v + 1;
@@ -114,10 +115,10 @@ void em_select(u8 *t) {
         }
         if (pad & 0x8000) {
             sum = 0;
-            sum += *(u16 *)(sw + 0xA4);
-            sum += *(u16 *)(sw + 0xA6);
-            sum += *(u16 *)(sw + 0xA8);
-            sum += *(u16 *)(sw + 0xAA);
+            sum += *(u16 *)(sw + GV(0xA4, 0xC8));
+            sum += *(u16 *)(sw + GV(0xA6, 0xCA));
+            sum += *(u16 *)(sw + GV(0xA8, 0xCC));
+            sum += *(u16 *)(sw + GV(0xAA, 0xCE));
             if (sum < 0x10) {
                 system_w[3] = 1;
                 all_reset();

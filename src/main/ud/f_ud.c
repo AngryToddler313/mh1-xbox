@@ -2,6 +2,7 @@
  * memory-card slot block (option_w + 0x10, 0x480 bytes per slot), the pouch copy between User_data and a player work
  * (PLW +0x828), the hunter point to rank conversion (h_rank_tbl: ascending point limits ending in 9999999 = 0x98967F),
  * Set_userdata/Set_equip_data (fill a player work's name, pouch, equipment from the saved data) and Gold_add. */
+#include "g_alias.h"
 #include "types.h"
 #include "pl.h"
 #include "ud.h"
@@ -51,7 +52,11 @@ typedef struct EQUD {
     u8 x02;
     u8 x03;
     s32 x04;
+#ifdef VERSION_MHG
+    u8 pad08[0xC74 - 8];   /* G: the equipment block sits 0x8A8 later (see UDW in ud.h) */
+#else
     u8 pad08[0x3CC - 8];
+#endif
     s16 wx3CC;
     s16 wx3CE;
     s16 wx3D0;
@@ -117,7 +122,7 @@ void Save_userdata(int slot) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void Set_equip_data(EQPL *pl, EQUD *u) {
     Set_equip_idx(u);
     pl->x11 = u->x01;
@@ -147,19 +152,19 @@ asm void Set_userdata(PLW *pl)
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void ItemCopy_Pl2Ud(PLW *pl) {
-    memcpy((u8 *)User_data + 0x37C, (u8 *)pl + 0x828, 0x50);
+    memcpy((u8 *)User_data[0].item, (u8 *)pl + 0x828, 0x50);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 void ItemCopy_Ud2Pl(PLW *pl) {
-    memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50);
+    memcpy((u8 *)pl + 0x828, (u8 *)User_data[0].item, 0x50);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 void Gold_add(int n) {
     User_data[0].gold = User_data[0].gold + n;
     if (User_data[0].gold > 9999999) {
@@ -313,7 +318,7 @@ s16 Ud_item_num_ck(u16 id) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 int Ud_item_num_ck2(u16 id)
 {
   s16 i;
@@ -342,7 +347,7 @@ int Ud_item_num_ck2(u16 id)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 int Ud_item_num_ck3(u16 id) {
     s16 i;
     int new_var;
@@ -473,7 +478,7 @@ int Omake_flag_ck(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 void Set_mini_data_to_pl(s8 *key, u8 *pl) {
     u8 *m;
     s8 id;
@@ -481,6 +486,21 @@ void Set_mini_data_to_pl(s8 *key, u8 *pl) {
 
     id = Get_pl_id(key);
     m = room_member_mini_data[id];
+#ifdef VERSION_MHG
+    /* G's mini data: equipment halfwords at 0xA, six bytes of values at 3, the rest after 0x14 */
+    *(s32 *)(pl + 0x5FC) = *(s32 *)(m + 0x14);
+    pl[0x11] = m[0x19];
+    pl[0x34E] = m[0x18];
+    w = *(s16 *)(m + 0xA);
+    v = *(s16 *)(m + 0xC);
+    x = *(s16 *)(m + 0xE);
+    *(s16 *)(pl + 0x35E) = w;
+    *(s16 *)(pl + 0x360) = v;
+    *(s16 *)(pl + 0x362) = x;
+    pl[0x8D3] = m[0x1A];
+    *(s8 *)(pl + 0x34C) = Get_weapon_id(m + 0xA, w);
+    memcpy(pl + 0x352, m + 3, 6);
+#else
     *(s32 *)(pl + 0x5FC) = *(s32 *)(m + 4);
     pl[0x11] = m[3];
     pl[0x34E] = m[0x14];
@@ -493,11 +513,12 @@ void Set_mini_data_to_pl(s8 *key, u8 *pl) {
     pl[0x8D3] = m[0x16];
     *(s8 *)(pl + 0x34C) = Get_weapon_id(m + 8, w);
     memcpy(pl + 0x352, m + 0xE, 6);
+#endif
     strcpy((char *)pl + 0x8D4, room_member_handle[id]);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 s8 Get_pl_id(s8 *key) {
     s8 i;
     s8 j;
@@ -515,10 +536,10 @@ s8 Get_pl_id(s8 *key) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void Copy_user_id(u8 no)
 {
-  u8 *d = (((u8 *) (&game_w)) + 0x1E8) - (-(no * 8));
+  u8 *d = (((u8 *) (&game_w)) + GV(0x1E8, 0x1F6)) - (-(no * 8));
   d[0] = my_user_id[0];
   d[1] = my_user_id[1];
   d[2] = my_user_id[2];

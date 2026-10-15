@@ -11,6 +11,9 @@
    remuneration_item_set, quest_item_ck2, Quest_net_sub. */
 
 #include "g_alias.h"
+#ifdef MHG_PS2
+void sub_main_func_004B55F0();
+#endif
 #include "quest.h"
 #include "plf.h"
 #include "types.h"
@@ -772,7 +775,7 @@ EMW *e;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 void Quest_enemy_die(e)
 EMW *e;
 {
@@ -787,15 +790,19 @@ EMW *e;
 #ifdef VERSION_MHG
             /* G (sub_main 0x4B4940): the kill-count message, the "N of kind" target count, the
              * per-kind kill counts (capped 9999) and the biggest size killed per kind */
+#ifdef MHG_PS2
+            sub_main_func_004B55F0(e);   /* the static quest_kill_count_ck (G keeps it outside this part) */
+#else
             quest_kill_count_ck(e);
+#endif
             if (quest_w.x240 != 0 && quest_w.x23C == e->kind && quest_w.x23E > 0) {
                 quest_w.x23E--;
             }
             quest_w.x1D4[e->kind]++;
-            if ((u16)quest_w.x1D4[e->kind] >= 10000) {
+            if (quest_w.x1D4[e->kind] > 9999) {
                 quest_w.x1D4[e->kind] = 9999;
             }
-            if (sub_main_func_004B7920(e->kind) == 1 && (u16)quest_w.x16C[e->kind] < e->size) {
+            if (sub_main_func_004B7920(e->kind) == 1 && e->size > quest_w.x16C[e->kind]) {
                 quest_w.x16C[e->kind] = e->size;
             }
 #endif

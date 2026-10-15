@@ -311,7 +311,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -343,13 +343,13 @@ s32 yn_set_main(void) {
         t2 = yn_load_texfile(1, 0x40500);
         ynw = Yn_temp;
         memset(ynw, 0, 0x1AEC0);
-        M2C_FIELD(ynw, s32 *, 0) = t1;
-        M2C_FIELD(ynw, s32 *, 4) = t2;
-        yn_netcnf_init1(ynw + 0x1180);
+        YNF(ynw, s32 *, 0) = t1;
+        YNF(ynw, s32 *, 4) = t2;
+        yn_netcnf_init1(ynw + YNO(0x1180));
         yn_r_no = 1;
         return 0;
     case 1:
-        yn_netcnf_init2(ynw + 0x1180);
+        yn_netcnf_init2(ynw + YNO(0x1180));
         yn_hard_init();
         yn_proxy_wk_load();
         if (yn_type == 0) {
@@ -369,35 +369,35 @@ s32 yn_set_main(void) {
             break;
         case 1:
             yn_r_no = 6;
-            M2C_FIELD(ynw, s8 *, 0x24) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x24) = 0;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             break;
         case -1:
             yn_r_no = 6;
-            M2C_FIELD(ynw, s8 *, 0x24) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x24) = 0;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             break;
         case -2:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 6;
-            M2C_FIELD(ynw, s8 *, 0x17) = 0;
+            YNF(ynw, s8 *, 0x46) = 6;
+            YNF(ynw, s8 *, 0x17) = 0;
             yn_log_sd();
             break;
         case -3:
             yn_r_no = 0xA;
-            M2C_FIELD(ynw, s8 *, 0x24) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x17) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x1D;
+            YNF(ynw, s8 *, 0x24) = 0;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x17) = 0;
+            YNF(ynw, s8 *, 0x46) = 0x1D;
             yn_log_sd();
-            M2C_FIELD(ynw, s8 *, 0x42) = 1;
-            M2C_FIELD(ynw, s8 *, 0x43) = 4;
-            M2C_FIELD(ynw, s8 *, 0x44) = 1;
-            M2C_FIELD(ynw, s8 *, 0x45) = 1;
-            M2C_FIELD(ynw, s8 *, 0x47) = 1;
-            M2C_FIELD(ynw, s8 *, 0x48) = 0;
+            YNF(ynw, s8 *, 0x42) = 1;
+            YNF(ynw, s8 *, 0x43) = 4;
+            YNF(ynw, s8 *, 0x44) = 1;
+            YNF(ynw, s8 *, 0x45) = 1;
+            YNF(ynw, s8 *, 0x47) = 1;
+            YNF(ynw, s8 *, 0x48) = 0;
             break;
         }
         break;
@@ -408,31 +408,31 @@ s32 yn_set_main(void) {
         switch (r) {
         case 1:
             yn_r_no = 7;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
             break;
         case -1:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x2B;
+            YNF(ynw, s8 *, 0x46) = 0x2B;
             yn_log_sd();
             break;
         case -2:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 6;
+            YNF(ynw, s8 *, 0x46) = 6;
             yn_log_sd();
             break;
         case -3:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 5;
+            YNF(ynw, s8 *, 0x46) = 5;
             yn_log_sd();
             break;
         case -4:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x2B;
+            YNF(ynw, s8 *, 0x46) = 0x2B;
             yn_log_sd();
             break;
         case -6:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x39;
+            YNF(ynw, s8 *, 0x46) = 0x39;
             yn_log_sd();
             break;
         }
@@ -443,7 +443,7 @@ s32 yn_set_main(void) {
     case 6:
         w = ynw;
         M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
-        M2C_FIELD(ynw, s8 *, 0x39) = 0;
+        YNF(ynw, s8 *, 0x39) = 0;
         yn_key_repeat(Psw);
         r = yn_select_provider();
         switch (r) {
@@ -451,36 +451,36 @@ s32 yn_set_main(void) {
             break;
         case 1:
             yn_r_no = 7;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
             break;
         case 2:
             yn_r_no = 4;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 8) = 0;
             break;
         case -1:
             yn_r_no = 8;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x1A;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x17) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x46) = 0x1A;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x17) = 0;
             yn_log_sd();
             break;
         case -2:
             yn_r_no = 2;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
             break;
         }
         break;
     case 7:
         yn_set_exit_sub();
-        return M2C_FIELD(ynw, u8 *, 0x26) + 1;
+        return YNF(ynw, u8 *, 0x26) + 1;
     case 8:
         w = ynw;
         M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
         pad = *(u16 *)0x3F3714;
         if (pad & 0x40) {
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             yn_can_sd();
             yn_r_no = 6;
             break;
@@ -526,7 +526,7 @@ s32 yn_set_main(void) {
         pad = *(u16 *)0x3F3714;
         if ((pad & 0x20) || (pad & 0x40)) {
             yn_r_no = 6;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             yn_dec_sd();
         }
         break;
@@ -534,7 +534,7 @@ s32 yn_set_main(void) {
     if (yn_r_no == 4) {
         return 0;
     }
-    M2C_FIELD(ynw, s8 *, 0x1A) = yn_get_halftype();
+    YNF(ynw, s8 *, 0x1A) = yn_get_halftype();
     yn_set_halftype(1);
     yn_set_pal(0);
     yn_set_size(0x16, 0x16);
@@ -545,6 +545,6 @@ s32 yn_set_main(void) {
     yn_dialog_font();
     yn_help_font();
     yn_draw();
-    yn_set_halftype(M2C_FIELD(ynw, s8 *, 0x1A));
+    yn_set_halftype(YNF(ynw, s8 *, 0x1A));
     return 0;
 }

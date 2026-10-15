@@ -1,4 +1,8 @@
 /* Yes/No (network setup) overlay: sound effect helpers. yn.bin 0x0053B260-0x0053B2E4. */
+#include "g_alias.h"
+#ifdef MHG_PS2 /* G calls an 8-byte stub here */
+#define se_stop_all se_stat
+#endif
 void se_req(int, int, int);
 
 void yn_cur1_sd(void) { se_req(7, 0x12, 0); }

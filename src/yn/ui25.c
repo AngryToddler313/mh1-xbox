@@ -317,7 +317,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -347,7 +347,7 @@ void yn_dialog_font_setting(void) {
     u8 *p;
 
     y = 0x82;
-    e = ynw + M2C_FIELD(ynw, s8 *, 0xB) * 0x14;
+    e = ynw + YNF(ynw, s8 *, 0xB) * 0x14;
     d = M2C_FIELD(e, u8 **, 0x260);
     p = e + 0x250;
     if (M2C_FIELD(e, s32 *, 0x250) == 1) {

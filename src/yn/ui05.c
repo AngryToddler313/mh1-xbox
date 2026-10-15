@@ -300,7 +300,7 @@ typedef struct { s32 a; s32 b; } PR8;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 
 
@@ -320,23 +320,28 @@ extern char *args[2];
 
 
 
+#if !defined(G_PART) || G_PART == 1
 s32 yn_keyboard_sub(void) {
     u8 *temp_v0;
 
     if (Net_kb_input_sub() != 0) {
         SoftKey_onoff(0);
-        strcpy(ynw + 0x50, SoftKey_Getstr());
+        strcpy(ynw + YNO(0x50), SoftKey_Getstr());
         temp_v0 = ynw;
-        strcpy(M2C_FIELD(temp_v0, s32 *, 0x4C), temp_v0 + 0x50);
+        strcpy(YNF(temp_v0, s32 *, 0x4C), temp_v0 + YNO(0x50));
         return 1;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void yn_keyboard_server(void) {
 
 }
+#endif
 
+#if !defined(G_PART)
 void yn_draw(void) {
     flSetRenderState(0x61, 0x01000000);
     flSetRenderState(0x5E, 0x32);
@@ -345,14 +350,14 @@ void yn_draw(void) {
     flSetRenderState(0x6C, 0);
     SetFilterMode(0);
     yn_view_set();
-    flSetRenderState(4, M2C_FIELD(ynw, s32 *, 4));
+    flSetRenderState(4, YNF(ynw, s32 *, 4));
     yn_sprite_draw_sub(0x20, 0, -0x20);
-    flSetRenderState(4, M2C_FIELD(ynw, s32 *, 0));
+    flSetRenderState(4, YNF(ynw, s32 *, 0));
     yn_sprite_draw();
     yn_button_draw();
     flfntDraw(4);
     flSetRenderState(0x6C, 0);
-    flSetRenderState(4, M2C_FIELD(ynw, s32 *, 0));
+    flSetRenderState(4, YNF(ynw, s32 *, 0));
     yn_dialog_draw();
     flfntDraw(3);
     flSetRenderState(0x6C, 0);
@@ -361,7 +366,10 @@ void yn_draw(void) {
     flfntDraw(1);
     flSetRenderState(0x6C, 1);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void yn_view_set(void) {
 
 }
+#endif

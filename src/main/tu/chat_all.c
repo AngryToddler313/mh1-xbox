@@ -1309,7 +1309,7 @@ void Receive_mess_move(void) {
         }
         return;
     }
-    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0) {
+    if (!(PitMenu.x22 & 0x80) && (u8)PIT_HALT == 0) {
         PitMenu.x0F = 0;
         if (F16(&PitMenu, 0xC) > 0) {
             PitMenu.x0C = F16(&PitMenu, 0xC) - 1;
@@ -1320,7 +1320,7 @@ void Receive_mess_move(void) {
 extern void *receive_mes_str[2];
 
 void Pit_disp_receive_mes(void) {
-    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && F16(&PitMenu, 0xC) != 0) {
+    if (!(PitMenu.x22 & 0x80) && (u8)PIT_HALT == 0 && F16(&PitMenu, 0xC) != 0) {
         SetFilterMode(0);
         DispFrameMessage(pf_chat_log_base, receive_mes_str[F8(&PitMenu, 0xE)]);
         disp_chat_log_sub(0, 0, 0);
@@ -1348,11 +1348,11 @@ void Put_receive_mark(int n) {
 
 void SetMessageHaltFlag(void) {
     PitMenu.x0C = 0;
-    FS8(&PitMenu, 0x1C) = 1;
+    PIT_HALT = 1;
 }
 
 void ClearMessageHaltFlag(void) {
-    FS8(&PitMenu, 0x1C) = 0;
+    PIT_HALT = 0;
 }
 
 int func_5D8370(s8);

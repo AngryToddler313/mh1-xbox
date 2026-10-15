@@ -311,7 +311,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -329,7 +329,7 @@ void yn_dialog_draw(void) {
     u8 temp_v1;
     u8 *temp_a1;
 
-    temp_v1 = M2C_FIELD(ynw, u8 *, 0x46);
+    temp_v1 = YNF(ynw, u8 *, 0x46);
     switch (temp_v1) {
     case 0x2:
     case 0x5:
@@ -382,7 +382,7 @@ void yn_dialog_draw(void) {
     case 0x37:
     case 0x38:
         yn_sprite_draw_sub(0x1B, 0, 2);
-        yn_sprite_draw_sub(0x1A, 0, (s16)(-M2C_FIELD(ynw, s8 *, 0x17) * 0x1E));
+        yn_sprite_draw_sub(0x1A, 0, (s16)(-YNF(ynw, s8 *, 0x17) * 0x1E));
         return;
     case 0x10:
     case 0x11:

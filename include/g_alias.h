@@ -11,6 +11,7 @@
 #define GV(mh1, g) (g)
 /* G reads these strings through a pointer cell in its data (the MH1 sources use the array itself); the symbols are
  * PROVIDEd at the G addresses in config/mhg/g_names.txt, so only the PS2 G build uses them */
+extern void *gptr_002EC620[];
 extern void *gptr_002EC62C[];
 extern void *gptr_00527ED4[];
 extern void *gptr_00528410[];

@@ -25,6 +25,7 @@ build/mhg/src/main/net/netsyn01.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p3.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p4.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p8.c.o .rodata .data
+build/mhg/src/mhg/main/pl/f_pl_p43.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p19.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p21.c.o .rodata .data
 build/mhg/src/mhg/main/pl/f_pl_p29.c.o .rodata .data
@@ -76,6 +77,12 @@ build/mhg/src/game/shell/shell21.c.o .rodata .data
 build/mhg/src/game/shell/shell22.c.o .rodata .data
 build/mhg/src/game/shell/shell22b.c.o .rodata .data
 build/mhg/src/game/shell/shell23.c.o .rodata .data
+build/mhg/src/yn/ui28.c.o .rodata .data
+build/mhg/src/yn/ui30.c.o .rodata .data
+build/mhg/src/yn/ui14.c.o .rodata .data
+build/mhg/src/yn/ui15.c.o .rodata .data
+build/mhg/src/yn/ui12.c.o .rodata .data
+build/mhg/src/yn/ui24.c.o .rodata .data
 build/mhg/src/lobby/f/lb_al09.c.o .rodata .data
 build/mhg/src/lobby/f/lb_gdr16.c.o .rodata .data
 build/mhg/src/lobby/f/lb_ge2503.c.o .rodata .data

@@ -311,7 +311,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -325,6 +325,7 @@ extern s32 flPs2VIF1Control[];
 extern char *args[2];
 
 
+#if !defined(G_PART)
 void yn_prname_font_sub(u8 *arg0, s32 arg1, int arg2, int arg3, int arg4) {
     u8 sp140[0x100];
     u8 sp40[0x100];
@@ -342,7 +343,9 @@ void yn_prname_font_sub(u8 *arg0, s32 arg1, int arg2, int arg3, int arg4) {
     sprintf(sp40, lit_4085, arg1 + 1, sp140);
     yn_printf(arg2, arg3, sp40);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void yn_adname_font_sub(u8 *arg0, u8 *arg1, int arg2, int arg3, int arg4) {
     u8 buf[0x40];
 
@@ -353,3 +356,4 @@ void yn_adname_font_sub(u8 *arg0, u8 *arg1, int arg2, int arg3, int arg4) {
     yn_strconv(buf, arg0, arg4);
     yn_printf(arg2, arg3, buf);
 }
+#endif

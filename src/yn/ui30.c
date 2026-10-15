@@ -317,7 +317,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -336,8 +336,8 @@ typedef struct YMSG {
     char *str;          /* 0x04 */
 } YMSG;
 
-#define YS8(o) M2C_FIELD(ynw, s8 *, o)
-#define YU8(o) M2C_FIELD(ynw, u8 *, o)
+#define YS8(o) YNF(ynw, s8 *, o)
+#define YU8(o) YNF(ynw, u8 *, o)
 
 /* Draw the dialog parts for the current screen (ynw+0x42). */
 void yn_sprite_draw(void) {
@@ -408,8 +408,8 @@ void yn_sprite_draw(void) {
     case 8:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xC, 0, 0);
-        if (yn_netcnf_ip_check(ynw + 0xAB4) != 0 && yn_netcnf_ip_check(ynw + 0xAB8) != 0 &&
-            yn_netcnf_ip_check(ynw + 0xABC) != 0) {
+        if (yn_netcnf_ip_check(ynw + YNO(0xAB4)) != 0 && yn_netcnf_ip_check(ynw + YNO(0xAB8)) != 0 &&
+            yn_netcnf_ip_check(ynw + YNO(0xABC)) != 0) {
             yn_sprite_draw_sub(0xD, 0, 0);
         }
         if (YS8(0x39) == 0) {
@@ -428,7 +428,7 @@ void yn_sprite_draw(void) {
     case 10:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xC, 0, 0);
-        if (yn_netcnf_ip_check(ynw + 0xAC0) != 0) {
+        if (yn_netcnf_ip_check(ynw + YNO(0xAC0)) != 0) {
             yn_sprite_draw_sub(0xD, 0, 0);
         }
         if (YS8(0x39) == 0) {
@@ -470,13 +470,13 @@ void yn_sprite_draw(void) {
     case 15:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xD, 0, 0);
-        yn_sprite_draw_sub(0x13, 0, (s16)((1 - M2C_FIELD(ynw, s32 *, 0xEC8)) * 0x38));
+        yn_sprite_draw_sub(0x13, 0, (s16)((1 - YNF(ynw, s32 *, 0xEC8)) * 0x38));
         yn_sprite_draw_sub(0x14, 0, (s16)(YS8(0xD) * 0x38));
         break;
     case 16:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xC, 0, 0);
-        if (YU8(0xED0) != 0 && M2C_FIELD(ynw, u16 *, 0xECC) != 0) {
+        if (YU8(0xED0) != 0 && YNF(ynw, u16 *, 0xECC) != 0) {
             yn_sprite_draw_sub(0xD, 0, 0);
         }
         switch (YS8(0x39)) {

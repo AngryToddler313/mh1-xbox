@@ -311,7 +311,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -331,7 +331,7 @@ void yn_setup_allwork(u8 *arg0) {
     u8 *temp_s0;
 
     SrvType = 0;
-    temp_s0 = ynw + 0xEC8;
+    temp_s0 = ynw + YNO(0xEC8);
     memset(SrvDomain, 0, 0x100);
     SrvIPAddress = 0;
     SrvPort = 0;

@@ -83,9 +83,9 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     if (slot == 0xFF) {
         dst = (UDC_DST *)User_data;
     } else {
-        dst = (UDC_DST *)(option_w + slot * 0x480 + 0x10);
+        dst = (UDC_DST *)(option_w + slot * UD_SLOT + 0x10);
     }
-    flMemset(dst, 0, 0x480);
+    flMemset(dst, 0, UD_SLOT);
     B8(dst, 0) = 1;
     B8(dst, 1) = B8(src, 4);
     B8(dst, 2) = B8(src, 5);

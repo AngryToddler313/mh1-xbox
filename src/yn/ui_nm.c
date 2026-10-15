@@ -216,13 +216,13 @@ s32 yn_set_main(void) {
         t2 = yn_load_texfile(1, 0x40500);
         ynw = Yn_temp;
         memset(ynw, 0, 0x1AEC0);
-        M2C_FIELD(ynw, s32 *, 0) = t1;
-        M2C_FIELD(ynw, s32 *, 4) = t2;
-        yn_netcnf_init1(ynw + 0x1180);
+        YNF(ynw, s32 *, 0) = t1;
+        YNF(ynw, s32 *, 4) = t2;
+        yn_netcnf_init1(ynw + YNO(0x1180));
         yn_r_no = 1;
         return 0;
     case 1:
-        yn_netcnf_init2(ynw + 0x1180);
+        yn_netcnf_init2(ynw + YNO(0x1180));
         yn_hard_init();
         yn_proxy_wk_load();
         if (yn_type == 0) {
@@ -242,35 +242,35 @@ s32 yn_set_main(void) {
             break;
         case 1:
             yn_r_no = 6;
-            M2C_FIELD(ynw, s8 *, 0x24) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x24) = 0;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             break;
         case -1:
             yn_r_no = 6;
-            M2C_FIELD(ynw, s8 *, 0x24) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x24) = 0;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             break;
         case -2:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 6;
-            M2C_FIELD(ynw, s8 *, 0x17) = 0;
+            YNF(ynw, s8 *, 0x46) = 6;
+            YNF(ynw, s8 *, 0x17) = 0;
             yn_log_sd();
             break;
         case -3:
             yn_r_no = 0xA;
-            M2C_FIELD(ynw, s8 *, 0x24) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x17) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x1D;
+            YNF(ynw, s8 *, 0x24) = 0;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x17) = 0;
+            YNF(ynw, s8 *, 0x46) = 0x1D;
             yn_log_sd();
-            M2C_FIELD(ynw, s8 *, 0x42) = 1;
-            M2C_FIELD(ynw, s8 *, 0x43) = 4;
-            M2C_FIELD(ynw, s8 *, 0x44) = 1;
-            M2C_FIELD(ynw, s8 *, 0x45) = 1;
-            M2C_FIELD(ynw, s8 *, 0x47) = 1;
-            M2C_FIELD(ynw, s8 *, 0x48) = 0;
+            YNF(ynw, s8 *, 0x42) = 1;
+            YNF(ynw, s8 *, 0x43) = 4;
+            YNF(ynw, s8 *, 0x44) = 1;
+            YNF(ynw, s8 *, 0x45) = 1;
+            YNF(ynw, s8 *, 0x47) = 1;
+            YNF(ynw, s8 *, 0x48) = 0;
             break;
         }
         break;
@@ -281,31 +281,31 @@ s32 yn_set_main(void) {
         switch (r) {
         case 1:
             yn_r_no = 7;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
             break;
         case -1:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x2B;
+            YNF(ynw, s8 *, 0x46) = 0x2B;
             yn_log_sd();
             break;
         case -2:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 6;
+            YNF(ynw, s8 *, 0x46) = 6;
             yn_log_sd();
             break;
         case -3:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 5;
+            YNF(ynw, s8 *, 0x46) = 5;
             yn_log_sd();
             break;
         case -4:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x2B;
+            YNF(ynw, s8 *, 0x46) = 0x2B;
             yn_log_sd();
             break;
         case -6:
             yn_r_no = 9;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x39;
+            YNF(ynw, s8 *, 0x46) = 0x39;
             yn_log_sd();
             break;
         }
@@ -316,7 +316,7 @@ s32 yn_set_main(void) {
     case 6:
         w = ynw;
         M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
-        M2C_FIELD(ynw, s8 *, 0x39) = 0;
+        YNF(ynw, s8 *, 0x39) = 0;
         yn_key_repeat(Psw);
         r = yn_select_provider();
         switch (r) {
@@ -324,36 +324,36 @@ s32 yn_set_main(void) {
             break;
         case 1:
             yn_r_no = 7;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
             break;
         case 2:
             yn_r_no = 4;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 8) = 0;
             break;
         case -1:
             yn_r_no = 8;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x1A;
-            M2C_FIELD(ynw, s8 *, 8) = 0;
-            M2C_FIELD(ynw, s8 *, 0x17) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x46) = 0x1A;
+            YNF(ynw, s8 *, 8) = 0;
+            YNF(ynw, s8 *, 0x17) = 0;
             yn_log_sd();
             break;
         case -2:
             yn_r_no = 2;
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
             break;
         }
         break;
     case 7:
         yn_set_exit_sub();
-        return M2C_FIELD(ynw, u8 *, 0x26) + 1;
+        return YNF(ynw, u8 *, 0x26) + 1;
     case 8:
         w = ynw;
         M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
         pad = *(u16 *)0x3F3714;
         if (pad & 0x40) {
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             yn_can_sd();
             yn_r_no = 6;
             break;
@@ -399,7 +399,7 @@ s32 yn_set_main(void) {
         pad = *(u16 *)0x3F3714;
         if ((pad & 0x20) || (pad & 0x40)) {
             yn_r_no = 6;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             yn_dec_sd();
         }
         break;
@@ -407,7 +407,7 @@ s32 yn_set_main(void) {
     if (yn_r_no == 4) {
         return 0;
     }
-    M2C_FIELD(ynw, s8 *, 0x1A) = yn_get_halftype();
+    YNF(ynw, s8 *, 0x1A) = yn_get_halftype();
     yn_set_halftype(1);
     yn_set_pal(0);
     yn_set_size(0x16, 0x16);
@@ -418,17 +418,17 @@ s32 yn_set_main(void) {
     yn_dialog_font();
     yn_help_font();
     yn_draw();
-    yn_set_halftype(M2C_FIELD(ynw, s8 *, 0x1A));
+    yn_set_halftype(YNF(ynw, s8 *, 0x1A));
     return 0;
 }
 
 void yn_set_exit_sub(void) {
     yn_set_init(0);
-    flReleaseTextureHandle(M2C_FIELD(ynw, u16 *, 0));
-    flReleasePaletteHandle((u32) (M2C_FIELD(ynw, s32 *, 0) & 0xFFFF0000) >> 0x10);
-    flReleaseTextureHandle(M2C_FIELD(ynw, u16 *, 4));
-    flReleasePaletteHandle((u32) (M2C_FIELD(ynw, s32 *, 4) & 0xFFFF0000) >> 0x10);
-    yn_netcnf_exit(ynw + 0x1180);
+    flReleaseTextureHandle(YNF(ynw, u16 *, 0));
+    flReleasePaletteHandle((u32) (YNF(ynw, s32 *, 0) & 0xFFFF0000) >> 0x10);
+    flReleaseTextureHandle(YNF(ynw, u16 *, 4));
+    flReleasePaletteHandle((u32) (YNF(ynw, s32 *, 4) & 0xFFFF0000) >> 0x10);
+    yn_netcnf_exit(ynw + YNO(0x1180));
 }
 
 s32 yn_file_search(void) {
@@ -446,21 +446,21 @@ s32 yn_file_search(void) {
     switch (st) {
     case 0:
         *sp = st + 1;
-        M2C_FIELD(ynw, u8 *, 0x1D) = 0;
-        M2C_FIELD(ynw, s8 *, 0x1C) = 0;
-        M2C_FIELD(ynw, s8 *, 0x1F) = 0;
-        M2C_FIELD(ynw, u8 *, 0x27) = M2C_FIELD(ynw, u8 *, 0x1E);
-        yn_mc_init(ynw + 0x10D0);
-        memset(ynw + 0x1180, 0, 0x19D40);
-        memset(ynw + 0x250, 0, 0x258);
+        YNF(ynw, u8 *, 0x1D) = 0;
+        YNF(ynw, s8 *, 0x1C) = 0;
+        YNF(ynw, s8 *, 0x1F) = 0;
+        YNF(ynw, u8 *, 0x27) = YNF(ynw, u8 *, 0x1E);
+        yn_mc_init(ynw + YNO(0x10D0));
+        memset(ynw + YNO(0x1180), 0, 0x19D40);
+        memset(ynw + YNO(0x250), 0, 0x258);
     case 1:
-        if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
-            M2C_FIELD(ynw, u8 *, 0x1D) = M2C_FIELD(ynw, u8 *, 0x1D) | (((M2C_FIELD(ynw, u8 *, 0x10D2) | M2C_FIELD(ynw, u8 *, 0x10D3)) >> 1) & 3);
-            if (M2C_FIELD(ynw, u8 *, 0x1D) != 0) {
-                M2C_FIELD(ynw, u8 *, 0x24) = 2;
+        if (yn_mc_device_check_all(ynw + YNO(0x10D0)) >= 0) {
+            YNF(ynw, u8 *, 0x1D) = YNF(ynw, u8 *, 0x1D) | (((YNF(ynw, u8 *, 0x10D2) | YNF(ynw, u8 *, 0x10D3)) >> 1) & 3);
+            if (YNF(ynw, u8 *, 0x1D) != 0) {
+                YNF(ynw, u8 *, 0x24) = 2;
                 break;
             }
-            M2C_FIELD(ynw, u8 *, 0x24) = 0;
+            YNF(ynw, u8 *, 0x24) = 0;
             return -2;
         }
         break;
@@ -469,67 +469,67 @@ s32 yn_file_search(void) {
     case 2:
     case 3:
         for (;;) {
-            a = M2C_FIELD(ynw, u8 *, 0x27);
-            if (M2C_FIELD(ynw, u8 *, 0x1D) & (1 << a)) {
+            a = YNF(ynw, u8 *, 0x27);
+            if (YNF(ynw, u8 *, 0x1D) & (1 << a)) {
                 break;
             }
-            M2C_FIELD(ynw, u8 *, 0x27) = (a + 1) % 2;
-            a = M2C_FIELD(ynw, u8 *, 0x27);
-            if (a == M2C_FIELD(ynw, u8 *, 0x1E)) {
+            YNF(ynw, u8 *, 0x27) = (a + 1) % 2;
+            a = YNF(ynw, u8 *, 0x27);
+            if (a == YNF(ynw, u8 *, 0x1E)) {
                 break;
             }
         }
-        if (M2C_FIELD(ynw, u8 *, 0x24) == 3 && a == M2C_FIELD(ynw, u8 *, 0x1E)) {
-            M2C_FIELD(ynw, u8 *, 0x24) = 0;
-            M2C_FIELD(ynw, u8 *, 0x1E) = M2C_FIELD(ynw, u8 *, 0x27);
-            yn_mc_set_current(ynw + 0x10D0, M2C_FIELD(ynw, u8 *, 0x27));
+        if (YNF(ynw, u8 *, 0x24) == 3 && a == YNF(ynw, u8 *, 0x1E)) {
+            YNF(ynw, u8 *, 0x24) = 0;
+            YNF(ynw, u8 *, 0x1E) = YNF(ynw, u8 *, 0x27);
+            yn_mc_set_current(ynw + YNO(0x10D0), YNF(ynw, u8 *, 0x27));
             return -1;
         }
-        M2C_FIELD(ynw, u8 *, 0x24) = 4;
-        M2C_FIELD(ynw, u8 *, 0x1E) = M2C_FIELD(ynw, u8 *, 0x27);
-        yn_mc_set_current(ynw + 0x10D0, M2C_FIELD(ynw, u8 *, 0x27));
+        YNF(ynw, u8 *, 0x24) = 4;
+        YNF(ynw, u8 *, 0x1E) = YNF(ynw, u8 *, 0x27);
+        yn_mc_set_current(ynw + YNO(0x10D0), YNF(ynw, u8 *, 0x27));
         break;
     case 4:
-        r = yn_mc_ynfile_check(ynw + 0x10D0);
+        r = yn_mc_ynfile_check(ynw + YNO(0x10D0));
         if (r != -2) {
             if (r != -1) {
-                M2C_FIELD(ynw, u8 *, 0x24) = 3;
+                YNF(ynw, u8 *, 0x24) = 3;
             } else {
-                M2C_FIELD(ynw, u8 *, 0x24) = 5;
+                YNF(ynw, u8 *, 0x24) = 5;
             }
         }
         break;
     case 5:
-        yn_netcnf_get_filename(ynw + 0x1180, yn_mc_get_current(ynw + 0x10D0));
-        M2C_FIELD(ynw, s8 *, 0x1C) = 0;
-        if (yn_netcnf_magicno_check(ynw + 0x1180) != 0) {
+        yn_netcnf_get_filename(ynw + YNO(0x1180), yn_mc_get_current(ynw + YNO(0x10D0)));
+        YNF(ynw, s8 *, 0x1C) = 0;
+        if (yn_netcnf_magicno_check(ynw + YNO(0x1180)) != 0) {
             return -3;
         }
         none = 0;
-        yn_netcnf_set_current(ynw + 0x1180, 0);
-        n = yn_netcnf_get_num(ynw + 0x1180);
-        M2C_FIELD(ynw, s8 *, 0x1C) = n;
+        yn_netcnf_set_current(ynw + YNO(0x1180), 0);
+        n = yn_netcnf_get_num(ynw + YNO(0x1180));
+        YNF(ynw, s8 *, 0x1C) = n;
         if ((s8)n == 0) {
             none = 1;
         }
-        yn_netcnf_get_list(ynw + 0x1180);
-        yn_netcnf_set_current(ynw + 0x1180, 2);
-        if (yn_netcnf_get_num(ynw + 0x1180) == 0) {
+        yn_netcnf_get_list(ynw + YNO(0x1180));
+        yn_netcnf_set_current(ynw + YNO(0x1180), 2);
+        if (yn_netcnf_get_num(ynw + YNO(0x1180)) == 0) {
             none = 1;
         }
-        yn_netcnf_get_list(ynw + 0x1180);
-        yn_netcnf_set_current(ynw + 0x1180, 1);
-        if (yn_netcnf_get_num(ynw + 0x1180) == 0) {
+        yn_netcnf_get_list(ynw + YNO(0x1180));
+        yn_netcnf_set_current(ynw + YNO(0x1180), 1);
+        if (yn_netcnf_get_num(ynw + YNO(0x1180)) == 0) {
             none = 1;
         }
-        yn_netcnf_get_list(ynw + 0x1180);
+        yn_netcnf_get_list(ynw + YNO(0x1180));
         if (none == 0) {
-            yn_netcnf_net_allload(ynw + 0x1180);
-            yn_netcnf_setup_devwork(ynw + 0x1180, ynw + 0x250);
-            M2C_FIELD(ynw, u8 *, 0x24) = 0;
+            yn_netcnf_net_allload(ynw + YNO(0x1180));
+            yn_netcnf_setup_devwork(ynw + YNO(0x1180), ynw + YNO(0x250));
+            YNF(ynw, u8 *, 0x24) = 0;
             return 1;
         }
-        M2C_FIELD(ynw, u8 *, 0x24) = 0;
+        YNF(ynw, u8 *, 0x24) = 0;
         return -1;
     }
     return 0;
@@ -558,16 +558,16 @@ s32 yn_auto_connect(void) {
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         M2C_FIELD(temp_v0, s8 *, 0x18) = (s8) (temp_a0 + 1);
-        M2C_FIELD(ynw, u8 *, 0x1E) = 0U;
-        M2C_FIELD(ynw, u8 *, 0x25) = 0U;
+        YNF(ynw, u8 *, 0x1E) = 0U;
+        YNF(ynw, u8 *, 0x25) = 0U;
         /* fallthrough */
     case 1:                                         /* switch 1 */
-        if (yn_netcnf_pastproxy_check(ynw + 0xEC8, D_5310D0) < 0) {
+        if (yn_netcnf_pastproxy_check(ynw + YNO(0xEC8), D_5310D0) < 0) {
             return -4;
         }
         temp_v1 = ynw;
         M2C_FIELD(temp_v1, s8 *, 0x18) = (s8) (M2C_FIELD(temp_v1, s8 *, 0x18) + 1);
-        M2C_FIELD(ynw, s8 *, 0x24) = 0;
+        YNF(ynw, s8 *, 0x24) = 0;
     default:                                        /* switch 1 */
     case 0:                                         /* switch 2 */
 block_41:
@@ -589,8 +589,8 @@ block_41:
                 }
                 yn_backup_allwork(M2C_FIELD((temp_s0 + ynw), s32 *, 0x260));
                 yn_setup_allwork(M2C_FIELD((temp_s0 + ynw), s32 *, 0x260));
-                M2C_FIELD(ynw, s8 *, 0x18) = 5;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0x34;
+                YNF(ynw, s8 *, 0x18) = 5;
+                YNF(ynw, s8 *, 0x46) = 0x34;
                 yn_log_sd(5);
                 goto block_41;
             }
@@ -607,13 +607,13 @@ block_41:
 block_27:
             temp_a1_2 = ynw;
             M2C_FIELD(temp_a1_2, u8 *, 0x25) = (u8) (M2C_FIELD(temp_a1_2, u8 *, 0x25) | ((1 << M2C_FIELD(temp_a1_2, u8 *, 0x1E)) & 0xFF));
-            if (yn_netcnf_magicno_check(ynw + 0x1180, temp_a1_2) != 0) {
-                M2C_FIELD(ynw, s8 *, 0x18) = 4;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0x1D;
+            if (yn_netcnf_magicno_check(ynw + YNO(0x1180), temp_a1_2) != 0) {
+                YNF(ynw, s8 *, 0x18) = 4;
+                YNF(ynw, s8 *, 0x46) = 0x1D;
                 yn_log_sd(4);
-                yn_mc_init(ynw + 0x10D0);
+                yn_mc_init(ynw + YNO(0x10D0));
             } else {
-                M2C_FIELD(ynw, s8 *, 0x18) = 3;
+                YNF(ynw, s8 *, 0x18) = 3;
             }
             goto block_41;
         case -2:                                    /* switch 2 */
@@ -622,7 +622,7 @@ block_27:
         break;
     case 3:                                         /* switch 1 */
         M2C_FIELD(temp_v0, s8 *, 0x18) = 2;
-        M2C_FIELD(ynw, s8 *, 0x24) = 0;
+        YNF(ynw, s8 *, 0x24) = 0;
         temp_v1_3 = ynw;
         M2C_FIELD(temp_v1_3, u8 *, 0x1E) = (u8) (M2C_FIELD(temp_v1_3, u8 *, 0x1E) + 1);
         temp_v1_4 = ynw;
@@ -630,20 +630,20 @@ block_27:
         goto block_41;
     case 4:                                         /* switch 1 */
         if (yn_common_memcard_out(temp_a0, temp_a1) != 0) {
-            M2C_FIELD(ynw, s8 *, 0x18) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x18) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             return -6;
         }
         if (*(u16 *)0x3F3714 & 0x20) {
-            M2C_FIELD(ynw, s8 *, 0x18) = 3;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x18) = 3;
+            YNF(ynw, s8 *, 0x46) = 0;
             yn_dec_sd();
         }
         goto block_41;
     case 5:                                         /* switch 1 */
         if (*(u8 *)0x3F3714 & 0x20) {
             M2C_FIELD(temp_v0, s8 *, 0x18) = 0;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0;
+            YNF(ynw, s8 *, 0x46) = 0;
             yn_dec_sd(temp_a0, temp_a1);
             return 1;
         }
@@ -764,7 +764,7 @@ s32 yn_select_provider(void) {
     u8 *var_a0;
     u8 *var_a1;
 
-    temp_v1 = M2C_FIELD(ynw, s8 *, 0x18);
+    temp_v1 = YNF(ynw, s8 *, 0x18);
     if ((temp_v1 < 6) || (temp_v1 >= 9)) {
         if ((temp_v1 >= 0xC) && (temp_v1 < 0xE)) {
             goto block_5;
@@ -772,8 +772,8 @@ s32 yn_select_provider(void) {
     } else {
 block_5:
         if (yn_common_memcard_out() != 0) {
-            M2C_FIELD(ynw, s8 *, 0x18) = 0xF;
-            M2C_FIELD(ynw, s8 *, 0x46) = 7;
+            YNF(ynw, s8 *, 0x18) = 0xF;
+            YNF(ynw, s8 *, 0x46) = 7;
             yn_log_sd(0xFU);
         }
     }
@@ -792,20 +792,20 @@ block_5:
                 M2C_FIELD((ynw + var_v1), s8 *, 0xC) = 0;
                 var_v1 += 5;
             } while (var_v1 < 0x10);
-            yn_mc_init(ynw + 0x10D0);
+            yn_mc_init(ynw + YNO(0x10D0));
             yn_proxy_wk_load();
             /* fallthrough */
         case 1:                                     /* switch 1 */
-            M2C_FIELD(ynw, s8 *, 0x42) = 1;
+            YNF(ynw, s8 *, 0x42) = 1;
             temp_v1_2 = ynw;
             var_v0 = 2;
             if (M2C_FIELD(temp_v1_2, s8 *, 8) >= 2) {
                 var_v0 = 4;
             }
             M2C_FIELD(temp_v1_2, s8 *, 0x43) = var_v0;
-            M2C_FIELD(ynw, s8 *, 0x44) = 1;
-            M2C_FIELD(ynw, s8 *, 0x45) = 1;
-            M2C_FIELD(ynw, s8 *, 0x47) = 1;
+            YNF(ynw, s8 *, 0x44) = 1;
+            YNF(ynw, s8 *, 0x45) = 1;
+            YNF(ynw, s8 *, 0x47) = 1;
             temp_v1_3 = ynw;
             var_a0_2 = M2C_FIELD(temp_v1_3, s8 *, 8);
             if (var_a0_2 >= 2) {
@@ -826,8 +826,8 @@ block_5:
                 switch (temp_v1_4) {                /* switch 2; irregular */
                 case 0:                             /* switch 2 */
                     M2C_FIELD(temp_a0_2, s8 *, 0x18) = 0x13;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x37;
-                    M2C_FIELD(ynw, s8 *, 0x17) = 0;
+                    YNF(ynw, s8 *, 0x46) = 0x37;
+                    YNF(ynw, s8 *, 0x17) = 0;
                     break;
                 case 1:                             /* switch 2 */
                     M2C_FIELD(temp_a0_2, s8 *, 0x18) = 2;
@@ -842,8 +842,8 @@ block_5:
                 temp_a1 = ynw;
                 if (M2C_FIELD(temp_a1, s8 *, 8) >= 2) {
                     M2C_FIELD(temp_a1, s8 *, 0x19) = (s8) M2C_FIELD(temp_a1, s8 *, 0x18);
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x19;
+                    YNF(ynw, s8 *, 0x18) = 0xD;
+                    YNF(ynw, s8 *, 0x46) = 0x19;
                     yn_dec_sd(0xDU, temp_a1);
                 }
                 goto block_293;
@@ -906,19 +906,19 @@ block_5:
                 }
                 var_a1_2 += 1;
             } while (var_a1_2 < 0x10);
-            M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-            M2C_FIELD(ynw, s8 *, 0x19) = 6;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x17;
+            YNF(ynw, s8 *, 0x18) = 0xD;
+            YNF(ynw, s8 *, 0x19) = 6;
+            YNF(ynw, s8 *, 0x46) = 0x17;
             yn_proxy_wk_load(6, 0xD, temp_a2);
             goto block_293;
         case 3:                                     /* switch 1 */
             M2C_FIELD(temp_v0, s8 *, 0x42) = 3;
-            M2C_FIELD(ynw, s8 *, 0x43) = 2;
-            M2C_FIELD(ynw, s8 *, 0x44) = 0x13;
-            M2C_FIELD(ynw, s8 *, 0x45) = 0x15;
-            M2C_FIELD(ynw, s8 *, 0x47) = 0x1E;
-            M2C_FIELD(ynw, s8 *, 0x48) = 0;
-            if (yn_mc_device_check_all(ynw + 0x10D0, 0x13, 2) >= 0) {
+            YNF(ynw, s8 *, 0x43) = 2;
+            YNF(ynw, s8 *, 0x44) = 0x13;
+            YNF(ynw, s8 *, 0x45) = 0x15;
+            YNF(ynw, s8 *, 0x47) = 0x1E;
+            YNF(ynw, s8 *, 0x48) = 0;
+            if (yn_mc_device_check_all(ynw + YNO(0x10D0), 0x13, 2) >= 0) {
                 temp_a1_2 = ynw;
                 temp_a0_4 = M2C_FIELD(temp_a1_2, u8 *, 0x10D2);
                 M2C_FIELD(temp_a1_2, u8 *, 0x1D) = (u8) (M2C_FIELD(temp_a1_2, u8 *, 0x1D) | (((s32) (temp_a0_4 | M2C_FIELD(temp_a1_2, u8 *, 0x10D3)) >> 1) & 3));
@@ -940,7 +940,7 @@ loop_69:
                     M2C_FIELD(temp_a1_3, s8 *, 9) = var_a0_3;
                 } else {
                     M2C_FIELD(temp_v1_14, s8 *, 0x18) = 0xF;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 6;
+                    YNF(ynw, s8 *, 0x46) = 6;
                     yn_log_sd(temp_a0_4, temp_a1_2);
                 }
             }
@@ -956,7 +956,7 @@ loop_69:
                     yn_dec_sd(temp_a0_5, (int *) temp_a1_4, temp_a2);
                     temp_v0_6 = ynw;
                     yn_mc_set_current(temp_v0_6 + 0x10D0, M2C_FIELD(temp_v0_6, s8 *, 9));
-                    yn_mc_gmfile_current_set(ynw + 0x10D0);
+                    yn_mc_gmfile_current_set(ynw + YNO(0x10D0));
                 } else if (temp_a1_4 & 0x3000) {
                     temp_a0_6 = M2C_FIELD(temp_v0, s8 *, 9);
                     temp_a2_2 = M2C_FIELD(temp_v0, u8 *, 0x1D);
@@ -991,7 +991,7 @@ block_90:
                     if (((s64) ((s64) temp_a0_6 << 0x38) >> 0x38) != var_s0) {
                         yn_cur2_sd((u8 *) temp_a0_6, temp_v0 + 9, temp_a2_2, temp_a3);
                     }
-                    M2C_FIELD(ynw, s8 *, 9) = var_s0;
+                    YNF(ynw, s8 *, 9) = var_s0;
                 }
             }
             goto block_293;
@@ -1001,34 +1001,34 @@ block_90:
                 yn_log_sd();
                 switch (temp_v0_8) {                /* switch 3; irregular */
                 case -1:                            /* switch 3 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                    M2C_FIELD(ynw, s8 *, 0x19) = 6;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x17;
+                    YNF(ynw, s8 *, 0x18) = 0xD;
+                    YNF(ynw, s8 *, 0x19) = 6;
+                    YNF(ynw, s8 *, 0x46) = 0x17;
                     break;
                 case -7:                            /* switch 3 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xF;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x2C;
+                    YNF(ynw, s8 *, 0x18) = 0xF;
+                    YNF(ynw, s8 *, 0x46) = 0x2C;
                     break;
                 case -5:                            /* switch 3 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0x10;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0xA;
-                    M2C_FIELD(ynw, s8 *, 0x17) = 0;
+                    YNF(ynw, s8 *, 0x18) = 0x10;
+                    YNF(ynw, s8 *, 0x46) = 0xA;
+                    YNF(ynw, s8 *, 0x17) = 0;
                     yn_log_sd(0x10U);
                     break;
                 default:                            /* switch 3 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xF;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x22;
+                    YNF(ynw, s8 *, 0x18) = 0xF;
+                    YNF(ynw, s8 *, 0x46) = 0x22;
                     break;
                 }
             }
             goto block_293;
         case 6:                                     /* switch 1 */
             M2C_FIELD(temp_v0, s8 *, 0x42) = 0xF;
-            M2C_FIELD(ynw, s8 *, 0x43) = 2;
-            M2C_FIELD(ynw, s8 *, 0x44) = 0x13;
-            M2C_FIELD(ynw, s8 *, 0x45) = 0x16;
-            M2C_FIELD(ynw, s8 *, 0x47) = 0x1F;
-            M2C_FIELD(ynw, s8 *, 0x48) = 0;
+            YNF(ynw, s8 *, 0x43) = 2;
+            YNF(ynw, s8 *, 0x44) = 0x13;
+            YNF(ynw, s8 *, 0x45) = 0x16;
+            YNF(ynw, s8 *, 0x47) = 0x1F;
+            YNF(ynw, s8 *, 0x48) = 0;
             temp_v1_15 = *(u8 *)0x3F3714;
             if (temp_v1_15 & 0x40) {
                 yn_common_shot_cancel(0xE, 0x13U, 2);
@@ -1045,8 +1045,8 @@ block_90:
                     M2C_FIELD(temp_v1_16, s8 *, 0x19) = (s8) M2C_FIELD(temp_v1_16, s8 *, 0x18);
                 } else {
                     M2C_FIELD(temp_a1_5, s8 *, 0x19) = (s8) M2C_FIELD(temp_a1_5, s8 *, 0x18);
-                    M2C_FIELD(ynw, s8 *, 0x18) = 8;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x18;
+                    YNF(ynw, s8 *, 0x18) = 8;
+                    YNF(ynw, s8 *, 0x46) = 0x18;
                 }
             } else if (temp_v1_15 & 0x3000) {
                 if (temp_v1_15 & 0x2000) {
@@ -1064,10 +1064,10 @@ block_90:
             goto block_293;
         case 7:                                     /* switch 1 */
             M2C_FIELD(temp_v0, s8 *, 0x42) = 0x10;
-            M2C_FIELD(ynw, s8 *, 0x43) = 2;
-            M2C_FIELD(ynw, s8 *, 0x44) = 0x13;
-            M2C_FIELD(ynw, s8 *, 0x45) = 0x17;
-            M2C_FIELD(ynw, s8 *, 0x47) = 0x20;
+            YNF(ynw, s8 *, 0x43) = 2;
+            YNF(ynw, s8 *, 0x44) = 0x13;
+            YNF(ynw, s8 *, 0x45) = 0x17;
+            YNF(ynw, s8 *, 0x47) = 0x20;
             temp_v1_19 = ynw;
             M2C_FIELD(temp_v1_19, s8 *, 0x48) = (s8) M2C_FIELD(temp_v1_19, s8 *, 0xE);
             temp_v1_20 = *(u8 *)0x3F3714;
@@ -1080,23 +1080,23 @@ block_90:
                 switch (temp_v1_21) {               /* switch 4; irregular */
                 case 0:                             /* switch 4 */
                     M2C_FIELD(temp_a1_6, s8 *, 0x18) = 0xB;
-                    yn_keyboard_init(1, ynw + 0xED0);
+                    yn_keyboard_init(1, ynw + YNO(0xED0));
                     break;
                 case 1:                             /* switch 4 */
                     M2C_FIELD(temp_a1_6, s8 *, 0x18) = 0xC;
-                    yn_port_init(ynw + 0xECC, temp_a1_6);
+                    yn_port_init(ynw + YNO(0xECC), temp_a1_6);
                     break;
                 case 2:                             /* switch 4 */
                     M2C_FIELD(temp_a1_6, s8 *, 0x18) = 0xB;
-                    yn_keyboard_init(1, ynw + 0xFD0);
+                    yn_keyboard_init(1, ynw + YNO(0xFD0));
                     break;
                 case 3:                             /* switch 4 */
                     M2C_FIELD(temp_a1_6, s8 *, 0x18) = 0xC;
-                    yn_port_init(ynw + 0xECE, temp_a1_6);
+                    yn_port_init(ynw + YNO(0xECE), temp_a1_6);
                     break;
                 }
             } else if (temp_v1_20 & 0x800) {
-                M2C_FIELD(ynw, s8 *, 0x18) = 6;
+                YNF(ynw, s8 *, 0x18) = 6;
                 yn_cur1_sd(0xEU, 0x13, 2);
             } else if (temp_v1_20 & 0x400) {
                 temp_v1_22 = ynw;
@@ -1104,7 +1104,7 @@ block_90:
                     yn_ng_sd(0xE, 0x13, 2);
                 } else {
                     M2C_FIELD(temp_v1_22, s8 *, 0x18) = 8;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x18;
+                    YNF(ynw, s8 *, 0x46) = 0x18;
                     yn_cur1_sd(0xEU, 0x13, 2);
                 }
             } else if (temp_v1_20 & 0x3000) {
@@ -1126,7 +1126,7 @@ block_90:
             temp_a0_8 = temp_a1_7 & 0x40;
             if (temp_a0_8 != 0) {
                 M2C_FIELD(temp_v0, s8 *, 0x18) = 6;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_can_sd(temp_a0_8, temp_a1_7, temp_a2);
             } else {
                 temp_a0_9 = temp_a1_7 & 0x20;
@@ -1134,12 +1134,12 @@ block_90:
                     if (M2C_FIELD(temp_v0, s8 *, 0x17) != 0) {
                         M2C_FIELD(temp_v0, s8 *, 0x18) = (s8) (temp_a2 + 1);
                         yn_dec_sd(temp_a0_9, (int *) temp_a1_7, temp_a2);
-                        M2C_FIELD(ynw, s8 *, 0x18) = 0xA;
-                        M2C_FIELD(ynw, s8 *, 0x46) = 0x32;
+                        YNF(ynw, s8 *, 0x18) = 0xA;
+                        YNF(ynw, s8 *, 0x46) = 0x32;
                         yn_proxy_wk_save(0xA);
                     } else {
                         M2C_FIELD(temp_v0, s8 *, 0x18) = 6;
-                        M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                        YNF(ynw, s8 *, 0x46) = 0;
                         yn_can_sd(temp_a0_9, temp_a1_7, temp_a2);
                     }
                 } else if (temp_a1_7 & 0x3000) {
@@ -1162,25 +1162,25 @@ block_90:
                 yn_log_sd();
                 switch (temp_v0_12) {               /* switch 5; irregular */
                 case -1:                            /* switch 5 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xA;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x13;
+                    YNF(ynw, s8 *, 0x18) = 0xA;
+                    YNF(ynw, s8 *, 0x46) = 0x13;
                     break;
                 case -7:                            /* switch 5 */
                 case -3:                            /* switch 5 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x14;
+                    YNF(ynw, s8 *, 0x18) = 0xD;
+                    YNF(ynw, s8 *, 0x46) = 0x14;
                     break;
                 case -6:                            /* switch 5 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x1F;
+                    YNF(ynw, s8 *, 0x18) = 0xD;
+                    YNF(ynw, s8 *, 0x46) = 0x1F;
                     break;
                 case -5:                            /* switch 5 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 9;
+                    YNF(ynw, s8 *, 0x18) = 0xD;
+                    YNF(ynw, s8 *, 0x46) = 9;
                     break;
                 default:                            /* switch 5 */
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x22;
+                    YNF(ynw, s8 *, 0x18) = 0xD;
+                    YNF(ynw, s8 *, 0x46) = 0x22;
                     break;
                 }
             }
@@ -1188,7 +1188,7 @@ block_90:
         case 10:                                    /* switch 1 */
             if (*(u8 *)0x3F3714 & 0x20) {
                 M2C_FIELD(temp_v0, s8 *, 0x18) = 0;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_dec_sd((u16) var_a0);
                 return -2;
             }
@@ -1207,12 +1207,12 @@ block_90:
                 M2C_FIELD(temp_v1_27, s8 *, 0x18) = (s8) M2C_FIELD(temp_v1_27, s8 *, 0x19);
                 temp_v0_13 = ynw;
                 *M2C_FIELD(temp_v0_13, u16 **, 0x3C) = M2C_FIELD(temp_v0_13, u16 *, 0x3A);
-                M2C_FIELD(ynw, s8 *, 0x38) = 0;
+                YNF(ynw, s8 *, 0x38) = 0;
                 yn_can_sd((u16) var_a0, temp_a1_8, temp_a2);
             } else if (temp_a1_8 & 0x20) {
                 temp_v1_28 = ynw;
                 M2C_FIELD(temp_v1_28, s8 *, 0x18) = (s8) M2C_FIELD(temp_v1_28, s8 *, 0x19);
-                M2C_FIELD(ynw, s8 *, 0x38) = 0;
+                YNF(ynw, s8 *, 0x38) = 0;
                 yn_dec_sd((u16) var_a0, (int *) temp_a1_8, temp_a2);
             } else if (temp_a1_8 & 0xC00) {
                 if (temp_a1_8 & 0x800) {
@@ -1274,7 +1274,7 @@ block_90:
             } else {
 block_222:
                 M2C_FIELD(temp_v0, s8 *, 0x18) = (s8) M2C_FIELD(temp_v0, s8 *, 0x19);
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_dec_sd(temp_a0_11, (int *) temp_a1_10, temp_a2);
             }
             goto block_293;
@@ -1283,7 +1283,7 @@ block_222:
             temp_a0_12 = temp_a1_11 & 0x40;
             if (temp_a0_12 != 0) {
                 M2C_FIELD(temp_v0, s8 *, 0x18) = (s8) M2C_FIELD(temp_v0, s8 *, 0x19);
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_can_sd(temp_a0_12, temp_a1_11, temp_a2);
                 goto block_293;
             }
@@ -1292,11 +1292,11 @@ block_222:
                 if (temp_a0_13 != 0) {
                     M2C_FIELD(temp_v0, s8 *, 0x18) = 0;
                     yn_dec_sd((u16) temp_a0_13, (int *) temp_a1_11, temp_a2);
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                    YNF(ynw, s8 *, 0x46) = 0;
                     return -2;
                 }
                 M2C_FIELD(temp_v0, s8 *, 0x18) = (s8) M2C_FIELD(temp_v0, s8 *, 0x19);
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_can_sd((u16) temp_a0_13, temp_a1_11, temp_a2);
                 goto block_293;
             }
@@ -1316,7 +1316,7 @@ block_222:
         case 15:                                    /* switch 1 */
             if (*(u8 *)0x3F3714 & 0x20) {
                 M2C_FIELD(temp_v0, s8 *, 0x18) = 0;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_dec_sd((u16) var_a0);
                 return -2;
             }
@@ -1326,19 +1326,19 @@ block_222:
             temp_a0_14 = temp_a1_12 & 0x40;
             if (temp_a0_14 != 0) {
                 M2C_FIELD(temp_v0, s8 *, 0x18) = 2;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_can_sd(temp_a0_14, temp_a1_12, temp_a2);
             } else {
                 temp_a0_15 = temp_a1_12 & 0x20;
                 if (temp_a0_15 != 0) {
                     if (M2C_FIELD(temp_v0, s8 *, 0x17) != 0) {
                         M2C_FIELD(temp_v0, s8 *, 0x18) = 0x11;
-                        M2C_FIELD(ynw, s8 *, 0x46) = 0xB;
+                        YNF(ynw, s8 *, 0x46) = 0xB;
                         yn_dec_sd(0xBU, (int *) temp_a1_12, temp_a2);
-                        yn_mc_init(ynw + 0x10D0);
+                        yn_mc_init(ynw + YNO(0x10D0));
                     } else {
                         M2C_FIELD(temp_v0, s8 *, 0x18) = 2;
-                        M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                        YNF(ynw, s8 *, 0x46) = 0;
                         yn_can_sd(temp_a0_15, temp_a1_12, temp_a2);
                     }
                 } else if (temp_a1_12 & 0x3000) {
@@ -1361,31 +1361,31 @@ block_222:
             case -2:                                /* switch 6 */
                 break;
             case -1:                                /* switch 6 */
-                M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                M2C_FIELD(ynw, s8 *, 0x19) = 5;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0xC;
-                yn_mc_init(ynw + 0x10D0, (int *)0xD);
+                YNF(ynw, s8 *, 0x18) = 0xD;
+                YNF(ynw, s8 *, 0x19) = 5;
+                YNF(ynw, s8 *, 0x46) = 0xC;
+                yn_mc_init(ynw + YNO(0x10D0), (int *)0xD);
                 yn_log_sd();
                 break;
             default:                                /* switch 6 */
-                M2C_FIELD(ynw, s8 *, 0x18) = 0xD;
-                M2C_FIELD(ynw, s8 *, 0x19) = 2;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0xD;
-                yn_mc_init(ynw + 0x10D0);
+                YNF(ynw, s8 *, 0x18) = 0xD;
+                YNF(ynw, s8 *, 0x19) = 2;
+                YNF(ynw, s8 *, 0x46) = 0xD;
+                yn_mc_init(ynw + YNO(0x10D0));
                 yn_log_sd();
                 break;
             }
             goto block_293;
         case 18:                                    /* switch 1 */
-            yn_strcpy(ynw + 0x1ACB4, yn_netcnf_search_usr_name(temp_v0 + 0x1180, temp_v0 + (M2C_FIELD(temp_v0, s8 *, 0xB) * 0x1340) + 0xAF00, temp_a2));
+            yn_strcpy(ynw + YNO(0x1ACB4), yn_netcnf_search_usr_name(temp_v0 + 0x1180, temp_v0 + (M2C_FIELD(temp_v0, s8 *, 0xB) * 0x1340) + 0xAF00, temp_a2));
             temp_v1_36 = ynw;
             if ((temp_v1_36 + 0x1ACB4) != NULL) {
                 if (M2C_FIELD(temp_v1_36, s8 *, 0x1ACB4) == 0) {
                     goto block_266;
                 }
                 if (yn_netcnf_magicno_check(temp_v1_36 + 0x1180) != 0) {
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xF;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0x1D;
+                    YNF(ynw, s8 *, 0x18) = 0xF;
+                    YNF(ynw, s8 *, 0x46) = 0x1D;
                     yn_log_sd(0xFU);
                     goto block_293;
                 }
@@ -1393,22 +1393,22 @@ block_222:
                 temp_a0_16 = M2C_FIELD(((M2C_FIELD(temp_a1_13, s8 *, 0xB) * 0x14) + temp_a1_13), s32 *, 0x254);
                 if (temp_a0_16 < 0) {
                     M2C_FIELD(temp_a1_13, s8 *, 0x18) = 0xF;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 5;
+                    YNF(ynw, s8 *, 0x46) = 5;
                     yn_log_sd((u8) temp_a0_16, temp_a1_13);
                     goto block_293;
                 }
                 if (yn_hard_select_set(temp_a0_16, temp_a1_13) < 0) {
-                    M2C_FIELD(ynw, s8 *, 0x18) = 0xF;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 5;
+                    YNF(ynw, s8 *, 0x18) = 0xF;
+                    YNF(ynw, s8 *, 0x46) = 5;
                     yn_log_sd(0xFU);
                     goto block_293;
                 }
-                if (yn_netcnf_pastproxy_check(ynw + 0xEC8, D_5310D0) < 0) {
-                    M2C_FIELD(ynw, s8 *, 0x26) = 1;
+                if (yn_netcnf_pastproxy_check(ynw + YNO(0xEC8), D_5310D0) < 0) {
+                    YNF(ynw, s8 *, 0x26) = 1;
                 }
                 temp_a1_14 = ynw;
                 if (yn_netcnf_pastdata_check(D_5306B0, temp_a1_14 + (M2C_FIELD(temp_a1_14, s8 *, 0xB) * 0x14) + 0x250, 1) < 0) {
-                    M2C_FIELD(ynw, s8 *, 0x26) = 1;
+                    YNF(ynw, s8 *, 0x26) = 1;
                 }
                 temp_a0_17 = ynw;
                 yn_backup_allwork(M2C_FIELD(((M2C_FIELD(temp_a0_17, s8 *, 0xB) * 0x14) + temp_a0_17), s32 *, 0x260));
@@ -1418,7 +1418,7 @@ block_222:
             }
 block_266:
             M2C_FIELD(temp_v1_36, s8 *, 0x18) = 0xF;
-            M2C_FIELD(ynw, s8 *, 0x46) = 0x33;
+            YNF(ynw, s8 *, 0x46) = 0x33;
             yn_log_sd();
             goto block_293;
         case 19:                                    /* switch 1 */
@@ -1426,7 +1426,7 @@ block_266:
             temp_a0_19 = temp_a1_15 & 0x40;
             if (temp_a0_19 != 0) {
                 M2C_FIELD(temp_v0, s8 *, 0x18) = 1;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_can_sd(temp_a0_19, temp_a1_15, temp_a2);
                 goto block_293;
             }
@@ -1434,12 +1434,12 @@ block_266:
             if (temp_a0_20 != 0) {
                 if (M2C_FIELD(temp_v0, s8 *, 0x17) != 0) {
                     M2C_FIELD(temp_v0, s8 *, 0x18) = 0;
-                    M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                    YNF(ynw, s8 *, 0x46) = 0;
                     yn_dec_sd(temp_a0_20, (int *) temp_a1_15, temp_a2);
                     return 2;
                 }
                 M2C_FIELD(temp_v0, s8 *, 0x18) = 1;
-                M2C_FIELD(ynw, s8 *, 0x46) = 0;
+                YNF(ynw, s8 *, 0x46) = 0;
                 yn_can_sd(temp_a0_20, temp_a1_15, temp_a2);
                 goto block_293;
             }
@@ -1472,12 +1472,12 @@ void yn_common_shot_cancel(s8 arg0) {
     var_a0 = arg0;
     temp_a1 = ynw;
     M2C_FIELD(temp_a1, s8 *, 0x19) = (s8) M2C_FIELD(temp_a1, s8 *, 0x18);
-    M2C_FIELD(ynw, s8 *, 0x18) = var_a0;
-    M2C_FIELD(ynw, s8 *, 0x17) = 0;
+    YNF(ynw, s8 *, 0x18) = var_a0;
+    YNF(ynw, s8 *, 0x17) = 0;
     if ((yn_r_no == 6) && ((var_a0 = (s8) ynw, temp_v1 = M2C_FIELD(var_a0, s8 *, 0x19), (temp_v1 == 6)) || (temp_v1 == 7))) {
         M2C_FIELD(var_a0, s8 *, 0x46) = 0x38;
     } else {
-        M2C_FIELD(ynw, s8 *, 0x46) = 1;
+        YNF(ynw, s8 *, 0x46) = 1;
     }
     yn_can_sd((u8 *) var_a0, temp_a1);
 }
@@ -1488,7 +1488,7 @@ s32 yn_common_memcard_out(void) {
     u8 *temp_v0;
 
     temp_s0 = 0;
-    if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
+    if (yn_mc_device_check_all(ynw + YNO(0x10D0)) >= 0) {
         temp_v0 = ynw;
         temp_s0 |= ((M2C_FIELD(temp_v0, u8 *, 0x10D2) | M2C_FIELD(temp_v0, u8 *, 0x10D3)) >> 1) & 3;
         if (!(temp_s0 & (1 << yn_mc_get_current(temp_v0 + 0x10D0)))) {
@@ -1528,7 +1528,7 @@ which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
 void yn_title_font(void) {
     char *temp_s0;
 
-    temp_s0 = yn_title_mes_tbl[M2C_FIELD(ynw, s8 *, 0x44)];
+    temp_s0 = yn_title_mes_tbl[YNF(ynw, s8 *, 0x44)];
     yn_printf(yn_center_x(temp_s0, 0x16), 0x20, temp_s0);
 }
 
@@ -1549,7 +1549,7 @@ void yn_message_font_sub(void) {
     s8 temp_s1;
     u8 *var_s2;
 
-    temp_a1 = M2C_FIELD(ynw, s8 *, 0x45);
+    temp_a1 = YNF(ynw, s8 *, 0x45);
     temp_s1 = *(yn_mess_cnt_tbl + temp_a1);
     var_s2 = yn_mess_mes_tbl[temp_a1];
     var_s0 = 0;
@@ -1578,21 +1578,21 @@ void yn_connect_font_sub(void) {
     int off;
 
     yn_set_pal(0);
-    yn_printf(0x2C, 0x53, yn_memcard_mes_tbl[1 + yn_mc_get_current(ynw + 0x10D0)]);
+    yn_printf(0x2C, 0x53, yn_memcard_mes_tbl[1 + yn_mc_get_current(ynw + YNO(0x10D0))]);
     i = 0;
     y = 0xCB;
     for (; i < 2; i++, y += 0x1C) {
-        if (M2C_FIELD(ynw, s8 *, 0x16) + i >= M2C_FIELD(ynw, s8 *, 0x1C)) {
+        if (YNF(ynw, s8 *, 0x16) + i >= YNF(ynw, s8 *, 0x1C)) {
             break;
         }
-        p = ynw + (M2C_FIELD(ynw, s8 *, 0xC) + i) * 0x14;
+        p = ynw + (YNF(ynw, s8 *, 0xC) + i) * 0x14;
         if (M2C_FIELD(p, s32 *, 0x254) == -1) {
             yn_set_pal(2);
         } else if (M2C_FIELD(p, s32 *, 0x250) == 2) {
             yn_set_pal(9);
         }
-        r = (u8 *)yn_netcnf_search_usr_name(ynw + 0x1180, ynw + (M2C_FIELD(ynw, s8 *, 0xC) + i) * 0x1340 + 0xAF00);
-        if (r == 0 || M2C_FIELD(ynw + (M2C_FIELD(ynw, s8 *, 0xC) + i) * 0x14, s32 *, 0x250) == 2) {
+        r = (u8 *)yn_netcnf_search_usr_name(ynw + YNO(0x1180), ynw + (YNF(ynw, s8 *, 0xC) + i) * 0x1340 + 0xAF00);
+        if (r == 0 || M2C_FIELD(ynw + (YNF(ynw, s8 *, 0xC) + i) * 0x14, s32 *, 0x250) == 2) {
             yn_set_pal(2);
             strcpy(sp130, lit_4084);
         } else {
@@ -1600,7 +1600,7 @@ void yn_connect_font_sub(void) {
             yn_utf8_to_sjis(sp130, sp30);
         }
         {
-            int n = M2C_FIELD(ynw, s8 *, 0xC);
+            int n = YNF(ynw, s8 *, 0xC);
             sprintf(sp30, lit_4085, n + (i + 1), sp130);
         }
         yn_printf(0x2C, (s16)y, sp30);
@@ -1641,7 +1641,7 @@ void yn_hard_font_sub(void) {
             } else {
                 yn_set_pal(9);
             }
-            if ((M2C_FIELD(var_s1, s32 *, 0) == 1) && (var_s2 >= M2C_FIELD(ynw, s8 *, 0x15))) {
+            if ((M2C_FIELD(var_s1, s32 *, 0) == 1) && (var_s2 >= YNF(ynw, s8 *, 0x15))) {
                 sprintf((u8 *)&sp50, lit_4118, M2C_FIELD(var_s1, s32 *, 0x14), M2C_FIELD(var_s1, s32 *, 0x18));
                 yn_printf(0x65, (s64) (var_s0 << 0x30) >> 0x30, (u8 *)&sp50);
                 var_s0 += 0x1C;
@@ -1662,7 +1662,7 @@ void yn_hard_more_font_sub(void) {
     i = 0;
     y = 0xC4;
     do {
-        yn_printf(0x65, (s16)y, yn_hard_more_mes_tbl[M2C_FIELD(ynw, s8 *, 0x14) + (s8)i]);
+        yn_printf(0x65, (s16)y, yn_hard_more_mes_tbl[YNF(ynw, s8 *, 0x14) + (s8)i]);
         i = (s8)(i + 1);
         y += 0x1C;
     } while (i < 3);
@@ -1678,7 +1678,7 @@ void yn_memcard_font_sub(void) {
     var_s1 = yn_memcard_mes_tbl;
     var_s0 = 0xC4;
     do {
-        if (M2C_FIELD(ynw, u8 *, 0x1D) & (1 << ((s64) (var_s2 << 0x38) >> 0x38))) {
+        if (YNF(ynw, u8 *, 0x1D) & (1 << ((s64) (var_s2 << 0x38) >> 0x38))) {
             yn_set_pal(0);
         } else {
             yn_set_pal(9);
@@ -1952,7 +1952,7 @@ void yn_dialog_draw(void) {
     u8 temp_v1;
     u8 *temp_a1;
 
-    temp_v1 = M2C_FIELD(ynw, u8 *, 0x46);
+    temp_v1 = YNF(ynw, u8 *, 0x46);
     switch (temp_v1) {
     case 0x2:
     case 0x5:
@@ -2005,7 +2005,7 @@ void yn_dialog_draw(void) {
     case 0x37:
     case 0x38:
         yn_sprite_draw_sub(0x1B, 0, 2);
-        yn_sprite_draw_sub(0x1A, 0, (s16)(-M2C_FIELD(ynw, s8 *, 0x17) * 0x1E));
+        yn_sprite_draw_sub(0x1A, 0, (s16)(-YNF(ynw, s8 *, 0x17) * 0x1E));
         return;
     case 0x10:
     case 0x11:
@@ -2047,7 +2047,7 @@ void yn_dialog_font_sub(void) {
     u8 temp_a1;
     u8 *var_s2;
 
-    temp_a1 = M2C_FIELD(ynw, u8 *, 0x46);
+    temp_a1 = YNF(ynw, u8 *, 0x46);
     temp_s1 = *(yn_dialog_cnt_tbl + temp_a1);
     var_s2 = yn_dialog_mes_tbl[temp_a1];
     var_s0 = 0;
@@ -2073,7 +2073,7 @@ void yn_dialog_font_without_yesno(void) {
     u8 temp_a1;
     u8 *var_s1;
 
-    temp_a1 = M2C_FIELD(ynw, u8 *, 0x46);
+    temp_a1 = YNF(ynw, u8 *, 0x46);
     var_s1 = yn_dialog_mes_tbl[temp_a1];
     temp_s2 = (s64) ((*(yn_dialog_cnt_tbl + temp_a1) - 3) << 0x38) >> 0x38;
     var_s0 = 0;
@@ -2116,7 +2116,7 @@ void yn_dialog_font_memcard(s32 arg0) {
     u8 temp_a1;
     u8 *var_s3;
 
-    temp_a1 = M2C_FIELD(ynw, u8 *, 0x46);
+    temp_a1 = YNF(ynw, u8 *, 0x46);
     temp_s0 = *(yn_dialog_cnt_tbl + temp_a1);
     var_s3 = yn_dialog_mes_tbl[temp_a1];
     var_s2 = 0;
@@ -2127,7 +2127,7 @@ void yn_dialog_font_memcard(s32 arg0) {
                 var_s1 = (s16) ((s64) (yn_center_x(M2C_FIELD(var_s3, int **, 4), 0x16) << 0x30) >> 0x30);
             }
             if (((s64) (var_s2 << 0x38) >> 0x38) == arg0) {
-                sprintf((u8 *)&sp60, M2C_FIELD(var_s3, int **, 4), yn_mc_get_current(ynw + 0x10D0) + 1);
+                sprintf((u8 *)&sp60, M2C_FIELD(var_s3, int **, 4), yn_mc_get_current(ynw + YNO(0x10D0)) + 1);
                 yn_printf((s64) var_s1, M2C_FIELD(var_s3, s16 *, 2), (u8 *)&sp60);
             } else {
                 yn_printf((s64) var_s1, M2C_FIELD(var_s3, s16 *, 2), M2C_FIELD(var_s3, int **, 4));
@@ -2526,10 +2526,10 @@ void yn_strcpy(s8 *arg0, s32 arg1) {
 }
 
 void yn_port_init(u16 *arg0) {
-    M2C_FIELD(ynw, u16 **, 0x3C) = arg0;
-    M2C_FIELD(ynw, u16 *, 0x3A) = (u16) *arg0;
-    M2C_FIELD(ynw, s16 *, 0x40) = 1;
-    M2C_FIELD(ynw, s8 *, 0x38) = 0;
+    YNF(ynw, u16 **, 0x3C) = arg0;
+    YNF(ynw, u16 *, 0x3A) = (u16) *arg0;
+    YNF(ynw, s16 *, 0x40) = 1;
+    YNF(ynw, s8 *, 0x38) = 0;
 }
 
 typedef struct { s32 a; s32 b; } PR8;
@@ -2552,7 +2552,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 void yn_key_repeat(u8 *pad) {
@@ -2573,9 +2573,9 @@ void yn_keyboard_init(s32 arg0, s32 arg1) {
     s32 temp_s1;
 
     flfntInit();
-    temp_s1 = ynw + 0x50;
+    temp_s1 = ynw + YNO(0x50);
     memset(temp_s1, 0, 0x200);
-    M2C_FIELD(ynw, s32 *, 0x4C) = arg1;
+    YNF(ynw, s32 *, 0x4C) = arg1;
     strcpy(temp_s1, arg1);
     printf(lit_4994, strlen(arg1), arg1);
     printf(lit_4994, strlen(temp_s1), temp_s1);
@@ -2599,7 +2599,7 @@ s32 yn_keyboard_sub(void) {
 
     if (Net_kb_input_sub() != 0) {
         SoftKey_onoff(0);
-        strcpy(ynw + 0x50, SoftKey_Getstr());
+        strcpy(ynw + YNO(0x50), SoftKey_Getstr());
         temp_v0 = ynw;
         strcpy(M2C_FIELD(temp_v0, s32 *, 0x4C), temp_v0 + 0x50);
         return 1;
@@ -2619,14 +2619,14 @@ void yn_draw(void) {
     flSetRenderState(0x6C, 0);
     SetFilterMode(0);
     yn_view_set();
-    flSetRenderState(4, M2C_FIELD(ynw, s32 *, 4));
+    flSetRenderState(4, YNF(ynw, s32 *, 4));
     yn_sprite_draw_sub(0x20, 0, -0x20);
-    flSetRenderState(4, M2C_FIELD(ynw, s32 *, 0));
+    flSetRenderState(4, YNF(ynw, s32 *, 0));
     yn_sprite_draw();
     yn_button_draw();
     flfntDraw(4);
     flSetRenderState(0x6C, 0);
-    flSetRenderState(4, M2C_FIELD(ynw, s32 *, 0));
+    flSetRenderState(4, YNF(ynw, s32 *, 0));
     yn_dialog_draw();
     flfntDraw(3);
     flSetRenderState(0x6C, 0);
@@ -2653,7 +2653,7 @@ void yn_sprite_draw_sub(s32 arg0, int arg1, int arg2) {
     if (temp_s0 != 0) {
         flSetRenderState(0x5E, 0x12);
         temp_a1 = *(yn_parts_data + 2 + temp_s1);
-        temp_v0 = M2C_FIELD(ynw, u8 *, 0x21);
+        temp_v0 = YNF(ynw, u8 *, 0x21);
         if ((s32) temp_v0 >= 0) {
             var_f2 = (f32) temp_v0;
         } else {
@@ -2751,7 +2751,7 @@ void yn_setup_allwork(u8 *arg0) {
     u8 *temp_s0;
 
     SrvType = 0;
-    temp_s0 = ynw + 0xEC8;
+    temp_s0 = ynw + YNO(0xEC8);
     memset(SrvDomain, 0, 0x100);
     SrvIPAddress = 0;
     SrvPort = 0;
@@ -2823,15 +2823,15 @@ void yn_backup_allwork(u8 *ifc) {
     name[0] = 0;
     yn_netcnf_ifc_to_work(D_5306B0, ifc, name);
     yn_netcnf_dev_to_work(D_5306B0, ifc);
-    *(PR520 *)D_5310D0 = *(PR520 *)(ynw + 0xEC8);
+    *(PR520 *)D_5310D0 = *(PR520 *)(ynw + YNO(0xEC8));
 }
 
 void yn_proxy_wk_load(void) {
-    *(PR520 *)(ynw + 0xEC8) = *(PR520 *)D_530394;
+    *(PR520 *)(ynw + YNO(0xEC8)) = *(PR520 *)D_530394;
 }
 
 void yn_proxy_wk_save(void) {
-    *(PR520 *)D_530394 = *(PR520 *)(ynw + 0xEC8);
+    *(PR520 *)D_530394 = *(PR520 *)(ynw + YNO(0xEC8));
 }
 
 int yn_load_texfile(int file, int size) {

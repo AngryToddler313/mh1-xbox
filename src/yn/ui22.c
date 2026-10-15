@@ -312,7 +312,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -339,15 +339,15 @@ void yn_dialog_font_memcard(s32 arg0) {
     s8 n;
     int x;
 
-    n = yn_dialog_cnt_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
-    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
+    n = yn_dialog_cnt_tbl[YNF(ynw, u8 *, 0x46)];
+    m = (YMSG *)yn_dialog_mes_tbl[YNF(ynw, u8 *, 0x46)];
     for (i = 0; i < n; i = (s8)(i + 1), m++) {
         x = m->x;
         if (x == -1) {
             x = (s16)yn_center_x(m->str, 0x16);
         }
         if ((s8)i == arg0) {
-            sprintf(sp60, m->str, yn_mc_get_current(ynw + 0x10D0) + 1);
+            sprintf(sp60, m->str, yn_mc_get_current(ynw + YNO(0x10D0)) + 1);
             yn_printf(x, m->y, sp60);
         } else {
             yn_printf(x, m->y, m->str);

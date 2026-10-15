@@ -211,4 +211,5 @@ def main():
             print('%-45s ERROR %s' % (p, e))
 
 
-main()
+if __name__ == "__main__":
+    main()

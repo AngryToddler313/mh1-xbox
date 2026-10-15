@@ -312,7 +312,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -336,7 +336,7 @@ void yn_button_font(void) {
     s8 b;
     char **tbl = yn_button_mes_tbl;
 
-    b = M2C_FIELD(ynw, s8 *, 0x43);
+    b = YNF(ynw, s8 *, 0x43);
     switch (b) {
     case 1:
         yn_printf(0x122, 0x18F, tbl[0]);

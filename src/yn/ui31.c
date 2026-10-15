@@ -206,8 +206,8 @@ void yn_proxy_wk_save();
 int yn_load_texfile();
 void yn_scecom_reboot();
 
-#define YS8(o) M2C_FIELD(ynw, s8 *, o)
-#define YU8(o) M2C_FIELD(ynw, u8 *, o)
+#define YS8(o) YNF(ynw, s8 *, o)
+#define YU8(o) YNF(ynw, u8 *, o)
 #define PAD (*(u16 *)0x3F3714)
 
 /* Auto connect: pick the saved network setting of the first memory card that has one. */
@@ -223,7 +223,7 @@ s32 yn_auto_connect(void) {
         YU8(0x1E) = 0;
         YU8(0x25) = 0;
     case 1:
-        if (yn_netcnf_pastproxy_check(ynw + 0xEC8, D_5310D0) < 0) {
+        if (yn_netcnf_pastproxy_check(ynw + YNO(0xEC8), D_5310D0) < 0) {
             return -4;
         }
         YS8(0x18) = YS8(0x18) + 1;
@@ -232,7 +232,7 @@ s32 yn_auto_connect(void) {
     case 2:
         r = yn_file_search();
         if (r == 1) {
-            n = yn_netcnf_pastdata_check(D_5306B0, ynw + 0x250, YS8(0x1C));
+            n = yn_netcnf_pastdata_check(D_5306B0, ynw + YNO(0x250), YS8(0x1C));
             if (n >= 0) {
                 off = n * 0x14;
                 if (M2C_FIELD(off + (int)ynw, s32 *, 0x254) < 0) {
@@ -262,11 +262,11 @@ s32 yn_auto_connect(void) {
             YU8(0x25) = f | 0x80;
         }
         YU8(0x25) = YU8(0x25) | ((1 << YU8(0x1E)) & 0xFF);
-        if (yn_netcnf_magicno_check(ynw + 0x1180) != 0) {
+        if (yn_netcnf_magicno_check(ynw + YNO(0x1180)) != 0) {
             YS8(0x18) = 4;
             YS8(0x46) = 0x1D;
             yn_log_sd(4);
-            yn_mc_init(ynw + 0x10D0);
+            yn_mc_init(ynw + YNO(0x10D0));
         } else {
             YS8(0x18) = 3;
         }

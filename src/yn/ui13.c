@@ -312,7 +312,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -337,13 +337,13 @@ s8 arg0;
 {
     int t;
 
-    M2C_FIELD(ynw, s8 *, 0x19) = M2C_FIELD(ynw, s8 *, 0x18);
-    M2C_FIELD(ynw, s8 *, 0x18) = arg0;
-    M2C_FIELD(ynw, s8 *, 0x17) = 0;
-    if (yn_r_no == 6 && ((t = M2C_FIELD(ynw, s8 *, 0x19)) == 6 || t == 7)) {
-        M2C_FIELD(ynw, s8 *, 0x46) = 0x38;
+    YNF(ynw, s8 *, 0x19) = YNF(ynw, s8 *, 0x18);
+    YNF(ynw, s8 *, 0x18) = arg0;
+    YNF(ynw, s8 *, 0x17) = 0;
+    if (yn_r_no == 6 && ((t = YNF(ynw, s8 *, 0x19)) == 6 || t == 7)) {
+        YNF(ynw, s8 *, 0x46) = 0x38;
     } else {
-        M2C_FIELD(ynw, s8 *, 0x46) = 1;
+        YNF(ynw, s8 *, 0x46) = 1;
     }
     yn_can_sd();
 }

@@ -52,6 +52,7 @@ static void disp_cursorC(s16, s16, s16, s16, int, int);
 void Disp_help_mess(int, int);
 u8 Equip_moji_color_rare(u8);
 int Equip_moji_color_rare_i(u8);
+int Equip_moji_color_rare_g(u8); /* G: the same function at 0x21EA20, but its result is used as an int */
 
 typedef struct S2 { s16 a, b; } S2;
 typedef struct PFLP4 { s16 p[4]; u32 col; } PFLP4;
@@ -427,21 +428,21 @@ void Put_mini_sight(f32 scale, s16 ofs, int col) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 void Add_to_Monster_list(int n) {
-    F32(&User_data, 0x3F0) |= 1 << (n & 0xFF);
+    F32(&User_data, GV(0x3F0, 0xC98)) |= 1 << (n & 0xFF);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 int Monster_list_chk(int n) {
-    return (F32(&User_data, 0x3F0) & (1 << (n & 0xFF))) != 0;
+    return (F32(&User_data, GV(0x3F0, 0xC98)) & (1 << (n & 0xFF))) != 0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 int Monster_list_num(void) {
-    u32 v = F32(&User_data, 0x3F0);
+    u32 v = F32(&User_data, GV(0x3F0, 0xC98));
     v = (v & 0x15555555) + ((v & 0x2AAAAAAA) >> 1);
     v = (v & 0x33333333) + ((v & 0xCCCCCCCC) >> 2);
     v = (v & 0x0F0F0F0F) + ((v & 0xF0F0F0F0) >> 4);
@@ -450,12 +451,12 @@ int Monster_list_num(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 s8 Monster_list_search(s8 cur, char dir)
 {
   int n;
   u32 f;
-  f = *((u32 *) (((u8 *) (&User_data)) + 0x3F0));
+  f = *((u32 *) (((u8 *) (&User_data)) + GV(0x3F0, 0xC98)));
   if (f != 0)
   {
     if (cur < 0)
@@ -504,7 +505,7 @@ s8 Monster_list_search(s8 cur, char dir)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void Disp_menu_help(void) {
     Disp_help_mess(PitMenu.x11, PitMenu.x12);
 }
@@ -517,21 +518,21 @@ extern u32 item_col_tbl[];
 extern char lit_2796[];
 extern s32 *pit_help_str_tbl[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
 void Disp_help_mess(int kind, int id) {
     PFLP8 q;
     u8 *it;
 
-    if ((u8)kind < 7 && (u16)id != 0xFFFF) {
+    if ((u8)kind < GV(7, 8) && (u16)id != 0xFFFF) {
         if ((u8)kind == 1 && (u16)id > 0x18) {
             DispFrameMessage(help_mess_00354680, 0);
             flfntSetSize(0x12, 0x12);
             flfntLocate(0x168, 0x166);
             font_set_palette(FS16(help_mess_00354680, 8));
-            font_print_sp((void *)pit_help_str_tbl[1][(u16)id]);
+            font_print_sp_G((void *)pit_help_str_tbl[1][(u16)id]);
             it = Item_data[(u16)id - 0x18];
-            reload_tex(1, 0x118);
-            SetTextureStage(0x118);
+            reload_tex(1, GSLOT(0x118, 0x13F));
+            SetTextureStage(GSLOT(0x118, 0x13F));
             q.p[0] = 0xF4;
             q.p[1] = 0x166;
             q.p[2] = 0x28;
@@ -550,8 +551,12 @@ void Disp_help_mess(int kind, int id) {
             }
             flfntSetSize(0x10, 0x10);
             flfntLocate(0x132, 0x192);
+#ifdef MHG_PS2
+            font_set_palette(Equip_moji_color_rare_g(it[2]));
+#else
             font_set_palette(Equip_moji_color_rare_i(it[2]));
-            font_print(lit_2796, it[2] + 1);
+#endif
+            font_print(GSTR(lit_2796, gptr_002EC620), it[2] + 1);
             return;
         }
         DispFrameMessage(help_mess_00354680, (void *)pit_help_str_tbl[(u8)kind][(u16)id]);
@@ -1114,7 +1119,7 @@ void Pit_disp_chat_log(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 22
 void Receive_mess_move(void) {
     if (FS8(&PitMenu, 6) != 0) {
         if (F8(&PitMenu, 0xF) == 0) {
@@ -1122,7 +1127,7 @@ void Receive_mess_move(void) {
         }
         return;
     }
-    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0) {
+    if (!(PitMenu.x22 & 0x80) && (u8)PIT_HALT == 0) {
         PitMenu.x0F = 0;
         if (F16(&PitMenu, 0xC) > 0) {
             PitMenu.x0C = F16(&PitMenu, 0xC) - 1;
@@ -1135,7 +1140,7 @@ extern void *receive_mes_str[2];
 
 #if !defined(G_PART)
 void Pit_disp_receive_mes(void) {
-    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && F16(&PitMenu, 0xC) != 0) {
+    if (!(PitMenu.x22 & 0x80) && (u8)PIT_HALT == 0 && F16(&PitMenu, 0xC) != 0) {
         SetFilterMode(0);
         DispFrameMessage(pf_chat_log_base, receive_mes_str[F8(&PitMenu, 0xE)]);
         disp_chat_log_sub(0, 0, 0);
@@ -1164,16 +1169,16 @@ void Put_receive_mark(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 23
 void SetMessageHaltFlag(void) {
     PitMenu.x0C = 0;
-    FS8(&PitMenu, 0x1C) = 1;
+    PIT_HALT = 1;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 24
 void ClearMessageHaltFlag(void) {
-    FS8(&PitMenu, 0x1C) = 0;
+    PIT_HALT = 0;
 }
 #endif
 
@@ -1721,7 +1726,7 @@ asm static int ng_word_sub(char *text, char *ng, s8 mode)
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 25
 static int zen_kigou_suuji_chk(u8 *p) {
     u8 c = p[0];
 
@@ -1735,7 +1740,7 @@ static int zen_kigou_suuji_chk(u8 *p) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 26
 int ChatKinsoku_chk(u8 *s) {
     u8 *p = s;
     u8 c = *p;
@@ -1756,9 +1761,9 @@ extern u8 default_reibun[];
 void *memcpy(void *, const void *, int);
 void Init_reibun(void);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 27
 void Default_reibun_set(void) {
-    memcpy((u8 *)&option_w + 0xDB0, default_reibun, 0x21C);
+    memcpy((u8 *)&option_w + GV(0xDB0, 0x2A30), default_reibun, 0x21C);
     Init_reibun();
 }
 #endif

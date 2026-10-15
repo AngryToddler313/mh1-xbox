@@ -312,7 +312,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -339,7 +339,7 @@ void yn_id_pw_font_sub(void) {
     int n;
     int i;
 
-    p = ynw + 0x4B4;
+    p = ynw + YNO(0x4B4);
     if (*p == 0) {
         yn_printf(0x115, 0xC4, lit_4217);
     } else {
@@ -347,7 +347,7 @@ void yn_id_pw_font_sub(void) {
         yn_strconv(sp50, sp10, 0x18);
         yn_printf(0x115, 0xC4, sp50);
     }
-    p = ynw + 0x6B4;
+    p = ynw + YNO(0x6B4);
     if (*p == 0) {
         yn_printf(0x115, 0xFC, lit_4218);
         return;

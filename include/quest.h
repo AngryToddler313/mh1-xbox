@@ -109,8 +109,8 @@ typedef struct QUEST_W {
     u8 x168;            /* 0x168 cleared by Quest_start */
     s8 x169;            /* 0x169 (time limit - 1) / 9000, not capped (xAF is capped at 2) */
     u16 rnd_seed;       /* 0x16A the quest's generator state (Quest_rand) */
-    s16 x16C[52];       /* 0x16C cleared by Quest_start */
-    s16 x1D4[52];       /* 0x1D4 cleared by Quest_start */
+    u16 x16C[52];       /* 0x16C (u16: lhu in G's Quest_enemy_die) cleared by Quest_start */
+    u16 x1D4[52];       /* 0x1D4 (u16: lhu in G's Quest_enemy_die) cleared by Quest_start */
     s16 x23C;           /* 0x23C cleared by Quest_start */
     s16 x23E;           /* 0x23E */
     s16 x240;           /* 0x240 */

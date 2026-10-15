@@ -155,7 +155,7 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
 #ifdef VERSION_MHG
     u8 _padG[7];        /* G: everything from here on sits 7 bytes later (PitMenu is 0x...290 there) */
 #endif
-    u8 _pad1C;
+    s8 x1C;             /* 0x1C message halt flag (f_chat) */
     u8 open;            /* 0x1D non-zero while the menu is open (Cockpit_menu_chk) */
     u8 logtop;          /* 0x1E chat log write index (f_chat) */
     u8 lognum;          /* 0x1F chat log entries used */
@@ -163,8 +163,13 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     u8 x21;             /* 0x21 */
     u8 x22;             /* 0x22 chat log arrow flags (f_chat) */
     PIT_CHAT log[64];   /* 0x23 */
-    u8 _pad1763;
+    s8 xend;            /* G: 0x17EA right after the log; MH1 0x1763 (unused there) */
 } PIT_MENU;
+#ifdef VERSION_MHG
+#define PIT_HALT PitMenu.xend   /* G keeps the message halt flag behind the log */
+#else
+#define PIT_HALT PitMenu.x1C
+#endif
 
 typedef struct PIT_PRIM {           /* pit_prim: three display layers */
     u8 _pad00[0x14];

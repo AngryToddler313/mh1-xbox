@@ -309,7 +309,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -329,13 +329,13 @@ void yn_backup_allwork(u8 *ifc) {
     name[0] = 0;
     yn_netcnf_ifc_to_work(D_5306B0, ifc, name);
     yn_netcnf_dev_to_work(D_5306B0, ifc);
-    *(PR520 *)D_5310D0 = *(PR520 *)(ynw + 0xEC8);
+    *(PR520 *)D_5310D0 = *(PR520 *)(ynw + YNO(0xEC8));
 }
 
 void yn_proxy_wk_load(void) {
-    *(PR520 *)(ynw + 0xEC8) = *(PR520 *)D_530394;
+    *(PR520 *)(ynw + YNO(0xEC8)) = *(PR520 *)D_530394;
 }
 
 void yn_proxy_wk_save(void) {
-    *(PR520 *)D_530394 = *(PR520 *)(ynw + 0xEC8);
+    *(PR520 *)D_530394 = *(PR520 *)(ynw + YNO(0xEC8));
 }

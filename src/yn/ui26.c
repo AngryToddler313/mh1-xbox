@@ -317,7 +317,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -341,9 +341,9 @@ void yn_keyboard_init(int arg0, u8 *arg1) {
     u8 *buf;
 
     flfntInit();
-    buf = ynw + 0x50;
+    buf = ynw + YNO(0x50);
     memset(buf, 0, 0x200);
-    M2C_FIELD(ynw, u8 **, 0x4C) = arg1;
+    YNF(ynw, u8 **, 0x4C) = arg1;
     strcpy(buf, arg1);
     printf(lit_4994, strlen(arg1), arg1);
     printf(lit_4994, strlen(buf), buf);

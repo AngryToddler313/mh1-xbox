@@ -312,7 +312,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -335,8 +335,8 @@ typedef struct YMSG {
 void yn_dialog_font(void) {
     u8 id;
 
-    yn_set_z(650.0f);
-    id = M2C_FIELD(ynw, u8 *, 0x46);
+    yn_set_z(GV(650.0f, 550.0f));
+    id = YNF(ynw, u8 *, 0x46);
     switch (id) {
     case 0x1:
     case 0x2:
@@ -412,7 +412,7 @@ void yn_dialog_font(void) {
     case 0x27:
     case 0x28:
     case 0x29:
-        if (M2C_FIELD(ynw, s8 *, 0x1B) == 3) {
+        if (YNF(ynw, s8 *, 0x1B) == 3) {
             yn_dialog_font_without_yesno();
         } else {
             yn_dialog_font_sub();
@@ -426,10 +426,10 @@ void yn_dialog_font(void) {
     case 0x2A:
         yn_dialog_font_once(0);
         yn_dialog_font_once(1);
-        if (M2C_FIELD(ynw, u8 *, 0x21) & 0x20) {
+        if (YNF(ynw, u8 *, 0x21) & 0x20) {
             yn_dialog_font_once(2);
         }
         break;
     }
-    yn_set_z(850.0f);
+    yn_set_z(GV(850.0f, 716.6667f));
 }

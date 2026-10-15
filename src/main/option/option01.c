@@ -261,7 +261,7 @@ int cfg_change_ck(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void option_sub_menu(OPTTSK *t, int pad) {
     s16 chg = 0;
     s8 *w = option_w;
@@ -276,47 +276,47 @@ void option_sub_menu(OPTTSK *t, int pad) {
     } else {
         p = pad & 0xFFFF;
         if (p & 0x2000) {
-            if (w[6] > -0x10) {
+            if (w[GV(6, 8)] > -0x10) {
                 chg = 1;
-                w[6]--;
+                w[GV(6, 8)]--;
                 shown |= 0x2000;
                 cursor_se();
             } else {
-                w[6] = -0x10;
+                w[GV(6, 8)] = -0x10;
             }
         }
         if (p & 0x1000) {
-            if (w[6] < 0x10) {
+            if (w[GV(6, 8)] < 0x10) {
                 chg = 1;
-                w[6]++;
+                w[GV(6, 8)]++;
                 shown |= 0x1000;
                 cursor_se();
             } else {
-                w[6] = 0x10;
+                w[GV(6, 8)] = 0x10;
             }
         }
         if (p & 0x800) {
-            if (w[5] > -0x10) {
+            if (w[GV(5, 7)] > -0x10) {
                 chg = 1;
-                w[5]--;
+                w[GV(5, 7)]--;
                 shown |= 0x800;
                 cursor_se();
             } else {
-                w[5] = -0x10;
+                w[GV(5, 7)] = -0x10;
             }
         }
         if (p & 0x400) {
-            if (w[5] < 0x10) {
+            if (w[GV(5, 7)] < 0x10) {
                 chg = 1;
-                w[5]++;
+                w[GV(5, 7)]++;
                 shown |= 0x400;
                 cursor_se();
             } else {
-                w[5] = 0x10;
+                w[GV(5, 7)] = 0x10;
             }
         }
         if (chg != 0) {
-            flAdjustScreen(w[5], w[6]);
+            flAdjustScreen(w[GV(5, 7)], w[GV(6, 8)]);
         }
     }
     disp_option_sub_menu(t, shown);

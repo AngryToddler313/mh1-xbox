@@ -317,7 +317,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -339,7 +339,7 @@ typedef struct YMSG {
 void yn_button_draw(void) {
     s8 b;
 
-    b = M2C_FIELD(ynw, s8 *, 0x43);
+    b = YNF(ynw, s8 *, 0x43);
     switch (b) {
     case 1:
     case 2:
@@ -363,13 +363,13 @@ s8 arg0;
 {
     int t;
 
-    M2C_FIELD(ynw, s8 *, 0x19) = M2C_FIELD(ynw, s8 *, 0x18);
-    M2C_FIELD(ynw, s8 *, 0x18) = arg0;
-    M2C_FIELD(ynw, s8 *, 0x17) = 0;
-    if (yn_r_no == 6 && ((t = M2C_FIELD(ynw, s8 *, 0x19)) == 6 || t == 7)) {
-        M2C_FIELD(ynw, s8 *, 0x46) = 0x38;
+    YNF(ynw, s8 *, 0x19) = YNF(ynw, s8 *, 0x18);
+    YNF(ynw, s8 *, 0x18) = arg0;
+    YNF(ynw, s8 *, 0x17) = 0;
+    if (yn_r_no == 6 && ((t = YNF(ynw, s8 *, 0x19)) == 6 || t == 7)) {
+        YNF(ynw, s8 *, 0x46) = 0x38;
     } else {
-        M2C_FIELD(ynw, s8 *, 0x46) = 1;
+        YNF(ynw, s8 *, 0x46) = 1;
     }
     yn_can_sd();
 }
@@ -377,7 +377,7 @@ s8 arg0;
 void yn_dialog_font_once(s32 arg0) {
     YMSG *m;
     int x;
-    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
+    m = (YMSG *)yn_dialog_mes_tbl[YNF(ynw, u8 *, 0x46)];
     m += arg0;
     x = m->x;
     if (x == -1) {
@@ -392,8 +392,8 @@ void yn_help_font(void) {
     int x;
     YMSG *m;
 
-    n = yn_help_cnt_tbl[M2C_FIELD(ynw, s8 *, 0x47) + M2C_FIELD(ynw, s8 *, 0x48)];
-    m = (YMSG *)yn_help_mes_tbl[M2C_FIELD(ynw, s8 *, 0x47) + M2C_FIELD(ynw, s8 *, 0x48)];
+    n = yn_help_cnt_tbl[YNF(ynw, s8 *, 0x47) + YNF(ynw, s8 *, 0x48)];
+    m = (YMSG *)yn_help_mes_tbl[YNF(ynw, s8 *, 0x47) + YNF(ynw, s8 *, 0x48)];
     for (i = 0; i < n; i = (s8)(i + 1), m++) {
         x = m->x;
         if (x == -1) {
@@ -409,8 +409,8 @@ void yn_message_font_sub(void) {
     int x;
     YMSG *m;
 
-    n = yn_mess_cnt_tbl[M2C_FIELD(ynw, s8 *, 0x45)];
-    m = (YMSG *)yn_mess_mes_tbl[M2C_FIELD(ynw, s8 *, 0x45)];
+    n = yn_mess_cnt_tbl[YNF(ynw, s8 *, 0x45)];
+    m = (YMSG *)yn_mess_mes_tbl[YNF(ynw, s8 *, 0x45)];
     for (i = 0; i < n; i = (s8)(i + 1), m++) {
         x = m->x;
         if (x == -1) {
@@ -426,8 +426,8 @@ void yn_dialog_font_sub(void) {
     int x;
     YMSG *m;
 
-    n = yn_dialog_cnt_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
-    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
+    n = yn_dialog_cnt_tbl[YNF(ynw, u8 *, 0x46)];
+    m = (YMSG *)yn_dialog_mes_tbl[YNF(ynw, u8 *, 0x46)];
     for (i = 0; i < n; i = (s8)(i + 1), m++) {
         x = m->x;
         if (x == -1) {
@@ -443,8 +443,8 @@ void yn_dialog_font_without_yesno(void) {
     int i;
     int x;
 
-    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
-    n = ((s8 *)yn_dialog_cnt_tbl)[M2C_FIELD(ynw, u8 *, 0x46)] - 3;
+    m = (YMSG *)yn_dialog_mes_tbl[YNF(ynw, u8 *, 0x46)];
+    n = ((s8 *)yn_dialog_cnt_tbl)[YNF(ynw, u8 *, 0x46)] - 3;
     for (i = 0; i < n; i = (s8)(i + 1), m++) {
         x = m->x;
         if (x == -1) {
@@ -463,7 +463,7 @@ void yn_memcard_font_sub(void) {
     p = yn_memcard_mes_tbl;
     y = 0xC4;
     do {
-        if (M2C_FIELD(ynw, u8 *, 0x1D) & (1 << (s8)i)) {
+        if (YNF(ynw, u8 *, 0x1D) & (1 << (s8)i)) {
             yn_set_pal(0);
         } else {
             yn_set_pal(9);
@@ -480,7 +480,7 @@ void yn_button_font(void) {
     s8 b;
     char **tbl = yn_button_mes_tbl;
 
-    b = M2C_FIELD(ynw, s8 *, 0x43);
+    b = YNF(ynw, s8 *, 0x43);
     switch (b) {
     case 1:
         yn_printf(0x122, 0x18F, tbl[0]);
@@ -527,7 +527,7 @@ void yn_hard_font_sub(void) {
             } else {
                 yn_set_pal(9);
             }
-            if (M2C_FIELD(p, s32 *, 0) == 1 && shown >= M2C_FIELD(ynw, s8 *, 0x15)) {
+            if (M2C_FIELD(p, s32 *, 0) == 1 && shown >= YNF(ynw, s8 *, 0x15)) {
                 sprintf(sp50, lit_4118, M2C_FIELD(p, s32 *, 0x14), M2C_FIELD(p, s32 *, 0x18));
                 yn_printf(0x65, (s16)y, sp50);
                 y += 0x1C;
@@ -582,15 +582,15 @@ void yn_dialog_font_memcard(s32 arg0) {
     s8 n;
     int x;
 
-    n = yn_dialog_cnt_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
-    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
+    n = yn_dialog_cnt_tbl[YNF(ynw, u8 *, 0x46)];
+    m = (YMSG *)yn_dialog_mes_tbl[YNF(ynw, u8 *, 0x46)];
     for (i = 0; i < n; i = (s8)(i + 1), m++) {
         x = m->x;
         if (x == -1) {
             x = (s16)yn_center_x(m->str, 0x16);
         }
         if ((s8)i == arg0) {
-            sprintf(sp60, m->str, yn_mc_get_current(ynw + 0x10D0) + 1);
+            sprintf(sp60, m->str, yn_mc_get_current(ynw + YNO(0x10D0)) + 1);
             yn_printf(x, m->y, sp60);
         } else {
             yn_printf(x, m->y, m->str);
@@ -633,7 +633,7 @@ void yn_id_pw_font_sub(void) {
     int n;
     int i;
 
-    p = ynw + 0x4B4;
+    p = ynw + YNO(0x4B4);
     if (*p == 0) {
         yn_printf(0x115, 0xC4, lit_4217);
     } else {
@@ -641,7 +641,7 @@ void yn_id_pw_font_sub(void) {
         yn_strconv(sp50, sp10, 0x18);
         yn_printf(0x115, 0xC4, sp50);
     }
-    p = ynw + 0x6B4;
+    p = ynw + YNO(0x6B4);
     if (*p == 0) {
         yn_printf(0x115, 0xFC, lit_4218);
         return;
@@ -688,7 +688,7 @@ void yn_port_font_sub(u16 *arg0, int arg1, int arg2) {
     if (cnt == 0) {
         cnt++;
     }
-    if (M2C_FIELD(ynw, s8 *, 0x39) != 0 && M2C_FIELD(ynw, u16 **, 0x3C) == arg0) {
+    if (YNF(ynw, s8 *, 0x39) != 0 && YNF(ynw, u16 **, 0x3C) == arg0) {
         for (i = 0; i < 13; i++) {
             buf[i] = 0x20;
         }
@@ -713,7 +713,7 @@ void yn_dialog_font(void) {
     u8 id;
 
     yn_set_z(650.0f);
-    id = M2C_FIELD(ynw, u8 *, 0x46);
+    id = YNF(ynw, u8 *, 0x46);
     switch (id) {
     case 0x1:
     case 0x2:
@@ -789,7 +789,7 @@ void yn_dialog_font(void) {
     case 0x27:
     case 0x28:
     case 0x29:
-        if (M2C_FIELD(ynw, s8 *, 0x1B) == 3) {
+        if (YNF(ynw, s8 *, 0x1B) == 3) {
             yn_dialog_font_without_yesno();
         } else {
             yn_dialog_font_sub();
@@ -803,7 +803,7 @@ void yn_dialog_font(void) {
     case 0x2A:
         yn_dialog_font_once(0);
         yn_dialog_font_once(1);
-        if (M2C_FIELD(ynw, u8 *, 0x21) & 0x20) {
+        if (YNF(ynw, u8 *, 0x21) & 0x20) {
             yn_dialog_font_once(2);
         }
         break;
@@ -817,7 +817,7 @@ void yn_message_font(void) {
     int y;
     int idx;
 
-    id = M2C_FIELD(ynw, s8 *, 0x45);
+    id = YNF(ynw, s8 *, 0x45);
     switch (id) {
     case 1:
         yn_connect_font_sub();
@@ -840,22 +840,22 @@ void yn_message_font(void) {
         yn_id_pw_font_sub();
         return;
     case 11:
-        yn_ipadrs_font_sub(ynw + 0xAB4, 0x157, 0xC4);
-        yn_ipadrs_font_sub(ynw + 0xAB8, 0x157, 0xE0);
-        yn_ipadrs_font_sub(ynw + 0xABC, 0x157, 0xFC);
+        yn_ipadrs_font_sub(ynw + YNO(0xAB4), 0x157, 0xC4);
+        yn_ipadrs_font_sub(ynw + YNO(0xAB8), 0x157, 0xE0);
+        yn_ipadrs_font_sub(ynw + YNO(0xABC), 0x157, 0xFC);
         yn_message_font_sub();
         return;
     case 13:
-        yn_ipadrs_font_sub(ynw + 0xAC0, 0x157, 0xC4);
-        yn_ipadrs_font_sub(ynw + 0xAC4, 0x157, 0xFC);
+        yn_ipadrs_font_sub(ynw + YNO(0xAC0), 0x157, 0xC4);
+        yn_ipadrs_font_sub(ynw + YNO(0xAC4), 0x157, 0xFC);
         yn_message_font_sub();
         return;
     case 14:
-        yn_adname_font_sub(ynw + 0x8B4, lit_3947, 0x115, 0xE0);
+        yn_adname_font_sub(ynw + YNO(0x8B4), lit_3947, 0x115, 0xE0);
         yn_message_font_sub();
         return;
     case 15:
-        yn_adname_font_sub(ynw + 0xAC8, lit_3948, 0x115, 0xE0);
+        yn_adname_font_sub(ynw + YNO(0xAC8), lit_3948, 0x115, 0xE0);
         yn_message_font_sub();
         return;
     case 16:
@@ -864,9 +864,9 @@ void yn_message_font(void) {
         i = 0;
         y = 0xC4;
         do {
-            idx = M2C_FIELD(ynw, s8 *, 0x16) + i;
-            if (idx < M2C_FIELD(ynw, s8 *, 0x1C)) {
-                yn_prname_font_sub(yn_netcnf_search_usr_name(ynw + 0x1180, ynw + idx * 0x1340 + 0xAF00), idx, 0x65, (s16)y);
+            idx = YNF(ynw, s8 *, 0x16) + i;
+            if (idx < YNF(ynw, s8 *, 0x1C)) {
+                yn_prname_font_sub(yn_netcnf_search_usr_name(ynw + YNO(0x1180), ynw + idx * 0x1340 + 0xAF00), idx, 0x65, (s16)y);
             }
             i++;
             y += 0x1C;
@@ -874,10 +874,10 @@ void yn_message_font(void) {
         yn_message_font_sub();
         return;
     case 23:
-        yn_adname_font_sub(ynw + 0xED0, lit_3949, 0x157, 0xBA);
-        yn_adname_font_sub(ynw + 0xFD0, lit_3950, 0x157, 0xEA);
-        yn_port_font_sub((u16 *)(ynw + 0xECC), 0x157, 0xD2);
-        yn_port_font_sub((u16 *)(ynw + 0xECE), 0x157, 0x102);
+        yn_adname_font_sub(ynw + YNO(0xED0), lit_3949, 0x157, 0xBA);
+        yn_adname_font_sub(ynw + YNO(0xFD0), lit_3950, 0x157, 0xEA);
+        yn_port_font_sub((u16 *)(ynw + YNO(0xECC)), 0x157, 0xD2);
+        yn_port_font_sub((u16 *)(ynw + YNO(0xECE)), 0x157, 0x102);
         yn_message_font_sub();
         return;
     case 24:
@@ -894,9 +894,9 @@ void yn_keyboard_init(int arg0, u8 *arg1) {
     u8 *buf;
 
     flfntInit();
-    buf = ynw + 0x50;
+    buf = ynw + YNO(0x50);
     memset(buf, 0, 0x200);
-    M2C_FIELD(ynw, u8 **, 0x4C) = arg1;
+    YNF(ynw, u8 **, 0x4C) = arg1;
     strcpy(buf, arg1);
     printf(lit_4994, strlen(arg1), arg1);
     printf(lit_4994, strlen(buf), buf);
@@ -924,7 +924,7 @@ void yn_dialog_font_setting(void) {
     u8 *p;
 
     y = 0x82;
-    e = ynw + M2C_FIELD(ynw, s8 *, 0xB) * 0x14;
+    e = ynw + YNF(ynw, s8 *, 0xB) * 0x14;
     d = M2C_FIELD(e, u8 **, 0x260);
     p = e + 0x250;
     if (M2C_FIELD(e, s32 *, 0x250) == 1) {
@@ -1024,15 +1024,15 @@ void yn_sprite_draw_sub(int arg0, int arg1, int arg2) {
     if (sel != 0) {
         flSetRenderState(0x5E, 0x12);
         s = yn_spr_data + yn_parts_data[i + 2];
-        t = M2C_FIELD(ynw, u8 *, 0x21);
+        t = YNF(ynw, u8 *, 0x21);
         a = 128.0f + 127.0f * flSin(3.1415927f * (f32)t / 2.0f / 16.0f);
         yn_sprite_draw_each(s, sel, arg1, arg2, ((u8)(u32)a << 24) | 0xFFFFFF);
         flSetRenderState(0x5E, 0x32);
     }
 }
 
-#define YS8(o) M2C_FIELD(ynw, s8 *, o)
-#define YU8(o) M2C_FIELD(ynw, u8 *, o)
+#define YS8(o) YNF(ynw, s8 *, o)
+#define YU8(o) YNF(ynw, u8 *, o)
 
 /* Draw the dialog parts for the current screen (ynw+0x42). */
 void yn_sprite_draw(void) {
@@ -1103,8 +1103,8 @@ void yn_sprite_draw(void) {
     case 8:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xC, 0, 0);
-        if (yn_netcnf_ip_check(ynw + 0xAB4) != 0 && yn_netcnf_ip_check(ynw + 0xAB8) != 0 &&
-            yn_netcnf_ip_check(ynw + 0xABC) != 0) {
+        if (yn_netcnf_ip_check(ynw + YNO(0xAB4)) != 0 && yn_netcnf_ip_check(ynw + YNO(0xAB8)) != 0 &&
+            yn_netcnf_ip_check(ynw + YNO(0xABC)) != 0) {
             yn_sprite_draw_sub(0xD, 0, 0);
         }
         if (YS8(0x39) == 0) {
@@ -1123,7 +1123,7 @@ void yn_sprite_draw(void) {
     case 10:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xC, 0, 0);
-        if (yn_netcnf_ip_check(ynw + 0xAC0) != 0) {
+        if (yn_netcnf_ip_check(ynw + YNO(0xAC0)) != 0) {
             yn_sprite_draw_sub(0xD, 0, 0);
         }
         if (YS8(0x39) == 0) {
@@ -1165,13 +1165,13 @@ void yn_sprite_draw(void) {
     case 15:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xD, 0, 0);
-        yn_sprite_draw_sub(0x13, 0, (s16)((1 - M2C_FIELD(ynw, s32 *, 0xEC8)) * 0x38));
+        yn_sprite_draw_sub(0x13, 0, (s16)((1 - YNF(ynw, s32 *, 0xEC8)) * 0x38));
         yn_sprite_draw_sub(0x14, 0, (s16)(YS8(0xD) * 0x38));
         break;
     case 16:
         yn_sprite_draw_sub(0xB, 0, 0);
         yn_sprite_draw_sub(0xC, 0, 0);
-        if (YU8(0xED0) != 0 && M2C_FIELD(ynw, u16 *, 0xECC) != 0) {
+        if (YU8(0xED0) != 0 && YNF(ynw, u16 *, 0xECC) != 0) {
             yn_sprite_draw_sub(0xD, 0, 0);
         }
         switch (YS8(0x39)) {

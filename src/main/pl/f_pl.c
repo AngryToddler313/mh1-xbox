@@ -3584,7 +3584,7 @@ static void pl_mv013(PLW *pl, s32 unused_arg) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 41
 static void pl_mv014(PLW *pl, s32 arg1) {
     int a2;
     f32 f;
@@ -4706,7 +4706,7 @@ static void pl_mv054(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 42
 static void pl_mv072(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -5214,7 +5214,7 @@ static void pick_set_sub(PLW *pl, u16 arg1) {
 #ifdef VERSION_MHG      /* G pl_mv071 (game 0x554280): skill 170 plays the gather motion at 2.6x */
 #define PL_MV071_FAST(pl) do { if (Pl_Skill_ck(pl, 170) == 1) { (pl)->chr_spd0 = 2.6f; (pl)->chr_spd1 = 2.6f; } } while (0)
 #endif
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 43
 static void pl_mv071(PLW *pl, u32 arg1) {
     u16 n;
     u16 r;
@@ -5289,11 +5289,11 @@ static void pl_mv071(PLW *pl, u32 arg1) {
                 }
 #ifdef VERSION_MHG
                 /* G: skills 103 / 104 halve the tool's odds now and then (1 in 4 / 1 in 2) */
-                if (Pl_Skill_ck(pl, 103) == 1 && (ran_suu(1) & 3) == 0) {
-                    n = (n >> 1) + 1;
+                if (Pl_Skill_ck(pl, 103) == 1 && ((r = ran_suu(1)) & 3) == 0) {
+                    n = ((u32)n >> 1) + 1;
                 }
-                if (Pl_Skill_ck(pl, 104) == 1 && (ran_suu(1) & 1) == 0) {
-                    n = (n >> 1) + 1;
+                if (Pl_Skill_ck(pl, 104) == 1 && ((r = ran_suu(1)) & 1) == 0) {
+                    n = ((u32)n >> 1) + 1;
                 }
 #define PL_MV071_SK0 48
 #define PL_MV071_SK1 49
@@ -6046,7 +6046,7 @@ static void pl_mv091(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 44
 static void pl_mv094(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -6056,6 +6056,15 @@ static void pl_mv094(PLW *pl, s32 arg1) {
         pl->x05 = s + 1;
         pl->x06 = 0;
         Pl_basic_flagset(pl, 0, 0, 0);
+#ifdef VERSION_MHG
+        pl->flag12 = 0;
+        if (arg1 == 0) {
+            pl_chr_set2(pl, 0x1A4, 4, 0);
+            pl_flag_set(pl, 0x10000);   /* G: only the first variant sets the flag, after the motion */
+        } else {
+            pl_chr_set2(pl, 0x1A8, 4, 0);
+        }
+#else
         pl_flag_set(pl, 0x10000);
         pl->flag12 = 0;
         if (arg1 == 0) {
@@ -6063,6 +6072,7 @@ static void pl_mv094(PLW *pl, s32 arg1) {
         } else {
             pl_chr_set2(pl, 0x1A8, 4, 0);
         }
+#endif
         pl->work39C = 0;
         break;
     case 1:
@@ -6161,7 +6171,7 @@ static void pl_mv095(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 45
 static void pl_mv097(PLW *pl, s32 unused_arg) {
     s32 n;
     s32 t;
@@ -10700,7 +10710,7 @@ static void egg_set(PLW *pl) {
 #else
 #define HOLD_CANNONBALL 0xA3
 #endif
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 static void egg_com_ck(PLW *pl, int arg1) {
     u8 sp3F;
     u16 sp3C;
@@ -11589,7 +11599,7 @@ static void pl_chat(PLW *pl) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 47
 void pl_move(void) {
     s32 i;
     PLW *p;

@@ -312,7 +312,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -341,7 +341,7 @@ void yn_memcard_font_sub(void) {
     p = yn_memcard_mes_tbl;
     y = 0xC4;
     do {
-        if (M2C_FIELD(ynw, u8 *, 0x1D) & (1 << (s8)i)) {
+        if (YNF(ynw, u8 *, 0x1D) & (1 << (s8)i)) {
             yn_set_pal(0);
         } else {
             yn_set_pal(9);

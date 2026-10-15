@@ -309,7 +309,7 @@ typedef struct { s32 w[130]; } PR520;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
 
@@ -326,6 +326,6 @@ extern char *args[2];
 void yn_title_font(void) {
     char *temp_s0;
 
-    temp_s0 = yn_title_mes_tbl[M2C_FIELD(ynw, s8 *, 0x44)];
+    temp_s0 = yn_title_mes_tbl[YNF(ynw, s8 *, 0x44)];
     yn_printf(yn_center_x(temp_s0, 0x16), 0x20, temp_s0);
 }

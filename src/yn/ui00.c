@@ -300,7 +300,7 @@ typedef struct { s32 a; s32 b; } PR8;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 
 
@@ -322,9 +322,9 @@ extern char *args[2];
 
 void yn_set_exit_sub(void) {
     yn_set_init(0);
-    flReleaseTextureHandle(M2C_FIELD(ynw, u16 *, 0));
-    flReleasePaletteHandle((u32) (M2C_FIELD(ynw, s32 *, 0) & 0xFFFF0000) >> 0x10);
-    flReleaseTextureHandle(M2C_FIELD(ynw, u16 *, 4));
-    flReleasePaletteHandle((u32) (M2C_FIELD(ynw, s32 *, 4) & 0xFFFF0000) >> 0x10);
-    yn_netcnf_exit(ynw + 0x1180);
+    flReleaseTextureHandle(YNF(ynw, u16 *, 0));
+    flReleasePaletteHandle((u32) (YNF(ynw, s32 *, 0) & 0xFFFF0000) >> 0x10);
+    flReleaseTextureHandle(YNF(ynw, u16 *, 4));
+    flReleasePaletteHandle((u32) (YNF(ynw, s32 *, 4) & 0xFFFF0000) >> 0x10);
+    yn_netcnf_exit(ynw + YNO(0x1180));
 }

@@ -300,7 +300,7 @@ typedef struct { s32 a; s32 b; } PR8;
         } while (n_ > 0); \
     } while (0)
 
-typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
+typedef struct YNW_K { u8 _p[YNO(0x28)]; s32 x28; u32 rep; } YNW_K;
 
 
 
@@ -329,10 +329,10 @@ void yn_strcpy(s8 *arg0, s32 arg1) {
 }
 
 void yn_port_init(u16 *arg0) {
-    M2C_FIELD(ynw, u16 **, 0x3C) = arg0;
-    M2C_FIELD(ynw, u16 *, 0x3A) = (u16) *arg0;
-    M2C_FIELD(ynw, s16 *, 0x40) = 1;
-    M2C_FIELD(ynw, s8 *, 0x38) = 0;
+    YNF(ynw, u16 **, 0x3C) = arg0;
+    YNF(ynw, u16 *, 0x3A) = (u16) *arg0;
+    YNF(ynw, s16 *, 0x40) = 1;
+    YNF(ynw, s8 *, 0x38) = 0;
 }
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
