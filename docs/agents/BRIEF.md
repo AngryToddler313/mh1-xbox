@@ -173,10 +173,10 @@ anything the coordinator must know to merge. Then stop.
 The laptop has 7.8 GB, about 3 GB of it used by the owner's own apps, and several agents build at once (14 Oct: at most two agents at a time; cap lowered to 1.5 GB after a third OOM, a 2.3 GB python under the old 3 GB cap). A python process grew to 5.6 GB during a
 G rebuild and the kernel's OOM killer took down the coordinator's session twice. Run every build
 under a cap so a runaway dies alone: `(ulimit -v 1500000; VERSION=mhg tools/rebuild.sh)` (same
-for tools/rebuild.sh, build_pc*.sh, tests). Exception: tools/test_save.sh builds with AddressSanitizer, which reserves terabytes of virtual
+for tools/rebuild.sh, build_pc*.sh, tests). Exceptions: the PS2 rebuilds (tools/rebuild.sh, VERSION=mhg too) run the compiler through wibo, which needs a 3 GB cap: `(ulimit -v 3000000; tools/rebuild.sh)`; xemu runs uncapped, alone. tools/test_save.sh builds with AddressSanitizer, which reserves terabytes of virtual
 memory and aborts under `ulimit -v`: run that one test without the cap. Before claiming a rebuild passes after changing
 config/mhg/c_rawfuncs.txt or registrations, prove it from clean
-(`rm -rf build/mhg/raw build/raw build/mhg/src`): stale generated .inc files hid a broken branch once.
+(`rm -rf build/mhg/raw build/raw build/mhg/src`, then run `tools/rebuild.sh` (MH1) FIRST: it regenerates build/raw. A G rebuild with build/raw missing makes wibo loop on a missing .inc until memory runs out; that was the cause of the first OOM crash, found by agent C on 14 Oct): stale generated .inc files hid a broken branch once.
 
 ## Interesting finds (14 Oct 2026)
 
