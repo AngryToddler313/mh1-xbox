@@ -550,7 +550,7 @@ class StoredLobbyTest(unittest.TestCase):
 class McsTest(unittest.TestCase):
     def test_stream_and_relay(self):
         st = M.ClientStream()
-        login = struct.pack(">BBHHHB3s", 0x82, 2, 0x1031, 12, 5, 0, b"\xff" * 3) + struct.pack(">H", 10) + b"0000500005"
+        login = struct.pack(">BBHHHB3s", 0x82, 2, 0x1031, 10, 5, 0, b"\xff" * 3) + b"0000500005"
         recs = bytes([2, 0xF1]) + bytes([5, 0x41, 1, 2, 3])
         out = list(st.feed(login + recs[:3])) + list(st.feed(recs[3:]))
         self.assertEqual(out[0][:3], ("login", 0x1031, 5))

@@ -693,7 +693,7 @@ and the town, and meets a PC client there (each sees the other, chat both ways).
 `mcsls` records (section 5.5, docs/server.md 2.4 / 4.2), while mh1-server's relay and the PC / Xbox ports speak
 net_peer frames. So a patched PS2 reaches the lobby, the town, rooms and matching, but **cannot hunt yet**. Step 2:
 
-### 3.7 Step 2: in-hunt parity (what is needed; nothing built)
+### 3.7 Step 2: in-hunt parity (the plan; built in 3.10)
 
 1. **The faithful game-server relay** (`tools/server/mcs.py`, docs/server.md 4.2, milestone S7): sends 0x1031, reads
    the 0x82 login (`cmcs_04`: `mmbbc_encode(key, seq)`), finds the match by the decoded key, relays records
@@ -912,6 +912,50 @@ server got all three lines; the PC shows the Xbox's and the PS2's hunters and go
 * PCSX2 cannot run under `ulimit -v` (it reserves several GB: "Failed to allocate fastmem area" in its log, black
   screenshots). That was the "no terms notice" failure of test_ps2_online under full_check (agent D): the cap, not the
   game. Both scripts now refuse to start under a cap.
+
+### 3.10 Step 2: hunts on the game's own protocol, PC / Xbox / PS2 (agent C, 16 Oct 2026)
+
+Decision (docs/DECISIONS.md, 16 Oct): the ports run the PS2's own session code. `mh1_server.py serve --lobby-mcs`
+answers 6914 with "mh1-mcs" and 6916 with its **mcs relay** (tools/server/mcs.py, one port, default 10298); at 6916
+the lobby registers the match's logins there with their player numbers (6912 - 1). rt_online.c sees "mh1-mcs" and
+hands the match to src/pc/rt/rt_mcs.c instead of net_peer.c.
+
+What the PC does after the match, with the game's code (rt_mcs.c's header has the details):
+1. `internet_to_modem` -> `cmcs_00`..`cmcs_06` (lobby): close the lobby socket, connect to 6916's address, wait for the
+   server's 0x1031, answer with the 0x82 login, `LobbyToMcsInit` (players, own number), `AQ_init`,
+   `AQSession_init_online` -> `CngSessionStart_online` -> `mcsls_init`;
+2. `AQ_exec` until `AQSession_wait`; `pl_num = AQ_join_num_get()`;
+3. Plsel's handshake: `Copy_user_id`, `sel_default_set`, the ready flag, `net_send_sys(2)` until every player's flag
+   came (each sends its hunter id and select data; slot 0 the quest), once more, 30 frames;
+4. the PC's own stage load; the other hunters' look from the lobby's mini data by the hunter id each sent
+   (`Set_mini_data_to_pl`, as `init_pl_work`);
+5. `net_start_ck` (sys 3 rounds; the network delay from mcsls' ping) until it agrees;
+6. every tick `AQ_send` + `AQ_exec` (mcsls_move: records in and out, pings, keep-alives; the AQ packets to
+   `self_data_ctrl` -> `net_receive_pl` / `_em` / `_sys` / `_host`).
+The ONLINE=1 build links aq_nm.c, aqcmd_nm.c, cng_nm.c, cngmsg_nm.c, cnmsg_nm.c, mcsls_*.c, netsyn04.c,
+netsyn07_nm.c and the cmcs_* lobby files; rt_np.c's `AQ_data_put` / `net_start_ck` / `mcsls_force_drop` pick the mcs
+or the direct-connect path (the game's are renamed `mcs_*` in build_pc.sh). The clock (`CngNetTimeGet`, the EE timer
+on the PS2) is the host's; `CnInetNetworkAveTcpPoll` says "connected".
+
+Found on the way [checked]:
+* The 0x82 login's payload is the 10 digits alone (no length in front; cmcs_04 uses `SetSendStringData`).
+* Three register pass-throughs that gcc cannot follow (tools/argregs.py --check): `ck_exec_aq` (aq_nm.c) forwards its
+  three arguments to `CngNetAQcommandExec`, `AQ_data_put` -> `pl_data_put` -> `send_my_data` the same,
+  `CngNetAQDataTrans2Work` (cng_nm.c) the packet's flag byte to `CngNetAQdataToObj`; written out in the _nm files
+  (the PC crashed in `CngNetAQcommandSort` before).
+* `system_w+0x35` ("loading") stops `AQ_exec` entirely; the title's edit screen leaves it set on the PC (the PS2's
+  game11 / game12 clear it): rt_mcs.c clears it. A PS2 does not poll its session at all while it loads a stage
+  (DROP_TIMEOUT is 30 s, `mcsls_timeout_default` 100 s): the relay allows 120 s of silence.
+* `AQ_data_put` refuses packets while the AQ timer is 0: the first `net_send_sys(2)` needs one `AQ_exec` before it
+  (Game_task's step 4 runs one before game0).
+* mcsls' sync / ping / start rounds need nothing from the server except passing the records on: no record waits for
+  everyone to be connected (sync flag 0 is repeated every 30 frames; ping and flag 2 are only sent once all said 1).
+
+Tested: `tools/test_online_mcs.sh` (two PCs, 127.0.0.1, ~4 min): login to the town, ANNA's room (quest 1, 2 players),
+BOB joins, both log in to the mcs relay (players 0 and 1), mcsls reaches state 5 (sync, 8 pings, start), the select
+handshake completes, `net_start_ck` agrees (delay 2 frames), each sees the other at the same position (np-pos), the
+monster's state from its owner (HP, action), ANNA delivers, BOB sees the clear, both back in the town. The relay saw
+the record kinds 0x20/0x30 (16 pings), 0x40/0x70 (app data), 0x90 (sync), 0xF0 (keep-alives).
 
 ## 4. Run it
 

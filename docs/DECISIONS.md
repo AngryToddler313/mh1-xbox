@@ -138,6 +138,19 @@ Kept as a fallback for any file that resists matching.
   boot and as overlays / quest files load (no 64 KB limit). Patched ISOs (PCSX2/OPL) can carry it built in.
   After the online launcher works; shares the English pipeline and its pending source decision (Freedom for G).
 
+**In-hunt parity: the PC / Xbox run the game's own session code; mh1-server relays the original records.** (agent C,
+16 Oct 2026; step 2 of the online plan above)
+- For a lobby match whose game rule (6914) is "mh1-mcs" (mh1-server `--lobby-mcs`), the PC and Xbox online builds link
+  and run the PS2's own in-hunt stack (aq_nm.c, Cng, aqcmd, mcsls, the lobby's cmcs_* login, net_start_ck): the bytes
+  on the wire are the PS2's, so a patched PS2, a PC and an Xbox can be in one hunt. No translator in the server.
+- The server side is the faithful relay tools/server/mcs.py (0x1031 / 0x82 login, records passed on unchanged to the
+  other members, health checks); the lobby registers each match's logins there at 6916.
+- net_peer.c (direct connect, no server) and the "mh1-relay" mode stay as they are for now (tested, simpler to host);
+  they cannot hunt with a PS2. Whether the relay mode is dropped once mcs is proven on real hardware: open.
+- Why not translate in the server: both sides carry the same AQ packets, but mcsls adds sync flags, ping rounds,
+  fragments and a start handshake that the PS2 waits for; reproducing them in Python would be a second, untested copy
+  of code we already have decompiled.
+
 **MH1 online on the Xbox: a separate online XBE** (agent C, 15 Oct 2026; owner may revisit)
 - `tools/build_xbox.py --online` builds the ONLINE=1 PC build's objects for the Xbox (into build/xbox/online, its own
   objects) with nxdk's lwIP; the plain Xbox build stays without network code, as the plain PC build does. Why not

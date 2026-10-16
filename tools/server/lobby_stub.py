@@ -13,7 +13,10 @@ the SQLite store (accounts.py, docs/server.md 3.2):
   * where a hunter was when his connection ended inside a lobby (a crash, a lost line, the match's logout) is kept
     for 15 minutes: his next login goes back there (6891);
   * the relay hand-off (with `relay_matches=True`): 6914 says "mh1-relay", 6916 gives the relay's address and a session
-    made for that room.
+    made for that room;
+  * or the game-server hand-off (with `mcs=McsServer`, `mh1_server.py serve --lobby-mcs`): 6914 says "mh1-mcs", 6916
+    gives the mcs relay's address (mcs.py, the game's own in-hunt records, as a PS2 expects) and registers the match's
+    logins there, each with its player number (6912 - 1).
 Without a store (`accounts=None`, `mh1_server.py serve --open`) any login is accepted and the storage is the test
 server's memory: for tests on 127.0.0.1 only.
 """
@@ -49,13 +52,17 @@ def ts_strs(p, n, off=0):
     return out, off
 
 
-def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matches=False, loop=None, log=print):
+def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matches=False, loop=None, log=print,
+                 mcs=None, mcs_port=None):
     base = ts.Client
 
     class Client(base):
         login = None
 
         def on_6101_2(self, seq, p):
+            if accounts is None:        # (no store: still know the login, the mcs relay finds its match by it)
+                n = struct.unpack(">H", p[:2])[0]
+                self.login = decode_login_key(p[2:2 + n], seq)
             if accounts is not None:
                 n = struct.unpack(">H", p[:2])[0]
                 key = p[2:2 + n]
@@ -132,6 +139,25 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
                         r.relay_port, r.relay_match = port, r.match
                 ip = bytes(int(x) for x in relay_host.split("."))
                 self.send(ts.ANS, 0x6916, ts.str16(ip) + ts.str16(struct.pack(">H", port)), seq=seq)
+
+        if mcs is not None:
+            def on_6914_1(self, seq, p):        # MatchGameRule: the game server is the mcs relay (rt_online.c reads it)
+                self.send(ts.ANS, 0x6914, ts.str16("mh1-mcs"), seq=seq)
+
+            def on_6916_1(self, seq, p):        # MatchMcsIpAddr: the mcs relay; the match's logins registered there
+                r = self.match_room() if hasattr(self, "match_room") else None
+                if r is None:
+                    self.send(ts.ANS, 0x6916, ts.str16(bytes(4)) + ts.str16(bytes(2)), seq=seq)
+                    return
+                keys = {m.login: i for i, m in enumerate(r.match) if getattr(m, "login", None)}
+                with ts.ROOMS_LOCK:
+                    if getattr(r, "mcs_match", None) is not r.match:
+                        r.mcs_match = r.match
+                        quest = (getattr(r, "prop", 0) >> 1) & 0xFF
+                        name = "room %d quest %d" % (r.id, quest)
+                        loop.call_soon_threadsafe(mcs.add_match, keys, name)
+                ip = bytes(int(x) for x in relay_host.split("."))
+                self.send(ts.ANS, 0x6916, ts.str16(ip) + ts.str16(struct.pack(">H", mcs_port)), seq=seq)
 
     return Client
 

@@ -690,8 +690,10 @@ u8 *CngNetAQDataSearch(CNGAQ *q) {
     return 0;
 }
 
-int CngNetAQDataTrans2Work(CNGAQ *q, u8 *w) {
-    return CngNetAQdataToObj(w, q);
+/* The caller's third argument (the packet's flags byte, get_AQdata) reaches CngNetAQdataToObj untouched in a2 on the
+ * PS2 (a tail call that only swaps a0 / a1); named here so the PC build passes it on too. */
+int CngNetAQDataTrans2Work(CNGAQ *q, u8 *w, u8 mode) {
+    return CngNetAQdataToObj(w, q, mode);
 }
 
 s8 CngNetAQIsHost(CNGAQ *q) {

@@ -328,12 +328,22 @@ static int matched(void)
     snprintf(ip, sizeof ip, "%u.%u.%u.%u", a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, a >> 24);
     fprintf(stderr, "online: match: quest %d, %d players, slot %d, game server %s port %d\n", quest, n, slot, ip, port);
     rt_log("online: match: quest %d, %d players, slot %d, game server %s port %d", quest, n, slot, ip, port);
-    CpInetTcpAbort(*(s32 *)(ConnWork + 4));         /* internet_connect_minimum_cleanup: the lobby connection */
-    CpInetTcpDelete((int *)(ConnWork + 4));
     {   /* the game rule string of 6914 (MatchGameRule, CnetSys_w+0x30323): "mh1-relay" = the 6916 address is
-         * mh1-server's session relay (docs/server.md 4.3): every player joins it, the relay orders the slots as 6912 */
+         * mh1-server's session relay (docs/server.md 4.3): every player joins it, the relay orders the slots as 6912;
+         * "mh1-mcs" = a game server of the game's own in-hunt protocol (mcs.py): the PC runs the PS2's session
+         * (rt_mcs.c, docs/network.md 3.10), which closes the lobby connection itself (cmcs_00) */
         extern u8 CnetSys_w[];
         int relay = !strncmp((char *)CnetSys_w + 0x30323, "mh1-relay", 9);
+        if (!strncmp((char *)CnetSys_w + 0x30323, "mh1-mcs", 7)) {
+            void rt_np_configure_mcs(int players);
+            say("the game server speaks the game's own protocol%s: player %d", "", slot);
+            rt_np_configure_mcs(n);
+            active = 0;
+            back = 1;
+            return quest > 0 ? quest : -1;
+        }
+        CpInetTcpAbort(*(s32 *)(ConnWork + 4));     /* internet_connect_minimum_cleanup: the lobby connection */
+        CpInetTcpDelete((int *)(ConnWork + 4));
         if (relay)
             say("the game server is a session relay%s: joining it (slot %d)", "", slot);
         else
