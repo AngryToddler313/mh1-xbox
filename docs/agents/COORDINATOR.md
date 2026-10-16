@@ -123,6 +123,13 @@ tools/xbox_serve.py --xbe build/xbox/f_test.xbe; the PC was restarted 13 Oct, so
 Merge F after that test (it must not hang at audio open; RT_AC97_NOCODEC=1 disables the codec part). Still pending: new loader install (tools/xbox_upload.sh
 --loader), load: timing lines from the next returned log.
 Queue (owner, 15 Oct evening; start when a slot frees, two agents max):
+0. One loader per game (owner asked): today only E:\Games\MH1\default.xbe is the loader and it
+   updates whichever game xbox_serve.py serves. Wanted: launching G updates G, launching Monster Hunter
+   updates MH1. Loader learns its own folder (MH1 / MHG) and asks /version?game=..., /<game>.xbe;
+   E:\Games\MHG\default.xbe becomes the loader, G's game moves to mhg.xbe (the data install must not
+   overwrite the loader: leave default.xbe out of G's manifest); a game's exit returns to its own loader;
+   xbox_serve.py serves MH1 and G builds at once (dist/xbox/MH1, dist/xbox/MHG). Delivery: one
+   tools/xbox_upload.sh --loader run (owner types the FTP login). Test in xemu (alone) first.
 1. G Xbox bugs from the owner's play (docs/RELEASE_G.md GB5): debug-menu skip leaves render state
    (half-screen tint triangle, depth order), village music at the title, no villagers on the normal
    village entry, sky frames in the wake-up cutscene. Reproduce on PC G first.
