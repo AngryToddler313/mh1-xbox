@@ -147,6 +147,12 @@ set -- -batch -nogui -fastboot -datapath "$PH" -logfile "$LOG" -earlyconsolelog
 [ -z "$ELF" ] || set -- "$@" -elf "$(realpath "$ELF")"
 set -- "$@" -- "$(realpath "$ISO")"
 
+# Everything this script starts (PCSX2, its Xvfb) is stopped when it ends, also when it is killed (TERM/INT/HUP) or
+# fails: tools/emu_lib.sh. To end a run early, kill this script's PID (never PCSX2 by name).
+. tools/emu_lib.sh
+PID=; XPID=
+stop() { emu_stop $PID $XPID; }
+emu_traps stop
 XVFB=${XVFB:-$HOME/xboxdev/xvfb/root/usr/bin/Xvfb}
 if [ -z "$SHOW" ]; then
     [ -x "$XVFB" ] || { echo "no Xvfb at $XVFB (see tools/run_xemu.sh's header; or --show)"; exit 1; }
@@ -158,29 +164,21 @@ if [ -z "$SHOW" ]; then
     export DISPLAY=:$DNUM
     unset WAYLAND_DISPLAY
     export QT_QPA_PLATFORM=xcb
-    sleep 2
+    emu_sleep 2
 fi
 export SDL_AUDIODRIVER=dummy
 [ -x build/pcsx2/xkey ] || { mkdir -p build/pcsx2; gcc -O1 -o build/pcsx2/xkey tools/pcsx2/xkey.c -lX11 \
     /usr/lib/x86_64-linux-gnu/libXtst.so.6 2>/dev/null || echo "note: xkey not built (no libX11/libXtst)"; }
 "$PCSX2" "$@" >"$D/logs/stdout.txt" 2>&1 &
 PID=$!
-stop() {
-    P="$(pgrep -P $PID || :) $PID"
-    kill $P 2>/dev/null || :
-    for i in 1 2 3 4 5; do kill -0 $P 2>/dev/null || break; sleep 1; done
-    kill -9 $P 2>/dev/null || :
-    kill ${XPID:-} 2>/dev/null || :
-}
-trap stop EXIT
 T=0
 for A in ${AFTER:-$SECS}; do
-    sleep $(( A - T )); T=$A
+    emu_sleep $(( A - T )); T=$A
     if [ -n "$SHOT" ] && [ -z "$SHOW" ]; then
         OUT=$SHOT; [ -z "$AFTER" ] || [ "$A" = "${AFTER##* }" ] || OUT="${SHOT%.png}_${A}s.png"
         ffmpeg -nostdin -v error -y -f x11grab -i "$DISPLAY" -frames:v 1 "$OUT" && echo "screenshot: $OUT"
     fi
     kill -0 $PID 2>/dev/null || { echo "PCSX2 ended early (see $D/logs/stdout.txt)"; break; }
 done
-[ $T -ge $SECS ] || sleep $(( SECS - T ))
+[ $T -ge $SECS ] || emu_sleep $(( SECS - T ))
 echo "log: $LOG"

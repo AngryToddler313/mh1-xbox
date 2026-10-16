@@ -13,12 +13,17 @@ cd "$(dirname "$0")/.."
 SRC=${XBOX_FILES:-xbox_files}
 OUT=build/show/xemu_online; rm -rf $OUT; mkdir -p $OUT
 XF=build/xemu_online/xbox_files
-SP=""; PP=""
-fail() { echo "xemu online test FAILED: $1 (see $OUT)"; [ -n "$PP" ] && kill $PP 2>/dev/null; [ -n "$SP" ] && kill $SP 2>/dev/null; exit 1; }
+SP=""; PP=""; XP=""
+# run_xemu.sh stops xemu and its Xvfb when it is killed (tools/emu_lib.sh); every way out stops it, the PC client and
+# the server
+. tools/emu_lib.sh
+cleanup() { emu_stop $PP $XP $SP; SP=""; PP=""; XP=""; }
+emu_traps cleanup
+fail() { echo "xemu online test FAILED: $1 (see $OUT)"; exit 1; }
 [ -f build/xbox/online/nv2a/default.xbe ] || fail "no build/xbox/online/nv2a/default.xbe (see the header)"
 [ -x build/pc/mhview_online ] || fail "no build/pc/mhview_online (ONLINE=1 tools/build_pc.sh)"
 for f in mcpx.bin bios.bin; do [ -f "$SRC/$f" ] || fail "no $SRC/$f (the owner's Xbox files; XBOX_FILES=DIR)"; done
-pgrep -x xemu >/dev/null && fail "another xemu is running (xemu runs alone)"
+xemu_running && fail "another xemu is running (xemu runs alone)"
 rm -rf build/xemu_online; mkdir -p $XF
 cp "$SRC/mcpx.bin" "$SRC/bios.bin" $XF/
 [ -f "$SRC/eeprom.bin" ] && cp "$SRC/eeprom.bin" $XF/
@@ -58,7 +63,7 @@ env MH1_SAVE_DIR="$PWD/$OUT/card_PC" RT_NAME=PC RT_VILLAGE_START=1 RT_VILLAGE_SK
     --shot $OUT/pc.png --time 60 --size 640x480" > $OUT/pc.log 2>&1 &
 PP=$!
 wait $PP; PP=""
-wait $XP
+wait $XP; XP=""
 cp $XF/xemu_debug.txt $OUT/xbox_serial.txt
 python3 tools/xbox_fatx.py get $XF/hdd.img Games/MH1/mh1log.txt $OUT/xbox_stderr.txt >/dev/null 2>&1
 python3 tools/xbox_fatx.py get $XF/hdd.img Games/MH1/settings.ini $OUT/settings_after.ini >/dev/null 2>&1

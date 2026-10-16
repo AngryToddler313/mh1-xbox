@@ -18,12 +18,15 @@ cd "$(dirname "$0")/.."
 O=build/ps2online; mkdir -p $O
 LAUNCH=; [ "$1" = "--launcher" ] && LAUNCH=1
 fail() { echo "ps2 online test FAILED: $1 (see $O)"; cleanup; exit 1; }
+# run_pcsx2.sh stops PCSX2 and its Xvfb when it is killed (tools/emu_lib.sh); every way out stops it, the PC client
+# and the server
+. tools/emu_lib.sh
+RP=; SP=; PCP=
 cleanup() {
-    [ -n "$SLP" ] && kill $SLP 2>/dev/null
-    [ -n "$RP" ] && wait $RP 2>/dev/null
-    [ -n "$SP" ] && { kill $SP 2>/dev/null; wait $SP 2>/dev/null; }
-    RP=; SP=; SLP=
+    emu_stop $PCP $RP $SP
+    RP=; SP=; PCP=
 }
+emu_traps cleanup
 # PCSX2 reserves several GB of address space (fastmem): under a `ulimit -v` cap it stops at once ("Failed to allocate
 # fastmem area" in emulog.txt) and the screenshots stay black. Run this test uncapped (ps2_patch.py caps itself).
 [ "$(ulimit -v)" = unlimited ] || fail "a memory cap (ulimit -v $(ulimit -v)) is set: PCSX2 cannot start under it; run uncapped"
@@ -76,7 +79,7 @@ else
     DNUM=$DNUM tools/run_pcsx2.sh --net --iso $O/mh1_online.iso $CARD --seconds 900 --log $O/emulog.txt > $O/run.txt 2>&1 &
 fi
 RP=$!
-sleep 50; SLP=$(pgrep -P $RP sleep | head -1)
+sleep 50
 shot 01_boot
 # k KEYS... [SECONDS]: press the keys (one xkey call, each held 200 ms, 600 ms apart), then wait (default 9 s: the game
 # ignores keys during its fades; a key sent in its own call right after another was lost now and then, so pairs like
@@ -155,7 +158,7 @@ for i in 1 2 3; do      # 決定 (a lone key press is lost now and then: again u
     k c 4; grep -aq "chat b'\\\\x82\\\\xa2\\\\x82\\\\xa4' in lobby 1" $O/server.log && break
 done
 shot 11_ps2_chat
-wait $PCP
+wait $PCP; PCP=
 cleanup
 grep -aq "chat b'PS2 and PC in one town' in lobby 1" $O/server.log || fail "the PC's chat line did not reach the server"
 grep -a 'online: tick [0-9]* slot [0-9] "' $O/pc.log | grep -aq ' shown$' || fail "the PC does not show the PS2's hunter"

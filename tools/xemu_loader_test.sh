@@ -29,8 +29,9 @@ PORT=${PORT:-8799}
 XBE1=${XBE1:-build/xbox/nv2a/default.xbe}
 XBEG=${XBEG:-build/mhg/xbox/nv2a/default.xbe}
 FATX="python3 tools/xbox_fatx.py"
+. tools/emu_lib.sh
 for f in "$XBE1" "$XBEG" "$SRC/mcpx.bin" "$SRC/bios.bin"; do [ -f "$f" ] || { echo "missing $f"; exit 1; }; done
-if pgrep -f 'xemu-[0-9.]*-x86_64' >/dev/null; then echo "another xemu is running: not starting"; exit 1; fi
+if xemu_running; then echo "another xemu is running: not starting"; exit 1; fi
 export MH1_HIDDEN=1
 
 . ~/xboxdev/env.sh
@@ -54,13 +55,14 @@ $FATX put "$T/hdd.img" "$T/ltg" Games/MHG/loader.txt >/dev/null
 SPID=
 serve() { python3 tools/xbox_serve.py --port "$PORT" "$@" > "$T/serve_$RUN.log" 2>&1 & SPID=$!; sleep 2; }
 unserve() { [ -z "$SPID" ] || { kill "$SPID" 2>/dev/null || :; wait "$SPID" 2>/dev/null || :; SPID=; }; }
-trap unserve EXIT
+emu_traps unserve      # (and run_xemu.sh, which stops xemu and its Xvfb: tools/emu_lib.sh)
 # boot TARGET SECONDS: the test DVD starts TARGET; screenshots along the way, serial log kept
 boot() {
     printf '%s\n' "$1" > "$T/launch.txt"
     $FATX put "$T/hdd.img" "$T/launch.txt" launch.txt >/dev/null
     XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe --net --shot "$T/run$RUN.png" \
-        --after "$2" >/dev/null 2>&1 || :
+        --after "$2" >/dev/null 2>&1 &
+    wait $! || :
     cp "$T/xemu_debug.txt" "$T/serial_$RUN.txt"
 }
 FAILS=0

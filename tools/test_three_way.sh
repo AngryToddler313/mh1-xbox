@@ -13,15 +13,15 @@
 # then the PC client. Both are hidden (Xvfb); xemu gets a fresh scratch disk image, never the shared hdd.img.
 cd "$(dirname "$0")/.."
 O=build/show/three_way; rm -rf $O; mkdir -p $O
-SP=; RP=; XP=; PCP=; SLP=
+SP=; RP=; XP=; PCP=
+# run_xemu.sh and run_pcsx2.sh stop their emulator and Xvfb when they are killed (tools/emu_lib.sh); this stops them,
+# the PC client and the server on every way out (failure, Ctrl-C, kill)
+. tools/emu_lib.sh
 cleanup() {
-    [ -n "$PCP" ] && kill $PCP 2>/dev/null
-    [ -n "$XP" ] && { kill $XP 2>/dev/null; wait $XP 2>/dev/null; }
-    [ -n "$SLP" ] && kill $SLP 2>/dev/null
-    [ -n "$RP" ] && wait $RP 2>/dev/null
-    [ -n "$SP" ] && { kill $SP 2>/dev/null; wait $SP 2>/dev/null; }
-    SP=; RP=; XP=; PCP=; SLP=
+    emu_stop $PCP $XP $RP $SP
+    SP=; RP=; XP=; PCP=
 }
+emu_traps cleanup
 fail() { echo "three-way test FAILED: $1 (see $O)"; cleanup; exit 1; }
 SRC=${XBOX_FILES:-xbox_files}
 CARDNET=${CARD_NET:-build/ps2online/card_net.ps2}
@@ -30,7 +30,8 @@ CARDNET=${CARD_NET:-build/ps2online/card_net.ps2}
 [ -f build/xbox/online/nv2a/default.xbe ] || fail "no Xbox online build (tools/build_xbox.py --online --gfx nv2a)"
 [ -x build/pc/mhview_online ] || fail "no build/pc/mhview_online (ONLINE=1 tools/build_pc.sh)"
 for f in mcpx.bin bios.bin; do [ -f "$SRC/$f" ] || fail "no $SRC/$f (the owner's Xbox files; XBOX_FILES=DIR)"; done
-pgrep -x xemu >/dev/null && fail "another xemu is running (xemu runs alone)"
+xemu_running && fail "another xemu is running (xemu runs alone)"
+pcsx2_running && fail "another PCSX2 is running"
 
 [ "$(ulimit -v)" = unlimited ] || fail "a memory cap (ulimit -v) is set: PCSX2 and xemu cannot start under it; run uncapped"
 IP=$(ip -4 route get 192.168.0.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p')
@@ -65,7 +66,7 @@ shot() { grab $DNUM 640x480 "$O/ps2_$1.png"; }
 DNUM=$DNUM tools/run_pcsx2.sh --net --iso "disc/mh1/Monster Hunter (Japan).iso" --elf build/ps2launch/MH1LAUNCH.ELF \
     --card $CARDNET --seconds 1200 --log $O/ps2_emulog.txt > $O/ps2_run.txt 2>&1 &
 RP=$!
-sleep 50; SLP=$(pgrep -P $RP sleep | head -1)
+sleep 50
 NK=0
 k() {
     ks=""; w=9

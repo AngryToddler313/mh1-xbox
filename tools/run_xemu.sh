@@ -125,33 +125,31 @@ DBG="$XF/xemu_debug.txt"; : > "$DBG"
 set -- -device lpc47m157 -serial "file:$DBG"
 [ -n "$SHOW" ] || set -- "$@" -audio none     # hidden runs make no sound
 XVFB=${XVFB:-$HOME/xboxdev/xvfb/root/usr/bin/Xvfb}
+# Everything this script starts (xemu, its Xvfb, the recorder) is stopped when it ends, also when it is killed
+# (TERM/INT/HUP) or fails: tools/emu_lib.sh. Kill this script's PID, never xemu by name.
+. tools/emu_lib.sh
+PID=; XPID=; RPID=
+stop() {
+    [ -n "$RPID" ] && kill -INT $RPID 2>/dev/null && emu_sleep 2
+    emu_stop $PID $RPID $XPID
+}
+emu_traps stop
 if [ -z "$SHOW" ]; then
     [ -x "$XVFB" ] || { echo "no Xvfb at $XVFB (see the header; or --show to use the desktop)"; exit 1; }
     DNUM=$(( 70 + $$ % 20 ))
     "$XVFB" :$DNUM -screen 0 1280x960x24 -nolisten tcp >/dev/null 2>&1 &
     XPID=$!
     export DISPLAY=:$DNUM
-    sleep 2
+    emu_sleep 2
 fi
 if [ -z "$SHOT" ]; then
-    [ -n "$SHOW" ] && exec "$XEMU" "$@"
-    trap 'kill $XPID 2>/dev/null' EXIT
-    "$XEMU" "$@"
+    "$XEMU" "$@" &
+    PID=$!
+    wait $PID
     exit
 fi
 "$XEMU" "$@" >"$XF/xemu.log" 2>&1 &
 PID=$!
-# xemu sometimes ignores SIGTERM (11 Oct 2026, left running after the script ended): KILL
-# what is left after 5 s
-stop() {
-    P="$(pgrep -P $PID || :) $PID"
-    kill $P 2>/dev/null || :
-    for i in 1 2 3 4 5; do kill -0 $P 2>/dev/null || break; sleep 1; done
-    kill -9 $P 2>/dev/null || :
-    [ -n "${RPID:-}" ] && kill -INT $RPID 2>/dev/null && sleep 2
-    kill ${XPID:-} 2>/dev/null || :
-}
-trap stop EXIT
 if [ -n "${REC:-}" ]; then
     ffmpeg -v error -y -f x11grab -framerate ${REC_FPS:-10} -video_size 1280x960 -i "${DISPLAY:-:0}" \
         -vf scale=640:480 -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p "$REC" </dev/null &
@@ -159,9 +157,9 @@ if [ -n "${REC:-}" ]; then
 fi
 T=0
 for A in $AFTER; do
-    sleep $(( A - T )); T=$A
+    emu_sleep $(( A - T )); T=$A
     OUT=$SHOT; [ "$A" = "$AFTER" ] || OUT="${SHOT%.png}_${A}s.png"
-    ffmpeg -v error -y -f x11grab -i "${DISPLAY:-:0}" -frames:v 1 "$OUT"
+    ffmpeg -v error -y -f x11grab -i "${DISPLAY:-:0}" -frames:v 1 "$OUT" </dev/null
     echo "screenshot: $OUT"
 done
 echo "game log (serial port): $DBG"

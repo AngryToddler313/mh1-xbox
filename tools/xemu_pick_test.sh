@@ -33,7 +33,10 @@ FATX="python3 tools/xbox_fatx.py"
 for f in "$XB" "$SRC/mcpx.bin" "$SRC/bios.bin"; do [ -f "$f" ] || { echo "missing $f"; exit 1; }; done
 [ -d "$DISC" ] || { echo "missing $DISC (the owner's game files)"; exit 1; }
 export MH1_HIDDEN=1
-while pgrep -x xemu >/dev/null || pgrep -x AppRun >/dev/null; do echo "another xemu is running: waiting"; sleep 30; done
+. tools/emu_lib.sh
+SPID=
+emu_traps '[ -z "$SPID" ] || kill $SPID 2>/dev/null || :'      # (and run_xemu.sh, which stops xemu and its Xvfb)
+while xemu_running; do echo "another xemu is running: waiting"; sleep 30; done
 
 . ~/xboxdev/env.sh
 rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj src/pc/xbox/xbox_report.obj
@@ -64,7 +67,8 @@ K="$K,ddown,idle,ddown,idle,dright,idle,dright,idle,dright,idle,dright,idle,drig
 K="$K,dup,idle,dright,idle,dright,idle,cross,idle*400,circle,idle,start,idle*30"
 echo "idle*400,select+r1*2,idle*3,$K,idle*600" > "$T/input.txt"
 XBOX_FILES="$T" VERSION=$VER tools/run_xemu.sh --gfx nv2a --data "$DISC" --input "$T/input.txt" --env "$T/env.txt" \
-    --shot "$T/run1.png" --after "40 50 60 70 80 90 100 110 120 130 150" >/dev/null 2>&1 || :
+    --shot "$T/run1.png" --after "40 50 60 70 80 90 100 110 120 130 150" >/dev/null 2>&1 &
+wait $! || :
 cp "$T/xemu_debug.txt" "$T/serial_1.txt"
 FAILS=0
 check() { if eval "$2"; then echo "PASS $1"; else echo "FAIL $1"; FAILS=$((FAILS + 1)); fi; }
@@ -99,9 +103,9 @@ printf 'E:\\Games\\%s\\default.xbe\n' "$FOLDER" > "$T/launch.txt"
 $FATX put "$T/hdd.img" "$T/launch.txt" launch.txt >/dev/null
 RDIR=build/xbox/reports; before=$(ls $RDIR 2>/dev/null | wc -l)
 python3 tools/xbox_serve.py --port "$PORT" --xbe /nonexistent --xbe-g /nonexistent > "$T/serve.log" 2>&1 & SPID=$!
-trap 'kill $SPID 2>/dev/null || :' EXIT
 sleep 2
-XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe --net --shot "$T/run2.png" --after "45" >/dev/null 2>&1 || :
+XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe --net --shot "$T/run2.png" --after "45" >/dev/null 2>&1 &
+wait $! || :
 kill $SPID 2>/dev/null || :; wait $SPID 2>/dev/null || :
 cp "$T/xemu_debug.txt" "$T/serial_2.txt"
 check "the loader POSTed the report (/report?game=$VER)" "grep -q 'POST /report?game=$VER' '$T/serve.log'"
