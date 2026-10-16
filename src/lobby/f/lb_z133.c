@@ -14,6 +14,14 @@ void Lb_reset(void) {
 block_3:
         Info_Initialization();
     }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    /* G (lobby 0x59CCA0): offline it stops here. The village's NPCs stay in em_work over a stage change (house,
+     * farm ...): G's vs_square_init places them only on the first load of a visit (lb_sys x00), so MH1's
+     * push_em_work_all here left the village empty after the hunter came out of his house (owner, G on the Xbox,
+     * 16 Oct 2026: "no villagers when the village is reached the normal way"; RELEASE_G GB5 bug 3) */
+    if (Online_ck() == 0)
+        return;
+#endif
     push_em_work_all();
     stage_free();
     clr_move_work();

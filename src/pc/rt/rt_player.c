@@ -57,9 +57,22 @@ void rt_player_game_init(int no)
     const char *we = getenv("RT_WEAPON");
     int gun = we && (we[0] == 'g' || we[0] == 'G');
     int wid = we ? atoi(we + gun) : 156;
-    int type = gun ? 7 : 6;
-    if (gun && (wid < 0 || wid >= (rt_ver_mhg() ? 78 : 26))) gun = 0, type = 6, wid = 156;
-    if (!gun && (wid < 0 || wid >= 234)) wid = 156;
+    int type, nken = rt_ver_mhg() ? 381 : 234, ngun = rt_ver_mhg() ? 78 : 26;
+    if (!we) {
+        /* the hunter's own weapon (the save's equipped set: MH1 User_data+0x3CD kind, +0x3CE id; G +0xC75 / +0xC76), as
+         * Set_userdata gives it to pl_init. The default above only stands in when there is none (a --quest run without
+         * a save). Before 16 Oct 2026 the default was written over the save's on every quest start: a weapon bought,
+         * taken from the box or swapped in the debug menu never reached a quest (RELEASE_G GB5 bug 5) */
+        const u8 *e = User_data + (rt_ver_mhg() ? 0xC74 : 0x3CC);
+        int k = e[1], id = *(const u16 *)(e + 2);
+        if ((k == 6 && id > 0 && id < nken) || (k == 7 && id >= 0 && id < ngun)) {
+            gun = k == 7;
+            wid = id;
+        }
+    }
+    type = gun ? 7 : 6;
+    if (gun && (wid < 0 || wid >= ngun)) gun = 0, type = 6, wid = 156;
+    if (!gun && (wid < 0 || wid >= nken)) wid = 156;
     /* init_pl_work's offline master path (Set_userdata) [read from the asm] */
     pl->be_flag = 1;
     pl->id = (u16)no;

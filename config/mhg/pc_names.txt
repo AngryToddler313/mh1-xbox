@@ -34,3 +34,4 @@ sub_main lit_843_00386A40 0x537880 +   # G disp_reward (sub_main 0x4F8720) reads
 sub_main lit_1001_00386A58 0x537B40 +  # G reward_itembox (0x4F8990) reads "%s <infinity>" (item type 0xFF) through the cell at 0x5262C0; zero-filled until now: the reward screen's item line was blank
 sub_main lit_1002_00386A60 0x537B48 +  # G reward_itembox: "%s x%d" (name and count) through the cell at 0x5262C4 (G's lit_4893 is the same string)
 lobby lb_banner_close_str 0x636EA4  # pointer cell: the banner's "close" label (G lobby 0x58DC30 prints it)
+lobby tl_etc 0x636E70  # the lobby's short strings (chat window, yes, no, save, quit without saving, OK ...): G's DispDialogData (lobby 0x5A02B0) reads +4 / +8 / +0xC / +0x10. Missing, it was a function stand-in and the bed's save prompt read code bytes (crash once the prompt was drawn)

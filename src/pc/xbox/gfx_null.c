@@ -10,6 +10,7 @@
 struct gfx_texture { int w, h; };
 struct gfx_clay { int nvert; };
 int gfx_tex_src_hint;
+int gfx_tex_rgba_hint;
 static int W = 640, H = 480;
 
 int gfx_init(int width, int height, const char *title, int hidden)
@@ -31,6 +32,7 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     gfx_texture *t = calloc(1, sizeof *t);
     (void)rgba;
     gfx_tex_src_hint = 0;
+    gfx_tex_rgba_hint = 0;
     if (t) {
         t->w = w;
         t->h = h;
@@ -38,6 +40,7 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     return t;
 }
 void gfx_release_texture(gfx_texture *t) { free(t); }
+int gfx_update_texture(gfx_texture *t, const uint8_t *rgba) { (void)rgba; return t ? 0 : -1; }
 void gfx_set_render_state(int state, uintptr_t value) { (void)state; (void)value; }
 void gfx_set_render_state_f(int state, float value) { (void)state; (void)value; }
 void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)

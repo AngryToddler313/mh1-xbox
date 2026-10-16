@@ -975,3 +975,34 @@ All PC-only G code (`#ifdef VERSION_MHG` in *_nm.c / PC files, or `VERSION_MHG &
 - **Poison knife**: tools/test_activities.py's pinned-Rathian setup with mhview_g (scratch knife.py): one knife hits (hp -4), stock +50,
   tolerance 200, decays 10 a step; later knives miss once the Rathian turns to attack.
 - Open: em21 die case 4 (game 0x60CF20), the quest-10035 stage-54 demo (em21_main -> 0x60C280), em21/em08 init char-set (0x549FE0).
+
+## G on the Xbox: owner's bugs GB5 1-10 (16 Oct 2026)
+
+Reproduced on the PC G build first (hidden, --shot/--time/--input, RT_SHOTS), then in xemu (own copy of the HDD image in
+build/A/xf, `flock xemu.lock`, build/A/gb5/x/xrun.sh records each run). Pictures and logs in build/A/gb5/.
+- **1 draw order after the debug menu**: dbgmenu.c states_on() turned GFX_RS_ZTEST off and states_off() never turned it on;
+  nothing else sets it, so every frame after the menu had been open drew without the depth test (PC GL too, MH1 too). Shots
+  z/a_400 (no menu), b_400 (menu opened and closed: villagers over the gate beam), c_400 (fixed). Also dbg_leave_village():
+  Pit_reset + Lbc_set_prim(0,0,0) before the debug menu leaves the village, as Local_main does.
+- **2 village music at the title**: dbg_title stops both streams and the SE voices. Note: Local_main's -1 (leaving the village
+  "another way") makes viewer.c run quest_back (restart the quest), not the title [code read, not run]; the bed's
+  "quit the game" would end there. Left for later.
+- **3 no villagers**: G's Lb_reset (lobby 0x59CCA0) returns right after Online_ck() offline; MH1's runs push_em_work_all, and
+  G's vs_square_init calls Lb_npc_set only while lb_sys x00 == 0 (the first load of a visit). Leaving the house emptied the
+  village (the debug menu's village row reloads from step 0, so the NPCs came back there). lb_z133.c G branch.
+- **5 weapon swap**: rt_player_game_init (rt_player.c) wrote its default weapon (156, or RT_WEAPON) into User_data at every
+  quest start, so any equipped weapon reverted; it now takes the save's (Ken ids < 381 / Gun < 78 in G). The sound packs
+  had followed User_data already, which is why the owner heard the new weapon.
+- **6 gallery movie**: gfx_update_texture (gl / nv2a / null) and gfx_tex_rgba_hint; rt_movie.c rewrites the oldest of its three
+  textures. xemu: free memory flat at 11 MB during movie 9 (was 4.7-5.8 MB), no black frames. xemu still shows only ~2
+  frames a second during the movie (the decoder in emulation); real hardware speed unknown.
+- **8 bed save prompt invisible**: G's Lbc_init_network_work had no callback on the text prim (MH1's alias has no G address);
+  wiring text_lobby_trans_ot3 crashed in DispDialogData because tl_etc was a generated function stand-in in G. tl_etc = G
+  lobby 0x636E70 (config/mhg/pc_names.txt), G dialog kind 4 reads entries 3/4 (lb_by180.c TL_SAVE). PC and xemu shots.
+- **10 one frame after retire**: viewer.c draws black while game mode is 6 and the village has not been entered (the quest
+  stage is gone). New test aid RT_RETIRE=tick (rt_dbg.c, offline Quest_retire_set). PC RT_SHOTS: tick 477 sky -> black.
+- **4 sky in the wake-up**: not reproduced (PC every 4 ticks, xemu every recorded frame) on the current build.
+- **9 kill-all**: not reproduced on PC G (areas 32/34/35/36 of quest 10: only the hunter's area's monsters hit, second pass
+  shows them gone; kill in 33 then moving to 32 leaves 32's alive). rt_dbg_hits now logs each monster (slot, kind, area, hp).
+- Found: garbage line "慰･$d" at 140,360 after NEW GAME's save (select/edit_nm.c disp_edinfo_g with an item index past
+  G's help table) [seen in PC font trace and xemu video; not fixed].

@@ -711,3 +711,13 @@ obvious workarounds.
   game's folder with launch data "MH1X" (as before 11 Oct), which sends the log and then goes to the dashboard. An XBE that
   is itself default.xbe still goes to the dashboard.
 - **Changed:** rt_log's session-log folder on the Xbox was E:\Games\MH1\logs for G too; now the game's folder (XBOX_GAME_DIR).
+
+## G Xbox bugs GB5 (agent A, 16 Oct 2026)
+- **Dropped:** rt_player_game_init writing its default weapon (156 / RT_WEAPON) into User_data at every quest start; **now** the
+  save's equipped weapon is used when RT_WEAPON is unset (the default only without a save). **Why:** bought / box / debug
+  weapons never reached a quest (GB5 bug 5). **To revert:** the rt_player.c hunk of the commit "G Xbox bugs GB5".
+- **Dropped:** MH1's Lb_reset body for G offline (push_em_work_all, stage_free, clr_move_work, prim_init); **now** G's early
+  return (lobby 0x59CCA0). **Why:** villagers vanished after the house (bug 3). lb_z133.c.
+- **Dropped:** create + release of a texture per movie frame; **now** three textures updated in place (gfx_update_texture).
+- **Changed:** the debug menu restores the depth test and fade colour after drawing; its jumps out of the village run
+  Pit_reset + Lbc_set_prim(0,0,0); its title row stops the sound; viewer.c draws black in mode 6 before the village.

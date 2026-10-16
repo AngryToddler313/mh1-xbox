@@ -249,9 +249,21 @@ static void upload(void)
         mv.th = h;
     }
     mv.ti = (mv.ti + 1) % NTEX;
-    if (mv.tex[mv.ti])
-        gfx_release_texture(mv.tex[mv.ti]);
-    mv.tex[mv.ti] = gfx_create_texture(w, h, px);
+    /* the oldest of the three textures takes the new frame in place; a new texture only for the first frames (or when
+     * the backend cannot: it then keeps the old one until the new one exists, no black frame) */
+    if (!mv.tex[mv.ti] || gfx_update_texture(mv.tex[mv.ti], px) != 0) {
+        gfx_texture *nt;
+        gfx_tex_rgba_hint = 1;
+        nt = gfx_create_texture(w, h, px);
+        if (!nt) {
+            rt_warn_once("movie-tex", "movie %d: no memory for a frame texture", mv.no);
+            mv.ti = (mv.ti + NTEX - 1) % NTEX;      /* keep showing the last frame */
+            return;
+        }
+        if (mv.tex[mv.ti])
+            gfx_release_texture(mv.tex[mv.ti]);
+        mv.tex[mv.ti] = nt;
+    }
     mv.ready = 1;
 }
 

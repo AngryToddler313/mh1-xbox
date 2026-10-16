@@ -345,7 +345,7 @@ static void list_enter(void)
     }
     case P_EQLIST:
         if (rt_dbg_equip_set(l->arg, l->sel) == 0)
-            note("%s", "equipped (the hunter shows it from the next area or quest)");
+            note("%s", "equipped (the hunter carries it from the next quest or village visit)");
         else
             note("%s", "the equipment box is full");
         pop();
@@ -641,6 +641,11 @@ static void states_off(void)
     gfx_set_render_state(GFX_RS_ALPHA_FUNC, 4);
     gfx_set_render_state(GFX_RS_BLEND, 1);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
+    /* the depth test and the fade colour back as the scene uses them: nothing else switches the depth test on again, so
+     * after the menu had been open once every later frame drew without it (owner, G on the Xbox, 16 Oct 2026: wrong
+     * draw order after the debug menu's quest start, "until restart"; RELEASE_G GB5 bug 1) */
+    gfx_set_render_state(GFX_RS_ZTEST, 1);
+    gfx_set_render_state(GFX_RS_FADE_COLOR, 0xFFFFFFFFu);
     rt_2d_restore_texture();
 }
 

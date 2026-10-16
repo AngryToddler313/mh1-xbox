@@ -515,6 +515,8 @@ void str_volume(int ch, int v)
 
 void str_stop(int ch)
 {
+    if (trace && strw[ch].id >= 0)
+        printf("snd: tick %d str %d stops\n", tick_no, ch);
     strw[ch].id = -1;
     strw[ch].ended = 0;
     audio_stream_clear(ch);

@@ -13,6 +13,12 @@ extern void Disp_back();
 extern void Lb_put_inputMsgForHTML();
 extern void draw_dialog_square();
 extern int strlen();
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#define TL_SAVE 3       /* G (lobby 0x5A02B0) reads tl_etc+0xC / +0x10 for the two choices of kind 4: G's tl_etc (0x636E70) lost MH1's
+                         * three chat-target strings 3-5, so "save" / "quit without saving" are entries 3 and 4 (MH1 6 and 7) */
+#else
+#define TL_SAVE 6
+#endif
 
 void DispDialogData(void) {
     char buf[0x80];
@@ -97,19 +103,19 @@ void DispDialogData(void) {
                 font_set_palette(6);
                 y += 0x28;
                 flfntLocate(0xC4, y);
-                font_print(lit_902_0065DA40, ((int *)tl_etc)[6]);
+                font_print(lit_902_0065DA40, ((int *)tl_etc)[TL_SAVE]);
                 font_set_palette(0xA);
                 flfntLocate(0x154, y);
-                font_print(lit_902_0065DA40, ((int *)tl_etc)[7]);
+                font_print(lit_902_0065DA40, ((int *)tl_etc)[TL_SAVE + 1]);
                 Sel_csr_disp(0xF6, (s16)(y - 2), 0x8C, 0x18, 0xB0008000);
             } else {
                 font_set_palette(0xA);
                 y += 0x28;
                 flfntLocate(0xC4, y);
-                font_print(lit_902_0065DA40, ((int *)tl_etc)[6]);
+                font_print(lit_902_0065DA40, ((int *)tl_etc)[TL_SAVE]);
                 font_set_palette(6);
                 flfntLocate(0x154, y);
-                font_print(lit_902_0065DA40, ((int *)tl_etc)[7]);
+                font_print(lit_902_0065DA40, ((int *)tl_etc)[TL_SAVE + 1]);
                 Sel_csr_disp(0x1A1, (s16)(y - 2), 0xC2, 0x18, 0xB0008000);
             }
             break;

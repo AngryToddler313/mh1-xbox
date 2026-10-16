@@ -505,6 +505,7 @@ int gfx_read_depth(float *d)
 }
 
 int gfx_tex_src_hint;
+int gfx_tex_rgba_hint;
 static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
 {
     gfx_texture *t = calloc(1, sizeof *t);
@@ -512,6 +513,7 @@ static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
     t->h = h;
     t->src = gfx_tex_src_hint;
     gfx_tex_src_hint = 0;
+    gfx_tex_rgba_hint = 0;
     rt_ms_add("textures in GPU memory (RGBA8, GPU)", (long)w * h * 4);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
     {   /* the Xbox estimate costs a colour count per texture: only for RT_MEM */
@@ -548,6 +550,17 @@ gfx_texture * gfx_create_texture(int w, int h, const uint8_t *rgba)
     r = gfx_create_texture_lt(w, h, rgba);
     rt_lt_end(RTL_TEXUP);
     return r;
+}
+
+int gfx_update_texture(gfx_texture *t, const uint8_t *rgba)
+{
+    if (!t)
+        return -1;
+    glBindTexture(GL_TEXTURE_2D, t->id);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t->w, t->h, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    if (G.tex)              /* the bound texture the draws expect */
+        glBindTexture(GL_TEXTURE_2D, G.tex->id);
+    return 0;
 }
 
 void gfx_release_texture(gfx_texture *t)

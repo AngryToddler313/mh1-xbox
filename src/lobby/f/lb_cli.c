@@ -2149,8 +2149,10 @@ void Lbc_init_network_work() {
     F(int, pNet, PNET_OFS(0x18)) = (int)&lb_prim + 0x20;
     F(int, pNet, PNET_OFS(0x1C)) = (int)&lb_prim + 0x40;
     F(int, pNet, PNET_OFS(0x20)) = (int)&lb_prim + 0x60;
-    /* G's fifth prim (the text, text_lobby_trans_ot3 on its own ordering table) is not drawn on the PC: no callback here
-     * (MH1's text_lobby_trans_ot3_o has no G address) */
+    /* G's fifth prim (the text: text_lobby_trans_ot3, the dialog layer) is the PC's fourth, as in MH1. It had no callback
+     * here (MH1's alias name text_lobby_trans_ot3_o has no G address), so the bed's "save?" / "quit?" dialogs waited for
+     * yes / no with nothing on screen, as MH1's did before 13 Oct (owner, G on the Xbox, 16 Oct 2026; RELEASE_G GB5 bug 8) */
+    F(int, F(int, pNet, PNET_OFS(0x20)), 0x14) = (int)&text_lobby_trans_ot3;
     F(s32, F(int, pNet, PNET_OFS(0x14)), 0x18) = 0;
     F(s32, F(int, pNet, PNET_OFS(0x18)), 0x18) = 1;
     F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x18) = 2;

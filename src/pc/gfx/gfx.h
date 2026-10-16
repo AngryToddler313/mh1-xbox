@@ -35,6 +35,12 @@ int  gfx_read_pixels(uint8_t *rgb);
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba);
 extern int gfx_tex_src_hint;   /* memory report only: the next texture's size as stored on the disc (4/8-bit + CLUT) */
 void gfx_release_texture(gfx_texture *t);
+/* New texels for a texture of the same size, in place (movie frames: rt_movie.c keeps a ring of three). Returns 0, or
+ * -1 when this texture cannot take them (the Xbox backend's palettised textures): create a new one then. Creating and
+ * releasing a 256 x 512 texture for every frame took a colour count, two mallocs and a contiguous allocation each
+ * time on the Xbox (2 frames a second in xemu, GPU memory churn; owner: the gallery movie flickered black and crashed) */
+int gfx_update_texture(gfx_texture *t, const uint8_t *rgba);
+extern int gfx_tex_rgba_hint;  /* the next gfx_create_texture keeps RGBA8 (no palette try: a movie frame) */
 /* Movie frames come as RGBA from the decoder (sfd_rgba) through gfx_create_texture
  * on every backend. (The Xbox backend had a YUY2 texture converted by the GPU;
  * on the real Xbox its colours came out wrong, so it was dropped on 11 Oct 2026.) */

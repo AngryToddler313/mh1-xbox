@@ -97,6 +97,7 @@ static const float ident[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
 static const uint32_t blend_factor[6] = { 0, 1, 0x302, 0x303, 0x304, 0x305 };  /* GL enums, as NV2A takes them */
 
 int gfx_tex_src_hint;
+int gfx_tex_rgba_hint;
 
 static void mat_mul(float *out, const float *a, const float *b)       /* out = a * b */
 {
@@ -449,7 +450,9 @@ static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
     t->src = gfx_tex_src_hint;
     gfx_tex_src_hint = 0;
     t->rect = !(is_pow2(w) && is_pow2(h));
-    if (!t->rect && w * h >= 256) {
+    if (gfx_tex_rgba_hint) {            /* a movie frame: RGBA8, updated in place later (gfx_update_texture) */
+        gfx_tex_rgba_hint = 0;
+    } else if (!t->rect && w * h >= 256) {
         /* palettised when the image has <= 256 colours: 1 byte per texel
          * instead of 4 (NV2A SZ_I8_A8R8G8B8; swizzled, power-of-two only) */
         static uint32_t pal[256];
@@ -514,6 +517,38 @@ static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
             memset(t->mem, 0, size);
     }
     return t;
+}
+
+/* new texels in place for an RGBA8 texture of the same size (movie frames). The GPU is idle at each gfx_begin_frame
+ * (wait_idle) and rt_movie.c rewrites the oldest of its three textures, last drawn two frames before. */
+int gfx_update_texture(gfx_texture *t, const uint8_t *rgba)
+{
+    static uint32_t *scratch;
+    static size_t scratch_n;
+    size_t size;
+    int y;
+    if (!t || !t->mem || t->pal)
+        return -1;
+    rt_lt_begin(RTL_TEXUP);
+    size = (size_t)t->pitch * t->h;
+    if (t->rect) {
+        for (y = 0; y < t->h; y++)
+            memcpy(t->mem + (size_t)y * t->pitch, rgba + (size_t)y * t->w * 4, (size_t)t->w * 4);
+    } else {
+        if (scratch_n < size) {
+            free(scratch);
+            scratch = malloc(size);
+            scratch_n = scratch ? size : 0;
+        }
+        if (!scratch) {
+            rt_lt_end(RTL_TEXUP);
+            return -1;
+        }
+        swizzle(scratch, rgba, t->w, t->h, 4);   /* (scattered writes into write-combined memory would be slow) */
+        memcpy(t->mem, scratch, size);
+    }
+    rt_lt_end(RTL_TEXUP);
+    return 0;
 }
 
 gfx_texture * gfx_create_texture(int w, int h, const uint8_t *rgba)

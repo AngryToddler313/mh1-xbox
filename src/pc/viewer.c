@@ -1966,10 +1966,24 @@ static void dbg_leave_boot(void)    /* from the title / boot screens: the boot's
     rt_boot_abort();
     booting = 0;
 }
+/* what Local_main does when the hunter leaves the village (src/lobby/f/lb_village_nm.c, its return 1 / -1): the pause
+ * menu's prims and state back to the quest's (Pit_reset) and the lobby's three screen prims cleared. The debug menu's
+ * jumps out of the village skipped both: the village's menu prims went on into the quest (owner, G on the Xbox, 16 Oct
+ * 2026: a half-screen tint and wrong draw order after "start a quest" from the village, RELEASE_G GB5 bug 1) */
+void Pit_reset(void);
+void Lbc_set_prim();
+static void dbg_leave_village(void)
+{
+    if (!rt_village_active())
+        return;
+    Pit_reset();
+    Lbc_set_prim(0, 0, 0);
+    rt_village_leave();
+}
 static void dbg_start_quest(int no)     /* as from the village counter: Quest_init / Quest_start, the start area */
 {
     dbg_leave_boot();
-    rt_village_leave();
+    dbg_leave_village();
     rt_world_reset();
     all_reset();
     rt_log("debug menu: start quest %d", no);
@@ -1979,7 +1993,7 @@ static void dbg_start_quest(int no)     /* as from the village counter: Quest_in
 static void dbg_village(int intro)      /* game mode 6: the village is entered on the next tick (rt_village_enter) */
 {
     dbg_leave_boot();
-    rt_village_leave();
+    dbg_leave_village();
     all_reset();
     if (intro)
         Event_flag_clear(2);            /* the first-visit event not seen yet (RT_VILLAGE_SKIP_INTRO sets it) */
@@ -1990,11 +2004,18 @@ static void dbg_village(int intro)      /* game mode 6: the village is entered o
 }
 static void dbg_title(void)             /* the power-on sequence again (logos, title), as a reset does */
 {
-    rt_village_leave();
+    dbg_leave_village();
     rt_world_reset();
     rt_monster_clear_all();
     all_reset();
     rt_import_select();                 /* select.bin's data as on the disc */
+    {   /* a power-on starts with the sound quiet: the village's music (stream 0) and demo stream 1 kept playing over
+         * the logos and the title (owner, G on the Xbox, 15 Oct 2026) */
+        void str_stop_all(void);
+        void se_stop_all(void);
+        str_stop_all();
+        se_stop_all();
+    }
     rt_log("debug menu: back to the title (power-on sequence)");
     rt_boot_init();
     booting = 1;
@@ -2840,6 +2861,14 @@ int main(int argc, char **argv)
                 gfx_begin_frame(0);
                 goto frame_done;
             }
+        }
+        if (rt_flow_mode() == 6 && !rt_village_active() && !rt_online_town()) {
+            /* the quest is over (game5's last step, a retire, the debug menu's village row) and Game_task's mode 6 has
+             * not entered the village yet: the quest stage is gone (all_reset) and the fade was reset, so the scene
+             * showed one frame of sky with the hunter where the village should be (owner, G on the Xbox, 16 Oct 2026,
+             * RELEASE_G GB5 bug 10). The PS2 draws nothing between the result screen and Local_main's first fade */
+            gfx_begin_frame(0);
+            goto frame_done;
         }
         if (quest_dark_tick >= 0 && quest_dark_tick == flip_ticks) {
             /* the quest start (game11-13 on the PS2, one tick here): the screen stays dark (MH1) or on the

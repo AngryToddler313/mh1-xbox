@@ -51,6 +51,9 @@ void rt_dbg_hits(void)
         u8 *e = em_work + EMW_SIZE * i;
         if (!e[0] || *(s16 *)(e + 0x302) <= 0)
             continue;
+        if (rt_dbg.kill_req)
+            rt_log("debug menu: monster slot %d kind %d area %d hp %d%s", i, e[2], e[0x736], *(s16 *)(e + 0x302),
+                   e[0x736] == pl[0x736] ? ": lethal hit" : "");
         if (rt_dbg.kill_req && e[0x736] == pl[0x736]) {     /* as RT_PL_SLAY: a lethal hit, as if hit_check had found one */
             e[0x38D] = 1;
             *(s16 *)(e + 0x766) = 30000;
@@ -65,6 +68,15 @@ void rt_dbg_hits(void)
                 long v = (long)*(s16 *)(e + 0x766 + 2 * k) * rt_dbg.dmg_mul;
                 *(s16 *)(e + 0x766 + 2 * k) = (s16)(v > 30000 ? 30000 : v < -30000 ? -30000 : v);
             }
+        }
+    }
+    if (getenv("RT_RETIRE")) {          /* test aid: abandon the quest at that quest tick (the quest menu's "return to the
+                                         * village": Quest_retire_set), offline too (rt_np.c's RT_QUEST_RETIRE is co-op only) */
+        static int tk;
+        void Quest_retire_set(void);
+        if (++tk == atoi(getenv("RT_RETIRE"))) {
+            rt_log("test aid: quest tick %d: retire", tk);
+            Quest_retire_set();
         }
     }
     if (rt_dbg.kill_req) {
