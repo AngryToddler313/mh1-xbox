@@ -889,6 +889,27 @@ Player's guide: docs/PLAYING.md. No DNAS crypto of any kind; only RAM patches of
 * Not done: a table entry with patches for MH G (its addresses differ; the table has the slot), and the "lost key"
   fragility of the scripted test (timed key presses; checked twice in a row, see test_ps2_online.sh's comments).
 
+### 3.9 Three platforms in one town (agent B, 16 Oct 2026)
+
+`tools/test_three_way.sh` (about 10 minutes, PCSX2 and xemu at once, both hidden, run uncapped): one mh1-server on
+this machine's LAN address (invite-only, three fresh accounts), then
+* the PS2: the owner's unpatched disc in PCSX2 through the memory-card launcher (3.8), the card with the NET file from
+  a test_ps2_online run; the same scripted screens as 3.6 up to lobby 1's town;
+* the Xbox: the online build in xemu on a scratch disk image whose settings.ini points at the LAN address
+  (`online_server = 192.168.x.y:10200` and the account; xemu's NAT reaches the host's LAN address too);
+* the PC: build/pc/mhview_online headless (RT_NET_HOST etc.).
+All three stand by the fountain in a short column (the PC walks up behind the PS2, the Xbox steps left in front of it:
+each camera follows its own hunter and the chat window covers the lower left, so a column keeps everyone in view;
+RT_LB_WARP is no use here, it moves the hunter only on its own screen, nothing is sent until it walks); the PC and the Xbox each say a line (RT_NET_SAY), then the PS2 types "いう" on its
+software keyboard. Each platform's screen is taken right after (the PC: its own shot just after the PS2's line arrived,
+since its chat window closes after a few seconds) and put side by side: build/show/three_way/three_way.png. Checks: the
+server got all three lines; the PC shows the Xbox's and the PS2's hunters and got both their lines. [checked, 3 runs on
+16 Oct 2026, all OK; in the last each screen shows all three hunters by name and all three chat lines]
+* Order matters: the PS2 goes first and alone (its key presses are timed); xemu starts once the PS2 is in the town.
+* PCSX2 cannot run under `ulimit -v` (it reserves several GB: "Failed to allocate fastmem area" in its log, black
+  screenshots). That was the "no terms notice" failure of test_ps2_online under full_check (agent D): the cap, not the
+  game. Both scripts now refuse to start under a cap.
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online

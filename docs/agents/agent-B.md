@@ -1381,3 +1381,21 @@ in 20 s, fatal 0x1E in memcpy at the opening movie). rt_movie.c audio_feed stops
   client that last left the town in the guild hall comes back there and does not see hunters on the square.
 - gcc (ps2sdk, n32) code called from MWCC code works for <= 4 int args: -G0 -mno-abicalls -fno-pic, link with -T of
   absolute symbol assignments (tools/ps2launch/syms.ld).
+
+## Three platforms in one town (16 Oct 2026)
+
+Owner's request: one picture of the PS2, Xbox and PC hunters together in the same online town.
+- New `tools/test_three_way.sh` (docs/network.md 3.9): one mh1-server on the LAN address with three accounts; the PS2
+  (PCSX2, memory-card launcher, plain disc) goes to lobby 1's town first and alone; then xemu (online build, scratch
+  disk image, settings.ini -> the LAN address) and the PC client (mhview_online, hidden). Xbox and PC say a line, the
+  PS2 types "いう"; each screen is taken and put side by side in build/show/three_way/three_way.png (not committed).
+  Passed on every run (3 runs, 16 Oct); about 10 minutes; memory stayed above 3.5 GB available with both emulators.
+- The "no terms notice" failure agent D saw (black 02_net.png) was PCSX2 not starting at all: run under full_check's
+  `ulimit -v` cap, it fails "Failed to allocate fastmem area" (D's emulog.txt). Not a game or script problem.
+  test_ps2_online.sh and test_three_way.sh now refuse to start under a cap; full_check skips test_three_way like the
+  other emulator tests.
+- Lessons: the camera follows each player's own hunter and the chat window covers the lower left, so for everyone to
+  see everyone the hunters stand in a short column (one behind, one in front); RT_LB_WARP only moves the hunter on its
+  own screen (no position is sent until it walks), so the test walks them with pad input instead. The PC's chat window
+  closes a few seconds after the last line: the test takes the PC's own shot just after the PS2's line arrived there.
+  Never edit a shell script while it runs (sh reads it as it goes; it broke one run).

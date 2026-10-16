@@ -24,6 +24,9 @@ cleanup() {
     [ -n "$SP" ] && { kill $SP 2>/dev/null; wait $SP 2>/dev/null; }
     RP=; SP=; SLP=
 }
+# PCSX2 reserves several GB of address space (fastmem): under a `ulimit -v` cap it stops at once ("Failed to allocate
+# fastmem area" in emulog.txt) and the screenshots stay black. Run this test uncapped (ps2_patch.py caps itself).
+[ "$(ulimit -v)" = unlimited ] || fail "a memory cap (ulimit -v $(ulimit -v)) is set: PCSX2 cannot start under it; run uncapped"
 IP=$(ip -4 route get 192.168.0.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p')
 [ -n "$IP" ] || IP=$(hostname -I | awk '{print $1}')
 case "$IP" in 10.*|192.168.*|172.1[6-9].*|172.2?.*|172.3[01].*) ;; *) fail "no private LAN address ($IP)";; esac
