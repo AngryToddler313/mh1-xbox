@@ -746,3 +746,13 @@ obvious workarounds.
   **To revert:** the commit "leaving the village without a quest".
 - **Changed:** our server's plaza / lobby names start with a full-width space; the lobby join counts are (all, in rooms)
   clamped to 0..9 instead of (count, 100). tools/test_online.sh's plaza-name grep follows.
+
+## G release checklist, fourth pass (agent A, 16 Oct 2026)
+- **Dropped:** mhg_pcmeta's rule "every `.word SYMBOL` of the split is a pointer" for names D_xxxx below 0x100000
+  (78 words of pc_ptrs.txt). **Why:** 0x0000FFFF list ends were zeroed (title strips). **To revert:** commit "G PC:
+  title strips ...".
+- **Dropped:** rt_font's empty gap for G's ~Bnn; **now** the icon is drawn (PutButtonICON).
+- **Dropped:** for G, the plain reward-list backdrop; **now** the quest clear's frame copy (rt_2d.c rt_cap_*).
+- **Dropped:** for the G PC build, MH1's Pl_damage_sub / pl_guard_set C (kept for MH1); **now** G's (pl_damageb.c).
+  **Why:** G's armour skills on hits. **To revert:** the commit "G PC: hunter damage skills, trans_stage".
+- **Changed:** trans_stage.c G branches (G_ONLY / MH1_ONLY labels); MH1 unchanged.
