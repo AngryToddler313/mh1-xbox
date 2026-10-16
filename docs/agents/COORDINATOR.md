@@ -133,6 +133,9 @@ Queue (owner, 15 Oct evening; start when a slot frees, two agents max):
 0b. Three-way picture (owner asked): PS2 (PCSX2, tools/test_ps2_online.sh) + Xbox (xemu online,
    tools/xemu_online_test.sh) + PC client in one town on one mh1-server on the LAN address; one screenshot
    of each plus a combined one. Run with NOTHING else (no agent, no full check): both emulators at once.
+0c. Small fix: tools/test_three_way.sh (and maybe other xemu callers) leaves the xemu AppImage running: it kills
+   run_xemu.sh's PID, not xemu itself (an orphan ran 1 h at 400% CPU on 16 Oct, stopped by the coordinator).
+   Also `pgrep -x xemu` does not match the AppImage's process name, so the "xemu runs alone" guard misses it.
 1. G Xbox bugs from the owner's play (docs/RELEASE_G.md GB5): debug-menu skip leaves render state
    (half-screen tint triangle, depth order), village music at the title, no villagers on the normal
    village entry, sky frames in the wake-up cutscene. Reproduce on PC G first.
