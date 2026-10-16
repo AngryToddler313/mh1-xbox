@@ -26,7 +26,7 @@ RC=$?
 [ $RC -eq 0 ] || { tail -5 $OUT/client.out; fail "the client stopped early (rc $RC)"; }
 for s in "tcp connected" "login ok" "top information: level" "plazas: 2" 'plaza 1 ".*Test Plaza 1" status 3' \
          "lobbies: 4" 'member 0: id "0000' 'stopped in phase "done"'; do
-    grep -q "$s" $OUT/client.out || fail "missing: $s"
+    LC_ALL=C grep -q "$s" $OUT/client.out || fail "missing: $s"
 done
 sleep 0.3
 grep -q "client gone" $OUT/server.log || fail "the server never saw the client leave"

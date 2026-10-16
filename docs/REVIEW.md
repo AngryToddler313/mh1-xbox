@@ -731,7 +731,7 @@ obvious workarounds.
 - **Changed:** gfx_nv2a.c gfx_execute_clay checks gfx_rec_clay once at the top for both paths (execute_cpu did it for the
   CPU path, the skinned path after its own check): same behaviour, one place.
 
-## Small fixes (agent B, 17 Oct 2026)
+## Small fixes (agent B, 16 Oct 2026)
 - **Changed:** run_xemu.sh / run_pcsx2.sh stopped the emulator only on a normal end; **now** tools/emu_lib.sh (new) stops
   the emulator's whole process tree and its Xvfb on every exit, also when the script is killed (TERM/INT/HUP) or fails.
   **Dropped:** the `pgrep -x xemu` / `pgrep -x AppRun` guards (never matched xemu; AppRun also matched PCSX2) for

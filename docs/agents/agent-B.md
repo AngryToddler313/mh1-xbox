@@ -1400,7 +1400,7 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   closes a few seconds after the last line: the test takes the PC's own shot just after the PS2's line arrived there.
   Never edit a shell script while it runs (sh reads it as it goes; it broke one run).
 
-## Small fixes round (17 Oct 2026)
+## Small fixes round (16 Oct 2026)
 1. **Emulators left running** (COORDINATOR queue 0c). Cause: xemu is an AppImage; its process is named `AppRun` (the
    FUSE helper detaches, named `xemu-0.8.13`), so `pgrep -x xemu` never matched; run_xemu.sh's cleanup was an EXIT trap
    only, which a SIGTERM to the script skips, and `sleep` in the foreground delays any trap. New tools/emu_lib.sh
