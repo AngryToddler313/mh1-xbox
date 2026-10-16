@@ -282,14 +282,18 @@ Differences from a player hosting:
   (`Relay.create_session`, from the port pool `--relay-ports`).
 * Each hunt's traffic is logged (frames, bytes, frames/s) for capacity planning; no packet contents are logged.
 
-### 4.2 The faithful relay for mcsls (`tools/server/mcs.py`, skeleton)
+### 4.2 The faithful relay for mcsls (`tools/server/mcs.py`; used since 16 Oct 2026)
 
-For real PS2s or a PC mode that links the game's own mcsls stack: sends 0x1031, reads the 0x82 login, finds the match by
-the decoded login key, relays records (refusing records whose sender id is not the connection's), sends a 0x1021 health
-check every 10 s, drops a connection silent for 40 s. **Untested with a client**; open points: the exact header of the
-server's 0x1031 (magic byte and category; `select_ps2` reads it like a lobby packet), what 0x1032 means (the skeleton
-sends it as an acknowledgement: **[guess]**), whether the real server consumed the 0xF0 keep-alives (the skeleton
-forwards them).
+`mh1_server.py serve --lobby-mcs [--mcs-port 10298]`: the lobby answers 6914 with "mh1-mcs" and 6916 with this relay's
+address and port, and registers the match's logins (8 digits) with their player numbers (6912 - 1) here. The relay
+sends 0x1031 on connect, reads the 0x82 login (the 10 digits of `mmbbc_encode`, no length in front), puts the
+connection into its match by the decoded login, answers 0x1032 (**[guess]**: the client ignores it), passes every
+record on unchanged to the other members (refusing records whose sender id is not the connection's), forwards the
+0xF0 keep-alives (the clients' drop timer, DROP_TIMEOUT 30 s, counts any record), sends a 0x1021 health check every
+10 s and drops a connection silent for 120 s (a PS2 does not poll while it loads a stage). One port serves every
+match. Tested with two PCs (tools/test_online_mcs.sh), a PS2 in PCSX2 and a PC (tools/test_ps2_hunt.sh), the Xbox in
+xemu and a PC (tools/xemu_mcs_hunt.sh): docs/network.md 3.10. Unknown: what the real server did beyond relaying (the
+client shows nothing of it).
 
 ### 4.3 Lobby to relay hand-off (needs a small client change, for agent B / the coordinator)
 

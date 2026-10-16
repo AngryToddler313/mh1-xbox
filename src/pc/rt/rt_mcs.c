@@ -215,7 +215,7 @@ void rt_mcs_init_slots(void)
     }
 }
 
-static int start_r;
+static int start_r, start_echo;
 static void start_step(void) { start_r = mcs_net_start_ck(); }
 
 /* game13: net_start_ck until every player has loaded (sys 3) and the network delay is known */
@@ -233,6 +233,20 @@ void rt_mcs_start(void)
     }
     fprintf(stderr, "mcs: start %s after %d frames, network delay %d frames\n", start_r ? "agreed" : "NOT agreed", t,
             *(s16 *)((u8 *)&game_w + GWX(0x1B0)));
+    start_echo = start_r ? 6 : 0;
+}
+
+/* net_start_ck sends its "loaded" (sys 3, round 2) once, in step 0. A PS2 clears what it got of it at the end of its
+ * stage load (game11 clears game_w+0xD8..0xDB), so a PC that loaded first and sent it while the PS2 was still in
+ * game10 would leave the PS2 waiting at "クエストを開始します" for ever (seen in tools/test_ps2_hunt.sh). The PC agrees
+ * only once every other player's sys 3 came, i.e. once they are past their loads: it says "loaded" a few more times
+ * then (every second, 6 times). A player already in the hunt only stores the value (net_receive_sys kind 3). */
+static void start_echo_send(void)
+{
+    u8 d6 = GW8(0xD6);
+    GW8(0xD6) = 1;                      /* sys 3 carries xD6 + 1 = 2: round 2 done */
+    net_send_sys(3, game_w.master);
+    GW8(0xD6) = d6;
 }
 
 /* every game tick (rt_np_tick): last tick's packets out, this tick's in */
@@ -242,6 +256,10 @@ void rt_mcs_tick(void)
     AQ_send();
     AQ_exec();
     k++;
+    if (start_echo && k % 30 == 0) {
+        start_echo_send();
+        start_echo--;
+    }
     if (trace && (k % 300 == 0 || mcsls_state() != last_state))
         fprintf(stderr, "mcs: tick %d mcsls state %d error %d pl_state %d %d %d %d\n", k, mcsls_state(),
                 *(s32 *)(mcsls_w + 0x160), game_w.pl_state[0], game_w.pl_state[1], game_w.pl_state[2],

@@ -957,6 +957,30 @@ handshake completes, `net_start_ck` agrees (delay 2 frames), each sees the other
 monster's state from its owner (HP, action), ANNA delivers, BOB sees the clear, both back in the town. The relay saw
 the record kinds 0x20/0x30 (16 pings), 0x40/0x70 (app data), 0x90 (sync), 0xF0 (keep-alives).
 
+**PS2 and PC in one hunt** (`tools/test_ps2_hunt.sh`, PCSX2 hidden + one PC, ~20 min, uncapped, by hand; not in
+full_check) [checked, 16 Oct 2026]: the owner's unpatched disc through the memory-card launcher, mh1-server
+`--lobby-mcs` on the LAN address. ANNA (PC) posts quest 1 for 2 at the counter, the PS2 joins it at the quest board
+and gets ready at the departure spot, ANNA starts. Both log in to the mcs relay (the PS2's own cmcs_04 0x82 login is
+accepted by mcs.py), mcsls sync / 8 pings / start, the select handshake (sys 2 both ways), net_start_ck agrees (the
+PS2 needs ~340 frames to load the stage), and both are in the forest camp: **the PS2 shows ANNA next to its hunter and
+both names in its party list; the PC shows the PS2's hunter "TEST", and sees it walk when the PS2 walks**; ANNA
+delivers the quest's item and **the PS2 gets the clear and its reward screen** (quest events over sys 6). Screens:
+build/show/ps2_hunt/shared_hunt.png (PS2 at the camp | the PC at the camp | the PS2's reward screen). Not tested
+yet with the PS2: a monster fight (quest 1 has no large monster), monster ownership hand-over to or from a PS2, a PS2
+leaving mid-hunt, 3-4 players.
+* Found by this test: the PC said "loaded" (sys 3) once, while the PS2 was still in game10; the PS2's game11 clears
+  those flags at the end of its load, so it waited at "クエストを開始します" for ever. rt_mcs.c now repeats it six
+  times (once a second) after its own start was agreed.
+* Test aids for the PS2 (no game code changed): a PCSX2 cheat file (`tools/run_pcsx2.sh --cheats`, pnach RAM writes)
+  holds the hunter on the guild hall's door in the square, puts it at the quest board once in the hall, at the
+  departure spot while L2 is held, and sets the guild registration flag (event flag 4) as the PC tests'
+  RT_NET_REGISTERED does; without it the board's square does nothing. In the hall the hunter must not be moved every
+  frame (it could not walk off); PCSX2 applies cheats by the CRC of the first ELF (the launcher's), run_pcsx2.sh
+  installs the file under both.
+* The room flow on the PS2, for anyone scripting it: square on the door (into the hall), square at the board, circle
+  through the list and the paper, "参加しますか" yes, OK; then at the departure spot square ("出発準備"), circle; the
+  leader starts with square at the same spot once everyone is ready (before that the counter only says so).
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online
