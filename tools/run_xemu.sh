@@ -35,6 +35,7 @@
 #             build/xbox/loader/default.xbe); --gfx is then ignored
 #   --net     give the Xbox xemu's NAT network (the laptop is reachable at its own address,
 #             or 10.0.2.2; for the loader with tools/xbox_serve.py)
+#   --online  boot the MH1 online build (build/xbox/online/..., tools/build_xbox.py --online); implies --net
 # The game's log (rt_log lines, notes, a liveness line every 5 s) comes out of the emulated
 # serial port into xbox_files/xemu_debug.txt (src/pc/xbox/xbox_log.c).
 # xemu always opens a window, so by default it runs on its own hidden X display: Xvfb unpacked
@@ -45,7 +46,7 @@ set -e
 cd "$(dirname "$0")/.."
 XF=$(realpath -m "${XBOX_FILES:-xbox_files}")
 XEMU=${XEMU:-$HOME/xboxdev/xemu/xemu-0.8.136-x86_64.AppImage}
-VER=${VERSION:-mh1}; GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=
+VER=${VERSION:-mh1}; GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=; ONL=
 while [ $# -gt 0 ]; do
     case "$1" in
     --gfx) GFX=$2; shift 2 ;;
@@ -60,6 +61,7 @@ while [ $# -gt 0 ]; do
     --show) SHOW=1; shift ;;
     --xbe) XBE=$2; shift 2 ;;
     --net) NET=1; shift ;;
+    --online) ONL=1; NET=1; shift ;;
     *) echo "unknown option $1"; exit 2 ;;
     esac
 done
@@ -77,6 +79,7 @@ mh1) XB=build/xbox; VFLAG=; NAME=mh1; FILES="AFS_DATA.AFS AFS00.AFS AFS01.AFS SL
 mhg) XB=build/mhg/xbox; VFLAG="--version mhg "; NAME=mhg; FILES="AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_658.69" ;;
 *) echo "--version mh1|mhg"; exit 2 ;;
 esac
+if [ -n "$ONL" ]; then [ "$VER" = mh1 ] || { echo "--online: MH1 only"; exit 2; }; XB=build/xbox/online; VFLAG="--online "; fi
 case "$GFX" in null) B=$XB ;; nv2a) B=$XB/nv2a ;; *) echo "--gfx null|nv2a"; exit 2 ;; esac
 [ -f $B/default.xbe ] || { echo "no $B/default.xbe: run  . ~/xboxdev/env.sh; python3 tools/build_xbox.py $VFLAG$( [ $GFX = nv2a ] && echo --gfx nv2a )"; exit 1; }
 

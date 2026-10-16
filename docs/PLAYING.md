@@ -277,7 +277,49 @@ Python 3.8 or newer; it is invite-only (you make an account for each friend) and
 Step by step: docs/server.md, "Run your own server". Each player puts the server's address and his account in
 `mh1pc.ini` (`online_server`, `online_login`, `online_password`) and chooses the network mode on the title screen.
 This talks only to your server. The port does **not** connect to public servers of the original game, and must
-not be pointed at them without their operators' permission. Online play on the Xbox is not available yet.
+not be pointed at them without their operators' permission. The Xbox can join the same server: next section.
+
+### Online on the Xbox (Monster Hunter, not G yet)
+
+The online Xbox game is a separate XBE (`./mh1 xbox DISC --online` puts it in `dist/xbox/MH1-online/default.xbe`;
+by hand: `ONLINE=1 tools/build_pc.sh`, then `python3 tools/build_xbox.py --online --gfx nv2a`, giving
+`build/xbox/online/nv2a/default.xbe`). It uses the same data folder `E:\Games\MH1\data` as the normal game. It talks
+only to the server you give it, the same server the PC version uses (lobby, town, chat, rooms). Status: tested in the
+xemu emulator against a server on this laptop (login, town, a PC player in the same town); not yet on a real Xbox.
+
+1. **The server, on the laptop.** Make one account for the Xbox and start the server bound to the laptop's LAN
+   address (docs/server.md, "Run your own server"):
+
+       python3 tools/server/mh1_server.py account add --db mh1-server.sqlite3 --note "Xbox"
+       python3 tools/server/mh1_server.py serve --bind 192.168.1.105 --lobby-port 10200 --db mh1-server.sqlite3
+
+   `192.168.1.105` is the laptop's address on the home network today; it can change (DHCP): `ip -4 addr` shows the
+   current one. The firewall must let the Xbox reach port 10200 (and 10301-10399 for hunts through the relay).
+2. **Tell the Xbox the server and the account.** A small text file `settings.ini` with these three lines (the login
+   and password that `account add` printed):
+
+       online_server = 192.168.1.105:10200
+       online_login = 12345678
+       online_password = THE16CHARPASSWRD
+
+   Copy it to the Xbox as `E:\Games\MH1\settings.ini`: `XBOX_IP=<the Xbox's address> tools/xbox_upload.sh --settings
+   settings.ini`, or any FTP program. (This replaces the file the settings menu writes; the menu's choices go back
+   to their defaults once, and the menu keeps the online lines when it saves.) Without an `online_server` line the
+   game tries the laptop named in the loader's `loader.txt`, port 10200.
+3. **Start the online XBE through the loader.** Stop the loader server that is running now (Ctrl+C in its terminal),
+   then serve the online build instead:
+
+       tools/xbox_serve.py --xbe dist/xbox/MH1-online/default.xbe
+
+   (the MH1 data must already be on the Xbox: if not, add `--data dist/xbox/MH1` once). Start **Monster Hunter** on
+   the Xbox: the loader fetches the online XBE and starts it. To go back to the normal game or to G, stop it and
+   start `xbox_serve.py` the way you did before.
+4. **In the game:** on the title screen choose the network mode, as on the PC. The game starts the Xbox's network
+   (the dashboard's network settings; DHCP is fine, it waits up to 10 s), connects, and goes through the Capcom ID
+   screens into the plaza and the town. PC players on the same server see the Xbox hunter and the other way round.
+   The Xbox log (`E:\Games\MH1\mh1log.txt`, sent to the laptop by the loader at its next start) has `net:` and
+   `online:` lines that show where it stopped if something fails (no network, the server not reachable, the login
+   refused).
 
 ### Playing online on a PS2 or in PCSX2 (patch your own disc)
 

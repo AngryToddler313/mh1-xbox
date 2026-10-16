@@ -1665,3 +1665,32 @@ RT_PL_ITEMS, RT_PL_GOD; shots in build/show/F/xset/, not committed):
 - Builds: MH1 PC, test_menu.sh and test_quest_loop.sh pass; G PC (the first build_pc_mhg.sh run failed to link with a
   duplicate `D_3F360A` between rt_gen.c's stand-in and rt_game's alias header, a second run linked: the adapt headers are
   made during the first link; not caused by this change); MH1 Xbox null and nv2a, G nv2a link.
+
+## Online on the Xbox (agent C, 15 Oct 2026)
+
+MH1's online town on the Xbox: `ONLINE=1 tools/build_pc.sh`, then `python3 tools/build_xbox.py --online --gfx nv2a`
+-> `build/xbox/online/nv2a/default.xbe` (own objects in build/xbox/online; `./mh1 xbox DISC --online` copies it to
+dist/xbox/MH1-online/). How the owner runs it: docs/PLAYING.md, "Online on the Xbox". Decision: docs/DECISIONS.md.
+
+What the build does differently from the plain Xbox build:
+- the ONLINE=1 PC build's objects (build/pc/objs.txt after an ONLINE=1 build; build_xbox.py checks build/pc/.variant)
+  plus src/pc/net (net_cpinet, net_dnas, net_netcnf, net_peer) and `-DMH1_ONLINE=1` for the front-end;
+- nxdk's lwIP (lib/net, libnxdk_net.lib). lwIP has its own global `tcp_init` (its TCP module start) that clashed with
+  the game's `tcp_init` (lb_tcp01.c): the link uses a copy of the library with lwIP's renamed (`llvm-objcopy
+  --redefine-sym _tcp_init=_lwip_tcp_init`, build/xbox/online/libnxdk_net_mh1.lib);
+- net_cpinet.c / net_peer.c `#if defined(NXDK)`: lwIP sockets. nxdk's lwIP has no LWIP_SO_RCVBUF, so FIONREAD
+  (bytes waiting, TcpGetStatus st[3]) is a non-blocking MSG_PEEK of up to 0x3CA bytes. The first CpInetInitialize
+  calls nxNetInit(NULL) (dashboard settings; DHCP waits up to 10 s; -2 = no answer yet, the interface stays up). The NIC
+  is shut down before the game goes back to the dashboard (xbox_quit_hook in xbox_log.c), as the loader does;
+- the server comes from settings.ini (`online_server`, `online_login`, `online_password`, the PC's mh1pc.ini keys), which
+  the settings menu now keeps when it rewrites the file; without online_server, loader.txt's host, port 10200.
+- rt_np.c: no Win32 co-op dialog or _putenv_s on the Xbox (xbox_env_set instead).
+
+**Checked in xemu** (tools/xemu_online_test.sh: hidden xemu with NAT networking, its own blank disk image with
+E:\Games\MH1\settings.ini put on it by xbox_fatx.py, `mh1_server.py serve --open` on 127.0.0.1, the Xbox reaches it as
+10.0.2.2): "net: Xbox address 10.0.2.15" (xemu's DHCP) 8 s after the start, "online: connecting to 10.0.2.2 port N"
+(the port from settings.ini), connected, the Capcom ID screens by script, the plaza, lobby entry ("quest download: none")
+and "town step 4" at tick 578. A PC client (mhview_online, hidden) then logged in to the same lobby: the server logged
+both handles, the PC log has `slot 0 "XBOX" ... shown`, the Xbox log `slot 1 "PC" ... shown`; screenshots
+build/show/xemu_online/xbox_sees_pc.png and pc_sees_xbox.png (not committed) show both hunters by the fountain, named.
+Not yet on a real Xbox; rooms and a co-op hunt from the Xbox are not tested.

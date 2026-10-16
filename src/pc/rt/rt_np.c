@@ -92,7 +92,12 @@ int rt_np_arg(int argc, char **argv, int *i)
         static char buf[512];
         const char *old = getenv("RT_NET_ALLOW");
         snprintf(buf, sizeof buf, "%s%s%s", old ? old : "", old ? "," : "", argv[++*i]);
-#ifdef _WIN32
+#if defined(NXDK)
+        {
+            void xbox_env_set(const char *name, const char *value);    /* xbox_env.c: pdclib has no environment */
+            xbox_env_set("RT_NET_ALLOW", buf);
+        }
+#elif defined(_WIN32)
         _putenv_s("RT_NET_ALLOW", buf);
 #else
         setenv("RT_NET_ALLOW", buf, 1);
@@ -180,7 +185,7 @@ static int have_tool(const char *t)
 }
 #endif
 static char ask_addr[64];
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(NXDK)      /* (not the Xbox: no windows there; its co-op uses the online town) */
 /* Windows: one small window (no resource file): Host / Join, the quest list, the number of
  * players, the host's address, OK / Cancel. Returns 1 host, 2 join, 0 cancelled. */
 enum { ID_HOST = 101, ID_JOIN, ID_QUEST, ID_PLAYERS, ID_ADDR, ID_OK, ID_CANCEL };
@@ -290,7 +295,9 @@ static int win_dialog(int *quest_no)
 static int ask_coop(int *quest_no)
 {
     char line[64];
-#ifdef _WIN32
+#if defined(NXDK)
+    /* the Xbox: no dialogs (the console question below finds no input and cancels) */
+#elif defined(_WIN32)
     if (!getenv("RT_NO_GUI"))
         return win_dialog(quest_no);
 #else

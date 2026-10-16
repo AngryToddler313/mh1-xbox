@@ -227,13 +227,14 @@ void gfx_opts_save(void)
                 pc_opt.debug_menu == 1);
     note(f, "hud: original, or prototype gunner (the unused early HUD mock-up cockpit2, for bowgun users; docs/pc.md)");
     fprintf(f, "hud = %s\n", rt_hud_style ? "prototype gunner" : "original");
-#ifndef XBOX
+    /* (the Xbox too: the settings menu rewrites settings.ini, and the player's online lines must survive that) */
     if (pc_opt.online_server[0] || pc_opt.online_login[0] || pc_opt.online_password[0]) {
         fprintf(f, "# online (the ONLINE=1 build): lobby server host:port (a public address set here is allowed; MH Oldschool\n"
                    "# is always refused), the 8-digit login and its password\n");
         fprintf(f, "online_server = %s\nonline_login = %s\nonline_password = %s\n", pc_opt.online_server, pc_opt.online_login,
                 pc_opt.online_password);
     }
+#ifndef XBOX
     note(f, "the windowed position and size, kept on exit");
     if (gfx_opt.win_w > 0) {
         fprintf(f, "window_x = %d\nwindow_y = %d\nwindow_w = %d\nwindow_h = %d\n", gfx_opt.win_x, gfx_opt.win_y, gfx_opt.win_w,
