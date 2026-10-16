@@ -5,6 +5,7 @@ NOT an MH Oldschool server and not Capcom's: written from the game client's code
 
   relay     the in-hunt session relay (relay.py): players' games join it with `--join SERVER --port P` and hunt
             together through it, as with a player hosting but with nobody needing an open port
+  mcs       with --lobby-mcs: the game server of the PS2's own in-hunt protocol (mcs.py), for PS2, PC and Xbox hunts
   lobby     the lobby protocol (lobby_stub.py over tools/mh1_testserver.py) with accounts from SQLite: invite-only,
             only accounts the operator made (`account add`) can log in
   accounts  manage the SQLite account store
@@ -62,8 +63,15 @@ async def serve(a):
         db = AccountDB(a.db) if a.db else None
         if db:
             db.prune()
+        mcs = mcs_port = None
+        if a.lobby_mcs:
+            from mcs import McsServer
+            from lobby_stub import decode_login_key
+            mcs = McsServer(decode_login_key, log=lambda m: print(m, flush=True))
+            mcs_port = await mcs.start(a.bind, a.mcs_port)
+            print("mh1-server game server (mcs relay) on %s:%d" % (a.bind, mcs_port), flush=True)
         lobby = Lobby(a.bind, a.lobby_port, accounts=db, relay=relay, relay_host=a.public_address or a.bind,
-                      relay_matches=a.lobby_relay, loop=asyncio.get_event_loop())
+                      relay_matches=a.lobby_relay, loop=asyncio.get_event_loop(), mcs=mcs, mcs_port=mcs_port)
         print("mh1-server lobby on %s:%d%s" % (a.bind, lobby.start(), " (accounts: %s)" % a.db if db else " (--open: any login)"),
               flush=True)
     stop = asyncio.Event()
@@ -142,6 +150,9 @@ def main():
     s.add_argument("--start-wait", type=float, default=300.0, help="seconds before a session starts with whoever came")
     s.add_argument("--lobby-port", type=int, help="also run the lobby (0 = any free port)")
     s.add_argument("--lobby-relay", action="store_true", help="matches go through the relay (6916; needs a client that joins it)")
+    s.add_argument("--lobby-mcs", action="store_true",
+                   help="matches go through the game's own in-hunt protocol (mcs relay, PS2 / PC / Xbox together)")
+    s.add_argument("--mcs-port", type=int, default=10298, help="the mcs relay's port (one for every hunt)")
     s.add_argument("--public-address", help="the address players reach this server at (for 6916)")
     s.add_argument("--db", help="SQLite account store; without it the lobby accepts any login")
     s.add_argument("-v", "--verbose", action="store_true", help="log the lobby's traffic and events")

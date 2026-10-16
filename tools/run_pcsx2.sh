@@ -20,6 +20,8 @@
 #   --shot      screenshots of the hidden display at the --after times (default: at the end)
 #   --log       where the log goes (default $PCSX2_HOME/PCSX2/logs/emulog.txt; EE and IOP console output included)
 #   --show      run on the desktop instead (debugging by hand only)
+#   --cheats F  a pnach cheat file (RAM writes, e.g. a test's warp aid) for MH1 (SLPM-65495, CRC C2008A92, or the
+#               --elf's CRC), its [sections] enabled; without it no cheats run
 #   --net       DEV9 network adaptor on, in PCSX2's "Sockets" mode (no root, no TAP/PCAP): the guest gets an address from
 #               PCSX2's own DHCP and reaches the host's LAN address (not 127.0.0.1) through ordinary host sockets
 # Input: pad 1 is the keyboard (arrows = d-pad, x = cross, c = circle, z = square, s = triangle, Return = start,
@@ -34,7 +36,7 @@ cd "$(dirname "$0")/.."
 PCSX2=${PCSX2:-$HOME/ps2dev/pcsx2/pcsx2-v2.8.2.AppImage}
 PH=$(realpath -m "${PCSX2_HOME:-$HOME/ps2dev/pcsx2/data}")
 D=$PH/PCSX2      # PCSX2 puts its folders in DATAPATH/PCSX2
-ISO="disc/mh1/Monster Hunter (Japan).iso"; ELF=""; CARD=""; CARDFROM=""; SECS=120; SHOT=""; AFTER=""; LOG=""; SHOW=; NET=false
+ISO="disc/mh1/Monster Hunter (Japan).iso"; ELF=""; CARD=""; CARDFROM=""; SECS=120; SHOT=""; AFTER=""; LOG=""; SHOW=; NET=false; CHEATS=""
 while [ $# -gt 0 ]; do
     case "$1" in
     --iso) ISO=$2; shift 2 ;;
@@ -47,6 +49,7 @@ while [ $# -gt 0 ]; do
     --log) LOG=$2; shift 2 ;;
     --show) SHOW=1; shift ;;
     --net) NET=true; shift ;;
+    --cheats) CHEATS=$2; shift 2 ;;
     *) echo "unknown option $1"; exit 2 ;;
     esac
 done
@@ -67,6 +70,20 @@ elif [ -n "$CARD" ]; then
 fi
 [ -f "$D/memcards/Mcd001.ps2" ] || echo "note: no memory card in slot 1 yet (--card / --card-from); PCSX2 makes an empty one"
 LOG=${LOG:-$D/logs/emulog.txt}
+mkdir -p "$D/cheats"
+rm -f "$D/cheats/"SLPM-65495_*.pnach
+CHEATON=false; CHEATLIST=""
+if [ -n "$CHEATS" ]; then
+    cp "$CHEATS" "$D/cheats/SLPM-65495_C2008A92.pnach"
+    if [ -n "$ELF" ]; then  # a boot ELF (the launcher) keeps its own CRC (PCSX2's: the XOR of the file's words) for the game
+        CRC=$(python3 -c "import struct,sys; d=open(sys.argv[1],'rb').read(); d+=bytes(-len(d)%4); c=0
+for (w,) in struct.iter_unpack('<I', d): c ^= w
+print('%08X' % c)" "$ELF")
+        cp "$CHEATS" "$D/cheats/SLPM-65495_$CRC.pnach"
+    fi
+    CHEATON=true
+    CHEATLIST=$(sed -n 's/^\[\(.*\)\]$/Enable = \1/p' "$CHEATS")
+fi
 PINEON=false; [ -z "$PINE" ] || PINEON=true
 
 # settings: written fresh each run (PCSX2 adds its defaults for the rest)
@@ -92,7 +109,7 @@ BIOS = $BIOSF
 EnableFastBoot = true
 HostFs = true
 EnablePatches = false
-EnableCheats = false
+EnableCheats = $CHEATON
 EnableDiscordPresence = false
 EnablePINE = $PINEON
 PINESlot = ${PINE:-28011}
@@ -118,6 +135,8 @@ EnableIOPConsole = true
 SDL = false
 [Achievements]
 Enabled = false
+[Cheats]
+$CHEATLIST
 [DEV9/Eth]
 EthEnable = $NET
 EthApi = Sockets

@@ -67,7 +67,7 @@ int mcsls_get_error_code();
 int set01_set2();
 int Quest_error_set();
 void get_AQdata(void);
-u8 *ck_exec_aq();
+u8 *ck_exec_aq(void *u, int mode, u32 now);
 void host_change(void);
 void AQ_session_exit_online(void);
 void AQ_recv(int);
@@ -100,7 +100,7 @@ void sync_host_sub(u8 *d, int idx);
 void other_item_sub(u8 *d, int idx, int x);
 void item_ans_send(int a, int b);
 int CngNetAQDataPut();
-void pl_data_put();
+void pl_data_put(int pl, u8 *d, int kind);
 int send_my_data();
 
 typedef struct SYSX { u8 pad[0x34]; u8 x34; u8 x35; } SYSX;
@@ -335,8 +335,9 @@ int AQSession_wait(void) {
     return r;
 }
 
-u8 *ck_exec_aq() {
-    return CngNetAQcommandExec();
+/* the arguments (unit, list, time) pass through in a0-a2 on the PS2; written out for the PC build (tools/argregs.py) */
+u8 *ck_exec_aq(void *u, int mode, u32 now) {
+    return CngNetAQcommandExec(u, mode, now);
 }
 
 void AQ_send(void) {
@@ -629,7 +630,7 @@ int AQ_data_put(int pl, u8 *d, int mode) {
     }
     d[2] = game_w.master;
     if (pl > 0 && pl < 5 && mode == 0) {
-        pl_data_put();
+        pl_data_put(pl, d, mode);   /* (a0-a2 passed through on the PS2) */
         return 1;
     }
     if (w->buff < 2) {
@@ -645,7 +646,7 @@ int AQ_data_put(int pl, u8 *d, int mode) {
     return ((s8)send_my_data(pl, d, mode) != 0) ? -7 : 0;
 }
 
-void pl_data_put(int pl, u8 *d) {
+void pl_data_put(int pl, u8 *d, int kind) {
     int len = d[1];
     PLPUT *pb = &pl_put_buf;
     int r;
@@ -656,7 +657,7 @@ void pl_data_put(int pl, u8 *d) {
     if (len != 0) {
         r = (len + 3) / 4 * 4;
         if (pb->pl != -1 && pb->pl != pl) {
-            send_my_data(pl, d);
+            send_my_data(pl, d, kind);
         }
         v = aq_work.x28;
         l = pb->len;

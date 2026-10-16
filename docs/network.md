@@ -693,7 +693,7 @@ and the town, and meets a PC client there (each sees the other, chat both ways).
 `mcsls` records (section 5.5, docs/server.md 2.4 / 4.2), while mh1-server's relay and the PC / Xbox ports speak
 net_peer frames. So a patched PS2 reaches the lobby, the town, rooms and matching, but **cannot hunt yet**. Step 2:
 
-### 3.7 Step 2: in-hunt parity (what is needed; nothing built)
+### 3.7 Step 2: in-hunt parity (the plan; built in 3.10)
 
 1. **The faithful game-server relay** (`tools/server/mcs.py`, docs/server.md 4.2, milestone S7): sends 0x1031, reads
    the 0x82 login (`cmcs_04`: `mmbbc_encode(key, seq)`), finds the match by the decoded key, relays records
@@ -913,6 +913,83 @@ server got all three lines; the PC shows the Xbox's and the PS2's hunters and go
   screenshots). That was the "no terms notice" failure of test_ps2_online under full_check (agent D): the cap, not the
   game. Both scripts now refuse to start under a cap.
 
+### 3.10 Step 2: hunts on the game's own protocol, PC / Xbox / PS2 (agent C, 16 Oct 2026)
+
+Decision (docs/DECISIONS.md, 16 Oct): the ports run the PS2's own session code. `mh1_server.py serve --lobby-mcs`
+answers 6914 with "mh1-mcs" and 6916 with its **mcs relay** (tools/server/mcs.py, one port, default 10298); at 6916
+the lobby registers the match's logins there with their player numbers (6912 - 1). rt_online.c sees "mh1-mcs" and
+hands the match to src/pc/rt/rt_mcs.c instead of net_peer.c.
+
+What the PC does after the match, with the game's code (rt_mcs.c's header has the details):
+1. `internet_to_modem` -> `cmcs_00`..`cmcs_06` (lobby): close the lobby socket, connect to 6916's address, wait for the
+   server's 0x1031, answer with the 0x82 login, `LobbyToMcsInit` (players, own number), `AQ_init`,
+   `AQSession_init_online` -> `CngSessionStart_online` -> `mcsls_init`;
+2. `AQ_exec` until `AQSession_wait`; `pl_num = AQ_join_num_get()`;
+3. Plsel's handshake: `Copy_user_id`, `sel_default_set`, the ready flag, `net_send_sys(2)` until every player's flag
+   came (each sends its hunter id and select data; slot 0 the quest), once more, 30 frames;
+4. the PC's own stage load; the other hunters' look from the lobby's mini data by the hunter id each sent
+   (`Set_mini_data_to_pl`, as `init_pl_work`);
+5. `net_start_ck` (sys 3 rounds; the network delay from mcsls' ping) until it agrees;
+6. every tick `AQ_send` + `AQ_exec` (mcsls_move: records in and out, pings, keep-alives; the AQ packets to
+   `self_data_ctrl` -> `net_receive_pl` / `_em` / `_sys` / `_host`).
+The ONLINE=1 build links aq_nm.c, aqcmd_nm.c, cng_nm.c, cngmsg_nm.c, cnmsg_nm.c, mcsls_*.c, netsyn04.c,
+netsyn07_nm.c and the cmcs_* lobby files; rt_np.c's `AQ_data_put` / `net_start_ck` / `mcsls_force_drop` pick the mcs
+or the direct-connect path (the game's are renamed `mcs_*` in build_pc.sh). The clock (`CngNetTimeGet`, the EE timer
+on the PS2) is the host's; `CnInetNetworkAveTcpPoll` says "connected".
+
+Found on the way [checked]:
+* The 0x82 login's payload is the 10 digits alone (no length in front; cmcs_04 uses `SetSendStringData`).
+* Three register pass-throughs that gcc cannot follow (tools/argregs.py --check): `ck_exec_aq` (aq_nm.c) forwards its
+  three arguments to `CngNetAQcommandExec`, `AQ_data_put` -> `pl_data_put` -> `send_my_data` the same,
+  `CngNetAQDataTrans2Work` (cng_nm.c) the packet's flag byte to `CngNetAQdataToObj`; written out in the _nm files
+  (the PC crashed in `CngNetAQcommandSort` before).
+* `system_w+0x35` ("loading") stops `AQ_exec` entirely; the title's edit screen leaves it set on the PC (the PS2's
+  game11 / game12 clear it): rt_mcs.c clears it. A PS2 does not poll its session at all while it loads a stage
+  (DROP_TIMEOUT is 30 s, `mcsls_timeout_default` 100 s): the relay allows 120 s of silence.
+* `AQ_data_put` refuses packets while the AQ timer is 0: the first `net_send_sys(2)` needs one `AQ_exec` before it
+  (Game_task's step 4 runs one before game0).
+* mcsls' sync / ping / start rounds need nothing from the server except passing the records on: no record waits for
+  everyone to be connected (sync flag 0 is repeated every 30 frames; ping and flag 2 are only sent once all said 1).
+
+Tested: `tools/test_online_mcs.sh` (two PCs, 127.0.0.1, ~4 min): login to the town, ANNA's room (quest 1, 2 players),
+BOB joins, both log in to the mcs relay (players 0 and 1), mcsls reaches state 5 (sync, 8 pings, start), the select
+handshake completes, `net_start_ck` agrees (delay 2 frames), each sees the other at the same position (np-pos), the
+monster's state from its owner (HP, action), ANNA delivers, BOB sees the clear, both back in the town. The relay saw
+the record kinds 0x20/0x30 (16 pings), 0x40/0x70 (app data), 0x90 (sync), 0xF0 (keep-alives).
+
+**PS2 and PC in one hunt** (`tools/test_ps2_hunt.sh`, PCSX2 hidden + one PC, ~20 min, uncapped, by hand; not in
+full_check) [checked, 16 Oct 2026]: the owner's unpatched disc through the memory-card launcher, mh1-server
+`--lobby-mcs` on the LAN address. ANNA (PC) posts quest 1 for 2 at the counter, the PS2 joins it at the quest board
+and gets ready at the departure spot, ANNA starts. Both log in to the mcs relay (the PS2's own cmcs_04 0x82 login is
+accepted by mcs.py), mcsls sync / 8 pings / start, the select handshake (sys 2 both ways), net_start_ck agrees (the
+PS2 needs ~340 frames to load the stage), and both are in the forest camp: **the PS2 shows ANNA next to its hunter and
+both names in its party list; the PC shows the PS2's hunter "TEST", and sees it walk when the PS2 walks**; ANNA
+delivers the quest's item and **the PS2 gets the clear and its reward screen** (quest events over sys 6). Screens:
+build/show/ps2_hunt/shared_hunt.png (PS2 at the camp | the PC at the camp | the PS2's reward screen). Not tested
+yet with the PS2: a monster fight (quest 1 has no large monster), monster ownership hand-over to or from a PS2, a PS2
+leaving mid-hunt, 3-4 players.
+**Xbox and PC** (`tools/xemu_mcs_hunt.sh`, xemu hidden, ~10 min) [checked]: the same flow with the online Xbox build
+joining (RT_LB_WARP as the PC tests, settings.ini for the server); the Xbox sees ANNA, gets the clear and its reward
+screen; the PC sees XBOX (build/show/xemu_mcs/shared_hunt.png).
+
+**PS2, PC and Xbox in one hunt** (`XBOX=1 tools/test_ps2_hunt.sh`, PCSX2 + xemu + PC, ~25 min) [checked, 16 Oct
+2026]: a room for 3; the mcs relay has players 0 (PC), 1 (PS2), 2 (Xbox); every screen shows all three hunters at
+the camp and all three names in its party list (build/show/ps2_hunt/three_platform_hunt.png: PS2 | PC | Xbox); the
+PC's delivery clears the quest on all three.
+
+* Found by this test: the PC said "loaded" (sys 3) once, while the PS2 was still in game10; the PS2's game11 clears
+  those flags at the end of its load, so it waited at "クエストを開始します" for ever. rt_mcs.c now repeats it six
+  times (once a second) after its own start was agreed.
+* Test aids for the PS2 (no game code changed): a PCSX2 cheat file (`tools/run_pcsx2.sh --cheats`, pnach RAM writes)
+  holds the hunter on the guild hall's door in the square, puts it at the quest board once in the hall, at the
+  departure spot while L2 is held, and sets the guild registration flag (event flag 4) as the PC tests'
+  RT_NET_REGISTERED does; without it the board's square does nothing. In the hall the hunter must not be moved every
+  frame (it could not walk off); PCSX2 applies cheats by the CRC of the first ELF (the launcher's), run_pcsx2.sh
+  installs the file under both.
+* The room flow on the PS2, for anyone scripting it: square on the door (into the hall), square at the board, circle
+  through the list and the paper, "参加しますか" yes, OK; then at the departure spot square ("出発準備"), circle; the
+  leader starts with square at the same spot once everyone is ready (before that the counter only says so).
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online
@@ -926,6 +1003,10 @@ server got all three lines; the PC shows the Xbox's and the PS2's hunters and go
     tools/test_online_guest.sh                       # guest rooms, two clients against mh1-server (~2 min)
     tools/test_online_event.sh                       # an event quest downloaded, posted, cleared; a patch refused (~4.5 min)
     tools/test_online_server.sh                      # login to town to quest to town against mh1-server (relay) (~4 min)
+    tools/test_online_mcs.sh                         # the same on the game's own in-hunt protocol (mcs relay, 3.10) (~4 min)
+    tools/test_ps2_hunt.sh                           # a PS2 (PCSX2) and a PC hunt together (3.10; uncapped, ~20 min)
+    XBOX=1 tools/test_ps2_hunt.sh                    # PS2 + PC + Xbox (xemu) in one hunt (~25 min)
+    tools/xemu_mcs_hunt.sh                           # the Xbox and a PC (~10 min)
     RUN=wine BIN=build/win/mhview_online.exe tools/test_online_server.sh   # the same with the Windows build (passes, 10 Oct 2026)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 

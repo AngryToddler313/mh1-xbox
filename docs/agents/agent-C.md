@@ -1994,3 +1994,23 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   The G game menu's cursor starts on NEW GAME on a card without hunters: tools/pc_scripts/newgame.txt needs its `dup*2,idle*10,` removed for G.
 - **Village hunter's name**: rt_village.c now calls Set_userdata (name, pouch, equipment) on the first visit; scripted hunters get RT_NAME.
 - **trans_stage** looked at (not ported): 12 new blocks, about 720 instructions, per-stage clay draws (see RELEASE_G.md).
+
+## Online step 2: hunts on the game's own protocol (16 Oct 2026)
+- **What:** PC / Xbox online builds now run the PS2's in-hunt stack (aq_nm.c, aqcmd_nm.c, cng_nm.c, cngmsg_nm.c,
+  cnmsg_nm.c, mcsls_*.c, netsyn04.c, netsyn07_nm.c, the lobby's cmcs_*) for matches from `mh1_server.py serve
+  --lobby-mcs`; glue in src/pc/rt/rt_mcs.c, the switch in rt_np.c / rt_online.c; server: tools/server/mcs.py (was a
+  skeleton) wired into mh1_server.py / lobby_stub.py. docs/network.md 3.10, docs/DECISIONS.md (16 Oct).
+- **Tests:** tools/test_online_mcs.sh (two PCs, passes); tools/test_ps2_hunt.sh (PS2 in PCSX2 + PC, needs PCSX2,
+  not in full_check); tools/run_pcsx2.sh `--cheats FILE` (pnach RAM writes, used as a warp aid for the PS2's hunter).
+- **Lessons:** register pass-throughs in near-match network C (ck_exec_aq, pl_data_put, CngNetAQDataTrans2Work) show
+  up only on the PC: run `tools/argregs.py lobby build/main.dis build/lobby.dis --check FILE` on every _nm file before
+  linking it into the PC build. `system_w+0x35` is the "loading" flag that stops AQ_exec. The 0x82 mcs login carries
+  the 10 key digits without a length.
+- **PS2 / Xbox (16 Oct, later):** tools/test_ps2_hunt.sh (PS2 + PC; XBOX=1 adds the Xbox: three platforms in one hunt,
+  all pass) and tools/xemu_mcs_hunt.sh (Xbox + PC). Fix found by the PS2: rt_mcs.c repeats net_start_ck's sys 3 after
+  agreeing (the PS2's game11 clears what arrived before its load ended). PS2 test aids: PCSX2 pnach cheats
+  (`run_pcsx2.sh --cheats`) for warps and the guild registration flag; MH1 needs square on doors and at the board, the
+  "ready" is square at the departure spot (3100, 2100) in the hall. PCSX2 loads cheats by the first ELF's CRC (the
+  launcher's), computed as the XOR of the file's words.
+- **Open:** monster fights with a PS2 in the party (quest 1 has none), ownership hand-over to/from a PS2, a PS2
+  dropping mid-hunt, real hardware (PS2 and Xbox), the meaning of 0x1032.

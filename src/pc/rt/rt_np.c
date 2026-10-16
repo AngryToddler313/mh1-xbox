@@ -32,6 +32,8 @@
 #define GW8(o) (((u8 *)&game_w)[o])
 
 extern u8 Ken_data[][0x18];
+extern u8 select_w[];
+#define select_w_ select_w
 extern u8 Battle_type[];
 
 static int rt_online;
@@ -68,6 +70,21 @@ static void sleep_ms(int ms)
     nanosleep(&t, NULL);
 #endif
 }
+
+double rt_np_now_s(void) { return now_s(); }
+void rt_np_sleep_ms(int ms) { sleep_ms(ms); }
+
+/* an online-town match on the game's own in-hunt protocol (rt_mcs.c, docs/network.md 3.10) */
+int rt_mcs_on(void);
+void rt_mcs_configure(int on);
+int rt_mcs_setup(void);
+void rt_mcs_init_slots(void);
+void rt_mcs_start(void);
+void rt_mcs_tick(void);
+void rt_mcs_end(void);
+int mcs_AQ_data_put(int ch, u8 *d, int mode);
+int mcs_net_start_ck(void);
+void mcs_force_drop(u32 n);
 
 /* command line: --host [BIND_IP] / --join HOST_IP, --port N, --players N (host: wait for N) */
 int rt_np_arg(int argc, char **argv, int *i)
@@ -580,6 +597,14 @@ void rt_np_configure(int role, const char *addr, int port, int players)
     want_addr = role == 2 ? a : NULL;
     want_port = port;
     want_players = players < 2 ? 2 : players > 4 ? 4 : players;
+    rt_mcs_configure(0);
+}
+
+/* the online town's match through mh1-server's game server (6914 "mh1-mcs"): the game's own session (rt_mcs.c) */
+void rt_np_configure_mcs(int players)
+{
+    rt_np_configure(2, "", 0, players);
+    rt_mcs_configure(1);
 }
 
 /* Before the quest is set up: host waits for the joiners and announces the quest; a joiner
@@ -590,6 +615,14 @@ int rt_np_setup(int quest_no)
     int wait_s = getenv("RT_NP_WAIT") ? atoi(getenv("RT_NP_WAIT")) : 300, t;
     if (!want_role)
         return 0;
+    if (rt_mcs_on()) {
+        if (!getenv("RT_NP_NOSAVE") && !User_data[8])
+            load_own_hunter();
+        int q = rt_mcs_setup();
+        if (q <= 0)
+            rt_mcs_end();               /* no hunt: the game-server connection closed, back to the town */
+        return q > 0 ? q : -1;
+    }
     if (want_role == 3) {
         want_role = ask_coop(&quest_no);
         if (!want_role)
@@ -646,16 +679,18 @@ int rt_np_setup(int quest_no)
     return quest_no;
 }
 
-int rt_np_slot(void) { return want_role ? np_slot() : 0; }
-int rt_np_players(void) { return want_role ? np_players() : 1; }
+int rt_mcs_slot(void);
+int rt_mcs_players(void);
+int rt_np_slot(void) { return rt_mcs_on() ? rt_mcs_slot() : want_role ? np_slot() : 0; }
+int rt_np_players(void) { return rt_mcs_on() ? rt_mcs_players() : want_role ? np_players() : 1; }
 
 /* rt_player_game_init, before pl_init: the session's slots, as Game_task step 3 and
  * init_pl_work do online (every slot's equipment and look from its mini data, which the host
  * collected and sent to all). */
 void rt_np_init_slots(void)
 {
-    int n = np_players(), me = np_slot(), s;
-    if (!want_role || !np_started())
+    int n = rt_np_players(), me = rt_np_slot(), s;
+    if (!want_role || (!rt_mcs_on() && !np_started()))
         return;
     game_w.master = (u8)me;
     game_w.pl_num = (u8)n;
@@ -667,8 +702,9 @@ void rt_np_init_slots(void)
     }
     GW8(0x21B) = 0;                 /* host slot (host_change; guess) */
     GW8(0x1B0) = 2;                 /* frames of network delay (net_start_ck computes it from the ping) */
-    for (s = 0; s < 8; s++)
-        game_w.pl_state[s] = s < n ? 1 : 0;
+    if (!rt_mcs_on())               /* (an mcs session has them from AQ_join_num_get, a drop since included) */
+        for (s = 0; s < 8; s++)
+            game_w.pl_state[s] = s < n ? 1 : 0;
     {   /* the quest's first monsters were made (pull_enemy_work, em_init) before the slots were known:
          * the host (slot 0) owns them, as on the PS2: +0x8C3 = 0 on the host ("this machine runs it"), non-zero
          * elsewhere; +0x88E = the owner's slot, 0 on every machine (it was this machine's slot: when the host left,
@@ -681,7 +717,9 @@ void rt_np_init_slots(void)
                 em_work[0xA10 * k + 0x88E] = 0;
             }
     }
-    for (s = 0; s < n; s++) {
+    if (rt_mcs_on())
+        rt_mcs_init_slots();
+    else for (s = 0; s < n; s++) {
         PLW *pl = &player_work[s];
         if (s != me) {
             pl->be_flag = 1;
@@ -699,7 +737,7 @@ void rt_np_init_slots(void)
     {   /* the same random numbers to start with on every machine (the PS2 seeds them from its
          * clock, init_ran_suu): the quest's set-up then places the same things */
         extern u16 Rnd_w[];
-        Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + np_quest());
+        Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + (rt_mcs_on() ? *(u16 *)(select_w_ + 0xAC) : np_quest()));
     }
     if (getenv("RT_QUEST_TIME")) {  /* test aid: the quest's time left (ticks), for time-out tests */
         extern u8 quest_w[];
@@ -729,7 +767,9 @@ void rt_np_after_init(void)
         fprintf(stderr, " weapon %d armour %d %d %d %d %d\n", PF(&player_work[s], u16, 0x360), PF(&player_work[s], u8, 0x352),
                 PF(&player_work[s], u8, 0x354), PF(&player_work[s], u8, 0x355), PF(&player_work[s], u8, 0x356), PF(&player_work[s], u8, 0x357));
     }
-    {   /* the start barrier (net_start_ck's job, game13): every player has loaded the stage
+    if (rt_mcs_on())
+        rt_mcs_start();             /* game13's own net_start_ck */
+    else {   /* the start barrier (net_start_ck's job, game13): every player has loaded the stage
          * before anyone's hunt starts, so slow machines do not miss the first packets */
         static int round;
         int t;
@@ -748,6 +788,10 @@ void rt_np_after_init(void)
  * handed on by Em_Master_Change) */
 void mcsls_force_drop(u8 slot)
 {
+    if (rt_mcs_on()) {
+        mcs_force_drop(slot);
+        return;
+    }
     if (slot < game_w.pl_num && slot != game_w.master && game_w.pl_state[slot] != 0xFF) {
         game_w.pl_state[slot] = 0xFF;
         player_work[slot].x01 = 0;
@@ -760,9 +804,10 @@ void mcsls_force_drop(u8 slot)
 int AQ_data_put(int ch, u8 *d, int mode)
 {
     int n = d[1];
-    (void)mode;
     if (!rt_online)
         return -1;
+    if (rt_mcs_on())
+        return mcs_AQ_data_put(ch, d, mode);
     if (ch <= 0 || ch >= 0xB)
         return -4;
     d[2] = game_w.master;
@@ -780,7 +825,7 @@ int AQ_data_put(int ch, u8 *d, int mode)
 }
 
 /* net_start_ck (netsyn07_nm.c, game13): the quest start was agreed before the stage loaded */
-int net_start_ck(void) { return 1; }
+int net_start_ck(void) { return rt_mcs_on() ? mcs_net_start_ck() : 1; }
 
 void net_receive_pl(int no, u8 *buf, int force);
 void net_receive_em(int slot, u8 *buf);
@@ -842,7 +887,10 @@ void rt_np_tick(void)
             sleep_ms((int)((t0 + n_ticks / 30.0 - t) * 1000.0));
         n_ticks++;
     }
-    np_poll();
+    if (rt_mcs_on())
+        rt_mcs_tick();              /* the game's own session: AQ_send, AQ_exec (-> net_receive_*) */
+    else
+        np_poll();
     if (rt_online && getenv("RT_QUEST_RETIRE")) {     /* test aid: abandon the quest at that tick (the quest menu's
                                                        * "return to the village": Quest_retire_set) */
         static int tk;
@@ -852,7 +900,7 @@ void rt_np_tick(void)
             Quest_retire_set();
         }
     }
-    if (rt_online) {        /* a player who left: as mcsls_force_drop marks it (pl_state 0xFF), and no longer shown */
+    if (rt_online && !rt_mcs_on()) {    /* a player who left: as mcsls_force_drop marks it (pl_state 0xFF), and no longer shown */
         int s;
         for (s = 0; s < game_w.pl_num; s++)
             if (s != game_w.master && np_gone(s) && game_w.pl_state[s] != 0xFF) {
@@ -861,7 +909,7 @@ void rt_np_tick(void)
                 fprintf(stderr, "co-op: player %d left the quest\n", s);
             }
     }
-    while ((n = np_recv(&from, &type, buf, sizeof buf)) >= 0) {
+    while (!rt_mcs_on() && (n = np_recv(&from, &type, buf, sizeof buf)) >= 0) {
         st_rx++;
         if (n < 4 || (buf[2] == game_w.master && type != 7)) {
             st_drop++;
@@ -934,7 +982,10 @@ int rt_np_session_end(void)
     ItemCopy_Pl2Ud(&player_work[me]);       /* the pouch as it is now */
     save_own_hunter();
     rt_online = 0;
-    np_close();
+    if (rt_mcs_on())
+        rt_mcs_end();
+    else
+        np_close();
     /* (the village sets player_work[0] up again from User_data: Clear_lobby_ram, Local_main) */
     for (s = 1; s < 8; s++) {
         player_work[s].be_flag = 0;
@@ -951,7 +1002,9 @@ int rt_np_session_end(void)
 
 void rt_np_close(void)
 {
-    if (want_role)
+    if (rt_mcs_on())
+        rt_mcs_end();
+    else if (want_role)
         np_close();
 }
 

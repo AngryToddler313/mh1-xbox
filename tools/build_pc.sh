@@ -254,18 +254,29 @@ if [ -n "$ONLINE" ]; then
     NETMAIN="src/main/net/netdev01.c src/main/net/netdev17.c src/main/net/cnlbs01.c src/main/net/cnlbs02.c src/main/net/cnlbs03.c \
              src/main/net/netsyn01.c src/main/net/netsyn02_nm.c src/main/net/netsyn03.c \
              src/main/net/netsyn05.c src/main/net/netsyn08.c src/main/net/netsyn09.c src/main/net/netsyn10.c src/main/net/netsyn11_nm.c"
+    # the game's own in-hunt session for hunts through mh1-server's game server (rt_mcs.c, docs/network.md 3.10): the AQ
+    # queue, Cng, the mcsls session layer, the start handshake; AQ_data_put / net_start_ck / mcsls_force_drop are renamed
+    # (ABI below), rt_np.c's own pick the mcs or the direct-connect path
+    NETMAIN="$NETMAIN src/main/aq/aq_nm.c src/main/net/aqcmd_nm.c src/main/net/cng_nm.c src/main/net/cngmsg_nm.c \
+             src/main/net/cnmsg_nm.c src/main/net/mcsls_i01.c src/main/net/mcsls_m01.c src/main/net/mcsls_nm.c \
+             src/main/net/mcsls_r0_nm.c src/main/net/netsyn04.c src/main/net/netsyn07_nm.c"
+    # the lobby's game-server connect (internet_to_modem -> cmcs_00..06; connect_ps2 is lb_bz81.c's)
+    NETLB_MCS="src/lobby/b/lb_cmcs00.c src/lobby/b/lb_cmcs02.c src/lobby/b/lb_bz103.c src/lobby/b/lb_cmcs04.c \
+               src/lobby/b/lb_bz26.c src/lobby/b/lb_bz82.c src/lobby/b/lb_by63.c"
+    PICK_MAIN="$PICK_MAIN src/lobby/b/lb_cmcs01.c:cmcs_01 src/main/boot/boot02.c:LobbyToMcsInit,LobbyToMcsInitSocket \
+               src/main/plsel/plsel_nm.c:sel_default_set"
     NETLB="src/lobby/cnet/cnlbs.c src/lobby/cnet/cnlbsb.c src/lobby/cnet/cnlbsc.c src/lobby/cnet/cnlbsd.c src/lobby/cnet/cnlbse.c \
            src/lobby/cnet/cnlbsf.c src/lobby/cnet/cnlbsg.c src/lobby/cnet/cnlbsh.c src/lobby/cnet/cnlbs_nm.c \
            src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c \
-           src/ps2patch/online.c"   # (online.c: the server table fill shared with the PS2 online patch)
-    GAME="$GAME $NETMAIN $NETLB"
+           src/ps2patch/online.c $NETLB_MCS"   # (online.c: the server table fill shared with the PS2 online patch)
+    GAME="$GAME $NETMAIN $NETLB src/lobby/b/lb_cmcs01.c src/main/boot/boot02.c src/main/plsel/plsel_nm.c"
     WEAK="$WEAK lb__cnlbs_nm lb__lbui_nm"   # lbui_nm: the plaza TUs lb_plz2/3 (matched C) win
     # main's cnLBS file-download C calls the lobby's cnet helpers by address
     NETALIASES="func_5AD280=__cnetSub_Set_BgProcess func_5AD1B0=_cnet_Return_CallBack func_5ADB60=GetRecvData8 \
              func_5ADB90=GetRecvData32 func_5ADEE0=SetSendCommand func_5AE090=SetSendCommandLen func_5AE0B0=SetSendData8 \
              func_5AE120=SetSendData32 func_5AE300=Write_Socket"
     NETFRONT="src/pc/net/net_cpinet.c src/pc/net/net_dnas.c src/pc/net/net_netcnf.c src/pc/net/net_peer.c"
-    NETRT="rt_net rt_np rt_online"
+    NETRT="rt_net rt_np rt_online rt_mcs"
     PC="$PC $NETFRONT"
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
@@ -663,6 +674,10 @@ for f in $GAME; do
     case " $MATCHED_A " in *" $f "*) ABI="$ABI $FNDEFS" ;; esac
     # stage code (f_stage_nm.c, f_stageb.c) calls game.bin's Set09_set_ex and the lobby overlay's Eft25_set_pos by address
     case "$f" in src/main/stage/f_stage_nm.c|src/main/stage/f_stageb.c) ABI="$ABI -Dfunc_618F00=Set09_set_ex -Dfunc_60E330=Eft25_set_pos" ;; esac
+    # the game's in-hunt session (ONLINE=1, rt_mcs.c): rt_np.c's AQ_data_put / net_start_ck / mcsls_force_drop choose
+    # between it and the direct-connect co-op; the EE-timer clock is the host's (rt_mcs.c CngNetTimeGet)
+    case "$f" in src/main/aq/aq_nm.c) ABI="$ABI -DAQ_data_put=mcs_AQ_data_put" ;; src/main/net/netsyn07_nm.c) ABI="$ABI -Dnet_start_ck=mcs_net_start_ck" ;;
+        src/main/net/mcsls_nm.c) ABI="$ABI -Dmcsls_force_drop=mcs_force_drop" ;; src/main/net/cnmsg_nm.c) ABI="$ABI -DCngNetTimeGet=ps2_CngNetTimeGet" ;; esac
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj_p "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
     OBJS="$OBJS $o"
