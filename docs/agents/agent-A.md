@@ -1031,3 +1031,31 @@ Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, buil
   for every new case. Diffing the m2c drafts of MH1 and G (addresses stripped) lists the changed cases quickly.
 - Seen, not fixed: `mhview_g --stage 88/89` crashes in load_stage_hit (f_sphr.c:186), not from this change.
 - Progress (VERSION=mhg tools/progress.py): 20.161% before and after (this round is PC-only C, no new PS2 match).
+
+## G round 12: real-G reference shots, stage fog, Dual Swords sounds, NextStage_Dir_Set (16 Oct 2026)
+
+- **tools/g_ref_shot.sh + tools/pcsx2/pine.py** (RELEASE_G section 9). PCSX2 2.8.2's PINE: `EnablePINE`/`PINESlot` in
+  [EmuCore], socket $XDG_RUNTIME_DIR/pcsx2.sock.SLOT; ops 0-7 read/write 8-64 bit, 9/10 save/load state slot, 11 title,
+  15 status. run_pcsx2.sh: `PINE=slot` env, left stick on i/j/k/l, right stick t/f/g/h (the d-pad does not walk).
+  Village warp for the real game: lobby player_work (G 0x34D450) +0xAC / +0xB4 floats, as RT_LB_WARP. Quest accepted
+  = select_w+0xD0 (G 0x35EC30) holds the quest number (10001 for the elder's first quest); writing it alone does not
+  open the gate. Area warp = PLW+0x73A stage, +0x73C pos, +0x570 angle, +0x738 = 1 (stage_mv_ck's own fields).
+  G's camera: lpView (0x2EF28C) -> eye[3], target[3], ..., +0x2C angle of view. Gotcha: `kill $!` of a `flock ...
+  run_pcsx2.sh &` kills flock only; the emulator keeps the lock: kill run_pcsx2.sh (pgrep -P flockpid).
+- **Fog**: fl fogs per clay (RenderState 0x8000 from Attribute_from_amo's aa_fog[a[8]], aa_fog = {0x8000, 0} in both
+  games), FOGCOL takes the low 24 bits only, start/end are flSetRenderState 0x10/0x11 (stage_fog_set per stage; G reads
+  stage_work+0x50 instead when +0x4D > 0, set by func_0010F9F0, not ported: never set offline [inferred]). The PC
+  now does it per clay (gfx_clay_desc.fog). Fog strength vs the PS2 not calibrated (VU1 code not read).
+- **flPS2SendRenderState_ALPHA** (0x178C90) decoded for src 2: dst 0x10 -> ALPHA 0x48 = Cs*As + Cd (additive),
+  dst 0x30 -> 0x44 (normal blend). Confirms SetTrnslMode(4, 1) is additive (stage 27's layers).
+- **Battle_type at MH1 size on G** (0x7C of 0xE1): a G table that keeps its MH1 name but grew in G is imported at the
+  MH1 size unless pc_data.txt says otherwise; look for `extern X name[MH1 size]` with G indexes past it.
+- **ef_move_sub comparison method** (scratch, not committed): a ~250-line MIPS interpreter over the objdump of both
+  functions, pointer values symbolic (pl, w), loads from pl/w taken from an input dict (kind, anim), frame_check
+  returning 1, Code_Make returning a marker; per (kind, anim) the call multisets are compared. Guards are found by
+  re-running with one frame_check returning 0. The generated C was checked the same way (harness compiling the
+  case block with recording stubs).
+- **eft09 (G)**: G's eft09_set keeps the quest entry's lives (em_work_serch(em)->x04) in ew->timer; eft09_m ends the
+  tail when the entry's lives drop below it and +0x2E = 2; subspecies kinds in the tail_off switch. f_quest.c's statics
+  are global on the PC (one TU), so G code that calls them (em_work_serch) links.
+- Checks: see the commit.

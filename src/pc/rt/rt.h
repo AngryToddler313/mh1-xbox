@@ -297,6 +297,7 @@ void rt_game_draw_2d(void);
  * reward list */
 void rt_cap_request(void);
 void rt_cap_frame(void);
+void rt_fog_scene(int on);    /* rt_fl.c: the 3D scene's fog on/off (the clays made with gfx_clay_desc.fog) */
 int rt_cap_draw(void);
 void rt_cap_drop(void);
 

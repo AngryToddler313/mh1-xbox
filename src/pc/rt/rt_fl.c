@@ -14,6 +14,7 @@
 #include "clay.h"
 
 #include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -37,6 +38,16 @@ void rt_fl_reset_states(void)
     gfx_set_render_state(GFX_RS_BLEND_OP, 0);
     gfx_set_render_state(GFX_RS_FILTER, 0);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
+}
+
+int rt_fog_set;                     /* bit 0 / 1: fog start / end were set (rt_fog_scene) */
+
+/* The 3D scene's fog on (1) or off (0, before the 2D layers): the clays whose attribute asks for fog (gfx_clay_desc.fog)
+ * are drawn with the fog stage_fog_set gave (0x0F-0x11), as fl does per clay (RenderState 0x8000). Off until the game
+ * has set the fog range. */
+void rt_fog_scene(int on)
+{
+    gfx_set_render_state(GFX_RS_FOG_ENABLE, on && rt_fog_set == 3 && !getenv("RT_NOFOG"));
 }
 
 static void *mat_pend[32];          /* flSetRenderState(0x3A + k): the next clay's material k */
@@ -69,14 +80,15 @@ void flSetRenderState(int state, u32 value)
         rt_2d_set_texture(value);
         break;
     }
-    case 0x0F:   /* fog colour (GS FOGCOL); fog is only switched on by 0x12, which
-                  * nothing calls yet: InitRenderState(0) sets 0x0F-0x11 */
+    case 0x0F:   /* fog colour (GS FOGCOL: the low 24 bits; the top byte is not sent). Fog itself is per clay
+                  * (0x12 at clay creation: gfx_clay_desc.fog), switched on for the scene by rt_fog_scene */
         gfx_set_render_state(GFX_RS_FOG_COLOR, value & 0xFFFFFF);
         break;
     case 0x10:   /* fog start / end: the float's bits */
     case 0x11: {
         static float fog[2];
         memcpy(&fog[state - 0x10], &value, 4);
+        rt_fog_set |= 1 << (state - 0x10);     /* both set (stage_fog_set, InitRenderState): the scene may use fog */
         gfx_set_render_state(state == 0x10 ? GFX_RS_FOG_START : GFX_RS_FOG_END, (uintptr_t)&fog[state - 0x10]);
         break;
     }

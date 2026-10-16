@@ -825,6 +825,7 @@ static float scene_aspect(void)
 }
 
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
+static float view_fov = 1.0f;   /* free camera's vertical angle of view (--view's 7th value; 1.0 rad before) */
 static float fixed_time = -1;
 static const char *shot_list;     /* RT_SHOTS */
 static int shot_next;
@@ -2120,6 +2121,19 @@ int main(int argc, char **argv)
         else if (gfx_opts_arg(argc, argv, &i)) ;       /* --fullscreen, --vsync, --widescreen, ... (docs/pc.md) */
         else if (!strcmp(argv[i], "--cam") && i + 1 < argc)
             cam_given = sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]) > 0;
+        else if (!strcmp(argv[i], "--view") && i + 1 < argc) {
+            /* --view ex,ey,ez,tx,ty,tz[,fov]: the free camera from an eye, a target and an angle of view (rad), e.g. a
+             * PS2 game camera's lpView read in PCSX2 (tools/g_ref_shot.sh) */
+            float v[7] = { 0, 0, 0, 0, 0, -1, 1.0f }, d[3];
+            if (sscanf(argv[++i], "%f,%f,%f,%f,%f,%f,%f", &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6]) >= 6) {
+                d[0] = v[3] - v[0]; d[1] = v[4] - v[1]; d[2] = v[5] - v[2];
+                cam[0] = v[0]; cam[1] = v[1]; cam[2] = v[2];
+                cam[3] = atan2f(-d[0], -d[2]);
+                cam[4] = atan2f(d[1], sqrtf(d[0] * d[0] + d[2] * d[2]));
+                view_fov = v[6];
+                cam_given = 1;
+            }
+        }
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
         else if (!strcmp(argv[i], "--quest") && i + 1 < argc) quest_no = (int)strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--play")) play = 1;
@@ -2315,7 +2329,13 @@ int main(int argc, char **argv)
     }
     if (!disc) {
         fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
-                "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
+                "[--size WxH] [--cam x,y,z,yaw,pitch] [--view ex,ey,ez,tx,ty,tz[,fov]] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
+        return 1;
+    }
+    if (stage_given && (stage_no < 0 || stage_no >= 88)) {
+        /* both games have stages 0-87 (stage_start_pos[88], the per-stage file tables); G's
+         * stage_hit_data_w holds 0 past 87, which loaded file 0 as a collision link and crashed */
+        fprintf(stderr, "--stage %d: no such stage (0-87)\n", stage_no);
         return 1;
     }
     if (!rt_log_started())
@@ -2765,7 +2785,7 @@ int main(int argc, char **argv)
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
         /* the game's angle of view taken as the vertical fov [guess] */
-        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, scene_aspect(), 10.0f, 80000.0f);
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : view_fov, scene_aspect(), 10.0f, 80000.0f);
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
@@ -2981,12 +3001,13 @@ int main(int argc, char **argv)
         }
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);
-        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, scene_aspect(), 10.0f, 80000.0f);
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : view_fov, scene_aspect(), 10.0f, 80000.0f);
 
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
         gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
         gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
+        rt_fog_scene(1);                /* the stage's fog (stage_fog_set) for the clays that ask for it */
         gfx_set_render_state(GFX_RS_BLEND, 1);
         {
             flmat id;
@@ -3027,6 +3048,7 @@ int main(int argc, char **argv)
         rt_game_draw();                 /* game C prims (set14 waterfalls, effects) */
         rt_prof_end(RTP_PRIMS);
         rt_cap_frame();                 /* G: the quest clear's copy of the scene for the reward list (rt_2d.c) */
+        rt_fog_scene(0);
         rt_prof_begin(RTP_2D);
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
         rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */

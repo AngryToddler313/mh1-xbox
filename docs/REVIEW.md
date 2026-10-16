@@ -756,3 +756,20 @@ obvious workarounds.
 - **Dropped:** for the G PC build, MH1's Pl_damage_sub / pl_guard_set C (kept for MH1); **now** G's (pl_damageb.c).
   **Why:** G's armour skills on hits. **To revert:** the commit "G PC: hunter damage skills, trans_stage".
 - **Changed:** trans_stage.c G branches (G_ONLY / MH1_ONLY labels); MH1 unchanged.
+
+## G reference shots, fog, Dual Swords sounds (agent A, 16 Oct 2026)
+- **Changed:** GFX_RS_FOG_ENABLE used to switch GL fog on for everything drawn after it (nothing ever set it, so fog was
+  off); **now** it is the scene's fog switch and each clay decides (gfx_clay_desc.fog from its AMO attribute +0x20, as
+  fl's per-clay RenderState 0x8000): GL_FOG (and the nv2a fog constants) only around those clays. rt_game_init calls the
+  game's stage_fog_set; viewer.c turns the scene fog on after gfx_begin_frame and off before the 2D layers (rt_fog_scene).
+  **Why:** the real G (PCSX2 reference shots) has stage fog, the PC had none (MH1 too). RT_NOFOG=1 turns it off.
+  **To revert:** the commit "G PC: stage fog".
+- **Changed:** config/mhg/pc_data.txt imports Battle_type at G's size (0xE1, was MH1's 0x7C): G weapons with a type
+  from 0x7C on got their job from whatever followed the host copy. **Stand-in added:** rt_data.c turns job 6 (Dual
+  Swords) into job 1 (sword and shield) until the job-6 tables and moves are ported (pl_init crashed in
+  Pl_slash_lv_ck with job 6); RT_G_DUAL=1 keeps job 6.
+- **Dropped:** for G, MH1's NextStage_Dir_Set (kept for MH1); **now** G's (game 0x58F820, em_cmd_nm.c).
+- **Added:** G's Dual Swords case in ef_move_sub (pl_snd01.c, job 6; unreachable while the stand-in above is on) and
+  G's anim-801 Eft06 call. viewer.c rejects --stage outside 0-87 (88/89 crashed in load_stage_hit).
+- **Dropped:** for the G PC build, MH1's eft09_i / eft09_m / eft09_set behaviour (kept for MH1); **now** G's (subspecies
+  kinds, revival ends the cut tail, ot0 when fading). **To revert:** the commit "G PC: stage fog ...".

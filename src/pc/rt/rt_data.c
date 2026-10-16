@@ -12,6 +12,7 @@
  * the same bytes in the loaded image (which is relocated the same way).
  */
 #include "rt.h"
+#include "rt_log.h"
 #include "types.h"
 
 /* host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py) */
@@ -313,6 +314,21 @@ int rt_import_data(void)
     }
 #ifdef VERSION_MHG
     g_stage_lists();
+    {   /* Stand-in (16 Oct 2026): G's Dual Swords (job 6; Battle_type is imported at G's size 0xE1 now, the MH1 size
+         * 0x7C left every G type from 0x7C on reading past the copy) have no PC code yet: the job-indexed tables
+         * (Pl_slash_tbl, mv001_tbl, mv004_chr_tbl* ...) are MH1's six entries and pl_init crashed. Until they are
+         * ported a Dual Swords weapon plays as a sword and shield (job 1). RT_G_DUAL=1 keeps job 6 (for porting). */
+        extern u8 Battle_type[];
+        int k, n = 0;
+        if (!getenv("RT_G_DUAL"))
+            for (k = 0; k < 0xE1; k++)
+                if (Battle_type[k] == 6) {
+                    Battle_type[k] = 1;
+                    n++;
+                }
+        if (n)
+            rt_log_standin("G Dual Swords (job 6) played as sword and shield");
+    }
 #endif
     return missing;
 }

@@ -27,6 +27,7 @@ struct gfx_clay {
     uint16_t *index;
     gfx_batch *batch;
     int noscroll;               /* UV scroll (fl 0x19) does not apply */
+    int fog;                    /* drawn with fog while GFX_RS_FOG_ENABLE is on (gfx_clay_desc.fog) */
 };
 
 static struct {
@@ -600,8 +601,7 @@ void gfx_set_render_state(int state, uintptr_t v)
         glFogf(GL_FOG_END, *(const float *)v);
         break;
     case GFX_RS_FOG_ENABLE:
-        G.fog = v != 0;
-        if (v) glEnable(GL_FOG); else glDisable(GL_FOG);
+        G.fog = v != 0;                 /* GL_FOG is switched per clay (gfx_execute_clay) */
         break;
     case GFX_RS_VIEW:
         memcpy(G.view, (const float *)v, sizeof G.view);
@@ -696,6 +696,7 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
     c->nindex = d->nindex;
     c->nbatch = d->nbatch;
     c->noscroll = d->noscroll;
+    c->fog = d->fog;
     c->pos = malloc(sizeof(float) * 3 * (d->nvert + 1));
     memcpy(c->pos, d->pos, sizeof(float) * 3 * d->nvert);
     if (d->st) {
@@ -772,7 +773,6 @@ static void pick_gl_off(void)
 {
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glEnable(GL_DITHER);
-    if (G.fog) glEnable(GL_FOG);
     if (G.blend_on) glEnable(GL_BLEND);
 }
 
@@ -934,8 +934,13 @@ static void gfx_execute_clay_gl(gfx_clay *c)
 
 void gfx_execute_clay(gfx_clay *c)
 {
+    int fog = G.fog && c->fog && !gfx_pick_pass;
     rt_prof_begin(RTP_GFX);
+    if (fog)
+        glEnable(GL_FOG);
     gfx_execute_clay_gl(c);
+    if (fog)
+        glDisable(GL_FOG);
     rt_prof_end(RTP_GFX);
 }
 

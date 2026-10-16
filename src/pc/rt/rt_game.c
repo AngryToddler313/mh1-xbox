@@ -383,6 +383,10 @@ void rt_game_init(int stage)
     stage_work.x01 = 1;
     stage_work.stage = (u8)stage;
     stage_work.data = Stage_data_get(stage);
+    {   /* game2 / game13 set the stage's fog with its models (f_game.c) */
+        void stage_fog_set(u8 n);
+        stage_fog_set((u8)stage);
+    }
     rt_prims_reset();       /* prims queued by the last tick belong to effects and
                              * set objects that are gone now (a windowed frame would
                              * draw them: eft13_t on a freed effect, village -> quest) */

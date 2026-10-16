@@ -60,6 +60,7 @@ struct gfx_clay {
     uint16_t *index;
     gfx_batch *batch;
     int noscroll;               /* UV scroll (fl 0x19) does not apply */
+    int fog;                    /* drawn with fog while GFX_RS_FOG_ENABLE is on (gfx_clay_desc.fog) */
     /* GPU skinning (gfx_clay_set_skin): the regrouped batches, their
      * vertices in contiguous memory (SKIN_STRIDE bytes each), this frame's
      * pose */
@@ -955,6 +956,7 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
     c->nindex = d->nindex;
     c->nbatch = d->nbatch;
     c->noscroll = d->noscroll;
+    c->fog = d->fog;
     c->pos = malloc(sizeof(float) * 3 * (d->nvert + 1));
     memcpy(c->pos, d->pos, sizeof(float) * 3 * d->nvert);
     if (d->st) {
@@ -1441,7 +1443,16 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
     use_program(0);
 }
 
+static void execute_clay(gfx_clay *c);
 void gfx_execute_clay(gfx_clay *c)
+{
+    int on = G.fog_on;
+    G.fog_on = on && c->fog;            /* the scene's fog, for the clays whose attribute asks for it */
+    execute_clay(c);
+    G.fog_on = on;
+}
+
+static void execute_clay(gfx_clay *c)
 {
     float mvp[16];
     if (gfx_rec_clay(c))

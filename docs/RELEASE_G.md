@@ -258,3 +258,67 @@ player meets it) [inferred from the asm diff sizes, not run]:
 4. Stage sets: set19_trans (GN8, stages 67/73/75), set04_trans, set06 (rewritten), set13_i.
 5. Per-monster: em27 em_die04 (rewritten), em08 em_dmg05, em16 / em17 small acts (0.74-0.79), em07 item/part sets.
 Done in this pass: Pl_damage_sub / pl_guard_set (was first: every hit on the hunter), trans_stage.
+
+## 9. Real-G reference shots and the GB6 quest lane, fifth pass (agent A, 16 Oct 2026)
+
+**New tool: tools/g_ref_shot.sh** (real-G pictures next to the PC's). The owner's G disc runs in PCSX2 (hidden, PINE
+socket on: tools/pcsx2/pine.py reads/writes EE memory and save states). A save state "in a quest" is made once from the
+real menus (NEW GAME, name, house, the Village Elder's first quest, the gate) and kept in build/ref/pcsx2home; each
+shot loads it and moves the hunter to the stage the way an area exit does (PLW+0x73A/0x73C/0x570/0x738, game2 loads
+the area), grabs the screen, reads G's game camera (lpView: eye, target, angle of view) and draws the same stage on the
+PC from that camera (`mhview_g --stage N --view eye,target,fov`, new). `--pc-only` redraws the PC side from the saved
+cameras after a PC change. ~1 min per stage. Example: `tools/g_ref_shot.sh --out build/ref 27 8 15`.
+The scripted creation of the save state was checked from an empty PCSX2 home (NEWSTATE=1, ~4 min: state saved, stage
+27 shot taken) [verified]; the comparison pictures below came from a state made by hand with the same steps.
+
+**Comparison** (PS2 left, PC with fog middle, PC before right): build/A/ref/cmp_s08.png .. cmp_s85.png, all in
+build/A/ref/overview.png; pairs build/A/ref/sNN.png.
+- **Stage 27 (last round's additive layers 2/3)**: the real G has the same pale overlay where the PC drew it: the
+  additive layers are right [verified: PS2 picture]. What differed was the fog (below) and overall brightness.
+- **Stage fog was missing on the PC (MH1 and G)**: fl gives each clay a fog bit from its material attribute (+0x20:
+  0 = fog, aa_fog), stage_fog_set sets the colour / start / end per stage; the PC never drew fog. **Fixed**: per-clay
+  fog in the GL and nv2a backends, stage_fog_set at each stage load [verified: 27 and 08 move toward the PS2's bluish /
+  grey haze; difference pictures]. The PS2's fog still looks stronger at a distance (stage 8's sky is almost all fog
+  colour on the PS2) [the PS2 fog formula in the VU1 code is not read: start/end used as GL linear eye-distance fog].
+- **Brighter PC**: stages 27, 15, 29 are about 1.5-2x brighter near the camera on the PC (27: ground 108,111,65 vs
+  55,60,39; stage 29 is dusk-dark on the PS2). Stage 8 matches. Likely the stage lighting (light_set / pl_light_tbl
+  per stage); the PC's lighting is its own approximation (docs/pc.md "Lighting") [not fixed; next step].
+- **Stage 15**: the PS2 has the sun with its lens flare (set13) right in view; the PC's --stage picture has no sun
+  [the --stage viewer runs no set objects; not checked in a quest].
+- **Stage 24**: below the jungle edge the PS2 shows black (clear colour), the PC its blue clear colour [minor].
+- **Stage 74**: the two G set pieces at set74_pos_tbl (7900,0,6030 / 5560,0,6960) are drawn by the PC as dark
+  branch-like shapes and are not visible on the PS2 in the same view, although G has the set model loaded there
+  (set_mdlw flag 1, 3 clays, read in PCSX2) [open: probably drawn but invisible on the PS2 (UV-scrolled drips);
+  not settled].
+- **Stages 76/77/85** (town / tavern / guild hall areas): match apart from the effects (candle flames) the --stage
+  viewer does not run.
+- **8 and 15**: shapes and set pieces match (last round's turning piece on 8 is gone on both).
+
+**`mhview_g --stage 88/89`**: not G stages (both games have stages 0-87; G's stage_hit_data_w is 0 past 87, the file-0
+link crashed load_stage_hit). The viewer now refuses stage numbers outside 0-87.
+
+**GB6 quest lane, item 1 (hunter weapon effects and sounds)**: G's pl01_effect_move calls two functions (sub_main
+0x4E30B0 effects, 0x4A9F50 sounds) that together hold MH1's ef_move_sub. Running both (a small MIPS interpreter
+over the asm, per weapon class 0-5 and every motion number in the scripts) gives the same calls as MH1's except:
+anim 801 (G adds an Eft06 flash when PLW+0x8D0 = 4: ported) and the other-players skill section (online only, G
+adds skill 115 and five weapon ids: not ported). G's weapon switch has **7 classes: class 6 is the Dual Swords**,
+which the PC had no sounds for: **ported** (pl_snd01.c case 6, generated from both kind-6 blocks; checked against the
+interpreter for all 3000 motion numbers: 0 differences).
+But the PC cannot play the Dual Swords yet: **Battle_type was imported at MH1's size** (0x7C; G 0xE1), so every G
+weapon type from 0x7C on (G's new weapons of all classes, all Dual Swords) took its class from unrelated host memory.
+Fixed (pc_data.txt); with the right class 6, pl_init crashes (Pl_slash_tbl / mv001_tbl / mv004_chr_tbl* are MH1's six
+entries), so job 6 now plays as sword and shield (stand-in, rt_data.c; RT_G_DUAL=1 for porting).
+**New gap (Blocker for G's weapon list): the Dual Swords class** (job-6 tables, moves, motions, the second blade's
+trail Eft05 arg 2) is not ported.
+
+**Item 2, NextStage_Dir_Set** (where a monster heads when it changes area): G picks the side from the signed offset to
+the next area (MH1 compared it with w/3, 2w/3 and w/2, so a next area to the left / front always gave side 0 or the
+middle). **Ported** (em_cmd_nm.c VERSION_MHG) [asm read; build and quest tests; not watched in a hunt].
+
+**Item 3, monster effects**: **eft09 (the cut tail) ported** (game 0x56E230 / 0x56E3D0 / 0x56E940, eft09.c G
+branches): the subspecies (kinds 37, 41-44, 47-49) now leave a cut tail too (MH1's kind list only had the originals),
+a cut tail goes away when its monster loses a life (G's revival: the lives count is kept at eft09_set), and a fading
+monster's tail is drawn in ot0 [verified: G quest 10 tail-cut run, "em-tail: kind 1 tail cut ... pick 0"; the
+subspecies and revival paths: asm read, not run]. Eft05 (weapon trail) is rewritten in G for several trails per
+effect (count per type, prims each, helpers 0x56C660 / 0x56C880); it matters with the Dual Swords: not done.
+eft20_pos_set / eft13_t: not started.

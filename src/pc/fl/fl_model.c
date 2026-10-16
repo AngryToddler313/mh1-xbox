@@ -132,6 +132,9 @@ static void build_part(fl_model *m, int pi)
     d.batch = batch;
     d.dynamic = fp->skinned || fp->lit;
     d.noscroll = !(p->has_attr && p->attr[7] != 0);     /* attr +0x1C: the UV-scroll type (aa_uvscroll) */
+    /* attr +0x20: the fog type (Attribute_from_amo: flSetRenderState(0x12, aa_fog[a[8]]), aa_fog = { 0x8000, 0 } in both
+     * games: 0 = fog). Parts without the attribute chunk get fog_type[flags & 0x800], off for the stage (flags 0) */
+    d.fog = p->has_attr && p->attr[8] == 0;
     fp->clay = gfx_create_clay(&d);
     if (d.dynamic) {
         static int check = -1;
