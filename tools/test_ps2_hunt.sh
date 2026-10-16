@@ -11,17 +11,19 @@
 # it is in the guild hall (0x4D), and marks the hunter as registered with the guild (event flag 4, what the PC tests'
 # RT_NET_REGISTERED does). That is the only RAM the test touches; the game code is unchanged.
 #
-# usage: tools/test_ps2_hunt.sh     (~10 min; uncapped: PCSX2 cannot start under ulimit -v; PCSX2 alone)
+# usage: tools/test_ps2_hunt.sh     (~20 min; uncapped: PCSX2 cannot start under ulimit -v; PCSX2 alone)
+#   XBOX=1: three platforms: the online Xbox build in xemu joins as the third player (room for 3; as
+#           tools/xemu_mcs_hunt.sh; XBOX_FILES = the owner's Xbox files). ~25 min.
 # Needs: PCSX2 + the owner's BIOS (tools/run_pcsx2.sh), the launcher (tools/ps2launch/build.sh), a PS2 card with the
 # NET file (build/ps2online/card_net.ps2, from tools/test_ps2_online.sh), build/pc/mhview_online, ANNA's card
 # (tools/test_coop.sh saves).
 cd "$(dirname "$0")/.."
 O=build/show/ps2_hunt; rm -rf $O; mkdir -p $O
 . tools/emu_lib.sh
-RP=; SP=; PCP=
+RP=; SP=; PCP=; XP=
 cleanup() {
-    emu_stop $PCP $RP $SP
-    RP=; SP=; PCP=
+    emu_stop $PCP $XP $RP $SP
+    RP=; SP=; PCP=; XP=
 }
 emu_traps cleanup
 fail() { echo "ps2 hunt test FAILED: $1 (see $O)"; cleanup; exit 1; }
@@ -30,6 +32,7 @@ CARDNET=${CARD_NET:-build/ps2online/card_net.ps2}
 [ -f "$CARDNET" ] || fail "no PS2 card with the NET file ($CARDNET: run tools/test_ps2_online.sh once)"
 [ -x build/pc/mhview_online ] || fail "no build/pc/mhview_online (ONLINE=1 tools/build_pc.sh)"
 pcsx2_running && fail "another PCSX2 is running"
+[ -z "$XBOX" ] || ! xemu_running || fail "another xemu is running"
 [ "$(ulimit -v)" = unlimited ] || fail "a memory cap (ulimit -v) is set: PCSX2 cannot start under it; run uncapped"
 [ -f build/coop/save_ANNA/BISLPM-65495MH/BISLPM-65495MH ] || tools/test_coop.sh saves ANNA >/dev/null || fail "no ANNA card"
 rm -rf $O/card_ANNA; mkdir -p $O/card_ANNA; cp -r build/coop/save_ANNA/. $O/card_ANNA/
@@ -46,7 +49,7 @@ mcs-port = 10298
 db = accounts.sqlite3
 verbose = yes
 CONF
-for a in ps2 pc; do
+for a in ps2 pc ${XBOX:+xbox}; do
     python3 tools/server/mh1_server.py account add --db $O/accounts.sqlite3 --note $a > $O/account_$a.txt || fail "account"
 done
 id_of() { sed -n 's/^login \([0-9]*\) password .*/\1/p' $O/account_$1.txt; }
@@ -135,25 +138,54 @@ k z 10      # square on the door: into the guild hall (the cheat puts the hunter
 shot 04_guild_hall
 echo "PS2 in the town (guild hall: $O/ps2_04_guild_hall.png)"
 
+XP=; NPL=2
+if [ -n "$XBOX" ]; then     # ---- the Xbox (tools/xemu_mcs_hunt.sh's set-up); it joins after the PS2
+    NPL=3
+    SRC=${XBOX_FILES:-xbox_files}; XF=build/ps2_hunt_xbox/xbox_files
+    [ -f build/xbox/online/nv2a/default.xbe ] || fail "no Xbox online build (tools/build_xbox.py --online --gfx nv2a)"
+    for f in mcpx.bin bios.bin; do [ -f "$SRC/$f" ] || fail "no $SRC/$f (XBOX_FILES=DIR)"; done
+    rm -rf build/ps2_hunt_xbox; mkdir -p $XF
+    cp "$SRC/mcpx.bin" "$SRC/bios.bin" $XF/
+    [ -f "$SRC/eeprom.bin" ] && cp "$SRC/eeprom.bin" $XF/
+    truncate -s 8G $XF/hdd.img
+    python3 tools/xbox_fatx.py format $XF/hdd.img >/dev/null || fail "could not format the disk image"
+    printf 'online_server = %s:10200\r\nonline_login = %s\r\nonline_password = %s\r\n' $IP $(id_of xbox) "$(pw_of xbox)" \
+        > $O/settings.ini
+    python3 tools/xbox_fatx.py put $XF/hdd.img $O/settings.ini Games/MH1/settings.ini >/dev/null || fail "settings.ini"
+    XJ=${XJ:-6500}
+    JOIN=""; t=$((XJ + 50)); while [ $t -le $((XJ + 500)) ]; do JOIN="$JOIN;$t:circle*2"; t=$((t + 50)); done
+    REW=""; t=$((XJ + 2600)); while [ $t -le $((XJ + 9000)) ]; do REW="$REW;$t:circle*2"; t=$((t + 120)); done
+    python3 tools/mk_input.py - "200:circle*2;302:circle*2;404:circle*2;556:circle*2;738:square*3;$XJ:square*3$JOIN;$((XJ+900)):square*3;$((XJ+960)):circle*2;$((XJ+1020)):circle*2;$((XJ+1080)):circle*2$REW" $((XJ + 10000)) > $O/xbox_input.txt
+    printf 'RT_ARGS=--quest 10 --play --online\nRT_NAME=XBOX\nRT_VILLAGE_START=1\nRT_VILLAGE_SKIP_INTRO=1\nRT_ONLINE_TRACE=1\nRT_NET_REGISTERED=1\nRT_NP_TRACE=1\nRT_NP_POS=150\nRT_LB_WARP=60,5545,2750,8000;300,1850,1500,8000;%d,3100,2100,8000\n' $((XJ + 300)) > $O/xbox_env.txt
+    XBOX_FILES=$XF tools/run_xemu.sh --online --gfx nv2a --data disc/mh1 --env $O/xbox_env.txt --input $O/xbox_input.txt \
+        --shot $O/xbox.png --after "300 340 380 420 460 500 540 580" > $O/xemu_run.log 2>&1 &
+    XP=$!
+    i=0
+    while [ $i -lt 500 ] && ! grep -aq "online: quest download" $XF/xemu_debug.txt 2>/dev/null; do sleep 2; i=$((i + 2)); done
+    grep -aq "online: quest download" $XF/xemu_debug.txt || fail "the Xbox did not enter a lobby"
+    echo "the Xbox entered a lobby after about $i s"
+fi
+
 # ---- the PC (ANNA): into the guild hall, a room for 2 players without a password, quest 1; after the PS2 joined,
 # the match. Ticks are the PC's (30 a second from its start).
 LOGIN="200:circle*2;302:circle*2;404:circle*2;556:circle*2;738:square*3"
 TALK=""; t=1041; while [ $t -le 1441 ]; do TALK="$TALK;$t:circle*2"; t=$((t + 40)); done
-SHEET=${SHEET:-"1521:dleft*2;1543:dleft*2;1565:ddown*2;1590:ddown*2;1615:ddown*2;1640:circle*2;1700:circle*2;1760:circle*2;1820:circle*2;1880:circle*2"}
-START=${START:-6000}     # ANNA's match start (square, circles; the PC tests' timing): the PS2 joins and gets ready before
+DL="1543:dleft*2;"; [ -n "$XBOX" ] && DL=""    # players 4 -> 2 (or 3)
+SHEET=${SHEET:-"1521:dleft*2;${DL}1565:ddown*2;1590:ddown*2;1615:ddown*2;1640:circle*2;1700:circle*2;1760:circle*2;1820:circle*2;1880:circle*2"}
+START=${START:-$([ -n "$XBOX" ] && echo 8000 || echo 6000)}     # ANNA's match start (square, circles; the PC tests' timing): the PS2 joins and gets ready before
 GO=""     # tried three times, 30 s apart: before every member is ready the counter only says so
 for t in $START $((START + 900)) $((START + 1800)); do
     GO="$GO;$t:square*3;$((t+60)):circle*2;$((t+120)):circle*2;$((t+180)):circle*2"
 done
 HUNT=""     # in the hunt: circle now and then (the delivery at the box after RT_PL_WARP, then the reward screens)
 t=$((START + 3300)); while [ $t -le $((START + 7500)) ]; do HUNT="$HUNT;$t:circle*2"; t=$((t + 90)); done
-IA=$(python3 tools/mk_input.py - "$LOGIN$TALK;$SHEET$GO$HUNT" 14000)
+IA=$(python3 tools/mk_input.py - "$LOGIN$TALK;$SHEET$GO$HUNT" 16500)
 (env MH1_SAVE_DIR="$PWD/$O/card_ANNA" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_QUEST_TRACE=1 \
     RT_NOMOVIE=1 RT_NET_REGISTERED=1 RT_NET_HOST=$IP RT_NET_PORT=10200 RT_NET_ID=$(id_of pc) RT_NET_PASS=$(pw_of pc) \
     RT_LB_WARP="60,5545,2750,8000;300,1300,1600,C000;$((START - 1000)),3100,2100,8000" RT_NP_TRACE=1 RT_NP_POS=150 RT_NP_EM=150 RT_PL_ITEMS=77:15 \
-    RT_PL_WARP="${WARP_A:-2400,10350,10640,7000}" RT_SHOTS=${SHOTS:-1700,4000,6100,7400,8000,9600,10200} \
+    RT_PL_WARP="${WARP_A:-2400,10350,10640,7000}" RT_SHOTS=${SHOTS:-1700,4000,6100,7400,8000,9600,10200,11200,12200} \
     timeout 900 build/pc/mhview_online disc/mh1 --quest 10 --play --online --mute --input "$IA" \
-    --shot $O/pc.png --time 460 --size 640x480 > $O/pc.log 2>&1) &
+    --shot $O/pc.png --time 540 --size 640x480 > $O/pc.log 2>&1) &
 PCP=$!
 i=0
 while [ $i -lt 200 ] && ! grep -q "creates room" $O/server.log; do sleep 2; i=$((i + 2)); done
@@ -186,6 +218,11 @@ sleep 30; shot hunt_30
 DISPLAY=:$DNUM $K i:2500:300 l:1500:300; sleep 5; shot hunt_40
 for s in 60 90 120 150 180 210 240; do sleep 25; shot hunt_$s; done
 wait $PCP; PCP=
+if [ -n "$XP" ]; then
+    wait $XP; XP=
+    cp $XF/xemu_debug.txt $O/xbox_serial.txt
+    python3 tools/xbox_fatx.py get $XF/hdd.img Games/MH1/mh1log.txt $O/xbox_stderr.txt >/dev/null 2>&1
+fi
 cleanup
 grep -aq "mcs: every player is in" $O/pc.log || fail "the PC and the PS2 did not complete the select (sys 2)"
 grep -aq "mcs: start agreed" $O/pc.log || fail "the start was not agreed (net_start_ck)"
@@ -193,4 +230,10 @@ grep -aq "mcs: start agreed" $O/pc.log || fail "the start was not agreed (net_st
 n=$(grep -a "np-pos: .* me 0 slot 1 stg" $O/pc.log | awk '{print $11, $13}' | sort -u | wc -l)
 [ "$n" -ge 2 ] || fail "the PC did not see the PS2's hunter move"
 grep -aq "rt_flow: tick [0-9]* mode 2 step 0 D5 3" $O/pc.log || fail "the PC did not see the quest cleared"
+grep -aq "mcs: logged in to the game server: $NPL players" $O/pc.log || fail "not $NPL players in the session"
+if [ -n "$XBOX" ]; then
+    grep -q "mcs: login .*player 2 of match" $O/server.log || fail "the Xbox did not log in to the game server"
+    grep -aq "mcs: start agreed" $O/xbox_serial.txt $O/xbox_stderr.txt || fail "the Xbox did not agree on the start"
+    grep -aq "np-pos: .* me 0 slot 2 stg" $O/pc.log || fail "the PC has no third hunter"
+fi
 echo "ps2 hunt test: OK (see $O)"

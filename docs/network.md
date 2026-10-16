@@ -968,6 +968,15 @@ delivers the quest's item and **the PS2 gets the clear and its reward screen** (
 build/show/ps2_hunt/shared_hunt.png (PS2 at the camp | the PC at the camp | the PS2's reward screen). Not tested
 yet with the PS2: a monster fight (quest 1 has no large monster), monster ownership hand-over to or from a PS2, a PS2
 leaving mid-hunt, 3-4 players.
+**Xbox and PC** (`tools/xemu_mcs_hunt.sh`, xemu hidden, ~10 min) [checked]: the same flow with the online Xbox build
+joining (RT_LB_WARP as the PC tests, settings.ini for the server); the Xbox sees ANNA, gets the clear and its reward
+screen; the PC sees XBOX (build/show/xemu_mcs/shared_hunt.png).
+
+**PS2, PC and Xbox in one hunt** (`XBOX=1 tools/test_ps2_hunt.sh`, PCSX2 + xemu + PC, ~25 min) [checked, 16 Oct
+2026]: a room for 3; the mcs relay has players 0 (PC), 1 (PS2), 2 (Xbox); every screen shows all three hunters at
+the camp and all three names in its party list (build/show/ps2_hunt/three_platform_hunt.png: PS2 | PC | Xbox); the
+PC's delivery clears the quest on all three.
+
 * Found by this test: the PC said "loaded" (sys 3) once, while the PS2 was still in game10; the PS2's game11 clears
   those flags at the end of its load, so it waited at "クエストを開始します" for ever. rt_mcs.c now repeats it six
   times (once a second) after its own start was agreed.
