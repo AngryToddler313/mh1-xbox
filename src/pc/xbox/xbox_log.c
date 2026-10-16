@@ -1,8 +1,8 @@
 /* Xbox log: stderr goes to a file next to the game's data. When the game exits,
  * the last lines are shown on screen for 10 s (for the capture card), then the
- * Xbox goes back to the dashboard; the next start of the network loader
- * (E:\Games\MH1\default.xbe) sends the log to the laptop and fetches the newest
- * build (docs/xbox.md "Network loader"). */
+ * game goes back to the network loader in its folder (E:\Games\MH1\default.xbe or
+ * E:\Games\MHG\default.xbe), which sends the log to the laptop and returns to the
+ * dashboard; its next start fetches the newest build (docs/xbox.md "Network loader"). */
 #include <hal/debug.h>
 #include <hal/video.h>
 #include <hal/xbox.h>
@@ -14,31 +14,38 @@
 #include <string.h>
 
 #include "xbox_title.h"
+#include "xbox_path.h"
 
-/* The log file: mh1log.txt in the folder of the running XBE when that is on E: (the network loader starts
- * E:\Games\MH1\mh1.xbe, also for a G build, and sends E:\Games\MH1\mh1log.txt), else (xemu's DVD, a
- * folder elsewhere) in the version's game folder (xbox_title.h: E:\Games\MH1 or E:\Games\MHG). */
+/* The log file: mh1log.txt in the folder of the running XBE when that is on E: (the network loader of
+ * each game starts E:\Games\MH1\mh1.xbe or E:\Games\MHG\mhg.xbe and sends that folder's mh1log.txt),
+ * else (xemu's DVD, a folder elsewhere) in the version's game folder (xbox_title.h: E:\Games\MH1 or
+ * E:\Games\MHG). */
 static char xbox_log_path[300] = XBOX_GAME_DIR "\\mh1log.txt";
 #define XBOX_LOG xbox_log_path
 
 static void log_path_from_xbe(void)
 {
-    static const char pre[] = "\\Device\\Harddisk0\\Partition1\\";
-    size_t n = XeImageFileName->Length, k = sizeof pre - 1;
-    char p[260];
-    char *slash;
-    size_t i;
-    if (n <= k || n >= sizeof p)
-        return;
-    memcpy(p, XeImageFileName->Buffer, n);
-    p[n] = 0;
-    for (i = 0; i < k; i++)
-        if ((p[i] | 0x20) != (pre[i] | 0x20))
-            return;
-    if ((slash = strrchr(p, '\\')) == NULL || slash < p + k)
-        return;
-    *slash = 0;
-    snprintf(xbox_log_path, sizeof xbox_log_path, "E:\\%s\\mh1log.txt", p + k);
+    char dir[260];
+    if (xbox_image_dir(dir, sizeof dir, NULL, 0))
+        snprintf(xbox_log_path, sizeof xbox_log_path, "%s\\mh1log.txt", dir);
+}
+
+/* leaving the game: back to the network loader in the game's own folder (its default.xbe), with launch
+ * data "MH1X" so it only sends this log and goes on to the dashboard (src/pc/xbox/loader/main.c). An XBE
+ * that is itself default.xbe (installed by hand, or xemu's DVD) goes straight to the dashboard. */
+static void xbox_leave(void)
+{
+    static unsigned char ld[3072] = "MH1X";     /* LAUNCH_DATA_PAGE.LaunchData (XLaunchXBEEx copies 3072 bytes) */
+    char dir[260], name[64], loader[300];
+    FILE *f;
+    if (xbox_image_dir(dir, sizeof dir, name, sizeof name) && !xbox_is_default_xbe(name)) {
+        snprintf(loader, sizeof loader, "%s\\default.xbe", dir);
+        if ((f = fopen(loader, "rb")) != NULL) {
+            fclose(f);
+            XLaunchXBEEx(loader, ld);
+        }
+    }
+    XLaunchXBE(NULL);
 }
 #define TAIL 24
 
@@ -102,11 +109,11 @@ static void xbox_log_show(void)
     debugPrint(XBOX_GAME_SHORT " stopped. Last lines of %s:\n\n", XBOX_LOG);
     for (i = n > TAIL ? n - TAIL : 0; i < n; i++)
         debugPrint("%s", lines[i % TAIL]);
-    debugPrint("\nBack to the dashboard in 10 s.\n");
+    debugPrint("\nBack to the loader / dashboard in 10 s.\n");
     Sleep(10000);
     if (xbox_quit_hook)
         xbox_quit_hook();
-    XLaunchXBE(NULL);
+    xbox_leave();
 }
 
 /* SDL's own checks: log them and go on (its default asks Abort/Retry/Ignore on

@@ -1,10 +1,11 @@
 /* Game data install through the network loader (docs/xbox.md "Installing game data through
  * the loader"). Evolution X's FTP server stalls on big files and can't resume, so the
  * loader fetches the game folder from tools/xbox_serve.py --data instead:
- *   GET /manifest   "MH1DATA <folder> <chunk> <files>", then per file
- *                   "F <size> <crc32> <path>" and "C <crc32 of each chunk> ..."
- *   GET /data/<path> with "Range: bytes=N-": the file from N on.
- * Each file goes to E:\Games\<folder>\<path>. What is already on the disk is checked chunk
+ *   GET /manifest?game=mhg   "MH1DATA <folder> <chunk> <files>", then per file
+ *                            "F <size> <crc32> <path>" and "C <crc32 of each chunk> ..."
+ *   GET /data/<path>?game=mhg with "Range: bytes=N-": the file from N on.
+ * <folder> must be this loader's game (MH1 / MHG); each file goes to the loader's own folder
+ * (E:\Games\MHG\<path>), never over the loader (default.xbe). What is already on the disk is checked chunk
  * by chunk against the manifest's checksums and kept up to the first bad or missing chunk;
  * the download starts there. Each chunk is checked in memory before it is written (one
  * WriteFile per 4 MB chunk; pdclib's fwrite would go 1 KB at a time). A dropped or stalled
@@ -150,9 +151,9 @@ static unsigned long check_disk(const char *full, DataFile *f, unsigned char *bu
     return done;
 }
 
-static int fetch_file(const char *dir, DataFile *f, unsigned char *buf, unsigned long chunk)
+static int fetch_file(const char *dir, const char *game, DataFile *f, unsigned char *buf, unsigned long chunk)
 {
-    char full[160], url[96], *s;
+    char full[280], url[112], *s;
     Fetch x;
     int round, fails;
     unsigned long done;
@@ -164,7 +165,7 @@ static int fetch_file(const char *dir, DataFile *f, unsigned char *buf, unsigned
             CreateDirectoryA(full, NULL);       /* E:\Games\MHG\data; fails harmlessly when it exists */
             *s = '\\';
         }
-    snprintf(url, sizeof url, "/data/%s", f->path);
+    snprintf(url, sizeof url, "/data/%s?game=%s", f->path, game);
     for (round = 0; round < 3; round++) {
         progress("Checking", f->path, 0, f->size, 0);
         done = check_disk(full, f, buf, chunk, 1);
@@ -231,8 +232,8 @@ static int parse_manifest(char *m, char *folder, unsigned long *chunk, DataFile 
             if (n == MAXFILES || sscanf(line, "F %lu %lx %63s", &f->size, &f->crc, f->path) != 3 ||
                 !safe_name(f->path, 1))
                 return -1;
-            /* never over the loader itself */
-            if (!strcmp(folder, "MH1") && !strcmp(f->path, "default.xbe"))
+            /* never over the loader itself (both games' default.xbe is the loader) */
+            if (!strcmp(f->path, "default.xbe"))
                 return -1;
             f->nchunk = (f->size + *chunk - 1) / *chunk;
             if (!(f->chunk = calloc(f->nchunk + 1, sizeof *f->chunk)))
@@ -253,9 +254,9 @@ static int parse_manifest(char *m, char *folder, unsigned long *chunk, DataFile 
     return n ? 0 : -1;
 }
 
-int install_data(char *game, int ngame)
+int install_data(const char *dir, const char *game)
 {
-    char folder[16], dir[48], rec_path[64], *m, *rec;
+    char folder[16], want[8], rec_path[240], url[48], *m, *rec;
     unsigned long chunk;
     unsigned char *buf;
     DataFile fl[MAXFILES];
@@ -264,7 +265,8 @@ int install_data(char *game, int ngame)
 
     memset(fl, 0, sizeof fl);
     crc_init();
-    if (!(m = xh_http("GET", "/manifest", NULL, 0, &n))) {
+    snprintf(url, sizeof url, "/manifest?game=%s", game);
+    if (!(m = xh_http("GET", url, NULL, 0, &n))) {
         debugPrint("The laptop has no data list.\n");
         return -1;
     }
@@ -274,10 +276,15 @@ int install_data(char *game, int ngame)
         return -1;
     }
     free(m);
-    snprintf(dir, sizeof dir, "E:\\Games\\%s\\", folder);
-    CreateDirectoryA("E:\\Games", NULL);
-    snprintf(rec_path, sizeof rec_path, "E:\\Games\\%s", folder);
-    CreateDirectoryA(rec_path, NULL);
+    for (i = 0; i < 3 && game[i]; i++)            /* "mhg" -> "MHG" */
+        want[i] = game[i] >= 'a' && game[i] <= 'z' ? game[i] - 32 : game[i];
+    want[i] = 0;
+    if (strcmp(folder, want)) {
+        debugPrint("The laptop's data is for %s, not %s; nothing installed.\n", folder, want);
+        for (i = 0; i < nf; i++)
+            free(fl[i].chunk);
+        return -1;
+    }
     snprintf(rec_path, sizeof rec_path, "%smh1data.txt", dir);
     debugPrint("Installing game data to %s (%d files)\n", dir, nf);
     if (!(buf = malloc(chunk))) {
@@ -309,7 +316,7 @@ int install_data(char *game, int ngame)
             snprintf(line, sizeof line, "%lu %08lx %s\n", fl[i].size, fl[i].crc, fl[i].path);
             if (strstr(rec, line))
                 debugPrint("OK       %-16s (checked before)\n", fl[i].path);
-            else if (fetch_file(dir, &fl[i], buf, chunk) < 0) {
+            else if (fetch_file(dir, game, &fl[i], buf, chunk) < 0) {
                 failed = 1;
                 break;
             }
@@ -326,10 +333,9 @@ int install_data(char *game, int ngame)
     for (i = 0; i < nf; i++)
         free(fl[i].chunk);
     if (failed) {
-        debugPrint("Install not finished. Start Monster Hunter again to go on from here.\n");
+        debugPrint("Install not finished. Start the game again to go on from here.\n");
         return -1;
     }
     debugPrint("Game data complete in %s (%lu s).\n", dir, (unsigned long)(GetTickCount() - t0) / 1000);
-    snprintf(game, ngame, "%sdefault.xbe", dir);
-    return strcmp(folder, "MH1") ? 1 : 0;
+    return 0;
 }

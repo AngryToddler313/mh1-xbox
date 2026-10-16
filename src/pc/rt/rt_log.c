@@ -3,7 +3,7 @@
  *
  * One file per session, logs/mh1_YYYYMMDD_HHMMSS.log, in a folder next to the
  * save directory (Linux ~/.local/share/mh1pc/logs, Windows %APPDATA%\mh1pc\logs,
- * Xbox E:\Games\MH1\logs, or $MH1_LOG_DIR); the newest 20 are kept. It holds
+ * Xbox E:\Games\MH1\logs or E:\Games\MHG\logs, or $MH1_LOG_DIR); the newest 20 are kept. It holds
  * a header (build, OS, GPU, window, controller, audio), the game's events
  * (boot, mode / stage changes, quest start / clear / fail, save and load
  * results, movies), warnings (missing files, no-op stand-ins called, audio
@@ -91,6 +91,7 @@ static unsigned long now_ms(void)
 
 #ifdef MH1_XBOX
 #include <xboxkrnl/xboxkrnl.h>
+#include "../xbox/xbox_title.h"     /* XBOX_GAME_DIR: E:\Games\MH1 or E:\Games\MHG */
 #endif
 /* the memory left: the Xbox's free physical pages (stage-change lines); elsewhere, with RT_MEM on,
  * the tracked heap and the textures as the Xbox keeps them (rt_memstat.c) */
@@ -280,7 +281,7 @@ static void put_line(char level, const char *text)
     ring_n++;
 #ifdef MH1_XBOX
     xbox_serial_write(line, n + 1);         /* xemu: serial port (xbox_log.c) */
-    fwrite(line, 1, (size_t)n + 1, stderr); /* hardware: E:\Games\MH1\mh1log.txt, which the network loader
+    fwrite(line, 1, (size_t)n + 1, stderr); /* hardware: mh1log.txt in the game's folder, which its network loader
                                              * sends to the laptop (the log file under logs\ never leaves the box) */
 #endif
     if (lf) {
@@ -698,7 +699,7 @@ static void logs_dir(char *out, size_t n)
     }
 #endif
 #ifdef MH1_XBOX
-    snprintf(out, n, "E:\\Games\\MH1\\logs");
+    snprintf(out, n, "%s\\logs", XBOX_GAME_DIR);     /* G: E:\Games\MHG\logs (was MH1's folder) */
 #else
     snprintf(out, n, "%s", rt_mc_root());       /* .../mh1pc/memcard0 -> .../mh1pc/logs */
     s = out + strlen(out);

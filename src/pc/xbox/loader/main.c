@@ -1,21 +1,24 @@
-/* MH1 network loader (docs/xbox.md "Network loader").
+/* Network loader, one per game (docs/xbox.md "Network loader").
  *
- * Installed once as E:\Games\MH1\default.xbe, so Evolution X lists it as
- * "Monster Hunter". On each start it:
- *   1. sends the last game log (E:\Games\MH1\mh1log.txt) to the laptop,
- *   2. downloads the newest game build (mh1.xbe) when the laptop has a new one,
+ * The same program is installed as E:\Games\MH1\default.xbe (Evolution X lists it as "Monster Hunter")
+ * and as E:\Games\MHG\default.xbe ("Monster Hunter G"; tools/xbox_upload.sh --loader builds both titles
+ * and installs both). It serves the game of the folder it was started from: a "game=mh1" / "game=mhg"
+ * line in that folder's loader.txt, else the folder's name (MHG: G, anything else: MH1). The game is
+ * <folder>\mh1.xbe or mhg.xbe. On each start it:
+ *   1. sends the last game log (<folder>\mh1log.txt) to the laptop,
+ *   2. downloads the newest game build (/mh1.xbe or /mhg.xbe) when the laptop has a new one,
  *   3. starts the game.
- * When the game exits it starts this loader again (launch data "MH1X"); then
- * the loader only sends the log and goes back to the dashboard. (A first
- * version polled the laptop every 3 s for a new build; the Xbox's network
- * froze after 5 connections, ping included, cause unknown. So each start
- * makes at most 3 connections, and the next start comes from the pad.)
- * The laptop is found at the address in E:\Games\MH1\loader.txt
- * ("192.168.1.166:8765" when the file is missing). Only our own build files
- * travel this way; there is no login.
- * When the laptop runs tools/xbox_serve.py --data FOLDER, /version ends in a "DATA" line and
- * the loader first installs that game folder (install.c: E:\Games\MHG or the MH1 data),
- * resuming where it stopped; a finished G folder is then started.
+ * Every request names the game (?game=mhg); tools/xbox_serve.py serves both games at once and still
+ * answers the old MH1 loader's requests without it. When the game exits it starts this loader again
+ * (launch data "MH1X", xbox_log.c); then the loader only sends the log and goes back to the dashboard.
+ * (A first version polled the laptop every 3 s for a new build; the Xbox's network froze after 5
+ * connections, ping included, cause unknown. So each start makes at most 4 connections, and the next
+ * start comes from the pad.)
+ * The laptop is found at the address in the first line of <folder>\loader.txt ("192.168.1.166:8765"
+ * when the file is missing). Only our own build files travel this way; there is no login.
+ * When the laptop runs tools/xbox_serve.py --data FOLDER for this game, /version ends in a "DATA" line
+ * and the loader first installs that game's data into its own folder (install.c), resuming where it
+ * stopped; never over the loader itself.
  */
 #include <hal/debug.h>
 #include <hal/video.h>
@@ -30,16 +33,64 @@
 #include <string.h>
 #include "../xnet_http.h"
 #include "install.h"
+#include "../xbox_path.h"
 
 extern struct netif *g_pnetif;
 
-#define DIR      "E:\\Games\\MH1\\"
-#define GAME     DIR "mh1.xbe"
-#define GAME_VER DIR "mh1.ver"
-#define GAME_LOG DIR "mh1log.txt"
-#define HOSTFILE DIR "loader.txt"
-#define TEST_INPUT DIR "data\\input.txt"
-#define TEST_ENV   DIR "data\\env.txt"
+/* this loader's folder (with a trailing backslash) and game, set at the start of main */
+static char DIR[200] = "E:\\Games\\MH1\\";
+static char GAMEID[8] = "mh1";              /* "mh1" / "mhg": the ?game= of every request */
+static char GAME[240], GAME_VER[240], GAME_LOG[240], HOSTFILE[240], TEST_INPUT[240], TEST_ENV[240];
+
+static void set_paths(void)
+{
+    snprintf(GAME, sizeof GAME, "%s%s.xbe", DIR, GAMEID);
+    snprintf(GAME_VER, sizeof GAME_VER, "%s%s.ver", DIR, GAMEID);
+    snprintf(GAME_LOG, sizeof GAME_LOG, "%smh1log.txt", DIR);
+    snprintf(TEST_INPUT, sizeof TEST_INPUT, "%sdata\\input.txt", DIR);
+    snprintf(TEST_ENV, sizeof TEST_ENV, "%sdata\\env.txt", DIR);
+}
+
+/* which folder and game: the folder of this XBE (on E:), the game from a "game=" line in its
+ * loader.txt, else from the folder's name */
+static void find_game(void)
+{
+    char dir[200], line[96];
+    const char *base;
+    FILE *f;
+    int found = 0;
+    if (xbox_image_dir(dir, sizeof dir, NULL, 0))
+        snprintf(DIR, sizeof DIR, "%s\\", dir);
+    else
+        snprintf(dir, sizeof dir, "%.*s", (int)strlen(DIR) - 1, DIR);   /* not on E: (xemu's DVD): MH1's folder */
+    base = strrchr(dir, '\\') ? strrchr(dir, '\\') + 1 : dir;
+    snprintf(HOSTFILE, sizeof HOSTFILE, "%sloader.txt", DIR);
+    if ((f = fopen(HOSTFILE, "r")) != NULL) {
+        while (fgets(line, sizeof line, f))
+            if (!strncmp(line, "game=", 5)) {
+                line[5 + strcspn(line + 5, "\r\n ")] = 0;
+                if (!strcmp(line + 5, "mh1") || !strcmp(line + 5, "mhg")) {
+                    snprintf(GAMEID, sizeof GAMEID, "%s", line + 5);
+                    found = 1;
+                }
+            }
+        fclose(f);
+    }
+    if (!found)
+        snprintf(GAMEID, sizeof GAMEID, "%s", ((base[0] | 0x20) == 'm' && (base[1] | 0x20) == 'h' &&
+                                               (base[2] | 0x20) == 'g' && !base[3]) ? "mhg" : "mh1");
+    set_paths();
+}
+
+/* "/version" -> "/version?game=mhg" */
+static const char *url(const char *path)
+{
+    static char u[2][160];
+    static int k;
+    k ^= 1;
+    snprintf(u[k], sizeof u[k], "%s?game=%s", path, GAMEID);
+    return u[k];
+}
 
 static char *read_file(const char *path, int *n)
 {
@@ -103,7 +154,7 @@ static void launch_game(void)
 static void fetch_test(void)
 {
     int n, ni, ne;
-    char *b = xh_http("GET", "/test", NULL, 0, &n), *p;
+    char *b = xh_http("GET", url("/test"), NULL, 0, &n), *p;
     if (!b)
         return;
     if (sscanf(b, "MH1TEST %d %d", &ni, &ne) == 2 && (p = strchr(b, '\n')) != NULL &&
@@ -128,22 +179,27 @@ int main(void)
     unsigned long ldt;
     const unsigned char *ld;
     int after_game, n;
-    char *log, *ver, *have, *xbe, *data, game[64];
+    char *log, *ver, *have, *xbe, *data, path[32];
+    const char *title;
 
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
     after_game = XGetLaunchInfo(&ldt, &ld) == 0 && ldt == LDT_TITLE && ld && !memcmp(ld, "MH1X", 4);
+    find_game();
     xh_read_host(HOSTFILE);
-    debugPrint("MH1 network loader\n");
+    title = strcmp(GAMEID, "mhg") ? "Monster Hunter" : "Monster Hunter G";
+    debugPrint("%s network loader (%s)\n", title, DIR);
     if (nxNetInit(NULL) != 0) {
         debugPrint("No network.\n");
+        if (after_game)             /* the game just exited: not straight back into it */
+            launch(NULL);
         launch_game();
     }
     net_up = 1;
     debugPrint("Xbox %s, laptop %s:%d\n", ip4addr_ntoa(netif_ip4_addr(g_pnetif)), xh_host, xh_port);
 
     if ((log = read_file(GAME_LOG, &n)) != NULL) {
-        char *r = xh_http("POST", "/log", log, n, &n);
+        char *r = xh_http("POST", url("/log"), log, n, &n);
         debugPrint(r ? "Sent the last game log.\n" : "Could not send the last game log.\n");
         if (r)
             remove(GAME_LOG);
@@ -156,30 +212,23 @@ int main(void)
         Sleep(3000);
         launch(NULL);
     }
-    if (!(ver = xh_http("GET", "/version", NULL, 0, &n))) {
+    if (!(ver = xh_http("GET", url("/version"), NULL, 0, &n))) {
         debugPrint("The laptop does not answer.\n");
         launch_game();
     }
     data = strstr(ver, "\nDATA");
     ver[strcspn(ver, "\n")] = 0;
-    if (data) {
-        int r = install_data(game, sizeof game);
-        if (r < 0) {
-            debugPrint("Back to the dashboard in 60 s.\n");
-            Sleep(60000);
-            launch(NULL);
-        }
-        if (r > 0 && !strcmp(ver, "none")) {      /* G's folder done and no build to test: start G */
-            debugPrint("Starting %s in 5 s.\n", game);
-            Sleep(5000);
-            launch(game);
-        }
+    if (data && install_data(DIR, GAMEID) < 0) {
+        debugPrint("Back to the dashboard in 60 s.\n");
+        Sleep(60000);
+        launch(NULL);
     }
     have = read_file(GAME_VER, &n);
     if (strcmp(ver, "none") && (!have || strcmp(have, ver))) {
         DWORD t0 = GetTickCount(), t1;
         debugPrint("Downloading build %s ...\n", ver);
-        if ((xbe = xh_http("GET", "/mh1.xbe", NULL, 0, &n)) != NULL) {
+        snprintf(path, sizeof path, "/%s.xbe", GAMEID);
+        if ((xbe = xh_http("GET", url(path), NULL, 0, &n)) != NULL) {
             t1 = GetTickCount();
             debugPrint("Got %d bytes in %lu ms. Writing it ...\n", n, (unsigned long)(t1 - t0));
             if (write_file(GAME, xbe, n) == 0 && write_file(GAME_VER, ver, strlen(ver)) == 0)

@@ -1421,3 +1421,29 @@ Lb_put_shopYesNo (the table was read through a D_ name: use real symbol names, t
 the box's equip-change flow (no Lb_equip_set in G), the banner wait. Details and the items left as they are (lb_npc_trans, DispDialogData, Disp_lb_item_box,
 with the reasons) are in docs/RELEASE_G.md section 7. Pad names for hidden runs: circle / cross / square (detail) / triangle / ddown / r1; the shop's list is at
 about tick 165 of tools/gvil_ev.py with circles every 30 from 45.
+
+## One network loader per game (16 Oct 2026, COORDINATOR.md queue item 0)
+
+Owner's request: starting Monster Hunter G updates G from the laptop and starts it, Monster Hunter the same for MH1;
+without the laptop each starts its copy on the disk. Done; details and test results in docs/xbox.md "Network loader" and
+"Two network loaders: one per game", decision in docs/DECISIONS.md, dropped behaviour in docs/REVIEW.md.
+- Loader (src/pc/xbox/loader): finds its folder from XeImageFileName (new shared helper src/pc/xbox/xbox_path.h, also
+  used by xbox_log.c), the game from loader.txt "game=" or the folder name; all paths and requests per game
+  (`?game=mh1|mhg`, /mh1.xbe or /mhg.xbe). install_data(dir, game) writes into the loader's own folder, refuses a list
+  for the other game and any default.xbe. No network right after a game exit: dashboard, not the game again.
+- Game (xbox_log.c): leaving returns to `<folder>\default.xbe` with launch data "MH1X" unless the running XBE is
+  default.xbe itself. rt_log.c's Xbox session-log folder is XBOX_GAME_DIR\logs (G wrote into MH1's folder).
+- tools/xbox_serve.py: both games at once (GAMES dict), --xbe / --xbe-g (defaults dist/xbox/MH1|MHG/default.xbe),
+  --data repeatable, --test-game, logs <time>-<game>.txt; plain /version, /manifest, /data, /test, /log = MH1.
+- tools/xbox_upload.sh --loader: builds the loader twice (cxbe title only differs) and installs both folders with
+  loader.txt "<ip>:8765" + "game=..". --settings goes to the MH1 folder (XBOX_DIR for another).
+- Test: tools/xemu_loader_test.sh (new; scratch disk, test DVD src/pc/xbox/testlaunch), 23/23 checks pass. Lesson:
+  in xemu a cold boot from the DVD already reports launch data type 2, so a test launcher can't use XGetLaunchInfo to
+  tell "first boot" from "came back"; it deletes its E:\launch.txt instead. "Back to the dashboard" on a disk with no
+  dashboard ends at the kernel's error 21 screen (expected).
+- The coordinator's running server (old xbox_serve.py) must be restarted after the merge: new loaders get 404 from it
+  and start the copy on the disk.
+- full_check.sh (16 Oct): all ok except test_ps2_online (agent C's PCSX2 test, merged from agent-C). First it failed on
+  `ulimit: error setting limit` (it raises its own cap to 3 GB inside full_check's 1.5 GB cap): test_ps2_online now gets
+  the 3 GB cap in full_check like test_ps2_patch. Run alone after that it gets further and stops at "no terms notice"
+  (02_net.png black) in PCSX2: not looked into (no PS2 code changed here); for agent C.

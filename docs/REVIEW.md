@@ -697,3 +697,17 @@ obvious workarounds.
 - **Dropped:** game_w+0xD1 reads in pl_move_sub (net position slot) and f_em_nm.c's em init (EB(0x88E)) on the G PC (the master byte lives at +0x3A there); **now** `game_w.master`.
 - **Changed:** rt_village.c called Set_userdata for the village hunter only with RT_POUCH; **now** always on the first visit (the name and equipment of the saved hunter, as init_pl_work does), and a
   test hunter without a name gets RT_NAME.
+
+## One network loader per game (agent D, 16 Oct 2026)
+- **Dropped:** the G data install writing E:\Games\MHG\default.xbe (G's game) and the loader then starting it
+  ("Starting E:\Games\MHG\default.xbe in 5 s"); install_data's E:\Games\<folder from the list> target. **Now** that name is G's
+  loader; G is mhg.xbe, served as /mhg.xbe and downloaded by the usual build check; the install writes into the loader's own
+  folder and only for its game. **Why:** owner's request (each game updates itself). **To revert:** the commit
+  "Xbox: one network loader per game".
+- **Dropped:** xbox_serve.py's single build (default build/xbox/default.xbe, `/mh1.xbe` only) and single --data folder. **Now**
+  both games at once, defaults dist/xbox/MH1/default.xbe and dist/xbox/MHG/default.xbe (--xbe / --xbe-g), --data once per
+  game. Logs are named <time>-<game>.txt.
+- **Changed:** leaving the game on the Xbox went straight to the dashboard (since 11 Oct); **now** it starts the loader in the
+  game's folder with launch data "MH1X" (as before 11 Oct), which sends the log and then goes to the dashboard. An XBE that
+  is itself default.xbe still goes to the dashboard.
+- **Changed:** rt_log's session-log folder on the Xbox was E:\Games\MH1\logs for G too; now the game's folder (XBOX_GAME_DIR).
