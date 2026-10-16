@@ -80,3 +80,15 @@ PROVIDE(ClassInfo_c74 = 0x006DEC00);
 PROVIDE(kouho_work_g = 0x0041E020); /* G's conversion candidate buffers (the symbol file puts kouho_work at 0x40E000) */
 PROVIDE(CnetSys_g = 0x006FA760);
 PROVIDE(lb_sys = 0x006548F0); /* main.bin reads lb_sys too (menu01.c) */
+/* the Dual Swords (job 6, agent A): G-only player helpers and table (src/main/pl/f_pl.c, src/game/shell/shell00.c) */
+PROVIDE(ds_atk_set = 0x0054CBA0);
+PROVIDE(shell00_set2 = 0x006690D0);
+PROVIDE(ds_chr_tbl = 0x006784F0);
+PROVIDE(pl_at083 = 0x0055C160);
+PROVIDE(pl_at084 = 0x0055C290);
+PROVIDE(pl_at085 = 0x0055C4C0);
+PROVIDE(pl_at089 = 0x0055CA40);
+PROVIDE(pl_at091 = 0x0055CC90);
+PROVIDE(pl_at093 = 0x0055CDF0);
+PROVIDE(pl_at094 = 0x0055D0A0);
+PROVIDE(pl_at102 = 0x0055D2E0);

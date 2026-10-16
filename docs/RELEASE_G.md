@@ -309,7 +309,11 @@ weapon type from 0x7C on (G's new weapons of all classes, all Dual Swords) took 
 Fixed (pc_data.txt); with the right class 6, pl_init crashes (Pl_slash_tbl / mv001_tbl / mv004_chr_tbl* are MH1's six
 entries), so job 6 now plays as sword and shield (stand-in, rt_data.c; RT_G_DUAL=1 for porting).
 **New gap (Blocker for G's weapon list): the Dual Swords class** (job-6 tables, moves, motions, the second blade's
-trail Eft05 arg 2) is not ported.
+trail Eft05 arg 2) is not ported. **Done 16 Oct 2026 (agent A, round 13):** the Dual Swords play as G's (attacks, combos,
+demon mode on R1, both blades drawn, two trails and the demon mode's red trails and glow, the left blade's hits); the
+stand-in is gone. Checked side by side with the real G in PCSX2 (build/A/dual/cmp_combo.png, cmp_demon.png) and in a
+G quest (tools/test_all_quests_g.sh dual run). Found on the way: no G-new weapon model (index 124+, any class) was drawn
+on the PC (weapon_model_data imported at MH1 size): fixed. Details: docs/agents/agent-A.md "G round 13".
 
 **Item 2, NextStage_Dir_Set** (where a monster heads when it changes area): G picks the side from the signed offset to
 the next area (MH1 compared it with w/3, 2w/3 and w/2, so a next area to the left / front always gave side 0 or the

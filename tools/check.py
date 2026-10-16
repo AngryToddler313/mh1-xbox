@@ -99,6 +99,10 @@ def original_functions():
     if MHG:
         for mod, a, sz, n in mhg_rows():
             out.setdefault(n, []).append((mod, a, sz))
+            # a G-only function named by hand in config/mhg/g_names.txt (PROVIDE(name = addr)) is found by that name too
+            for gn in G_FUNCNAMES.get(a, ()):
+                if gn != n:
+                    out.setdefault(gn, []).append((mod, a, sz))
         return out
     inv = {v: k for k, v in SECTIONS.items()}
     for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mh1_symbols.csv"),

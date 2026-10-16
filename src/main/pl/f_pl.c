@@ -308,6 +308,21 @@ static void pl_at074(PLW *pl, s32 unused_arg);
 static void pl_at077(PLW *pl, s32 unused_arg);
 static void pl_at078(PLW *pl, s32 arg1);
 static void pl_attack(PLW *pl);
+#ifdef VERSION_MHG     /* G only: the Dual Swords (job 6) */
+static void ds_atk_set(PLW *pl, int dir, int combo);
+static void pl_at083(PLW *pl, s32 arg1);
+static void pl_at084(PLW *pl, s32 arg1);
+static void pl_at085(PLW *pl, s32 arg1);
+static void pl_at089(PLW *pl, s32 unused_arg);
+static void pl_at091(PLW *pl, s32 arg1);
+static void pl_at093(PLW *pl, s32 arg1);
+static void pl_at094(PLW *pl, s32 arg1);
+static void pl_at102(PLW *pl, s32 unused_arg);
+void shell00_set2(PLW *pl, int arg, int blade);         /* G game 0x6690D0 (shell00.c) */
+void Eft05_set(PLW *pl, int timer, int arg);
+extern s16 ds_chr_tbl[8];                               /* G game 0x6784F0: {motion, blend} x 4 (pl_at091) */
+void eft_ds_aura_set(PLW *pl, int arg);                 /* G game 0x5688E0 (eft_ds_g.c) */
+#endif
 static void pl_dm000(PLW *pl);
 static void pl_dm001(PLW *pl, s32 arg1);
 static void pl_dm002(PLW *pl);
@@ -510,6 +525,12 @@ clr:
                 }
                 eft01_set(pl, 1);
                 Eft06_set(1.0f, pl, 7, 0, 1);
+#ifdef VERSION_MHG
+                if (pl->kind == 6) {    /* G (sub_main 0x4F1048): the Dual Swords' demon-mode trails and aura, for the quest */
+                    Eft05_set(pl, -1, 3);
+                    eft_ds_aura_set(pl, 0);
+                }
+#endif
             }
         }
         pl++;
@@ -1488,6 +1509,21 @@ static void job_special_com_ck(PLW *pl, u8 mode) {
                 }
                 Pl_act_set2(pl, 1, 0x18, 0);
                 return;
+#ifdef VERSION_MHG
+            case 6:     /* G (game 0x54BC30): R1 turns the Dual Swords' demon mode on */
+                if (mode == 2) {
+                    t = pl->work56B;
+                    if (t & 0xF) {
+                        pl->work56B = t & 0xF0;
+                        func_549200(pl, 4);
+                    }
+                }
+                if (pl->work93D == 0) {
+                    Pl_act_set2(pl, 1, 0x53, 0);
+                    return;
+                }
+                break;
+#endif
             }
         } else {
             switch (pl->kind) {
@@ -1499,6 +1535,15 @@ static void job_special_com_ck(PLW *pl, u8 mode) {
             case 2:
                 Pl_act_set2(pl, 1, 0x18, 0);
                 break;
+#ifdef VERSION_MHG
+            case 6:
+                if (pl->work93D == 0) {
+                    Pl_act_set2(pl, 1, 0x53, 0);
+                    return;
+                }
+                Pl_act_set2(pl, 1, 0x62, 0);
+                break;
+#endif
             }
         }
     }
@@ -1756,6 +1801,33 @@ static void ex_atk_ck(PLW *pl, s32 arg1) {
                 return;
             }
             break;
+#ifdef VERSION_MHG
+        case 4:
+        case 6:     /* G (game 0x54C9xx): the Dual Swords evade as the sword and shield; R1 turns the demon mode on / off */
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                if (pl->sw.an_now & 0x3C00) {
+                    temp_v0_2 = (pl->sw.ang[0] + 0x4000) & 0xFFFF;
+                    if (temp_v0_2 < 0x5C72) {
+                        Pl_act_set(pl, 0, 0x31, 4);
+                    } else if (temp_v0_2 < 0xA38E) {
+                        Pl_act_set(pl, 0, 0x1C, 4);
+                    } else {
+                        Pl_act_set(pl, 0, 0x32, 4);
+                    }
+                } else {
+                    Pl_act_set(pl, 0, 0x1C, 4);
+                }
+            }
+            if (pl->kind == 6 && (pl->sw.trg & 0x80)) {
+                if (pl->work93D == 0) {
+                    Pl_act_set2(pl, 1, 0x63, 0);
+                    return;
+                }
+                Pl_act_set2(pl, 1, 0x62, 0);
+                return;
+            }
+            break;
+#else
         case 4:
             if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
                 if (pl->sw.an_now & 0x3C00) {
@@ -1775,6 +1847,7 @@ static void ex_atk_ck(PLW *pl, s32 arg1) {
                 return;
             }
             break;
+#endif
         case 2:
             if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
                 if (pl->sw.an_now & 0x3C00) {
@@ -1822,6 +1895,41 @@ static void ex_atk_ck(PLW *pl, s32 arg1) {
 }
 #endif
 
+/* G only (game 0x0054CBA0): the Dual Swords' next attack from the stick (dir 0 forward, 1 sideways, 2 back, 3 the
+   combo's last sideways step) and the demon mode; combo = called from a running combo (the follow-up moves). */
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 49)
+static void ds_atk_set(PLW *pl, int dir, int combo) {
+    switch (dir) {
+    case 0:
+        if (pl->work93D != 0) {
+            Pl_act_set(pl, 1, 0x54, 4);
+        } else if (combo == 0) {
+            Pl_act_set(pl, 1, 0x5B, 4);
+        } else {
+            Pl_act_set(pl, 1, 0x64, 4);
+        }
+        break;
+    case 1:
+        if (pl->work93D != 0) {
+            Pl_act_set(pl, 1, 0x5A, 4);
+        } else if (combo == 0) {
+            Pl_act_set(pl, 1, 0x5C, 4);
+        } else {
+            Pl_act_set(pl, 1, 0x65, 4);
+        }
+        break;
+    case 2:
+    case 3:
+        if (pl->work93D != 0) {
+            Pl_act_set(pl, 1, 0x59, 4);
+        } else if (dir == 2) {
+            Pl_act_set(pl, 1, 0x5D, 4);
+        }
+        break;
+    }
+}
+#endif
+
 #if !defined(G_PART)
 static void basic_atack_ck(PLW *pl) {
     s32 temp_v0;
@@ -1854,6 +1962,30 @@ static void basic_atack_ck(PLW *pl) {
                 return;
             }
             break;
+#ifdef VERSION_MHG
+        case 6:     /* G: the Dual Swords (game 0x54CDD0) */
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                Pl_act_set(pl, 0, 0x1C, 4);
+            }
+            if (pl->sw.an_trg & 0x3C) {
+                temp_v0 = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+                if (temp_v0 < 0x4001) {
+                    ds_atk_set(pl, 0, 0);
+                    return;
+                }
+                if (temp_v0 < 0x9556) {
+                    Pl_act_set(pl, 1, 0x55, 4);
+                    return;
+                }
+                if (temp_v0 < 0xD556) {
+                    ds_atk_set(pl, 1, 0);
+                    return;
+                }
+                ds_atk_set(pl, 2, 0);
+                return;
+            }
+            break;
+#endif
         case 0:
         default:
             if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
@@ -8960,6 +9092,487 @@ static void pl_at078(PLW *pl, s32 arg1) {
 }
 #endif
 
+/* G only (PS2 Monster Hunter G game 0x0055C160-0x0055D36C): the Dual Swords' (job 6) attack handlers, called by G's
+   pl_attack for actions 0x53-0x66 (agent A, 16 Oct 2026; named pl_atNNN after their first action number, as MH1's).
+   PLW+0x93D = demon mode ("kijinka") on; shell00_set2 (G game 0x6690D0) is shell00_set with the blade (0 right,
+   1 left) in the shell's x07; ds_atk_set (G game 0x54CBA0) picks the next attack from the stick direction and the
+   demon mode. pl->x06 holds the direction a combo input asked for. */
+/* pl_at083: near-match (PC only; the G build keeps G's asm): G has an extra empty `beq arg1, 2` (+2 instructions) before
+   the demon-mode-on block; switch orders and an empty case 2 tried (16 Oct 2026). Logic checked against the asm. */
+#if defined(VERSION_MHG) && !defined(G_PART)
+static void pl_at083(PLW *pl, s32 arg1) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->flag12 = 1;
+        switch (arg1) {
+        case 2:
+        default:
+            pl->work93D = 1;
+            pl->x43E = 2;
+            if (arg1 == 0) {
+                pl_chr_set2(pl, 0x3FA, 4, 0);
+            } else {
+                pl_chr_set2(pl, 0x3FA, 4, 0xA);
+            }
+            break;
+        case 1:
+            pl->work93D = 0;
+            pl_chr_set2(pl, 0x3FB, 4, 0);
+            break;
+        }
+        break;
+    case 1:
+        if (arg1 == 0) {
+            pl->x43E = 2;
+        }
+        if (pl->work194 == 0) {
+            pl->x43E = 0;
+            pl_to_normal(pl, 0, 2, 0);
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at084(PLW *pl, s32 arg1) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->x07 = 0;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        if (arg1 == 0) {
+            pl_chr_set2(pl, 0x583, 4, 0);
+        } else {
+            pl_chr_set2(pl, 0x57D, 4, 0);
+        }
+        shell00_set2(pl, 0x2D, (u8)arg1);
+        break;
+    case 1:
+        if (frame_check2(40.0f, pl, 0) != 0) {
+            pl->x05++;
+            if (arg1 == 0) {
+                pl_chr_set2(pl, 0x582, 0, 0);
+            } else {
+                pl_chr_set2(pl, 0x581, 0, 0);
+            }
+            shell00_set2(pl, 0x34, (u8)arg1);
+            pl->x07 = 0;
+            break;
+        }
+        if (we04_hit_sub(pl) == 1) {
+            break;
+        }
+        if (frame_check(24.0f, pl, 0) != 0) {
+            shell00_set2(pl, 0x2E, (u8)arg1);
+        }
+        if (frame_check(34.0f, pl, 0) != 0) {
+            shell00_set2(pl, 0x2F, (u8)arg1);
+        }
+        break;
+    case 2:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+            break;
+        }
+        if (we04_hit_sub(pl) == 1) {
+            break;
+        }
+        if (frame_check(28.0f, pl, 0) != 0) {
+            shell00_set2(pl, 0x35, (u8)arg1);
+        }
+        if (frame_check(38.0f, pl, 0) != 0) {
+            shell00_set2(pl, 0x36, (u8)arg1);
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at085(PLW *pl, s32 arg1) {
+    u8 s;
+    f32 f0, f1;
+    s32 a;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->x07 = 0;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        switch (arg1) {
+        case 0:
+            pl_chr_set2(pl, 0x579, 2, 0);
+            func_6362B0(pl, 0x25);
+            break;
+        case 1:
+            pl_chr_set2(pl, 0x57A, 2, 0);
+            func_6362B0(pl, 0x26);
+            break;
+        case 2:
+            pl_chr_set2(pl, 0x57B, 2, 0);
+            func_6362B0(pl, 0x28);
+            break;
+        case 3:
+            pl_chr_set2(pl, 0x579, 2, 0xA);
+            func_6362B0(pl, 0x25);
+            Eft05_set(pl, 8, 1);
+            break;
+        }
+        break;
+    case 1:
+        if (pl->x06 == 0) {
+            f0 = 10.0f;
+            f1 = 50.0f;
+            if (arg1 == 2) {
+                f0 = 60.0f;
+                f1 = 120.0f;
+            }
+            if (frame_check2(f0, pl, 0) != 0 && frame_check2(f1, pl, 0) == 0 && (pl->sw.an_trg & 0x3C)) {
+                a = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+                if (a < 0x4001) {
+                    pl->x06 = 2;
+                } else if (a < 0x9556) {
+                    pl->x06 = 1;
+                } else if (a < 0xD556) {
+                    pl->x06 = 3;
+                } else {
+                    pl->x06 = 4;
+                }
+            }
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+            break;
+        }
+        if (we04_hit_sub(pl) == 1) {
+            break;
+        }
+        switch (arg1) {
+        case 0:
+        case 3:
+            if (frame_check2(22.0f, pl, 0) != 0) {
+                switch (pl->x06) {
+                case 1:
+                    Pl_act_set(pl, 1, 0x56, 4);
+                    break;
+                case 2:
+                    ds_atk_set(pl, 0, 1);
+                    break;
+                case 3:
+                    ds_atk_set(pl, 1, 1);
+                    break;
+                case 4:
+                    ds_atk_set(pl, 3, 1);
+                    break;
+                default:
+                    if (frame_check2(50.0f, pl, 0) == 0) {
+                        ex_atk_ck(pl, 0);
+                    }
+                    break;
+                }
+            }
+            break;
+        case 1:
+            if (frame_check2(28.0f, pl, 0) != 0) {
+                switch (pl->x06) {
+                case 1:
+                    Pl_act_set(pl, 1, 0x57, 4);
+                    break;
+                case 2:
+                    ds_atk_set(pl, 0, 1);
+                    break;
+                case 3:
+                    ds_atk_set(pl, 1, 1);
+                    break;
+                case 4:
+                    ds_atk_set(pl, 3, 1);
+                    break;
+                default:
+                    if (frame_check2(50.0f, pl, 0) == 0) {
+                        ex_atk_ck(pl, 0);
+                    }
+                    break;
+                }
+            }
+            if (frame_check(18.0f, pl, 0) != 0) {
+                func_6362B0(pl, 0x27);
+            }
+            break;
+        case 2:
+            if (frame_check2(88.0f, pl, 0) != 0) {
+                switch (pl->x06) {
+                case 2:
+                    ds_atk_set(pl, 0, 1);
+                    break;
+                case 3:
+                    ds_atk_set(pl, 1, 1);
+                    break;
+                case 4:
+                    ds_atk_set(pl, 3, 1);
+                    break;
+                default:
+                    if (frame_check2(120.0f, pl, 0) == 0) {
+                        ex_atk_ck(pl, 0);
+                    }
+                    break;
+                }
+            }
+            if (frame_check(58.0f, pl, 0) != 0) {
+                func_6362B0(pl, 0x29);
+            }
+            if (frame_check(70.0f, pl, 0) != 0) {
+                func_6362B0(pl, 0x2A);
+            }
+            break;
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at089(PLW *pl, s32 unused_arg) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x57F, 2, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x43E = 0x1C;
+        func_6362B0(pl, 0x30);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+            break;
+        }
+        if (frame_check(58.0f, pl, 0) != 0 && pl->work887 < 2) {
+            Pl_act_set(pl, 1, 0x66, 4);
+            break;
+        }
+        if (frame_check(20.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x31);
+        }
+        if (frame_check(26.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x32);
+        }
+        if (frame_check(50.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x32);
+        }
+        if (frame_check(54.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x31);
+        }
+        if (frame_check(66.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x31);
+        }
+        if (frame_check(70.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x32);
+        }
+        if (frame_check(82.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x32);
+        }
+        if (frame_check(88.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x31);
+        }
+        if (frame_check(118.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x33);
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at091(PLW *pl, s32 arg1) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->x07 = 0;
+        pl_chr_set2(pl, ds_chr_tbl[arg1 * 2], 4, ds_chr_tbl[arg1 * 2 + 1]);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        shell00_set2(pl, 0x2D, (u8)arg1);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (we04_hit_sub(pl) == 1) {
+            break;
+        }
+        if (frame_check2(50.0f, pl, 0) != 0) {
+            ex_atk_ck(pl, 0);
+        }
+        if (frame_check(24.0f, pl, 0) != 0) {
+            shell00_set2(pl, 0x2E, (u8)arg1);
+        }
+        if (frame_check(34.0f, pl, 0) != 0) {
+            shell00_set2(pl, 0x2F, (u8)arg1);
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at093(PLW *pl, s32 arg1) {
+    u8 s;
+    s32 a;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x06 = 0;
+        pl->x07 = 0;
+        pl->work08 = 0;
+        switch (arg1) {
+        case 0:
+            pl->x05 = 2;
+            pl_chr_set2(pl, 0x57C, 2, 0);
+            func_6362B0(pl, 0x2B);
+            break;
+        case 1:
+            pl->x05++;
+            pl->flag12 = 1;
+            pl_chr_set2(pl, 0x585, 4, 0);
+            break;
+        case 2:
+            pl->x05 = 2;
+            pl_chr_set2(pl, 0x57C, 4, 0);
+            func_6362B0(pl, 0x2B);
+            break;
+        }
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl->x05 = s + 1;
+            pl_chr_set2(pl, 0x57C, 2, 0x1C);
+            func_6362B0(pl, 0x37);
+        }
+        break;
+    case 2:
+        if (pl->x06 == 0 && frame_check2(20.0f, pl, 0) != 0 && frame_check2(42.0f, pl, 0) == 0 && (pl->sw.an_trg & 0x3C)) {
+            a = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+            if (a > 0x4000 && a < 0x9556) {
+                pl->x06 = 1;
+            }
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+            break;
+        }
+        if (we04_hit_sub(pl) == 1) {
+            break;
+        }
+        if (frame_check(36.0f, pl, 0) != 0 && pl->work08 == 0) {
+            pl->work08++;
+            func_6362B0(pl, 0x38);
+        }
+        if (frame_check2(42.0f, pl, 0) != 0) {
+            if (pl->x06 != 0) {
+                Pl_act_set(pl, 1, 0x5E, 4);
+                break;
+            }
+            if (frame_check2(60.0f, pl, 0) == 0) {
+                ex_atk_ck(pl, 0);
+            }
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at094(PLW *pl, s32 arg1) {
+    u8 s;
+    s32 a;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x06 = 0;
+        pl_chr_set2(pl, 0x57E, 2, arg1 != 0 ? 4 : 0);
+        func_6362B0(pl, 0x2C);
+        break;
+    case 1:
+        if (pl->x06 == 0 && frame_check2(26.0f, pl, 0) != 0 && frame_check2(38.0f, pl, 0) == 0 && (pl->sw.an_trg & 0x3C)) {
+            a = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+            if (a < 0x4001) {
+                pl->x06 = 2;
+            } else if (a < 0x9556) {
+                pl->x06 = 1;
+            } else if (a < 0xD556) {
+                pl->x06 = 3;
+            }
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (we04_hit_sub(pl) == 1) {
+            break;
+        }
+        if (frame_check2(26.0f, pl, 0) != 0) {
+            switch (pl->x06) {
+            case 1:
+                Pl_act_set(pl, 1, 0x58, 4);
+                break;
+            case 2:
+                Pl_act_set(pl, 1, 0x64, 4);
+                break;
+            case 3:
+                Pl_act_set(pl, 1, 0x65, 4);
+                break;
+            default:
+                if (frame_check2(38.0f, pl, 0) == 0) {
+                    ex_atk_ck(pl, 0);
+                }
+                break;
+            }
+        }
+        break;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && (!defined(G_PART) || G_PART == 48)
+static void pl_at102(PLW *pl, s32 unused_arg) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 0, 0);
+        pl_chr_set2(pl, 0x584, 0, 0);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+        }
+        break;
+    }
+}
+#endif
+
 #if !defined(G_PART)
 static void pl_attack(PLW *pl) {
     pl->work350 = 0;
@@ -9210,6 +9823,71 @@ static void pl_attack(PLW *pl) {
     case 0x52:
         pl_at036(pl, 4);
         break;
+#ifdef VERSION_MHG     /* G (game 0x55D370): the Dual Swords (0x53-0x66) and a fourth pl_at024 */
+    case 0x53:
+        pl_at083(pl, 0);
+        break;
+    case 0x54:
+        pl_at084(pl, 0);
+        break;
+    case 0x55:
+        pl_at085(pl, 0);
+        break;
+    case 0x56:
+        pl_at085(pl, 1);
+        break;
+    case 0x57:
+        pl_at085(pl, 2);
+        break;
+    case 0x58:
+        pl_at085(pl, 3);
+        break;
+    case 0x59:
+        pl_at089(pl, 0);
+        break;
+    case 0x5A:
+        pl_at084(pl, 1);
+        break;
+    case 0x5B:
+        pl_at091(pl, 0);
+        break;
+    case 0x5C:
+        pl_at091(pl, 1);
+        break;
+    case 0x5D:
+        pl_at093(pl, 0);
+        break;
+    case 0x5E:
+        pl_at094(pl, 0);
+        break;
+    case 0x5F:
+        pl_at094(pl, 1);
+        break;
+    case 0x60:
+        pl_at093(pl, 1);
+        break;
+    case 0x61:
+        pl_at093(pl, 2);
+        break;
+    case 0x62:
+        pl_at083(pl, 1);
+        break;
+    case 0x63:
+        pl_at083(pl, 2);
+        break;
+    case 0x64:
+        pl_at091(pl, 2);
+        break;
+    case 0x65:
+        pl_at091(pl, 3);
+        break;
+    case 0x66:
+        pl_at102(pl, 0);
+        break;
+    case 0x67:
+        pl_at024(pl, 3);
+        break;
+#endif
     default:
         pl_to_normal(pl, 0, 4, 0);
         break;
@@ -9353,6 +10031,9 @@ static void pl_dm002(PLW *pl) {
     switch (s) {
     case 0:
         pl->x05 = s + 1;
+#ifdef VERSION_MHG
+        pl->work93D = 0;    /* G: a knock-down ends the demon mode */
+#endif
         pl_chr_set2(pl, 0xCD, 0, 0x10);
         get_joint_pos(pl, 2, sp90);
         pl->pos[1] = sp90[1];
@@ -9517,6 +10198,9 @@ static void pl_dm005(PLW *pl) {
     switch (s) {
     case 0:
         pl->x05 = s + 1;
+#ifdef VERSION_MHG
+        pl->work93D = 0;    /* G: a knock-down ends the demon mode */
+#endif
         pl_chr_set2(pl, 0xD0, 0, 0);
         get_joint_pos(pl, 2, sp90);
         pl->pos[1] = sp90[1];

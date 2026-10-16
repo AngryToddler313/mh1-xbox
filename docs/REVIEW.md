@@ -773,3 +773,15 @@ obvious workarounds.
   G's anim-801 Eft06 call. viewer.c rejects --stage outside 0-87 (88/89 crashed in load_stage_hit).
 - **Dropped:** for the G PC build, MH1's eft09_i / eft09_m / eft09_set behaviour (kept for MH1); **now** G's (subspecies
   kinds, revival ends the cut tail, ot0 when fading). **To revert:** the commit "G PC: stage fog ...".
+
+## G Dual Swords (agent A, 16 Oct 2026)
+- **Dropped:** the stand-in in rt_data.c that turned every Dual Swords weapon (job 6) into a sword and shield (job 1),
+  and its RT_G_DUAL=1 switch. **Now** job 6 plays as G's Dual Swords: G's attack handlers (pl_at083..pl_at102, actions
+  0x53-0x66), ds_atk_set, the job-6 cases of basic_atack_ck / ex_atk_ck / job_special_com_ck (R1 = demon mode), the
+  job-indexed tables at G size, shell00_set2 (the left blade's hits), the demon mode in shell00_i, the second blade in
+  rt_player_weapon, G's eft05 (two trails, the demon mode's red trails) and the demon-mode glow (eft_ds_aura_*).
+  **Why:** the real class instead of a stand-in (checked against the real G in PCSX2: build/A/dual/cmp_*.png).
+  **To revert:** the commit "G: the Dual Swords".
+- **Dropped:** for the G PC build, MH1's eft05_i / eft05_m / eft05_d / eft05_t / Eft05_set (kept for MH1); **now** G's
+  (eft05_nm.c VERSION_MHG). **Changed:** rt_weapon_afs takes G's 225 weapon models (was 124: every G weapon with a model
+  from 124 on had no model on the PC, any class).

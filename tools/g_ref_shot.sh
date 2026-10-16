@@ -16,6 +16,14 @@
 #   --no-pc     PS2 pictures only
 #   --pc-only   the PC pictures again (after a PC change) from the cameras of an earlier run (DIR/views.txt); no PCSX2
 #   NEWSTATE=1  make the in-quest save state again (STEPSHOTS=1: a picture after each scripted step, DIR/step_NNN.png)
+#   WEAPON=KIND:ID  the hunter takes this weapon into the quest (KIND 6 sword, 7 gun; poked into the equipped item-box
+#               entry before the gate, Set_equip_idx copies it at departure). Its own save state: slot 9 - KIND
+#               (WEAPON=6:234, the first Dual Swords: slot 3). Made like NEWSTATE the first time.
+#   --combo KEYS  no stage shots: load the state, then record the screen (30 fps, DIR/combo.mp4 and every 3rd frame as
+#               DIR/combo_NNN.png) while pressing KEYS: a list of KEY[:HOLD_MS] / pause:SECONDS (keys of
+#               tools/run_pcsx2.sh: t/f/g/h right stick, e = R1, i/j/k/l left stick ...); peek:OFF prints the
+#               hunter's PLW byte at OFF (e.g. peek:0x93D, the Dual Swords' demon mode). Example:
+#               WEAPON=6:234 tools/g_ref_shot.sh --out build/A/dual --combo "t pause:0.6 t pause:0.6 t pause:2"
 # Needs: PCSX2 + the owner's BIOS (tools/run_pcsx2.sh), disc/mhg/Monster Hunter G (Japan).iso, build/mhg/pc/mhview_g
 # (tools/build_pc_mhg.sh), Xvfb. Takes the shared emulator lock itself (one emulator at a time: xemu.lock next to the
 # main checkout).
@@ -29,17 +37,18 @@ case " $* " in *" --pc-only "*) G_REF_LOCKED=1 ;; esac      # (no emulator)
 if [ -z "$G_REF_LOCKED" ]; then
     G_REF_LOCKED=1 exec flock "$LOCK" "$0" "$@"
 fi
-OUT=build/ref; PC=1; PCONLY=
+OUT=build/ref; PC=1; PCONLY=; COMBO=
 while [ $# -gt 0 ]; do
     case "$1" in
     --out) OUT=$2; shift 2 ;;
     --no-pc) PC=; shift ;;
     --pc-only) PCONLY=1; shift ;;
+    --combo) COMBO=$2; PC=; shift 2 ;;
     -*) echo "unknown option $1"; exit 2 ;;
     *) break ;;
     esac
 done
-[ $# -gt 0 ] || { sed -n '2,27p' "$0"; exit 2; }
+[ $# -gt 0 ] || [ -n "$COMBO" ] || { sed -n '2,33p' "$0"; exit 2; }
 mkdir -p "$OUT"
 # the PC picture of one shot: pc_shot TAG STAGE VIEW
 pc_shot() {
@@ -72,6 +81,11 @@ mkdir -p "$PCSX2_HOME/PCSX2"
 [ -e "$PCSX2_HOME/PCSX2/bios" ] || ln -s "$HOME/ps2dev/pcsx2/data/PCSX2/bios" "$PCSX2_HOME/PCSX2/bios"
 export PINE=${PINE:-28050} DNUM=${DNUM:-93}
 SLOT=9              # the save-state slot that holds "in a quest"
+UD=0x32C210         # User_data
+if [ -n "$WEAPON" ]; then
+    WK=${WEAPON%%:*}; WID=${WEAPON#*:}
+    SLOT=$((9 - WK))
+fi
 ST=$PCSX2_HOME/PCSX2/sstates
 PL=0x34D450; SELW=0x35EC30
 K=build/pcsx2/xkey
@@ -122,6 +136,13 @@ if [ -n "$NEWSTATE" ] || ! ls "$ST"/*.0$SLOT.p2s >/dev/null 2>&1; then
         k 1.5 c
     done
     k 2 x x x x x x
+    if [ -n "$WEAPON" ]; then     # the weapon to take along: the equipped set is an index into the item box (User_data
+        # +0xCFE; box entries of 6 bytes at +0x44: +1 kind, +2 id); Set_equip_idx copies it to +0xC75 / +0xC76 at departure
+        EI=$(p r16 $((UD + 0xCFE)) | awk '{print $2}')
+        EA=$((UD + 0x44 + EI * 6))
+        p w8 $((EA + 1)) "$WK" ";" w16 $((EA + 2)) "$WID" ";" w8 $((UD + 0xC75)) "$WK" ";" w16 $((UD + 0xC76)) "$WID"
+        echo "equipped weapon kind $WK id $WID (box entry $EI)"
+    fi
     # the village gate: square departs -> the quest loads (camp of the Forest and Hills, stage 21)
     p wf $((PL + 0xAC)) 10650 ";" wf $((PL + 0xB4)) 15225
     k 2; k 25 z
@@ -131,6 +152,29 @@ if [ -n "$NEWSTATE" ] || ! ls "$ST"/*.0$SLOT.p2s >/dev/null 2>&1; then
     echo "saved the in-quest state"
 fi
 
+if [ -n "$COMBO" ]; then         # record a move sequence in the quest's camp
+    p load $SLOT; sleep 4
+    echo "hunter: job $(p r8 $((PL + 2)) | awk '{print $2}') weapon $(p r16 $((PL + 0x360)) | awk '{print $2}')"
+    rm -f "$OUT"/combo_*.png
+    ffmpeg -nostdin -v error -y -f x11grab -framerate 30 -video_size 640x480 -i :$DNUM -t 30 "$OUT/combo.mp4" </dev/null &
+    FP=$!
+    sleep 1
+    T0=$(date +%s)
+    for a in $COMBO; do
+        case "$a" in
+        pause:*) sleep "${a#pause:}" ;;
+        peek:*) echo "  t+$(( $(date +%s) - T0 ))s PLW+${a#peek:} = $(p r8 $((PL + ${a#peek:})) | awk '{print $2}')" ;;
+        *:*) DISPLAY=:$DNUM $K "$a:0" ;;
+        *) DISPLAY=:$DNUM $K "$a:120:0" ;;
+        esac
+    done
+    sleep 1
+    kill -INT $FP 2>/dev/null; wait $FP 2>/dev/null
+    ffmpeg -nostdin -v error -y -i "$OUT/combo.mp4" -vf "select=not(mod(n\\,3))" -vsync vfr "$OUT/combo_%03d.png"
+    echo "combo: $OUT/combo.mp4, $(ls "$OUT"/combo_*.png | wc -l) frames $OUT/combo_NNN.png"
+    cleanup
+    exit 0
+fi
 for S in "$@"; do
     parse "$S"
     p load $SLOT; sleep 4

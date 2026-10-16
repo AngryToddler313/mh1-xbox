@@ -34,6 +34,35 @@ void shell00_set(PLW *pl, int arg) {
         sh->owner = pl;
         sh->xC8 = ((EMW *)pl)->ang[1];
         sh->xB8 = pl->cnt39A;
+#ifdef VERSION_MHG
+        sh->x07 = 0;        /* G: the right blade (shell00_set2) */
+#endif
+        sh->ang[0] = ((EMW *)pl)->ang[0];
+        sh->ang[1] = ((EMW *)pl)->ang[1];
+        sh->ang[2] = ((EMW *)pl)->ang[2];
+        flvecCopy(&sh->pos2, pl->pos);
+        ((EMW *)pl)->x19 = 0;
+    }
+}
+#endif
+
+#if defined(VERSION_MHG) && !defined(G_PART)
+/* G only (game 0x6690D0): shell00_set for the Dual Swords: blade = which sword hits (0 right hand, 1 left; x07, read
+   by shell00_i). Not byte-checked (the G game build keeps it as asm). */
+void shell00_set2(PLW *pl, int arg, int blade) {
+    SHLW *sh = pull_shell_work(0);
+
+    if (sh != 0) {
+        sh->type = 0;
+        sh->arg = arg;
+        sh->move = shell00_move;
+        sh->em_no = pl->id;
+        sh->x7A = ((EMW *)pl)->x10;
+        sh->char0 = pl->char0;
+        sh->owner = pl;
+        sh->xC8 = ((EMW *)pl)->ang[1];
+        sh->xB8 = pl->cnt39A;
+        sh->x07 = blade;
         sh->ang[0] = ((EMW *)pl)->ang[0];
         sh->ang[1] = ((EMW *)pl)->ang[1];
         sh->ang[2] = ((EMW *)pl)->ang[2];
@@ -88,6 +117,18 @@ static void shell00_i(SHLW *sh) {
     sh->be_flag = 1;
     sh->trans = 0;
     pl_atck_data_set_shl(sh, pl, sh->arg, shell00_tbl);
+#ifdef VERSION_MHG
+    if (sh->x07 & 1) {      /* G: the left blade of the Dual Swords hits from the other hand */
+        switch (sh->body) {
+        case 9:
+            sh->body = 10;
+            break;
+        case 10:
+            sh->body = 9;
+            break;
+        }
+    }
+#endif
     sh->x88 = shell00_body_tbl[sh->body];
     sh->x8C = 0;
     sh->stg = pl->stg;
@@ -146,6 +187,13 @@ static void shell00_i(SHLW *sh) {
             }
         }
     }
+#ifdef VERSION_MHG
+    if (pl->kind == 6 && pl->work93D != 0) {   /* G: the Dual Swords in demon mode: x1.35 attack, hit flags 0 / 0x12 */
+        *((u8 *)sh + 0x75) = 0;
+        *((u8 *)sh + 0x76) = 0x12;
+        sh->x62 = (u8)(1.35f * (f32)sh->x62);
+    }
+#endif
     if (sh->x60 != 0) {
         a = flAbs(pl->blend0 % 100);
         sh->x60 += (u8)(a - (s32)(flAbs(pl->act_tm0) / 2.0f) - 1);

@@ -1059,3 +1059,37 @@ Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, buil
   tail when the entry's lives drop below it and +0x2E = 2; subspecies kinds in the tail_off switch. f_quest.c's statics
   are global on the PC (one TU), so G code that calls them (em_work_serch) links.
 - Checks: see the commit.
+
+## G round 13: the Dual Swords (job 6) on PC/Xbox G (16 Oct 2026)
+
+- **What G adds for job 6** (all read from G's asm): pl_attack cases 0x53-0x67 (0x67 = pl_at024(pl, 3), another class);
+  eight G-only handlers at game 0x55C160-0x55D36C, named pl_at083/084/085/089/091/093/094/102 after their first action;
+  ds_atk_set (game 0x54CBA0: next attack from the stick and the demon mode); job-6 cases in basic_atack_ck (stick:
+  forward 0x55, else ds_atk_set), ex_atk_ck (evades as sword and shield, R1 during a move = 0x63 on / 0x62 off) and
+  job_special_com_ck (R1 = 0x53). PLW+0x93D = demon mode ("kijinka"): stamina drains 1 a tick (timer_calc_sub_pl, was
+  already ported), knock-downs end it (pl_dm002 / pl_dm005), shell00_i gives x1.35 attack and hit flags 0 / 0x12.
+  shell00_set2 (game 0x6690D0) = shell00_set with the blade in shell x07; shell00_i then swaps body 9 <-> 10 (left hand).
+- **Tables at G size** (config/mhg/pc_data.txt): Pl_slash_tbl, mv001_tbl, job_atk_adj_tbl (7 jobs + pad), ds_chr_tbl
+  (G only), weapon_model_data / WEAPON_TEX (225 models; was 124: no G-new weapon of any class had a model on the PC).
+- **Weapon drawing**: G's weapon_joint_calc takes the blade as a second argument (case 6 only; weapon_joint_calc2 on
+  the PC); weapon_trans places the second hierarchy in the left hand (joint 0x12, offset -7.4/-0.4/-6.5, XYZ(0,0,pi)) or
+  on the back next to the first (part 9). rt_player_weapon does the same.
+- **Trails**: G's eft05 keeps up to two trails per effect (count per arg 1,1,1,2,2; history interleaved per trail),
+  arg 1/2 right/left blade, 3 both blades in red for the demon mode (pl_init creates it for the quest, timer -1, drawn
+  only while the mode is on), per-weapon tip offset and hand-row scale tables (ds_type_index = G main 0x101F10). The
+  demon-mode glow (G game 0x567F70..: effect type 3, clay 59 of eft_mdlw[0], every other frame) is eft_ds_aura_*.
+  The glow's update passes an unset register as the frame mode (G bug or leftover); the PC uses 1 as the draw does
+  [guess].
+- **Matching**: pl_at084..pl_at102 (7 functions, 4320 bytes, part 48) and ds_atk_set (316 bytes, part 49) match G
+  (VERSION=mhg check.py, G game rebuild OK). pl_at083 near-match (one extra empty `beq arg, 2` in G; switch orders and
+  an empty case tried), PC only. tools/check.py now also finds a G-only function by a name PROVIDEd in
+  config/mhg/g_names.txt. G matched: game 26.34% -> 26.72%, all G 20.04% -> 20.16%.
+- **Tools**: tools/gdraft.py drafts raw G functions too (c_rawfuncs, from the split image through objdump);
+  tools/g_ref_shot.sh WEAPON=KIND:ID (the equipped item-box entry User_data+0xCFE -> +0x44 + 6n is poked before the
+  gate; G copies it to +0xC75 at departure) and --combo "KEYS" (records the screen while pressing keys; peek:OFF reads
+  a PLW byte). tools/test_all_quests_g.sh has a Dual Swords hunt (g_dual; DUAL=1 with quest numbers).
+- **Checked**: real G in PCSX2 with Dual Swords 234: forward combo, R1 demon mode (PLW+0x93D read 1), demon attacks with
+  red trails on both blades; PC side by side build/A/dual/cmp_combo.png, cmp_demon.png. PC hunt quest 10 with 234:
+  hits on the Rathian (1-5 per hit, no aid), quest clear with the test aids; all four stick directions and the demon
+  versions run (0x5B 0x5C 0x5D 0x5A 0x54 0x59). Not checked: hit values against the real game, sounds by ear,
+  pl_at089 (demon dance) frame by frame, the white (non-demon) trails' look.

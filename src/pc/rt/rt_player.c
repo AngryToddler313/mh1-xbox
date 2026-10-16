@@ -662,6 +662,9 @@ void rt_player_set_ang(int no, int ang_y)
 typedef struct { f32 p[3]; f32 r[3]; } RT_WDISP;
 extern RT_WDISP weapon_disp_tbl_r[], weapon_disp_tbl_l[], weapon_disp_tbl_b[];
 s16 weapon_joint_calc(PLW *pl);
+#ifdef VERSION_MHG
+s16 weapon_joint_calc2(PLW *pl, int blade);
+#endif
 void flmatInit(FLMAT *m);
 void flmatCopy(FLMAT *d, FLMAT *s);
 void flmatSetXYZ33(FLMAT *m, f32 x, f32 y, f32 z);
@@ -684,9 +687,15 @@ int rt_player_weapon(int no, float *root0, float *root1)
     f32 p[3], r[3], o[3], sc = 1.0f;
     RT_WDISP *tb;
     int jt, k = pl->kind;
+#ifdef VERSION_MHG
+    if (!part_w(pl, 9) || k > 6)        /* G: job 6, the Dual Swords */
+        return -1;
+    jt = k == 6 ? weapon_joint_calc2(pl, 0) : weapon_joint_calc(pl);
+#else
     if (!part_w(pl, 9) || k > 5)
         return -1;
     jt = weapon_joint_calc(pl);
+#endif
     if (jt != 2) {
         int pi = jt == 0 ? 0x12 : 0xE;
         flmatCopy(&m0, part_w(pl, pi));
@@ -695,12 +704,12 @@ int rt_player_weapon(int no, float *root0, float *root1)
         memcpy(r, tb->r, sizeof r);
         flvecApplyMat33(o, p, part_w(pl, pi));
     } else {
-        flmatCopy(&m0, part_w(pl, k == 4 ? 9 : 10));
+        flmatCopy(&m0, part_w(pl, k == 4 || k == 6 ? 9 : 10));
         tb = &weapon_disp_tbl_b[k];
         memcpy(p, tb->p, sizeof p);
         memcpy(r, tb->r, sizeof r);
-        flvecApplyMat33(o, p, part_w(pl, 10));
-        sc = k == 4 || k == 5 ? 1.0f : k == 3 ? 0.9f : 0.8f;
+        flvecApplyMat33(o, p, part_w(pl, k == 6 ? 9 : 10));     /* G weapon_trans: the Dual Swords turn by part 9 */
+        sc = k == 4 || k == 5 || k == 6 ? 1.0f : k == 3 ? 0.9f : 0.8f;
     }
     m0[3][0] += o[0];
     m0[3][1] += o[1];
@@ -728,7 +737,31 @@ int rt_player_weapon(int no, float *root0, float *root1)
         m0[3][2] += o[2];
         flmatMul(&w, &n2, &m0);
         memcpy(root1, w, sizeof w);
-    } else
+    }
+#ifdef VERSION_MHG
+    else if (k == 6) {          /* G weapon_trans (main 0x1328xx): the Dual Swords' second blade (AHI group 1) */
+        FLMAT n2;
+        f32 a[3];
+        if (weapon_joint_calc2(pl, 1) != 2) {   /* drawn: in the left hand (joint 0x12) */
+            flmatCopy(&m0, get_joint_wmat(pl, 0x12));
+            p[0] = -7.4f; p[1] = -0.4f; p[2] = -6.5f;
+            a[0] = 0.0f; a[1] = 0.0f; a[2] = 3.14159274f;
+        } else {                                /* on the back, next to the first (part 9) */
+            flmatCopy(&m0, part_w(pl, 9));
+            p[0] = 17.0f; p[1] = 50.0f; p[2] = -18.0f;
+            a[0] = 1.67551613f; a[1] = 0.148353f; a[2] = -0.488692224f;
+        }
+        flvecApplyMat33(o, p, &m0);
+        m0[3][0] += o[0];
+        m0[3][1] += o[1];
+        m0[3][2] += o[2];
+        flmatInit(&n2);
+        flmatSetXYZ33(&n2, a[0], a[1], a[2]);
+        flmatMul(&w, &n2, &m0);
+        memcpy(root1, w, sizeof w);
+    }
+#endif
+    else
         memcpy(root1, root0, sizeof w);
     return jt;
 }
@@ -762,7 +795,7 @@ int rt_player_weapon_model(int no)
 int rt_weapon_afs(int model, int tex)
 {
     extern s32 weapon_model_data[], WEAPON_TEX[];
-    if (model < 0 || model >= 124)
+    if (model < 0 || model >= (rt_ver_mhg() ? 225 : 124))     /* G: 225 models (config/mhg/pc_data.txt) */
         return -1;
     return tex ? WEAPON_TEX[model] : weapon_model_data[model];
 }

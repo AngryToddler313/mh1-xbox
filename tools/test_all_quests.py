@@ -15,6 +15,8 @@ G mode (G=1, tools/test_all_quests_g.sh; build/mhg/pc/mhview_g on disc/mhg, alwa
 screen with its list, no crash; then a second run with RT_QUEST_TIME (the quest's time left) idles in the camp: the quest
 must fail on time-out (x06 6), no crash. The village after the reward screen and the money are not checked for G
 (G's village is not ported yet: docs/mhg.md section 5).
+G also: a Dual Swords hunt (g_dual: quest 10 with the first Dual Swords, demon mode, the class's own attacks), in a
+full run or with DUAL=1.
 usage: test_all_quests.py [quest ...]   (default: all)"""
 import os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,7 +51,7 @@ def run(q, env, inp, secs, tag):
     try:
         with open(log, 'w') as f:
             r = subprocess.run(RUN + [EXE, DISC, '--quest', str(q), '--input', inp, '--shot', os.path.join(OUT, tag + '.png'),
-                                '--time', str(secs)], env=e, stdout=(f if os.environ.get('RT_PL_TRACE') else subprocess.DEVNULL), stderr=f, timeout=900)
+                                '--time', str(secs)], env=e, stdout=(f if os.environ.get('RT_PL_TRACE') or env.get('RT_PL_TRACE') else subprocess.DEVNULL), stderr=f, timeout=900)
         rc = r.returncode
     except subprocess.TimeoutExpired:
         rc = 'timeout'
@@ -249,6 +251,27 @@ def g_carts(q=9, kind=11):
     if not fail or int(fail.group(1)) <= 0: why.append('no quest failure with time left')
     return ('PASS' if not why else 'FAIL'), '; '.join(why) or 'carts: 2 camp returns, failed on the third (time left %s), %.0fs' % (fail.group(1), dt)
 
+def g_dual(q=10, weapon=234):
+    """G: the Dual Swords (job 6, Ken_data 234). R1 (demon mode on), then right-stick attacks with the usual aids (warp
+    to the Rathian, damage x40, god mode) until the quest clears. PASS = the w06 motions loaded, the Dual Swords' own
+    attack actions (0x53-0x66) and demon mode ran (RT_PL_TRACE), hits landed, quest clear + reward list, no crash."""
+    inp = 'idle*60,r1*2,idle*40' + (',cam_u*2,idle*14' * 6 + ',circle*2,idle*28' * 3) * 200
+    env = {'RT_WEAPON': str(weapon), 'RT_QUEST_STAGE': '1', 'RT_PL_TARGET': 'k1', 'RT_PL_WARP_EM': '200-90000', 'RT_PL_GOD': '1',
+           'RT_DMG_MUL': '40', 'RT_PL_SLAY': '8000', 'RT_PL_TRACE': '1', 'RT_HIT_DM': '1'}
+    rc, d, dt = run(q, env, inp, 600, 'q%d_dual' % q)
+    acts = {int(a) for a in re.findall(r'^pl: act 1/(\d+) ', d, re.M)}
+    ds = sorted(a for a in acts if 0x53 <= a <= 0x66)
+    why = []
+    if rc not in (0, None) or 'Segmentation' in d: why.append('crash/exit %s' % rc)
+    if 'w06_tbl created' not in d: why.append('no Dual Swords motions (w06_tbl)')
+    if not ds: why.append('no Dual Swords attack (actions 0x53-0x66)')
+    if not re.search(r'93D 1 ', d): why.append('demon mode never on')
+    if not re.search(r'^hit: em0', d, re.M): why.append('no hit on the monster')
+    if not re.search(r'D5 3', d): why.append('no quest clear')
+    elif 'rt_flow: rewards:' not in d: why.append('no reward list')
+    return ('PASS' if not why else 'FAIL'), '; '.join(why) or 'Dual Swords %d: actions %s, demon mode, hits, clear, %.0fs' % (
+        weapon, ' '.join('%X' % a for a in ds), dt)
+
 if __name__ == '__main__':
     qs = [int(a) for a in sys.argv[1:]] or (G_QUESTS if G else [q for lv in sorted(LEVELS) for q in LEVELS[lv]])
     star = {q: lv for lv in LEVELS for q in LEVELS[lv]}
@@ -268,6 +291,10 @@ if __name__ == '__main__':
     if G and not sys.argv[1:]:
         r, why = g_carts()
         print('%-5s carts  quest   9 %s' % (r, why), flush=True)
+        bad += r == 'FAIL'
+    if G and (not sys.argv[1:] or os.environ.get('DUAL') == '1'):
+        r, why = g_dual()
+        print('%-5s dual   quest  10 %s' % (r, why), flush=True)
         bad += r == 'FAIL'
     print('%d quests FAILED' % bad if bad else 'no unexpected failures (%d quests, %d skipped, known failures listed above)' % (len(qs), sum(q in SKIP for q in qs)))
     sys.exit(1 if bad else 0)

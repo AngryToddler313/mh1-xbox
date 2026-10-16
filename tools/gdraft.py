@@ -33,6 +33,55 @@ def block(module, name):
             return "glabel %s\n%s" % (name, m.group(1))
     return None
 
+OBJDUMP = os.path.expanduser('~/.local/opt/ps2-binutils-2.47/bin/mips64r5900el-ps2-elf-objdump')
+
+def raw_block(module, name):
+    """a function the G build keeps as raw bytes (config/mhg/c_rawfuncs.txt, so not in asm/mhg): its asm from the split
+    image through objdump, in the asm/ layout m2c reads (branch labels, jal names from G's symbols)"""
+    addr = size = None
+    for l in open(os.path.join(ROOT, "config/mhg/c_rawfuncs.txt")):
+        p = l.split()
+        if len(p) >= 4 and p[0] == module and p[3] == name:
+            addr, size = int(p[1], 16), int(p[2], 16)
+    if addr is None:
+        return None
+    vram = int(re.search(r"vram:\s*(0x[0-9A-Fa-f]+|\d+)", open(os.path.join(ROOT, "config/mhg/%s.yaml" % module)).read()).group(1), 0)
+    img = open(os.path.join(ROOT, "build/mhg/split/%s.bin" % module), "rb").read()
+    syms = {}
+    for mod in ("main", "sub_main", module):
+        for l in open(os.path.join(ROOT, "config/mhg/symbols/%s.txt" % mod)):
+            m = re.match(r"(\w+) = 0x([0-9A-Fa-f]+);.*type:func", l)
+            if m:
+                syms.setdefault(int(m[2], 16), m[1])
+    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+        f.write(img[addr - vram: addr - vram + size])
+    out = subprocess.run([OBJDUMP, "-D", "-b", "binary", "-m", "mips:5900", "-M", "gpr-names=numeric",
+                          "--adjust-vma=0x%x" % addr, f.name], capture_output=True, text=True).stdout
+    os.unlink(f.name)
+    ins = []
+    for l in out.splitlines():
+        m = re.match(r"\s*([0-9a-f]+):\s+([0-9a-f]{8})\s+(\S+)\s*(.*)", l)
+        if m:
+            ins.append((int(m[1], 16), m[2], m[3], m[4]))
+    targets = set()
+    lines = []
+    for a, w, op, args in ins:
+        args = re.sub(r"\$f(\d+)", r"$f\1", args)
+        if op in ("jal", "j") and re.match(r"0x[0-9a-f]+$", args):
+            tg = int(args, 16)
+            args = syms.get(tg, "func_%08X" % tg)
+        elif (op.startswith("b") or op in ("bc1t", "bc1f")) and re.search(r"0x[0-9a-f]+$", args):
+            tg = int(re.search(r"0x([0-9a-f]+)$", args).group(1), 16)
+            targets.add(tg)
+            args = re.sub(r"0x[0-9a-f]+$", ".L%08X" % tg, args)
+        lines.append((a, "    /* %X %08X %s */  %-10s %s" % (a - vram, a, w.upper(), op, args)))
+    body = ""
+    for a, l in lines:
+        if a in targets:
+            body += ".L%08X:\n" % a
+        body += l + "\n"
+    return "glabel %s\n%s" % (name, body)
+
 def jump_tables(module, text):
     out = ""
     names = sorted(set(re.findall(r"%hi\(((?:lit_\d+(?:_[0-9A-F]+)?|jtbl_[0-9A-F]+))\)", text)))
@@ -69,7 +118,7 @@ def main():
     ks = sorted(gs)
     allD = set()
     for fn in a.funcs:
-        b = block(a.m, fn)
+        b = block(a.m, fn) or raw_block(a.m, fn)
         if not b:
             print("/* %s: not found */" % fn); continue
         b, jt = jump_tables(a.m, b)

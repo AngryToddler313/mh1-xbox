@@ -88,6 +88,9 @@ s32 frame_check2(f32, PLW *, int);
 
 #define W1C4(pl) (*(s32 *)((u8 *)(pl) + 0x1C4))
 
+#ifdef VERSION_MHG
+static int wjc_blade;       /* G's weapon_joint_calc(pl, blade): which Dual Swords blade (case 6 only reads it) */
+#endif
 s16 weapon_joint_calc(PLW *pl) {
     s16 r = 2;
 
@@ -248,6 +251,47 @@ s16 weapon_joint_calc(PLW *pl) {
             break;
         }
         break;
+#ifdef VERSION_MHG
+    case 6:     /* G (main 0x12F2A0, a second argument: the blade): the Dual Swords; wjc_blade 1 = the left blade */
+        switch (pl->char0) {
+        case 0x3EA:
+            if (frame_check2(wjc_blade == 0 ? 8.0f : 10.0f, pl, 0) != 0) {
+                r = 1;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3EB:
+            r = 2;
+            if (frame_check2(wjc_blade == 0 ? 20.0f : 28.0f, pl, 0) == 0) {
+                r = 1;
+            }
+            break;
+        case 0x3F1:
+            r = 2;
+            if (frame_check2(wjc_blade == 0 ? 18.0f : 30.0f, pl, 0) == 0) {
+                r = 1;
+            }
+            break;
+        case 0x3F9:
+            if (frame_check2(44.0f, pl, 0) == 0) {
+                r = 0;
+            }
+            break;
+        case 0x585:
+            if (W1C4(pl) != 1 && frame_check2(4.0f, pl, 0) != 0) {
+                r = 1;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+#endif
     case 0:
     default:
         switch (pl->char0) {
@@ -456,3 +500,15 @@ s16 weapon_joint_calc(PLW *pl) {
     }
     return r;
 }
+
+#ifdef VERSION_MHG
+/* G's weapon_joint_calc(pl, blade) (main 0x12F2A0): the same answer for every class but the Dual Swords, whose
+   blades leave the back at different frames (blade 0 right, 1 left; used by the PC's rt_player_weapon) */
+s16 weapon_joint_calc2(PLW *pl, int blade) {
+    s16 r;
+    wjc_blade = blade;
+    r = weapon_joint_calc(pl);
+    wjc_blade = 0;
+    return r;
+}
+#endif

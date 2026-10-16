@@ -397,3 +397,26 @@ stage_camera_data_ex = 0x00289AA0; // size:0x80 noptr
 # trans_stage (G sub_main 0x4A22C0): stage 0x4A's two set pieces (src/main/stage/trans_stage.c; agent A, 16 Oct 2026)
 [game]
 set74_pos_tbl = 0x006D0760; // size:0x20 noptr
+# The Dual Swords (job 6, agent A, 16 Oct 2026): job-indexed tables G grew from MH1's six jobs to seven (+ a zero pad)
+[sub_main]
+Pl_slash_tbl = 0x00515340; // size:0x20              # sharpness band list per job (7 pointers into gslash_rows + 0)
+[game]
+mv001_tbl = 0x006783C0; // size:0x10 noptr           # pl_mv001's next action per job (7 + 0)
+ds_chr_tbl = 0x006784F0; // size:0x10 noptr          # G only: the Dual Swords' pl_at091 motions {motion, blend} x 4
+[main]
+job_atk_adj_tbl = 0x002B01D0; // size:0x20 noptr     # attack percentage per job (7 + 0)
+# the Dual Swords' trails and demon-mode glow (G eft05 rewrite, game 0x56BBC0..; glow effect game 0x567F70..; agent A)
+[game]
+eft05_ofs = 0x0067A080; // size:0x30 noptr           # trail tip offsets per arg 0-3 (MH1 2 rows)
+eft05_ds_ofs = 0x0067A0B0; // size:0x220 noptr       # G only: Dual Swords tip offset [blade 2][22 weapons]{x,y,z} (0x110 apart)
+eft05_ds_scl = 0x0067A2D0; // size:0x220 noptr       # G only: Dual Swords hand-matrix row scales [blade 2][22]
+eft_ds_aura_ofs = 0x00679200; // size:0x220 noptr    # G only: demon-mode glow offset [blade 2][22]
+eft_ds_aura_scl = 0x00679420; // size:0x220 noptr    # G only: demon-mode glow row scales [blade 2][22]
+[main]
+eft05_g_tbl = 0x002EC728; // size:0x14 noptr         # G only: trail clay per arg [4], trail count per arg [6]
+eft_ds_aura_n = 0x002EC6F8; // size:0x8 noptr        # G only: demon-mode glow points per arg
+ds_type_ranges = 0x00253F50; // size:0x14 noptr      # G only: Dual Swords weapon types {first, last}.., -1 (main 0x101F10)
+# weapon models: 225 in G (MH1 124); every G weapon from model 124 on (all G-new weapons, every Dual Swords) had no model on the PC
+[main]
+weapon_model_data = 0x00258DB0; // size:0x384 noptr  # AFS index of each weapon model
+WEAPON_TEX = 0x0025CBE0; // size:0x384 noptr         # AFS index of each weapon model's textures

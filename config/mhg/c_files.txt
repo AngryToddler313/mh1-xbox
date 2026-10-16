@@ -1791,3 +1791,5 @@ lobby 0x005BB400 0x005BB468 mhg/lobby/cnet/cnlbs_p86
 lobby 0x005BB5D0 0x005BB644 mhg/lobby/cnet/cnlbs_p87
 lobby 0x005E6010 0x005E6050 mhg/lobby/cnet/cnlbs_p88
 lobby 0x005B1610 0x005B1644 mhg/lobby/cnet/cnlbsg_p44
+game 0x0054CBA0 0x0054CCDC mhg/main/pl/f_pl_p49
+game 0x0055C290 0x0055D370 mhg/main/pl/f_pl_p48

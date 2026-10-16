@@ -130,6 +130,11 @@ void timer_calc_sub_pl(PLW *pl) {
                 break;
             case 1:
                 temp_v1_3 = pl->flag15;
+#ifdef VERSION_MHG
+                if (temp_v1_3 == 0x67) {
+                    break;
+                }
+#endif
                 if ((temp_v1_3 != 0x4C) && (temp_v1_3 != 0x27) && (temp_v1_3 != 0x26) && (temp_v1_3 != 0x25) && (temp_v1_3 != 0x22) && (temp_v1_3 != 0x1B) && (temp_v1_3 != 0x1A) && (temp_v1_3 != 0x18)) {
                     Pl_stamina_calc(pl, 2);
                 }
