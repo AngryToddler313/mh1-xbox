@@ -5,6 +5,7 @@
 # `--import-save`, and requires that CONTINUE in the game shows 1550z again. Needs disc/mh1 like the
 # other game tests. RUN=wine BIN=build/win/mhview.exe works too.
 cd "$(dirname "$0")/.."
+export MH1_HIDDEN=1   # no window on the owner's screen, no real controller
 BIN=${BIN:-build/pc/mhview}
 [ -n "$SKIP_LOOP" ] || sh tools/test_quest_loop.sh >/dev/null 2>&1
 OUT=build/show/loop; export MH1_SAVE_DIR="$PWD/$OUT/card"; export RT_NOMOVIE=1 RT_NO_GUI=1

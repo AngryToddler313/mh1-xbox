@@ -149,6 +149,9 @@ static int main_rows[R_N], n_main;
 
 static int in_game(void) { return !rt_boot_active(); }
 static int in_quest(void) { return in_game() && rt_flow_mode() == 2 && !rt_village_active(); }
+/* rows shown greyed out and refused: the village jumps need a hunter (from the title screen G crashed there,
+ * owner's Xbox, 16 Oct 2026; docs/RELEASE_G.md GB5 bug 7) */
+static int row_off(int r) { return (r == R_VILLAGE || r == R_VILLAGE_INTRO) && !in_game(); }
 
 static void main_build(void)
 {
@@ -233,6 +236,10 @@ static void main_enter(int r)
         push(P_AREA, 0);
         break;
     case R_VILLAGE: case R_VILLAGE_INTRO:
+        if (row_off(r)) {
+            note("%s", "Load or make a hunter first (CONTINUE / NEW GAME)");
+            break;
+        }
         do_close();
         if (M.act.village)
             M.act.village(r == R_VILLAGE_INTRO);
@@ -709,6 +716,10 @@ static void draw_row(const level *l, int i, float x, float y, float w, int seln)
     case P_MAIN: {
         int r = main_rows[i];
         main_label(r, a, sizeof a, b, sizeof b);
+        if (row_off(r)) {
+            strncat(a, "  (load a hunter first)", sizeof a - strlen(a) - 1);
+            c = seln ? 0x9098A8FFu : 0x606878FFu;
+        }
         text(x, y, 16, a, c, 0);
         if (*b) {
             if (seln) {

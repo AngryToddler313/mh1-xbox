@@ -5,6 +5,7 @@
 #  3. a second start with that file opens the menu once more (back.png shows the saved values read back).
 # Uses the save made by tools/test_quest_loop.sh (build/show/loop/card): run that first. Headless, ~30 s.
 cd "$(dirname "$0")/.."
+export MH1_HIDDEN=1   # no window on the owner's screen, no real controller
 BIN=${BIN:-build/pc/mhview}
 export RT_NOMOVIE=1
 OUT=build/show/menu; mkdir -p $OUT; rm -f $OUT/*.ini $OUT/*.png

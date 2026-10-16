@@ -130,6 +130,9 @@ Queue (owner, 15 Oct evening; start when a slot frees, two agents max):
    overwrite the loader: leave default.xbe out of G's manifest); a game's exit returns to its own loader;
    xbox_serve.py serves MH1 and G builds at once (dist/xbox/MH1, dist/xbox/MHG). Delivery: one
    tools/xbox_upload.sh --loader run (owner types the FTP login). Test in xemu (alone) first.
+0b. Three-way picture (owner asked): PS2 (PCSX2, tools/test_ps2_online.sh) + Xbox (xemu online,
+   tools/xemu_online_test.sh) + PC client in one town on one mh1-server on the LAN address; one screenshot
+   of each plus a combined one. Run with NOTHING else (no agent, no full check): both emulators at once.
 1. G Xbox bugs from the owner's play (docs/RELEASE_G.md GB5): debug-menu skip leaves render state
    (half-screen tint triangle, depth order), village music at the title, no villagers on the normal
    village entry, sky frames in the wake-up cutscene. Reproduce on PC G first.

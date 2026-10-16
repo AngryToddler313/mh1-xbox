@@ -5,6 +5,7 @@
 # a backtrace with symbol names, the last log lines and the game state; no home directory or
 # user name appears in a log. Headless, ~10 s. BIN=... runs another build (e.g. build/win under wine).
 cd "$(dirname "$0")/.."
+export MH1_HIDDEN=1   # no window on the owner's screen, no real controller
 BIN=${BIN:-build/pc/mhview}   # RUN=wine for the Windows exe
 OUT=build/show/log; rm -rf $OUT; mkdir -p $OUT/logs
 export MH1_SAVE_DIR="$PWD/$OUT/card" MH1_LOG_DIR="$PWD/$OUT/logs" RT_NOMOVIE=1

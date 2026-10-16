@@ -9,6 +9,7 @@
 #  3. Monster Hunter G (when build/mhg/pc/mhview_g and disc/mhg exist): quest list, quest 4 started, an item in the pouch.
 # Pictures of every menu page: build/show/dbgmenu/*_NN.png (RT_DBG_SHOTS). ~1 min.
 cd "$(dirname "$0")/.."
+export MH1_HIDDEN=1   # no window on the owner's screen, no real controller
 BIN=${BIN:-build/pc/mhview}
 export RT_NOMOVIE=1
 OUT=build/show/dbgmenu; rm -rf $OUT; mkdir -p $OUT/logs
