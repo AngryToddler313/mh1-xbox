@@ -138,6 +138,15 @@ Kept as a fallback for any file that resists matching.
   boot and as overlays / quest files load (no 64 KB limit). Patched ISOs (PCSX2/OPL) can carry it built in.
   After the online launcher works; shares the English pipeline and its pending source decision (Freedom for G).
 
+**MH1 online on the Xbox: a separate online XBE** (agent C, 15 Oct 2026; owner may revisit)
+- `tools/build_xbox.py --online` builds the ONLINE=1 PC build's objects for the Xbox (into build/xbox/online, its own
+  objects) with nxdk's lwIP; the plain Xbox build stays without network code, as the plain PC build does. Why not
+  online by default: build/pc holds one variant at a time (plain or ONLINE=1), the plain build is what every test and
+  G use, and an always-online XBE would start the NIC code path in every run. `./mh1 xbox DISC --online` makes both.
+- The server address on the Xbox: `online_server` in E:\Games\MH1\settings.ini (the PC's mh1pc.ini keys); without it
+  the laptop in the loader's loader.txt, port 10200. Never a hard-coded address. MH Oldschool stays refused
+  (net_cpinet.c).
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)

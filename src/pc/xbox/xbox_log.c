@@ -80,6 +80,9 @@ static void serial_line(const char *s)
     xbox_serial_write("\n", 1);
 }
 
+/* run before the game leaves for the dashboard: the online build stops the NIC there (net_cpinet.c) */
+void (*xbox_quit_hook)(void);
+
 static void xbox_log_show(void)
 {
     static char lines[TAIL][96];
@@ -101,6 +104,8 @@ static void xbox_log_show(void)
         debugPrint("%s", lines[i % TAIL]);
     debugPrint("\nBack to the dashboard in 10 s.\n");
     Sleep(10000);
+    if (xbox_quit_hook)
+        xbox_quit_hook();
     XLaunchXBE(NULL);
 }
 

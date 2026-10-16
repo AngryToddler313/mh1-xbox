@@ -31,7 +31,20 @@
 #include <stdarg.h>
 #include "net_cpinet.h"
 
-#ifdef _WIN32
+#if defined(NXDK)
+/* the original Xbox (tools/build_xbox.py --online): nxdk's lwIP (lib/net) with its BSD-style calls. The NIC is
+ * brought up on the first CpInetInitialize (xbox_net_up: DHCP or the dashboard's static address) */
+#include <lwip/sockets.h>
+#include <lwip/netdb.h>
+#include <lwip/netif.h>
+#include <nxdk/net.h>
+typedef int hsock;
+#define HS_BAD (-1)
+#define hs_close lwip_close
+#define hs_err() errno
+#define E_INPROGRESS EINPROGRESS
+#define E_WOULDBLOCK EWOULDBLOCK
+#elif defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 typedef SOCKET hsock;
@@ -83,6 +96,7 @@ static int net_up;
 static uint64_t stat_tx, stat_rx;
 
 void net_log(const char *fmt, ...);
+void rt_log(const char *fmt, ...);
 
 /* ---- destination policy ---- */
 
@@ -161,7 +175,9 @@ int net_dest_allowed(uint32_t addr) { return dest_allowed(addr); }
 
 static void sock_nonblock(hsock s)
 {
-#ifdef _WIN32
+#if defined(NXDK)
+    lwip_fcntl(s, F_SETFL, O_NONBLOCK);
+#elif defined(_WIN32)
     u_long one = 1;
     ioctlsocket(s, FIONBIO, &one);
 #else
@@ -171,7 +187,13 @@ static void sock_nonblock(hsock s)
 
 static int sock_pending(hsock s)
 {
-#ifdef _WIN32
+#if defined(NXDK)
+    /* nxdk's lwIP is built without LWIP_SO_RCVBUF, so FIONREAD is not there: peek instead (at most one
+     * CpInetTcpRecv's worth, which is all the game asks for at a time) */
+    static char peek[0x3CA];
+    int n = lwip_recv(s, peek, sizeof peek, MSG_PEEK | MSG_DONTWAIT);
+    return n > 0 ? n : 0;
+#elif defined(_WIN32)
     u_long n = 0;
     if (ioctlsocket(s, FIONREAD, &n) != 0)
         return 0;
@@ -214,9 +236,48 @@ static NETSOCK *get(int h)
 
 /* ---- init ---- */
 
+#if defined(NXDK)
+/* the Xbox's network interface, once per run: nxNetInit(NULL) takes the dashboard's settings (DHCP or a fixed address)
+ * and waits up to 10 s for a DHCP answer. -2 (no answer yet) leaves the interface up and DHCP running, so it can
+ * still get an address later; calling nxNetInit again would add the interface twice. The NIC is stopped again when
+ * the game leaves for the dashboard (xbox_log.c xbox_quit_hook): a program started after one that left it running
+ * hangs in nxNetInit (the loader saw this, 11 Oct 2026). */
+extern void (*xbox_quit_hook)(void);
+extern struct netif *g_pnetif;       /* nxdk's interface (lib/nxdk/net.c) */
+static int xnet_state;      /* 0 not tried, 1 up, -1 failed */
+
+static void xbox_net_stop(void)
+{
+    if (xnet_state == 1)
+        nxNetShutdown();
+    xnet_state = 0;
+}
+
+static int xbox_net_up(void)
+{
+    int r;
+    if (xnet_state)
+        return xnet_state > 0 ? 0 : -1;
+    rt_log("net: starting the Xbox network interface (dashboard settings, DHCP waits up to 10 s)");
+    r = nxNetInit(NULL);
+    if (r != 0 && r != -2) {
+        xnet_state = -1;
+        rt_log("net: no network (nxNetInit %d): is the cable in, and the dashboard's network set up?", r);
+        return -1;
+    }
+    xnet_state = 1;
+    xbox_quit_hook = xbox_net_stop;
+    rt_log("net: Xbox address %s%s", ip4addr_ntoa(netif_ip4_addr(g_pnetif)), r == -2 ? " (no DHCP answer yet)" : "");
+    return 0;
+}
+#endif
+
 int CpInetInitialize(void)
 {
-#ifdef _WIN32
+#if defined(NXDK)
+    if (xbox_net_up() != 0)
+        return -1;
+#elif defined(_WIN32)
     WSADATA wd;
     if (!net_up && WSAStartup(MAKEWORD(2, 2), &wd) != 0)
         return -1;
@@ -233,7 +294,7 @@ int CpInetTerminate(void)
             hs_close(socks[i].fd);
             socks[i].state = S_FREE;
         }
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(NXDK)
     if (net_up)
         WSACleanup();
 #endif

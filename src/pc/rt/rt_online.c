@@ -21,6 +21,8 @@
  *   online_login = 00000000           the 8-digit login (the MMBB id the portal gave; 8 digits are sent, docs/server.md)
  *   online_password = LOCALTEST0000000  its password (16 characters)
  * RT_NET_HOST / RT_NET_PORT / RT_NET_ID / RT_NET_PASS override the file (tests).
+ * Xbox (tools/build_xbox.py --online): the same keys in settings.ini in the game folder (E:\Games\MH1); without an
+ * online_server line the server is the laptop named in the network loader's loader.txt, port 10200.
  */
 #include "lbsys_g.h"
 #include <stdio.h>
@@ -34,6 +36,9 @@
 #include "ps2patch.h"
 #include "../gfx/gfx_gl.h"
 #include "../net/net_cpinet.h"
+#ifdef NXDK
+#include "../xbox/xbox_title.h"     /* XBOX_GAME_DIR */
+#endif
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -81,6 +86,21 @@ static void rt_online_config(void)
 {
     const char *e;
     char *c;
+#ifdef NXDK
+    if (!pc_opt.online_server[0]) {     /* the Xbox without an online_server line in settings.ini: the laptop the network
+                                         * loader uses (its loader.txt, "host:port"), port 10200; docs/PLAYING.md */
+        FILE *f = fopen(XBOX_GAME_DIR "\\loader.txt", "r");
+        char l[96];
+        if (f && fgets(l, sizeof l, f)) {
+            l[strcspn(l, ":\r\n ")] = 0;
+            if (l[0])
+                snprintf(host, sizeof host, "%s", l);
+            rt_log("online: no online_server in settings.ini: the loader's laptop %s, port %d", host, port);
+        }
+        if (f)
+            fclose(f);
+    }
+#endif
     if (!pc_opt.online_server[0])           /* the defaults (written to mh1pc.ini on a normal exit) */
         snprintf(pc_opt.online_server, sizeof pc_opt.online_server, "%s:%d", host, port);
     else {      /* the player's own choice: a public address there is allowed (MH Oldschool never is) */
