@@ -644,8 +644,8 @@ MMBB_LOGIN (0x38A150) and BsLbsCount (0x38A12C); its calls go to Net_fade_kill, 
 cnLbc_LoadModelWait (lobby 0x5B2C20 / 0x5B2C30), memset and strncpy. The server side: `tools/test_online_server.sh`
 with the shared fill code.
 
-**Not verified (needs PCSX2 or a PS2; PCSX2 is not installed on the dev machine, so nothing was run, and an emulator
-window must not open on the owner's screen anyway)**: the patched disc booting into the network menu, DNAS screen ending with success,
+**Not verified (needs PCSX2 or a PS2; not run yet. PCSX2 now runs hidden on the dev machine with the owner's BIOS:
+`tools/run_pcsx2.sh --iso PATCHED.iso`, see 3.8; it boots the disc to the title)**: the patched disc booting into the network menu, DNAS screen ending with success,
 the server select, the login against mh1-server, the town. Open questions for that first run:
 * A new hunter's first login: the PS2 may open the in-game browser on a local page (`afs://02/3`, personal data)
   that the PC skips (`MainBrowser` "closed"); whether it submits anywhere is unknown.
@@ -683,7 +683,7 @@ net_peer frames. So a patched PS2 reaches the lobby, the town, rooms and matchin
 5. Tests: PC-only first (two PC clients over mcsls through mcs.py, the same hunt as test_online_server.sh), then the
    owner with PCSX2 / a PS2 and a PC in one room.
 
-### 3.8 Memory-card patch route (research, agent B, 15 Oct 2026; read from the code, nothing run)
+### 3.8 Memory-card patch route (agent B, 15 Oct 2026: research from the code, then run in PCSX2; verdict in 5 below)
 
 Question: can a one-time homebrew on the player's PS2 put **our** patch (the DNAS skip in ms01.c and our
 `internet_browser`, i.e. what `tools/ps2_patch.py` changes) into the game's own memory-card patch slot, so that the
@@ -755,7 +755,7 @@ committed). No key material was found or needed for this answer; none is in this
   minimal `r = 1`) + the 720-byte internet_browser (code + settings) + 12-byte entry headers: under 2 KB, far inside
   the limit. One personal blob per player (the server, login and password are inside, as with ps2_patch.py).
 
-**4. Verdict: possible with a condition, not proven.** Possible if `sceDNAS2InstPersonalizeData_nohdd` accepts plain
+**4. Verdict before the test (superseded by 5): possible with a condition, not proven.** Possible if `sceDNAS2InstPersonalizeData_nohdd` accepts plain
 data (case a); not possible if it needs the server's container (case b). The code cannot settle it (Sony's code is
 obfuscated); one run on a PS2 settles it. Even in case (a) the result is per console (moving the card to another PS2
 loses it), and the player needs a way to run homebrew once (FreeMcBoot, uLaunchELF, OPL, or similar).
@@ -771,6 +771,54 @@ Installer steps for case (a) (nothing built). Simplest is to let the game do the
 3. The player then removes the homebrew and boots the plain disc: auto-load decodes and applies the patch, the network
    menu skips DNAS and connects to our server. A save on another PS2 erases it; running the installer again restores it.
 Test it first in PCSX2 (it runs the real DNAS280.IMG; the console IDs come from its BIOS dump), then on a PS2.
+
+**5. Test in PCSX2 (15 Oct 2026): case (b). Personalize does NOT take plain data [checked].**
+
+Setup (all tools committed, nothing Capcom's): PCSX2 v2.8.2 (official AppImage, `~/ps2dev/pcsx2`, outside the repo) on
+its own Xvfb display, software renderer, no audio, EE/IOP console to a log: `tools/run_pcsx2.sh`. BIOS: the owner's
+dump, SCPH-39001 (US, v1.6), with no NVM/MEC file (PCSX2 makes a default one). The disc: the owner's Japanese .iso in the
+drive, the executable replaced by a test build with `-elf` (`tools/ps2_pdtest.py`: `src/ps2patch/pdtest.c`, MWCC, linked
+over the dead ms_net_patch_set body, and PatchLoadinDNAS_Main's first two instructions turned into a jump to it; test
+only, not built by tools/build.py). Memory card: a fresh image holding the PC port's save (`tools/pcsx2/savecard.c`,
+the PC port's own export), so the title's auto-load reads a save and calls PatchLoadinDNAS_Main once, as on a PS2.
+`tools/test_pdtest.sh` runs the two boots (~2 min). Logging through the game's own `printf` works (lines `PDTEST`).
+
+Boot 1 (install build; at the title, after the auto-load): a 32-byte plain list (`"M-HUNTER"`, 1 entry, key 0, writes
+`"PDTESTOK"` at 0x26A2E0) in patch_buff, dnas_ins.bin loaded with `Net_put_overlay_data(2)` (as PatchLoadinDNAS_Main
+does), then the game's `InetDNAS2PersonalEncode` (func_A2FBD0) called every frame as ms_net_patch_set's state 0x15
+calls it, **without** InetDNAS2ConnectInstall / sceDNAS2AuthInstall. Its steps and the sce results it stores
+(`dnerrno_0038AA50`, what func_A2FBC0 returns; length in `dndst_len`):
+
+| Glue step | Sony call (addresses in dnas_ins.bin) | Result |
+|---|---|---|
+| 0 -> 10 | `sceDNAS2InstInit_nohdd` (0xA20710) | 0 (OK) |
+| 10 -> 11 | `sceDNAS2InstPersonalizeDataLength_nohdd` (0xA267F8; size, buffer, &length) | 32, output length **0** |
+| 11 -> 15 | `sceDNAS2InstPersonalizeData_nohdd` (0xA26848) | 0 |
+| 15 -> 100 | `sceDNAS2InstShutdown_nohdd` (0xA20740) | (not stored) |
+| 100 | the glue returns its length, 0 | 0 = "not finished": the glue starts again at step 0 and loops forever |
+
+So the library "succeeds" with an empty result: nothing is encrypted, nothing could be saved (the test stops there;
+boot 2 with the probe build reads the card and logs "tail length 0, nothing to do"). Why, read in the library
+(unobfuscated entry code): both personalize calls feed the buffer through a read callback (0xA268F8: copies from the
+buffer at 0xA319A0, position 0xA319A4, size 0xA319A8) into a parser (0xA23430) whose first act is to read a
+**0x580-byte (1408) header**; with fewer bytes it gives up at once (what our 32 bytes got). The rest of the parser is
+self-decrypting code (not read). Second run with the same list behind a 0x580-byte zero header (`PAD=0x580
+tools/test_pdtest.sh`): PersonalizeDataLength now reads the header and **rejects it: result -1**, the glue fails
+(-1), as ms_net_patch_set would show a DNAS error. So the input must be a Sony DNAS container with a 1408-byte
+header (the output of `sceDNAS2AuthInstall`, i.e. of Sony's DNAS server), not plain data: **case (b)**. Making such a
+header would need Sony's DNAS key material and format (signatures; RSA-BSAFE is linked), which we neither have nor
+want. The boot side (decode) is the same library and needs the personalized form of such a container.
+
+What this does not depend on: the BIOS region (US BIOS, Japanese disc; Init and the calls run normally, the -1 is the
+header check) and the NVM (console IDs only matter once there is a container to bind) [reasoned, not tested with a JP
+BIOS]. What was not tested, because nothing could be made: boot 2 decoding a saved patch (PatchLoadinDNAS_Main ->
+PatchExecCS); the probe build is ready for it (`PDTEST target ... after PatchExecCS(0, 0)`).
+
+**Recommendation: the memory-card launcher (below) is the route for players without OPL**; the one-time installer
+is dead (no plain-data personalize, and no DNAS server to make a container). The patched image of 3.6 (OPL, PCSX2)
+stays the simplest route. Left open, not ours to pursue: MH Oldschool answers the DNAS hosts for unpatched discs
+(2.1), so someone has a working DNAS server answer for this title; whether that includes `AuthInstall` for patches is
+unknown, and we do not use their servers.
 
 **Fallback (case b, or players who keep homebrew anyway): a memory-card launcher ELF** that boots the original disc
 and patches in RAM at every start. It can still use the game's own applier, with no hook code of ours: before jumping

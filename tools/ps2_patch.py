@@ -173,11 +173,11 @@ def conf_header(a):
 
 
 def build_unit(u, conf):
-    """compile the unit's C with -DMH1_ONLINE_PATCH and link it at u['lo']; returns its bytes"""
+    """compile the unit's C with -DMH1_ONLINE_PATCH (or u['defs']) and link it at u['lo']; returns its bytes"""
     os.makedirs(os.path.join(ROOT, OUT), exist_ok=True)
     open(os.path.join(ROOT, OUT, "mh1p_conf.h"), "w").write(conf)
     obj = "%s/%s.o" % (OUT, u["name"])
-    run([WIBO, MWCC] + CFLAGS + ["-Iinclude", "-I" + OUT, "-Ibuild/raw", "-DMH1_ONLINE_PATCH", u["src"], "-o", obj])
+    run([WIBO, MWCC] + CFLAGS + ["-Iinclude", "-I" + OUT, "-Ibuild/raw"] + u.get("defs", ["-DMH1_ONLINE_PATCH"]) + [u["src"], "-o", obj])
     # what the object may hold: code and initialised data (no small data: lobby.bin is out of the gp range)
     for l in run([BU + "objdump", "-h", obj]).split("\n"):
         f = l.split()
