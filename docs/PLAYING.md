@@ -298,14 +298,56 @@ docs/network.md 3.7). Only the Japanese Monster Hunter disc (SLPM-65495); not G 
    instead. The patch skips DNAS (Sony's shut-down network check) and replaces the shut-down KDDI login portal by
    your server and account; nothing else in the game changes. The patched image contains your login and your copy
    of the game: do not share it.
-4. PCSX2: enable the network adaptor (DEV9, Ethernet) and boot the patched .iso. A real PS2: the patched .iso through
-   OPL (USB, network or HDD) with the network adaptor. In the game's network menu make a connection setting as usual
-   ("Add Setting"; IP automatic). Then choose the network mode on the title screen.
+4. PCSX2: Settings > Network & HDD: enable the Ethernet adaptor, device type **Sockets** (no administrator rights
+   needed), then boot the patched .iso. A real PS2: the patched .iso through OPL (USB, network or HDD) with the
+   network adaptor. When the server runs on the same PC as PCSX2, give its **LAN address** (192.168.x.y) in
+   `--server`, not 127.0.0.1.
+5. In the game: CONTINUE, your hunter, then **街へ行く** (network mode). The first time it asks to make a NET file
+   ("はい", slot 1), shows a notice (進む), then on the "ネットワーク接続" screen choose **ネットワーク設定の編集**:
+   Sony's network settings open. Add Setting -> memory card slot 1 -> SCE/Ethernet (Network Adaptor) -> PPPoE "Not
+   Required" -> IP address **Auto** -> DNS **Auto** -> save -> quit. The game restarts; go to 街へ行く again, load the
+   NET file, pick "1.Setting 1": it connects, logs in to your server and shows the plaza. A new hunter is asked about
+   Capcom's user registration (choose **登録しない**, do not register) and a Capcom ID (take the first free slot).
+   Then 街に入る -> a lobby -> the town.
 
-Untested on a PS2 and in PCSX2 so far (the patch was checked by reading the patched code; docs/network.md 3.6 lists
-what still needs a first real run). When the server runs on the same PC as PCSX2, give its LAN address, not
-127.0.0.1. The patch refuses the addresses of MH Oldschool, which serves unpatched discs itself.
+Tested in PCSX2 (15 Oct 2026, docs/network.md 3.6): login, plaza, town, and a PC player in the same town (each sees
+the other, chat both ways). Not tested on a real PS2 yet. The patch refuses the addresses of MH Oldschool, which serves
+unpatched discs itself.
 
+### Playing online on a real PS2 without a patched disc (memory-card launcher)
+
+For a PS2 that runs homebrew from the memory card (**Free McBoot** or **OpenTuna**) and boots the **original disc**:
+`MH1LAUNCH.ELF` loads the game from your disc, patches it in the console's memory (the same two changes as above:
+DNAS skipped, your server instead of the KDDI portal) and starts it. The disc and your saves are not changed. Same
+limits as above: lobby, town, chat and rooms; no hunting together yet; Japanese Monster Hunter (SLPM-65495) only.
+
+1. Build it once on Linux (no disc needed): get the ps2sdk toolchain (the prebuilt "latest" release of
+   github.com/ps2dev/ps2dev, `ps2dev-ubuntu-latest.tar.gz`, unpacked anywhere), then
+   `PS2DEV=/path/to/ps2dev tools/ps2launch/build.sh` -> `build/ps2launch/MH1LAUNCH.ELF`.
+2. Write `MH1LAUNCH.CNF`, a plain text file with your server and account:
+
+       server = 192.168.1.20:10200
+       login = 12345678
+       password = YOURPASSWORD
+
+3. Copy both files to the memory card, into the same folder, e.g. `mc0:/APPS/` (with uLaunchELF's file browser from a
+   USB stick, or any memory-card manager). The config can also go to `mc0:/MH1LAUNCH/MH1LAUNCH.CNF`.
+4. Start it by hand from uLaunchELF / the FMCB menu with the Monster Hunter disc in the drive, or let it start by
+   itself at power-on (below). It shows a few lines of text and then the game starts as usual. Make the network
+   setting in the game as in step 5 above; **after making it, restart the console** (Sony's settings program restarts
+   the game from the disc without the patch).
+
+**Auto-launch at power-on** (then "run homebrew once" is enough: every power-on with the MH disc goes online with
+your server). The launcher is safe for every disc: any other game (and Monster Hunter G, not supported yet) is
+started exactly as the console would, untouched; with no disc or a PS1 / DVD video disc it goes back to the browser.
+* Free McBoot 1.966 (and OpenTuna installs, which come with the same FMCB configurator): FMCB menu -> **FMCB
+  Configurator** -> "Configure launcher keys" (or edit `mc0:/SYS-CONF/FREEMCB.CNF`) -> set the **Auto** entry to
+  `mc0:/APPS/MH1LAUNCH.ELF` (the line `LK_Auto_E1 = mc0:/APPS/MH1LAUNCH.ELF`), keep the auto-launch delay short,
+  save. Holding a pad button at power-on still opens the FMCB menu as before.
+* We do not ship Free McBoot or OpenTuna; install them from their own releases. **Untested on a console** (written
+  from FMCB's documented settings; tested only in PCSX2, where the launcher was started directly).
+
+## Known issues
 ## Known issues
 
 * The game is in **Japanese**. An English translation table can be loaded (docs/english.md) but none is included.

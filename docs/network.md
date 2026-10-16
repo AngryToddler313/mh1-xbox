@@ -644,18 +644,48 @@ MMBB_LOGIN (0x38A150) and BsLbsCount (0x38A12C); its calls go to Net_fade_kill, 
 cnLbc_LoadModelWait (lobby 0x5B2C20 / 0x5B2C30), memset and strncpy. The server side: `tools/test_online_server.sh`
 with the shared fill code.
 
-**Not verified (needs PCSX2 or a PS2; not run yet. PCSX2 now runs hidden on the dev machine with the owner's BIOS:
-`tools/run_pcsx2.sh --iso PATCHED.iso`, see 3.8; it boots the disc to the title)**: the patched disc booting into the network menu, DNAS screen ending with success,
-the server select, the login against mh1-server, the town. Open questions for that first run:
-* A new hunter's first login: the PS2 may open the in-game browser on a local page (`afs://02/3`, personal data)
-  that the PC skips (`MainBrowser` "closed"); whether it submits anywhere is unknown.
-* PCSX2's network adaptor (DEV9, Ethernet, PCAP or Sockets mode) and how the guest reaches a server on the same PC:
-  use the PC's LAN address in `--server` rather than 127.0.0.1 **[guess]**.
-* The connection setting: the game's own network settings (yn overlay) on the memory card are needed as before (as
-  for MH Oldschool: "Add Setting" in the game's network menu); unchanged by the patch.
-* After a hunt the PS2 connects again (`CnetWork+5 = 3`, `server_connect`): the patched `internet_browser` fills the
-  table again; fine on paper.
-
+**First real run in PCSX2 (agent B, 15 Oct 2026) [checked]: the patched disc logs in to mh1-server, reaches the plaza
+and the town, and meets a PC client there (each sees the other, chat both ways).** Test: `tools/test_ps2_online.sh`
+(hidden PCSX2, scripted key presses; ~6 min). What it took and what was seen, in order:
+* **PCSX2's network without root**: DEV9 Ethernet in **"Sockets" mode** (`EthApi = Sockets`, `EthDevice = Auto`,
+  PCSX2.ini `[DEV9/Eth]`; `tools/run_pcsx2.sh --net`). PCSX2 answers the guest's DHCP itself and turns the guest's TCP
+  into ordinary host sockets: no TAP, no pcap, no sudo. The guest reaches the server at the PC's **LAN address**
+  (192.168.1.105 here; the server binds it), not 127.0.0.1; the server sees the connection coming from that same
+  address. The guess above was right.
+* **Input**: PCSX2's pad 1 bound to keyboard keys (run_pcsx2.sh writes `[Pad1]`), keys sent into the hidden Xvfb
+  display with XTEST (`tools/pcsx2/xkey.c`, built by run_pcsx2.sh; no xdotool needed). Circle confirms, cross cancels.
+* **Title -> network**: CONTINUE, slot 1, the hunter (the PC port's save on a fresh card, `--card-from`), then
+  "街へ行く" on MODE SELECT is the network mode. The game asks for a **NET file** on the card ("NETファイルがありません");
+  "yes" makes it (slot 1), then a terms notice (進む), then the game's "ネットワーク接続" screen: "ネットワーク設定の編集"
+  starts **Sony's own network settings program** (from the disc; English with the US BIOS): Add Setting -> slot 1 ->
+  guide -> SCE/Ethernet (Network Adaptor) -> PPPoE not required -> IP Auto (DHCP) -> DNS Auto -> name "Setting 1" ->
+  save -> no connection test -> quit. **Quitting restarts the game from the disc** (intro, auto-load); from then on
+  the game finds the NET file and the setting ("1.Setting 1"); picking it connects.
+* After the NET file is loaded (or made): the autosave notice, on some runs a menu "ネットワーク接続 / 前回と同じ接続 /
+  ログインID削除" (its first entry), then the terms notice (進む), then the connection screen.
+* **DNAS**: skipped by the patch, no error, no DNAS traffic [checked: the server's log follows at once].
+* **Server table / login**: the patched internet_browser filled it; tcp_init connected to 192.168.1.105:10200 and the
+  6101 login with the 8-digit key and the 16-character password was accepted (`lobby: login ... ok`), then 6102,
+  6103, 600E x4, 6131. No in-game browser page was opened (the open question above: answered, none for this flow).
+* **First login of a new hunter**: "ユーザー登録/変更" (Capcom user registration: name and contact data for events);
+  "登録しない" (do not register) goes on. Then "カプコンＩＤ選択" with three empty slots: the first one, "yes" to a new
+  ID -> the server makes a new hunter id. Both screens are the game's own; nothing is sent beyond the lobby protocol.
+* **Plaza**: "mh1-serverTest Plaza 1" (the server table's name and the plaza name run together; the PC shows "Local
+  test serverTest Plaza 1" the same way: cosmetic, both clients). 街に入る lists "mh1-serverTest Lobby 1-4", 0 people;
+  the quest column shows "(null)人" **[checked on screen, cause not looked into: a field our server leaves empty]**.
+* **Town**: lobby 1 -> the town square (stage 0x4C), the hunter at the fountain; the server logs the PS2's binary
+  records (types 1, 2, 3, 16) in lobby 1.
+* **PS2 <-> PC**: an ONLINE=1 PC client (headless, its own fresh account and card, `RT_NET_HOST` = the LAN address)
+  logs in and enters the same town. The PS2 shows the PC's hunter "PCHUNTER" walking on the square next to its own;
+  the PC log shows the PS2's hunter "ＴＥＳＴ" on stage 76 "shown" (screenshots both sides). The PC's chat line
+  reached the PS2 (its chat log: "PCHUNTERが街に向かっています / 到着しました", the line, "街から出ました" when it left); the
+  PS2's line typed on its software keyboard (△, kana, 決定) reached the server and the PC's chat log
+  (`chat log: from "ＴＥＳＴ" ...`). **The first PS2 <-> PC meeting works.**
+* Not tried in this run: rooms, matching, mail, friend search, the line check over minutes (the session stayed up
+  ~10 minutes without a drop), a second PS2, a real PS2.
+* Gotcha for anyone scripting this: an account's town place is kept by the server; a PC test client that left the
+  town in the guild hall comes back there (stage 0x4D) and does not see a hunter on the square. Fresh accounts in the
+  test. Another: ffmpeg in a background script needs `-nostdin` (it stopped on SIGTTIN and hung the first test run).
 **What is not in step 1: the hunt.** After matching, a PS2 connects to the 6916 game server address and speaks
 `mcsls` records (section 5.5, docs/server.md 2.4 / 4.2), while mh1-server's relay and the PC / Xbox ports speak
 net_peer frames. So a patched PS2 reaches the lobby, the town, rooms and matching, but **cannot hunt yet**. Step 2:
@@ -820,15 +850,44 @@ stays the simplest route. Left open, not ours to pursue: MH Oldschool answers th
 (2.1), so someone has a working DNAS server answer for this title; whether that includes `AuthInstall` for patches is
 unknown, and we do not use their servers.
 
-**Fallback (case b, or players who keep homebrew anyway): a memory-card launcher ELF** that boots the original disc
-and patches in RAM at every start. It can still use the game's own applier, with no hook code of ours: before jumping
-to the entry point it patches main: (1) the ms01 DNAS skip (the bytes ps2_patch.py builds); (2) `PatchLoadinDNAS_Main`
-to copy our plain list (kept in main's dead `ms_net_patch_set` body, 6920 bytes, never reached because our servers
-never send a patch; patch_buff itself is bss (past the ELF's file size) and would be cleared by the start-up code) into patch_buff+0x10000 and set
-the tail length; (3) `mc_copy_patch` to do nothing in both directions, so the card's slot is left alone and is not
-overwritten with our data. The game's `PatchExecCS` then applies the lobby entry at every lobby load [guess for the
-whole design: addresses checked, the run is not]. This needs homebrew at every boot, as OPL with a ps2_patch.py image
-does; for players who already use OPL the patched image (3.6) stays the simpler route.
+**Fallback, built (agent B, 15 Oct 2026): the memory-card launcher `MH1LAUNCH.ELF` [checked in PCSX2; not yet on a
+PS2].** Sources: `src/ps2patch/launcher.c` (the ELF), `src/ps2patch/launch_hook.c` + `src/ps2patch/online.c` (the
+in-game blob); build: `tools/ps2launch/build.sh` with the open ps2sdk (prebuilt ps2dev release, outside the repo;
+neither the disc nor the PS2 rebuild is needed: the blob links against `tools/ps2launch/syms.ld`, addresses only).
+Player's guide: docs/PLAYING.md. No DNAS crypto of any kind; only RAM patches of the game's own code.
+* **Pass-through (safe for "auto launch" at every power-on)**: it reads the disc's SYSTEM.CNF (BOOT2). No disc / not a
+  PS2 disc -> back to the browser (`Exit`). A PS2 game not in its table, Monster Hunter G (SLPM_658.69, in the table
+  with no patch yet), or an MH1 executable whose size / CRC32 differ -> started untouched through `rom0:PS2LOGO` (as the
+  console boots a disc). Checked in PCSX2: MH G's disc -> "no online patch for this game yet" -> PS2LOGO -> G's intro;
+  MH1 with the test key `test_force_passthrough = 1` -> PS2LOGO -> SLPM_654.95 unpatched.
+* **MH1 (SLPM_654.95, 5648908 bytes, CRC32 0xCF1A62C0)**: the launcher (linked at 0x01800000, out of the game's way)
+  reads the executable from the disc, checks size and CRC32, loads its segments, then patches RAM; every patched
+  word is first compared with the expected original instruction (else: untouched):
+  1. 0x26827C in ms_network_bb_authentication: `jal InetDNAS2ConnectNetStart` -> `addiu v0, zero, 1` (DNAS
+     "authenticated"; the same effect as ps2_patch.py's recompiled function, 4 bytes instead of 932);
+  2. ms_net_patch_set (0x2687E0, the "patch download" menu; our server never sends a patch) -> `jr ra; v0 = 1`; its
+     dead body from 0x268800 holds the blob (984 bytes: mh1p_conf with the player's settings at 0x268808, mh1l_hook,
+     mh1p_fill_server_table, mh1l_internet_browser = online.c's internet_browser);
+  3. 0x23E5EC in Load_overlay: `jal PatchExecCS` -> `jal mh1l_hook`: PatchExecCS as before, then, if the overlay just
+     loaded is lobby.bin (CRC32 of the 720 bytes at 0x5B5980 = the original internet_browser), the first word of
+     internet_browser becomes `j mh1l_internet_browser` (+ nop) and the caches are flushed. So every lobby load (also
+     after a hunt) is patched; disc and card are never written.
+  Then IOP reset and `ExecPS2(entry, argv[0] = "cdrom0:\SLPM_654.95;1")`.
+  The blob is gcc (n32) code called from MWCC (EABI) code: the same argument registers for up to four integer
+  arguments, the same saved registers, no small data (-G0); it calls the game's memset / strncpy / PatchExecCS and the
+  lobby's cnLbc_LoadNetModel / Wait at their addresses.
+* **Config** `MH1LAUNCH.CNF` (text: `server = HOST:PORT`, `login = `, `password = `), next to the ELF (argv[0]'s
+  folder) or `mc0:/MH1LAUNCH/`, `mc1:/MH1LAUNCH/`. MH Oldschool's addresses and the original service's names are
+  refused (the same list as ps2_patch.py). No config -> the game starts untouched.
+* **Test** (`tools/test_ps2_online.sh --launcher`): PCSX2 boots MH1LAUNCH.ELF (as `host:MH1LAUNCH.ELF`, config read
+  from `host:MH1LAUNCH.CNF`) with the **unpatched** .iso in the drive: patched in RAM, then the same run as 3.6 -
+  login on mh1-server, plaza, town, the PC client in the same town, each sees the other, chat both ways [checked].
+* **Known limit**: the game's own network-settings program (Sony's "Add Setting", started from the network menu)
+  restarts the game from the disc when it quits, which drops the RAM patch. After making a setting the first time,
+  restart the console (or the launcher). Also: FMCB / OpenTuna auto-launch was not tried (no console here), and a
+  real PS2 run is still to be done by the owner.
+* Not done: a table entry with patches for MH G (its addresses differ; the table has the slot), and the "lost key"
+  fragility of the scripted test (timed key presses; checked twice in a row, see test_ps2_online.sh's comments).
 
 ## 4. Run it
 
