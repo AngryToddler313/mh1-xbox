@@ -721,3 +721,12 @@ obvious workarounds.
 - **Dropped:** create + release of a texture per movie frame; **now** three textures updated in place (gfx_update_texture).
 - **Changed:** the debug menu restores the depth test and fade colour after drawing; its jumps out of the village run
   Pit_reset + Lbc_set_prim(0,0,0); its title row stops the sound; viewer.c draws black in mode 6 before the village.
+
+## Bug reporter on the Xbox (agent E, 16 Oct 2026)
+- **Dropped:** pick.h's empty Xbox stand-ins (the reporter compiled out of the Xbox build). **Now** pick.c is built for
+  the Xbox (Back + Black, pad pointer, on-screen keyboard, USB keyboard / mouse, nv2a id pass, reports sent through the
+  loader; docs/xbox.md "Bug reporter on the Xbox"). **Why:** owner's request. **To revert:** the commit "Xbox: bug reporter".
+- **Changed:** on the PC, a freeze made with the controller (Back/View + Start) now also takes the pad (pointer, A, the
+  on-screen keyboard) and draws the panel at scale 2 with the controller's keys; an F8 freeze is unchanged.
+- **Changed:** gfx_nv2a.c gfx_execute_clay checks gfx_rec_clay once at the top for both paths (execute_cpu did it for the
+  CPU path, the skinned path after its own check): same behaviour, one place.

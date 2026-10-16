@@ -1208,7 +1208,7 @@ from the dashboard when nxNetInit starts it again (like the dumper's hang after 
 nxNetShutdown). To try at the next loader install: reset the NIC first (nvnetdrv stop/reset
 before nxNetInit), and keep the 10 s receive timeout (it cannot help when the whole stack hangs).
 
-## Keyboard and mouse on the Xbox (research, agent E, 14 Oct 2026; nothing built)
+## Keyboard and mouse on the Xbox (research, agent E, 14 Oct 2026; HID part built 16 Oct 2026)
 
 Why: the PC's F8 bug reporter, F9 debug menu typing, the name entry and a free camera want a keyboard and mouse; on
 the Xbox the debug menu works with the pad alone (Back + R3, docs/pc.md "Debug menu"). Read from nxdk's sources
@@ -1282,6 +1282,65 @@ set_protocol(0), set_idle(0), start_int_read.
 to two HID interfaces (3 IN + 1 OUT endpoints: check them against the S3's endpoint limit) and OTA updates still working; the nxdk HID driver on
 connect / disconnect and its DPC callback racing the game thread; the USB memory pool (MEM_POOL_UNIT_NUM 96, 512 KB) with
 the extra pipes; power from a pad port with the dongle's Wi-Fi on; for route 3 the nxNetInit hang and the game's memory.
+
+**Built (16 Oct 2026, agent E): route 1 / 2 in the game, for the bug reporter only** (next section): src/pc/xbox/kbm_xbox.c.
+Differences from the design above: nxdk_usb.lib is left as it is; tools/build_xbox.py compiles nxdk's hid_core.c /
+hid_driver.c into the game from a patched copy (build/xbox/usbhid/, HID_DBGMSG off). The HID driver must be registered
+before SDL's joystick start (usbh_core_init is a no-op the second time; SDL's 500 ms enumeration then probes keyboards
+with both drivers present), so pad_init calls kbm_init first. Boot-protocol interfaces only (subclass 1, protocol 1 / 2:
+fixed 8-byte keyboard and 3-4-byte mouse reports, no descriptor parser); the connect callback only records the device, the
+game thread sends set_protocol(0) / set_idle(0) / start_int_read; the DPC callback copies keyboard reports into a ring
+and adds up mouse motion. No SDL events are pushed: pick.c reads kbm_key / kbm_mouse itself (the menus, name entry and
+free camera do not use it yet). **Untested**: xemu attaches no USB keyboard to the guest here and no hardware was tried.
+
+## Bug reporter on the Xbox (agent E, 16 Oct 2026)
+
+Owner request: the PC's F8 bug reporter (docs/pc.md "Bug reporter") on the Xbox. How the owner uses it: docs/PLAYING.md
+"Reporting a bug". src/pc/pick.c is now built for the Xbox too (it was compiled out: pick.h had empty stand-ins).
+
+- **Combo: Back + Black** (select + R1), read from every game tick's pad in viewer.c read_pad -> pick_tick_pad (so a
+  --input script can press it; the combo is taken out of the game's pad state). Free on the Xbox: Back + Start (held 2 s:
+  quit), Back + R3 (debug menu), Back + L3 (settings) are the others. Back + White stays free; LT + RT combos were avoided
+  (both are held in fights). Pressing Back first lets one or two ticks of select reach the game, as with the other combos.
+  A USB keyboard's F8 freezes too.
+- **Controller UI** (pick_pad, once per drawn frame while frozen; the viewer hands it the pad or the --input script, as
+  for the debug menu): right / left stick move a drawn pointer (dead zone 20, up to 12 px a frame, squared), the d-pad
+  1 px (3 px a frame when held); A down / up = the PC's mouse button (a click under 5 px, else a box from where A went
+  down); X undo; Y the on-screen keyboard (4 rows of characters + Shift / Space / Del / Done; A types, X deletes, Y space,
+  B closes); White hides the panel; Start saves; B or the combo again cancels. A USB keyboard types into the note (Enter
+  saves, Esc cancels), a USB mouse moves the pointer (left = A, right = undo) (kbm_xbox.c, above). The panel uses the 5x7
+  font at scale 2 with short lines (a TV at 640 x 480).
+- **Id pass on NV2A** (gfx_nv2a.c): as the GL backend, each clay / 2D draw asks gfx_pick_cb for an id. The shaders are
+  unchanged: the fog path paints the id (fog colour = id colour, fog factor (k, b) = (0, 1) so rgb = COLOR1.rgb, for the
+  plain and the skinning program), the fade constant is 1, alpha stays texture x vertex alpha so the alpha test still cuts
+  out; blending is held off for the pass (gfx_set_render_state does not switch it on while gfx_pick_pass; gfx_begin_frame
+  switches it off and restores the game's state on the frame after). The render states the GL backend reports (blend,
+  alpha / z functions, filter, clamp, fog, fade, texture size; the texture's address instead of a GL name) are tracked for
+  the report. **No depth read** (pbkit keeps its depth buffer's address; it may be tiled): no hit position / nearest bone
+  in Xbox reports. **No clip.gif** (the 14 MB frame ring does not fit the 64 MB console); everything else as on the PC.
+  The id frame is the viewer's `goto redraw` (gfx_begin_frame twice without a flip; gfx_read_pixels waits for the GPU
+  first). gfx_null.c (the headless build): stand-ins, a report there has a black picture and no objects.
+- **Saving**: E:\Games\MH1\reports\report_<date>_<time>\ (G: E:\Games\MHG), from rt_log_dir's parent like the PC;
+  GetLocalTime for the name. A "Bug report saved" line shows over the game for 4 s.
+- **To the laptop**: src/pc/xbox/xbox_report.c. The network loader (loader/main.c) sends every finished report folder
+  without a sent.txt in ONE POST /report?game=mh1|mhg (body "MH1REPORTS n", per report "R name", per file "F size name"
+  + bytes, "E"; at most 24 MB, the rest next time) right after the log, in both its paths (normal start and after the game
+  exited), then writes sent.txt into each folder (they stay on E:). tools/xbox_serve.py saves each to
+  build/xbox/reports/<time>-<game>[-k]/ (+ xbox_folder.txt, the folder's name on E:). The online build (MH1_ONLINE) also
+  sends at once when its network is already up (net_cpinet.c xbox_net_ready; laptop from the game folder's loader.txt);
+  it never starts the network for this. Connections: the loader's start makes at most one more (5 with a log, the
+  reports, the version, a new build and the test files; the old freeze was after 5 in a polling loop, docs above);
+  the usual way is the after-game path (log + reports = 2).
+- **Owner**: the loaders must be rebuilt and installed again (tools/xbox_upload.sh --loader) to send reports.
+
+**Tested** (16 Oct 2026): tools/test_pick.sh part 5 (PC, the same pad code: RT_PICK_PAD=1 turns on the Back + Black combo
+there; a script freezes, clicks, drags a box, types "hi" on the on-screen keyboard and saves; marks at the expected
+pixels); tools/xemu_pick_test.sh in xemu, MH1 and G nv2a (all checks pass for both): Back + Black at tick ~400 of
+quest 10, click + box + "hi" by script; the report on E: has 14 (MH1) / 15 (G) objects of the kinds stage, sky, hud,
+monster, hunter, weapon, effect, the id buffer is flat (the first try showed texture noise: the id override was set after
+the fog constants were already copied into the push buffer); the loader POSTed it, the laptop's copy is byte-identical,
+E: got sent.txt. Frozen-frame screenshots with the panel and the on-screen keyboard: build/xbox/pick_xemu/run1_*.png
+(not committed). Not tested: a real Xbox, a USB keyboard / mouse, the online build's direct send.
 
 ## Later idea: 5.1 surround (owner, 13 Oct 2026; not started)
 

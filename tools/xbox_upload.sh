@@ -39,7 +39,7 @@ fi
 # always a fresh build with the default address: objects left by a test build for xemu
 # (XH_HOST=10.0.2.2, docs/xbox.md) would otherwise end up in the installed loader.
 # One program, two titles (the dashboard lists each folder by its XBE's title).
-rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj
+rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj src/pc/xbox/xbox_report.obj
 (. ~/xboxdev/env.sh && make -C src/pc/xbox/loader -s &&
 	make -C src/pc/xbox/loader -s OUTPUT_DIR=../../../../build/xbox/loader_g XBE_TITLE='Monster\ Hunter\ G')
 me=$(ip -4 route get "$XBOX" | sed -n 's/.* src \([0-9.]*\).*/\1/p')

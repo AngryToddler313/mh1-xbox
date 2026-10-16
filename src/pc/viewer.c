@@ -920,6 +920,7 @@ static void read_pad(pad_state *ps)
         pad_read(ps, !dbgmenu_freecam());
     dbgmenu_tick_pad(ps);
     menu_tick_pad(ps);
+    pick_tick_pad(ps);          /* the bug reporter's combo on the Xbox (Back + Black) */
 }
 
 /* a --input script kept in a file (--input @file; on the Xbox D:\data\input.txt):
@@ -2686,6 +2687,14 @@ int main(int argc, char **argv)
                 pad_read(&dp, 0);
             dbgmenu_pad(&dp);
         }
+        if (play && pick_wants_pad()) {         /* the bug reporter frozen with the controller: pointer, A, note, the script too */
+            pad_state pp;
+            if (script)
+                script_live = pad_script_next(&pp);
+            else
+                pad_read(&pp, 0);
+            pick_pad(&pp);
+        }
         {   /* the bug reporter stops the game clock while it is frozen */
             static int holding;
             static Uint32 hold_t0;
@@ -3051,7 +3060,7 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && !menu_busy() && !(dbgmenu_busy() && script_live) && (!shot_list || ticks >= 2 + (int)fr)
+        if (shot && frame_no >= frames && shot_next <= 0 && !(pick_busy() && (script_live || !pick_wants_pad())) && !menu_busy() && !(dbgmenu_busy() && script_live) && (!shot_list || ticks >= 2 + (int)fr)
             && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);

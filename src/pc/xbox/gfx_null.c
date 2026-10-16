@@ -27,6 +27,9 @@ float gfx_scene_aspect(void) { return 4.0f / 3.0f; }
 void gfx_begin_frame(uint32_t clear_rgb) { (void)clear_rgb; }
 void gfx_end_frame(void) { SwitchToThread(); }    /* no vblank wait here: let the audio thread run (gfx_nv2a.c wait_idle) */
 int gfx_read_pixels(uint8_t *rgb) { memset(rgb, 0, (size_t)W * H * 3); return 0; }
+/* the bug reporter (pick.c): no id pass without drawing (a report has the black picture and no objects) */
+void gfx_pick_matrices(float view[16], float proj[16]) { memset(view, 0, 64); memset(proj, 0, 64); }
+int gfx_read_depth(float *d) { (void)d; return -1; }
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
 {
     gfx_texture *t = calloc(1, sizeof *t);

@@ -3,7 +3,8 @@
 # "Monster Hunter G": make -C src/pc/xbox/loader OUTPUT_DIR=../../../../build/xbox/loader_g XBE_TITLE='Monster\ Hunter\ G'
 # (only cxbe runs again). tools/xbox_upload.sh --loader builds and installs both.
 XBE_TITLE = Monster\ Hunter
-SRCS = main.c install.c ../xnet_http.c
+SRCS = main.c install.c ../xnet_http.c ../xbox_report.c
+CFLAGS += -DXBOX_REPORT_NET
 NXDK_NET = y
 OUTPUT_DIR = ../../../../build/xbox/loader
 # XH_HOST / XH_PORT (optional): the laptop address used when loader.txt is missing

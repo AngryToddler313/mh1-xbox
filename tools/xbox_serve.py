@@ -19,6 +19,12 @@ loader installed before 16 Oct 2026, MH1 only) count as MH1.
   POST /log?game=G      saved to build/xbox/logs/<time>-<game>.txt and printed. A log that starts with
                         "MH1DUMP <name>" (src/pc/xbox/dumper: the BIOS flash, for xemu) is saved to
                         build/xbox/dump/<name> instead; Microsoft's file, so it stays out of git.
+  POST /report?game=G   bug reports from the game's Back + Black reporter (src/pc/xbox/xbox_report.c: the loader
+                        sends the ones not sent yet at its start, the online build at once): each is saved to
+                        build/xbox/reports/<time>-<game>/ (screenshot.png, annotated.png, idbuffer.png,
+                        report.json, log_tail.txt, input.txt as the PC writes them; read them with
+                        tools/show_report.py DIR). Body: "MH1REPORTS <n>", per report "R <name>", per file
+                        "F <size> <name>" + bytes, "E".
 Only these paths are served; nothing else in the repo is reachable.
 
 --data DIR (may be given twice, once per game): install a game folder (./mh1 xbox's dist/xbox/MHG or
@@ -44,6 +50,7 @@ ROOT = os.path.join(REPO, 'build', 'xbox')
 RERUN = os.path.join(ROOT, 'rerun.txt')
 LOGS = os.path.join(ROOT, 'logs')
 DUMPS = os.path.join(ROOT, 'dump')
+REPORTS = os.path.normpath(os.path.join(ROOT, 'reports'))
 TEST = {'input': None, 'env': None, 'game': None}
 CHUNK = 4 << 20          # the loader checks and writes the data in pieces of this size
 FOLDER = {'mh1': 'MH1', 'mhg': 'MHG'}
@@ -111,6 +118,46 @@ def load_data(src):
     GAMES[game]['data'] = {'files': files_new, 'src': src, 'manifest': b'\n'.join(out) + b'\n',
                            'stamp': [(f, n, os.path.getmtime(f)) for f, n in files_new.values()]}
     return game
+
+
+def save_reports(body, game, root=None):
+    """a /report body -> one folder per report under root (build/xbox/reports); returns the folders, or None when
+    the body is malformed (nothing is kept then)"""
+    root = root or REPORTS
+    lines = body.split(b'\n', 1)
+    m = re.fullmatch(rb'MH1REPORTS (\d+)', lines[0])
+    if not m or len(lines) < 2:
+        return None
+    rest, reports = lines[1], []
+    for _ in range(int(m.group(1))):
+        head, _, rest = rest.partition(b'\n')
+        mr = re.fullmatch(rb'R ([A-Za-z0-9_.-]{1,63})', head)
+        if not mr:
+            return None
+        files = []
+        while True:
+            head, _, rest = rest.partition(b'\n')
+            if head == b'E':
+                break
+            mf = re.fullmatch(rb'F (\d+) ([A-Za-z0-9_][A-Za-z0-9_.-]{0,63})', head)
+            if not mf or b'..' in mf.group(2) or int(mf.group(1)) > len(rest):
+                return None
+            n = int(mf.group(1))
+            files.append((mf.group(2).decode(), rest[:n]))
+            rest = rest[n:]
+        reports.append((mr.group(1).decode(), files))
+    out = []
+    stamp = time.strftime('%Y%m%d-%H%M%S')
+    for name, files in reports:
+        d, k = os.path.join(root, '%s-%s' % (stamp, game)), 2
+        while os.path.exists(d) or d in out:
+            d, k = os.path.join(root, '%s-%s-%d' % (stamp, game, k)), k + 1
+        os.makedirs(d)
+        for f, data in files:
+            open(os.path.join(d, f), 'wb').write(data)
+        open(os.path.join(d, 'xbox_folder.txt'), 'w').write('E:\\Games\\%s\\reports\\%s\n' % (FOLDER[game], name))
+        out.append(d)
+    return out
 
 
 def set_xbe(game, path):
@@ -209,6 +256,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
             open(name, 'wb').write(body)
             print('== Xbox %s log -> %s (%d bytes)' % (FOLDER[game], name, len(body)))
             sys.stdout.write(body.decode('utf-8', 'replace')[-3000:] + '\n')
+        elif path == '/report' and game:
+            dirs = save_reports(body, game)
+            if dirs is None:
+                self.send_error(400)
+                return
+            for d in dirs:
+                note = ''
+                try:
+                    import json
+                    note = json.load(open(os.path.join(d, 'report.json'))).get('note', '')
+                except (OSError, ValueError):
+                    pass
+                print('== Xbox %s bug report -> %s  note: %s  (python3 tools/show_report.py %s)'
+                      % (FOLDER[game], d, note, os.path.relpath(d, os.getcwd())))
         elif path == '/note':
             print('== Xbox: %s' % body.decode('utf-8', 'replace'))
         else:

@@ -5,7 +5,8 @@
  * and installs both). It serves the game of the folder it was started from: a "game=mh1" / "game=mhg"
  * line in that folder's loader.txt, else the folder's name (MHG: G, anything else: MH1). The game is
  * <folder>\mh1.xbe or mhg.xbe. On each start it:
- *   1. sends the last game log (<folder>\mh1log.txt) to the laptop,
+ *   1. sends the last game log (<folder>\mh1log.txt) and the bug reports not sent yet (<folder>\reports\, the
+ *      game's Back + Black reporter, xbox_report.c) to the laptop,
  *   2. downloads the newest game build (/mh1.xbe or /mhg.xbe) when the laptop has a new one,
  *   3. starts the game.
  * Every request names the game (?game=mhg); tools/xbox_serve.py serves both games at once and still
@@ -32,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../xnet_http.h"
+#include "../xbox_report.h"
 #include "install.h"
 #include "../xbox_path.h"
 
@@ -40,13 +42,14 @@ extern struct netif *g_pnetif;
 /* this loader's folder (with a trailing backslash) and game, set at the start of main */
 static char DIR[200] = "E:\\Games\\MH1\\";
 static char GAMEID[8] = "mh1";              /* "mh1" / "mhg": the ?game= of every request */
-static char GAME[240], GAME_VER[240], GAME_LOG[240], HOSTFILE[240], TEST_INPUT[240], TEST_ENV[240];
+static char GAME[240], GAME_VER[240], GAME_LOG[240], HOSTFILE[240], TEST_INPUT[240], TEST_ENV[240], REPORTS[240];
 
 static void set_paths(void)
 {
     snprintf(GAME, sizeof GAME, "%s%s.xbe", DIR, GAMEID);
     snprintf(GAME_VER, sizeof GAME_VER, "%s%s.ver", DIR, GAMEID);
     snprintf(GAME_LOG, sizeof GAME_LOG, "%smh1log.txt", DIR);
+    snprintf(REPORTS, sizeof REPORTS, "%sreports", DIR);
     snprintf(TEST_INPUT, sizeof TEST_INPUT, "%sdata\\input.txt", DIR);
     snprintf(TEST_ENV, sizeof TEST_ENV, "%sdata\\env.txt", DIR);
 }
@@ -206,6 +209,8 @@ int main(void)
         free(r);
         free(log);
     }
+    if ((n = xbox_report_send_pending(REPORTS, GAMEID)) != 0)       /* one POST for all of them */
+        debugPrint(n > 0 ? "Sent %d bug report(s).\n" : "Could not send the bug reports (kept for the next start).\n", n);
 
     if (after_game) {
         debugPrint("Game exited. Back to the dashboard.\n");

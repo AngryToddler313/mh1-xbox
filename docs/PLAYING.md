@@ -163,6 +163,9 @@ bug (see below). Name entry: type with the keyboard, Enter finishes.
 
 Guard is R1 = Black, which is a small button; if that feels bad, tell us (it is easy to swap on request).
 
+Xbox shortcuts (hold **Back**, then press the second button): **Back + Black** reports a bug (below), Back + L3 the
+settings, Back + R3 the testers' debug menu, Back + Start held 2 seconds leaves the game.
+
 ## Settings (PC)
 
 Press **F10** at any time. The game pauses while the menu is open. Rows: windowed / fullscreen, 4:3 or 16:9
@@ -216,6 +219,50 @@ The menu is on in test builds. A release build (made with `MH1_RELEASE=1`) has i
 on the PC put `debug_menu = 1` (or `0`) in `mh1pc.ini`, or start with `--debug-menu` / `--no-debug-menu`; on the Xbox
 put `RT_DEBUG_MENU=1` (or `0`) in `data\env.txt`. Changes you make with it are real: a save made afterwards keeps
 them. Use a copy of your memory card for testing.
+
+## Reporting a bug (PC and Xbox)
+
+When you see something broken (a glitch, a wrong texture, a monster stuck in a wall), report it right there:
+
+**PC:** press **F8** (or Back/View + Start on a controller). The game freezes. Click each broken thing (it lights up
+and gets a number), or drag a box around a broken area; right click undoes the last pick. Type what is wrong, then
+**Enter** saves the report; **Esc** or F8 cancels. The report folder (screenshots, game state, your inputs) is saved
+under the game's data folder (`.../mh1pc/reports`); nothing is sent anywhere. Frozen with the controller, the pad
+works as on the Xbox below.
+
+**Xbox:** hold **Back** and press **Black** (the small black button). The game freezes and a panel at the top shows
+the keys:
+
+| button | what it does |
+|---|---|
+| right stick (or left stick) | moves the white cross (the pointer); a light push moves it slowly; the d-pad moves it one dot |
+| **A** | picks the thing under the cross (it lights up and gets a number) |
+| hold **A** and move | draws a box: everything inside is picked |
+| **X** | undoes the last pick |
+| **Y** | opens a keyboard on the screen to type a note (see below) |
+| **White** | hides / shows the panel (if it covers what you want to pick) |
+| **Start** | saves the report and the game goes on ("Bug report saved" at the bottom for a few seconds) |
+| **B** (or Back + Black again) | cancels: nothing is saved |
+
+The on-screen keyboard: d-pad or left stick moves, **A** types the key, **X** deletes a letter, **Y** is a space,
+"Shift" switches to capitals and signs, **B** or "Done" closes it; Start still saves. A note is optional, but one
+line ("the river flickers when I stand here") helps a lot.
+
+A **USB keyboard or mouse** works too when one is plugged into a pad port (through a pad-to-USB adapter) before the
+game starts: type the note directly, Enter saves, Esc cancels, F8 freezes; the mouse moves the pointer, left click
+picks (drag = box), right click undoes. (Written but not tried yet with a real keyboard; tell us if it does nothing.)
+
+**Where Xbox reports go:** each one is saved on the Xbox in `E:\Games\MH1\reports\report_<date>_<time>`
+(Monster Hunter G: `E:\Games\MHG\reports`). When you leave the game (Back + Start for 2 s) its loader sends the new
+reports to your computer together with the log, as long as `tools/xbox_serve.py` is running there; otherwise at the next
+start with the computer on. They land in `build/xbox/reports/<time>-mh1` (or `-mhg`) on the computer:
+`screenshot.png`, `annotated.png` (your picks marked), `report.json` (your note, what you picked, the game state),
+`log_tail.txt`, `input.txt`. `python3 tools/show_report.py build/xbox/reports/<folder>` prints one readably. Reports
+already sent stay on the Xbox (with a `sent.txt` in the folder); delete old ones by FTP when you like. The online
+build of Monster Hunter sends a report at once when you are connected.
+
+**Once:** the loaders on the Xbox must be the new ones that know about reports: run `tools/xbox_upload.sh --loader`
+again (as when you installed them).
 
 ## Saves
 
@@ -406,8 +453,8 @@ started exactly as the console would, untouched; with no disc or a PS1 / DVD vid
   been compared frame by frame with a real PS2, so some effects look different.
 * Xbox: about 30 fps in the village and hunts on the tested console; long pauses when changing areas (no loading
   screen); some effects may differ; no in-game settings; the dashboard shows a generic save icon.
-* Some rare monster/stage combinations may still have glitches. Press **F8** when you see one (PC): the game
-  freezes, click the broken things, type what is wrong, Enter. A report folder (screenshots, game state, your
+* Some rare monster/stage combinations may still have glitches. Press **F8** (PC) or **Back + Black** (Xbox) when
+  you see one: see "Reporting a bug" above. A report folder (screenshots, game state, your
   inputs) is saved under the game's data folder (`.../mh1pc/reports`). Every run also writes a debug log
   (`.../mh1pc/logs`); nothing is ever sent anywhere. Attach them to an issue at
   https://github.com/itsbigcforme67/mh1-xbox/issues (Windows: `bug_report.bat` packs them).
