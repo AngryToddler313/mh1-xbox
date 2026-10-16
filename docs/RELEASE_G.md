@@ -249,3 +249,12 @@ What a G player notices, each checked in hidden PC G runs (pictures in build/A/t
   says (a pale overlay where the PC drew dark rocks) [G's code read, not compared with a PS2 picture: owner check].
   Seen: `mhview_g --stage 88 / 89` crash in load_stage_hit (not from this change).
 - **Not real**: "em21 die case 4" (map error, see section 4). **hit_mark_set_new** was already G (row updated).
+
+GB6, quest lane, what is left (docs/survey/mhg_cov_g.txt of 15 Oct re-read against today's code; ranked by how often a
+player meets it) [inferred from the asm diff sizes, not run]:
+1. pl01_effect_move / ef_move_sub_0024A790 (hunter weapon effects and sounds: G calls two big G-only functions; every hunt).
+2. NextStage_Dir_Set (em_cmd, 0.73: where a monster heads when it changes area; every hunt with area changes).
+3. Monster effects eft20_pos_set (0.65), eft13_t (0.79), eft09_m (0.75), Eft05 (rewritten in G).
+4. Stage sets: set19_trans (GN8, stages 67/73/75), set04_trans, set06 (rewritten), set13_i.
+5. Per-monster: em27 em_die04 (rewritten), em08 em_dmg05, em16 / em17 small acts (0.74-0.79), em07 item/part sets.
+Done in this pass: Pl_damage_sub / pl_guard_set (was first: every hit on the hunter), trans_stage.
