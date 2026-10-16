@@ -567,6 +567,9 @@ EMW *em;
 
 
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+void rt_cap_request(void);              /* src/pc/rt/rt_2d.c: G's quest clear frame copy */
+#endif
 s16 quest_condition_prog(pl, i)
 PLW *pl;
 s16 i;
@@ -806,6 +809,10 @@ again:
             if (Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0 && quest_w.xB0 != 0 && ((EMW *)quest_w.xB0)->kind == 2) {
                 quest_w.x14C = ((EMW *)quest_w.xB0)->x302;
             }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            rt_cap_request();               /* G 0x4B8AA0: system_w+0x33 = 0x81, a copy of the next frame for the reward list
+                                             * (G starts the camera once it is taken, the PC at once: rt_2d.c) */
+#endif
             QuestClearCameraRequest();
             quest_w.x182 = 0;
             i++;

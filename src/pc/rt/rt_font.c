@@ -63,6 +63,7 @@ extern int font_reset_flag;
 
 uint8_t *rt_file_load(int idx, size_t *n);
 void rt_2d_restore_texture(void);
+void PutButtonICON(u8 *p, u8 n);   /* main chat_nm.c: G's ~Bnn icons */
 
 /* ------------------------------------------------------------ set-up */
 void flfntCacheFlush(void)
@@ -658,8 +659,18 @@ void font_print_sp(const char *fmt, ...)
                 strncat(w, p, 0x7F - strlen(w));
                 p = w;
             } else if ((code & 0xFF00) == 0x400) {
-                /* G's ~Bnn: the original queues a button sprite at the pen (func_0012B8F0, drawn with the
-                 * font stack) and moves the pen one glyph on. Not ported: the PC leaves the gap only. */
+                /* G's ~Bnn: the original queues {pen x, pen y, glyph height, icon nn, alpha 0xFF} for the
+                 * font stack (func_0012B8F0) and draws the queue with PutButtonICON after the stack's text
+                 * (func_0012B530, from the frame's flfntDraw calls); the pen moves one glyph on. The PC
+                 * draws the icon at once (same entry, same call): the text is drawn over the frames anyway. */
+                u8 ic[8];
+                *(s16 *)(ic + 0) = x;
+                *(s16 *)(ic + 2) = y;
+                *(s16 *)(ic + 4) = size_h;
+                ic[6] = (u8)(code & 0xFF);
+                ic[7] = 0xFF;
+                if (ic[6] < 10)         /* button_icon_uv has 10 cells (MH1 and G) */
+                    PutButtonICON(ic, 1);
                 x += size_w;
                 flfntLocate(x, y);
             }

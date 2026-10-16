@@ -3026,6 +3026,7 @@ int main(int argc, char **argv)
         rt_prof_begin(RTP_PRIMS);
         rt_game_draw();                 /* game C prims (set14 waterfalls, effects) */
         rt_prof_end(RTP_PRIMS);
+        rt_cap_frame();                 /* G: the quest clear's copy of the scene for the reward list (rt_2d.c) */
         rt_prof_begin(RTP_2D);
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
         rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */

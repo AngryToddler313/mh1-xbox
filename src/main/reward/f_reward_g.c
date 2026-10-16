@@ -15,13 +15,15 @@
  *   15/16  "added to the GALLERY": a gallery title (by event flag)
  *   17/18  online error                                             19 fade out to the village (game_w.mode 6)
  * Announcements chain: each one, when closed, looks for the next (record, training, movie, gallery title).
- * The reward screens' "frozen game frame" backdrop (main 0x12EAF0, a 256x224 copy of the last game frame made by
- * the PS2 GS) is not drawn on the PC: the host has no frame copy, so the reward list has the plain backdrop. */
+ * The reward list's "frozen game frame" backdrop (main 0x12EAF0, the GS's copy of the scene at the quest clear) is
+ * the host's read-back of that frame (src/pc/rt/rt_2d.c rt_cap_*). */
 #include "g_alias.h"
 #include "reward.h"
 
 /* PC / Xbox only (tools/build_pc.sh, VERSION=mhg); tools/build.py compiles every src file with MWCC, which gets an empty file */
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
+int rt_cap_draw(void);          /* src/pc/rt/rt_2d.c: the quest clear's frame copy */
+void rt_cap_drop(void);
 
 /* G's result_w (sub_main 0x542490, 0x20 bytes); nothing outside this module reads it, so it is a host object */
 typedef struct GRESULT_W {
@@ -215,11 +217,12 @@ void disp_mark(void)                                    /* 0x4F3BC0, as MH1 */
 }
 
 /* 0x4F3C80: the reward list. G sets system_w+0x32 and draws the frozen game frame (main 0x12EAF0) where MH1 drew
- * disp_mark; the PC has no frame copy (see the top of the file) */
+ * disp_mark: the copy of the quest clear's scene, at half alpha over the backdrop (rt_2d.c rt_cap_draw) */
 void trans_result_0(void)
 {
     font_set_stack_no(4);
     Disp_back();
+    rt_cap_draw();
     disp_reward();
 }
 
@@ -542,6 +545,7 @@ static void to_village(GAME_W *t)
     t->mode = 6;
     t->step = 0;
     all_reset();
+    rt_cap_drop();                  /* the quest clear's frame copy (G's all_reset clears system_w+0x33 / its use) */
 }
 
 void result_prog(void)                                  /* 0x4F4A60 */
