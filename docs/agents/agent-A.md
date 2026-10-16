@@ -1093,3 +1093,6 @@ Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, buil
   hits on the Rathian (1-5 per hit, no aid), quest clear with the test aids; all four stick directions and the demon
   versions run (0x5B 0x5C 0x5D 0x5A 0x54 0x59). Not checked: hit values against the real game, sounds by ear,
   pl_at089 (demon dance) frame by frame, the white (non-demon) trails' look.
+- **Xbox**: G nv2a build in xemu, RT_ARGS=--quest 10 with RT_WEAPON=234: quest starts, the hunter holds the Dual
+  Swords (build/A/dual/xemu.png, xemu.mp4), 20-25 fps, no crash in 240 s. Checks: tools/full_check.sh all ok (emulator
+  tests skipped as usual), VERSION=mhg rebuild 7 OK, G Xbox build ok.
