@@ -683,6 +683,105 @@ net_peer frames. So a patched PS2 reaches the lobby, the town, rooms and matchin
 5. Tests: PC-only first (two PC clients over mcsls through mcs.py, the same hunt as test_online_server.sh), then the
    owner with PCSX2 / a PS2 and a PC in one room.
 
+### 3.8 Memory-card patch route (research, agent B, 15 Oct 2026; read from the code, nothing run)
+
+Question: can a one-time homebrew on the player's PS2 put **our** patch (the DNAS skip in ms01.c and our
+`internet_browser`, i.e. what `tools/ps2_patch.py` changes) into the game's own memory-card patch slot, so that the
+plain original disc applies it by itself at every boot? Sources: matched C (`mc/mccard_nm.c` CardAtld,
+`mc/mcsave_nm.c`, `net/patch01.c`, `net/patch02.c`, `net/ms04.c` ms_net_patch_set, `ime/imeb.c` Load_overlay,
+`fl/flsys02.c`), the asm of PatchExecCS, and a local disassembly of the two DNAS overlays from the disc (not kept, not
+committed). No key material was found or needed for this answer; none is in this section.
+
+**1. Boot path: the saved patch is applied long before anything network or DNAS runs [checked].**
+* `system_hard_init` (flsys02.c) reboots the IOP with `cdrom0:\IOP\MODULES\DNAS280.IMG` at start-up: Sony's DNAS
+  IOP image is the IOP kernel for the whole session, so its IOP side is there with no network at all.
+* Title auto-load: `CardAtld11` (card read OK, `decode_to_ck` = the save's own scramble + checksum, which homebrew can
+  compute from mcsave_nm.c) -> `save_data_sub(0, 0x1F)` -> `mc_copy_patch(0)`: card image +0x208 (0x10000 bytes) to
+  `patch_buff`, +0x10208 (0x40 bytes) to `patch_buff+0x20000` (the "tail": 10-char version, 4-char tag, u32 length at
+  +0x14). Then `PatchLoadinDNAS_Init`, and `CardAtld14` runs `PatchLoadinDNAS_Main` until it finishes.
+* `PatchLoadinDNAS_Main` (patch02.c): tail length 0 -> nothing to do. Else copy half 0 to half 1, load overlay 2 of
+  the network slot (`Net_put_overlay_data(2)`, = dnas_ins.bin at 0xA06200), call `InetDNAS2PersonalDecode` (0xA2FD30)
+  on half 1 with the stored length and the limit 0x10000; > 0: `PatchExecCS(0, 0)` (main's entries); < 0:
+  `PatchInitCS` (patch_buff and the tail length cleared in RAM).
+* After that **every** `Load_overlay(ov, slot)` (imeb.c) calls `PatchExecCS(slot, ov)` right after loading and
+  `mwOverlayInit`, before the overlay's code runs. So entries for lobby.bin are applied each time the lobby loads
+  (and again after a hunt). Entry key = `slot << 4 | overlay`; main = key 0 [guess, strong: the boot call
+  `PatchExecCS(0, 0)`, no overlay is loaded in slot 0]; lobby = probably 0x13 [guess: ms_net_patch_set applies
+  `PatchExecCS(1, 3)` right after a decode in the network menu; game.bin is `Load_overlay(2, 1)` = 0x12].
+* The DNAS check (`ms_network_bb_authentication`, main) only runs when the player picks the network game, minutes
+  later. A main-code entry patching it is in place by then. **Order is fine.**
+
+**2. The decryption: Sony's DNAS-inst "personal" (console-bound) format [checked for the calls; key internals guess].**
+* `InetDNAS2PersonalDecode` (Capcom glue in dnas_ins.bin) is a step machine over Sony calls:
+  `sceDNAS2InstInit_nohdd()`, `sceDNAS2InstExtractDataLength_nohdd(stored length, buffer, &plain length)` (error if
+  the plain length > 0x10000), `sceDNAS2InstExtractData_nohdd(..)` (decrypts in place), `sceDNAS2InstShutdown_nohdd()`.
+  Any library error -> -1 -> `PatchInitCS`.
+* The game also has the other direction: `InetDNAS2PersonalEncode` (0xA2FBD0) ->
+  `sceDNAS2InstPersonalizeDataLength_nohdd` / `sceDNAS2InstPersonalizeData_nohdd`. ms_net_patch_set (network menu,
+  after a login that received a patch, 5.8) runs: the patch from 6122 in patch_buff -> `InetDNAS2ConnectInstall`
+  (dnas_net.bin: `sceDNAS2InitNoHDD` with the title's auth info, then `sceDNAS2AuthInstall`, which talks to Sony's
+  DNAS server; its output replaces the buffer, length in `D_6E9700[0]`) -> load dnas_ins -> **personalize on the
+  console** (`InetDNAS2PersonalEncode`; the result's length goes to tail+0x14) -> version and tag into the tail ->
+  `SaveGameFileNet2` -> decode it again and `PatchExecCS(0, 0)` / `PatchExecCS(1, 3)`.
+* Key material: not in Capcom code and not on the card. The save holds only the encrypted blob and the 0x40 tail
+  (mcsave_nm.c layout) [checked]; nothing from a DNAS authentication is stored there. The keys live in Sony's code:
+  the EE library is self-decrypting/obfuscated (its strings too) and the IOP part is inside DNAS280.IMG; "personalize"
+  binds the data to the console (its unique IDs) [guess, from the function names and the known DNAS design; whether it
+  also binds to the memory card is unknown]. A card moved to another PS2 fails to decode; the game then clears the
+  patch in RAM and the next save writes the cleared slot back, erasing it [checked: PatchInitCS + mc_copy_patch(1)].
+* Checks at boot: only the library's own results (the extract calls; whether the container carries a MAC or RSA
+  signature inside is unknown: dnas_ins links RSA-BSAFE code including `AI_PKCS_RSAPublic` [checked that it is
+  linked, guess what it is used for]), then the plain text must start with `"M-HUNTER"` (else nothing applied). The
+  6121 byte sum only checks the download, never the card [checked]. If the tail version is newer than `MediaVersion`
+  it is copied into `MediaVersion`; either way the entries are applied [checked].
+* **Can code on the same PS2 make a blob the game accepts?** It hinges on one unknown: what
+  `sceDNAS2InstPersonalizeData_nohdd` takes as input.
+  * (a) If it takes the plain data (i.e. `sceDNAS2AuthInstall` returned the decrypted patch and personalize only
+    re-encrypts it for this console), then the game's own code can personalize **our** plain list on the player's
+    console, and no DNAS server and no prior DNAS authentication are needed. This is the reading the call order
+    suggests (online step -> local encrypt -> save -> local decrypt -> magic check on the result) [guess].
+  * (b) If it takes a server-issued container (still wrapped by Sony's server key), only Sony's DNAS server could
+    produce the input: impossible now, on every console.
+  * Either way we never need the per-console data from an official authentication: the decode path uses no network
+    and no stored authentication data [checked], so case (a) would work on consoles that never went online.
+
+**3. Format limits [checked].**
+* Plain list (after decode, in patch_buff+0x10000): `"M-HUNTER"`, u32 count, then entries {u32 key, u32 RAM address,
+  u32 length (bit 31: a u32 source address follows instead of the bytes; copy from RAM), bytes, padded to 4}. At most
+  0x10000 bytes plain; the encrypted form must also fit the 0x10000 card slot (the personalize overhead is unknown,
+  small [guess]). The 0x20040 buffer is two 0x10000 halves + the tail; only half 0 and the tail are saved.
+* Overlays loaded later: yes, through the per-load `PatchExecCS` above (the lobby is re-patched at every load).
+* Our patch: the DNAS skip (at most the 0x574-byte range of ms_network_bb_authentication, or a few bytes for a
+  minimal `r = 1`) + the 720-byte internet_browser (code + settings) + 12-byte entry headers: under 2 KB, far inside
+  the limit. One personal blob per player (the server, login and password are inside, as with ps2_patch.py).
+
+**4. Verdict: possible with a condition, not proven.** Possible if `sceDNAS2InstPersonalizeData_nohdd` accepts plain
+data (case a); not possible if it needs the server's container (case b). The code cannot settle it (Sony's code is
+obfuscated); one run on a PS2 settles it. Even in case (a) the result is per console (moving the card to another PS2
+loses it), and the player needs a way to run homebrew once (FreeMcBoot, uLaunchELF, OPL, or similar).
+
+Installer steps for case (a) (nothing built). Simplest is to let the game do the work itself:
+1. A small ELF, started once from homebrew with the MH1 disc in the drive, loads SLPM_654.95 from the disc (no Capcom
+   bytes shipped) and applies a few RAM patches before jumping to its entry point.
+2. Install mode: at title (after the auto-load), it writes our plain `"M-HUNTER"` list into patch_buff (built by
+   ps2_patch.py from the same rebuild: ms01 entry with key 0, internet_browser entry with the lobby key), sets the tail
+   (version = the disc's own `MediaVersion` string, so nothing reported to a server changes), and starts
+   ms_net_patch_set at its state 0x14 (load dnas_ins -> `InetDNAS2PersonalEncode` -> tail -> `SaveGameFileNet2` ->
+   decode -> `PatchExecCS`). If the decode gives back `"M-HUNTER"` the game itself has proven case (a).
+3. The player then removes the homebrew and boots the plain disc: auto-load decodes and applies the patch, the network
+   menu skips DNAS and connects to our server. A save on another PS2 erases it; running the installer again restores it.
+Test it first in PCSX2 (it runs the real DNAS280.IMG; the console IDs come from its BIOS dump), then on a PS2.
+
+**Fallback (case b, or players who keep homebrew anyway): a memory-card launcher ELF** that boots the original disc
+and patches in RAM at every start. It can still use the game's own applier, with no hook code of ours: before jumping
+to the entry point it patches main: (1) the ms01 DNAS skip (the bytes ps2_patch.py builds); (2) `PatchLoadinDNAS_Main`
+to copy our plain list (kept in main's dead `ms_net_patch_set` body, 6920 bytes, never reached because our servers
+never send a patch; patch_buff itself is bss (past the ELF's file size) and would be cleared by the start-up code) into patch_buff+0x10000 and set
+the tail length; (3) `mc_copy_patch` to do nothing in both directions, so the card's slot is left alone and is not
+overwritten with our data. The game's `PatchExecCS` then applies the lobby entry at every lobby load [guess for the
+whole design: addresses checked, the run is not]. This needs homebrew at every boot, as OPL with a ps2_patch.py image
+does; for players who already use OPL the patched image (3.6) stays the simpler route.
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online
