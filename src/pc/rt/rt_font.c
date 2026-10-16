@@ -603,6 +603,23 @@ const char *font_sp_ck(const char *s, s16 *code, int mode)
         } else if ((s16)mode == 0)
             *code = (s16)(n | 0x200);
         return s;
+    case 'B':       /* G only (font_sp_ck 0x12B9C0): ~Bnn, a pad button icon in the text (0x400|nn); one
+                     * full-width glyph wide (strlen_sp: the 4 bytes count as 2) */
+        if ((s16)mode == 1) {
+            *code = -2;
+            s += 2;
+            break;
+        }
+        if ((s16)mode != 0)
+            break;
+        s++;
+        if (*s >= '0' && *s <= '9') {
+            n = *s++ - '0';
+            if (*s >= '0' && *s <= '9')
+                n = n * 10 + (*s++ - '0');
+        }
+        *code = (s16)(n | 0x400);
+        return s;
     }
     return s;
 }
@@ -640,6 +657,11 @@ void font_print_sp(const char *fmt, ...)
                 font_work_set((u8 *)w, (s16)(code & 0xFF));
                 strncat(w, p, 0x7F - strlen(w));
                 p = w;
+            } else if ((code & 0xFF00) == 0x400) {
+                /* G's ~Bnn: the original queues a button sprite at the pen (func_0012B8F0, drawn with the
+                 * font stack) and moves the pen one glyph on. Not ported: the PC leaves the gap only. */
+                x += size_w;
+                flfntLocate(x, y);
             }
             continue;
         }

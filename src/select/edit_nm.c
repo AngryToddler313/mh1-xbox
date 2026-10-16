@@ -3,6 +3,23 @@
 #include "select.h"
 #define PSWV(i) (*(volatile u16 *)&Psw[i])
 
+#ifdef VERSION_MHG
+/* G keeps the edit screen's messages in a table of string pointers in sub_main (D_5284A0, 4 bytes each;
+ * MH1 has them as select.bin literals). Its words are pointer words: the PC loader has already turned
+ * them into host pointers (config/mhg/pc_ptrs.txt), so they are read with rt_ptr_at. */
+const void *rt_ptr_at(u32 va);
+s16 mc_mes_disp(int, s16, int);
+int strlen_sp();
+void font_print_sp();
+void flfntLocate();
+static const char *g_msg(int i) {
+    const char *p = rt_ptr_at(0x5284A0u + 4u * (u32)i);
+    return p ? p : "";
+}
+/* x that centres s at 10 px per byte (G: strlen for font_print_ex, strlen_sp for font_print_sp) */
+#define G_CX(n) ((s16)((0x280 - (int)(n) * 10) / 2))
+#endif
+
 void char_make_init(void) {
     EDIT_W *e = &edit_w;
     s16 i;
@@ -262,6 +279,26 @@ void user_load(void *unused, PLW *pl, s16 n) {
 }
 
 void disp_mc(u8 *w, s16 flag) {
+#ifdef VERSION_MHG
+    /* G 0x545B00: G's strings, centred; after the save: 0 no save, 1 saved (welcome), 2 carried over */
+    const char *m;
+    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
+    flfntSetSize(0x14, 0x14);
+    if (flag == 0) {
+        m = g_msg(0x10);
+        font_print_ex(G_CX(strlen(m)), 0x168, 0, m);
+        m = g_msg(0x11);
+        font_print_ex(G_CX(strlen(m)), 0x180, 2, m);
+        return;
+    }
+    switch (w[0x3B]) {
+    case 0: m = g_msg(0x13); break;
+    case 1: m = g_msg(0x12); break;
+    case 2: m = g_msg(0x15); break;
+    default: return;        /* (G reads an unset register here) */
+    }
+    font_print_ex(G_CX(strlen(m)), 0x168, 0, m);
+#else
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
     flfntSetSize(0x14, 0x14);
     if (flag == 0) {
@@ -274,6 +311,7 @@ void disp_mc(u8 *w, s16 flag) {
         return;
     }
     font_print_ex(0x96, 0x168, 0, lit_504_0053B8A0);
+#endif
 }
 
 int cmn_mongon_look_sub(s8 *str, s8 *tbl);
@@ -419,6 +457,52 @@ void disp_edinfo(u8 *w) {
 }
 
 void disp_check(u8 *w, s16 mode) {
+#ifdef VERSION_MHG
+    /* G 0x5456D0: G's strings centred, mode 4 (carry over) skips the name check, mode 5 shows a card
+     * message, the yes / no row moves down to 0x184 under a message */
+    u8 f = 0;
+    const char *m = "";
+    s16 y;
+    flfntSetSize(0x14, 0x14);
+    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
+    if (mode != 4) {
+        if (name_str_check(w) == 0) {
+            f = 1;
+        } else if (NG_name_chk(w + 0x24) == 0) {
+            f = 2;
+        }
+    }
+    if (f != 0 && mode == 0) {
+        font_print_ex(f == 1 ? 0xC8 : 0xD2, 0x168, 0, g_msg(f));
+        m = g_msg(3);
+        flfntLocate(G_CX(strlen_sp(m)), 0x180);
+        font_print_sp(lit_319_0053B628, m);
+        return;
+    }
+    switch (mode) {
+    case 1: m = g_msg(5); break;
+    case 2: m = g_msg(6); break;
+    case 3: m = g_msg(7); break;
+    case 4: m = g_msg(0x1C); break;
+    case 5: mc_mes_disp(0x140, 0x160, 0x30); break;
+    default: m = g_msg(4); break;
+    }
+    if (mode != 5) {
+        font_print_ex(G_CX(strlen(m)), 0x168, 0, m);
+        y = 0x184;
+    } else {
+        y = 0x180;
+    }
+    if (w[3] == 0) {
+        Sel_csr_disp(0x10E, y - 2, 0x64, 0x18, 0xFF20C0C0);
+        font_print_ex(0xFA, y, 5, g_msg(8));
+        font_print_ex(0x15E, y, 0, g_msg(9));
+    } else {
+        Sel_csr_disp(0x17C, y - 2, 0x64, 0x18, 0xFF20C0C0);
+        font_print_ex(0xFA, y, 0, g_msg(10));
+        font_print_ex(0x15E, y, 5, g_msg(11));
+    }
+#else
     u8 f;
     flfntSetSize(0x14, 0x14);
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
@@ -462,9 +546,27 @@ void disp_check(u8 *w, s16 mode) {
             font_print_ex(0x15E, 0x180, 5, lit_471_0053B7A8);
         }
     }
+#endif
 }
 
 void disp_save_info(void *unused, u16 mode) {
+#ifdef VERSION_MHG
+    /* G 0x5459E0 */
+    const char *m;
+    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
+    flfntSetSize(0x14, 0x14);
+    if (mode == 0) {
+        font_print_ex(0xA0, 0x168, 0, g_msg(12));
+        font_print_ex(0xA0, 0x180, 0, g_msg(13));
+        return;
+    }
+    m = g_msg(14);
+    flfntLocate(G_CX(strlen_sp(m)), 0x168);
+    font_print_sp(lit_319_0053B628, m);
+    m = g_msg(15);
+    flfntLocate(G_CX(strlen_sp(m)), 0x180);
+    font_print_sp(lit_319_0053B628, m);
+#else
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
     flfntSetSize(0x14, 0x14);
     if (mode == 0) {
@@ -476,6 +578,7 @@ void disp_save_info(void *unused, u16 mode) {
         Disp_button(1.0f, 0, 0xCE, 0x17E, 8);
         Disp_button(1.0f, 1, 0x132, 0x17E, 8);
     }
+#endif
 }
 
 void ed_view_set(PLW *pl, s16 mode, s16 flag) {
@@ -1203,13 +1306,9 @@ void Edit_task(STASK *t) {
  * (McOperationSet 0xB) and offers it; steps 1-11 are MH1's steps 0-10 (G step = MH1 step + 1)
  * with G's changes: roll_move turns all hunters together, the help line comes from a sub_main
  * table, and the exit to Game_task also clears system_w 0x43-0x45. */
-const u8 *rt_addr(u32 va, unsigned int n);
 void rt_log_standin(const char *name);
 void em_create_model();
 void yure_move();
-int strlen_sp();
-void font_print_sp();
-void flfntLocate();
 void font_set_palette();
 
 /* roll_move (G 0x5466A0): L1/R1 turn the preview; all three hunters share hunter 0's angle */
@@ -1225,15 +1324,12 @@ static void roll_move_g(void) {
 }
 
 /* G 0x545520 (MH1 disp_edinfo): the two help lines of the edit menu item, from G's table at sub_main
- * 0x528440 (8 bytes per item: two string pointers), centred, printed with ~ codes (no button icons) */
+ * 0x528440 (8 bytes per item: two string pointers), centred, printed with ~ codes (no button icons).
+ * The table's words are pointer words: the PC loader has already turned them into host pointers
+ * (config/mhg/pc_ptrs.txt), so they are read with rt_ptr_at, not followed as PS2 addresses. */
 static const char *g_edit_msg(int item, int line) {
-    const u8 *p = rt_addr(0x528440u + 8u * (u32)item + 4u * (u32)line, 4);
-    u32 va;
-    if (!p)
-        return "";
-    va = p[0] | p[1] << 8 | p[2] << 16 | (u32)p[3] << 24;
-    p = va ? rt_addr(va, 1) : 0;
-    return p ? (const char *)p : "";
+    const char *p = rt_ptr_at(0x528440u + 8u * (u32)item + 4u * (u32)line);
+    return p ? p : "";
 }
 
 static void disp_edinfo_g(u8 *w) {

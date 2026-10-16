@@ -446,7 +446,7 @@ static size_t rel_lower_in(const uint32_t *rel32, size_t nrel32, uint32_t va)
 static size_t rel_lower(uint32_t va) { return rel_lower_in(rel32, nrel32, va); }
 
 /* after rt_mem_trim: one bit per word of main_img and of game.bin */
-static uint32_t *ptr_bits_main, *ptr_bits_ovl;
+static uint32_t *ptr_bits_main, *ptr_bits_ovl, *ptr_bits_sub;    /* sub: G's sub_main.bin */
 
 int rt_is_pointer(uint32_t va)
 {
@@ -456,6 +456,8 @@ int rt_is_pointer(uint32_t va)
             return ptr_bits_main[(va - main_va) >> 7] >> ((va - main_va) >> 2 & 31) & 1;
         if (ptr_bits_ovl && va >= OVL_GAME_VRAM && va < OVL_GAME_VRAM + ovl_n && !(va & 3))
             return ptr_bits_ovl[(va - OVL_GAME_VRAM) >> 7] >> ((va - OVL_GAME_VRAM) >> 2 & 31) & 1;
+        if (ptr_bits_sub && va >= sub_va && va < sub_va + sub_n && !(va & 3))
+            return ptr_bits_sub[(va - sub_va) >> 7] >> ((va - sub_va) >> 2 & 31) & 1;
         return 0;
     }
     k = rel_lower(va);
@@ -707,6 +709,7 @@ void rt_mem_trim(void)
         const char *o = rt_ms_push("overlay data copies + relocations");
         ptr_bits_main = calloc((main_n >> 7) + 1, 4);
         ptr_bits_ovl = calloc((ovl_n >> 7) + 1, 4);
+        ptr_bits_sub = sub_n ? calloc((sub_n >> 7) + 1, 4) : NULL;
         rt_ms_pop(o);
         for (k = 0; k < nrel32; k++) {
             uint32_t va = rel32[k];
@@ -714,6 +717,8 @@ void rt_mem_trim(void)
                 ptr_bits_main[(va - main_va) >> 7] |= 1u << ((va - main_va) >> 2 & 31);
             else if (ptr_bits_ovl && va >= OVL_GAME_VRAM && va < OVL_GAME_VRAM + ovl_n)
                 ptr_bits_ovl[(va - OVL_GAME_VRAM) >> 7] |= 1u << ((va - OVL_GAME_VRAM) >> 2 & 31);
+            else if (ptr_bits_sub && va >= sub_va && va < sub_va + sub_n)  /* G's sub_main words (were lost here) */
+                ptr_bits_sub[(va - sub_va) >> 7] |= 1u << ((va - sub_va) >> 2 & 31);
         }
     }
     free(rel32); rel32 = NULL; nrel32 = 0;
