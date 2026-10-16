@@ -368,9 +368,11 @@ class Client(socketserver.BaseRequestHandler):
         2: dict(count=0x6401, name=0x6402, join=0x6403, status=0x6404, explain=0x640D, entry=0x6406, exit=0x6501),
     }
     # (name, status) per piece; status 3 = open. Lobbies are numbered across all plazas.
+    # The client prints a plaza / lobby name straight after the server table's name ("%s%s", the plaza list "%12s%s"):
+    # the names start with a full-width space so the two do not run together ("mh1-serverTest Plaza 1" before).
     TABLE = {
-        0: [("Test Plaza 1", 3), ("Test Plaza 2", 3)],
-        1: [("Test Lobby 1", 3), ("Test Lobby 2", 3), ("Test Lobby 3", 3), ("Test Lobby 4", 3)],
+        0: [("\u3000Test Plaza 1", 3), ("\u3000Test Plaza 2", 3)],
+        1: [("\u3000Test Lobby 1", 3), ("\u3000Test Lobby 2", 3), ("\u3000Test Lobby 3", 3), ("\u3000Test Lobby 4", 3)],
         2: [],
     }
 
@@ -409,6 +411,14 @@ class Client(socketserver.BaseRequestHandler):
         i = struct.unpack(">H", p[:2])[0]
         if k == 2:
             self.send(ANS, c["join"], struct.pack(">HHH", i, len(self.room(i).members), self.room(i).max), seq=seq)
+        elif k == 1:
+            # lobby: (all hunters in the lobby, those of them in its rooms). The town list (plaza_enterLobbyTrans,
+            # lobby 0x599F60) shows "<total - in rooms>人 <in rooms>人" through a table of single full-width digits
+            # (lobby 0x64E350, indexed without a bound): each number must stay 0..9. It was (count, 100): index 100
+            # past the table, "(null)人" on the PS2. [guess] the second number means hunters gathered for a quest.
+            busy = min(sum(len(r.members) for r in rooms_of(i)), 9)
+            total = busy + min(max(REG.count(k, i) - busy, 0), 9)
+            self.send(ANS, c["join"], struct.pack(">HHH", i, total, busy), seq=seq)
         else:
             self.send(ANS, c["join"], struct.pack(">HHH", i, REG.count(k, i), 100), seq=seq)
 

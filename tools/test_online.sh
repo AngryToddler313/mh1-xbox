@@ -24,7 +24,7 @@ done
 RT_NET_PORT=$PORT timeout 60 $BIN disc/mh1 --nettest full > $OUT/client.out 2>&1
 RC=$?
 [ $RC -eq 0 ] || { tail -5 $OUT/client.out; fail "the client stopped early (rc $RC)"; }
-for s in "tcp connected" "login ok" "top information: level" "plazas: 2" 'plaza 1 "Test Plaza 1" status 3' \
+for s in "tcp connected" "login ok" "top information: level" "plazas: 2" 'plaza 1 ".*Test Plaza 1" status 3' \
          "lobbies: 4" 'member 0: id "0000' 'stopped in phase "done"'; do
     grep -q "$s" $OUT/client.out || fail "missing: $s"
 done

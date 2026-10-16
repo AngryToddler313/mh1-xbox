@@ -672,7 +672,10 @@ and the town, and meets a PC client there (each sees the other, chat both ways).
   ID -> the server makes a new hunter id. Both screens are the game's own; nothing is sent beyond the lobby protocol.
 * **Plaza**: "mh1-serverTest Plaza 1" (the server table's name and the plaza name run together; the PC shows "Local
   test serverTest Plaza 1" the same way: cosmetic, both clients). 街に入る lists "mh1-serverTest Lobby 1-4", 0 people;
-  the quest column shows "(null)人" **[checked on screen, cause not looked into: a field our server leaves empty]**.
+  the quest column shows "(null)人" **[checked on screen]**. Both were our server's data, fixed 17 Oct (agent B): the
+  client prints the names as "%s%s" (our names now start with a full-width space), and the lobby list shows the
+  lobby join-user answer's two numbers (6303: all, in rooms) through a table of single digits: the server sent
+  (count, 100), index 100 past the table. Now each 0..9 (docs/agents/agent-B.md "Small fixes round").
 * **Town**: lobby 1 -> the town square (stage 0x4C), the hunter at the fountain; the server logs the PS2's binary
   records (types 1, 2, 3, 16) in lobby 1.
 * **PS2 <-> PC**: an ONLINE=1 PC client (headless, its own fresh account and card, `RT_NET_HOST` = the LAN address)

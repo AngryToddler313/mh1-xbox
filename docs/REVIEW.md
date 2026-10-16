@@ -730,3 +730,19 @@ obvious workarounds.
   on-screen keyboard) and draws the panel at scale 2 with the controller's keys; an F8 freeze is unchanged.
 - **Changed:** gfx_nv2a.c gfx_execute_clay checks gfx_rec_clay once at the top for both paths (execute_cpu did it for the
   CPU path, the skinned path after its own check): same behaviour, one place.
+
+## Small fixes (agent B, 17 Oct 2026)
+- **Changed:** run_xemu.sh / run_pcsx2.sh stopped the emulator only on a normal end; **now** tools/emu_lib.sh (new) stops
+  the emulator's whole process tree and its Xvfb on every exit, also when the script is killed (TERM/INT/HUP) or fails.
+  **Dropped:** the `pgrep -x xemu` / `pgrep -x AppRun` guards (never matched xemu; AppRun also matched PCSX2) for
+  xemu_running (pgrep -f on the AppImage file name); test_three_way's and test_ps2_online's SLP (they killed run_pcsx2's
+  sleep child to end it; they now kill run_pcsx2.sh itself). **To revert:** the commit "Emulator scripts stop xemu/PCSX2".
+- **Dropped:** for G, MH1's disp_mc / disp_check / disp_save_info strings (select.bin literal addresses, garbage in G);
+  **now** G's code (sub_main table D_5284A0, centred). g_edit_msg's rt_addr of the table words (they are host pointers)
+  for rt_ptr_at. **Why:** garbage line after NEW GAME's save, empty edit help lines. **To revert:** the commit "G:
+  edit/continue screen messages".
+- **Dropped:** quest_back for Local_main's -1 (the bed's "quit the game" restarted the last quest); **now** village_quit:
+  the game menu (Select_task) as Game_task's case -1 does. quest_back stays for RT_NO_VILLAGE and the online town.
+  **To revert:** the commit "leaving the village without a quest".
+- **Changed:** our server's plaza / lobby names start with a full-width space; the lobby join counts are (all, in rooms)
+  clamped to 0..9 instead of (count, 100). tools/test_online.sh's plaza-name grep follows.

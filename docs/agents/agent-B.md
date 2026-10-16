@@ -1399,3 +1399,42 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   own screen (no position is sent until it walks), so the test walks them with pad input instead. The PC's chat window
   closes a few seconds after the last line: the test takes the PC's own shot just after the PS2's line arrived there.
   Never edit a shell script while it runs (sh reads it as it goes; it broke one run).
+
+## Small fixes round (17 Oct 2026)
+1. **Emulators left running** (COORDINATOR queue 0c). Cause: xemu is an AppImage; its process is named `AppRun` (the
+   FUSE helper detaches, named `xemu-0.8.13`), so `pgrep -x xemu` never matched; run_xemu.sh's cleanup was an EXIT trap
+   only, which a SIGTERM to the script skips, and `sleep` in the foreground delays any trap. New tools/emu_lib.sh
+   (emu_stop: TERM to the whole tree, KILL after 5 s; emu_traps: EXIT + TERM/INT/HUP, then every leftover child;
+   emu_sleep: interruptible; xemu_running / pcsx2_running: `pgrep -f '[x]emu-0.8.136-x86_64.AppImage|[.]mount_[x]emu-0'`,
+   the bracket keeps it from matching a command line that quotes it). Used by run_xemu.sh, run_pcsx2.sh,
+   test_three_way.sh, xemu_online_test.sh, xemu_loader_test.sh, xemu_pick_test.sh, test_ps2_online.sh. Callers start
+   run_xemu.sh with `& wait $!` so a kill acts at once. Verified (under the xemu lock): kill run_xemu.sh's PID 15 s in ->
+   exit 143 at once, no xemu / FUSE helper / Xvfb left; same for a killed caller and for run_pcsx2.sh.
+2. **G garbage line after NEW GAME's save** ('慰･$d' at 140,360). Not disp_edinfo_g (agent A's guess): MH1's disp_mc
+   (steps 7-9) printed MH1 select.bin literal addresses. G's disp_mc 0x545B00 / disp_check 0x5456D0 / disp_save_info
+   0x5459E0 read a string-pointer table in sub_main (D_5284A0) and centre with strlen; written from G's asm in the
+   VERSION_MHG branches of edit_nm.c. After the save G says "モンスターハンターの世界へようこそ！" there [verified: font
+   trace + shots]. Found on the way: disp_edinfo_g's help lines were always empty: the table words are already host
+   pointers (pc_ptrs), and rt_ptr_at returned NULL for all of sub_main after rt_mem_trim (its bitmap covered main and the
+   overlay only; fixed in rt_mem.c). G's font has a `~Bnn` code (a button icon inline, font_sp_ck 0x12B9C0 code 0x400|nn,
+   queued by func_0012B8F0 and drawn with the font stack): parsed now, the PC leaves a glyph-wide gap; drawing the icon is
+   not done. CONTINUE's character-select lines are G's now too.
+3. **Leaving the village another way** (Local_main -1: the bed's no-save -> quit -> quit without saving). Reproduced on
+   MH1 and G PC: the viewer restarted quest 10 (quest_back). Game_task's case -1 (main f_game.c) runs all_reset,
+   Load_overlay(1,1), Select_Tsk_Execute (Select_task step 1 = the game menu). Now rt_boot_to_select (rt_boot.c) +
+   village_quit (viewer.c); the boot tick loop runs the menu. Verified: both versions show the GAME MENU; MH1 CONTINUE
+   from there back into the village. Script: RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1
+   RT_LB_WARP="30,11225,14400,0;230,2259,745,4001", input
+   `idle*60,square*2,idle*200,square*2,idle*250,dright*2,idle*30,circle*2,idle*120,dleft*2,idle*30,circle*2,idle*120,dright*2,idle*30,circle*2,idle*700`
+   with a card holding a save.
+4. **Online town list** (network.md 3.6). Both from our server's data. (a) The lobby list prints
+   `"%s人        %s人"` with two entries of a table of single full-width digits (lobby 0x64E350, 0..9 then other words, no
+   bound check in the original) indexed by ja - jb and jb of the lobby's join-user answer (6303: id, ja, jb). The server
+   sent (count, 100): index 100, "(null)" on the PS2. Now (all hunters in the lobby, those in its rooms), each 0..9.
+   The PS2's list (PCSX2, test_ps2_online.sh --launcher with STEPSHOTS=1, step_020) titles the columns 街中 (in town) and
+   クエスト (quest) and shows "0人 / 0人"; its help line says a town holds at most 8 [checked on screen]. That rooms count
+   as "quest" is still a [guess]. The plaza header there reads "mh1-server　Test Plaza 1", "参加者： 0人"; on the PC
+   that header's number is blank (not looked into). The lobby names are long enough to touch the column icons. (b) Names: the client prints server name + plaza / lobby
+   name with "%s%s" ("%12s%s" in the plaza list): our names now start with a full-width space. The PC's port of
+   plaza_enterLobbyTrans has `% 10` on both indexes (not in the original; kept as a guard). Also seen: the plaza
+   header "参加者：　　人" shows no number on the PC (not looked into).
