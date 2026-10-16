@@ -122,6 +122,16 @@ DMA-only fix did not help on hardware; the codec build awaits the owner's test (
 tools/xbox_serve.py --xbe build/xbox/f_test.xbe; the PC was restarted 13 Oct, so restart the server).
 Merge F after that test (it must not hang at audio open; RT_AC97_NOCODEC=1 disables the codec part). Still pending: new loader install (tools/xbox_upload.sh
 --loader), load: timing lines from the next returned log.
+Queue (owner, 15 Oct evening; start when a slot frees, two agents max):
+1. G Xbox bugs from the owner's play (docs/RELEASE_G.md GB5): debug-menu skip leaves render state
+   (half-screen tint triangle, depth order), village music at the title, no villagers on the normal
+   village entry, sky frames in the wake-up cutscene. Reproduce on PC G first.
+2. Bug reporter on the Xbox (owner asked): port src/pc/pick.c (PC-only today) to the Xbox. Freeze with
+   a pad combo that does not clash with Back+Start (quit), Back+R3 (debug), Back+L3 (settings); pointer
+   from the right stick / USB mouse, marks with A / click, note via USB keyboard or on-screen keyboard;
+   save the report to E: and POST it to the laptop through the loader server (tools/xbox_serve.py) into
+   build/xbox/reports/. Step toward the USB keyboard + mouse plan (docs/xbox.md, RetroKM composite).
+Laptop is now 192.168.1.105 (DHCP); the owner re-ran tools/xbox_upload.sh --loader 15 Oct.
 Known unfixed: "quit game?" yes after the bed save drops to the Forest camp; bed sleep jingle
 has no sample (village sound pack not loaded).
 Full check before a push: `tools/full_check.sh` (rebuild 5 OK, PC build, every tools/test_*.sh,
