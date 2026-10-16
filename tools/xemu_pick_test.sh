@@ -16,7 +16,8 @@
 # Screens (the frozen frame with the panel and the keyboard), serial logs and server log: build/xbox/pick_xemu/.
 # Needs: the nv2a build (tools/build_xbox.py --gfx nv2a [--version mhg]), disc/mh1 (or disc/mhg), the owner's
 # mcpx.bin / bios.bin (XBOX_FILES_SRC, default the main checkout's xbox_files; read only). ~6 minutes.
-# Run it alone: xemu is uncapped and big; it waits while another xemu runs.
+# Run it alone: xemu is uncapped and big; it waits while another xemu runs. With other agents about, wrap it:
+#   flock "/home/james/claude projects/MH XBOX/xemu.lock" tools/xemu_pick_test.sh
 set -e
 cd "$(dirname "$0")/.."
 VER=mh1; [ "$1" = "--version" ] && VER=$2

@@ -1335,8 +1335,12 @@ Owner request: the PC's F8 bug reporter (docs/pc.md "Bug reporter") on the Xbox.
 
 **Tested** (16 Oct 2026): tools/test_pick.sh part 5 (PC, the same pad code: RT_PICK_PAD=1 turns on the Back + Black combo
 there; a script freezes, clicks, drags a box, types "hi" on the on-screen keyboard and saves; marks at the expected
-pixels); tools/xemu_pick_test.sh (MH1 nv2a in xemu: see the result line below); MH1 and G nv2a builds and the loader
-compile and link. Not tested: a real Xbox, a USB keyboard / mouse, the online build's direct send.
+pixels); tools/xemu_pick_test.sh in xemu, MH1 and G nv2a (all checks pass for both): Back + Black at tick ~400 of
+quest 10, click + box + "hi" by script; the report on E: has 14 (MH1) / 15 (G) objects of the kinds stage, sky, hud,
+monster, hunter, weapon, effect, the id buffer is flat (the first try showed texture noise: the id override was set after
+the fog constants were already copied into the push buffer); the loader POSTed it, the laptop's copy is byte-identical,
+E: got sent.txt. Frozen-frame screenshots with the panel and the on-screen keyboard: build/xbox/pick_xemu/run1_*.png
+(not committed). Not tested: a real Xbox, a USB keyboard / mouse, the online build's direct send.
 
 ## Later idea: 5.1 surround (owner, 13 Oct 2026; not started)
 
