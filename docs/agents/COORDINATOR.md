@@ -123,29 +123,29 @@ tools/xbox_serve.py --xbe build/xbox/f_test.xbe; the PC was restarted 13 Oct, so
 Merge F after that test (it must not hang at audio open; RT_AC97_NOCODEC=1 disables the codec part). Still pending: new loader install (tools/xbox_upload.sh
 --loader), load: timing lines from the next returned log.
 Queue (owner, 15 Oct evening; start when a slot frees, two agents max):
-0. One loader per game (owner asked): today only E:\Games\MH1\default.xbe is the loader and it
+0. DONE 16 Oct (agent D). One loader per game (owner asked): today only E:\Games\MH1\default.xbe is the loader and it
    updates whichever game xbox_serve.py serves. Wanted: launching G updates G, launching Monster Hunter
    updates MH1. Loader learns its own folder (MH1 / MHG) and asks /version?game=..., /<game>.xbe;
    E:\Games\MHG\default.xbe becomes the loader, G's game moves to mhg.xbe (the data install must not
    overwrite the loader: leave default.xbe out of G's manifest); a game's exit returns to its own loader;
    xbox_serve.py serves MH1 and G builds at once (dist/xbox/MH1, dist/xbox/MHG). Delivery: one
    tools/xbox_upload.sh --loader run (owner types the FTP login). Test in xemu (alone) first.
-0b. Three-way picture (owner asked): PS2 (PCSX2, tools/test_ps2_online.sh) + Xbox (xemu online,
+0b. DONE 16 Oct (tools/test_three_way.sh). Three-way picture (owner asked): PS2 (PCSX2, tools/test_ps2_online.sh) + Xbox (xemu online,
    tools/xemu_online_test.sh) + PC client in one town on one mh1-server on the LAN address; one screenshot
    of each plus a combined one. Run with NOTHING else (no agent, no full check): both emulators at once.
-0c. Small fix: tools/test_three_way.sh (and maybe other xemu callers) leaves the xemu AppImage running: it kills
+0c. DONE 16 Oct (agent B, tools/emu_lib.sh). Was: tools/test_three_way.sh (and maybe other xemu callers) leaves the xemu AppImage running: it kills
    run_xemu.sh's PID, not xemu itself (an orphan ran 1 h at 400% CPU on 16 Oct, stopped by the coordinator).
    Also `pgrep -x xemu` does not match the AppImage's process name, so the "xemu runs alone" guard misses it.
-1. G Xbox bugs from the owner's play (docs/RELEASE_G.md GB5): debug-menu skip leaves render state
+1. DONE 16 Oct (agent A: 7 fixed, 2 not reproduced). G Xbox bugs from the owner's play (docs/RELEASE_G.md GB5): debug-menu skip leaves render state
    (half-screen tint triangle, depth order), village music at the title, no villagers on the normal
    village entry, sky frames in the wake-up cutscene. Reproduce on PC G first.
-2. Bug reporter on the Xbox (owner asked): port src/pc/pick.c (PC-only today) to the Xbox. Freeze with
+2. DONE 16 Oct (agent E: Back+Black). Bug reporter on the Xbox (owner asked): port src/pc/pick.c (PC-only today) to the Xbox. Freeze with
    a pad combo that does not clash with Back+Start (quit), Back+R3 (debug), Back+L3 (settings); pointer
    from the right stick / USB mouse, marks with A / click, note via USB keyboard or on-screen keyboard;
    save the report to E: and POST it to the laptop through the loader server (tools/xbox_serve.py) into
    build/xbox/reports/. Step toward the USB keyboard + mouse plan (docs/xbox.md, RetroKM composite).
 Laptop is now 192.168.1.105 (DHCP); the owner re-ran tools/xbox_upload.sh --loader 15 Oct.
-Known unfixed: "quit game?" yes after the bed save drops to the Forest camp; bed sleep jingle
+Known unfixed (the bed "quit game?" -> Forest camp bug was fixed 16 Oct, agent B): bed sleep jingle
 has no sample (village sound pack not loaded).
 Full check before a push: `tools/full_check.sh` (rebuild 5 OK, PC build, every tools/test_*.sh,
 both Xbox builds) plus `VERSION=mhg tools/rebuild.sh` (7 OK).
