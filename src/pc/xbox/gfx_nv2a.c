@@ -91,6 +91,10 @@ static struct {
     int zwrite, ztest;
     int fog_on;
     float fog_start, fog_end, fog_col[4];
+    /* the states as set, for the bug reporter (gfx_pick_info) and to restore blending after its id pass */
+    int blend_on, bsrc, bdst, bop, afunc, aref, zfunc;
+    int pick_was;                   /* the last frame was an id pass */
+    float pick_col[4];              /* the current draw's id colour (pick pass) */
 } G;
 
 static const float ident[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
@@ -364,8 +368,14 @@ void gfx_begin_frame(uint32_t c)
     G.ring_used = 0;
     push1(NV097_SET_DEPTH_MASK, 1);
     pb_erase_depth_stencil_buffer(0, 0, G.w, G.h);
+    if (gfx_pick_pass)
+        c = 0;                                  /* the id pass: id 0 = nothing */
     pb_fill(0, 0, G.w, G.h, 0xFF000000u | (c & 0xFFFFFF));
     push1(NV097_SET_DEPTH_MASK, G.zwrite);
+    if (gfx_pick_pass || G.pick_was) {          /* blending off for the id pass, back as the game set it after it */
+        push1(NV097_SET_BLEND_ENABLE, G.blend_on && !gfx_pick_pass);
+        G.pick_was = gfx_pick_pass;
+    }
 }
 
 void gfx_end_frame(void)
@@ -606,12 +616,15 @@ void gfx_set_render_state(int state, uintptr_t v)
         memcpy(G.proj, (const float *)v, sizeof G.proj);
         break;
     case GFX_RS_ALPHA_REF:
+        G.aref = (int)(v & 255);
         push1(NV097_SET_ALPHA_REF, (uint32_t)(v & 255));
         break;
     case GFX_RS_ALPHA_FUNC:
+        G.afunc = (int)(v & 7);
         push1(NV097_SET_ALPHA_FUNC, 0x200 + (v & 7));      /* the game's 0-7 are the GL compare enums in order */
         break;
     case GFX_RS_ZFUNC:
+        G.zfunc = (int)v;
         push1(NV097_SET_DEPTH_FUNC, v == 1 ? 0x201 : v == 3 ? 0x203 : v == 7 ? 0x207 : 0x200);
         break;
     case GFX_RS_FADE_COLOR:
@@ -638,7 +651,10 @@ void gfx_set_render_state(int state, uintptr_t v)
         unsigned src = v & 15, dst = (v >> 4) & 15;
         if (src < 6 && dst < 6) {
             uint32_t *p = pb_begin();
-            p = pb_push1(p, NV097_SET_BLEND_ENABLE, 1);
+            G.blend_on = 1;
+            G.bsrc = (int)src;
+            G.bdst = (int)dst;
+            p = pb_push1(p, NV097_SET_BLEND_ENABLE, !gfx_pick_pass);     /* the id pass draws without blending */
             p = pb_push1(p, NV097_SET_BLEND_FUNC_SFACTOR, blend_factor[src]);
             p = pb_push1(p, NV097_SET_BLEND_FUNC_DFACTOR, blend_factor[dst]);
             pb_end(p);
@@ -646,6 +662,7 @@ void gfx_set_render_state(int state, uintptr_t v)
         break;
     }
     case GFX_RS_BLEND_OP:
+        G.bop = (int)v;
         push1(NV097_SET_BLEND_EQUATION, (v & 0xC00) == 0x400 ? NV097_SET_BLEND_EQUATION_V_FUNC_SUBTRACT
               : (v & 0xC00) == 0x800 ? NV097_SET_BLEND_EQUATION_V_FUNC_REVERSE_SUBTRACT
               : NV097_SET_BLEND_EQUATION_V_FUNC_ADD);
@@ -658,7 +675,10 @@ void gfx_set_render_state(int state, uintptr_t v)
         break;
     case GFX_RS_BLEND: {
         uint32_t *p = pb_begin();
-        p = pb_push1(p, NV097_SET_BLEND_ENABLE, v != 0);
+        G.blend_on = v != 0;
+        G.bsrc = GFX_BF_SRC_ALPHA;
+        G.bdst = GFX_BF_INV_SRC_ALPHA;
+        p = pb_push1(p, NV097_SET_BLEND_ENABLE, v != 0 && !gfx_pick_pass);
         if (v) {
             p = pb_push1(p, NV097_SET_BLEND_FUNC_SFACTOR, 0x302);
             p = pb_push1(p, NV097_SET_BLEND_FUNC_DFACTOR, 0x303);
@@ -697,6 +717,13 @@ static void upload_constants(const float *mvp, const float *tex, int fog)
         kb[0] = 1.0f / (G.fog_end - G.fog_start);
         kb[1] = -G.fog_start / (G.fog_end - G.fog_start);
     }
+    if (fog)
+        fade_rgba(fd);
+    if (gfx_pick_pass) {        /* the id pass: the fog path paints the id colour (factor 1), no fade */
+        kb[0] = 0;
+        kb[1] = 1;
+        fd[0] = fd[1] = fd[2] = fd[3] = 1;
+    }
     p = pb_push1(p, NV097_SET_TRANSFORM_CONSTANT_LOAD, 96);
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 16);
     memcpy(p, mvp, 64);
@@ -708,10 +735,8 @@ static void upload_constants(const float *mvp, const float *tex, int fog)
     memcpy(p, kb, 16);
     p += 4;
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
-    memcpy(p, G.fog_col, 16);
+    memcpy(p, gfx_pick_pass ? G.pick_col : G.fog_col, 16);
     p += 4;
-    if (fog)
-        fade_rgba(fd);
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
     memcpy(p, fd, 16);
     p += 4;
@@ -732,6 +757,66 @@ static void tex_matrix(const gfx_texture *t, float *out, const gfx_clay *c)
             out[4 * i + 1] *= (float)t->h;
         }
     }
+}
+
+/* ------------------------------------------------------------ the bug reporter's id pass (pick.c, rt_pick.c)
+ * As gfx_gl.c: while gfx_pick_pass is set, every clay / 2D draw asks gfx_pick_cb for an id and is drawn flat in
+ * that id's colour (red = bits 0-7, green 8-15, blue 16-23). The shaders are not changed: the fog path paints it
+ * (fog colour = the id colour, fog factor 1: rgb = COLOR1.rgb exactly), the alpha stays texture alpha x vertex alpha
+ * so the alpha test still cuts out leaves and fences; blending is off for the pass (gfx_set_render_state does not
+ * switch it on, gfx_begin_frame switches it off and back). The game's z test and write stay. */
+static void pick_fill(gfx_pick_info *gi, int is2d, int nvert, gfx_texture *t)
+{
+    memset(gi, 0, sizeof *gi);
+    gi->is2d = is2d;
+    gi->nvert = nvert;
+    if (t) {
+        gi->tex = (unsigned)(uintptr_t)t;       /* no GL texture names here: the texture's address */
+        gi->tex_w = t->w;
+        gi->tex_h = t->h;
+    }
+    gi->blend_on = G.blend_on;
+    gi->bsrc = G.bsrc;
+    gi->bdst = G.bdst;
+    gi->bop = G.bop;
+    gi->ztest = is2d ? 0 : G.ztest;
+    gi->zwrite = G.zwrite;
+    gi->zfunc = G.zfunc;
+    gi->afunc = G.afunc;
+    gi->aref = (float)G.aref;
+    gi->nearest = G.filter_point;
+    gi->clamp = G.clamp;
+    gi->fog = G.fog_on;
+    gi->fade = G.fade;
+    memcpy(gi->texmat, G.texmat, sizeof gi->texmat);
+    memcpy(gi->world, G.world, sizeof gi->world);
+}
+
+static int pick_use(const gfx_pick_info *gi)
+{
+    uint32_t id;
+    if (!gfx_pick_cb || !(id = gfx_pick_cb(gi)))
+        return 0;
+    G.pick_col[0] = (id & 255) / 255.0f;
+    G.pick_col[1] = ((id >> 8) & 255) / 255.0f;
+    G.pick_col[2] = ((id >> 16) & 255) / 255.0f;
+    G.pick_col[3] = 1;
+    return 1;
+}
+
+/* the view / projection of the id pass, for turning a click back into a world position (pick.c) */
+void gfx_pick_matrices(float view[16], float proj[16])
+{
+    memcpy(view, G.view, sizeof G.view);
+    memcpy(proj, G.proj, sizeof G.proj);
+}
+
+/* pbkit keeps its depth buffer's address to itself (and NV2A may store it tiled / compressed): no depth here, so an
+ * Xbox report has no hit position or nearest bone (pick.c leaves them out) */
+int gfx_read_depth(float *d)
+{
+    (void)d;
+    return -1;
 }
 
 static vtx *ring_alloc(int n)
@@ -944,8 +1029,6 @@ static void execute_cpu(gfx_clay *c)
     const uint16_t *clip_idx = NULL;
     vtx *v;
 
-    if (gfx_rec_clay(c))
-        return;
     if (!c->nvert)
         return;
     mat_mul(mvp, G.world, G.view);          /* row vectors: v * world * view * proj * viewport */
@@ -1069,6 +1152,22 @@ void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, con
 
     if (gfx_rec_2d(w, h, nvert, pos, st, col))
         return;
+    if (gfx_pick_pass) {
+        gfx_pick_info gi;
+        pick_fill(&gi, 1, nvert, t);
+        gi.sw = w;
+        gi.sh = h;
+        gi.bbox2d[0] = gi.bbox2d[1] = 1e30f;
+        gi.bbox2d[2] = gi.bbox2d[3] = -1e30f;
+        for (i = 0; i < nvert; i++) {
+            if (pos[2 * i] < gi.bbox2d[0]) gi.bbox2d[0] = pos[2 * i];
+            if (pos[2 * i] > gi.bbox2d[2]) gi.bbox2d[2] = pos[2 * i];
+            if (pos[2 * i + 1] < gi.bbox2d[1]) gi.bbox2d[1] = pos[2 * i + 1];
+            if (pos[2 * i + 1] > gi.bbox2d[3]) gi.bbox2d[3] = pos[2 * i + 1];
+        }
+        if (!pick_use(&gi))
+            return;
+    }
     if (nvert <= 0 || !(v = ring_alloc(nvert)))
         return;
     for (i = 0; i < nvert; i++) {
@@ -1271,6 +1370,12 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
     k[72] = c->light.lit ? 1.0f : 0.0f;
     for (i = 0; i < 4; i++)                  /* fl state 0x67, as the CPU path multiplies it in */
         k[76 + i] = G.fade == 0xFFFFFFFFu ? 1.0f : ((G.fade >> (i == 3 ? 24 : 16 - 8 * i)) & 255) / 255.0f;
+    if (gfx_pick_pass) {                    /* the id pass (see upload_constants) */
+        k[32] = 0;
+        k[33] = 1;
+        memcpy(k + 36, G.pick_col, 12);
+        k[76] = k[77] = k[78] = k[79] = 1;
+    }
     use_program(1);
     push_consts(92, c91, 1);
     for (b = 0; b < m->nbatch; b++) {
@@ -1304,12 +1409,21 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
 void gfx_execute_clay(gfx_clay *c)
 {
     float mvp[16];
+    if (gfx_rec_clay(c))
+        return;
+    if (gfx_pick_pass) {                    /* the bug reporter's id pass: one id per clay (as gfx_gl.c) */
+        gfx_pick_info gi;
+        pick_fill(&gi, 0, c->nvert, c->nbatch ? (c->batch[0].tex ? c->batch[0].tex : G.tex) : G.tex);
+        gi.noscroll = c->noscroll;
+        gi.clay = c;
+        if (!pick_use(&gi))
+            return;
+    }
     if (!c->skin || !c->posed) {
         execute_cpu(c);
         return;
     }
-    if (gfx_rec_clay(c))                    /* skinned and lit by skin.vs.cg */
-        return;
+    /* skinned and lit by skin.vs.cg */
     mat_mul(mvp, G.world, G.view);
     mat_mul(mvp, mvp, G.proj);
     mat_mul(mvp, mvp, G.viewport);

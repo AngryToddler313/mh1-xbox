@@ -34,11 +34,11 @@ if pgrep -f 'xemu-[0-9.]*-x86_64' >/dev/null; then echo "another xemu is running
 export MH1_HIDDEN=1
 
 . ~/xboxdev/env.sh
-rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj
+rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj src/pc/xbox/xbox_report.obj
 make -C src/pc/xbox/loader -s
 make -C src/pc/xbox/loader -s OUTPUT_DIR=../../../../build/xbox/loader_g XBE_TITLE='Monster\ Hunter\ G'
 make -C src/pc/xbox/testlaunch -s
-rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj      # nothing test-specific is in them, but keep it clean
+rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj src/pc/xbox/xbox_report.obj      # nothing test-specific is in them, but keep it clean
 L1=build/xbox/loader/default.xbe; LG=build/xbox/loader_g/default.xbe
 
 rm -rf "$T"; mkdir -p "$T"

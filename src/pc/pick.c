@@ -1,5 +1,5 @@
 /*
- * pick.c - the in-game bug reporter (PC front-end; not part of the Xbox build).
+ * pick.c - the in-game bug reporter (PC GL front-end and Xbox nv2a build).
  *
  * F8 (or Back/View + Start on a controller) freezes the game: no ticks, audio paused. The frame is grabbed,
  * drawn once more with flat per-draw-call ids (gfx_pick_pass: the draw sites tag what they draw, rt_pick.c),
@@ -11,6 +11,12 @@
  * the picked objects with ids / render states / positions, the game state, build, seed), log_tail.txt (the
  * last 300 log lines), clip.gif (the last ~10 s, 320x240) and input.txt (the pad state of every tick from the
  * start of the session, for a headless replay). Nothing leaves the machine.
+ *
+ * The Xbox (docs/xbox.md "Bug reporter on the Xbox"): Back + Black freezes, the controller drives a pointer (pick_pad),
+ * Y opens an on-screen keyboard for the note, a USB keyboard / mouse work when one is plugged in (kbm_xbox.c). The
+ * report goes to <game folder>\reports\report_<date>\ on E: (no clip.gif: no frame ring on the Xbox's 64 MB, and no
+ * depth: no hit position); the network loader sends it to the laptop at its next start (xbox_report.c), the online
+ * build sends it at once when its network is up.
  */
 #include "pick.h"
 #include "font5x7.h"
@@ -31,9 +37,53 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef XBOX
+#include <windows.h>
+#include "xbox/kbm_xbox.h"
+#include "xbox/xbox_report.h"
+#else
 #include <sys/stat.h>
+#endif
 #ifdef MH1_WIN
 #include <direct.h>
+#endif
+
+/* the report folder's paths: the Xbox kernel wants '\\' (CreateDirectoryA fails on a '/') */
+#ifdef XBOX
+#define PSEP "\\"
+#else
+#define PSEP "/"
+#endif
+
+/* what the Xbox's SDL does not have (no video subsystem, no OS cursor, no text input, no clipboard) */
+#ifdef XBOX
+#define os_text_input(on) ((void)0)
+#define os_cursor(on) ((void)0)
+#define os_rel_mouse() 0
+#define os_set_rel_mouse(on) ((void)0)
+static int path_exists(const char *p) { return GetFileAttributesA(p) != INVALID_FILE_ATTRIBUTES; }
+static void now_text(char *out, int n, int iso)
+{
+    SYSTEMTIME s;
+    GetLocalTime(&s);
+    snprintf(out, (size_t)n, iso ? "%04d-%02d-%02dT%02d:%02d:%02d" : "%04d%02d%02d_%02d%02d%02d",
+             s.wYear, s.wMonth, s.wDay, s.wHour, s.wMinute, s.wSecond);
+}
+#else
+#define os_text_input(on) ((on) ? SDL_StartTextInput() : SDL_StopTextInput())
+#define os_cursor(on) SDL_ShowCursor((on) ? SDL_ENABLE : SDL_DISABLE)
+#define os_rel_mouse() SDL_GetRelativeMouseMode()
+#define os_set_rel_mouse(on) SDL_SetRelativeMouseMode((on) ? SDL_TRUE : SDL_FALSE)
+static int path_exists(const char *p)
+{
+    struct stat st;
+    return stat(p, &st) == 0;
+}
+static void now_text(char *out, int n, int iso)
+{
+    time_t t = time(NULL);
+    strftime(out, (size_t)n, iso ? "%Y-%m-%dT%H:%M:%S" : "%Y%m%d_%H%M%S", localtime(&t));
+}
 #endif
 
 int viewer_write_png(const char *path, int w, int h, const uint8_t *rgb);
@@ -54,6 +104,14 @@ static float view[16], proj[16];
 static gfx_texture *dtex;
 static Uint32 frozen_ms0;
 static int dirty;
+static int padui;                       /* the controller drives a pointer (pick_pad): Xbox; PC when frozen by the controller */
+static float pmx = -1, pmy = -1;        /* that pointer, window pixels */
+static int pad_prev, tick_mask, hide_panel;
+static int osk_open, osk_r, osk_c, osk_shift, osk_rep;  /* the on-screen keyboard (note text with the pad) */
+#ifdef XBOX
+static char toast[96];                  /* "report saved" for a few seconds after the freeze */
+static Uint32 toast_ms;
+#endif
 
 /* ------------------------------------------------------------ CPU drawing into an RGB image */
 static void px(uint8_t *img, int x, int y, int r, int g, int b)
@@ -414,7 +472,7 @@ static void write_text(const char *dir, const char *name, const char *text)
 {
     char p[1000];
     FILE *f;
-    snprintf(p, sizeof p, "%s/%s", dir, name);
+    snprintf(p, sizeof p, "%s" PSEP "%s", dir, name);
     f = fopen(p, "wb");
     if (f) {
         fwrite(text, 1, strlen(text), f);
@@ -433,7 +491,7 @@ static void idbuffer_png(const char *dir)
         img[3 * i + 1] = id ? (uint8_t)(64 + (h >> 16) % 192) : 0;
         img[3 * i + 2] = id ? (uint8_t)(64 + (h >> 8) % 192) : 0;
     }
-    snprintf(p, sizeof p, "%s/idbuffer.png", dir);
+    snprintf(p, sizeof p, "%s" PSEP "idbuffer.png", dir);
     viewer_write_png(p, W, H, img);
     free(img);
 }
@@ -453,6 +511,10 @@ void pick_ring_frame(void)
     Uint32 now;
     int x, y;
     uint8_t *o;
+#ifdef XBOX
+    (void)full; (void)now; (void)x; (void)y; (void)o;
+    return;                             /* no clip on the Xbox: the ring would take 14 MB of its 64 */
+#endif
     if (state != PS_OFF)
         return;
     {
@@ -635,10 +697,9 @@ static char *report_json(const char *name)
     int nticks = 0;
     char *inp = rt_pick_input_script(&nticks);
     char tbuf[64];
-    time_t t = time(NULL);
     unsigned seed = (unsigned)rt_seed_get();
     if (!o) return NULL;
-    strftime(tbuf, sizeof tbuf, "%Y-%m-%dT%H:%M:%S", localtime(&t));
+    now_text(tbuf, sizeof tbuf, 1);
     pick_json_str(nt, sizeof nt, note);
     jappend(&o, &n, &cap, "{\n \"report\": \"%s\",\n \"created\": \"%s\",\n \"build\": \"%s\",\n \"note\": %s,\n", name, tbuf, rt_log_build(), nt);
     jappend(&o, &n, &cap, " \"window\": [%d,%d],\n \"random_seed\": %u,\n", W, H, seed);
@@ -690,7 +751,12 @@ static char *report_json(const char *name)
     }
     g = pick_game_json();
     jappend(&o, &n, &cap, "\n ],\n \"game\": %s,\n", g ? g : "null");
+#ifdef XBOX
+    jappend(&o, &n, &cap, " \"platform\": \"xbox\",\n \"input_used\": \"%s\",\n", kbm_have_keyboard() || kbm_have_mouse() ? "controller + USB keyboard / mouse" : "controller");
+    jappend(&o, &n, &cap, " \"files\": [\"screenshot.png\",\"annotated.png\",\"idbuffer.png\",\"log_tail.txt\",\"input.txt\"]\n}\n");
+#else
     jappend(&o, &n, &cap, " \"files\": [\"screenshot.png\",\"annotated.png\",\"idbuffer.png\",\"log_tail.txt\",\"clip.gif\",\"input.txt\"]\n}\n");
+#endif
     free(g);
     free(inp);
     return o;
@@ -699,13 +765,12 @@ static char *report_json(const char *name)
 static void save_report(void)
 {
     char base[900], dir[1000], stamp[40], name[80];
-    time_t t = time(NULL);
     char *json, *tail, *inp;
     const char *ld = rt_log_dir();
     size_t l;
     uint8_t *ann;
     char p[1100];
-    strftime(stamp, sizeof stamp, "%Y%m%d_%H%M%S", localtime(&t));
+    now_text(stamp, sizeof stamp, 0);
     snprintf(base, sizeof base, "%s", ld);
     l = strlen(base);
     while (l > 1 && (base[l - 1] == '/' || base[l - 1] == '\\'))
@@ -717,25 +782,22 @@ static void save_report(void)
     else
         snprintf(base + l, sizeof base - l, "reports");
     snprintf(name, sizeof name, "report_%s", stamp);
-    snprintf(dir, sizeof dir, "%s/%s", base, name);
+    snprintf(dir, sizeof dir, "%s" PSEP "%s", base, name);
     {
         int k;
         for (k = 2; k < 100; k++) {
-            FILE *x = fopen(dir, "rb");        /* (a directory: fopen fails on it on Windows, succeeds on Linux) */
-            struct stat st;
-            if (x) fclose(x);
-            if (stat(dir, &st) != 0)
+            if (!path_exists(dir))
                 break;
             snprintf(name, sizeof name, "report_%s_%d", stamp, k);
-            snprintf(dir, sizeof dir, "%s/%s", base, name);
+            snprintf(dir, sizeof dir, "%s" PSEP "%s", base, name);
         }
     }
     rt_mkdirs(dir);
-    snprintf(p, sizeof p, "%s/screenshot.png", dir);
+    snprintf(p, sizeof p, "%s" PSEP "screenshot.png", dir);
     viewer_write_png(p, W, H, shot);
     ann = (uint8_t *)malloc((size_t)W * H * 3);
     build_disp(ann, 1);
-    snprintf(p, sizeof p, "%s/annotated.png", dir);
+    snprintf(p, sizeof p, "%s" PSEP "annotated.png", dir);
     viewer_write_png(p, W, H, ann);
     free(ann);
     idbuffer_png(dir);
@@ -748,10 +810,23 @@ static void save_report(void)
     inp = rt_pick_input_script(NULL);
     if (inp) write_text(dir, "input.txt", inp);
     free(inp);
+#ifndef XBOX
     snprintf(p, sizeof p, "%s/clip.gif", dir);
     write_gif(p);
+#endif
     rt_log("bug report saved: %s (note: %d characters, %d objects picked)", rt_log_path(dir), (int)strlen(note), nsel);
     fprintf(stderr, "bug report saved: %s\n", dir);
+#ifdef XBOX
+    snprintf(toast, sizeof toast, "Bug report saved: %.60s", name);
+    toast_ms = SDL_GetTicks();
+    {   /* the online build sends it now when its network is up; else the loader does at its next start */
+        int r = xbox_report_send_now(base);
+        if (r > 0)
+            snprintf(toast, sizeof toast, "Bug report saved and sent to the laptop");
+        rt_log("bug report: %s", r > 0 ? "sent to the laptop" : r == 0 ? "the network loader sends it at its next start"
+                                                                  : "sending failed; the network loader tries again at its next start");
+    }
+#endif
     if (getenv("RT_PICK_EXIT"))         /* headless replays: leave as soon as the report is written */
         exit(0);
 }
@@ -784,17 +859,26 @@ void pick_arm(void)
         return;
     state = PS_ARMED;
     audio_pause(1);
-    rt_log("bug report: game frozen (F8)");
+#ifdef XBOX
+    rt_log("bug report: game frozen (Back + Black)");
+#else
+    rt_log("bug report: game frozen (%s)", padui ? "controller" : "F8");
+#endif
 }
 
 static void end_session(void)
 {
     state = PS_OFF;
     audio_pause(0);
-    SDL_StopTextInput();
-    SDL_ShowCursor(SDL_DISABLE);
+    os_text_input(0);
+    os_cursor(0);
+    tick_mask = pad_prev;               /* the buttons that closed the reporter do not reach the game */
+    osk_open = 0;
+#ifndef XBOX
+    padui = 0;
+#endif
     if (rel_mouse_was)                  /* back to the free camera's captured mouse */
-        SDL_SetRelativeMouseMode(SDL_TRUE);
+        os_set_rel_mouse(1);
     gfx_set_render_state(GFX_RS_ALPHA_FUNC, 4);
     gfx_set_render_state(GFX_RS_BLEND, 1);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
@@ -840,6 +924,21 @@ static void run_script(void)
 
 int pick_frame_hook(void)
 {
+#ifdef XBOX
+    if (state == PS_OFF && toast[0]) {  /* "report saved" over the game for 4 s */
+        if (SDL_GetTicks() - toast_ms > 4000)
+            toast[0] = 0;
+        else {
+            int tw = (int)strlen(toast) * 12;
+            gfx_size(&W, &H);
+            gfx_set_render_state(GFX_RS_TEXTURE, 0);
+            gfx_set_render_state(GFX_RS_BLEND, 1);
+            ui_quad((float)((W - tw) / 2 - 8), (float)(H - 60), (float)((W + tw) / 2 + 8), (float)(H - 32), 0x000000C0u);
+            ui_text((W - tw) / 2, H - 53, toast, 2, 0xFFFF80FFu);
+            ui_flush();
+        }
+    }
+#endif
     switch (state) {
     case PS_ARMED: {
         gfx_size(&W, &H);
@@ -871,13 +970,18 @@ int pick_frame_hook(void)
         free(rgb);
         free(depth);
         depth = (float *)malloc(n * sizeof *depth);
-        gfx_read_depth(depth);
+        if (depth && gfx_read_depth(depth) != 0) {     /* the Xbox backend has no depth read */
+            free(depth);
+            depth = NULL;
+        }
         gfx_pick_matrices(view, proj);
         disp = (uint8_t *)malloc(n * 3);
         nsel = nmarks = 0;
         note[0] = 0;
         rebuild_groups();
         rt_log("bug report: id pass done (%d draw calls tagged)", pick_count());
+        if (getenv("RT_PICK_PAD"))      /* test aid: the RT_PICK_AT freeze takes the pad / the --input script (pick_pad) */
+            manual = padui = 1;
         if (!manual && !getenv("RT_PICK_UI")) {   /* scripted (RT_PICK_*): picks, note, save, resume */
             run_script();
             save_report();
@@ -889,11 +993,19 @@ int pick_frame_hook(void)
         ui_script_start();
         /* the viewer captures the mouse (relative mode, cursor hidden): release it so the
          * player sees the cursor while clicking / dragging */
-        rel_mouse_was = SDL_GetRelativeMouseMode();
-        SDL_SetRelativeMouseMode(SDL_FALSE);
-        SDL_ShowCursor(SDL_ENABLE);
-        SDL_StartTextInput();
+        rel_mouse_was = os_rel_mouse();
+        os_set_rel_mouse(0);
+        os_cursor(1);
+        os_text_input(1);
         frozen_ms0 = SDL_GetTicks();
+        pmx = W / 2.0f;                 /* the pad's pointer starts in the middle */
+        pmy = H / 2.0f;
+        hide_panel = 0;
+        osk_open = drag = 0;
+        pad_prev = 0xFFFF;              /* what is held at the freeze (the combo) is not a new press */
+#ifdef XBOX
+        padui = 1;
+#endif
         dirty = 1;
         pick_frozen_frame();            /* the back buffer holds the id pass: show the frozen frame */
         return 0;
@@ -971,12 +1083,111 @@ static void ui_script_step(void)
     }
 }
 
+static void utf8_pop(char *s)
+{
+    size_t l = strlen(s);
+    if (!l)
+        return;
+    l--;
+    while (l > 0 && ((unsigned char)s[l] & 0xC0) == 0x80)
+        l--;
+    s[l] = 0;
+}
+
+/* ------------------------------------------------------------ the on-screen keyboard (the note with the pad)
+ * Four rows of characters and a row of Shift / Space / Del / Done; d-pad or left stick moves, A types, X deletes,
+ * Y is a space, B or Done closes it (Start still saves the report). */
+#define OSK_COLS 11
+static const char *const osk_rows[2][4] = {
+    { "1234567890-", "qwertyuiop/", "asdfghjkl'.", "zxcvbnm,?!:" },
+    { "1234567890_", "QWERTYUIOP(", "ASDFGHJKL\";", "ZXCVBNM<>=)" },
+};
+static const char *const osk_special[4] = { "Shift", "Space", "Del", "Done" };
+
+static void note_add(const char *t)
+{
+    if (strlen(note) + strlen(t) < sizeof note - 1)
+        strcat(note, t);
+}
+
+static void osk_draw(int sc)
+{
+    int kw = 44, kh = 30, gw = OSK_COLS * kw, x0 = (W - gw) / 2, y0 = H - 5 * kh - 24, r, c;
+    char ch[2] = { 0, 0 };
+    ui_quad((float)(x0 - 8), (float)(y0 - 8), (float)(x0 + gw + 8), (float)(y0 + 5 * kh + 8), 0x101830E0u);
+    for (r = 0; r < 4; r++)
+        for (c = 0; c < OSK_COLS; c++) {
+            int x = x0 + c * kw, y = y0 + r * kh, on = osk_r == r && osk_c == c;
+            ui_quad((float)(x + 2), (float)(y + 2), (float)(x + kw - 2), (float)(y + kh - 2), on ? 0xFFD040FFu : 0x404860FFu);
+            ch[0] = osk_rows[osk_shift][r][c];
+            ui_text(x + (kw - 6 * sc) / 2, y + (kh - 7 * sc) / 2, ch, sc, on ? 0x000000FFu : 0xFFFFFFFFu);
+        }
+    for (c = 0; c < 4; c++) {           /* the last row: four wide keys */
+        int x = x0 + c * gw / 4, y = y0 + 4 * kh, on = osk_r == 4 && osk_c == c;
+        const char *t = osk_special[c];
+        ui_quad((float)(x + 2), (float)(y + 2), (float)(x + gw / 4 - 2), (float)(y + kh - 2),
+                on ? 0xFFD040FFu : (c == 0 && osk_shift) ? 0x60A060FFu : 0x404860FFu);
+        ui_text(x + (gw / 4 - 6 * sc * (int)strlen(t)) / 2, y + (kh - 7 * sc) / 2, t, sc, on ? 0x000000FFu : 0xFFFFFFFFu);
+    }
+}
+
+static void osk_press(void)
+{
+    char ch[2] = { 0, 0 };
+    if (osk_r < 4) {
+        ch[0] = osk_rows[osk_shift][osk_r][osk_c];
+        note_add(ch);
+    } else if (osk_c == 0)
+        osk_shift ^= 1;
+    else if (osk_c == 1)
+        note_add(" ");
+    else if (osk_c == 2)
+        utf8_pop(note);
+    else
+        osk_open = 0;
+}
+
+/* one drawn frame of the keyboard: b = buttons held, pr = newly pressed */
+static void osk_pad(const pad_state *p, int b, int pr)
+{
+    int dx = 0, dy = 0;
+    if ((b & PAD_UP) || p->ly < -70) dy = -1;
+    else if ((b & PAD_DOWN) || p->ly > 70) dy = 1;
+    if ((b & PAD_LEFT) || p->lx < -70) dx = -1;
+    else if ((b & PAD_RIGHT) || p->lx > 70) dx = 1;
+    if (dx || dy) {                     /* a step at once, then one every 6 frames while held */
+        if (osk_rep == 0 || (osk_rep > 15 && osk_rep % 6 == 0)) {
+            int cols = osk_r == 4 ? 4 : OSK_COLS, nr;
+            if (dx)
+                osk_c = (osk_c + dx + cols) % cols;
+            if (dy) {
+                nr = (osk_r + dy + 5) % 5;
+                if (nr == 4 && osk_r != 4)
+                    osk_c = osk_c * 4 / OSK_COLS;
+                else if (osk_r == 4 && nr != 4)
+                    osk_c = osk_c * OSK_COLS / 4 + 1;
+                osk_r = nr;
+            }
+        }
+        osk_rep++;
+    } else
+        osk_rep = 0;
+    if (pr & PAD_CROSS)
+        osk_press();
+    if (pr & PAD_SQUARE)
+        utf8_pop(note);
+    if (pr & PAD_TRIANGLE)
+        note_add(" ");
+    if (pr & PAD_CIRCLE)
+        osk_open = 0;
+}
+
 unsigned pick_frozen_ms(void) { return frozen_ms0 ? SDL_GetTicks() - frozen_ms0 : 0; }
 
 void pick_frozen_frame(void)
 {
     char line[260];
-    int sc = W >= 900 ? 2 : 1, cw = 6 * sc, lh = 9 * sc, y, k, px0 = 8, pw, maxc, rows;
+    int sc = W >= 900 || padui ? 2 : 1, cw = 6 * sc, lh = 9 * sc, y, k, px0 = 8, pw, maxc, rows;
     if (state != PS_FROZEN)
         return;
     if (dirty)
@@ -1016,35 +1227,56 @@ void pick_frozen_frame(void)
     /* panel */
     pw = W - 2 * px0 > 100 * cw ? 100 * cw : W - 2 * px0;
     maxc = pw / cw - 2;
-    rows = 4 + (nsel < 12 ? nsel : 12) + 3;
-    ui_quad((float)px0, 6, (float)(px0 + pw), (float)(6 + rows * lh + 8), 0x000000C8u);
-    y = 10;
-    ui_text(px0 + 4, y, "BUG REPORT: click = pick, drag = box, right-click = undo", sc, 0xFFFF80FFu);
-    y += lh;
-    ui_text(px0 + 4, y, "type a note, Enter = save the report, Esc or F8 = cancel", sc, 0xFFFF80FFu);
-    y += lh;
-    snprintf(line, sizeof line, "%d object(s) picked, %d draw calls on screen", nsel, pick_count());
-    ui_text(px0 + 4, y, line, sc, 0xC0C0C0FFu);
-    y += lh;
-    for (k = 0; k < nsel && k < 12; k++) {
-        char d[220];
-        const unsigned *c = pal[k % 6];
-        pick_describe(pick_entry(sel[k].id), d, sizeof d);
-        snprintf(line, sizeof line, "%d. %.*s", k + 1, maxc - 4, d);
-        ui_text(px0 + 4, y, line, sc, (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | 0xFF);
-        y += lh;
-    }
-    if (nsel > 12) {
-        snprintf(line, sizeof line, "... and %d more (see report.json)", nsel - 12);
+    if (!hide_panel) {
+        int nlist = padui ? (nsel < 6 ? nsel : 6) : (nsel < 12 ? nsel : 12);
+        rows = 4 + nlist + 3;
+        ui_quad((float)px0, 6, (float)(px0 + pw), (float)(6 + rows * lh + 8), 0x000000C8u);
+        y = 10;
+        if (padui) {            /* the controller's keys (Xbox; PC frozen by the controller); kept short for a TV */
+            ui_text(px0 + 4, y, "BUG REPORT  stick: pointer  A: pick", sc, 0xFFFF80FFu);
+            y += lh;
+            ui_text(px0 + 4, y, "hold A + move: box  X: undo  Y: note", sc, 0xFFFF80FFu);
+            y += lh;
+            ui_text(px0 + 4, y, "START: save  B: cancel  WHITE: hide", sc, 0xFFFF80FFu);
+            y += lh;
+        } else {
+            ui_text(px0 + 4, y, "BUG REPORT: click = pick, drag = box, right-click = undo", sc, 0xFFFF80FFu);
+            y += lh;
+            ui_text(px0 + 4, y, "type a note, Enter = save the report, Esc or F8 = cancel", sc, 0xFFFF80FFu);
+            y += lh;
+        }
+        snprintf(line, sizeof line, padui ? "%d picked, %d draws" : "%d object(s) picked, %d draw calls on screen", nsel, pick_count());
         ui_text(px0 + 4, y, line, sc, 0xC0C0C0FFu);
         y += lh;
+        for (k = 0; k < nlist; k++) {
+            char d[220];
+            const unsigned *c = pal[k % 6];
+            pick_describe(pick_entry(sel[k].id), d, sizeof d);
+            snprintf(line, sizeof line, "%d. %.*s", k + 1, maxc - 4, d);
+            ui_text(px0 + 4, y, line, sc, (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | 0xFF);
+            y += lh;
+        }
+        if (nsel > nlist) {
+            snprintf(line, sizeof line, "... and %d more (see report.json)", nsel - nlist);
+            ui_text(px0 + 4, y, line, sc, 0xC0C0C0FFu);
+            y += lh;
+        }
+        y += lh / 2;
+        {
+            int len = (int)strlen(note), from = len > maxc - 8 ? len - (maxc - 8) : 0;
+            char tmp[300];
+            snprintf(tmp, sizeof tmp, "Note: %.*s%s", maxc - 7, note + from, (SDL_GetTicks() / 400) & 1 ? "_" : " ");
+            ui_text(px0 + 4, y, tmp, sc, 0xFFFFFFFFu);
+        }
     }
-    y += lh / 2;
-    {
-        int len = (int)strlen(note), from = len > maxc - 8 ? len - (maxc - 8) : 0;
-        char tmp[300];
-        snprintf(tmp, sizeof tmp, "Note: %.*s%s", maxc - 7, note + from, (SDL_GetTicks() / 400) & 1 ? "_" : " ");
-        ui_text(px0 + 4, y, tmp, sc, 0xFFFFFFFFu);
+    if (padui && osk_open)
+        osk_draw(sc);
+    else if (padui && pmx >= 0) {        /* the pad's pointer: a white cross with a dark edge */
+        int x = (int)pmx, yy = (int)pmy;
+        ui_quad((float)(x - 11), (float)(yy - 2), (float)(x + 12), (float)(yy + 3), 0x000000C0u);
+        ui_quad((float)(x - 2), (float)(yy - 11), (float)(x + 3), (float)(yy + 12), 0x000000C0u);
+        ui_quad((float)(x - 10), (float)(yy - 1), (float)(x + 11), (float)(yy + 2), 0xFFFFFFFFu);
+        ui_quad((float)(x - 1), (float)(yy - 10), (float)(x + 2), (float)(yy + 11), 0xFFFFFFFFu);
     }
     ui_flush();
     ui_script_step();
@@ -1056,16 +1288,6 @@ static void cancel(void)
     end_session();
 }
 
-static void utf8_pop(char *s)
-{
-    size_t l = strlen(s);
-    if (!l)
-        return;
-    l--;
-    while (l > 0 && ((unsigned char)s[l] & 0xC0) == 0x80)
-        l--;
-    s[l] = 0;
-}
 
 /* one SDL event: returns 1 when the reporter consumed it */
 int pick_event(const void *vev)
@@ -1137,14 +1359,177 @@ int pick_event(const void *vev)
     return 1;
 }
 
-/* the controller combo, polled once per drawn frame */
+/* the PC controller combo (Back/View + Start, read from the controller), polled once per drawn frame; the pad then
+ * drives the pointer too (pick_pad). The Xbox uses pick_tick_pad (Back + Start held there quits the game). */
 void pick_poll_pad(void)
 {
+#ifndef XBOX
     static int was;
     int now = pad_combo_held();
     if (now && !was && state == PS_OFF) {
         manual = 1;
+        padui = 1;
         pick_arm();
     }
     was = now;
+#endif
+}
+
+/* every game tick's pad: the Xbox combo Back + Black (select + R1); on the PC only with RT_PICK_PAD=1 (test aid: a
+ * --input script presses it). The combo and the buttons that closed the reporter stay away from the game. */
+#define PICK_COMBO (PAD_SELECT | PAD_R1)
+void pick_tick_pad(pad_state *ps)
+{
+    static int prev, on = -1;
+    int b = ps->bits;
+#ifdef XBOX
+    int key, mods;
+    on = 1;
+    while (kbm_key(&key, &mods))        /* a USB keyboard: F8 freezes too (keys typed outside the reporter go nowhere) */
+        if (key == KBM_F8 && state == PS_OFF) {
+            manual = padui = 1;
+            pick_arm();
+        }
+#else
+    if (on < 0)
+        on = getenv("RT_PICK_PAD") != NULL;
+#endif
+    ps->bits &= (uint16_t)~tick_mask;
+    tick_mask &= b;
+    if (on && state == PS_OFF && (b & PICK_COMBO) == PICK_COMBO && (prev & PICK_COMBO) != PICK_COMBO) {
+        ps->bits &= (uint16_t)~PICK_COMBO;
+        manual = padui = 1;
+        pick_arm();
+    }
+    prev = b;
+}
+
+int pick_wants_pad(void) { return state == PS_FROZEN && padui; }
+
+static void pointer_move(float dx, float dy)
+{
+    pmx += dx;
+    pmy += dy;
+    if (pmx < 0) pmx = 0;
+    if (pmy < 0) pmy = 0;
+    if (pmx > W - 1) pmx = (float)(W - 1);
+    if (pmy > H - 1) pmy = (float)(H - 1);
+    mx = (int)pmx;
+    my = (int)pmy;
+}
+
+/* a stick axis -> pixels this frame: dead zone 20, then up to 12 px at full tilt, slow near the middle */
+static float stick_px(int v)
+{
+    float a = (float)(v < 0 ? -v : v) - 20;
+    if (a <= 0)
+        return 0;
+    a /= 107.0f;
+    return (v < 0 ? -1 : 1) * 12.0f * a * a;
+}
+
+static void press_down(void)
+{
+    drag = 1;
+    dx0 = mx = (int)pmx;
+    dy0 = my = (int)pmy;
+}
+
+static void press_up(void)
+{
+    if (!drag)
+        return;
+    drag = 0;
+    if (abs(mx - dx0) < 5 && abs(my - dy0) < 5)
+        add_click(dx0, dy0);
+    else
+        add_box(dx0, dy0, mx, my);
+}
+
+/* once per drawn frame while frozen with padui: the controller (or the --input script), and on the Xbox a USB
+ * keyboard and mouse */
+void pick_pad(const pad_state *p)
+{
+    int b = p->bits, pr = b & ~pad_prev, rel = ~b & pad_prev;
+    static int drep;
+    pad_prev = b;
+    if (state != PS_FROZEN)
+        return;
+    if (getenv("RT_PICK_TRACE"))
+        fprintf(stderr, "pick_pad %04X rx %d ry %d at %.0f,%.0f\n", b, p->rx, p->ry, pmx, pmy);
+#ifdef XBOX
+    {
+        int key, mods, mdx, mdy, mb;
+        static int mb_prev;
+        while (state == PS_FROZEN && kbm_key(&key, &mods)) {
+            char c = kbm_ascii(key, mods);
+            if (key == KBM_ENTER) {
+                save_report();
+                end_session();
+                return;
+            } else if (key == KBM_ESC || key == KBM_F8) {
+                cancel();
+                return;
+            } else if (key == KBM_BACKSPACE)
+                utf8_pop(note);
+            else if (c) {
+                char t[2] = { c, 0 };
+                note_add(t);
+            }
+        }
+        if (kbm_mouse(&mdx, &mdy, &mb)) {
+            if (mdx || mdy)
+                pointer_move((float)mdx, (float)mdy);
+            if ((mb & 1) && !(mb_prev & 1))
+                press_down();
+            if (!(mb & 1) && (mb_prev & 1))
+                press_up();
+            if ((mb & 2) && !(mb_prev & 2))
+                undo();
+            mb_prev = mb;
+        }
+    }
+#endif
+    if ((pr & PICK_COMBO) && (b & PICK_COMBO) == PICK_COMBO) {     /* the combo again: cancel (as F8 on the PC) */
+        cancel();
+        return;
+    }
+    if (pr & PAD_START) {
+        save_report();
+        end_session();
+        return;
+    }
+    if (osk_open) {
+        osk_pad(p, b, pr);
+        return;
+    }
+    if (pr & PAD_CIRCLE) {
+        cancel();
+        return;
+    }
+    if (pr & PAD_CROSS)                 /* (before the move: a box starts where A went down) */
+        press_down();
+    {   /* pointer: right stick, left stick, d-pad (1 px a press, faster when held) */
+        float dx = stick_px(p->rx) + stick_px(p->lx), dy = stick_px(p->ry) + stick_px(p->ly);
+        int ddx = (b & PAD_RIGHT ? 1 : 0) - (b & PAD_LEFT ? 1 : 0), ddy = (b & PAD_DOWN ? 1 : 0) - (b & PAD_UP ? 1 : 0);
+        if (ddx || ddy) {
+            int step = drep == 0 ? 1 : drep > 12 ? 3 : 0;
+            dx += (float)(ddx * step);
+            dy += (float)(ddy * step);
+            drep++;
+        } else
+            drep = 0;
+        if (dx != 0 || dy != 0)
+            pointer_move(dx, dy);
+    }
+    if (rel & PAD_CROSS)
+        press_up();
+    if (pr & PAD_SQUARE)
+        undo();
+    if (pr & PAD_TRIANGLE) {
+        osk_open = 1;
+        drag = 0;
+    }
+    if (pr & PAD_L1)
+        hide_panel ^= 1;
 }

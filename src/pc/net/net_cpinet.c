@@ -253,6 +253,8 @@ static void xbox_net_stop(void)
     xnet_state = 0;
 }
 
+int xbox_net_ready(void) { return xnet_state == 1; }     /* the bug reporter sends a report at once (xbox_report.c) */
+
 static int xbox_net_up(void)
 {
     int r;

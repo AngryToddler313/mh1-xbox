@@ -31,11 +31,17 @@ FRONT = ['src/pc/viewer.c', 'src/pc/dbgmenu.c', 'src/pc/menu.c', 'src/pc/font5x7
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
          'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c',
          'src/pc/xbox/xbox_log.c', 'src/pc/xbox/xbox_env.c', 'src/pc/xbox/xbox_ac97.c',
-         'src/pc/xbox/xbox_scanf.c']
+         'src/pc/xbox/xbox_scanf.c', 'src/pc/pick.c', 'src/pc/xbox/kbm_xbox.c', 'src/pc/xbox/xbox_report.c']
+# nxdk's USB HID class driver (lib/usb, not in its nxdk_usb.lib): compiled into the game for a USB keyboard / mouse
+# (kbm_xbox.c), with its debug messages (sysprintf onto the screen) switched off in a patched copy
+HID_SRC = ['lib/usb/libusbohci/src_hid/hid_core.c', 'lib/usb/libusbohci/src_hid/hid_driver.c']
+USB_INC = ['-I' + NXDK + '/lib/usb/libusbohci/inc', '-I' + NXDK + '/lib/usb/libusbohci_xbox',
+           '-DUSBH_USE_EXTERNAL_CONFIG="usbh_config_xbox.h"']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
 SKIP = {'rt_mc', 'rt_save', 'rt_symtab', 'rt_memstat'}
 # --online: the ONLINE=1 PC build's network front-end (docs/network.md) over nxdk's lwIP (lib/net)
-NET_FRONT = ['src/pc/net/net_cpinet.c', 'src/pc/net/net_dnas.c', 'src/pc/net/net_netcnf.c', 'src/pc/net/net_peer.c']
+NET_FRONT = ['src/pc/net/net_cpinet.c', 'src/pc/net/net_dnas.c', 'src/pc/net/net_netcnf.c', 'src/pc/net/net_peer.c',
+             'src/pc/xbox/xnet_http.c']      # (the bug reporter sends reports itself when the network is up)
 NET_INC = ['-I' + NXDK + '/lib/net/lwip/src/include', '-I' + NXDK + '/lib/net/nforceif/include', '-I' + NXDK + '/lib/net/nvnetdrv']
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
         'libnxdk_automount_d.lib', 'libpbkit.lib', 'nxdk_usb.lib', 'libxboxrt.lib', 'libzlib.lib', 'libSDL2.lib']
@@ -208,7 +214,20 @@ def main():
             args += ['-include', 'src/pc/rt/rt_memstat.h']
         if 'xbox_libc' not in f and 'xbox_log' not in f:
             args += ['-include', COMPAT]
+        if 'kbm_xbox' in f:
+            args += USB_INC
         jobs.append((b, args + ['-c', f, '-o', '%s/%s.obj' % (OBJ, b)]))
+    for f in HID_SRC:
+        src = open(NXDK + '/' + f).read()
+        lines = src.split('\n')
+        last = max(i for i, l in enumerate(lines) if l.startswith('#include'))
+        lines.insert(last + 1, '#undef HID_DBGMSG\n#define HID_DBGMSG(...) ((void)0)')
+        b = 'x_usb_' + os.path.basename(f)[:-2]
+        cp = '%s/usbhid/%s' % (OUT, os.path.basename(f))
+        os.makedirs(os.path.dirname(cp), exist_ok=True)
+        open(cp, 'w').write('\n'.join(lines))
+        jobs.append((b, ['nxdk-cc', '-O2', '-w'] + USB_INC + ['-I' + NXDK + '/lib/usb/libusbohci/src_hid', '-c', cp,
+                         '-o', '%s/%s.obj' % (OBJ, b)]))
     res = list(cf.ThreadPoolExecutor(4).map(run, jobs))
     bad = [r for r in res if r[1]]
     with open(OUT + '/compile.log', 'w') as f:

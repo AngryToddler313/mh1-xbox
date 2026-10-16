@@ -4,6 +4,9 @@
  * position: A cross, B circle, X square, Y triangle, LB L1, RB R1,
  * LT L2, RT R2, Back select, Start start, stick clicks L3/R3.
  */
+#ifdef XBOX
+#include "../xbox/kbm_xbox.h"
+#endif
 #include "pad.h"
 #include "../rt/rt_log.h"
 
@@ -70,6 +73,9 @@ void pad_init(void)
     int i;
     if (headless)
         return;
+#ifdef XBOX
+    kbm_init();                 /* a USB keyboard / mouse for the bug reporter: its HID driver before SDL starts the USB stack */
+#endif
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER))
         SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
     for (i = 0; i < SDL_NumJoysticks() && !ctl; i++)

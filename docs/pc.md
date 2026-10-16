@@ -579,8 +579,15 @@ files and JSON, the event path, the replay and show_report.py. Checked 8 Oct 202
 under Wine.
 
 `tools/bug_report.sh` / `bug_report.bat` pack the newest three reports with the logs. The screenshots show the
-game's graphics (the player sends them on purpose; nothing is uploaded by the program). Compiled out on the Xbox
-(`pick.h` has empty stand-ins under XBOX; rt_pick.c only holds the tags and the id table, and links there).
+game's graphics (the player sends them on purpose; nothing is uploaded by the program). On the Xbox since 16 Oct 2026
+(docs/xbox.md "Bug reporter on the Xbox": Back + Black, a pad pointer, an on-screen keyboard; the nv2a id pass).
+
+**Controller UI** (16 Oct 2026, the Xbox's, also on the PC): frozen by the controller (Back/View + Start), the pad works
+as on the Xbox (docs/PLAYING.md "Reporting a bug"): sticks / d-pad move a drawn pointer, A picks (held A + move = box), X
+undoes, Y opens an on-screen keyboard, White (LB) hides the panel, Start saves, B cancels; mouse and keyboard keep working.
+Frozen by F8, nothing changed. Test aid `RT_PICK_PAD=1`: the Xbox combo select + r1 freezes from a --input script and an
+RT_PICK_AT freeze takes the pad too; the script then gives one step per drawn frame while frozen (test_pick.sh part 5).
+`RT_PICK_TRACE=1` prints the pad and pointer per frozen frame.
 Not verified: a real mouse and keyboard session (the event path is driven by pushed events), the controller
 combo (the pad_combo_held read is 5 lines; no pad press was made), high-DPI displays (mouse coordinates are taken as
 framebuffer pixels), the clip's colours (3-3-2 palette, no dithering), reports of the movie / boot screens (the

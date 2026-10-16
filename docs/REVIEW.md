@@ -711,3 +711,12 @@ obvious workarounds.
   game's folder with launch data "MH1X" (as before 11 Oct), which sends the log and then goes to the dashboard. An XBE that
   is itself default.xbe still goes to the dashboard.
 - **Changed:** rt_log's session-log folder on the Xbox was E:\Games\MH1\logs for G too; now the game's folder (XBOX_GAME_DIR).
+
+## Bug reporter on the Xbox (agent E, 16 Oct 2026)
+- **Dropped:** pick.h's empty Xbox stand-ins (the reporter compiled out of the Xbox build). **Now** pick.c is built for
+  the Xbox (Back + Black, pad pointer, on-screen keyboard, USB keyboard / mouse, nv2a id pass, reports sent through the
+  loader; docs/xbox.md "Bug reporter on the Xbox"). **Why:** owner's request. **To revert:** the commit "Xbox: bug reporter".
+- **Changed:** on the PC, a freeze made with the controller (Back/View + Start) now also takes the pad (pointer, A, the
+  on-screen keyboard) and draws the panel at scale 2 with the controller's keys; an F8 freeze is unchanged.
+- **Changed:** gfx_nv2a.c gfx_execute_clay checks gfx_rec_clay once at the top for both paths (execute_cpu did it for the
+  CPU path, the skinned path after its own check): same behaviour, one place.

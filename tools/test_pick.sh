@@ -5,8 +5,12 @@
 #     must appear (objects of several kinds, game state, marks, the note, the build and seed);
 #  2. the same through real SDL events (RT_PICK_UI=1: mouse down / up, text input, Enter pushed one per frozen frame);
 #  3. replay: a second run fed with the first report's input.txt reaches the same game state at the same tick;
-#  4. tools/show_report.py prints the report.
-# BIN=... RUN=wine runs the Windows build. ~20 s.
+#  4. tools/show_report.py prints the report;
+#  5. the controller UI (the Xbox's: pick_pad, docs/xbox.md "Bug reporter on the Xbox") driven by the --input script:
+#     RT_PICK_PAD=1 turns on the Xbox combo Back + Black (select + r1) on the PC, the script then moves the pointer with
+#     the right stick, picks with A (cross), drags a box with A held, types "hi" on the on-screen keyboard (Y opens it),
+#     closes it with B and saves with Start.
+# BIN=... RUN=wine runs the Windows build. ~25 s.
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe
 OUT=build/show/pick; rm -rf $OUT; mkdir -p $OUT
@@ -61,4 +65,25 @@ PY
 python3 tools/show_report.py "$R1" > $OUT/show.txt || fail "show_report.py"
 grep -q "PICKED OBJECTS" $OUT/show.txt || fail "show_report output"
 python3 tools/show_report.py "$R1" --replay | grep -q "RT_PICK_AT=900 RT_PICK_EXIT=1 " || fail "show_report --replay does not print the RT_PICK_AT command"
-echo "pick OK: report with $(ls $R1 | wc -l) files, UI path, replay reaches the same state, show_report.py"
+# 5. the controller UI. Frozen, the script gives one step per drawn frame; the pointer starts in the middle (320,240),
+# a full stick moves it 12 px a frame. click at the middle; to (104,300); A held while moving to (500,444): a box;
+# Y: the keyboard (cursor on '1', row 0 col 0) -> down 2 right 5 = 'h', up 1 right 2 = 'i'; B closes it; Start saves.
+K="cross,idle,cam_l*18,cam_d*5,idle,cross+cam_r*33,cross+cam_d*12,cross,idle*2,triangle,idle"
+K="$K,ddown,idle,ddown,idle,dright,idle,dright,idle,dright,idle,dright,idle,dright,idle,cross,idle"
+K="$K,dup,idle,dright,idle,dright,idle,cross,idle,circle,idle,start,idle*30"
+env MH1_SAVE_DIR="$PWD/$OUT/r4/card" MH1_LOG_DIR="$PWD/$OUT/r4/logs" RT_PICK_PAD=1 \
+    $RUN $BIN disc/mh1 --quest 10 --play --input "idle*300,select+r1*2,idle*3,$K" --size 640x480 --shot $OUT/d.png --time 20 > $OUT/d.out 2>&1
+R4=$(ls -d $OUT/r4/reports/report_* 2>/dev/null | head -1)
+[ -n "$R4" ] || fail "controller UI: no report"
+python3 - "$R4/report.json" <<'PY' || fail "controller UI report content"
+import json, sys
+d = json.load(open(sys.argv[1]))
+assert d['note'] == 'hi', d['note']
+m = d['marks']
+assert len(m) == 2 and m[0]['type'] == 'click' and (m[0]['x'], m[0]['y']) == (320, 240), m
+assert m[1]['type'] == 'box' and (m[1]['x0'], m[1]['y0'], m[1]['x1'], m[1]['y1']) == (104, 300, 500, 444), m
+assert d['objects'], 'nothing picked'
+print('controller UI ok: tick %d, %d objects' % (d['game']['tick'], len(d['objects'])))
+PY
+grep -q "game frozen (controller)" $OUT/r4/logs/mh1_*.log || fail "controller UI: no freeze line in the log"
+echo "pick OK: report with $(ls $R1 | wc -l) files, UI path, replay reaches the same state, show_report.py, controller UI"

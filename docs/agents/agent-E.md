@@ -1084,3 +1084,17 @@ quest's info pages are English (docs/english.md "G round 3"). Verified: G PC bui
 - Not done: G quest counter shots (find the counter NPC position), the options page values, G-only ranks, online UI pairs of the US lobby
   (0x69b540..0x69d300 are the online screens: the G online lobby rows could be paired the same way), memory card dialogs of G (66 + 58 twins), game tutorial
   pages (26 twins with G edits).
+
+## Bug reporter on the Xbox (16 Oct 2026)
+Built: pick.c for the Xbox (pad UI pick_tick_pad / pick_pad, on-screen keyboard, toast), gfx_nv2a.c id pass (fog-path
+trick), kbm_xbox.c (USB HID boot keyboard / mouse), xbox_report.c (bundle + POST), loader sends pending reports,
+xbox_serve.py POST /report, tools/test_pick.sh part 5, tools/xemu_pick_test.sh. Docs: xbox.md "Bug reporter on the
+Xbox", PLAYING.md "Reporting a bug", pc.md, REVIEW.md.
+Lessons:
+- An id pass needs no new NV2A shader: our pixel shader ends in a fog lerp, so fog colour = id colour with factor 1 gives
+  the id exactly and keeps texture alpha for the alpha test.
+- nxdk's usbh_core_init is idempotent and SDL's joystick start calls it again; a USB class driver registered before
+  SDL_InitSubSystem(GAMECONTROLLER) is probed during SDL's 500 ms enumeration. nxdk_usb.lib need not be rebuilt: compile
+  the class driver's sources into the program (patched copy for the on-screen debug messages).
+- A pointer moved by the script: handle the A press before the frame's move, or a box starts one step late.
+- Frozen state with scripts: a --shot run must wait for the reporter only while the script still has steps (as dbgmenu).
