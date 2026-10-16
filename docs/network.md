@@ -1003,6 +1003,10 @@ PC's delivery clears the quest on all three.
     tools/test_online_guest.sh                       # guest rooms, two clients against mh1-server (~2 min)
     tools/test_online_event.sh                       # an event quest downloaded, posted, cleared; a patch refused (~4.5 min)
     tools/test_online_server.sh                      # login to town to quest to town against mh1-server (relay) (~4 min)
+    tools/test_online_mcs.sh                         # the same on the game's own in-hunt protocol (mcs relay, 3.10) (~4 min)
+    tools/test_ps2_hunt.sh                           # a PS2 (PCSX2) and a PC hunt together (3.10; uncapped, ~20 min)
+    XBOX=1 tools/test_ps2_hunt.sh                    # PS2 + PC + Xbox (xemu) in one hunt (~25 min)
+    tools/xemu_mcs_hunt.sh                           # the Xbox and a PC (~10 min)
     RUN=wine BIN=build/win/mhview_online.exe tools/test_online_server.sh   # the same with the Windows build (passes, 10 Oct 2026)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 

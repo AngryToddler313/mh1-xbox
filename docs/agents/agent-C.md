@@ -2006,3 +2006,11 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   up only on the PC: run `tools/argregs.py lobby build/main.dis build/lobby.dis --check FILE` on every _nm file before
   linking it into the PC build. `system_w+0x35` is the "loading" flag that stops AQ_exec. The 0x82 mcs login carries
   the 10 key digits without a length.
+- **PS2 / Xbox (16 Oct, later):** tools/test_ps2_hunt.sh (PS2 + PC; XBOX=1 adds the Xbox: three platforms in one hunt,
+  all pass) and tools/xemu_mcs_hunt.sh (Xbox + PC). Fix found by the PS2: rt_mcs.c repeats net_start_ck's sys 3 after
+  agreeing (the PS2's game11 clears what arrived before its load ended). PS2 test aids: PCSX2 pnach cheats
+  (`run_pcsx2.sh --cheats`) for warps and the guild registration flag; MH1 needs square on doors and at the board, the
+  "ready" is square at the departure spot (3100, 2100) in the hall. PCSX2 loads cheats by the first ELF's CRC (the
+  launcher's), computed as the XOR of the file's words.
+- **Open:** monster fights with a PS2 in the party (quest 1 has none), ownership hand-over to/from a PS2, a PS2
+  dropping mid-hunt, real hardware (PS2 and Xbox), the meaning of 0x1032.
