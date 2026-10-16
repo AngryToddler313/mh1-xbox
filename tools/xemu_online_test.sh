@@ -7,7 +7,7 @@
 # folder (E:\Games\MH1\settings.ini, put on xemu's disk image with tools/xbox_fatx.py).
 # xemu uses its own copy of the owner's Xbox files (XBOX_FILES, default the main checkout's xbox_files): a fresh blank
 # disk image in build/xemu_online/xbox_files, so the shared image is never written. Screenshots and logs in
-# build/show/xemu_online (never committed). About 10 minutes.
+# build/show/xemu_online (never committed). About 5 minutes (the Xbox is in the town about 60 s after xemu starts; the shots at 90-120 s show both hunters).
 #   build first:  ONLINE=1 tools/build_pc.sh && . ~/xboxdev/env.sh && python3 tools/build_xbox.py --online --gfx nv2a
 cd "$(dirname "$0")/.."
 SRC=${XBOX_FILES:-xbox_files}
@@ -46,7 +46,7 @@ RT_ONLINE_TRACE=1
 EOF
 echo "idle*200,circle*2,idle*100,circle*2,idle*100,circle*2,idle*150,circle*2,idle*20000" > $OUT/input.txt
 XBOX_FILES=$XF tools/run_xemu.sh --online --gfx nv2a --data disc/mh1 --env $OUT/env.txt --input $OUT/input.txt \
-    --shot $OUT/xbox.png --after "${AFTER:-90 150 210 270 330 390 450 510 570}" > $OUT/xemu_run.log 2>&1 &
+    --shot $OUT/xbox.png --after "${AFTER:-90 120 150 240}" > $OUT/xemu_run.log 2>&1 &
 XP=$!
 # the PC client once the Xbox has entered a lobby (its log over the serial port: "quest download", the lobby entry)
 i=0
