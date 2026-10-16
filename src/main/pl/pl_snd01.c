@@ -1424,6 +1424,11 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         sound_call_0024A2A0(pl, 4, 74);
         ashi_sd_req_0024A510(18.0f, pl, 0);
         yoroi_sd_req(18.0f, pl, 0);
+#ifdef VERSION_MHG
+        if (frame_check(20.0f, pl, 0) && pl->work8D0 == 4) {   /* G (sub_main 0x4E4400) */
+            Eft06_set(1.0f, pl, 10, 0, 14);
+        }
+#endif
         break;
     case 802:
         sound_call_0024A2A0(pl, 4, 74);
@@ -2352,6 +2357,311 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             break;
         }
         break;
+#ifdef VERSION_MHG
+    case 6:     /* G: the Dual Swords (job 6). G splits this script in two (sub_main 0x4E30B0 effects, 0x4A9F50
+                 * sounds, each with a kind switch of 7); the cases below are both halves' kind-6 blocks merged
+                 * (effects first), generated from the asm by running each block per motion (agent A, 16 Oct 2026).
+                 * A motion that only one half handles also gets the other half's move_default, as in G. */
+        switch (w->anim) {
+        case 1002:
+            sound_call2(pl, 2, 6);
+            sound_call2(pl, 8, 1);
+            ashi_sd_req_0024A510(22.0f, pl, 0);
+            yoroi_sd_req(22.0f, pl, 0);
+            move_default_0024A750(pl, w);     /* G: one half of the split script has no case */
+            break;
+        case 1003:
+            sound_call2(pl, 18, 2);
+            sound_call2(pl, 26, 7);
+            ashi_sd_req_0024A510(32.0f, pl, 0);
+            yoroi_sd_req(34.0f, pl, 0);
+            ashi_sd_req_0024A510(40.0f, pl, 1);
+            move_default_0024A750(pl, w);     /* G: one half of the split script has no case */
+            break;
+        case 1004:
+            ashi_eft_req(2.0f, pl, 5, 1);
+            ashi_eft_req(26.0f, pl, 8, 1);
+            ashi_sd_req_0024A510(2.0f, pl, 0);
+            yoroi_sd_req(6.0f, pl, 0);
+            sound_call2(pl, 6, Code_Make(39, 1, 40, 1));
+            ashi_sd_req_0024A510(22.0f, pl, 3);
+            yoroi_sd_req(22.0f, pl, 0);
+            break;
+        case 1009:
+            ashi_eft_req(6.0f, pl, 5, 1);
+            ashi_sd_req_0024A510(2.0f, pl, 3);
+            yoroi_sd_req(2.0f, pl, 0);
+            ashi_sd_req_0024A510(22.0f, pl, 3);
+            yoroi_sd_req(24.0f, pl, 0);
+            ashi_sd_req_0024A510(46.0f, pl, 0);
+            yoroi_sd_req(48.0f, pl, 0);
+            sound_call2(pl, 4, 3);
+            sound_call2(pl, 20, 2);
+            sound_call2(pl, 10, 3);
+            sound_call2(pl, 28, 7);
+            break;
+        case 1012:
+            ashi_eft_req(2.0f, pl, 8, 1);
+            ashi_eft_req(16.0f, pl, 10, 6);
+            sound_call2(pl, 2, Code_Make(35, 2, 36, 2));
+            ashi_sd_req_0024A510(2.0f, pl, 3);
+            sound_call_0024A2A0(pl, 2, 63);
+            yoroi_sd_req(20.0f, pl, 3);
+            sound_call_0024A2A0(pl, 20, 65);
+            break;
+        case 1013:
+            ashi_eft_req(2.0f, pl, 5, 1);
+            ashi_eft_req(18.0f, pl, 10, 6);
+            sound_call2(pl, 2, Code_Make(35, 2, 36, 2));
+            ashi_sd_req_0024A510(2.0f, pl, 3);
+            sound_call_0024A2A0(pl, 2, 63);
+            yoroi_sd_req(20.0f, pl, 3);
+            sound_call_0024A2A0(pl, 20, 65);
+            break;
+        case 1018:
+            if (frame_check(32.0f, pl, 0)) {
+                Eft13_set_scl(pl, 2, 35, 1.0f);
+            }
+            sound_call2(pl, 18, 1);
+            sound_call2(pl, 22, 6);
+            sound_call2(pl, 34, 12);
+            sound_call_0024A2A0(pl, 34, 54);
+            sound_call_0024A2A0(pl, 32, 63);
+            ashi_sd_req_0024A510(26.0f, pl, 3);
+            yoroi_sd_req(24.0f, pl, 0);
+            ashi_sd_req_0024A510(72.0f, pl, 0);
+            break;
+        case 1019:
+            if (frame_check(8.0f, pl, 0)) {
+                Eft13_set_scl(pl, 2, 39, 1.5f);
+                Eft13_set_scl(pl, 10, 36, 1.0f);
+            }
+            sound_call2(pl, 8, 5);
+            sound_call2(pl, 8, 9);
+            sound_call_0024A2A0(pl, 10, 63);
+            ashi_sd_req_0024A510(26.0f, pl, 3);
+            yoroi_sd_req(46.0f, pl, 0);
+            ashi_sd_req_0024A510(46.0f, pl, 0);
+            break;
+        case 1401:
+            ashi_eft_req(10.0f, pl, 8, 1);
+            if (frame_check(14.0f, pl, 0)) {
+                func_543690(pl, 5, 2);
+            }
+            sound_call2(pl, 16, Code_Make(35, 2, 36, 2));
+            sound_call2(pl, 2, 3);
+            sound_call2(pl, 14, 8);
+            ashi_sd_req_0024A510(12.0f, pl, 3);
+            yoroi_sd_req(12.0f, pl, 4);
+            ashi_sd_req_0024A510(58.0f, pl, 0);
+            break;
+        case 1402:
+            ashi_eft_req(12.0f, pl, 5, 8);
+            ashi_eft_req(34.0f, pl, 5, 1);
+            if (frame_check(2.0f, pl, 0)) {
+                func_543690(pl, 6, 2);
+            }
+            if (frame_check(20.0f, pl, 0)) {
+                func_543690(pl, 7, 1);
+            }
+            sound_call2(pl, 14, 8);
+            sound_call2(pl, 22, 4);
+            ashi_sd_req_0024A510(36.0f, pl, 3);
+            ashi_sd_req_0024A510(54.0f, pl, 3);
+            ashi_sd_req_0024A510(64.0f, pl, 0);
+            sound_call_0024A2A0(pl, 30, 68);
+            yoroi_sd_req(36.0f, pl, 0);
+            yoroi_sd_req(24.0f, pl, 0);
+            break;
+        case 1403:
+            ashi_eft_req(8.0f, pl, 5, 8);
+            ashi_eft_req(60.0f, pl, 8, 3);
+            if (frame_check(10.0f, pl, 0)) {
+                func_543690(pl, 7, 2);
+            }
+            if (frame_check(54.0f, pl, 0)) {
+                func_543690(pl, 8, 1);
+            }
+            if (frame_check(64.0f, pl, 0)) {
+                func_543690(pl, 12, 2);
+            }
+            sound_call2(pl, 18, Code_Make(35, 4, 36, 4));
+            sound_call2(pl, 54, 37);
+            sound_call2(pl, 4, 3);
+            sound_call2(pl, 16, 6);
+            sound_call2(pl, 44, 5);
+            sound_call2(pl, 64, 9);
+            ashi_sd_req_0024A510(60.0f, pl, 3);
+            ashi_sd_req_0024A510(124.0f, pl, 0);
+            yoroi_sd_req(60.0f, pl, 0);
+            yoroi_sd_req(88.0f, pl, 4);
+            break;
+        case 1404:
+            ashi_eft_req(14.0f, pl, 5, 1);
+            ashi_eft_req(28.0f, pl, 8, 8);
+            ashi_eft_req(38.0f, pl, 5, 3);
+            if (frame_check(36.0f, pl, 0)) {
+                func_543690(pl, 7, 1);
+            }
+            if (frame_check(36.0f, pl, 0)) {
+                func_543690(pl, 7, 2);
+            }
+            sound_call2(pl, 26, Code_Make(35, 4, 36, 4));
+            sound_call2(pl, 6, 1);
+            sound_call2(pl, 10, 6);
+            sound_call2(pl, 30, 9);
+            sound_call2(pl, 30, 4);
+            ashi_sd_req_0024A510(24.0f, pl, 3);
+            ashi_sd_req_0024A510(42.0f, pl, 3);
+            ashi_sd_req_0024A510(98.0f, pl, 1);
+            ashi_sd_req_0024A510(106.0f, pl, 0);
+            yoroi_sd_req(64.0f, pl, 0);
+            yoroi_sd_req(98.0f, pl, 0);
+            break;
+        case 1405:
+            ashi_eft_req(18.0f, pl, 8, 8);
+            ashi_eft_req(28.0f, pl, 5, 3);
+            if (frame_check(14.0f, pl, 0)) {
+                func_543690(pl, 13, 1);
+            }
+            if (frame_check(24.0f, pl, 0)) {
+                func_543690(pl, 10, 2);
+            }
+            sound_call2(pl, 28, Code_Make(37, 4, 36, 2));
+            sound_call2(pl, 6, 3);
+            sound_call2(pl, 18, 5);
+            sound_call2(pl, 30, 9);
+            ashi_sd_req_0024A510(12.0f, pl, 2);
+            ashi_sd_req_0024A510(36.0f, pl, 2);
+            ashi_sd_req_0024A510(56.0f, pl, 2);
+            sound_call_0024A2A0(pl, 40, 61);
+            sound_call2(pl, 66, 58);
+            ashi_sd_req_0024A510(68.0f, pl, 0);
+            sound_call2(pl, 66, 74);
+            yoroi_sd_req(56.0f, pl, 0);
+            break;
+        case 1406:
+            ashi_eft_req(18.0f, pl, 8, 1);
+            if (frame_check(10.0f, pl, 0)) {
+                func_543690(pl, 12, 1);
+            }
+            ashi_sd_req_0024A510(4.0f, pl, 3);
+            yoroi_sd_req(4.0f, pl, 0);
+            ashi_sd_req_0024A510(20.0f, pl, 3);
+            yoroi_sd_req(20.0f, pl, 0);
+            ashi_sd_req_0024A510(68.0f, pl, 0);
+            sound_call2(pl, 16, 36);
+            sound_call2(pl, 10, 5);
+            break;
+        case 1407:
+            if (frame_check(124.0f, pl, 0)) {
+                Eft13_set_scl(pl, 10, 38, 1.0f);
+                eft13_set(pl, 10, 37);
+            }
+            sound_call2(pl, 26, Code_Make(35, 2, 35, 2));
+            sound_call2(pl, 54, Code_Make(35, 2, 35, 2));
+            sound_call2(pl, 92, Code_Make(35, 2, 35, 2));
+            sound_call2(pl, 126, Code_Make(37, 4, 37, 4));
+            sound_call2(pl, 8, 8);
+            sound_call2(pl, 26, 4);
+            sound_call2(pl, 48, 4);
+            sound_call2(pl, 54, 8);
+            sound_call2(pl, 66, 8);
+            sound_call2(pl, 72, 4);
+            sound_call2(pl, 88, 8);
+            sound_call2(pl, 100, 4);
+            sound_call2(pl, 118, 9);
+            sound_call2(pl, 114, 5);
+            sound_call_0024A2A0(pl, 114, 63);
+            sound_call_0024A2A0(pl, 122, 60);
+            yoroi_sd_req(38.0f, pl, 0);
+            yoroi_sd_req(126.0f, pl, 0);
+            break;
+        case 1408:
+            ashi_sd_req_0024A510(22.0f, pl, 0);
+            yoroi_sd_req(22.0f, pl, 0);
+            ashi_sd_req_0024A510(36.0f, pl, 0);
+            yoroi_sd_req(36.0f, pl, 0);
+            move_default_0024A750(pl, w);     /* G: one half of the split script has no case */
+            break;
+        case 1409:
+            ashi_eft_req(34.0f, pl, 5, 3);
+            ashi_eft_req(60.0f, pl, 5, 1);
+            ashi_eft_req(72.0f, pl, 8, 8);
+            sound_call2(pl, 28, Code_Make(38, 4, 38, 4));
+            sound_call2(pl, 24, 5);
+            sound_call2(pl, 36, 9);
+            yoroi_sd_req(16.0f, pl, 0);
+            yoroi_sd_req(72.0f, pl, 0);
+            ashi_sd_req_0024A510(12.0f, pl, 2);
+            ashi_sd_req_0024A510(30.0f, pl, 2);
+            ashi_sd_req_0024A510(60.0f, pl, 2);
+            sound_call_0024A2A0(pl, 44, 63);
+            sound_call_0024A2A0(pl, 16, 58);
+            sound_call_0024A2A0(pl, 70, 68);
+            sound_call2(pl, 90, 74);
+            ashi_sd_req_0024A510(86.0f, pl, 0);
+            break;
+        case 1410:
+            ashi_eft_req(34.0f, pl, 8, 3);
+            ashi_eft_req(60.0f, pl, 8, 1);
+            ashi_eft_req(72.0f, pl, 5, 8);
+            sound_call2(pl, 28, Code_Make(38, 4, 38, 4));
+            sound_call2(pl, 24, 9);
+            sound_call2(pl, 36, 5);
+            yoroi_sd_req(16.0f, pl, 0);
+            yoroi_sd_req(72.0f, pl, 0);
+            ashi_sd_req_0024A510(12.0f, pl, 2);
+            ashi_sd_req_0024A510(30.0f, pl, 2);
+            ashi_sd_req_0024A510(60.0f, pl, 2);
+            sound_call_0024A2A0(pl, 44, 63);
+            sound_call_0024A2A0(pl, 16, 58);
+            sound_call_0024A2A0(pl, 70, 68);
+            sound_call2(pl, 90, 74);
+            ashi_sd_req_0024A510(86.0f, pl, 0);
+            break;
+        case 1411:
+            ashi_eft_req(18.0f, pl, 5, 8);
+            ashi_eft_req(28.0f, pl, 8, 3);
+            if (frame_check(14.0f, pl, 0)) {
+                func_543690(pl, 13, 2);
+            }
+            if (frame_check(24.0f, pl, 0)) {
+                func_543690(pl, 10, 1);
+            }
+            sound_call2(pl, 28, Code_Make(37, 4, 36, 2));
+            sound_call2(pl, 6, 3);
+            sound_call2(pl, 18, 9);
+            sound_call2(pl, 30, 5);
+            ashi_sd_req_0024A510(12.0f, pl, 2);
+            ashi_sd_req_0024A510(36.0f, pl, 2);
+            ashi_sd_req_0024A510(56.0f, pl, 2);
+            sound_call_0024A2A0(pl, 40, 61);
+            sound_call_0024A2A0(pl, 66, 58);
+            ashi_sd_req_0024A510(68.0f, pl, 0);
+            sound_call2(pl, 66, 74);
+            yoroi_sd_req(56.0f, pl, 0);
+            break;
+        case 1412:
+            ashi_eft_req(18.0f, pl, 5, 3);
+            ashi_sd_req_0024A510(16.0f, pl, 2);
+            sound_call_0024A2A0(pl, 18, 68);
+            yoroi_sd_req(20.0f, pl, 0);
+            break;
+        case 1413:
+            ashi_eft_req(16.0f, pl, 5, 3);
+            sound_call2(pl, 14, Code_Make(35, 3, 36, 3));
+            sound_call2(pl, 2, 6);
+            sound_call2(pl, 8, 1);
+            ashi_sd_req_0024A510(24.0f, pl, 0);
+            yoroi_sd_req(16.0f, pl, 0);
+            break;
+        default:
+            move_default_0024A750(pl, w);
+            break;
+        }
+        break;
+#endif
     case 0:
     default:
         switch (w->anim) {

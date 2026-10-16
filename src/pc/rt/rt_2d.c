@@ -402,3 +402,90 @@ void flmatSetZYX33(f32 x, f32 y, f32 z, f32 *m)
  * Used by the player name tags (village and quest), the sound pan and the ballista / bow sights. */
 void flvecrRotTransPers(f32 *out, f32 *in) { gfx_project(in, out); }
 void flmatrStore(void *m) { (void)m; }
+
+/* ------------------------------------------------------------ G's frozen game frame (quest clear)
+ * G (main 0x12E8A0 in the frame's trans, sub_main 0x4B8AA0 / 0x4B905C in quest_condition_prog): when the quest
+ * is cleared, quest_condition_prog asks for a copy of the next frame (system_w+0x33 = 0x81); the frame's trans
+ * copies the 3D scene (after the stage sprites, before the HUD) into texture 0x181 and answers 0x80; only then
+ * does quest_condition_prog start the clear camera (the PC starts it at once, as MH1: its quest flow stops calling
+ * quest_condition_prog after the clear, and a drawn frame follows every tick in play). The reward list (sub_main 0x4F3C80) draws that copy over its
+ * backdrop in 8 strips at half alpha (main 0x12EAF0: colour 0x80FFFFFF, 512 x 448). The PC reads the frame back
+ * (gfx_read_pixels) into a 256 x 256 texture and draws it over the whole window (the window's 3D picture, also
+ * widescreen). */
+static gfx_texture *cap_tex;
+static int cap_state;           /* 0 none, 0x81 asked, 0x80 taken (G's values) */
+
+void rt_cap_request(void)
+{
+    cap_state = 0x81;
+}
+
+/* the frame, after the 3D scene and the game's prims, before the 2D layers (viewer.c) */
+void rt_cap_frame(void)
+{
+    enum { TW = 256, TH = 256 };
+    int w, h, x, y;
+    u8 *rgb, *px;
+    if (cap_state != 0x81)
+        return;
+    gfx_size(&w, &h);
+    rgb = malloc((size_t)w * h * 3);
+    px = malloc(TW * TH * 4);
+    if (rgb && px && w > 0 && h > 0 && gfx_read_pixels(rgb) == 0) {
+        for (y = 0; y < TH; y++)                /* nearest sample: a backdrop at half alpha */
+            for (x = 0; x < TW; x++) {
+                const u8 *s = rgb + 3 * ((size_t)(y * h / TH) * w + x * w / TW);
+                u8 *d = px + 4 * (y * TW + x);
+                d[0] = s[0];
+                d[1] = s[1];
+                d[2] = s[2];
+                d[3] = 0xFF;
+            }
+        if (!cap_tex || gfx_update_texture(cap_tex, px) != 0) {
+            if (cap_tex)
+                gfx_release_texture(cap_tex);
+            gfx_tex_rgba_hint = 1;
+            cap_tex = gfx_create_texture(TW, TH, px);
+        }
+        if (getenv("RT_TRACE") || getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "rt_2d: quest clear frame copied (%dx%d)\n", w, h);
+    } else if (getenv("RT_TRACE") || getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_2d: quest clear frame not read (%dx%d)\n", w, h);
+    free(rgb);
+    free(px);
+    cap_state = 0x80;
+}
+
+/* the reward list's backdrop (f_reward_g.c trans_result_0, after Disp_back): 0 when there is no copy */
+int rt_cap_draw(void)
+{
+    static const float pos[12] = { 0, 0, SCR_W, 0, 0, SCR_H, SCR_W, 0, SCR_W, SCR_H, 0, SCR_H };
+    static const float st[12] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1 };
+    u8 col[24];
+    int i, an = gfx_2d_anchor;
+    if (cap_state == 0x81)          /* no frame was drawn since the clear (a fast-forwarded test run): no copy */
+        cap_state = 0;
+    if (!cap_tex)
+        return 0;
+    for (i = 0; i < 6; i++) {
+        col[4 * i] = col[4 * i + 1] = col[4 * i + 2] = 0xFF;
+        col[4 * i + 3] = 0x80;
+    }
+    gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)cap_tex);
+    gfx_set_render_state(GFX_RS_TEX_CLAMP, 1);
+    gfx_set_2d_anchor(GFX_A_STRETCH);
+    gfx_draw_2d(SCR_W, SCR_H, 6, pos, st, col);
+    gfx_set_2d_anchor(an);
+    gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
+    rt_2d_restore_texture();
+    return 1;
+}
+
+/* the copy belongs to one quest's result: dropped when the result ends */
+void rt_cap_drop(void)
+{
+    if (cap_tex)
+        gfx_release_texture(cap_tex);
+    cap_tex = NULL;
+    cap_state = 0;
+}

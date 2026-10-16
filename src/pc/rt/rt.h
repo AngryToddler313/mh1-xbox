@@ -293,6 +293,13 @@ void rt_hud_init(void);
 void rt_hud_tick(void);
 /* the screen layers (HUD, menus, info banner, text) after the 3D scene */
 void rt_game_draw_2d(void);
+/* G's frozen frame of the quest clear (rt_2d.c): asked by quest_condition_prog, taken by the frame, drawn by the
+ * reward list */
+void rt_cap_request(void);
+void rt_cap_frame(void);
+void rt_fog_scene(int on);    /* rt_fl.c: the 3D scene's fog on/off (the clays made with gfx_clay_desc.fog) */
+int rt_cap_draw(void);
+void rt_cap_drop(void);
 
 /* ------------------------------------------------------------ game modes (rt_flow.c) */
 /* fn = the host's game tick, called as game_core (swset/move/trans/hit_check) */

@@ -60,7 +60,8 @@ enum {
     GFX_RS_FOG_COLOR    = 0x0F,  /* value: 0xRRGGBB */
     GFX_RS_FOG_START    = 0x10,  /* value: float* */
     GFX_RS_FOG_END      = 0x11,  /* value: float* */
-    GFX_RS_FOG_ENABLE   = 0x12,  /* value: 0 off, else on (fl: fog type) */
+    GFX_RS_FOG_ENABLE   = 0x12,  /* value: 0 off, else on: fog for the clays made with gfx_clay_desc.fog (the scene's
+                                    fog; on the PS2 each clay keeps its own fog bit, fl RenderState 0x8000) */
     GFX_RS_VIEW         = 0x17,  /* value: const float[16], row vectors */
     GFX_RS_TEXMAT       = 0x19,  /* value: const float[16] applied to (s,t,0,1); NULL = identity */
     GFX_RS_WORLD        = 0x1A,  /* value: const float[16] (flMATRIX[0]) */
@@ -149,6 +150,8 @@ typedef struct {
     const gfx_batch *batch;
     int dynamic;               /* positions/colours change every frame */
     int noscroll;              /* the part's attribute has no UV scroll (+0x1C = 0): fl state 0x19 does not move its texture */
+    int fog;                   /* the part's attribute asks for fog (AMO +0x20 = 0: aa_fog[0] = 0x8000, fl RenderState 0x8000):
+                                  drawn with the fog of GFX_RS_FOG_* while GFX_RS_FOG_ENABLE is on */
 } gfx_clay_desc;
 
 /* Immediate 2D triangle list (screen prims of the game's menus / HUD):

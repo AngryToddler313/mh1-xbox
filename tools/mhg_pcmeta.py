@@ -88,6 +88,9 @@ def split_data():
                 if n is None:               # .asciz: up to the next line's address
                     n = 1
                 last = max(last or 0, a + n)
+                small = re.match(r"^D_([0-9A-F]+)$", arg)
+                if small and int(small.group(1), 16) < 0x100000:
+                    continue        # splat named a number (0x0000FFFF: an s16 list's -1 end + padding) D_FFFF: no pointer
                 if kind == "word" and re.match(r"^[A-Za-z_]\w*$", arg) and a & 3 == 0:
                     ptrs[m].add(a)
                     has_sym = True

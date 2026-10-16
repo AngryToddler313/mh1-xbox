@@ -66,7 +66,7 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 | GN14 | Xbox: G frame rate and memory on hardware unknown (xemu only); rt_meta.c costs 1.5 MB of .rdata on G | docs/xbox.md "Monster Hunter G on the Xbox" | owner test | Xbox + owner | [docs] |
 | GN15 (FIXED 15 Oct, agent A) | Sound: G's em04 sound script ran MH1's (stand-in sub_main_func_004ECD00); G's Eft13 dust | em04_nm.c, rt_quest.c | done: G's script differs only by kind 32's sound in motion 0x3F7; the dust script (0x4EDAA0) runs in G only while overlay 2 is in slot 2 (gallery event scenes), so no dust in quests, as on the PS2. No stand-in left | quest | [verified: G asm (0x4ECD00 decoded call by call), build]; sound by ear not checked |
 | GN16 | No G save test (round trip, corrupted card, two slots) like MH1's test_save.sh | tools/ | open | platform | [verified] |
-| GN17 (FIXED 15 Oct, agent A) | After a quest MH1's result_prog ran: no hand-in of G's five quest items, no record / training / gallery announcements, MH1's screens | src/main/reward/f_reward_g.c (G sub_main 0x4F3A50-0x4F7FDC, replaces f_reward.c / f_reward2.c / f_reward3.c in the G PC build) | done: G's 20-step result_prog: reward list, money, **sale of the special items** (ids 178, 260, 164, 139, 145 leave the pouch and are paid at their price), "monster hunting record updated" (picture, old / new size, crowns), "added to the training school" (User_data+0xDDC bits by kill count), gallery movie / title, online point screen and error screen as G. Found on the way: **func_0012D170 read past game_w** (rt_quest.c): in test runs it returned 1, so every quest end put the pouch back to its departure state and skipped the sale; now G's system_w test. **Not ported:** G's frozen game frame behind the reward list (main 0x12EAF0, a GS copy: the PC shows the plain backdrop); the random number G saves at User_data+0xD0A (no reader found) | quest | [verified: hidden runs of quests 10, 10015, 10043 reach every offline step (9-16), shots build/A/gn17/1_reward_list .. 7_gallery_title.png; the sale paid 1682 z for 2 x 178 and 3 x 145] |
+| GN17 (FIXED 15 Oct, agent A) | After a quest MH1's result_prog ran: no hand-in of G's five quest items, no record / training / gallery announcements, MH1's screens | src/main/reward/f_reward_g.c (G sub_main 0x4F3A50-0x4F7FDC, replaces f_reward.c / f_reward2.c / f_reward3.c in the G PC build) | done: G's 20-step result_prog: reward list, money, **sale of the special items** (ids 178, 260, 164, 139, 145 leave the pouch and are paid at their price), "monster hunting record updated" (picture, old / new size, crowns), "added to the training school" (User_data+0xDDC bits by kill count), gallery movie / title, online point screen and error screen as G. Found on the way: **func_0012D170 read past game_w** (rt_quest.c): in test runs it returned 1, so every quest end put the pouch back to its departure state and skipped the sale; now G's system_w test. **Not ported:** G's frozen game frame behind the reward list (done 16 Oct, section 8); the random number G saves at User_data+0xD0A (no reader found) | quest | [verified: hidden runs of quests 10, 10015, 10043 reach every offline step (9-16), shots build/A/gn17/1_reward_list .. 7_gallery_title.png; the sale paid 1682 z for 2 x 178 and 3 x 145] |
 
 ### Minor
 
@@ -142,8 +142,8 @@ Third pass (15 Oct 2026, agent A, quest lane): GN17 with GN11 / GN13 (above), th
 - **Plesioth (em21)**: G sets the land / water state x388 through game 0x62DB60 in 63 acts, which also switches the AI's distance set
   (em_range_set: 2 while swimming, 1 with the flag, else 0), so G's Plesioth picks its moves with water distances while it swims; MH1 never
   switched. The part-3 break has its own damage act 23 (G swapped the flinch motions of parts 3 and others against MH1). [verified: quest 11
-  trace, range 2 whenever x388 = 4; quest 35 passes]. **Open:** G's em21 die case 4 (game 0x60CF20) and the quest-10035 demo acts 1-4 on stage
-  54 (em21_main -> game 0x60C280, event flag 22; the PC skips that demo), em21_init's char-set / extra zeroing (game 0x549FE0).
+  trace, range 2 whenever x388 = 4; quest 35 passes]. **Closed 16 Oct (fourth pass):** the quest-10035 opening and em21_init's G kinds are ported; "die case 4" and
+  "0x60C280" came from a wrong map pair (another monster's move05/06): G's em21 has the same four die acts as MH1 (section 8).
 - **Cephadrome (em08)**: G's atk03 / atk04 (game 0x5CA620 / 0x5CA900; MH1's are empty) are three-way sand spreads (Shell08 kind 7 + Eft17).
   Ported; not seen chosen in the quest-13 trace (short fight with the x40 damage aid) [code from asm].
 
@@ -178,9 +178,9 @@ Still MH1 logic where G differs, that a player can notice (nothing here is a cra
 | Pause menu help line | row ステータス showed the friend-list help | **done**: G's Menu_status_i clears PitMenu.x10 (G's D_002FF2A0), so no help line under the pages |
 | Equipment detail windows | equip_exp_core 4.7 KB, EquipmentCompareWindowA, sword_zokusei, slash_level_bar (6 sharpness levels), Put_receive_mark | **done** (= GN7, src/main/menu/equip_g.c); Put_receive_mark (the "received" mark of the item window) is not looked at |
 | Standard camera | cam_sub_std (main 0x1D9D60), func_001DAE60 / func_0010AE00, k_HitEmCamera | **done** (agent C, src/main/cam/cam_nm.c, camr5_nm.c, src/main/hit/f_sphr.c, G branches): pad turning (0xC00) first, wall turn 1/8 per frame, angle easing 1/4, target 1/2, field-of-view easing, stage tables x5F7 / water camera, far camera jumps; **eye lift behind ridges**: G's ground line test func_0010AE00 (2 KB, G only, written from the asm as C in f_sphr.c: walks the ground grid cells along the segment, first crossed polygon wins) from the eye to the hunter's head joint, lift +20 per frame up to 300 while it is blocked and the ground at the eye is more than 150 above the ground at the target, else back by 20; **k_HitEmCamera** (G: only the first push01 sphere is tried per monster, body entries flagged 4 are skipped); **not done:** QuestClearCameraRequest, NPCZoomInCamera* still MH1 [hidden runs: camera_wall_tent.png; func_0010AE00 cast from the hunter in 8 directions with RT_GLINE=dist RT_GLINE_H RT_GLINE_DY (rt_cam.c): a ray that dips into the ground reports a hit in all 8, level rays report none; x2C is in the RT_CAM_TRACE line as `lift`; a real ridge was not staged] |
-| Stage drawing | trans_stage (15 KB, +450 instructions in G), stage_set_set, stage_spr_disp | **open (looked at, not ported)**: G adds 12 blocks of about 720 instructions in total (new per-stage cases with their own matrices and clay draws: the stage-number ladders now also list G's stages 8, 15, 88-91; the first block is a model at a fixed place turned by the frame counter), each needing a G stage to compare against; the stages look right in the village and quests [asm diff only] |
+| Stage drawing | trans_stage (15 KB, +450 instructions in G), stage_set_set, stage_spr_disp | **trans_stage done 16 Oct (agent A, section 8)**; earlier note: G adds 12 blocks of about 720 instructions in total (new per-stage cases with their own matrices and clay draws: the stage-number ladders now also list G's stages 8, 15, 88-91; the first block is a model at a fixed place turned by the frame counter), each needing a G stage to compare against; the stages look right in the village and quests [asm diff only] |
 | Wall collision | GetWallHitBit2 / GetWallHitBitEm / GetWallHitBitPl / HitWallPlayer (f_sphr.c) | **checked, one change** (agent C): the three GetWallHitBit* are the same logic as MH1's (G only moves the "already seen" searches into func_00106000 / 00106050 and changes registers [op-sequence compare]); HitWallPlayer now scales a monster's wall spheres by its base scale (EMW 0x600) when its size is 60-200 % and treats kind 50 like kind 7; the hunter slides along walls on the G PC [hidden run RT_PL_TRACE: build/C/w/w0.log, pos 9601,9633 -> wall at 9624,9586 -> 9042,9727] |
-| Player timers and moves | timer_calc_sub_pl (+68 instructions), pl_move_sub (a new field at +0x940, Pl_act_set instead of Pl_act_set2), Pl_item_stack, St_pick_ck2, body_hit_sub_new | **timer_calc_sub_pl and St_pick_ck2 done** (pl_nm.c, plx10.c: the +0x93E timer, stamina drain state +0x93D, life-bar recovery every 60 / 20 / 15 / 180 / 240 ticks by the damage-recovery skills, gathering skills 164-167 lower the chance a spot runs dry) [asm diff; compiled, not seen in a run]. **pl_move_sub done** (agent C, 15 Oct, pl_nm.c): the status reactions use Pl_act_set (G) instead of Pl_act_set2, work601 / work917 are no longer cleared, work940 = work8F0 each step (hit_mark_set_new reads it; that function's +150 G instructions for the skills 169 / 79 are not ported, see below) and work93D clears when flag12 == 0, no camera toggle in state 6; the net position packet slot now compares with G's master byte (game_w+0x3A; the MH1 +0xD1 read the wrong byte, also in em init f_em_nm.c) [asm diff]. **body_hit_sub_new done**: body entries flagged 4 are skipped, the push never sinks the hunter below the ground line x5AC [asm diff]. **Pl_item_stack**: the only G change is the item-book bit (sub_main 0x4C8EF0 sets bit n of User_data+0xDE8 for the item's collection number from a 250-entry ladder at 0x4C8B10) at three places; nothing on the PC reads the bits, so it is left out. **Not ported:** hit_mark_set_new (hunter hits on monsters, 703 vs 553 instructions: skill 169 / 79 and the work940 case) |
+| Player timers and moves | timer_calc_sub_pl (+68 instructions), pl_move_sub (a new field at +0x940, Pl_act_set instead of Pl_act_set2), Pl_item_stack, St_pick_ck2, body_hit_sub_new | **timer_calc_sub_pl and St_pick_ck2 done** (pl_nm.c, plx10.c: the +0x93E timer, stamina drain state +0x93D, life-bar recovery every 60 / 20 / 15 / 180 / 240 ticks by the damage-recovery skills, gathering skills 164-167 lower the chance a spot runs dry) [asm diff; compiled, not seen in a run]. **pl_move_sub done** (agent C, 15 Oct, pl_nm.c): the status reactions use Pl_act_set (G) instead of Pl_act_set2, work601 / work917 are no longer cleared, work940 = work8F0 each step (hit_mark_set_new reads it; that function's +150 G instructions for the skills 169 / 79 are not ported, see below) and work93D clears when flag12 == 0, no camera toggle in state 6; the net position packet slot now compares with G's master byte (game_w+0x3A; the MH1 +0xD1 read the wrong byte, also in em init f_em_nm.c) [asm diff]. **body_hit_sub_new done**: body entries flagged 4 are skipped, the push never sinks the hunter below the ground line x5AC [asm diff]. **Pl_item_stack**: the only G change is the item-book bit (sub_main 0x4C8EF0 sets bit n of User_data+0xDE8 for the item's collection number from a 250-entry ladder at 0x4C8B10) at three places; nothing on the PC reads the bits, so it is left out. **hit_mark_set_new: done** (it already matched G on the PS2 since 14 Oct, commit 03aca46d, and the G PC links that C from hit.c; this row was stale) [verified: G rebuild 7 OK, the PC binary's hit_mark_set_new is hit.c's G body] |
 | Card save screens | disp_savesel / disp_savesel_waku / disp_savesel_moji | **done** (agent C, src/main/mc/mcdisp_nm.c G branch): G's slots are 0xE00 bytes in option_w (MH1 0x480), each shows `1:NAME`, `TIME: h'mm" / MALE`, `MONEY: n z` (with `/ HR:rank` once the hunter has one) as G's own strings (gsave_fmt in pc_data.txt); empty slots NO DATA; waku takes the highlighted slot as 4th argument. Found on the way: **Default_reibun_set wrote the chat phrases at option_w+0xDB0 (MH1) = inside G's second save slot** (G: +0x2A30), so a fresh card showed slot 2 as used with garbage [verified: shots build/C/g/savesel_empty.png (three NO DATA after NEW GAME), savesel_continue.png (1:TEST ... after a save)]. Not ported: the PS2's buffer mode (G draws the slots from the card image while it checks; the PC keeps them in option_w) |
 | Fade | Fade_busy_ck / fade_set / Fade_task (a second state byte) | none seen |
 | HUD bits | disp_timer, disp_slash_level (G's levels), trans_box, player_info_sub, disp_item_list_present, disp_whole_map | small differences [asm diff only] |
@@ -214,3 +214,111 @@ struct offsets, which the G build already has (UDW / PLW / game_w G layouts).
 
 Checks (15 Oct 2026, agent D, after the second pass): tools/full_check.sh all ok (rebuild 5 OK, PC builds, every test, both Xbox builds); `VERSION=mhg tools/rebuild.sh`
 7 OK (3 GB cap); tools/test_gvillage.py 16/16; tools/test_all_quests_g.sh 98 quests + carts; G nv2a Xbox build OK (build_xbox.py --version mhg --gfx nv2a).
+
+## 8. Fourth pass (agent A, 16 Oct 2026)
+
+What a G player notices, each checked in hidden PC G runs (pictures in build/A/text, build/A/rwbg, build/A/q10035):
+- **Character creation title** reads "CHARACTER CREATION" (was "...CREATIONAAAA" off the screen edge). Cause: splat named
+  the data word 0x0000FFFF "D_FFFF" and tools/mhg_pcmeta.py took every `.word D_FFFF` as a pointer, so the loader zeroed
+  it: 78 words of G main, each the -1 end of an s16 list (the title strips and other tables). Fixed in the tool,
+  pc_ptrs.txt regenerated [verified: Sel_menu_disp trace before/after, shot edit_title_icons.png].
+- **Button icons in text** (G's `~Bnn`): the circle / cross etc. are drawn (PutButtonICON with the entry G queues,
+  func_0012B8F0) instead of a gap [verified: character creation help line "(O) enter (X) cancel"].
+- **Plesioth, quest 10035**: G's opening scene now has the Plesioth swimming its scripted path (game 0x6345E0, mode 6
+  act 1, 14 steps: placed, dives, turns, breaches with the spray at frame 114) while the demo camera runs, then it swims
+  off after event flag 22, as G's em21_main (0x636C08) does [verified: trace of the 14 steps in step with the camera's
+  commands, flag 22 set after the demo, shots]. Seen on the way, not fixed: ticks ~230-380 of the scene (an underwater
+  shot, camera at y -129..100) show the stage from below on the blue clear colour [not compared with a PS2].
+- **Reward list backdrop**: the frame of the quest clear (G: system_w+0x33 request in quest_condition_prog, copy in the
+  frame's trans, drawn at half alpha by main 0x12EAF0) is copied with gfx_read_pixels into a 256x256 texture and drawn
+  behind the list (src/pc/rt/rt_2d.c rt_cap_*). The PC starts the clear camera at once (MH1 timing); G waits one frame
+  [verified: quest 10 with RT_STEP=1, shot q10_7100: the Kut-Ku and the hunter behind the reward window]. Test runs
+  without drawn frames (fast-forwarded) get no copy and the old backdrop.
+- **Hunter hit by monsters** (GB6, Pl_damage_sub / pl_guard_set, game 0x66D300 / 0x66D080): G's skills now act: guard
+  skills 75-78 change the hit strength before the guard reaction; skill 110 (1 in 4: 70% damage, flash + sound) / 111
+  (130%); knock-down immunity by skill 41 / 107 (type 15), roar / wind immunity by skill 114 / 113 (type 14); damage
+  through a guard 1/2 with +0x3EB bits; dm_type 15 falls with its own act; the stun test of sub_main 0x4CC810; the voice
+  is not cut when nothing happens. Skill names are not looked up [asm read; build + quest tests].
+- **trans_stage** (G sub_main 0x4A22C0): G's per-stage changes: stage 0 not drawn; new layer cases for stages 8, 0xF,
+  0x18, 0x1B/0x1D, 0x4A, 0x58, 0x59-0x5B (turning pieces, scrolling water/lava layers, translucent mode 4/1), layers
+  hidden on 0x4C (4+) and 0x4D (4+), 0x55's scroll speed; set pieces: 0x18 new, 0x1D uses 0x2D's, 0x4A its own pair
+  (set74_pos_tbl, pc_data) [asm read case by case; m2c drafts of both versions diffed].
+  Before/after shots with the viewer's default camera (build/A/ts/ba.png, o* = MH1 code, s* = G code): **stage 24 no
+  longer crashes** (`mhview_g --stage 24` died with MH1's set-piece code); stage 8 no longer shows MH1's turning piece in
+  front of the camera; stage 74 no longer has a hole to the sky; stage 27's layers 2/3 are now drawn additive as G's code
+  says (a pale overlay where the PC drew dark rocks) [G's code read, not compared with a PS2 picture: owner check].
+  Seen: `mhview_g --stage 88 / 89` crash in load_stage_hit (not from this change).
+- **Not real**: "em21 die case 4" (map error, see section 4). **hit_mark_set_new** was already G (row updated).
+
+GB6, quest lane, what is left (docs/survey/mhg_cov_g.txt of 15 Oct re-read against today's code; ranked by how often a
+player meets it) [inferred from the asm diff sizes, not run]:
+1. pl01_effect_move / ef_move_sub_0024A790 (hunter weapon effects and sounds: G calls two big G-only functions; every hunt).
+2. NextStage_Dir_Set (em_cmd, 0.73: where a monster heads when it changes area; every hunt with area changes).
+3. Monster effects eft20_pos_set (0.65), eft13_t (0.79), eft09_m (0.75), Eft05 (rewritten in G).
+4. Stage sets: set19_trans (GN8, stages 67/73/75), set04_trans, set06 (rewritten), set13_i.
+5. Per-monster: em27 em_die04 (rewritten), em08 em_dmg05, em16 / em17 small acts (0.74-0.79), em07 item/part sets.
+Done in this pass: Pl_damage_sub / pl_guard_set (was first: every hit on the hunter), trans_stage.
+
+## 9. Real-G reference shots and the GB6 quest lane, fifth pass (agent A, 16 Oct 2026)
+
+**New tool: tools/g_ref_shot.sh** (real-G pictures next to the PC's). The owner's G disc runs in PCSX2 (hidden, PINE
+socket on: tools/pcsx2/pine.py reads/writes EE memory and save states). A save state "in a quest" is made once from the
+real menus (NEW GAME, name, house, the Village Elder's first quest, the gate) and kept in build/ref/pcsx2home; each
+shot loads it and moves the hunter to the stage the way an area exit does (PLW+0x73A/0x73C/0x570/0x738, game2 loads
+the area), grabs the screen, reads G's game camera (lpView: eye, target, angle of view) and draws the same stage on the
+PC from that camera (`mhview_g --stage N --view eye,target,fov`, new). `--pc-only` redraws the PC side from the saved
+cameras after a PC change. ~1 min per stage. Example: `tools/g_ref_shot.sh --out build/ref 27 8 15`.
+The scripted creation of the save state was checked from an empty PCSX2 home (NEWSTATE=1, ~4 min: state saved, stage
+27 shot taken) [verified]; the comparison pictures below came from a state made by hand with the same steps.
+
+**Comparison** (PS2 left, PC with fog middle, PC before right): build/A/ref/cmp_s08.png .. cmp_s85.png, all in
+build/A/ref/overview.png; pairs build/A/ref/sNN.png.
+- **Stage 27 (last round's additive layers 2/3)**: the real G has the same pale overlay where the PC drew it: the
+  additive layers are right [verified: PS2 picture]. What differed was the fog (below) and overall brightness.
+- **Stage fog was missing on the PC (MH1 and G)**: fl gives each clay a fog bit from its material attribute (+0x20:
+  0 = fog, aa_fog), stage_fog_set sets the colour / start / end per stage; the PC never drew fog. **Fixed**: per-clay
+  fog in the GL and nv2a backends, stage_fog_set at each stage load [verified: 27 and 08 move toward the PS2's bluish /
+  grey haze; difference pictures]. The PS2's fog still looks stronger at a distance (stage 8's sky is almost all fog
+  colour on the PS2) [the PS2 fog formula in the VU1 code is not read: start/end used as GL linear eye-distance fog].
+- **Brighter PC**: stages 27, 15, 29 are about 1.5-2x brighter near the camera on the PC (27: ground 108,111,65 vs
+  55,60,39; stage 29 is dusk-dark on the PS2). Stage 8 matches. Likely the stage lighting (light_set / pl_light_tbl
+  per stage); the PC's lighting is its own approximation (docs/pc.md "Lighting") [not fixed; next step].
+- **Stage 15**: the PS2 has the sun with its lens flare (set13) right in view; the PC's --stage picture has no sun
+  [the --stage viewer runs no set objects; not checked in a quest].
+- **Stage 24**: below the jungle edge the PS2 shows black (clear colour), the PC its blue clear colour [minor].
+- **Stage 74**: the two G set pieces at set74_pos_tbl (7900,0,6030 / 5560,0,6960) are drawn by the PC as dark
+  branch-like shapes and are not visible on the PS2 in the same view, although G has the set model loaded there
+  (set_mdlw flag 1, 3 clays, read in PCSX2) [open: probably drawn but invisible on the PS2 (UV-scrolled drips);
+  not settled].
+- **Stages 76/77/85** (town / tavern / guild hall areas): match apart from the effects (candle flames) the --stage
+  viewer does not run.
+- **8 and 15**: shapes and set pieces match (last round's turning piece on 8 is gone on both).
+
+**`mhview_g --stage 88/89`**: not G stages (both games have stages 0-87; G's stage_hit_data_w is 0 past 87, the file-0
+link crashed load_stage_hit). The viewer now refuses stage numbers outside 0-87.
+
+**GB6 quest lane, item 1 (hunter weapon effects and sounds)**: G's pl01_effect_move calls two functions (sub_main
+0x4E30B0 effects, 0x4A9F50 sounds) that together hold MH1's ef_move_sub. Running both (a small MIPS interpreter
+over the asm, per weapon class 0-5 and every motion number in the scripts) gives the same calls as MH1's except:
+anim 801 (G adds an Eft06 flash when PLW+0x8D0 = 4: ported) and the other-players skill section (online only, G
+adds skill 115 and five weapon ids: not ported). G's weapon switch has **7 classes: class 6 is the Dual Swords**,
+which the PC had no sounds for: **ported** (pl_snd01.c case 6, generated from both kind-6 blocks; checked against the
+interpreter for all 3000 motion numbers: 0 differences).
+But the PC cannot play the Dual Swords yet: **Battle_type was imported at MH1's size** (0x7C; G 0xE1), so every G
+weapon type from 0x7C on (G's new weapons of all classes, all Dual Swords) took its class from unrelated host memory.
+Fixed (pc_data.txt); with the right class 6, pl_init crashes (Pl_slash_tbl / mv001_tbl / mv004_chr_tbl* are MH1's six
+entries), so job 6 now plays as sword and shield (stand-in, rt_data.c; RT_G_DUAL=1 for porting).
+**New gap (Blocker for G's weapon list): the Dual Swords class** (job-6 tables, moves, motions, the second blade's
+trail Eft05 arg 2) is not ported.
+
+**Item 2, NextStage_Dir_Set** (where a monster heads when it changes area): G picks the side from the signed offset to
+the next area (MH1 compared it with w/3, 2w/3 and w/2, so a next area to the left / front always gave side 0 or the
+middle). **Ported** (em_cmd_nm.c VERSION_MHG) [asm read; build and quest tests; not watched in a hunt].
+
+**Item 3, monster effects**: **eft09 (the cut tail) ported** (game 0x56E230 / 0x56E3D0 / 0x56E940, eft09.c G
+branches): the subspecies (kinds 37, 41-44, 47-49) now leave a cut tail too (MH1's kind list only had the originals),
+a cut tail goes away when its monster loses a life (G's revival: the lives count is kept at eft09_set), and a fading
+monster's tail is drawn in ot0 [verified: G quest 10 tail-cut run, "em-tail: kind 1 tail cut ... pick 0"; the
+subspecies and revival paths: asm read, not run]. Eft05 (weapon trail) is rewritten in G for several trails per
+effect (count per type, prims each, helpers 0x56C660 / 0x56C880); it matters with the Dual Swords: not done.
+eft20_pos_set / eft13_t: not started.

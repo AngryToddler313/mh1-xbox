@@ -305,6 +305,10 @@ void em21_init(EMW *em) {
         case 0x11:
         case 0x15:
         case 0x16:
+#ifdef VERSION_MHG
+        /* G game 0x62D934: the G kinds too (39 and 20 have none) */
+        case 37: case 38: case 41: case 42: case 43: case 45: case 46: case 47: case 48: case 49:
+#endif
             em->ex[0xA3] = 0;
             eft09_set(em, temp_a1);
             break;
@@ -3579,6 +3583,206 @@ static void em_demo00_00606B70(EMW *em, EM21W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+int Event_flag_ck();
+void em_rate_clear(EMW *em);
+void em21_to_swim(EMW *em);
+/* G game 0x6345E0 (mode 6 act 1, G only): quest 10035's opening scene on stage 54. While the event demo runs
+ * (game_w.info_stop == 1, evdemo entry 15) em21_main puts the Plesioth here: it is placed at fixed points and swims a
+ * scripted path (turns, a dive, a breach with the water spray of Shell08 kind 0x22 at frame 114), then waits for event
+ * flag 22 (set when the demo ends) and swims off as normal. Written from G's asm (agent A, 16 Oct 2026). */
+static void em21_demo_path_g(EMW *em, f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1)
+{
+    /* a leg of the path: the Plesioth is put at (x0, y0, z0) and heads for (x1, y1, z1) */
+    em->pos[0] = x0;
+    em->pos[1] = y0;
+    em->pos[2] = z0;
+    em->tgt_pos[0] = x1;
+    em->tgt_pos[1] = y1;
+    em->tgt_pos[2] = z1;
+}
+static void em21_demo_aim_g(EMW *em, EM21W *w, s32 turn, int dist)
+{
+    em->ang[0] = 0;
+    em->ang[1] = (Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) + turn;
+    em->ang[2] = 0;
+    if (dist)
+        w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
+}
+static void em21_demo_swim_g(EMW *em, EM21W *w)
+{
+    w->spd[1] = em->ang[1];
+    speed_add(em, w->spd);
+    w->dist -= em->adj_z;
+}
+static void em_demo01_g(EMW *em, EM21W *w) {
+    em->x9D9 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em21_demo_path_g(em, 6694.0f, -550.0f, 17459.0f, 10412.0f, -550.0f, 12820.0f);
+        em21_demo_aim_g(em, w, 0, 1);
+        em_rate_clear(em);
+        em_char_set(em, 0x82, 0, 0);
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        em->work08 = 180;
+        ((u8 *)w)[0x90] = 0;                /* EMW 0x4D4 */
+        break;
+    case 1:
+        ((u8 *)w)[0x90] = 1;
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x83, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em21_demo_path_g(em, 6649.0f, -550.0f, 17459.0f, 10412.0f, -550.0f, 12820.0f);
+            em21_demo_aim_g(em, w, 0, 1);
+            em_char_set(em, 0x66, 0, 0);
+            w->spd[0] = 0;
+            w->spd[2] = 0;
+            em->work08 = 30;
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em->adj_z = 30.0f;
+        }
+        break;
+    case 4:
+        em21_demo_swim_g(em, w);
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em_rate_clear(em);
+            em21_demo_path_g(em, 15251.0f, -230.0f, 13531.0f, 14094.0f, -230.0f, 13301.0f);
+            em21_demo_aim_g(em, w, 0, 1);
+            w->spd[0] = 0;
+            w->spd[2] = 0;
+            em->adj_z = 20.0f;
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 5:
+        em21_demo_swim_g(em, w);
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em_rate_clear(em);
+            em->tgt_pos[0] = 10191.0f;
+            em->tgt_pos[1] = -200.0f;
+            em->tgt_pos[2] = 12523.0f;
+            em21_demo_aim_g(em, w, 0, 1);
+            em->adj_z = 50.0f;
+            em_char_set(em, 0x67, 0, 0);
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 6:
+        em21_demo_swim_g(em, w);
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em_rate_clear(em);
+            em21_demo_path_g(em, 10679.0f, -550.0f, 11603.0f, 10000.0f, -550.0f, 8560.0f);
+            em21_demo_aim_g(em, w, -0x3000, 0);
+            em_char_set(em, 0x72, 0, 0);
+            w->spd[0] = 0;
+            w->spd[2] = 0;
+            em->work08 = 90;
+            em->adj_z = 60.0f;
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 7:
+    case 8:                                 /* turning in place, 0x100 / 0x180 a tick */
+        em->ang[1] = (u16)(em->ang[1] + (em->x05 == 7 ? 0x100 : 0x180));
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (--em->work08 <= 0) {
+            if (em->x05 == 7) {
+                em->x05++;
+                em_rate_clear(em);
+                em21_demo_path_g(em, 5000.0f, -550.0f, 7950.0f, 5570.0f, -550.0f, 8900.0f);
+                em21_demo_aim_g(em, w, -0x3000, 0);
+                em_char_set(em, 0x72, 0, 0);
+                w->spd[0] = 0;
+                w->spd[2] = 0;
+                em->work08 = 45;
+                em->adj_z = 20.0f;
+            } else {
+                em->x05++;
+                em->tgt_pos[0] = 6600.0f;
+                em->tgt_pos[1] = -550.0f;
+                em->tgt_pos[2] = 9330.0f;
+                em21_demo_aim_g(em, w, 0, 1);
+                em_char_set(em, 0x6C, 0, 0);
+                em->adj_z = 50.0f;
+            }
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 9:
+        em21_demo_swim_g(em, w);
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em->tgt_pos[0] = 9120.0f;
+            em->tgt_pos[1] = -550.0f;
+            em->tgt_pos[2] = 10400.0f;
+            em21_demo_aim_g(em, w, 0, 1);
+            em_char_set(em, 0x67, 0, 0);
+            em->adj_z = 30.0f;
+            em->adj_y = -5.0f;
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 10:
+        em21_demo_swim_g(em, w);
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+            em_rate_clear(em);
+            em->work08 = 210;
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 11:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em21_demo_path_g(em, 9100.0f, -600.0f, 10350.0f, 11131.0f, -600.0f, 11228.0f);
+            em21_demo_aim_g(em, w, 0, 0);
+            em_char_set(em, 0x75, 0, 0);
+        }
+        swim_eff_set_0060C1A0(8.0f, em);
+        break;
+    case 12:
+        if (em_frame_check(em, 0, 114.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0, (s32)(46.0f * em->act_spd));
+        }
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            swim_eff_set2_0060C260(8.0f, em);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 13:
+        if (Event_flag_ck(0x16) == 1) {
+            em->x05++;
+            em21_to_swim(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_die00_00606C90(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -4179,6 +4383,11 @@ static void em_move06_00607CA0(EMW *em, EM21W *w) {
     case 0:
         em_demo00_00606B70(em, w);
         break;
+#ifdef VERSION_MHG
+    case 1:                                         /* G game 0x635F40: quest 10035's opening (em_demo01_g) */
+        em_demo01_g(em, w);
+        break;
+#endif
     }
 }
 
@@ -4451,6 +4660,14 @@ void em21_main(EMW *em) {
     if (var_s0 && em->x94E == 0) {
         em->x88B = 1;
     }
+#ifdef VERSION_MHG
+    /* G game 0x636C08: in quest 10035 on stage 54, until event flag 22 (its opening scene ends), the Plesioth takes
+     * no AI command; while the event demo runs it plays the scripted swim (mode 6 act 1) */
+    if (quest_w.no == 10035 && em->stg == 54 && !Event_flag_ck(22)) {
+        if (game_w.info_stop == 1 && em->mode != 6)
+            em21_act_set(em, 6, 1, 1);
+    } else
+#endif
     if (em->x839 != 0) {
         em_cmd_ck(em);
         em->x839 = 0;

@@ -25,8 +25,11 @@
 #   --net       DEV9 network adaptor on, in PCSX2's "Sockets" mode (no root, no TAP/PCAP): the guest gets an address from
 #               PCSX2's own DHCP and reaches the host's LAN address (not 127.0.0.1) through ordinary host sockets
 # Input: pad 1 is the keyboard (arrows = d-pad, x = cross, c = circle, z = square, s = triangle, Return = start,
-# BackSpace = select, q/e = L1/R1, 1/3 = L2/R2, i/k/j/l = the left stick up/down/left/right, w/a/d not used); build/pcsx2/xkey presses keys in the hidden display
+# BackSpace = select, q/e = L1/R1, 1/3 = L2/R2,
+# i/k/j/l = left stick up/down/left/right, t/g/f/h = right stick, w/a/d not used); build/pcsx2/xkey presses keys in the hidden display
 # (DISPLAY=:N, the number printed as "display :N"; set DNUM=N to choose it), e.g. tools/ps2_online_run.sh.
+# PINE=SLOT (env): PCSX2's PINE socket on (memory read/write, save states; tools/pcsx2/pine.py), at
+# $XDG_RUNTIME_DIR/pcsx2.sock.SLOT (pcsx2.sock for slot 28011). Used by tools/g_ref_shot.sh.
 # Fast boot (no BIOS logo), EE/IOP console logging on, the software renderer (no GPU needed), audio off.
 set -e
 cd "$(dirname "$0")/.."
@@ -81,6 +84,7 @@ print('%08X' % c)" "$ELF")
     CHEATON=true
     CHEATLIST=$(sed -n 's/^\[\(.*\)\]$/Enable = \1/p' "$CHEATS")
 fi
+PINEON=false; [ -z "$PINE" ] || PINEON=true
 
 # settings: written fresh each run (PCSX2 adds its defaults for the rest)
 cat > "$D/inis/PCSX2.ini" <<INI
@@ -107,6 +111,8 @@ HostFs = true
 EnablePatches = false
 EnableCheats = $CHEATON
 EnableDiscordPresence = false
+EnablePINE = $PINEON
+PINESlot = ${PINE:-28011}
 [EmuCore/GS]
 Renderer = 13
 VsyncEnable = 0
@@ -149,19 +155,23 @@ Right = Keyboard/Right
 Down = Keyboard/Down
 Left = Keyboard/Left
 Cross = Keyboard/X
-Circle = Keyboard/${PCSX2_CIRCLE:-C}
-Square = Keyboard/${PCSX2_SQUARE:-Z}
+Circle = Keyboard/C
+Square = Keyboard/Z
 Triangle = Keyboard/S
 Start = Keyboard/Return
 Select = Keyboard/Backspace
-LUp = Keyboard/I
-LDown = Keyboard/K
-LLeft = Keyboard/J
-LRight = Keyboard/L
 L1 = Keyboard/Q
 R1 = Keyboard/E
 L2 = Keyboard/1
 R2 = Keyboard/3
+LUp = Keyboard/I
+LDown = Keyboard/K
+LLeft = Keyboard/J
+LRight = Keyboard/L
+RUp = Keyboard/T
+RDown = Keyboard/G
+RLeft = Keyboard/F
+RRight = Keyboard/H
 [Pad2]
 Type = None
 INI

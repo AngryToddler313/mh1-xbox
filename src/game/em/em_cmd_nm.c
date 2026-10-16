@@ -4822,6 +4822,55 @@ void NextStage_No_Set(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G (game 0x58F820, from the asm; PC only): the exit side is picked from the SIGNED offset of the next area's
+ * centre: left / near third (<= -w/3) -> 0, |offset| <= 2w/3 -> middle, else the far side; both middle -> the side
+ * the offset points to (sign test). MH1 (below) compared the offset with w/3 and 2w/3, so a next area to the left
+ * or in front always gave side 0 or the middle. */
+f32 flAbs(f32);
+void NextStage_Dir_Set(EMW *em, f32 *out) {
+    EM_STG_BOX *cur;
+    s8 flag;
+    EM_STG_BOX *to;
+    f32 dz;
+    f32 dx;
+
+    to = Stage_data_get((u16)em->x73A);
+    cur = Stage_data_get(em->stg);
+    flag = 0;
+    dx = (to->x + to->w / 2.0f) - (cur->x + cur->w / 2.0f);
+    dz = (to->z + to->d / 2.0f) - (cur->z + cur->d / 2.0f);
+    if (dx <= -(cur->w / 3.0f)) {
+        out[0] = 0.0f;
+    } else if (flAbs(dx) <= (2.0f * cur->w) / 3.0f) {
+        flag = 1;
+        out[0] = cur->w / 2.0f;
+    } else {
+        out[0] = cur->w;
+    }
+    if (dz <= -(cur->d / 3.0f)) {
+        out[2] = 0.0f;
+    } else if (flAbs(dz) <= (2.0f * cur->d) / 3.0f) {
+        flag |= 2;
+        out[2] = cur->d / 2.0f;
+    } else {
+        out[2] = cur->d;
+    }
+    if (flag == 3) {
+        if (dx <= 0.0f) {
+            out[0] = 0.0f;
+        } else {
+            out[0] = cur->w;
+        }
+        if (dz <= 0.0f) {
+            out[2] = 0.0f;
+        } else {
+            out[2] = cur->d;
+        }
+    }
+    out[1] = area_move_high_y_tbl[em->stg];
+}
+#else
 void NextStage_Dir_Set(EMW *em, f32 *out) {
     EM_STG_BOX *cur;
     s8 flag;
@@ -4865,6 +4914,7 @@ void NextStage_Dir_Set(EMW *em, f32 *out) {
     }
     out[1] = area_move_high_y_tbl[em->stg];
 }
+#endif
 
 void em_cdm_act_flag_ck(EMW *em) {
     s32 i;

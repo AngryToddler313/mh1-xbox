@@ -1006,3 +1006,56 @@ build/A/xf, `flock xemu.lock`, build/A/gb5/x/xrun.sh records each run). Pictures
   shows them gone; kill in 33 then moving to 32 leaves 32's alive). rt_dbg_hits now logs each monster (slot, kind, area, hp).
 - Found: garbage line "慰･$d" at 140,360 after NEW GAME's save (select/edit_nm.c disp_edinfo_g with an item index past
   G's help table) [seen in PC font trace and xemu video; not fixed].
+
+## G round 11: release checklist, fourth pass (16 Oct 2026)
+
+Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, build/A/ts). RELEASE_G.md section 8.
+- **D_FFFF pointer words**: splat writes the data word 0x0000FFFF as `.word D_FFFF`; mhg_pcmeta.split_data counted every
+  `.word SYMBOL` as a pointer, the loader turned the words into NULL. 78 words in G main, each an s16 list's -1 end
+  (Sel_menu_disp's title strips: "CHARACTER CREATION" + zeros drawn as 'A'). Lesson: a split's `.word D_xxxx` with an
+  address below 0x100000 is a number. Found by tracing the strip in Sel_menu_disp (p pointed into the G image, not a
+  host copy: the importer was not at fault).
+- **~Bnn**: G queues {x, y, glyph height, icon, 0xFF} per font stack (0x12B8F0) and draws the queue with PutButtonICON
+  after the stack (0x12B530); rt_font draws it at once (same entry).
+- **em21 / quest 10035**: the map pairs MH1 em_move05/06 of em21 with another monster's (G 0x60D700/0x60D7B0: wrong);
+  G's em21 move05 (0x635EB0) has the MH1 four die acts, move06 (0x635F40) adds act 1 = game 0x6345E0 (the opening's
+  scripted swim). Lesson: check a `mhg_map.csv` "order" match against the neighbours' addresses before porting.
+  m2c drafts of 0x6345E0 lost a0 in two calls; read em_frame_check / Shell08_set_ang_time args from the asm.
+- **Frame copy**: G asks in quest_condition_prog (0x4B8AA0: system_w+0x33 = 0x81), copies in trans (0x12E8A0 ->
+  0x12EC90), starts the clear camera when 0x80 is seen (0x4B905C). The PC's quest flow stops calling
+  quest_condition_prog after the clear (x00 -> 1), so the camera stays immediate there. Fast-forwarded test runs draw
+  no frame in between: RT_STEP=1 shows it.
+- **Pl_damage_sub / pl_guard_set** (G C in pl_damageb.c, `#elif defined(VERSION_MHG)`): every G Pl_act_set passes 0xC;
+  sub_main 0x4CC810 = stun gauge / +0x93E / +0x93D test. Eft16_set_impact's float is the last C argument on the PC.
+- **trans_stage**: m2c's flmatMakeTrans shows f12 and f14 only (x, z): a UV matrix's v (f13) must be read from the asm
+  for every new case. Diffing the m2c drafts of MH1 and G (addresses stripped) lists the changed cases quickly.
+- Seen, not fixed: `mhview_g --stage 88/89` crashes in load_stage_hit (f_sphr.c:186), not from this change.
+- Progress (VERSION=mhg tools/progress.py): 20.161% before and after (this round is PC-only C, no new PS2 match).
+
+## G round 12: real-G reference shots, stage fog, Dual Swords sounds, NextStage_Dir_Set (16 Oct 2026)
+
+- **tools/g_ref_shot.sh + tools/pcsx2/pine.py** (RELEASE_G section 9). PCSX2 2.8.2's PINE: `EnablePINE`/`PINESlot` in
+  [EmuCore], socket $XDG_RUNTIME_DIR/pcsx2.sock.SLOT; ops 0-7 read/write 8-64 bit, 9/10 save/load state slot, 11 title,
+  15 status. run_pcsx2.sh: `PINE=slot` env, left stick on i/j/k/l, right stick t/f/g/h (the d-pad does not walk).
+  Village warp for the real game: lobby player_work (G 0x34D450) +0xAC / +0xB4 floats, as RT_LB_WARP. Quest accepted
+  = select_w+0xD0 (G 0x35EC30) holds the quest number (10001 for the elder's first quest); writing it alone does not
+  open the gate. Area warp = PLW+0x73A stage, +0x73C pos, +0x570 angle, +0x738 = 1 (stage_mv_ck's own fields).
+  G's camera: lpView (0x2EF28C) -> eye[3], target[3], ..., +0x2C angle of view. Gotcha: `kill $!` of a `flock ...
+  run_pcsx2.sh &` kills flock only; the emulator keeps the lock: kill run_pcsx2.sh (pgrep -P flockpid).
+- **Fog**: fl fogs per clay (RenderState 0x8000 from Attribute_from_amo's aa_fog[a[8]], aa_fog = {0x8000, 0} in both
+  games), FOGCOL takes the low 24 bits only, start/end are flSetRenderState 0x10/0x11 (stage_fog_set per stage; G reads
+  stage_work+0x50 instead when +0x4D > 0, set by func_0010F9F0, not ported: never set offline [inferred]). The PC
+  now does it per clay (gfx_clay_desc.fog). Fog strength vs the PS2 not calibrated (VU1 code not read).
+- **flPS2SendRenderState_ALPHA** (0x178C90) decoded for src 2: dst 0x10 -> ALPHA 0x48 = Cs*As + Cd (additive),
+  dst 0x30 -> 0x44 (normal blend). Confirms SetTrnslMode(4, 1) is additive (stage 27's layers).
+- **Battle_type at MH1 size on G** (0x7C of 0xE1): a G table that keeps its MH1 name but grew in G is imported at the
+  MH1 size unless pc_data.txt says otherwise; look for `extern X name[MH1 size]` with G indexes past it.
+- **ef_move_sub comparison method** (scratch, not committed): a ~250-line MIPS interpreter over the objdump of both
+  functions, pointer values symbolic (pl, w), loads from pl/w taken from an input dict (kind, anim), frame_check
+  returning 1, Code_Make returning a marker; per (kind, anim) the call multisets are compared. Guards are found by
+  re-running with one frame_check returning 0. The generated C was checked the same way (harness compiling the
+  case block with recording stubs).
+- **eft09 (G)**: G's eft09_set keeps the quest entry's lives (em_work_serch(em)->x04) in ew->timer; eft09_m ends the
+  tail when the entry's lives drop below it and +0x2E = 2; subspecies kinds in the tail_off switch. f_quest.c's statics
+  are global on the PC (one TU), so G code that calls them (em_work_serch) links.
+- Checks: see the commit.

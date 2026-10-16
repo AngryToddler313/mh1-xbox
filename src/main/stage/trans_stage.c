@@ -82,6 +82,20 @@ f32 flSin(f32);
 #define FRM ((u16)w->x08)
 #define SFRM ((s16)w->x08)
 #define X1E (*(u16 *)&game_w.x1E)
+/* G (sub_main 0x4A22C0; PC build only: the PS2 G build keeps G's bytes) edits the per-stage cases: G_ONLY / MH1_ONLY
+ * mark the case labels that differ, STG is the stage the switches test (G: stage_work+2, the stage st_model_load
+ * loaded; MH1: game_w.stage). Written from G's asm (agent A, 16 Oct 2026); MWCC cannot compile this file (near-match). */
+#ifdef VERSION_MHG
+#define G_ONLY(x) x
+#define MH1_ONLY(x)
+#define STG (w->stage)
+extern f32 set74_pos_tbl[2][4];     /* G 0x6D0760: stage 0x4A's two pieces (MH1 drew 0x4A like 0x48) */
+void SetTrnslMode();
+#else
+#define G_ONLY(x)
+#define MH1_ONLY(x) x
+#define STG (game_w.stage)
+#endif
 void trans_stage_sub();
 
 void trans_stage(void)
@@ -99,6 +113,9 @@ void trans_stage(void)
 
     if (w->x00 != 0) {
     if (w->x01 == 0) {
+#ifdef VERSION_MHG
+    } else if (game_w.stage == 0) {     /* G: nothing drawn on stage 0 */
+#endif
     } else {
     light_set(0);
     m = (STG_MDLS *)w->mdls;
@@ -112,14 +129,25 @@ void trans_stage(void)
     flmatSetXYZ33(&mat, w->rot[0], w->rot[1], w->rot[2]);
     RS(0x1A, (u32)&mat);
     n = m->num;
-    if (game_w.stage == 0 || game_w.stage == 0x1A) {
+    if (MH1_ONLY(game_w.stage == 0 ||) STG == 0x1A) {
         n = (s16)n - 1;
     }
     for (i = 0; i < n; i++, mdl++) {
         clay_attr_set(mdl->attr);
         if (i == 0) {
             RS(0x6D, 7);
-            switch (game_w.stage) {
+            switch (STG) {
+#ifdef VERSION_MHG
+            case 8:                         /* G: a piece at 13600, 10600 turning with the frame counter */
+                MT(13600.0f, 0.0f, 10600.0f);
+                SXA((FRM & 0x1FFF) << 3);
+                RS(0x1A, (u32)&mat);
+                EXC();
+                MTW();
+                SXW();
+                RS(0x1A, (u32)&mat);
+                break;
+#endif
             case 0x19:
                 MT(13000.0f, 0.0f, 20800.0f);
                 SXA((FRM & 0xFFF) << 4);
@@ -131,6 +159,7 @@ void trans_stage(void)
                 break;
             case 0x3A:
             case 0x40:
+            G_ONLY(case 0xF: case 0x59: case 0x5A: case 0x5B:)
                 MT(10000.0f, 0.0f, 10000.0f);
                 SXA((FRM & 0x1FFF) << 3);
                 RS(0x1A, (u32)&mat);
@@ -149,6 +178,7 @@ void trans_stage(void)
                 RS(0x1A, (u32)&mat);
                 break;
             case 0x42:
+            G_ONLY(case 0x58:)
                 MT(12000.0f, 0.0f, 8000.0f);
                 SXA((FRM & 0x1FFF) << 3);
                 RS(0x1A, (u32)&mat);
@@ -160,7 +190,7 @@ void trans_stage(void)
             case 0x47:
             case 0x48:
             case 0x49:
-            case 0x4A:
+            MH1_ONLY(case 0x4A:)
             case 0x4B:
                 MT(10000.0f, 0.0f, 10000.0f);
                 RS(0x1A, (u32)&mat);
@@ -175,8 +205,8 @@ void trans_stage(void)
             }
             RS(0x6D, 3);
         } else {
-            switch (game_w.stage) {
-            case 0:
+            switch (STG) {
+            MH1_ONLY(case 0:)
             case 0x1A:
                 if (i == 1) {
                     EXC();
@@ -214,14 +244,14 @@ void trans_stage(void)
                 }
                 break;
             case 6:
-            case 7:
+            MH1_ONLY(case 7:)
                 if (i == 2) {
                     break;
                 }
                 EXC();
                 break;
             case 0x15:
-            case 0x18:
+            MH1_ONLY(case 0x18:)
             case 0x22:
             case 0x23:
             case 0x24:
@@ -380,7 +410,76 @@ void trans_stage(void)
                     EXC();
                 }
                 break;
+#ifdef VERSION_MHG
+            case 0x18:
+                if (i == 8) {
+                    RS(0x60, 0);
+                    EXC();
+                    RS(0x60, 0x80);
+                } else {
+                    EXC();
+                }
+                break;
             case 0x1B:
+            case 0x1D:
+                if (i == 1) {
+                    RS(0x60, 0);
+                    EXC();
+                    RS(0x60, 0x80);
+                } else if (i == 2) {
+                    SetTrnslMode(4, 1);
+                    RS(0x60, 0);
+                    EXC();
+                    RS(0x60, 0x80);
+                    SetTrnslMode(4, 5);
+                } else if (i == 3) {
+                    SetTrnslMode(4, 1);
+                    RS(0x60, 0);
+                    w->x20 = (f32)(SFRM & 0x1FF) / 512.0f;
+                    UVT(0.0f, w->x20);
+                    RS(0x19, (u32)&mat2);
+                    EXC();
+                    RS(0x60, 0x80);
+                    SetTrnslMode(4, 5);
+                } else {
+                    RS(0x60, 0x80);
+                    EXC();
+                }
+                break;
+            case 8:
+                if (i == 1) {
+                    RS(0x60, 0);
+                    UVT((f32)(SFRM & 0x3FF) / 1024.0f, 0.0f);
+                    RS(0x19, (u32)&mat2);
+                } else if (i == 2) {
+                    RS(0x60, 0);
+                    UVT((f32)(SFRM & 0x1FF) / 512.0f, 0.0f);
+                    RS(0x19, (u32)&mat2);
+                } else {
+                    RS(0x60, 0x80);
+                    MTW();
+                    RS(0x1A, (u32)&mat);
+                }
+                EXC();
+                break;
+            case 0xF:
+                if (i == 1 || i == 4) {
+                    RS(0x60, 0);
+                    UVT((f32)(SFRM & 0x3FF) / 1024.0f, 0.0f);
+                    RS(0x19, (u32)&mat2);
+                } else if (i == 3) {
+                    RS(0x60, 0);
+                    UVT(0.0f, (f32)(SFRM & 0x3FF) / 1024.0f);
+                    RS(0x19, (u32)&mat2);
+                } else {
+                    RS(0x60, 0x80);
+                    MTW();
+                    RS(0x1A, (u32)&mat);
+                }
+                EXC();
+                break;
+#endif
+            MH1_ONLY(case 0x1B:)
             case 0x21:
                 if (i == 2) {
                     RS(0x60, 0);
@@ -394,8 +493,7 @@ void trans_stage(void)
                 }
                 EXC();
                 break;
-            case 8:
-            case 0xF:
+            MH1_ONLY(case 8: case 0xF:)
             case 0x25:
                 if (i == 2) {
                     RS(0x60, 0);
@@ -453,7 +551,7 @@ void trans_stage(void)
                     EXC();
                 }
                 break;
-            case 0x1D:
+            MH1_ONLY(case 0x1D:)
             case 0x27:
                 if (i == 2) {
                     RS(0x60, 0);
@@ -627,7 +725,7 @@ void trans_stage(void)
                 break;
             case 0x47:
             case 0x48:
-            case 0x4A:
+            MH1_ONLY(case 0x4A:)
                 if (i == 1) {
                     RS(0x60, 0);
                     MT(10000.0f, 0.0f, 10000.0f);
@@ -651,7 +749,24 @@ void trans_stage(void)
                 EXC();
                 RS(0x60, 0x80);
                 break;
+#ifdef VERSION_MHG
+            case 0x4A:                      /* G: layer 3 hidden, layer 6 without depth writes */
+                if (i == 3) {
+                    break;
+                }
+                if (i == 6) {
+                    RS(0x60, 0);
+                }
+                EXC();
+                RS(0x60, 0x80);
+                break;
+#endif
             case 0x4C:
+#ifdef VERSION_MHG
+                if (i >= 4) {               /* G: layers 4 and up are not drawn */
+                    break;
+                }
+#endif
                 if (i == 3) {
                     RS(0x60, 0);
                 } else {
@@ -665,6 +780,9 @@ void trans_stage(void)
                     RS(0x60, 0);
                     EXC();
                     RS(0x60, 0x80);
+#ifdef VERSION_MHG
+                } else if (i >= 4) {        /* G: layers 4 and up (MH1's flickering layer 4) are not drawn */
+#endif
                 } else if (i == 4) {
                     RS(0x60, 0);
                     flmatMakeTrans(&mat2, 0.0f, 0.5f * (f32)((X1E >> 1) & 1), 0.0f);
@@ -677,6 +795,7 @@ void trans_stage(void)
                 break;
             case 0x4E:
             case 0x4F:
+            G_ONLY(case 0x56:)
             case 0x57:
                 if (i == 2) {
                     RS(0x60, 0);
@@ -686,10 +805,35 @@ void trans_stage(void)
                     EXC();
                 }
                 break;
+#ifdef VERSION_MHG
+            case 0x58:                      /* G: 0x42's scrolling layers without layer 7 */
+                if (i == 1) {
+                    RS(0x60, 0);
+                    flmatMakeTrans(&mat2, (f32)(X1E & 0x3FF) / 1024.0f, 0.0f, 0.0f);
+                    RS(0x19, (u32)&mat2);
+                } else if (i == 3) {
+                    RS(0x60, 0);
+                    flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x1FF) / 512.0f, 0.0f);
+                    RS(0x19, (u32)&mat2);
+                } else if (i == 4) {
+                    RS(0x60, 0);
+                    flmatMakeTrans(&mat2, (f32)(X1E & 0x1FF) / 512.0f, 0.0f, 0.0f);
+                    RS(0x19, (u32)&mat2);
+                } else {
+                    RS(0x60, 0x80);
+                }
+                RS(0x1A, (u32)&mat);
+                EXC();
+                break;
+#endif
             case 0x55:
                 if (i == 1) {
                     RS(0x60, 0);
+#ifdef VERSION_MHG
+                    flmatMakeTrans(&mat2, (f32)(X1E & 0x7FF) / 2048.0f, 0.0f, 0.0f);
+#else
                     flmatMakeTrans(&mat2, (f32)(X1E & 0x1FF) / 512.0f, 0.0f, 0.0f);
+#endif
                     RS(0x19, (u32)&mat2);
                     EXC();
                     RS(0x60, 0x80);
@@ -707,8 +851,15 @@ void trans_stage(void)
             }
         }
     }
-    switch (game_w.stage) {
-    case 0:
+#ifdef VERSION_MHG
+    /* G: the set pieces only with a set model (or on stage 0x1A, whose pieces are in the stage model); without one
+     * G returns at once (no clay_attr_reset / state 0x60) */
+    if (STG != 0x1A && (set_mdlw == 0 || set_mdlw->flag == 0)) {
+        return;
+    }
+#endif
+    switch (STG) {
+    MH1_ONLY(case 0:)
     case 0x1A:
         p = (f32 *)st00_pos_tbl;
         mdl = &m->clay[3];
@@ -794,7 +945,20 @@ void trans_stage(void)
             trans_stage_sub((int)&mat, (u8 *)mdl);
         }
         break;
-    case 0x18:
+#ifdef VERSION_MHG
+    case 0x18:                      /* G: two set pieces at the origin with their texture scrolling */
+        RS(0x60, 0);
+        for (k = 0; k < 2; k++) {
+            mdl = &set_mdlw->clay[k];
+            flmatInit(&mat);
+            UVT((f32)(SFRM & 0x7FF) / 2048.0f, 0.0f);
+            RS(0x19, (u32)&mat2);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
+        }
+        RS(0x60, 0x80);
+        break;
+#endif
+    MH1_ONLY(case 0x18:)
     case 0x22:
         m = set_mdlw;
         p = (f32 *)set34_pos_tbl;
@@ -849,7 +1013,7 @@ void trans_stage(void)
             trans_stage_sub((int)&mat, (u8 *)mdl);
         }
         break;
-    case 0x1D:
+    MH1_ONLY(case 0x1D:)
     case 0x27:
         m = set_mdlw;
         p = (f32 *)set39_pos_tbl;
@@ -884,6 +1048,7 @@ void trans_stage(void)
         }
         break;
     case 0x2D:
+    G_ONLY(case 0x1D:)              /* G: stage 0x1D has 0x2D's pieces */
         p = (f32 *)set45_pos_tbl;
         mdl = &set_mdlw->clay[3];
         for (k = 0; k < 4; k++, p += 4) {
@@ -982,7 +1147,7 @@ void trans_stage(void)
         }
         break;
     case 0x48:
-    case 0x4A:
+    MH1_ONLY(case 0x4A:)
         m = set_mdlw;
         p = (f32 *)set72_pos_tbl;
         for (k = 0; k < 6; k++, p += 4) {
@@ -1009,6 +1174,19 @@ void trans_stage(void)
             trans_stage_sub((int)&mat, (u8 *)mdl);
         }
         break;
+#ifdef VERSION_MHG
+    case 0x4A:                      /* G: as 0x49 with its own two positions */
+        p = (f32 *)set74_pos_tbl;
+        mdl = &set_mdlw->clay[0];
+        for (k = 0; k < 2; k++, p += 4) {
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
+            RS(0x19, (u32)&mat2);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
+        }
+        break;
+#endif
     case 0x4B:
         p = (f32 *)set75_pos_tbl;
         mdl = &set_mdlw->clay[0];

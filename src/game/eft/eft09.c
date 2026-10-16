@@ -81,7 +81,9 @@ static void eft09_i(EFTW *ew) {
     ew->arg = 0;
     ew->be_flag = 1;
     ew->work14 = 0;
-    ew->timer = 0;
+#ifndef VERSION_MHG
+    ew->timer = 0;          /* G (game 0x56E230): no; eft09_set keeps the monster's lives there */
+#endif
     if (em->kind == 0x22) {
         ew->prim2 = 0;
     } else {
@@ -134,8 +136,26 @@ static asm void eft09_m(EFTW *ew)
 #include "eft09_m.inc"
 }
 #else
+#ifdef VERSION_MHG
+/* G's quest monster entry of this monster (f_quest.c em_work_serch; static there, global in the PC's TU) */
+struct QEM;
+struct QEM *em_work_serch(EMW *);
+#endif
 static void eft09_m(EFTW *ew) {
     EMW *em = ew->owner;
+#ifdef VERSION_MHG
+    {   /* G (game 0x56E3D0): the cut tail goes when the monster has lost a life (revival: quest entry +0x04 below
+         * the count eft09_set kept, +0x2E = 2) */
+        u8 *q = (u8 *)em_work_serch(em);
+        if (q != 0 && *(s8 *)(q + 4) < ew->timer && *(s16 *)(q + 0x2E) == 2) {
+            ew->mode++;
+            if (ew->x07 != 0xFF) {
+                Ext_pick_point_clr();
+            }
+            return;
+        }
+    }
+#endif
 
     if (em->be_flag == 0) {
         ew->mode++;
@@ -148,6 +168,14 @@ static void eft09_m(EFTW *ew) {
     case 0:
         ew->stg = em->stg;
         switch (em->kind) {
+#ifdef VERSION_MHG
+        case 37:                    /* G: the subspecies too (game 0x56E4B4) */
+        case 41:
+        case 42:
+        case 43:
+        case 44:
+        case 49:
+#endif
         case 1:
         case 0xB:
         case 0xE:
@@ -156,6 +184,10 @@ static void eft09_m(EFTW *ew) {
                 tail_off(ew);
             }
             break;
+#ifdef VERSION_MHG
+        case 47:
+        case 48:
+#endif
         case 0x11:
         case 0x16:
             if (em->mode == 4 && em->x15 == 0x11) {
@@ -188,6 +220,12 @@ static void eft09_m(EFTW *ew) {
         ew->prim->pos[0] = ew->pos[0];
         ew->prim->pos[1] = ew->pos[1];
         ew->prim->pos[2] = ew->pos[2];
+#ifdef VERSION_MHG
+        if (em->x798 != 1.0f) {     /* G: a fading monster's tail goes to ot0 (0x40) */
+            add_prim(ot0, ew->prim, 0x40, 1);
+            return;
+        }
+#endif
         add_prim(ot1, ew->prim, 0x20, 1);
     }
 }
@@ -268,6 +306,14 @@ void eft09_set(EMW *em) {
         ew->move = eft09_move;
         ew->owner = em;
         em->tail = ew;
+#ifdef VERSION_MHG
+        {   /* G (game 0x56E940): the monster's lives now, for eft09_m */
+            u8 *q = (u8 *)em_work_serch(em);
+            if (q != 0) {
+                ew->timer = *(s8 *)(q + 4);
+            }
+        }
+#endif
     }
 }
 #endif

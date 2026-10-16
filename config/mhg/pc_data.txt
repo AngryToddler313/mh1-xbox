@@ -172,6 +172,7 @@ em_vital_tbl = 0x005098B0; // size:0xD0            # per kind: pointer to s16 hi
 [sub_main]
 Shell_data = 0x00514E60; // size:0x40              # 32 shot types x {recoil, pow} (MH1: 4 bytes {ammo per load, sound, pow, -})
 Shell_max_tbl = 0x00514EA0; // size:0x2C0          # [22 gun classes (Gun_data +0xD)][32 shot types]: ammo per load (Shell_type_set)
+Battle_type = 0x00514D70; // size:0xE1              # weapon type -> job for types 0-0xE0 (MH1 0x7C): G types 0x7C+ (G weapons, the Dual Swords = job 6) read past the MH1-sized copy
 Ken_data = 0x00515360; // size:0x23C0              # 381 swords (MH1 234)
 Gun_data = 0x00517720; // size:0x750               # 78 guns of 0x18 bytes (MH1 26 of 0x14)
 Item_data = 0x004FF1F0; // size:0x28E0             # 523 items of 0x14 bytes (MH1 327 of 0x10)
@@ -393,3 +394,6 @@ gequip_str = 0x00527D60; // size:0x190               # label lists, wearable typ
 # follow camera (G main 0x1D9D60, src/main/cam/cam_nm.c; agent C, 15 Oct 2026): the stage camera entries are 0x1C bytes (MH1 symbol is one entry)
 [main]
 stage_camera_data_ex = 0x00289AA0; // size:0x80 noptr
+# trans_stage (G sub_main 0x4A22C0): stage 0x4A's two set pieces (src/main/stage/trans_stage.c; agent A, 16 Oct 2026)
+[game]
+set74_pos_tbl = 0x006D0760; // size:0x20 noptr
