@@ -20,13 +20,18 @@
 #   --shot      screenshots of the hidden display at the --after times (default: at the end)
 #   --log       where the log goes (default $PCSX2_HOME/PCSX2/logs/emulog.txt; EE and IOP console output included)
 #   --show      run on the desktop instead (debugging by hand only)
+#   --net       DEV9 network adaptor on, in PCSX2's "Sockets" mode (no root, no TAP/PCAP): the guest gets an address from
+#               PCSX2's own DHCP and reaches the host's LAN address (not 127.0.0.1) through ordinary host sockets
+# Input: pad 1 is the keyboard (arrows = d-pad, x = cross, c = circle, z = square, s = triangle, Return = start,
+# BackSpace = select, q/e = L1/R1, 1/3 = L2/R2, w/a/s/d not used); build/pcsx2/xkey presses keys in the hidden display
+# (DISPLAY=:N, the number printed as "display :N"; set DNUM=N to choose it), e.g. tools/ps2_online_run.sh.
 # Fast boot (no BIOS logo), EE/IOP console logging on, the software renderer (no GPU needed), audio off.
 set -e
 cd "$(dirname "$0")/.."
 PCSX2=${PCSX2:-$HOME/ps2dev/pcsx2/pcsx2-v2.8.2.AppImage}
 PH=$(realpath -m "${PCSX2_HOME:-$HOME/ps2dev/pcsx2/data}")
 D=$PH/PCSX2      # PCSX2 puts its folders in DATAPATH/PCSX2
-ISO="disc/mh1/Monster Hunter (Japan).iso"; ELF=""; CARD=""; CARDFROM=""; SECS=120; SHOT=""; AFTER=""; LOG=""; SHOW=
+ISO="disc/mh1/Monster Hunter (Japan).iso"; ELF=""; CARD=""; CARDFROM=""; SECS=120; SHOT=""; AFTER=""; LOG=""; SHOW=; NET=false
 while [ $# -gt 0 ]; do
     case "$1" in
     --iso) ISO=$2; shift 2 ;;
@@ -38,6 +43,7 @@ while [ $# -gt 0 ]; do
     --after) AFTER=$2; shift 2 ;;
     --log) LOG=$2; shift 2 ;;
     --show) SHOW=1; shift ;;
+    --net) NET=true; shift ;;
     *) echo "unknown option $1"; exit 2 ;;
     esac
 done
@@ -106,6 +112,35 @@ EnableIOPConsole = true
 SDL = false
 [Achievements]
 Enabled = false
+[DEV9/Eth]
+EthEnable = $NET
+EthApi = Sockets
+EthDevice = Auto
+InterceptDHCP = true
+AutoMask = true
+AutoGateway = true
+ModeDNS1 = Auto
+ModeDNS2 = Auto
+EthLogDHCP = true
+EthLogDNS = true
+[Pad1]
+Type = DualShock2
+Up = Keyboard/Up
+Right = Keyboard/Right
+Down = Keyboard/Down
+Left = Keyboard/Left
+Cross = Keyboard/X
+Circle = Keyboard/C
+Square = Keyboard/Z
+Triangle = Keyboard/S
+Start = Keyboard/Return
+Select = Keyboard/Backspace
+L1 = Keyboard/Q
+R1 = Keyboard/E
+L2 = Keyboard/1
+R2 = Keyboard/3
+[Pad2]
+Type = None
 INI
 
 set -- -batch -nogui -fastboot -datapath "$PH" -logfile "$LOG" -earlyconsolelog
@@ -115,8 +150,10 @@ set -- "$@" -- "$(realpath "$ISO")"
 XVFB=${XVFB:-$HOME/xboxdev/xvfb/root/usr/bin/Xvfb}
 if [ -z "$SHOW" ]; then
     [ -x "$XVFB" ] || { echo "no Xvfb at $XVFB (see tools/run_xemu.sh's header; or --show)"; exit 1; }
-    DNUM=$(( 90 + $$ % 9 ))
-    "$XVFB" :$DNUM -screen 0 1280x960x24 -nolisten tcp >/dev/null 2>&1 &
+    DNUM=${DNUM:-$(( 90 + $$ % 9 ))}
+    echo "display :$DNUM"
+    # (DISPLAY must not point at the new display while it starts: Xvfb then hangs, and everything that connects)
+    env -u DISPLAY "$XVFB" :$DNUM -screen 0 1280x960x24 -nolisten tcp >/dev/null 2>&1 &
     XPID=$!
     export DISPLAY=:$DNUM
     unset WAYLAND_DISPLAY
@@ -124,6 +161,8 @@ if [ -z "$SHOW" ]; then
     sleep 2
 fi
 export SDL_AUDIODRIVER=dummy
+[ -x build/pcsx2/xkey ] || { mkdir -p build/pcsx2; gcc -O1 -o build/pcsx2/xkey tools/pcsx2/xkey.c -lX11 \
+    /usr/lib/x86_64-linux-gnu/libXtst.so.6 2>/dev/null || echo "note: xkey not built (no libX11/libXtst)"; }
 "$PCSX2" "$@" >"$D/logs/stdout.txt" 2>&1 &
 PID=$!
 stop() {
@@ -139,7 +178,7 @@ for A in ${AFTER:-$SECS}; do
     sleep $(( A - T )); T=$A
     if [ -n "$SHOT" ] && [ -z "$SHOW" ]; then
         OUT=$SHOT; [ -z "$AFTER" ] || [ "$A" = "${AFTER##* }" ] || OUT="${SHOT%.png}_${A}s.png"
-        ffmpeg -v error -y -f x11grab -i "$DISPLAY" -frames:v 1 "$OUT" && echo "screenshot: $OUT"
+        ffmpeg -nostdin -v error -y -f x11grab -i "$DISPLAY" -frames:v 1 "$OUT" && echo "screenshot: $OUT"
     fi
     kill -0 $PID 2>/dev/null || { echo "PCSX2 ended early (see $D/logs/stdout.txt)"; break; }
 done

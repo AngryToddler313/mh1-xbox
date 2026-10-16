@@ -1366,3 +1366,18 @@ in 20 s, fatal 0x1E in memcpy at the opening movie). rt_movie.c audio_feed stops
   the patch has no short string literals: settings live in a struct defined in the patch (.data, placed after the code).
 - A replaced function must start at its original address (callers jal there): put it first in the file.
 - PCSX2 not installed: nothing was run on a PS2 / emulator.
+
+## PS2 online for real: PCSX2 run + memory-card launcher (15 Oct 2026)
+- PCSX2 (hidden) reaches our server: DEV9 "Sockets" mode (no root), server on the LAN address. The patched disc logs
+  in, plaza, town; a PC client joins the same town; each sees the other; chat both ways. tools/test_ps2_online.sh
+  (scripted keys through XTEST, tools/pcsx2/xkey.c; ~6.5 min, ~11 min with FRESH=1 / first run). docs/network.md 3.6.
+- MH1LAUNCH.ELF (src/ps2patch/launcher.c + launch_hook.c, tools/ps2launch/build.sh, open ps2sdk): boots the original
+  disc, RAM patch (4-byte DNAS skip, Load_overlay hook -> lobby internet_browser jump), config file; passes every
+  other disc through via rom0:PS2LOGO. Same end-to-end result in PCSX2 (`--launcher`). docs/network.md 3.8, PLAYING.md.
+- Gotchas: (1) Xvfb hangs if DISPLAY already points at its own display number while it starts (run_pcsx2.sh now
+  starts it with `env -u DISPLAY`); every later X client (ffmpeg, PCSX2) then blocks forever. (2) ffmpeg in a
+  background script: `-nostdin`. (3) A lone key press right after another xkey call is lost now and then: send pairs
+  in one call, and generous waits (9 s) on game screens. (4) The server keeps an account's town place: a PC test
+  client that last left the town in the guild hall comes back there and does not see hunters on the square.
+- gcc (ps2sdk, n32) code called from MWCC code works for <= 4 int args: -G0 -mno-abicalls -fno-pic, link with -T of
+  absolute symbol assignments (tools/ps2launch/syms.ld).
