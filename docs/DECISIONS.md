@@ -129,6 +129,14 @@ Kept as a fallback for any file that resists matching.
 - Order, after G's single player is solid: 1) MH1 PS2 patch (DNAS skip + server address) against our
   server; 2) in-hunt protocol parity; 3) G (its online code isn't ported yet).
 - Still never connect to the MH Oldschool public server without its operators' permission.
+- Real-PS2 delivery (owner, 15 Oct): the game's own card-patch slot needs a Sony DNAS container (tested in
+  PCSX2, docs/network.md 3.8), so instead: one open launcher ELF that Free McBoot / OpenTuna auto-runs at
+  power-on; it checks the disc ID, patches MH1 (later G) in RAM and boots it, and boots any other disc
+  untouched. "Run homebrew once, then just boot the disc." No DNAS crypto work of any kind.
+- PS2 English (owner, 15 Oct): the same launcher gets an English option — the text table is generated on the
+  player's PC from their own US disc (as for our ports), copied to the memory card, and patched into RAM at
+  boot and as overlays / quest files load (no 64 KB limit). Patched ISOs (PCSX2/OPL) can carry it built in.
+  After the online launcher works; shares the English pipeline and its pending source decision (Freedom for G).
 
 ## Rejected
 
