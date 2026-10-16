@@ -94,14 +94,20 @@ with resume and checksums. Copying every file by FTP is the fallback.
    **Recommended: the loader's HTTP install** (Evolution X's FTP server often drops big files part way and cannot
    resume them, so FTP is the fallback for the big files): copy only the small network loader by FTP and let it fetch the data from your computer over
    HTTP instead, with resume and checksums:
-   - `tools/xbox_upload.sh --loader` (set `XBOX_IP=` to your Xbox's address first): puts the loader in
-     `E:\Games\MH1` (it shows as **Monster Hunter**) plus `loader.txt` with this computer's address;
-   - `tools/xbox_serve.py --data dist/xbox/MH1` (or `dist/xbox/MHG` for Monster Hunter G) and leave it running;
-     your firewall must let the Xbox reach port 8765;
-   - start **Monster Hunter** on the Xbox. It copies the files (MH1 into `E:\Games\MH1\data` plus the game as
-     `mh1.xbe`; G into `E:\Games\MHG`), checks every 4 MB piece, shows the progress, and starts the game when
-     done. If the copy stops, start Monster Hunter again: it goes on from where it stopped. Later starts without
-     the server running simply start the game already on the disk.
+   - `tools/xbox_upload.sh --loader` (set `XBOX_IP=` to your Xbox's address first): puts one small loader in
+     `E:\Games\MH1` (it shows as **Monster Hunter**) and one in `E:\Games\MHG` (**Monster Hunter G**), each with a
+     `loader.txt` holding this computer's address. You only do this once (again only if your computer's address
+     changes);
+   - `tools/xbox_serve.py --data dist/xbox/MH1` (or `--data dist/xbox/MHG` for Monster Hunter G, or both
+     `--data` options at once) and leave it running; your firewall must let the Xbox reach port 8765;
+   - start **Monster Hunter** (or **Monster Hunter G**) on the Xbox. It copies that game's files into its own
+     folder (`E:\Games\MH1\data` or `E:\Games\MHG\data`, the game itself as `mh1.xbe` / `mhg.xbe`), checks
+     every 4 MB piece, shows the progress, and starts the game when done. If the copy stops, start it again: it
+     goes on from where it stopped.
+   Afterwards each start of Monster Hunter or Monster Hunter G asks the computer (when `tools/xbox_serve.py` runs,
+   with or without `--data`) for a newer build of that game, updates it and starts it; without the computer it
+   simply starts the copy already on the disk. Leaving a game goes back through its loader (which sends the
+   game's log to the computer) to the dashboard.
    Check afterwards that the sizes match the list above. The game itself checks at start-up: if a file is missing
    or has the wrong size (a cut-short copy) it shows which one, says where the files belong and returns to the
    dashboard after ten seconds; fix the copy and start again. (Only the sizes are checked there; the checksum check of
@@ -243,8 +249,8 @@ hunter who cannot faint. Saves are separate from Monster Hunter 1: Linux `~/.loc
 `%APPDATA%\mhgpc\memcard0\`, Xbox `E:\UDATA\` under G's own title id. You can also drag the G `.iso` onto
 `mhview_g.exe` (Windows) once to install its files. Xbox: files go to `E:\Games\MHG` (`default.xbe`,
 `data\AFS_DATA.AFS` 144 MB, `AFS00.AFS` 884 MB, `AFS01.AFS` 24 MB, `SLPM_658.69` 2 MB); use the loader's HTTP install
-with `tools/xbox_serve.py --data dist/xbox/MHG` as described above, FTP as the fallback; the loader (shown as
-Monster Hunter) installs G beside MH1.
+with `tools/xbox_serve.py --data dist/xbox/MHG` as described above, FTP as the fallback; G's own loader (shown as
+Monster Hunter G, `E:\Games\MHG\default.xbe`) installs G beside MH1, and the game itself is `mhg.xbe` there.
 
 What works (checked in scripted, hidden runs, not yet by a full human play-through): title, NEW GAME, hunter
 creation, saving, CONTINUE, the village (Kokoto) with its shops, forge, item box and the elder's quests, all 98
@@ -312,8 +318,8 @@ xemu emulator against a server on this laptop (login, town, a PC player in the s
        tools/xbox_serve.py --xbe dist/xbox/MH1-online/default.xbe
 
    (the MH1 data must already be on the Xbox: if not, add `--data dist/xbox/MH1` once). Start **Monster Hunter** on
-   the Xbox: the loader fetches the online XBE and starts it. To go back to the normal game or to G, stop it and
-   start `xbox_serve.py` the way you did before.
+   the Xbox: the loader fetches the online XBE and starts it. To go back to the normal game, stop it and start
+   `xbox_serve.py` the way you did before. Monster Hunter G is not affected (it has its own loader).
 4. **In the game:** on the title screen choose the network mode, as on the PC. The game starts the Xbox's network
    (the dashboard's network settings; DHCP is fine, it waits up to 10 s), connects, and goes through the Capcom ID
    screens into the plaza and the town. PC players on the same server see the Xbox hunter and the other way round.

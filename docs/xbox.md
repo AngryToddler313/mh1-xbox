@@ -681,42 +681,56 @@ power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appeari
   from Hard Drive, Trainers, Emulators, DVD, Launch Applications, MS Dashboard, Skin, System
   Configuration, Reboot, Power Off.
 
-## Network loader (11 Oct 2026)
+## Network loader (11 Oct 2026; one per game since 16 Oct 2026)
 
 So builds reach the real Xbox without the FTP login (agents never type it), a
 small loader (src/pc/xbox/loader/main.c, built by `make -C src/pc/xbox/loader`
-after `. ~/xboxdev/env.sh`) is installed once as `E:\Games\MH1\default.xbe`
-by `tools/xbox_upload.sh` (the owner runs it and types the login). Evolution X
-lists it as "Monster Hunter". On each start the loader:
+after `. ~/xboxdev/env.sh`) is installed once per game by `tools/xbox_upload.sh --loader`
+(the owner runs it and types the login): `E:\Games\MH1\default.xbe` (Evolution X lists it as
+"Monster Hunter") and `E:\Games\MHG\default.xbe` ("Monster Hunter G"), each with a
+`loader.txt` ("<laptop address>:8765" and "game=mh1" / "game=mhg"). It is one program built
+twice with a different XBE title. Which game it serves: the "game=" line of loader.txt in the
+folder it was started from (XeImageFileName, src/pc/xbox/xbox_path.h), else the folder's name
+(MHG: G, anything else MH1). On each start the loader:
 
-1. gets an address by DHCP (nxdk lwIP), reads the laptop address from
-   `E:\Games\MH1\loader.txt` (written by xbox_upload.sh);
-2. POSTs the last game log (`mh1log.txt`, the game's stderr) to the laptop and
-   deletes it;
-3. compares `GET /version` with `mh1.ver`; when different downloads
-   `GET /mh1.xbe` to `E:\Games\MH1\mh1.xbe`;
-4. starts mh1.xbe (D: is then E:\Games\MH1, so the game finds D:\data).
+1. gets an address by DHCP (nxdk lwIP), reads the laptop address from its folder's
+   `loader.txt`;
+2. POSTs the last game log (`mh1log.txt` in its folder, the game's stderr) to the laptop
+   (`/log?game=mhg`) and deletes it;
+3. compares `GET /version?game=G` with `mh1.ver` / `mhg.ver`; when different downloads
+   `GET /mh1.xbe` / `/mhg.xbe` to `mh1.xbe` / `mhg.xbe` in its folder;
+4. starts that game (D: is then the loader's folder, so the game finds D:\data).
 
 When the game exits (or Back + Start is held for 2 s: the box has no in-game
-reset), src/pc/xbox/xbox_log.c shows the log tail for 10 s and goes back to the
-dashboard; the next start (pad: A on "Play Games from Hard Drive", A on
-"Monster Hunter") sends the log and fetches the newest build. A first version
-let the game start the loader again, which then polled the laptop every 3 s:
-on 11 Oct the Xbox's network froze after 5 such connections (ping dead too,
-cause unknown; nxdk's lwIP debug output is off by default, so not that). Each
-start now makes at most 3 connections. The loader installed on the Xbox on
-11 Oct is the polling version, so the game no longer starts it with launch
-data; the source has the fixed version for the next install.
-If the laptop does not answer, the loader runs the copy already on the disk.
+reset), src/pc/xbox/xbox_log.c shows the log tail for 10 s and starts the
+loader in its own folder (`<folder>\default.xbe`, launch data "MH1X"), which only
+sends the log and goes back to the dashboard. A game XBE that is itself
+default.xbe (installed by hand) goes straight to the dashboard. The next start
+(pad: A on "Play Games from Hard Drive", A on "Monster Hunter" or "Monster Hunter G")
+fetches the newest build. A first version (11 Oct) let the game start the loader
+again, which then polled the laptop every 3 s: the Xbox's network froze after 5 such
+connections (ping dead too, cause unknown; nxdk's lwIP debug output is off by
+default, so not that). Each start now makes at most 4 connections (log, version,
+build, test script), and the loader started after a game makes one (the log). From
+11 to 16 Oct the game went straight to the dashboard and the log waited for the next
+start; the return to the loader is back since 16 Oct (tested in xemu, not yet on hardware).
+If the laptop does not answer, the loader runs the copy already on the disk; with no
+copy it says so and goes back to the dashboard after 30 s.
 
-Laptop side: `tools/xbox_serve.py` (port 8765) serves build/xbox/default.xbe,
-saves each log to build/xbox/logs/<time>.txt and prints it. `--xbe build/xbox/nv2a/default.xbe` serves the graphics build. Loop for
-testing on hardware: build_xbox.py, start from the pad, watch the server output
-and the capture card. A hang (no exit) still needs the owner at the power
-button. First results (11 Oct): the null-graphics build boots, finds D:\data
-and the controller, sets up quest 10 and runs (about 13,000 loops a second with
-nothing drawn); Back + Start exits cleanly.
-Untested on hardware until the owner installs it.
+Laptop side: `tools/xbox_serve.py` (port 8765) serves both games at once: MH1's build
+dist/xbox/MH1/default.xbe (`--xbe` for another, e.g. build/xbox/nv2a/default.xbe) and G's
+dist/xbox/MHG/default.xbe (`--xbe-g`), saves each log to build/xbox/logs/<time>-<game>.txt and
+prints it. Requests without `?game=` (the loader installed before 16 Oct) count as MH1, so an
+old MH1 loader keeps working. A new loader talking to an older xbox_serve.py gets 404s and
+starts the copy on its disk: restart the server after updating. Loop for testing on hardware:
+build_xbox.py, start from the pad, watch the server output and the capture card. A hang (no
+exit) still needs the owner at the power button. First results (11 Oct): the null-graphics build
+boots, finds D:\data and the controller, sets up quest 10 and runs (about 13,000 loops a second
+with nothing drawn); Back + Start exits cleanly.
+
+**Tested in xemu (agent D, 16 Oct 2026):** `tools/xemu_loader_test.sh` (hidden, a scratch disk
+image in build/xbox/loader_xemu, never xbox_files/hdd.img; a test DVD, src/pc/xbox/testlaunch,
+starts the loader from E:\Games\<game> as the dashboard would). Results under "Two loaders" below.
 
 ### First frame on hardware (11 Oct 2026)
 
@@ -1571,7 +1585,7 @@ build/xbox/loader_test/default.xbe --net`):
 Not tested: the real Xbox (Evolution X launching the loader; the network freezes noted above were never
 reproduced in xemu).
 
-**Owner, to install G:**
+**Owner, to install G** (superseded on 16 Oct 2026 by one loader per game: see "Two network loaders" below):
 1. Install the new loader once over FTP (two small files): `tools/xbox_upload.sh --loader` (asks for the
    FTP login; it rebuilds the loader first).
 2. `./mh1 xbox disc/mhg` if dist/xbox/MHG is not there yet, then `tools/xbox_serve.py --data dist/xbox/MHG`
@@ -1610,6 +1624,54 @@ kind in src/ (grep `__asm__("`); the link has no other undefined names.
 tools/xbox_serve.py --data now makes the manifest again when a file in the folder changes size or time (checked
 at each /version and /manifest), so a new G XBE copied into dist/xbox/MHG goes out without a server restart
 (a server started before this change needs one restart).
+
+### Two network loaders: one per game (agent D, 16 Oct 2026)
+
+Owner's request: starting G updates G and starts it; starting Monster Hunter does the same for MH1.
+What changed (details in "Network loader" above):
+- The loader serves the game of its own folder (loader.txt "game=", else the folder name) and names it in
+  every request (`?game=mh1|mhg`); its files are `<folder>\mh1.xbe|mhg.xbe`, `.ver`, `mh1log.txt`,
+  `data\input.txt|env.txt`. tools/xbox_upload.sh --loader builds the program twice (titles "Monster
+  Hunter" / "Monster Hunter G") and installs it into both folders with their loader.txt (the laptop's
+  address found with `ip route get <xbox>`).
+- E:\Games\MHG\default.xbe is now G's loader; G itself is mhg.xbe. A data install (`--data`) never
+  lists default.xbe for either game (the loader also refuses such a list), writes into the loader's own
+  folder, and is only answered to the loader of that game (`/manifest?game=mhg`; the list's MH1/MHG name
+  must match the loader's game). After the install the usual build check runs: the folder's default.xbe
+  is served as the build (/mhg.xbe), downloaded and started. `--data` may be given twice (both games).
+- Leaving a game returns to that game's loader (xbox_log.c xbox_leave: `<folder>\default.xbe`, launch
+  data "MH1X"), which sends the log and goes to the dashboard. With no network after a game exit the
+  loader now goes to the dashboard instead of starting the game again (an old loop).
+- G's logs: mh1log.txt was already written next to the running XBE (now E:\Games\MHG\mh1log.txt, sent
+  by G's loader); rt_log's session logs went to E:\Games\MH1\logs for G too, now
+  `XBOX_GAME_DIR\logs` (E:\Games\MHG\logs).
+
+**Tested in xemu** (`tools/xemu_loader_test.sh`, 23 checks, all pass; hidden, scratch disk image
+build/xbox/loader_xemu/hdd.img, server on port 8799, the loaders exactly as xbox_upload.sh builds them with
+loader.txt "10.0.2.2:8799" + "game=mh1" for MH1 and no game line for MHG, so the folder name picks G):
+1. G's loader, laptop up: GET /version?game=mhg, /mhg.xbe?game=mhg, /test?game=mhg; mhg.xbe on the disk has the
+   served size; G started from E:\Games\MHG (no data on the scratch disk: "no SLPM_658.69 in D:\data or
+   E:\Games\MHG\data"), its exit screen read "Last lines of E:\Games\MHG\mh1log.txt", it started G's loader,
+   which POSTed G's log (/log?game=mhg) and went to the dashboard. default.xbe stayed the loader; nothing in MH1's folder.
+2. MH1's loader, laptop up: the same with ?game=mh1 and mh1.xbe (the MH1 nv2a build).
+3. G's loader, no server: "The laptop does not answer", the mhg.xbe on the disk ran (once; after its exit the
+   loader did not start it again), its log stayed on the disk.
+4. G's loader with `--data` (a small fake G folder holding a default.xbe too): the log left from run 3 was sent,
+   then /manifest?game=mhg and the four files (byte-identical on the disk afterwards); default.xbe stayed the
+   loader (the fake default.xbe never left the laptop); G then started from mhg.xbe and complained about the
+   (fake) data sizes. MH1's /version and an old loader's plain /version had no DATA line meanwhile.
+Each run ends at the kernel's "error 21" screen: "back to the dashboard" finds no dashboard on the scratch disk
+(expected). The test DVD src/pc/xbox/testlaunch stands in for the dashboard (starts E:\launch.txt's XBE once).
+Not tested: the real Xbox (Evolution X starting each loader from its folder; XeImageFileName is how nxdk and the
+kernel name the running XBE, the same field xbox_log.c already used for the log path), and the loader with no
+network at all after a game exit (now goes to the dashboard instead of starting the game again; a code path, not run).
+
+**Owner, once:** `XBOX_IP=<the Xbox's address> tools/xbox_upload.sh --loader` (asks for the FTP login; builds both
+loaders, installs E:\Games\MH1\default.xbe + loader.txt and E:\Games\MHG\default.xbe + loader.txt with this
+laptop's current address). Then restart tools/xbox_serve.py (an older server does not know `?game=`; the loaders
+then start the copy on the disk). G's game was E:\Games\MHG\default.xbe before; that is now the loader, and the
+first start of Monster Hunter G with the server running downloads G as mhg.xbe (the G data already on the disk is
+kept). If the laptop's address changes (DHCP), run the upload again.
 
 ## Settings menu on the Xbox (agent F, 15 Oct 2026)
 

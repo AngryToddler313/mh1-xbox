@@ -1,27 +1,34 @@
 #!/usr/bin/env python3
-"""Laptop side of the Xbox network loader (src/pc/xbox/loader, docs/xbox.md "Network loader").
+"""Laptop side of the Xbox network loaders (src/pc/xbox/loader, docs/xbox.md "Network loader").
 
-    tools/xbox_serve.py [--port 8765] [--xbe build/xbox/nv2a/default.xbe] [--input FILE] [--env FILE]
-    tools/xbox_serve.py --data dist/xbox/MHG        (or dist/xbox/MH1: install a game folder, see below)
+    tools/xbox_serve.py [--port 8765] [--xbe MH1.xbe] [--xbe-g G.xbe] [--input FILE] [--env FILE] [--test-game mh1|mhg]
+    tools/xbox_serve.py --data dist/xbox/MHG [--data dist/xbox/MH1]     (install game folders, see below)
 
-Serves build/xbox/default.xbe (the null-graphics build; --xbe for another) to the loader as /mh1.xbe, with /version
-(size and time of that file, plus build/xbox/rerun.txt when present, so
-touching that file makes a waiting loader start the same build again).
---input / --env: a test run's scripted pad input (the PC's --input format) and
-RT_* switches (NAME=VALUE lines), sent as GET /test; the loader puts them in
-E:\\Games\\MH1\\data (input.txt, env.txt; xbox_env.c, viewer.c) and removes
-them when none are given. Logs the Xbox sends (POST /log) are saved to build/xbox/logs/<time>.txt and
-printed. A log that starts with "MH1DUMP <name>" (src/pc/xbox/dumper: the BIOS
-flash, for xemu) is saved to build/xbox/dump/<name> instead; Microsoft's file, so it stays out of git
-(build/ is ignored). Only these paths are served; nothing else in the repo is reachable.
+Serves both games at once, one loader each: E:\\Games\\MH1\\default.xbe ("Monster Hunter") asks with
+?game=mh1, E:\\Games\\MHG\\default.xbe ("Monster Hunter G") with ?game=mhg. Requests without ?game= (the
+loader installed before 16 Oct 2026, MH1 only) count as MH1.
+  GET /version?game=G   size and time of that game's build ("none" when there is none; plus
+                        build/xbox/rerun.txt when present, so touching that file makes the loader start the
+                        same build again), and a "DATA" line when --data has that game's folder
+  GET /mh1.xbe, /mhg.xbe the build: MH1 dist/xbox/MH1/default.xbe (--xbe for another, e.g.
+                        build/xbox/nv2a/default.xbe), G dist/xbox/MHG/default.xbe (--xbe-g)
+  GET /test?game=G      a test run's scripted pad input (--input, the PC's --input format) and RT_* switches
+                        (--env, NAME=VALUE lines): "MH1TEST <n> <n>" + both; the loader puts them in its
+                        data folder (input.txt, env.txt; xbox_env.c, viewer.c) and removes them when none are
+                        given. --test-game: only for that game (default both)
+  POST /log?game=G      saved to build/xbox/logs/<time>-<game>.txt and printed. A log that starts with
+                        "MH1DUMP <name>" (src/pc/xbox/dumper: the BIOS flash, for xemu) is saved to
+                        build/xbox/dump/<name> instead; Microsoft's file, so it stays out of git.
+Only these paths are served; nothing else in the repo is reachable.
 
---data DIR: install a game folder (./mh1 xbox's dist/xbox/MHG or dist/xbox/MH1: default.xbe + data/) on
-the Xbox through the loader instead of FTP (docs/xbox.md "Installing game data through the loader").
-/version then ends in a "DATA" line; the loader fetches GET /manifest ("MH1DATA <folder> <chunk> <n>",
-then per file "F <size> <crc32> <path>" and "C <crc32 of each chunk> ..."), and each missing or short
-file with GET /data/<path> and a Range header, writing it to E:\\Games\\<folder> (MHG when the folder
-holds SLPM_658.69, else MH1). For MH1 the folder's default.xbe is not installed over the loader; it is
-served as the build (/mh1.xbe) unless --xbe names another.
+--data DIR (may be given twice, once per game): install a game folder (./mh1 xbox's dist/xbox/MHG or
+dist/xbox/MH1: default.xbe + data/, or a bare folder of the four disc files) on the Xbox through that game's
+loader instead of FTP (docs/xbox.md "Installing game data through the loader"). The game is G when the folder
+holds SLPM_658.69, else MH1. That game's /version then ends in a "DATA" line; its loader fetches
+GET /manifest?game=G ("MH1DATA <MH1|MHG> <chunk> <n>", then per file "F <size> <crc32> <path>" and
+"C <crc32 of each chunk> ..."), and each missing or short file with GET /data/<path>?game=G and a Range
+header, writing it into its own folder. The folder's default.xbe is never in the list (on the Xbox that name is
+the loader); it is served as the game's build (/mh1.xbe, /mhg.xbe) unless --xbe / --xbe-g names another.
 """
 import argparse
 import http.server
@@ -29,36 +36,43 @@ import os
 import re
 import sys
 import time
+import urllib.parse
 import zlib
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build', 'xbox')
-XBE = os.path.join(ROOT, 'default.xbe')
+REPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+ROOT = os.path.join(REPO, 'build', 'xbox')
 RERUN = os.path.join(ROOT, 'rerun.txt')
 LOGS = os.path.join(ROOT, 'logs')
 DUMPS = os.path.join(ROOT, 'dump')
-TEST = {'input': None, 'env': None}
+TEST = {'input': None, 'env': None, 'game': None}
 CHUNK = 4 << 20          # the loader checks and writes the data in pieces of this size
-DATA = {'dir': None, 'files': {}, 'manifest': b''}
+FOLDER = {'mh1': 'MH1', 'mhg': 'MHG'}
+# per game: the build it serves, whether that is still the default, and the data install (None: off)
+GAMES = {g: {'xbe': os.path.normpath(os.path.join(REPO, 'dist', 'xbox', FOLDER[g], 'default.xbe')),
+             'xbe_default': True, 'data': None} for g in FOLDER}
 
 
-def version():
-    if not os.path.isfile(XBE):
-        v = 'none'       # no build to send (a data-only install); the loader keeps what it has
+def version(game):
+    g = GAMES[game]
+    if not os.path.isfile(g['xbe']):
+        v = 'none'       # no build to send; the loader keeps what it has
     else:
-        st = os.stat(XBE)
+        st = os.stat(g['xbe'])
         v = '%d-%d' % (st.st_size, int(st.st_mtime))
         if os.path.exists(RERUN):
             v += '-' + open(RERUN).read().strip()
-    if DATA['dir']:
+    if g['data']:
         v += '\nDATA'
     return v
 
 
-def data_fresh():
-    """the folder changed since the manifest was made (a new default.xbe copied in): make it again"""
-    if DATA['dir'] and any(os.path.getsize(f) != n or os.path.getmtime(f) != t for f, n, t in DATA['stamp']):
-        print('== the data folder changed: checksums again')
-        load_data(DATA['src'])
+def data_fresh(game):
+    """the folder changed since the manifest was made (new files copied in): make it again"""
+    d = GAMES[game]['data']
+    if d and any(not os.path.exists(f) or os.path.getsize(f) != n or os.path.getmtime(f) != t
+                 for f, n, t in d['stamp']):
+        print('== the %s data folder changed: checksums again' % FOLDER[game])
+        load_data(d['src'])
 
 
 def load_data(src):
@@ -66,20 +80,17 @@ def load_data(src):
     src = os.path.abspath(src)
     sub = os.path.join(src, 'data')
     base = sub if os.path.isdir(sub) else src
-    game = 'MHG' if os.path.exists(os.path.join(base, 'SLPM_658.69')) else 'MH1'
-    elf = 'SLPM_658.69' if game == 'MHG' else 'SLPM_654.95'
+    game = 'mhg' if os.path.exists(os.path.join(base, 'SLPM_658.69')) else 'mh1'
+    elf = 'SLPM_658.69' if game == 'mhg' else 'SLPM_654.95'
     names = [elf, 'AFS01.AFS', 'AFS_DATA.AFS', 'AFS00.AFS']    # small first: one bad link shows early
     files = [('data/' + n, os.path.join(base, n)) for n in names]
     for _, f in files:
         if not os.path.exists(f):
             sys.exit('%s missing' % f)
     xbe = os.path.join(src, 'default.xbe')
-    if game == 'MHG' and os.path.exists(xbe):
-        files.insert(0, ('default.xbe', xbe))         # G runs as its own game, E:\Games\MHG\default.xbe
-    if XBE_DEFAULT:     # no --xbe: MH1's build is the folder's XBE (E:\Games\MH1\default.xbe is the loader
-        set_xbe(xbe if game == 'MH1' and os.path.exists(xbe) else '')   # itself, so it goes in as mh1.xbe);
-        # for G no build, so the loader starts G once its folder is complete
-    out = [b'MH1DATA %s %d %d' % (game.encode(), CHUNK, len(files))]
+    if GAMES[game]['xbe_default'] and os.path.exists(xbe):
+        GAMES[game]['xbe'] = xbe        # the folder's XBE is the build (never installed as default.xbe: the loader)
+    out = [b'MH1DATA %s %d %d' % (FOLDER[game].encode(), CHUNK, len(files))]
     files_new = {}
     for rel, f in files:
         size, crc, chunks = 0, 0, []
@@ -97,20 +108,14 @@ def load_data(src):
         out.append(b'F %d %08x %s' % (size, crc, rel.encode()))
         out.append(b'C ' + b' '.join(b'%08x' % c for c in chunks))
         files_new[rel] = (f, size)
-    DATA['files'] = files_new
-    DATA['dir'] = game
-    DATA['src'] = src
-    DATA['stamp'] = [(f, n, os.path.getmtime(f)) for f, n in DATA['files'].values()]
-    DATA['manifest'] = b'\n'.join(out) + b'\n'
+    GAMES[game]['data'] = {'files': files_new, 'src': src, 'manifest': b'\n'.join(out) + b'\n',
+                           'stamp': [(f, n, os.path.getmtime(f)) for f, n in files_new.values()]}
+    return game
 
 
-XBE_DEFAULT = True
-
-
-def set_xbe(path):
-    global XBE, XBE_DEFAULT
-    XBE = os.path.abspath(path) if path else ''
-    XBE_DEFAULT = False
+def set_xbe(game, path):
+    GAMES[game]['xbe'] = os.path.abspath(path) if path else ''
+    GAMES[game]['xbe_default'] = False
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -121,21 +126,33 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def game(self):
+        """the path without the query, and the game it names (no ?game=: the old MH1 loader); None if unknown"""
+        u = urllib.parse.urlsplit(self.path)
+        g = urllib.parse.parse_qs(u.query).get('game', ['mh1'])[0]
+        return u.path, (g if g in GAMES else None)
+
     def do_GET(self):
-        if self.path in ('/version', '/manifest'):
-            data_fresh()
-        if self.path == '/version':
-            self.reply(version().encode(), 'text/plain')
-        elif self.path == '/test':
-            ins = open(TEST['input'], 'rb').read() if TEST['input'] else b''
-            env = open(TEST['env'], 'rb').read() if TEST['env'] else b''
+        path, game = self.game()
+        if not game:
+            self.send_error(404)
+            return
+        if path in ('/version', '/manifest'):
+            data_fresh(game)
+        d = GAMES[game]['data']
+        if path == '/version':
+            self.reply(version(game).encode(), 'text/plain')
+        elif path == '/test':
+            on = TEST['game'] in (None, game)
+            ins = open(TEST['input'], 'rb').read() if on and TEST['input'] else b''
+            env = open(TEST['env'], 'rb').read() if on and TEST['env'] else b''
             self.reply(b'MH1TEST %d %d\n' % (len(ins), len(env)) + ins + env, 'text/plain')
-        elif self.path == '/mh1.xbe' and os.path.isfile(XBE):
-            self.reply(open(XBE, 'rb').read())
-        elif self.path == '/manifest' and DATA['dir']:
-            self.reply(DATA['manifest'], 'text/plain')
-        elif self.path.startswith('/data/') and self.path[6:] in DATA['files']:
-            self.send_data(*DATA['files'][self.path[6:]])
+        elif path in ('/mh1.xbe', '/mhg.xbe') and os.path.isfile(GAMES[path[1:4]]['xbe']):
+            self.reply(open(GAMES[path[1:4]]['xbe'], 'rb').read())     # named by the file, ?game= or not
+        elif path == '/manifest' and d:
+            self.reply(d['manifest'], 'text/plain')
+        elif path.startswith('/data/') and d and path[6:] in d['files']:
+            self.send_data(*d['files'][path[6:]])
         else:
             self.send_error(404)
 
@@ -176,7 +193,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = self.rfile.read(int(self.headers.get('Content-Length', 0)))
-        if self.path == '/log' and body.startswith(b'MH1DUMP '):    # src/pc/xbox/dumper: name line + data
+        path, game = self.game()
+        if path == '/log' and body.startswith(b'MH1DUMP '):    # src/pc/xbox/dumper: name line + data
             head, _, data = body.partition(b'\n')
             name = head[8:].decode('ascii', 'replace').strip()
             if not re.fullmatch(r'[a-z0-9_]{1,24}\.bin', name):
@@ -185,13 +203,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
             os.makedirs(DUMPS, exist_ok=True)
             open(os.path.join(DUMPS, name), 'wb').write(data)
             print('== Xbox dump -> %s (%d bytes)' % (os.path.join(DUMPS, name), len(data)))
-        elif self.path == '/log':
+        elif path == '/log' and game:
             os.makedirs(LOGS, exist_ok=True)
-            name = os.path.join(LOGS, time.strftime('%Y%m%d-%H%M%S') + '.txt')
+            name = os.path.join(LOGS, time.strftime('%Y%m%d-%H%M%S') + '-%s.txt' % game)
             open(name, 'wb').write(body)
-            print('== Xbox log -> %s (%d bytes)' % (name, len(body)))
+            print('== Xbox %s log -> %s (%d bytes)' % (FOLDER[game], name, len(body)))
             sys.stdout.write(body.decode('utf-8', 'replace')[-3000:] + '\n')
-        elif self.path == '/note':
+        elif path == '/note':
             print('== Xbox: %s' % body.decode('utf-8', 'replace'))
         else:
             self.send_error(404)
@@ -206,22 +224,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--port', type=int, default=8765)
-    ap.add_argument('--xbe', help='the build to serve (default build/xbox/default.xbe)')
+    ap.add_argument('--xbe', help="MH1's build (default dist/xbox/MH1/default.xbe)")
+    ap.add_argument('--xbe-g', help="G's build (default dist/xbox/MHG/default.xbe)")
     ap.add_argument('--input', help="a test run's scripted input (PC --input format)")
     ap.add_argument('--env', help="a test run's RT_* switches (NAME=VALUE lines)")
-    ap.add_argument('--data', help='a game folder to install through the loader (dist/xbox/MHG, dist/xbox/MH1)')
+    ap.add_argument('--test-game', choices=sorted(GAMES), help='send --input/--env only to this game (default both)')
+    ap.add_argument('--data', action='append', default=[],
+                    help='a game folder to install through its loader (dist/xbox/MHG, dist/xbox/MH1); once per game')
     a = ap.parse_args()
     TEST['input'] = a.input and os.path.abspath(a.input)
     TEST['env'] = a.env and os.path.abspath(a.env)
+    TEST['game'] = a.test_game
     if a.xbe:
-        set_xbe(a.xbe)
-    if a.data:
-        load_data(a.data)
-        print('installing %s to E:\\Games\\%s (%d files) through the loader: start Monster Hunter on the Xbox'
-              % (os.path.abspath(a.data), DATA['dir'], len(DATA['files'])))
-    print('serving %s on port %d (version %s)' % (
-        os.path.normpath(XBE) + ' as /mh1.xbe' if os.path.isfile(XBE) else 'no build', a.port,
-        version().replace('\n', ' ')))
+        set_xbe('mh1', a.xbe)
+    if a.xbe_g:
+        set_xbe('mhg', a.xbe_g)
+    for d in a.data:
+        game = load_data(d)
+        print('installing %s to E:\\Games\\%s (%d files) through its loader: start %s on the Xbox'
+              % (os.path.abspath(d), FOLDER[game], len(GAMES[game]['data']['files']),
+                 'Monster Hunter G' if game == 'mhg' else 'Monster Hunter'))
+    for g in sorted(GAMES):
+        x = GAMES[g]['xbe']
+        print('%s: %s (version %s)' % (FOLDER[g], os.path.normpath(x) + ' as /%s.xbe' % g if os.path.isfile(x)
+                                       else 'no build', version(g).replace('\n', ' ')))
+    print('serving on port %d' % a.port)
     sys.stdout.flush()
     http.server.ThreadingHTTPServer(('0.0.0.0', a.port), Handler).serve_forever()
 

@@ -274,3 +274,17 @@ Owner to decide.
   copies the game files from the player's own Japanese ISO. Releases are
   marked as test builds, say a Japanese disc is required, and credit Capcom.
   Keep a backup of the repo elsewhere in case of a takedown.
+
+## Xbox: one network loader per game (owner's request, 16 Oct 2026)
+
+- Each game folder holds its own loader as default.xbe (E:\Games\MH1 "Monster Hunter",
+  E:\Games\MHG "Monster Hunter G"); the game lives next to it as mh1.xbe / mhg.xbe. Starting
+  either one updates that game from the laptop, without the laptop it starts the copy on the disk.
+- One program, two XBE titles (the dashboard lists folders by title). The game is picked at run
+  time from the loader's folder: a "game=" line in its loader.txt, else the folder name. Rejected:
+  a compile-time game switch (two different objects to keep apart in one build directory) and
+  only the folder name (a renamed folder would silently become MH1).
+- Requests carry `?game=`; requests without it are MH1, so the loader installed before 16 Oct
+  keeps working with the new server. One server process serves both games.
+- Games return to their own loader on exit again (it only sends the log, then the dashboard):
+  the 11 Oct network freeze came from a polling loader, not from the return itself.

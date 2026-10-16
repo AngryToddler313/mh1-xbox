@@ -1,5 +1,7 @@
-# MH1 network loader: make -C src/pc/xbox/loader (after . ~/xboxdev/env.sh)
-# -> build/xbox/loader/default.xbe; tools/xbox_upload.sh --loader installs it.
+# Network loader: make -C src/pc/xbox/loader (after . ~/xboxdev/env.sh)
+# -> build/xbox/loader/default.xbe, titled "Monster Hunter"; G's copy is the same program titled
+# "Monster Hunter G": make -C src/pc/xbox/loader OUTPUT_DIR=../../../../build/xbox/loader_g XBE_TITLE='Monster\ Hunter\ G'
+# (only cxbe runs again). tools/xbox_upload.sh --loader builds and installs both.
 XBE_TITLE = Monster\ Hunter
 SRCS = main.c install.c ../xnet_http.c
 NXDK_NET = y
