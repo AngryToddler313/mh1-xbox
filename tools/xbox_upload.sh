@@ -7,6 +7,8 @@
 # Big files over Evolution X's FTP stall: rather install game data through the loader itself
 # (tools/xbox_serve.py --data dist/xbox/MHG or dist/xbox/MH1, docs/xbox.md "Installing game data through the loader").
 # --loader (or nothing): only the loader and loader.txt, two small files.
+# --settings FILE: only FILE, as settings.ini in the game folder (the online build's online_server / online_login /
+# online_password lines, docs/PLAYING.md "Online on the Xbox"); nothing is built.
 # Login: ~/.netrc ("machine <ip> login .. password ..") or asked for here; never stored.
 set -e
 cd "$(dirname "$0")/.."
@@ -25,6 +27,12 @@ AUTH+=(--ftp-port -)
 URL=ftp://$XBOX/${XBOX_DIR:-E/Games/MH1}
 echo "copying to $URL"
 put() { echo "-> $2"; curl -sS "${AUTH[@]}" --ftp-create-dirs -T "$1" "$URL/$2"; }
+if [ "$1" = --settings ]; then
+	[ -f "$2" ] || { echo "--settings FILE: no file '$2'"; exit 1; }
+	put "$2" settings.ini
+	echo done
+	exit 0
+fi
 # always a fresh build with the default address: objects left by a test build for xemu
 # (XH_HOST=10.0.2.2, docs/xbox.md) would otherwise end up in the installed loader
 rm -f src/pc/xbox/loader/*.obj src/pc/xbox/xnet_http.obj

@@ -11,6 +11,9 @@ then linked with nxdk-link and turned into build/xbox/default.xbe by cxbe.
     . ~/xboxdev/env.sh; python3 tools/build_xbox.py      # see docs/xbox.md
     python3 tools/build_xbox.py --version mhg --gfx nv2a  # Monster Hunter G: from tools/build_pc_mhg.sh's
                                                           # build (build/mhg/pctree) -> build/mhg/xbox/
+    python3 tools/build_xbox.py --online --gfx nv2a       # MH1 online (the town, rooms, co-op): from an
+                                                          # ONLINE=1 tools/build_pc.sh -> build/xbox/online/nv2a/
+                                                          # (nxdk lwIP; docs/xbox.md "Online on the Xbox")
 Standard library only.
 """
 import re
@@ -31,6 +34,9 @@ FRONT = ['src/pc/viewer.c', 'src/pc/dbgmenu.c', 'src/pc/menu.c', 'src/pc/font5x7
          'src/pc/xbox/xbox_scanf.c']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
 SKIP = {'rt_mc', 'rt_save', 'rt_symtab', 'rt_memstat'}
+# --online: the ONLINE=1 PC build's network front-end (docs/network.md) over nxdk's lwIP (lib/net)
+NET_FRONT = ['src/pc/net/net_cpinet.c', 'src/pc/net/net_dnas.c', 'src/pc/net/net_netcnf.c', 'src/pc/net/net_peer.c']
+NET_INC = ['-I' + NXDK + '/lib/net/lwip/src/include', '-I' + NXDK + '/lib/net/nforceif/include', '-I' + NXDK + '/lib/net/nvnetdrv']
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
         'libnxdk_automount_d.lib', 'libpbkit.lib', 'nxdk_usb.lib', 'libxboxrt.lib', 'libzlib.lib', 'libSDL2.lib']
 
@@ -131,6 +137,21 @@ def main():
         OBJ = OUT + '/obj'
     elif version != 'mh1':
         sys.exit('build_xbox: --version mh1 or mhg')
+    # --online (MH1): the objects of an ONLINE=1 PC build (build/pc holds one variant at a time, build/pc/.variant),
+    # compiled into their own tree build/xbox/online so the plain Xbox build's objects stay as they are
+    online = '--online' in sys.argv
+    exe = 'mhview'
+    if online:
+        if version != 'mh1':
+            sys.exit('build_xbox: --online is MH1 only for now')
+        exe = 'mhview_online'
+        variant = open('build/pc/.variant').read().strip() if os.path.exists('build/pc/.variant') else ''
+        if variant != exe:
+            sys.exit('build_xbox: --online needs the ONLINE=1 PC build in build/pc (it holds %s); run ONLINE=1 tools/build_pc.sh'
+                     % (variant or 'nothing'))
+        OUT = 'build/xbox/online'
+        OBJ = OUT + '/obj'
+        FRONT.extend(NET_FRONT)
     iso_name = 'mhg.iso' if version == 'mhg' else 'mh1.iso'
     # --gfx null (default: draws nothing, for a first headless boot) or nv2a (pbkit, gfx_nv2a.c)
     gfx = sys.argv[sys.argv.index('--gfx') + 1] if '--gfx' in sys.argv else 'null'
@@ -143,10 +164,10 @@ def main():
     # only the objects the PC build links (build/pc/objs.txt, link order); build/pc
     # can hold stale objects of files no longer built
     linked = [os.path.basename(l.strip())[:-2] for l in open('build/pc/objs.txt') if l.strip()]
-    if 'rt_gen' not in linked or not os.path.exists('build/pc/mhview') \
-            or os.path.getmtime('build/pc/mhview') < os.path.getmtime('build/pc/objs.txt'):
+    if 'rt_gen' not in linked or not os.path.exists('build/pc/' + exe) \
+            or os.path.getmtime('build/pc/' + exe) < os.path.getmtime('build/pc/objs.txt'):
         sys.exit('build_xbox: the PC build did not finish (build/pc/objs.txt has no rt_gen.o or is newer '
-                 'than build/pc/mhview); run tools/build_pc.sh first')
+                 'than build/pc/%s); run %stools/build_pc.sh first' % (exe, 'ONLINE=1 ' if online else ''))
     nocmd = [b for b in linked if b not in SKIP and not os.path.exists('build/pc/cmd/%s.sh' % b)]
     if nocmd:       # e.g. rt_gen (gen_rt_auto's tables) skipped -> dozens of undefined symbols
         sys.exit('build_xbox: no recorded compile command for %s; run tools/build_pc.sh (to the end) first'
@@ -174,6 +195,8 @@ def main():
                        .replace('/mpeg2_idct.obj', '/mpeg2_%s.obj' % extra) for x in args]
                 jobs.append(('mpeg2_' + extra, a2 + ['-include', COMPAT]))
     sdl = ['-I' + NXDK + '/lib/sdl/SDL2/include', '-DXBOX', '-DMH1_MPEG2_MMX', '-Ithird_party/libmpeg2'] + sdl_extra
+    if online:
+        sdl += ['-DMH1_ONLINE=1'] + NET_INC
     for f in FRONT + ['src/pc/rt/rt_memstat.c']:
         b = 'x_' + os.path.basename(f)[:-2]
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl
@@ -210,8 +233,16 @@ def main():
     # main thread stack: 256 KB. The PC build's deepest main-thread stack in the
     # three PC tests and the title / Rathian runs was 35 KB (RT_STACK=1); nxdk's
     # default is 64 KB.
+    libs = [NXDK + '/lib/' + l for l in LIBS]
+    if online:
+        # lwIP's own tcp_init (its TCP module start) has the name of the game's tcp_init (lb_tcp01.c, the lobby
+        # connection): a copy of nxdk's network library with lwIP's renamed (inside the library only)
+        netlib = OUT + '/libnxdk_net_mh1.lib'
+        subprocess.run(['llvm-objcopy', '--redefine-sym', '_tcp_init=_lwip_tcp_init', NXDK + '/lib/libnxdk_net.lib', netlib],
+                       check=True)
+        libs.insert(LIBS.index('libnxdk.lib'), netlib)
     link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x40000', '-out:' + dst + '/main.exe', '-map:' + dst + '/main.map'] \
-        + objs + [NXDK + '/lib/' + l for l in LIBS]
+        + objs + libs
     r = subprocess.run(link, capture_output=True, text=True)
     open(dst + '/link.log', 'w').write(r.stdout + r.stderr)
     if r.returncode:

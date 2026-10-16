@@ -27,7 +27,14 @@
 #include "net_cpinet.h"
 #include "net_peer.h"
 
-#ifdef _WIN32
+#if defined(NXDK)         /* the original Xbox: nxdk's lwIP (net_cpinet.c brings the interface up) */
+#include <lwip/sockets.h>
+#include <windows.h>
+typedef int hsock;
+#define HS_BAD (-1)
+#define hs_close lwip_close
+#define WOULDBLOCK() (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINPROGRESS)
+#elif defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 typedef SOCKET hsock;
@@ -78,7 +85,9 @@ static int qh, qt;
 
 static void nonblock(hsock s)
 {
-#ifdef _WIN32
+#if defined(NXDK)
+    lwip_fcntl(s, F_SETFL, O_NONBLOCK);
+#elif defined(_WIN32)
     u_long one = 1;
     ioctlsocket(s, FIONBIO, &one);
 #else

@@ -3,7 +3,8 @@
 #
 #   ./mh1 linux   DISC [--out DIR] [--online] [--setup]     PC build for this Linux machine  -> dist/linux/  (G: dist/linux/MHG/)
 #   ./mh1 windows DISC [--out DIR] [--online] [--setup]     PC build for Windows (cross-built here) -> dist/windows/  (G: dist/windows/MHG/)
-#   ./mh1 xbox    DISC [--out DIR] [--setup]                original Xbox: XBE + data folder  -> dist/xbox/MH1/  (G: dist/xbox/MHG/)
+#   ./mh1 xbox    DISC [--out DIR] [--online] [--setup]     original Xbox: XBE + data folder  -> dist/xbox/MH1/  (G: dist/xbox/MHG/)
+#                                                           (--online: also the online XBE -> dist/xbox/MH1-online/default.xbe)
 #   ./mh1 check   DISC                                      only check the disc
 #
 # DISC is your own disc image of the JAPANESE Monster Hunter (SLPM-65495) or Monster Hunter G (SLPM-65869) for the
@@ -268,5 +269,14 @@ xbox)
     say "E:\\Games\\MH1\\default.xbe and E:\\Games\\MH1\\data\\AFS_DATA.AFS exist). With curl:"
     say "  tools/xbox_install.sh XBOX_IP \"$OUT/MH1\"     (asks for your Xbox's FTP login; or use any FTP program)"
     say "then start 'Monster Hunter' from your dashboard's games list."
+    if [ -n "$ONLINE_BUILD" ]; then
+        # the online XBE (docs/PLAYING.md "Online on the Xbox"): the same data folder, only the XBE differs
+        say "building the online version (the online PC objects, then the Xbox game)"
+        ONLINE=1 sh tools/build_pc.sh > build/mh1_linux_online.log 2>&1 || { tail -20 build/mh1_linux_online.log; die "the online build failed; log: build/mh1_linux_online.log"; }
+        python3 tools/build_xbox.py --online --gfx nv2a > build/mh1_xbox_online_build.log 2>&1 || { tail -20 build/mh1_xbox_online_build.log; die "the online Xbox build failed; full log: build/mh1_xbox_online_build.log"; }
+        mkdir -p "$OUT/MH1-online"
+        cp build/xbox/online/nv2a/default.xbe "$OUT/MH1-online/default.xbe"
+        say "online XBE: $OUT/MH1-online/default.xbe (it uses the data in E:\\Games\\MH1; docs/PLAYING.md, 'Online on the Xbox')"
+    fi
     ;;
 esac
