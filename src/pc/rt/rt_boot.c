@@ -164,6 +164,21 @@ void rt_boot_init(void)
     boot_ticks = 0;
 }
 
+/* Game_task when Local_main returns -1 (the village left another way than for a quest: the bed's "quit the game"):
+ * main f_game.c does all_reset, Load_overlay(1, 1) (select.bin; the caller re-imports it) and Select_Tsk_Execute,
+ * Select_task from step 1: the game menu (NEW GAME / CONTINUE / ...). The boot's tick loop runs it from here, as at
+ * power-on, until Game_task starts again. */
+void Select_Tsk_Execute(void);
+void rt_boot_to_select(void)
+{
+    all_reset();
+    Select_Tsk_Execute();
+    boot_active = 1;
+    boot_done = 0;
+    boot_ticks = 0;
+    rt_log("boot: the village was left (Local_main -1): back to the game menu (Select_task)");
+}
+
 /* The debug menu (src/pc/dbgmenu.c) leaves the boot screens for a quest or the village: the boot's tasks end, the
  * scheduler keeps only the system tasks (as rt_sys_init sets them up for a run without a boot) */
 void rt_boot_abort(void)

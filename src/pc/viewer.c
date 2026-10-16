@@ -1889,6 +1889,27 @@ static void quest_from_village(void)
         fprintf(stderr, "village: quest %d starts on stage %d (player tick %d)\n", quest_no, stage_no, rt_tick_count());
 }
 
+/* Local_main's -1: the village was left another way than for a quest (the bed's "quit the game"). Game_task (main
+ * f_game.c, its case -1) clears the world and runs Select_task: the game menu, then NEW GAME / CONTINUE lead back to
+ * Game_task and the village (rt_boot.c). Was quest_back (the quest restarted: "quit the game" dropped the hunter at the
+ * base camp). */
+void rt_world_reset(void);
+void rt_monster_clear_all(void);
+void all_reset(void);
+int rt_import_select(void);
+void rt_boot_to_select(void);
+static void village_quit(void)
+{
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "village: left without a quest (Local_main -1): to the game menu\n");
+    rt_world_reset();
+    rt_monster_clear_all();
+    rt_import_select();                 /* Load_overlay(1, 1): select.bin's data as on the disc */
+    rt_boot_to_select();
+    booting = 1;
+    rt_hunter_draw_hook = ed_hunter_hook;
+}
+
 /* After the reward screen (game mode 6): the village, as on the PS2
  * (rt_village.c runs lobby.bin's Local_main); a quest accepted at the
  * counter starts when the hunter leaves through the gate. RT_NO_VILLAGE=1
@@ -1948,7 +1969,7 @@ static void village_step(void)
         quest_no = q;
         quest_from_village();
     } else if (q < 0) {
-        quest_back();
+        village_quit();
     }
 }
 
