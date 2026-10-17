@@ -76,6 +76,7 @@ if [ -n "$KUTKU" ]; then    # quest ticks: both follow the Kut-Ku (from 60). ANN
     # camp (stage 21, 1500) so the monster passes to BOB, who fights alone (1600-2600) and goes back in turn (2600: it passes
     # to ANNA again, who follows it from 2500); BOB follows it again from 3400; both fight to the kill and carve (the warp
     # then puts them at the carve point)
+    [ -n "$LEAVE" ] && MUL=${MUL:-40}     # ANNA finishes alone
     F="RT_PL_GOD=1 RT_PL_TARGET=k${KIND:-6} RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-15} RT_GOTO_TRACE=1 RT_PL_CARVE=10"
     AIDS_A="$F RT_PL_GOTO2=1500,21;2500,-1 RT_PL_WARP_EM=600-1500,2600-9000"
     AIDS_B="$F RT_PL_GOTO2=2600,21;3400,-1 RT_PL_WARP_EM=1600-2600,3500-9000"

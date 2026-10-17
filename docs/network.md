@@ -1042,6 +1042,19 @@ the monster again), the `np-hp` trace and `items` / `vital` on np-pos (RT_NP_EM 
 **Two PCs** (`KUTKU=1 tools/test_online_mcs.sh`) [checked, same day]: the same hand-overs (ANNA -> BOB -> ANNA), HP,
 kill, both carve.
 
+**A player dropping out mid-hunt** [checked, 16 Oct 2026, one run each]:
+* PC killed (`KUTKU=1 LEAVE=1 tools/test_online_mcs.sh`: BOB's game SIGKILLed at quest tick 2100 while he owned the
+  Kut-Ku and ANNA was at the camp): ANNA's session marks him gone (mcsls' time-out, `pl_state` 0xFF: "mcs: player 1
+  dropped out"); when she is back on the area her game runs the monster, she kills it, carves, clears and returns to
+  the town.
+* PS2 closed (`HUNT=kutku DROP=ps2 tools/test_ps2_hunt.sh`: PCSX2 stopped at quest tick 2200 while the PS2 owned the
+  monster): the same on the PC (dropped, took the monster over, killed it, carved 6 items, the clear, the town).
+  build/show/ps2_hunt_drop_ps2/.
+* As in the original: with only one player left, `Em_Master_Change` just takes the monster over (`n < 2`:
+  EMW+0x8C3 = 0) and leaves the owner number (+0x88E) at the player who left; nothing is handed on, nothing breaks.
+  mcs.py does not tell the others that a member left (the client has no message for it; it notices the silence).
+* Xbox stopped: in the four-player run below.
+
 **What the server's 0x1032 means** (read from the client, mcsls_recv, main 0x231FF0-0x232050) [checked]: the client
 turns every server packet (0x28 ...) into a record of kind 0x60 and reads its command: 0x1021 (health check) sets
 `send_health_ans`, **0x1032 has its own case that does nothing**, anything else is ignored too. cmcs_04 / 05 / 06
