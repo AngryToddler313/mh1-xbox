@@ -1011,8 +1011,8 @@ with "owner" = whether the PS2 runs it, "master" = the owner slot, EMW+0x8C3 / +
 (xkey): right stick up (attack) while it fights, circle once the monster is dead in its own trace. Only RAM is
 touched; the game code is the disc's.
 
-**Result** [checked, 16 Oct 2026, one run; build/show/ps2_hunt/kutku_ps2_pc.png: top the PS2's screen (fighting,
-ANNA hitting, its carve), bottom the PC's (TEST = the PS2 at the Kut-Ku, the PC's carve, TEST carving)]:
+**Result** [checked, 16 Oct 2026, one run; its screens were overwritten by the next run (the script now takes
+`OUTDIR=`); the same moments are in the runs below]:
 * Owner hand-over both ways, the same on both machines: PC (slot 0) -> PS2 (slot 1) when the PC left the area,
   PS2 -> PC when the PS2 left it.
 * HP: the same sequence on both (2000 ... 1578 -> 1574 ... 1565 -> ... 205, 40, 0); the PS2 shows only values the PC
@@ -1053,7 +1053,26 @@ kill, both carve.
 * As in the original: with only one player left, `Em_Master_Change` just takes the monster over (`n < 2`:
   EMW+0x8C3 = 0) and leaves the owner number (+0x88E) at the player who left; nothing is handed on, nothing breaks.
   mcs.py does not tell the others that a member left (the client has no message for it; it notices the silence).
-* Xbox stopped: in the four-player run below.
+* Xbox stopped: in the four-player run below (xemu stopped at quest tick 4800, mid-fight, not the owner: the three
+  others went on; the PS2's party list drops XBOX).
+* (The PS2 run's own final check still expected the owner number to come back; the logs pass the corrected check,
+  `hunt_sync.py --masters 0,1 --stay PC --runs PC`, now in the script.)
+
+**Three and four players** [checked, 16 Oct 2026, one run each; `HUNT=kutku PC2=1 XBOX=1 DROP=xbox
+tools/test_ps2_hunt.sh`, ~45 min, `XBOX_FILES=` the owner's Xbox files; free memory stayed above 2.5 GB with PCSX2,
+xemu and two PCs, the 800 MB watchdog never fired]:
+* PC (ANNA, slot 0), PS2 (slot 1), PC 2 (BOB, slot 2), Xbox (slot 3) in one room, one mcs session; every screen lists
+  all four hunters; the PS2 takes the monster from the PC and gives it back; all four show the same HP values (no
+  machine ever shows one no owner had); the Xbox is stopped mid-fight; PC, PS2 and BOB kill it, all three carve
+  (3, 4, 3 items), clear and return to the town. build/show/ps2_hunt4b/kutku_four_platforms.png (top: the PS2 with four
+  names while it owns the Kut-Ku, the Xbox with four names, the PC's fight; bottom: BOB's screen, the PS2 after the
+  Xbox was stopped (three names), the PS2 seeing ANNA and BOB at the dead Kut-Ku).
+* An earlier run where the Xbox came to the board too late (xemu runs slower than real time while PCSX2 runs; the
+  leader's start is now later with four players) was a three-player hunt (PC, PS2, PC): the monster went PC -> PS2 ->
+  BOB (Em_Master_Change hands it to the next slot after the leaving owner that is on the area), all three carved and
+  cleared. build/show/ps2_hunt4/kutku_three_players.png.
+* PS2 closed mid-hunt: build/show/ps2_hunt_drop_ps2/kutku_ps2_drop.png (the PS2 fighting as the owner; the PC with the
+  PS2's hunter; the PC alone after PCSX2 was closed).
 
 **What the server's 0x1032 means** (read from the client, mcsls_recv, main 0x231FF0-0x232050) [checked]: the client
 turns every server packet (0x28 ...) into a record of kind 0x60 and reads its command: 0x1021 (health check) sets
@@ -1062,6 +1081,24 @@ never wait for an answer to the 0x82 login either (the session starts right afte
 command the client knows and ignores; what Capcom's server meant by it (an acknowledgement of the login is the likely
 guess: 0x1032 = 0x1031 + 1, and mcs.py sends it right after the login) cannot be read from the client. mcs.py keeps
 sending it: harmless, and closer to the original if it was the login's answer.
+
+**Retire the "mh1-relay" mode? Recommendation (for the coordinator / owner; nothing removed)**: yes, in two steps.
+* What it is: `mh1_server.py serve --lobby-relay` answers 6914 with "mh1-relay" and puts every player of a lobby match
+  on relay.py, which passes the PC's own net_peer frames; rt_online.c's `matched()` has a branch for it. PS2s cannot
+  use it (they speak mcsls), so a server in that mode keeps PS2 players out of PC / Xbox rooms.
+* The mcs mode (`--lobby-mcs`) now does everything the relay mode was for, with every platform: no player needs an
+  open port, the server is in the middle, monster fights, hand-overs, carves, drop-outs and the return to the town
+  work (3.10, 3.11), and it is the game's own protocol, so it is what a real PS2 / Xbox / PC mix needs anyway.
+* Step 1 (now, small): make `lobby-mcs = yes` the default in tools/server/mh1-server.conf.example and docs/server.md
+  ("Run your own server" still says lobby-relay), keep `--lobby-relay` working as a fallback.
+* Step 2 (after): remove the lobby's "mh1-relay" hand-off (lobby_stub.py's 6914 string, rt_online.c's relay branch,
+  test_online_town.sh's relay part) once (a) the owner has run a real PS2 / Xbox through mcs, (b) the Windows build
+  passes test_online_mcs.sh under Wine (only the relay path was tried with it, 10 Oct), and (c) mcs.py has relay.py's
+  per-member limits (rate / burst / backlog / idle; mcs.py has only the sender-id check and a 120 s silence limit).
+* Keep relay.py's stand-alone session (`serve --session`, a game started with `--join SERVER`) and net_peer.c's direct
+  connect for now: they are the no-lobby / LAN co-op paths, not lobby matches, and test_coop.sh relies on them.
+  "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
+  of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
 ## 4. Run it
 
@@ -1082,6 +1119,9 @@ sending it: harmless, and closer to the original if it was the login's answer.
     tools/xemu_mcs_hunt.sh                           # the Xbox and a PC (~10 min)
     HUNT=kutku tools/test_ps2_hunt.sh                # PS2 + PC fight the Kut-Ku: hand-overs, HP, damage, carves (3.11, ~25 min)
     KUTKU=1 tools/test_online_mcs.sh                 # the same with two PCs (~9 min)
+    KUTKU=1 LEAVE=1 tools/test_online_mcs.sh         # BOB's game killed mid-hunt, ANNA finishes (~7 min)
+    HUNT=kutku DROP=ps2 tools/test_ps2_hunt.sh       # PCSX2 closed mid-hunt, the PC finishes (~20 min)
+    HUNT=kutku PC2=1 XBOX=1 DROP=xbox tools/test_ps2_hunt.sh   # PC + PS2 + PC + Xbox, the Xbox stopped mid-fight (~45 min)
     RUN=wine BIN=build/win/mhview_online.exe tools/test_online_server.sh   # the same with the Windows build (passes, 10 Oct 2026)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 

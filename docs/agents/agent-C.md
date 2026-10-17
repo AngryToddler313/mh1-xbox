@@ -2031,3 +2031,11 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   between (hunt_sync checks that a follower only ever shows values an owner had). 0x1032: the client's mcsls_recv has
   an empty case for it (main 0x232030).
 - **Test aids:** RT_PL_CARVE=n, RT_PL_GOTO2 stage -1, np-hp trace, np-pos items / vital, "mcs: player N dropped out".
+- **Drop-outs and more players (same day):** PC killed (`KUTKU=1 LEAVE=1 test_online_mcs.sh`), PS2 closed
+  (`HUNT=kutku DROP=ps2`), Xbox stopped in a four-player hunt (`HUNT=kutku PC2=1 XBOX=1 DROP=xbox`, PC + PS2 + PC +
+  Xbox): the others always carried on, killed, carved, cleared. With one player left the game takes the monster over
+  without renumbering its owner byte (Em_Master_Change n < 2), so tests check "runs it" (owner column), not the
+  number. With four, xemu runs slower than real time beside PCSX2: the leader's start had to move later (START 11000).
+- **Recommendation written (network.md 3.11):** retire the lobby's "mh1-relay" hand-off in two steps (mcs as the
+  default first; remove after real hardware, Wine and mcs.py limits); keep relay.py's stand-alone session and
+  net_peer direct connect.

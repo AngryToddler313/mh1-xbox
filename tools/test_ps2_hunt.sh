@@ -196,7 +196,7 @@ TALK=""; t=1041; while [ $t -le 1441 ]; do TALK="$TALK;$t:circle*2"; t=$((t + 40
 DL="1521:dleft*2;1543:dleft*2;"; [ -n "$XBOX" ] && DL="1521:dleft*2;"; [ -n "$PC2" ] && NPL=$((NPL + 1)) && DL="${DL#1521:dleft\*2;}"    # players 4 -> 2 (3, 4)
 [ -n "$PC2" ] && [ -z "$XBOX" ] && DL="1521:dleft*2;"
 SHEET=${SHEET:-"${DL}1565:ddown*2;1590:ddown*2;1615:ddown*2;1640:circle*2;1700:circle*2;1760:circle*2;1820:circle*2;1880:circle*2"}
-START=${START:-$([ -n "$XBOX" ] && echo 8000 || echo 6000)}     # ANNA's match start (square, circles; the PC tests' timing): the PS2 joins and gets ready before
+START=${START:-$([ -n "$XBOX" ] && { [ -n "$PC2" ] && echo 11000 || echo 8000; } || echo 6000)}     # ANNA's match start (square, circles; the PC tests' timing): the PS2 joins and gets ready before
 GO=""     # tried three times, 30 s apart: before every member is ready the counter only says so
 for t in $START $((START + 900)) $((START + 1800)); do
     GO="$GO;$t:square*3;$((t+60)):circle*2;$((t+120)):circle*2;$((t+180)):circle*2"
@@ -359,6 +359,8 @@ if [ "$HUNT" = kutku ]; then    # the monster as each machine had it: HP from it
     # a dropped owner leaves EMW+0x88E as it was when only one player is left (Em_Master_Change: n < 2 just takes the
     # monster over): the PC then runs it under the old owner number
     [ "$DROP" = ps2 ] && { M=0,$PS2SLOT; [ -z "$PC2$XBOX" ] && X="--runs PC"; }
+    # with more players the monster goes on from the PS2 to the next one on its area after it (slot order): any
+    [ -n "$PC2$XBOX" ] && M=0,$PS2SLOT
     [ -n "$PC2" ] && L="$L BOB=$O/pc2.log" && C="$C,BOB" && ST="$ST,BOB"
     [ -n "$XBOX" ] && [ -s $O/xbox_stderr.txt ] && L="$L XBOX=$O/xbox_stderr.txt" && [ "$DROP" != xbox ] && ST="$ST,XBOX"
     python3 tools/hunt_sync.py --kind 6 --masters $M --kill --stay $ST $X --carve $C $L > $O/sync.txt
