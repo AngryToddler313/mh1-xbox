@@ -12,18 +12,29 @@
 # RT_NET_REGISTERED does). That is the only RAM the test touches; the game code is unchanged.
 #
 # usage: tools/test_ps2_hunt.sh     (~20 min; uncapped: PCSX2 cannot start under ulimit -v; PCSX2 alone)
+#   HUNT=kutku: quest 4 (the Kut-Ku, "怪鳥イャンクック襲来！", the fifth quest card) instead of quest 1: the monster's owner
+#           passes PC -> PS2 -> PC as each leaves its area, both hit it (the PS2 alone while it owns it, the PC alone
+#           while the PS2 owns it), the PC kills it, both carve. The PS2 is steered through PCSX2's PINE socket
+#           (tools/pcsx2/ps2_hunt_aid.py: RAM writes as the PC's RT_PL_* test aids, and a trace of the monster as the
+#           PS2 has it); tools/hunt_sync.py compares that trace with the PC's. ~30 min. MUL = the PC's damage factor.
+#   DROP=ps2 (with HUNT=kutku): PCSX2 is closed at quest tick 2200, while the PS2 owns the monster and the PC is at the
+#           camp: the PC's session must drop it, take the monster over when back on its area, kill it, carve and clear.
+#   PC2=1 (with HUNT=kutku XBOX=1): four players, a second PC (BOB) joins too; BOB and the Xbox stay at the camp until
+#           3400, then follow and fight to the kill. DROP=xbox: xemu is stopped at quest tick 4200 (mid-fight).
+#           A watchdog stops this test's emulators (xemu first) when the machine's available memory drops under 800 MB.
 #   XBOX=1: three platforms: the online Xbox build in xemu joins as the third player (room for 3; as
 #           tools/xemu_mcs_hunt.sh; XBOX_FILES = the owner's Xbox files). ~25 min.
 # Needs: PCSX2 + the owner's BIOS (tools/run_pcsx2.sh), the launcher (tools/ps2launch/build.sh), a PS2 card with the
 # NET file (build/ps2online/card_net.ps2, from tools/test_ps2_online.sh), build/pc/mhview_online, ANNA's card
 # (tools/test_coop.sh saves).
 cd "$(dirname "$0")/.."
-O=build/show/ps2_hunt; rm -rf $O; mkdir -p $O
+O=${OUTDIR:-build/show/ps2_hunt}; rm -rf $O; mkdir -p $O     # OUTDIR: keep several runs apart
 . tools/emu_lib.sh
-RP=; SP=; PCP=; XP=
+RP=; SP=; PCP=; XP=; AP=; KP=; BP=; WP=
 cleanup() {
-    emu_stop $PCP $XP $RP $SP
-    RP=; SP=; PCP=; XP=
+    rm -f $O/ps2_atk
+    emu_stop $WP $KP $AP $PCP $BP $XP $RP $SP
+    RP=; SP=; PCP=; XP=; AP=; KP=; BP=; WP=
 }
 emu_traps cleanup
 fail() { echo "ps2 hunt test FAILED: $1 (see $O)"; cleanup; exit 1; }
@@ -49,7 +60,7 @@ mcs-port = 10298
 db = accounts.sqlite3
 verbose = yes
 CONF
-for a in ps2 pc ${XBOX:+xbox}; do
+for a in ps2 pc ${XBOX:+xbox} ${PC2:+pc2}; do
     python3 tools/server/mh1_server.py account add --db $O/accounts.sqlite3 --note $a > $O/account_$a.txt || fail "account"
 done
 id_of() { sed -n 's/^login \([0-9]*\) password .*/\1/p' $O/account_$1.txt; }
@@ -103,9 +114,15 @@ DNUM=${DNUM:-97}
 K=build/pcsx2/xkey
 grab() { ffmpeg -nostdin -v error -y -f x11grab -draw_mouse 0 -video_size $2 -i :$1 -frames:v 1 "$3" </dev/null; }
 shot() { grab $DNUM 640x480 "$O/ps2_$1.png"; }
-DNUM=$DNUM tools/run_pcsx2.sh --net --iso "disc/mh1/Monster Hunter (Japan).iso" --elf build/ps2launch/MH1LAUNCH.ELF \
+PSLOT=${PSLOT:-28061}
+PINE=$PSLOT DNUM=$DNUM tools/run_pcsx2.sh --net --iso "disc/mh1/Monster Hunter (Japan).iso" --elf build/ps2launch/MH1LAUNCH.ELF \
     --card $CARDNET --cheats $O/warp.pnach --seconds 1500 --log $O/ps2_emulog.txt > $O/ps2_run.txt 2>&1 &
 RP=$!
+if [ "$HUNT" = kutku ]; then    # the PS2's test aid (PINE): idle until the hunt
+    echo idle > $O/ps2_ctl
+    python3 tools/pcsx2/ps2_hunt_aid.py --slot $PSLOT --ctl $O/ps2_ctl --kind 6 --exits $O/pc.log > $O/ps2_trace.txt 2>&1 &
+    AP=$!
+fi
 sleep 50
 NK=0
 k() {
@@ -155,8 +172,14 @@ if [ -n "$XBOX" ]; then     # ---- the Xbox (tools/xemu_mcs_hunt.sh's set-up); i
     XJ=${XJ:-6500}
     JOIN=""; t=$((XJ + 50)); while [ $t -le $((XJ + 500)) ]; do JOIN="$JOIN;$t:circle*2"; t=$((t + 50)); done
     REW=""; t=$((XJ + 2600)); while [ $t -le $((XJ + 9000)) ]; do REW="$REW;$t:circle*2"; t=$((t + 120)); done
-    python3 tools/mk_input.py - "200:circle*2;302:circle*2;404:circle*2;556:circle*2;738:square*3;$XJ:square*3$JOIN;$((XJ+900)):square*3;$((XJ+960)):circle*2;$((XJ+1020)):circle*2;$((XJ+1080)):circle*2$REW" $((XJ + 10000)) > $O/xbox_input.txt
+    XEND=$((XJ + 10000))
+    if [ "$HUNT" = kutku ]; then    # attacks and circles from the hunt on (RT_PL_CARVE keeps circle back while it lives)
+        REW=""; t=$((XJ + 2003)); while [ $t -le $((XJ + 17000)) ]; do REW="$REW;$t:circle*2;$((t+15)):cam_u*2"; t=$((t + 30)); done
+        XEND=$((XJ + 18000))
+    fi
+    python3 tools/mk_input.py - "200:circle*2;302:circle*2;404:circle*2;556:circle*2;738:square*3;$XJ:square*3$JOIN;$((XJ+900)):square*3;$((XJ+960)):circle*2;$((XJ+1020)):circle*2;$((XJ+1080)):circle*2$REW" $XEND > $O/xbox_input.txt
     printf 'RT_ARGS=--quest 10 --play --online\nRT_NAME=XBOX\nRT_VILLAGE_START=1\nRT_VILLAGE_SKIP_INTRO=1\nRT_ONLINE_TRACE=1\nRT_NET_REGISTERED=1\nRT_NP_TRACE=1\nRT_NP_POS=150\nRT_LB_WARP=60,5545,2750,8000;300,1850,1500,8000;%d,3100,2100,8000\n' $((XJ + 300)) > $O/xbox_env.txt
+    [ "$HUNT" = kutku ] && printf 'RT_PL_GOD=1\nRT_PL_TARGET=k6\nRT_PL_GOTO=3400,f\nRT_GOTO_TRACE=1\nRT_PL_CARVE=10\nRT_DMG_MUL=%s\nRT_PL_WARP_EM=3500-12000\nRT_NP_EM=30\n' ${MUL:-25} >> $O/xbox_env.txt
     XBOX_FILES=$XF tools/run_xemu.sh --online --gfx nv2a --data disc/mh1 --env $O/xbox_env.txt --input $O/xbox_input.txt \
         --shot $O/xbox.png --after "300 340 380 420 460 500 540 580" > $O/xemu_run.log 2>&1 &
     XP=$!
@@ -170,23 +193,65 @@ fi
 # the match. Ticks are the PC's (30 a second from its start).
 LOGIN="200:circle*2;302:circle*2;404:circle*2;556:circle*2;738:square*3"
 TALK=""; t=1041; while [ $t -le 1441 ]; do TALK="$TALK;$t:circle*2"; t=$((t + 40)); done
-DL="1543:dleft*2;"; [ -n "$XBOX" ] && DL=""    # players 4 -> 2 (or 3)
-SHEET=${SHEET:-"1521:dleft*2;${DL}1565:ddown*2;1590:ddown*2;1615:ddown*2;1640:circle*2;1700:circle*2;1760:circle*2;1820:circle*2;1880:circle*2"}
-START=${START:-$([ -n "$XBOX" ] && echo 8000 || echo 6000)}     # ANNA's match start (square, circles; the PC tests' timing): the PS2 joins and gets ready before
+DL="1521:dleft*2;1543:dleft*2;"; [ -n "$XBOX" ] && DL="1521:dleft*2;"; [ -n "$PC2" ] && NPL=$((NPL + 1)) && DL="${DL#1521:dleft\*2;}"    # players 4 -> 2 (3, 4)
+[ -n "$PC2" ] && [ -z "$XBOX" ] && DL="1521:dleft*2;"
+SHEET=${SHEET:-"${DL}1565:ddown*2;1590:ddown*2;1615:ddown*2;1640:circle*2;1700:circle*2;1760:circle*2;1820:circle*2;1880:circle*2"}
+START=${START:-$([ -n "$XBOX" ] && { [ -n "$PC2" ] && echo 11000 || echo 8000; } || echo 6000)}     # ANNA's match start (square, circles; the PC tests' timing): the PS2 joins and gets ready before
 GO=""     # tried three times, 30 s apart: before every member is ready the counter only says so
 for t in $START $((START + 900)) $((START + 1800)); do
     GO="$GO;$t:square*3;$((t+60)):circle*2;$((t+120)):circle*2;$((t+180)):circle*2"
 done
-HUNT=""     # in the hunt: circle now and then (the delivery at the box after RT_PL_WARP, then the reward screens)
-t=$((START + 3300)); while [ $t -le $((START + 7500)) ]; do HUNT="$HUNT;$t:circle*2"; t=$((t + 90)); done
-IA=$(python3 tools/mk_input.py - "$LOGIN$TALK;$SHEET$GO$HUNT" 16500)
+HUNTIN=""     # in the hunt: circle now and then (the delivery at the box after RT_PL_WARP, then the reward screens)
+t=$((START + 3300)); while [ $t -le $((START + 7500)) ]; do HUNTIN="$HUNTIN;$t:circle*2"; t=$((t + 90)); done
+CARD=""; END=16500; SECS=540; AIDS="RT_PL_ITEMS=77:15 RT_PL_WARP=${WARP_A:-2400,10350,10640,7000}"
+if [ "$HUNT" = kutku ]; then
+    CARD=";1262:dleft*2"     # the fifth quest card (dleft on the first)
+    # in the hunt: attacks (right stick up) and circle (carve, then the reward screens), cross / ddown + circle ("end
+    # receiving"); who hits when is decided by the warps (a hunter away from the monster swings at the air)
+    HUNTIN=""; t=$((START + 707)); while [ $t -le $((START + 14000)) ]; do
+        HUNTIN="$HUNTIN;$t:circle*2;$((t+15)):cam_u*2;$((t+30)):circle*2;$((t+45)):cam_u*2;$((t+60)):circle*2;$((t+75)):cam_u*2"
+        HUNTIN="$HUNTIN;$((t+90)):circle*2;$((t+105)):cam_u*2;$((t+120)):circle*2;$((t+135)):cam_u*2;$((t+150)):circle*2"
+        HUNTIN="$HUNTIN;$((t+165)):cam_u*2;$((t+180)):cross*2;$((t+200)):ddown*2;$((t+220)):circle*2;$((t+235)):cam_u*2"
+        t=$((t + 250))
+    done
+    SECS=$((START / 30 + 480)); END=$((SECS * 30))
+    # quest ticks: the PC follows the Kut-Ku (60) and fights alone (600-1500), goes back to the camp (1500: the monster
+    # passes to the PS2, which fights alone), follows it again (2500) and hits it (2600-) while the PS2 still owns it
+    # (and no longer attacks); the PS2 goes to the camp (3300: the monster comes back to the PC), the PC kills it and
+    # carves; the PS2 comes back and carves
+    AIDS="RT_PL_GOD=1 RT_PL_TARGET=k6 RT_PL_GOTO=60,f RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_DMG_MUL=${MUL:-25} RT_PL_GOTO2=1500,21;2500,-1"
+    AIDS="$AIDS RT_PL_WARP_EM=600-1500,2600-12000 RT_NP_EM=30"
+fi
+IA=$(python3 tools/mk_input.py - "$LOGIN$TALK$CARD;$SHEET$GO$HUNTIN" $END)
 (env MH1_SAVE_DIR="$PWD/$O/card_ANNA" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_QUEST_TRACE=1 \
     RT_NOMOVIE=1 RT_NET_REGISTERED=1 RT_NET_HOST=$IP RT_NET_PORT=10200 RT_NET_ID=$(id_of pc) RT_NET_PASS=$(pw_of pc) \
-    RT_LB_WARP="60,5545,2750,8000;300,1300,1600,C000;$((START - 1000)),3100,2100,8000" RT_NP_TRACE=1 RT_NP_POS=150 RT_NP_EM=150 RT_PL_ITEMS=77:15 \
-    RT_PL_WARP="${WARP_A:-2400,10350,10640,7000}" RT_SHOTS=${SHOTS:-1700,4000,6100,7400,8000,9600,10200,11200,12200} \
-    timeout 900 build/pc/mhview_online disc/mh1 --quest 10 --play --online --mute --input "$IA" \
-    --shot $O/pc.png --time 540 --size 640x480 > $O/pc.log 2>&1) &
+    RT_LB_WARP="60,5545,2750,8000;300,1300,1600,C000;$((START - 1000)),3100,2100,8000" RT_NP_TRACE=1 RT_NP_POS=150 RT_NP_EM=150 $AIDS \
+    RT_SHOTS=${SHOTS:-1700,4000,6100,7400,8000,9600,10200,11200,12200} \
+    timeout $((SECS + 360)) build/pc/mhview_online disc/mh1 --quest 10 --play --online --mute --input "$IA" \
+    --shot $O/pc.png --time $SECS --size 640x480 > $O/pc.log 2>&1) &
 PCP=$!
+if [ -n "$PC2" ]; then     # ---- a second PC (BOB): joins ANNA's room at the board first (as in test_online_mcs.sh)
+    sleep 2
+    rm -rf $O/card_BOB; mkdir -p $O/card_BOB; cp -r build/coop/save_BOB/. $O/card_BOB/ 2>/dev/null || fail "no BOB card (tools/test_coop.sh saves BOB)"
+    JB=""; t=2000; while [ $t -le 2450 ]; do JB="$JB;$t:circle*2"; t=$((t + 50)); done
+    IB=$(python3 tools/mk_input.py - "$LOGIN;1950:square*3$JB;2700:square*3;2760:circle*2;2820:circle*2$HUNTIN" $END)
+    AIDS_B="RT_NP_EM=150"
+    [ "$HUNT" = kutku ] && AIDS_B="RT_PL_GOD=1 RT_PL_TARGET=k6 RT_PL_GOTO=3400,f RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_DMG_MUL=${MUL:-25} RT_PL_WARP_EM=3500-12000 RT_NP_EM=30"
+    (env MH1_SAVE_DIR="$PWD/$O/card_BOB" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_QUEST_TRACE=1 \
+        RT_NOMOVIE=1 RT_NET_REGISTERED=1 RT_NET_HOST=$IP RT_NET_PORT=10200 RT_NET_ID=$(id_of pc2) RT_NET_PASS=$(pw_of pc2) \
+        RT_LB_WARP="60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" RT_NP_TRACE=1 RT_NP_POS=150 $AIDS_B \
+        RT_SHOTS=${SHOTS:-1700,4000,6100,7400,8000,9600,10200,11200,12200} \
+        timeout $((SECS + 360)) build/pc/mhview_online disc/mh1 --quest 10 --play --online --mute --input "$IB" \
+        --shot $O/pc2.png --time $((SECS - 2)) --size 640x480 > $O/pc2.log 2>&1) &
+    BP=$!
+fi
+if [ -n "$XBOX" ]; then     # memory watchdog: this test's emulators stop (xemu first) under 800 MB available
+    ( while sleep 5; do
+        a=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
+        if [ "$a" -lt 800000 ]; then echo "memory watchdog: $a kB available, stopping xemu" >> $O/watchdog.txt; emu_stop $XP; break; fi
+      done ) &
+    WP=$!
+fi
 i=0
 while [ $i -lt 200 ] && ! grep -q "creates room" $O/server.log; do sleep 2; i=$((i + 2)); done
 grep -q "creates room" $O/server.log || fail "ANNA did not create a room"
@@ -213,27 +278,97 @@ i=0
 while [ $i -lt 300 ] && ! grep -q "mcs: login .*player 1 of match" $O/server.log; do sleep 2; i=$((i + 2)); done
 grep -q "mcs: login .*player 1 of match" $O/server.log || fail "the PS2 did not log in to the game server"
 echo "the PS2 is on the game server"
+if [ "$HUNT" = kutku ]; then    # ---- the Kut-Ku: the PS2's part, timed from the PC's quest start (30 ticks a second)
+    i=0
+    while [ $i -lt 400 ] && ! grep -aq "village: quest 4 starts" $O/pc.log; do sleep 2; i=$((i + 2)); done
+    grep -aq "village: quest 4 starts" $O/pc.log || fail "the PC did not start the Kut-Ku quest (quest 4)"
+    T0=$(date +%s)
+    atq() { while [ $(( ($(date +%s) - T0) * 30 )) -lt $1 ]; do sleep 1; done; }
+    # keys while $O/ps2_atk exists: its words (t = right stick up: attack); once the monster is dead in the PS2's own
+    # trace, circle only (with a weapon drawn circle sheathes it first, then carves)
+    ( while :; do
+        if [ -f $O/ps2_atk ]; then
+            hp=$(grep -a 'np-em:' $O/ps2_trace.txt | tail -1 | awk '{print $13}')
+            keys=$(cat $O/ps2_atk 2>/dev/null); [ -n "$hp" ] && [ "$hp" -le 0 ] && keys=c
+            for key in $keys; do DISPLAY=:$DNUM $K $key:150:150; done
+        else sleep 0.5; fi
+      done ) &
+    KP=$!
+    echo follow > $O/ps2_ctl                     # the PS2 follows the monster from the start
+    atq 1200; shot kk_1200_pc_fights
+    atq 1550; echo fight > $O/ps2_ctl; echo t > $O/ps2_atk
+    atq 2000; shot kk_2000_ps2_fights
+    atq 2200; shot kk_2200_ps2_fights
+    if [ "$DROP" = ps2 ]; then      # the PS2 is closed while it owns the monster (the PC is at the camp)
+        emu_stop $KP $AP $RP; KP=; AP=; RP=; rm -f $O/ps2_atk
+        echo "PCSX2 closed at quest tick 2200"
+        wait $PCP; PCP=
+    else
+    atq 2400; shot kk_2400_ps2_fights
+    atq 2700; echo follow > $O/ps2_ctl; rm -f $O/ps2_atk
+    atq 3000; shot kk_3000_pc_hits
+    atq 3300; echo "goto 21" > $O/ps2_ctl
+    atq 3900; shot kk_3900_ps2_camp
+    atq 4200; echo fight > $O/ps2_ctl; echo t > $O/ps2_atk
+    for q in 4800 5400 6000 6600 7200 7800 8400 9000 9600 10200 10800 11400; do
+        atq $q; shot kk_$q
+        if [ $q = 4800 ] && [ "$DROP" = xbox ] && [ -n "$XP" ]; then     # (quest tick ~4800: mid-fight)
+            emu_stop $XP; XP=; echo "xemu stopped at quest tick 4800"
+        fi
+    done
+    rm -f $O/ps2_atk
+    wait $PCP; PCP=
+    shot kk_end
+    fi
+else
 # in the hunt: screenshots; the PS2's hunter walks (left stick) so the PC sees it move
 sleep 30; shot hunt_30
 DISPLAY=:$DNUM $K i:2500:300 l:1500:300; sleep 5; shot hunt_40
 for s in 60 90 120 150 180 210 240; do sleep 25; shot hunt_$s; done
 wait $PCP; PCP=
-if [ -n "$XP" ]; then
-    wait $XP; XP=
+fi
+[ -z "$BP" ] || { wait $BP; BP=; }
+if [ -n "$XBOX" ]; then
+    [ -z "$XP" ] || { wait $XP; XP=; }
     cp $XF/xemu_debug.txt $O/xbox_serial.txt
     python3 tools/xbox_fatx.py get $XF/hdd.img Games/MH1/mh1log.txt $O/xbox_stderr.txt >/dev/null 2>&1
 fi
 cleanup
 grep -aq "mcs: every player is in" $O/pc.log || fail "the PC and the PS2 did not complete the select (sys 2)"
 grep -aq "mcs: start agreed" $O/pc.log || fail "the start was not agreed (net_start_ck)"
-# the PS2's hunter (slot 1) as the PC sees it: at its start spot first, then somewhere else after its walk
-n=$(grep -a "np-pos: .* me 0 slot 1 stg" $O/pc.log | awk '{print $11, $13}' | sort -u | wc -l)
+PS2SLOT=$(sed -n "s/.*mcs: login $(id_of ps2): player \([0-9]\) .*/\1/p" $O/server.log | head -1)
+[ -n "$PS2SLOT" ] || fail "the PS2 has no player number on the game server"
+# the PS2's hunter as the PC sees it: at its start spot first, then somewhere else after its walk
+n=$(grep -a "np-pos: .* me 0 slot $PS2SLOT stg" $O/pc.log | awk '{print $11, $13}' | sort -u | wc -l)
 [ "$n" -ge 2 ] || fail "the PC did not see the PS2's hunter move"
 grep -aq "rt_flow: tick [0-9]* mode 2 step 0 D5 3" $O/pc.log || fail "the PC did not see the quest cleared"
 grep -aq "mcs: logged in to the game server: $NPL players" $O/pc.log || fail "not $NPL players in the session"
 if [ -n "$XBOX" ]; then
-    grep -q "mcs: login .*player 2 of match" $O/server.log || fail "the Xbox did not log in to the game server"
+    XSLOT=$(sed -n "s/.*mcs: login $(id_of xbox): player \([0-9]\) .*/\1/p" $O/server.log | head -1)
+    [ -n "$XSLOT" ] || fail "the Xbox did not log in to the game server"
     grep -aq "mcs: start agreed" $O/xbox_serial.txt $O/xbox_stderr.txt || fail "the Xbox did not agree on the start"
-    grep -aq "np-pos: .* me 0 slot 2 stg" $O/pc.log || fail "the PC has no third hunter"
+    grep -aq "np-pos: .* me 0 slot $XSLOT stg" $O/pc.log || fail "the PC does not see the Xbox's hunter"
+fi
+if [ -n "$PC2" ]; then
+    grep -aq "mcs: start agreed" $O/pc2.log || fail "BOB did not agree on the start"
+    grep -aq "rt_flow: tick [0-9]* mode 2 step 0 D5 3" $O/pc2.log || fail "BOB did not see the quest cleared"
+fi
+if [ "$HUNT" = kutku ]; then    # the monster as each machine had it: HP from its owner, the owner PC -> PS2 -> PC, the kill, carves
+    L="PC=$O/pc.log PS2=$O/ps2_trace.txt"; C=PC; ST=PC; M=0,$PS2SLOT,0; X=""
+    [ "$DROP" = ps2 ] || { C="$C,PS2"; ST="$ST,PS2"; }
+    # a dropped owner leaves EMW+0x88E as it was when only one player is left (Em_Master_Change: n < 2 just takes the
+    # monster over): the PC then runs it under the old owner number
+    [ "$DROP" = ps2 ] && { M=0,$PS2SLOT; [ -z "$PC2$XBOX" ] && X="--runs PC"; }
+    # with more players the monster goes on from the PS2 to the next one on its area after it (slot order): any
+    [ -n "$PC2$XBOX" ] && M=0,$PS2SLOT
+    [ -n "$PC2" ] && L="$L BOB=$O/pc2.log" && C="$C,BOB" && ST="$ST,BOB"
+    [ -n "$XBOX" ] && [ -s $O/xbox_stderr.txt ] && L="$L XBOX=$O/xbox_stderr.txt" && [ "$DROP" != xbox ] && ST="$ST,XBOX"
+    python3 tools/hunt_sync.py --kind 6 --masters $M --kill --stay $ST $X --carve $C $L > $O/sync.txt
+    r=$?; cat $O/sync.txt; [ $r = 0 ] || fail "the machines did not see the same hunt"
+    if [ -n "$DROP" ]; then
+        DS=$PS2SLOT; [ "$DROP" = xbox ] && DS=$XSLOT
+        grep -a "mcs: player $DS dropped out" $O/pc.log | head -1 | grep . || fail "the PC's session never dropped the $DROP"
+    fi
+    [ -n "$WP" ] && [ -f $O/watchdog.txt ] && cat $O/watchdog.txt
 fi
 echo "ps2 hunt test: OK (see $O)"

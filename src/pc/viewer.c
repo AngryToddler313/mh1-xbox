@@ -1959,6 +1959,18 @@ static void village_step(void)
                     lp = rt_np_slot();
                     quest_no = q2;
                     rt_log("online: co-op quest %d, %d players, slot %d", quest_no, rt_np_players(), lp);
+                    {   /* the quest's game.bin replaces the lobby overlay: "in the lobby" off (the PS2's game_init
+                         * clears game_w). Left on, body_hit read the town's body table (D_610370) for the quest's
+                         * monsters and crashed on the first area change (kind 12 on stage 39), and the menus took
+                         * their lobby variants. */
+                        extern uint8_t game_w[];
+                        void com_motion_load(int n), rt_motion_em_release(void);
+                        game_w[GWX(0x1DC)] = 0;
+                        rt_motion_em_release();     /* the town NPCs' motions go (as rt_village_leave) */
+                        com_motion_load(0);         /* and the quest's common motions (plcom_tbl) come back: the town
+                                                     * had loaded its own (lbcom_tbl), which lack the carve / gather
+                                                     * motions; a carve then ended at once, nothing was carved */
+                    }
                     quest_from_village();
                     return;
                 }

@@ -228,6 +228,25 @@ int rt_test_target(void)
 
 void rt_player_tick(int no)
 {
+    if (getenv("RT_PL_CARVE")) {    /* test aid "n": while the RT_PL_TARGET monster lives the script's circle (fl 0x20) is
+                                     * held back (with a weapon drawn it would sheathe it mid-fight); once it lies dead on
+                                     * the hunter's stage, only circle, every n ticks, for 50 s: the carves */
+        extern u8 em_work[];
+        static int dead_t = -1;
+        int n = atoi(getenv("RT_PL_CARVE")), t = aid_tick();
+        u8 *e = em_work + 0xA10 * rt_test_target();
+        if (n < 4)
+            n = 4;
+        if (e[0] && *(s16 *)(e + 0x302) > 0) {
+            rt_pad_aid(0x20, 0, 0);
+            dead_t = -1;
+        } else if (e[0]) {
+            if (dead_t < 0 || t < dead_t)
+                dead_t = t;
+            if (t - dead_t < 1500)     /* the carve point comes with the end of the death motion (~250 ticks) */
+                rt_pad_aid(0xFFFF, (t - dead_t) % n < 2 ? 0x20 : 0, 1);
+        }
+    }
     rt_pad_tick();
     pl_ticks++;
     if (getenv("RT_PL_AIM")) {      /* test aid: face monster 0 while standing (scripted fights) */
@@ -434,13 +453,15 @@ void rt_player_tick(int no)
         tk = aid_tick();
         int goto2_active = 0;
         sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
-        if (getenv("RT_PL_GOTO2")) {        /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp) */
+        if (getenv("RT_PL_GOTO2")) {        /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp);
+                                               a stage of -1 hands back to RT_PL_GOTO (e.g. "tick,f": follow the monster again) */
             const char *g2 = getenv("RT_PL_GOTO2");
             int t2, s2;
             while (g2 && *g2) {
                 if (sscanf(g2, "%d,%d", &t2, &s2) == 2 && tk >= t2) {
-                    t0 = 0, goal = s2;
-                    goto2_active = 1;
+                    if (s2 >= 0)
+                        t0 = 0, goal = s2;
+                    goto2_active = s2 >= 0;
                 }
                 g2 = strchr(g2, ';');
                 if (g2)

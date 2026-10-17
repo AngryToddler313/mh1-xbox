@@ -202,6 +202,7 @@ void rt_monster_pose(int no, void *fl_skel_ptr);
  * src/pc/pad/pad.h); rt_pad_tick (called by rt_player_tick) runs the PS2
  * pad driver step and the game's swset(). */
 void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry);
+void rt_pad_aid(uint16_t clear, uint16_t set, int right_stick_off);
 /* The pad driver step alone (Psw from the host pad, no swset). */
 void rt_pad_read(void);
 /* rt_village.c: the village (lobby.bin Local_main) after a quest */
