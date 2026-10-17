@@ -192,3 +192,8 @@ descriptions only, never game bytes or text.
 - Declare functions before calling them: the Xbox clang rejects implicit declarations that the PC build lets
   through. Check G work with `python3 tools/build_xbox.py --version mhg --gfx nv2a` before reporting.
 
+
+## Fixes go to both games (owner, 17 Oct 2026)
+When you fix something in G that MH1 shares (platform layer, glue, a shared table or function, a test aid), check MH1
+has the same fault and fix it there too, and the reverse. Say in your report which game(s) each fix covers and how
+each was checked.
