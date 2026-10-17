@@ -52,4 +52,19 @@ void light_init(void)
     memset(light_work, 0, 0x290);
     light_fill(light_work + 0x10, stg_light_tbl, 10.0f);
     light_fill(light_work + 0x150, (u8 **)(pl_light_tbl + game_w.stage * 0x14), 1.0f);
+#ifdef VERSION_MHG
+    {   /* G (main 0x10DEF0): with a stage environment block (stage_work+0x4D > 0) the actor lights' directions, colours
+         * and third rows come from it (stage_work+0x5C / +0x80 / +0xA4, 3 floats per light) */
+        extern u8 stage_work[];
+        u8 *b = light_work + 0x150;
+        int i, c;
+        if (stage_work[0x4D] > 0)
+            for (i = 0; i < 3; i++, b += 0x68)
+                for (c = 0; c < 3; c++) {
+                    *(f32 *)(b + 0x3C + 4 * c) = *(f32 *)(stage_work + 0x5C + 0xC * i + 4 * c);
+                    *(f32 *)(b + 0x0C + 4 * c) = *(f32 *)(stage_work + 0x80 + 0xC * i + 4 * c);
+                    *(f32 *)(b + 0x2C + 4 * c) = *(f32 *)(stage_work + 0xA4 + 0xC * i + 4 * c);
+                }
+    }
+#endif
 }

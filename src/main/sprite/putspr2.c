@@ -21,6 +21,12 @@ typedef struct STGW_L {
     s32 x10, x14, x18, x1C, x20, x24, x28, x2C, x30;
     u8 _pad34[0x48 - 0x34];
     s32 x48;                    /* Stage_data_get(stage) */
+#ifdef VERSION_MHG
+    u8 _pad4C;
+    u8 x4D;                     /* G: the stage file's environment block version (flow.h STGW) */
+    u8 _pad4E[2];
+    u8 fog[0xC];                /* 0x50 G: the block's fog: near, far, colour bytes (stage_fog_tbl's layout) */
+#endif
 } STGW_L;
 extern STGW_L stage_work;
 extern SP2 mega_tbl[4];
@@ -76,10 +82,22 @@ void stage_w_init(void) {
 }
 #endif
 
-/* Fog from stage_fog_tbl[n]: +0 near, +4 far, +8 colour (bytes r,g,b,a). */
-#if !defined(G_PART)
+/* Fog from stage_fog_tbl[n]: +0 near, +4 far, +8 colour (bytes r,g,b,a). G (sub_main 0x4A0DB0): from the stage file's
+ * environment block (stage_work+0x50) while it has one. */
+#if !defined(G_PART) || G_PART == 2
 void stage_fog_set(u8 n) {
+#ifdef VERSION_MHG
+    STGW_L *w = &stage_work;
+    u8 *f;
+
+    if (stage_work.x4D > 0) {
+        f = w->fog;
+    } else {
+        f = (u8 *)stage_fog_tbl[n];
+    }
+#else
     u8 *f = (u8 *)stage_fog_tbl[n];
+#endif
 
     flSetRenderState(0xF, (f[0xB] << 24) | (f[8] << 16) | (f[9] << 8) | f[0xA]);
     flSetRenderState(0x10, *(u32 *)f);

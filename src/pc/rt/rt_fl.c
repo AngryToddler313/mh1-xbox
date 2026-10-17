@@ -83,11 +83,15 @@ void flSetRenderState(int state, u32 value)
     case 0x0F:   /* fog colour (GS FOGCOL: the low 24 bits; the top byte is not sent). Fog itself is per clay
                   * (0x12 at clay creation: gfx_clay_desc.fog), switched on for the scene by rt_fog_scene */
         gfx_set_render_state(GFX_RS_FOG_COLOR, value & 0xFFFFFF);
+        if (getenv("RT_FOG_TRACE"))
+            fprintf(stderr, "fog colour %06X\n", value & 0xFFFFFF);
         break;
     case 0x10:   /* fog start / end: the float's bits */
     case 0x11: {
         static float fog[2];
         memcpy(&fog[state - 0x10], &value, 4);
+        if (getenv("RT_FOG_TRACE"))
+            fprintf(stderr, "fog %s %g\n", state == 0x10 ? "start" : "end", fog[state - 0x10]);
         rt_fog_set |= 1 << (state - 0x10);     /* both set (stage_fog_set, InitRenderState): the scene may use fog */
         gfx_set_render_state(state == 0x10 ? GFX_RS_FOG_START : GFX_RS_FOG_END, (uintptr_t)&fog[state - 0x10]);
         break;

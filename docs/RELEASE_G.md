@@ -326,3 +326,59 @@ monster's tail is drawn in ot0 [verified: G quest 10 tail-cut run, "em-tail: kin
 subspecies and revival paths: asm read, not run]. Eft05 (weapon trail) is rewritten in G for several trails per
 effect (count per type, prims each, helpers 0x56C660 / 0x56C880); it matters with the Dual Swords: not done.
 eft20_pos_set / eft13_t: not started.
+
+## 10. Picture match with the real G and the GB6 quest lane, sixth pass (agent A, 16 Oct 2026)
+
+Comparison pictures (PS2 left, PC before = round 12's viewer picture, PC now = a PC quest after the same area change),
+build/A/look/cmp_sNN.png, all in build/A/look/overview.png. Mean colour difference to the PS2 picture (0-255 per
+channel, HUD corners left out; the hunters still differ: the PS2 hunter wears no armour):
+
+| stage | before | now | what changed |
+|----|----|----|----|
+| 8 (swamp) | 8.8 | 6.2 | the green screen haze |
+| 15 (plains) | 104.4 | 12.8 | the sun's glare (set13 kind 8) |
+| 24 (jungle edge) | 31.5 | 23.9 | black below the edge (the clear colour); the PS2's mist over the trees remains |
+| 27 (forest river) | 35.5 | 8.4 | blue-to-dark screen gradient |
+| 29 (forest at dusk) | 19.7 | 3.3 | dusk gradient (81% dark at the bottom) |
+| 74 (cave) | 14.0 | 5.9 | the stage file's own fog and lights |
+| 77 (tavern) | 9.2 | 13.0 | candle flames now drawn; the number grew because the quest picture has a hunter and a map the viewer picture had not |
+
+- **"1.5-2x brighter near the camera" was not lighting or fog: it is stage_spr_disp**, a full-screen colour gradient
+  the game draws after the 3D scene and before the HUD (four top and four bottom colours per stage, faded by the view's
+  angle to the sun). The PC never called it (MH1 too). G reads its data from stage_work+0xC8.., filled by G's
+  stage_set_set from per-stage tables [verified: PCSX2 memory reads of stage_work+0xC8.. for stages 8, 15, 24, 27, 29,
+  74, 77 equal the PC's RT_SKY_TRACE=1 values]. Fog on the PS2 is the same linear eye-distance fog as the PC's
+  [verified: Vu1Code_0019_0002 (the stage's unlit fogged family) computes F = 255 (end - w) / (end - start); and a PCSX2
+  run with fog switched off by a memory poke barely changed the PS2 picture], so no fog calibration was needed.
+- **Stage file environment block** (G only, func_0010FD10): a stage file with a third link entry carries fog, actor
+  lights and (version 2) sun data that replace the tables. Stages 7 (version 2), 66 and 74 (version 1) have one
+  [verified: all 88 stages scanned with RT_FOG_TRACE=1; PCSX2: stage 74 fog 0xCFCFCF 200-14000, block version 1].
+  Ported: rt_stage_env, G stage_fog_set (matches G), light_init's G override.
+- **Sun glare on stage 15**: G's stage_set_set (matches G) spawns set13 kind 8 there, a G-new kind (three
+  camera-facing layers scrolling at their own periods); G's set13_i (new stage cases 7, 0xF, 0x1D, 0x59-0x5B) and the
+  kind-8 parts of set13_m / set13_trans are ported (PC C, set13 is still asm on the PS2) [verified: cmp_s15.png].
+- **Candle flames on 76/77**: G's set06 (matches G): the candles are parts of the area model, fading as the camera
+  comes close; the tavern's flame flickers [verified: cmp_s77.png].
+- **Stage 24's blue**: the PC cleared the 3D view to a fixed blue; the game clears to black (setBGcolor(0)) [verified:
+  cmp_s24.png]. Also fixed: an area change to a stage without a set model (G 24) left set_mdlw on freed clays (crash).
+- **Stage 74's two set pieces** (round 12): not visible on either side from the area-change camera; the PS2 cave was
+  brighter because of the environment block, now matched. Not looked at from other cameras.
+- **Hunter brightness** (the PS2 hunter is darker on 27): RT_LIGHT_GAME=1 (the game's own stage lights) makes the PC
+  hunter darker too (build/A/look/lg/cmp27.png); the PS2 hunter has no armour, so not settled [open].
+- G action 0x67 (Dual Swords) now runs G's pl_at024 arg 3 (matches G).
+
+**GB6 quest lane** (section 8's list), done this pass:
+- set19 (stages 67/73/75 = GN8): set19_i / set19_trans match G. G reads those stages' positions from never-filled
+  tables (FINDS.md), so the pieces MH1 showed there are gone in G; the PC now does the same. Stages 11/12/21's masks
+  were read from the wrong addresses (mhg_map name slip): fixed.
+- set06: matches G (above). set13_i: ported (PC). set04: not done.
+- eft20_pos_set: G's kind 0x24 (as kind 2), x07 10-13, arg 10's new joints, args 13/21, the nine kinds' shell01 hits
+  (PC C, eft20_nm.c). eft13_t: G's types 35-39 (matches G); eft13's per-type tables imported at G's 40 types.
+- em27 em_die04: **not ported** after all: G's version only checks the revival (no Quest_enemy_revival_set, no
+  reposition); G calls Quest_enemy_revival_set elsewhere, so on the PC (MH1's revival flow) the Velocidrome family
+  revived forever and 8 G quests failed in tools/test_all_quests_g.sh; reverted to MH1's [verified: the failing run].
+  em08: G's damage act 0x14 had no handler on the PC (em08_main already
+  set it): the Cephadrome family's flinch after a part-3 break could hang in mode 4 [inferred from the code, not run]; fixed with G's em_move04 and
+  em_dmg05 side argument. em16_to_normal: G's per-kind action speed.
+- Not done: eft05's non-Dual-Swords uses (G's eft05 already runs for every weapon; not compared with the PS2), em17's
+  small acts, em07 item / hagi sets, set04.

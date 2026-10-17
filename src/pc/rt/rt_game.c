@@ -69,10 +69,60 @@ typedef struct {                     /* stage_work, 0x64 bytes (set14_nm.c STAGE
     u8 _pad40[8];
     void *data;                      /* 0x48 stage_w_init: Stage_data_get(stage) (floor heights) */
     u8 _pad4C[0x64 - 0x4C];
+#ifdef VERSION_MHG
+    u8 _pad64[0x100 - 0x64];         /* G: 0x100 bytes (the sun data at 0xC8, flow.h STGW) */
+#endif
 } RT_STAGE_WORK;
+#ifdef VERSION_MHG
+_Static_assert(sizeof(RT_STAGE_WORK) == 0x100 && offsetof(RT_STAGE_WORK, mdl) == 0x3C, "STAGE_WORK layout");
+#else
 _Static_assert(sizeof(RT_STAGE_WORK) == 0x64 && offsetof(RT_STAGE_WORK, mdl) == 0x3C, "STAGE_WORK layout");
+#endif
 
 RT_STAGE_WORK stage_work;            /* 0x3D8230 */
+
+#ifdef VERSION_MHG
+/* G's func_0010FD10 (main 0x10FD10, called by load_stage_model): a stage file with a third link entry carries an
+ * environment block, s16 version first. Version 1 or 2: fog colour bytes (4 -> stage_work+0x58), near / far
+ * (8 -> +0x50), the actor lights' directions, colours and second colours (3 x 0x24 -> +0x5C, +0x80, +0xA4;
+ * func_0010F9F0 / func_0010FA40); version 2 also the sun (func_0010FAA0: position 12 -> +0xC8, the gradient's lines
+ * 4 -> +0xD4, 8 colours stored r,g,b,a -> 0xAARRGGBB words at +0xD8). stage_work+0x4D keeps the version (0: none;
+ * other values are cleared): stage_fog_set and light_init take the block's fog / lights while it is > 0, and
+ * stage_set_set keeps the block's sun when it is 2 [asm read; PCSX2: stage 74 has version 1, fog 0xCFCFCF 200-14000]. */
+void rt_stage_env(const unsigned char *p, size_t n)
+{
+    u8 *w = (u8 *)&stage_work;
+    int v = p && n >= 2 ? *(const s16 *)p : 0;
+    int i;
+    if (v != 1 && v != 2)
+        v = 0;
+    if (v == 2 && n < 2 + 0xC + 0x6C + 0x30)
+        v = 1;
+    if (v >= 1 && n < 2 + 0xC + 0x6C)
+        v = 0;
+    w[0x4D] = (u8)v;
+    if (v == 0)
+        return;
+    p += 2;
+    memcpy(w + 0x58, p, 4);
+    memcpy(w + 0x50, p + 4, 8);
+    p += 0xC;
+    memcpy(w + 0x5C, p, 0x24);
+    memcpy(w + 0x80, p + 0x24, 0x24);
+    memcpy(w + 0xA4, p + 0x48, 0x24);
+    p += 0x6C;
+    if (v == 2) {
+        memcpy(w + 0xC8, p, 0xC);
+        memcpy(w + 0xD4, p + 0xC, 4);
+        for (i = 0; i < 8; i++) {
+            const u8 *c = p + 0x10 + 4 * i;
+            *(u32 *)(w + 0xD8 + 4 * i) = (u32)c[3] << 24 | (u32)c[0] << 16 | (u32)c[1] << 8 | c[2];
+        }
+    }
+    if (getenv("RT_FOG_TRACE"))
+        fprintf(stderr, "stage environment block version %d\n", v);
+}
+#endif
 RT_SET_MDLW *set_mdlw;               /* 0x38A184 */
 static RT_SET_MDLW set_mdl, stage_mdl;
 static CLAY stage_clay[64];
@@ -128,12 +178,14 @@ int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
         old[i] = set_mdl.flag && set_clay[i].handle >= 0 ? set_clay[i].handle : -1;
     memset(set_clay, 0, sizeof set_clay);
     for (i = 0; i < 64; i++) {
+        if (i >= n && old[i] >= 0 && old[i] < nclays)
+            clays[old[i]] = NULL;       /* a handle of the previous set model no longer in use: its clay is freed */
         set_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
         if (i < n)
             pick_note_handle(set_clay[i].handle, PK_SET, rt_stage_model_no, i, 1);
     }
-    set_mdl.flag = 1;
+    set_mdl.flag = n > 0;
     set_mdl.nclay = (s16)(n < 64 ? n : 64);
     set_mdl.clay = set_clay;
     set_mdlw = &set_mdl;
@@ -552,6 +604,22 @@ void rt_game_draw(void)
     rt_prof_end(RTP_EFT_DRAW);
     rt_fl_reset_states();
     draw_ot(4);
+    {   /* stage_spr_disp (f_stage_nm.c): the stage's full-screen colour gradient (st_sun_rgba_tbl, faded by the view's
+         * angle to the sun: stage 8's green haze, 27's blue/dark, 29's dusk) and the sun-glare flash. MH1's trans()
+         * calls it in game modes 2 and 3, G's every frame (its own stage tests). Drawn as a 2D layer before the HUD. */
+        void stage_spr_disp(void);
+        static int off = -1;            /* RT_NO_STAGE_SPR=1: leave it out (before/after pictures) */
+        if (off < 0)
+            off = getenv("RT_NO_STAGE_SPR") != NULL;
+#ifndef VERSION_MHG
+        if (game_w.mode == 2 || game_w.mode == 3)
+#endif
+        if (!off) {
+            PICK(PK_OTHER, 0, 0, 0, 0);
+            stage_spr_disp();
+            rt_fl_reset_states();
+        }
+    }
     PICK(PK_OTHER, 0, 0, 0, 0);
 }
 

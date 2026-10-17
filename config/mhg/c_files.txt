@@ -1793,3 +1793,11 @@ lobby 0x005E6010 0x005E6050 mhg/lobby/cnet/cnlbs_p88
 lobby 0x005B1610 0x005B1644 mhg/lobby/cnet/cnlbsg_p44
 game 0x0054CBA0 0x0054CCDC mhg/main/pl/f_pl_p49
 game 0x0055C290 0x0055D370 mhg/main/pl/f_pl_p48
+game 0x00559290 0x005594C4 mhg/main/pl/f_pl_p50
+sub_main 0x004A0E50 0x004A1688 mhg/main/stage/stage_set_g
+sub_main:rodata 0x00529300 0x00529470 mhg/main/stage/stage_set_g
+sub_main 0x004E12C0 0x004E17D4 mhg/main/set/set06_p4
+sub_main 0x004E1810 0x004E1BE8 mhg/main/set/set06_p5
+sub_main 0x004A0DB0 0x004A0E48 mhg/main/sprite/putspr2_p2
+sub_main 0x004D3300 0x004D43A4 mhg/main/eft/eft13b_p3
+sub_main:rodata 0x0052BEB0 0x0052BF70 mhg/main/eft/eft13b_p3

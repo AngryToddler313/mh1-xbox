@@ -2839,27 +2839,34 @@ static void em_dmg04_0059FD40(EMW *em, EM08W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G (game 0x5CB620): the side comes from the caller (em_move04: act 5 = 1, G's act 0x14 = 0) instead of em->x07 */
+static void em_dmg05_0059FE40(EMW *em, EM08W *w, int side) {
+#define EM08_SIDE side
+#else
 static void em_dmg05_0059FE40(EMW *em, EM08W *w) {
+#define EM08_SIDE em->x07
+#endif
 
     switch (em->x05) {
     case 0:
         em->x05++;
         em->x3F4 = 0;
         em_cmd_reset(em);
-        em_char_set(em, (s16)(em->x07 ? 0x45 : 0x4A), 0, 0);
+        em_char_set(em, (s16)(EM08_SIDE ? 0x45 : 0x4A), 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
             em->x05++;
             em->work08 = 0;
-            em_char_set(em, (s16)(em->x07 ? 0x46 : 0x4B), 0, 0);
+            em_char_set(em, (s16)(EM08_SIDE ? 0x46 : 0x4B), 0, 0);
             break;
         }
         break;
     case 2:
         if (em->x194 == 0) {
             em->x05++;
-            em_char_set(em, (s16)(em->x07 ? 0x81 : 0x80), 0, 0);
+            em_char_set(em, (s16)(EM08_SIDE ? 0x81 : 0x80), 0, 0);
             break;
         }
         break;
@@ -2867,7 +2874,7 @@ static void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         if (em->x194 == 0) {
             em->x05++;
             em->work08 = 0;
-            em_char_set(em, (s16)(em->x07 ? 0x47 : 0x7C), 0, 0);
+            em_char_set(em, (s16)(EM08_SIDE ? 0x47 : 0x7C), 0, 0);
             break;
         }
         break;
@@ -2881,6 +2888,7 @@ static void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         break;
     }
 }
+#undef EM08_SIDE
 
 static void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
     switch (em->x05) {
@@ -4297,7 +4305,11 @@ static void em_move04_005A2B70(EMW *em, EM08W *w) {
         em_dmg04_0059FD40(em, w);
         break;
     case 5:
+#ifdef VERSION_MHG
+        em_dmg05_0059FE40(em, w, 1);
+#else
         em_dmg05_0059FE40(em, w);
+#endif
         break;
     case 6:
         em_dmg06_0059FFE0(em, w);
@@ -4305,9 +4317,11 @@ static void em_move04_005A2B70(EMW *em, EM08W *w) {
     case 7:
         em_dmg07_005A00F0(em, w);
         break;
+#ifndef VERSION_MHG             /* G (game 0x5CDD90): no acts 8, 12, 13, 14, 18; act 0x14 is dmg05's other side */
     case 8:
         em_dmg08_005A0250(em, w);
         break;
+#endif
     case 9:
         em_dmg09_005A0350(em, w);
         break;
@@ -4317,15 +4331,21 @@ static void em_move04_005A2B70(EMW *em, EM08W *w) {
     case 11:
         em_dmg11_005A0500(em, w);
         break;
+#ifndef VERSION_MHG
     case 12:
         em_dmg12_005A05E0(em, w);
         break;
+#endif
+#ifndef VERSION_MHG
     case 13:
         em_dmg13_005A06C0(em, w);
         break;
+#endif
+#ifndef VERSION_MHG
     case 14:
         em_dmg14_005A07B0(em, w);
         break;
+#endif
     case 15:
         em_dmg15_005A08C0(em, w);
         break;
@@ -4335,11 +4355,18 @@ static void em_move04_005A2B70(EMW *em, EM08W *w) {
     case 17:
         em_dmg17_005A0C40(em, w);
         break;
+#ifndef VERSION_MHG
     case 18:
         em_dmg18_005A0E60(em, w);
         break;
+#endif
     case 19:
         em_dmg19_005A0F50(em, w);
+#ifdef VERSION_MHG
+        break;
+    case 0x14:
+        em_dmg05_0059FE40(em, w, 0);
+#endif
     default:
         break;
     }

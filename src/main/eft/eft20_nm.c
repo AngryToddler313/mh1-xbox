@@ -1003,6 +1003,44 @@ void eft20_m(EFTW *ew) {
         (pos)[2] += v[2];                                  \
     } while (0)
 
+/* G: kind 0x24 is handled as kind 2 (G_KIND2: "not like kind 2"), and the landing dust's shell01 hit differs for the
+ * kinds game 0x54A290 lists (6, 8, 0xF, 0x14, 0x16, 0x26, 0x27, 0x2D, 0x30) [asm read] */
+#ifdef VERSION_MHG
+static int eft20_g_kinds(int k)
+{
+    switch ((u8)k) {
+    case 6: case 8: case 0xF: case 0x14: case 0x16: case 0x26: case 0x27: case 0x2D: case 0x30:
+        return 1;
+    }
+    return 0;
+}
+#define G_KIND2(k) ((k) != 0x24 && (k) != 2)
+#define G_SHELL(k, mh1, g) (eft20_g_kinds(k) ? (g) : (mh1))
+/* x07 10-13 of args 2 and 3 (G): joint 0x2B / 0x1E / 2 (their matrices' translation) or joint 1, on the floor line */
+#define G_CASES_10_13                                       \
+        case 10:                                            \
+            flmatCopy(&m, get_joint_wmat_em(em, 0x2B));     \
+            flmatGetTrans(pos, &m);                         \
+            pos[1] = em->x5AC;                              \
+            break;                                          \
+        case 11:                                            \
+            flmatCopy(&m, get_joint_wmat_em(em, 0x1E));     \
+            flmatGetTrans(pos, &m);                         \
+            pos[1] = em->x5AC;                              \
+            break;                                          \
+        case 12:                                            \
+            flmatCopy(&m, get_joint_wmat_em(em, 2));        \
+            flmatGetTrans(pos, &m);                         \
+            pos[1] = em->x5AC;                              \
+            break;                                          \
+        case 13:                                            \
+            get_joint_pos_em(em, 1, pos);                   \
+            pos[1] = em->x5AC;
+#else
+#define G_KIND2(k) ((k) != 2)
+#define G_SHELL(k, mh1, g) (mh1)
+#endif
+
 s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
     FLMAT m;
     f32 v[3];
@@ -1024,7 +1062,13 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
     case 14:
     case 18:
     case 19:
-        if (em->kind != 2) {
+        if (G_KIND2(em->kind)) {
+#ifdef VERSION_MHG
+            if (x07 == 10) {            /* G (sub_main 0x4DA770) */
+                get_joint_pos_em(em, 0x2B, pos);
+                pos[1] = em->x5AC;
+            } else
+#endif
             if (x07 != 9) {
                 pos[0] = em->pos[0];
                 pos[1] = em->x5AC;
@@ -1033,16 +1077,16 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
                 get_joint_pos_em(em, 4, pos);
                 pos[1] = em->x5AC;
             }
-            if (go != 0 && em->kind != 2) {
+            if (go != 0 && G_KIND2(em->kind)) {
                 switch (arg) {
                 case 1:
-                    shell = 0x21;
+                    shell = G_SHELL(em->kind, 0x21, 0x2C);
                     break;
                 case 9:
-                    shell = 0x27;
+                    shell = G_SHELL(em->kind, 0x27, 0x2E);
                     break;
                 case 11:
-                    shell = 0x26;
+                    shell = G_SHELL(em->kind, 0x26, 0x2D);
                     break;
                 }
             }
@@ -1086,6 +1130,10 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
             get_joint_pos_em(em, 0x1C, pos);
             pos[1] = em->x5AC;
             break;
+#ifdef VERSION_MHG
+        G_CASES_10_13
+            break;
+#endif
         default:
             get_joint_pos_em(em, 0x1A, pos);
             pos[1] = em->x5AC;
@@ -1122,6 +1170,9 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
             pos[2] += v[2];
             pos[1] = em->x5AC;
             break;
+#ifdef VERSION_MHG
+        G_CASES_10_13           /* no break after case 13 in G: it goes on to the default's joint */
+#endif
         default:
             get_joint_pos_em(em, 0x14, pos);
             pos[1] = em->x5AC;
@@ -1163,14 +1214,26 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
         pos[1] += -5.0f;
         break;
     case 10:
+#ifdef VERSION_MHG
+        if (x07 == 0xB) {
+            get_joint_pos_em(em, 0x1E, pos);
+            pos[1] = GetGroundHit(pos);
+            break;
+        }
+        if (!G_KIND2(em->kind)) {
+            get_joint_pos_em(em, 1, pos);
+            pos[1] = GetGroundHit(pos);
+            break;
+        }
+#endif
         get_joint_pos_em(em, 0x29, pos);
         pos[1] = GetGroundHit(pos);
         if (go != 0) {
-            shell = 0x20;
+            shell = G_SHELL(em->kind, 0x20, 0x30);
         }
         break;
     case 25:
-        if (em->kind == 2) {
+        if (!G_KIND2(em->kind)) {
             flmatCopy(&m, get_joint_wmat_em(em, 0x33));
         } else {
             flmatCopy(&m, get_joint_wmat_em(em, 0x24));
@@ -1185,7 +1248,7 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
         pos[2] += v[2];
         break;
     case 26:
-        if (em->kind == 2) {
+        if (!G_KIND2(em->kind)) {
             flmatCopy(&m, get_joint_wmat_em(em, 0x33));
             v[0] = 0.0f;
             v[1] = -23.7f;
@@ -1212,6 +1275,10 @@ s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
         pos[1] = em->x5AC;
         pos[2] = m[3][2] + v[2];
         break;
+#ifdef VERSION_MHG
+    case 13:
+    case 21:
+#endif
     case 29:
         pos[0] = em->pos[0];
         pos[1] = em->x5AC;

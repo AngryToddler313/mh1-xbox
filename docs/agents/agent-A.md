@@ -1096,3 +1096,41 @@ Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, buil
 - **Xbox**: G nv2a build in xemu, RT_ARGS=--quest 10 with RT_WEAPON=234: quest starts, the hunter holds the Dual
   Swords (build/A/dual/xemu.png, xemu.mp4), 20-25 fps, no crash in 240 s. Checks: tools/full_check.sh all ok (emulator
   tests skipped as usual), VERSION=mhg rebuild 7 OK, G Xbox build ok.
+
+## G round 14: picture match with the real G, quest lane (16 Oct 2026)
+
+- **Method**: tools/g_ref_shot.sh gained `POKE="pine commands"` (a second PS2 picture after a memory poke, output in
+  OUT/poke_TAG.txt: used to switch the PS2's fog off and to read stage_work / fl state) and `PCQUEST=10001` (the PC
+  picture from a quest after the same area change, test aid RT_AREA_GO=tick,stage[,x,z,ang], instead of the --stage
+  viewer: set objects, effects, HUD and the screen gradient only run in a quest). Each run writes OUT/fl_TAG.txt
+  (flFogColor/End/Start, flPS2FadeColor, flPS2Ambient read from the PS2). Picture difference: a small python script
+  over ffmpeg raw frames (scratch; numbers in RELEASE_G section 10).
+- **Lesson: compare before modelling.** The "brighter PC" looked like lighting / fog; reading the PS2's fl state showed
+  fog and fade identical, a fog-off poke changed almost nothing, and the per-pixel ratio was a multiply -> a 2D overlay.
+  trans() calls stage_spr_disp between ot4 and the sprites; the PC's rt_game_draw had replaced trans() and left it out.
+- **VU1 notes**: stage area parts use shader family 0x19 (Vu1Code_0019_0002, AddMatrix_0007: matrices + FOG at mem 9):
+  vertex colour goes to the GS unscaled (ftoi0 of the float colour, flPS2HalfColorSub halves the bytes at clay build:
+  255 -> 128 = 1.0), fog F = 255 (end - w) / (end - start), clamped. The param tables (param_XXXX_YYYY, 0x18 input type,
+  0x24 colour scale) map families to programs; families 0x10-0x12 are unlit without fog, 0x19/0x1A the fogged ones.
+- **G stage environment block** (main 0x10FD10 and helpers 0x10F9F0 / 0x10FA40 / 0x10FAA0, read from the asm):
+  layout in rt_game.c rt_stage_env. stage_work+0x4D is the version; stage_fog_set / light_init / stage_set_set test it.
+- **Matched for G this round** (VERSION=mhg check.py OK, G rebuild 7 OK): pl_at024 (f_pl part 50), stage_set_set
+  (stage_set_g.c, jump table sub_main 0x529300), set19_i + set19_trans (removed from c_rawfuncs), set06_i / set06_m
+  (part 4), set06_trans (part 5), stage_fog_set (putspr2 part 2), eft13_t (eft13b part 3, jump tables 0x52BEB0-0x52BF70).
+  Matching tricks: G's stage_set_set wants Set06_set(s16) (passes the loop variable unextended) and an unprototyped
+  Set05_set; set06_trans needed its early returns split into two ifs (`if (!p) return; if (!p->flag) return;` instead of
+  `||`, which made MWCC emit bne + b to a second epilogue) and stw declared before mw; eft13_t needed a random-swap search
+  of its declaration order (scratch tryorder.py: 162 -> 84 -> 20 differing) and then statement order inside the new cases.
+- **Names**: config/mhg/g_names.txt gained set19g_* (mhg_map put set19_s11/s12/s21_mask_tbl one table off: the G
+  names sit on stages 15/21/24's masks), set06_st76/77_*, stage_fog_tbl, the overlay set functions and sun tables for
+  sub_main's stage_set_set. check.py finds a G-only function with no type in the symbol file through a g_names PROVIDE
+  (set06_trans).
+- **PC-only ports** (G code, not matched): stage_spr_disp G branch (f_stage_nm.c), set13_i / set13_m / set13_trans kind 8
+  and new stages, eft20_pos_set, em08 dmg05 / move04, em16_to_normal, light_init's environment override.
+- **Lesson**: a G function that drops a call (em27 die04 without Quest_enemy_revival_set) can rely on a caller G
+  changed too; porting it alone made the Velocidrome family revive forever (test_all_quests_g caught it). Reverted.
+- **Fixed on the way**: Em_data_com_adrs_get with no quest (PC only: the viewer's monsters crashed in G's eft09_set);
+  stale set clays after an area change to a stage without set model (rt_bind_set_model n = 0 now unbinds); 3D clear
+  colour black.
+- **Checks**: tools/full_check.sh (see the commit), VERSION=mhg rebuild 7 OK, G Xbox build. Pictures: build/A/look.
+- Progress (VERSION=mhg tools/progress.py): all G 20.16% (round 13) -> 20.575%.

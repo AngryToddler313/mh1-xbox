@@ -113,6 +113,8 @@ segments:
       - [0x015E70, asm, text/pl_at008]
       - [0x016220, c, mhg/main/pl/f_pl_p20]
       - [0x016AC8, asm, text/tame_com_ck]
+      - [0x016C90, c, mhg/main/pl/f_pl_p50]
+      - [0x016EC4, asm, text/pl_at025]
       - [0x016ED0, c, mhg/main/pl/f_pl_p21]
       - [0x0173A0, asm, text/pl_at029]
       - [0x017700, c, mhg/main/pl/f_pl_p22]
