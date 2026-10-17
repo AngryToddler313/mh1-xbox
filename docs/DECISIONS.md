@@ -301,3 +301,12 @@ Owner to decide.
   keeps working with the new server. One server process serves both games.
 - Games return to their own loader on exit again (it only sends the log, then the dashboard):
   the 11 Oct network freeze came from a polling loader, not from the return itself.
+
+### Lockstep referee against the real game; fixes go to both games (owner, 17 Oct 2026)
+- Matching effort goes where G differs from MH1 (ranked by how often a player meets it), not into bulk matching of
+  functions G shares with MH1: those already run as our MH1 code.
+- Next: an automatic referee. The real game (owner's disc in PCSX2) and the port run side by side with the same pad
+  input; the game state (hunter/monster positions, HP, items, flags) is compared each tick. A difference points at a
+  game-code gap (G still on MH1 logic) or at the port's glue (table sizes, host stand-ins). Built for G first, and for
+  MH1 JP with the same tool.
+- Owner rule: every fix found this way (or any other way) that also applies to MH1 goes into MH1 too, and the reverse.
