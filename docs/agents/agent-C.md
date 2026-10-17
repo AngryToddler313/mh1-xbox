@@ -2014,3 +2014,20 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   launcher's), computed as the XOR of the file's words.
 - **Open:** monster fights with a PS2 in the party (quest 1 has none), ownership hand-over to/from a PS2, a PS2
   dropping mid-hunt, real hardware (PS2 and Xbox), the meaning of 0x1032.
+
+## Online step 2, round 2: a monster with a PS2 in the party (16 Oct 2026)
+- **What:** quest 4 (the Kut-Ku, the fifth ★ quest card) with a PS2 (PCSX2) and a PC: owner hand-overs both ways, HP
+  in sync, each player's damage, the kill, carves on both (docs/network.md 3.11). `HUNT=kutku tools/test_ps2_hunt.sh`,
+  `KUTKU=1 tools/test_online_mcs.sh` (two PCs; `LEAVE=1`: BOB's game killed mid-hunt).
+- **PS2 aid:** tools/pcsx2/ps2_hunt_aid.py drives the PS2's hunter through PCSX2's PINE socket (RAM only: god, area
+  exits from the PC's RT_GOTO_TRACE log, warp next to the monster / its carve point) and writes the PC's trace formats
+  from the PS2's RAM (np-hp / np-em / np-pos), so tools/hunt_sync.py can compare the machines.
+- **Bugs fixed (PC online quest start from the town, viewer.c):** game_w+0x1DC stayed "in the lobby" (crash on the
+  first area change: body_hit read lobby.bin's body tables); the town's common motions stayed loaded (carves ended at
+  once). Lesson: the PS2's game_init / com_motion_load(0) run at every quest start; any PC path that starts a quest
+  without them must do their work (rt_village_leave does for the offline village).
+- **Learned:** the owner of a monster computes every hunter's hits (the PC's RT_DMG_MUL did not apply to its hits
+  while the PS2 owned the monster); followers get the HP only with the owner's action packets, so they skip values in
+  between (hunt_sync checks that a follower only ever shows values an owner had). 0x1032: the client's mcsls_recv has
+  an empty case for it (main 0x232030).
+- **Test aids:** RT_PL_CARVE=n, RT_PL_GOTO2 stage -1, np-hp trace, np-pos items / vital, "mcs: player N dropped out".

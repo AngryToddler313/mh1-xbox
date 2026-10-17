@@ -58,6 +58,14 @@ void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry)
     host_stick[3] = ry;
 }
 
+/* test aids (rt_player.c RT_PL_CARVE): change this tick's host buttons, optionally drop the right stick */
+void rt_pad_aid(uint16_t clear, uint16_t set, int right_stick_off)
+{
+    host_bits = (u16)((host_bits & ~clear) | set);
+    if (right_stick_off)
+        host_stick[2] = host_stick[3] = 0;
+}
+
 /* the fl library's stick values: angle in degrees (atan2(-y, x)) and power 0..127 */
 static void stick(int x, int y, s16 *ang, s16 *pow)
 {

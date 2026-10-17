@@ -900,6 +900,15 @@ void rt_np_tick(void)
             Quest_retire_set();
         }
     }
+    if (rt_online && rt_mcs_on()) {     /* the game's own session marks a player who dropped (time-out or abandon): say so once */
+        static u8 seen[4];
+        int s;
+        for (s = 0; s < game_w.pl_num && s < 4; s++) {
+            if (game_w.pl_state[s] == 0xFF && !seen[s])
+                fprintf(stderr, "mcs: player %d dropped out of the session (pl_state 0xFF)\n", s);
+            seen[s] = game_w.pl_state[s] == 0xFF;
+        }
+    }
     if (rt_online && !rt_mcs_on()) {    /* a player who left: as mcsls_force_drop marks it (pl_state 0xFF), and no longer shown */
         int s;
         for (s = 0; s < game_w.pl_num; s++)
@@ -947,23 +956,45 @@ void rt_np_tick(void)
         ++k;
         if (trace && k % 300 == 0)
             fprintf(stderr, "np: %lu sent, %lu received, %lu not used\n", st_tx, st_rx, st_drop);
+        if (getenv("RT_NP_EM") && rt_online) {      /* test aid: every change of a large monster's HP (tools/hunt_sync.py) */
+            extern u8 em_work[];
+            static s16 last_hp[20];
+            static u8 last_kind[20];
+            for (s = 0; s < 20; s++) {
+                u8 *e = em_work + 0xA10 * s;
+                s16 hp = *(s16 *)(e + 0x302);
+                if (!e[0] || e[2] == 0 || e[0x9E2] == 0) {
+                    last_kind[s] = 0;
+                    continue;
+                }
+                if (last_kind[s] != e[2] || last_hp[s] != hp)
+                    fprintf(stderr, "np-hp: tick %d me %d em %d kind %d hp %d owner %d master %d\n", k, game_w.master, s, e[2], hp,
+                            e[0x8C3] ? -1 : game_w.master, (s8)e[0x88E]);
+                last_kind[s] = e[2];
+                last_hp[s] = hp;
+            }
+        }
         if (getenv("RT_NP_EM") && rt_online && k % atoi(getenv("RT_NP_EM")) == 0) {   /* test aid: the monsters as this machine has them */
             extern u8 em_work[];
             for (s = 0; s < 20; s++) {
                 u8 *e = em_work + 0xA10 * s;
                 if (!e[0] || e[2] == 0)
                     continue;
-                fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f\n", k, game_w.master, s,
-                        e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? -1 : game_w.master, e[0x9E2], e[0x14], e[0x15],
-                        *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4));
+                fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f master %d\n", k,
+                        game_w.master, s, e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? -1 : game_w.master, e[0x9E2], e[0x14],
+                        e[0x15], *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4), (s8)e[0x88E]);   /* master: the owner slot, EMW+0x88E */
             }
         }
         if (getenv("RT_NP_POS") && rt_online && k % atoi(getenv("RT_NP_POS")) == 0)   /* test aid: every player's position as this machine sees it */
             for (s = 0; s < game_w.pl_num; s++) {
                 PLW *p = &player_work[s];
-                fprintf(stderr, "np-pos: tick %d me %d slot %d stg %d pos %.0f %.0f %.0f ang %04X/%04X act %d/%d box %08X pouch %d:%d\n", k,
-                        game_w.master, s, p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF, p->ang_y & 0xFFFF, p->flag14,
-                        p->flag15, *(u32 *)((u8 *)&game_w + GWX(0x1A8)), PF(p, s16, 0x828), PF(p, s16, 0x82A));
+                int it, items = 0;
+                for (it = 0; it < 20; it++)     /* the pouch's item count (a carve adds to it) */
+                    items += PF(p, s16, 0x82A + 4 * it) > 0 ? PF(p, s16, 0x82A + 4 * it) : 0;
+                fprintf(stderr, "np-pos: tick %d me %d slot %d stg %d pos %.0f %.0f %.0f ang %04X/%04X act %d/%d box %08X pouch %d:%d items %d"
+                        " vital %d\n", k, game_w.master, s, p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF,
+                        p->ang_y & 0xFFFF, p->flag14, p->flag15, *(u32 *)((u8 *)&game_w + GWX(0x1A8)), PF(p, s16, 0x828),
+                        PF(p, s16, 0x82A), items, PF(p, s16, 0x302));
             }
     }
 }
