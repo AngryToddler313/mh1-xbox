@@ -56,6 +56,10 @@ typedef struct EFT13_PIECE {
 extern s16 eft13_num[35];
 extern EFT_MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
+#ifdef VERSION_MHG
+extern FLMAT rview_matY;
+void RotateZ(void *, f32);
+#endif
 extern u8 Eft_kemuri_rgb[11][4];
 extern u8 eft13_type26_rgb[8][3];
 
@@ -110,10 +114,8 @@ void eft13_e(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void eft13_t(PRIM *pr) {
-    u8 r;
-    u8 g;
     u8 b;
     f32 rot[3];
     f32 sc[3];
@@ -126,6 +128,8 @@ void eft13_t(PRIM *pr) {
     f32 alpha;
     void *mats;
     CLAY *cl;
+    u8 r;
+    u8 g;
 
     if (mw != 0 && mw->flag != 0) {
         t = Eft_stg_type[game_w.stage];
@@ -166,6 +170,11 @@ void eft13_t(PRIM *pr) {
         case 32:
         case 33:
         case 34:
+#ifdef VERSION_MHG
+        case 37:                /* G (sub_main 0x4D3300) */
+        case 38:
+        case 39:
+#endif
             cl = &mw->clay[74];
             sc[0] = p->size * p->scale[0];
             sc[1] = p->size * p->scale[1];
@@ -288,6 +297,99 @@ void eft13_t(PRIM *pr) {
             make_mat_srt(sc, rot, pr->pos, 2, &m);
             flmatMul33_2(&m, &rview_mat);
             break;
+#ifdef VERSION_MHG
+        case 35:                /* G: a burst of pieces without z writes: a red flash flat to the camera's yaw (clay
+                                 * 74), a white core (81), red streaks tilted out from the effect's turn (38), an orange
+                                 * glow (59) [asm read; which monster uses it not checked] */
+            flSetRenderState(0x6C, 0);
+            flag |= 2;
+            sc[0] = p->size * p->scale[0];
+            alpha = 1.0f;
+            sc[1] = p->size * p->scale[1];
+            sc[2] = p->size * p->scale[2];
+            switch (p->no) {
+            case 0:
+                g = 0x33;
+                r = 0xFF;
+                b = 0x33;
+                cl = &mw->clay[74];
+                make_mat_srt(sc, rot, pr->pos, 0, &m);
+                flmatMul33_2(&m, &rview_matY);
+                break;
+            case 1:
+                r = 0xFF;
+                g = 0xFF;
+                b = 0xFF;
+                cl = &mw->clay[81];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot));
+                make_mat_srt(sc, rot, pr->pos, 2, &m);
+                flmatMul33_2(&m, &rview_mat);
+                break;
+            default:
+            case 2:
+            case 3:
+            case 4:
+                g = 0x33;
+                r = 0xFF;
+                b = 0x33;
+                cl = &mw->clay[38];
+                switch (p->no) {
+                case 2:
+                    rot[0] = -0.7853982f;
+                    rot[1] = -0.7853982f;
+                    break;
+                case 3:
+                    rot[0] = 0.7853982f;
+                    rot[1] = -0.7853982f;
+                    break;
+                case 4:
+                    rot[0] = 2.3561945f;
+                    rot[1] = 0.0f;
+                    break;
+                default:
+                    rot[0] = 0.0f;
+                    rot[1] = 0.0f;
+                    break;
+                }
+                rot[1] += DEG2RAD(ANG2DEG(ew->u0A.joint));
+                rot[2] = DEG2RAD(ANG2DEG(p->rot));
+                make_mat_srt(sc, rot, pr->pos, 0xC, &m);
+                RotateZ((void *)&m, rot[2]);
+                break;
+            case 5:
+                r = 0xFF;
+                g = 0xAF;
+                b = 0x6F;
+                cl = &mw->clay[59];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot));
+                make_mat_srt(sc, rot, pr->pos, 2, &m);
+                flmatMul33_2(&m, &rview_mat);
+                break;
+            }
+            break;
+        case 36:                /* G: two red streaks (clay 38) tilted left / right of the effect's turn */
+            flSetRenderState(0x6C, 0);
+            flag |= 2;
+            g = 0x33;
+            alpha = 1.0f;
+            r = 0xFF;
+            b = 0x33;
+            sc[0] = p->size * p->scale[0];
+            sc[1] = p->size * p->scale[1];
+            sc[2] = p->size * p->scale[2];
+            cl = &mw->clay[38];
+            rot[0] = -0.5235988f;
+            if (p->no == 0) {
+                rot[1] = -1.3089969f;
+            } else {
+                rot[1] = 1.3089969f;
+            }
+            rot[1] += DEG2RAD(ANG2DEG(ew->u0A.joint));
+            rot[2] = DEG2RAD(ANG2DEG(p->rot));
+            make_mat_srt(sc, rot, pr->pos, 0xC, &m);
+            RotateZ((void *)&m, rot[2]);
+            break;
+#endif
         }
         if (ew->arg == 1 || ew->arg == 2 || ew->arg == 16) {
             eft_trans_sub(cl, &m, flag, p->alpha, mats);
@@ -295,6 +397,9 @@ void eft13_t(PRIM *pr) {
             eft_trans_sub_col(cl, &m, (((u8)(255.0f * alpha * p->alpha) << 24) | (r << 16)) | (g << 8) | b, flag, mats);
         }
         SetFilterMode(1);
+#ifdef VERSION_MHG
+        flSetRenderState(0x6C, 1);
+#endif
     }
 }
 #endif

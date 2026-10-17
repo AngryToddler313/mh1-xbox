@@ -80,6 +80,49 @@ _Static_assert(sizeof(RT_STAGE_WORK) == 0x64 && offsetof(RT_STAGE_WORK, mdl) == 
 #endif
 
 RT_STAGE_WORK stage_work;            /* 0x3D8230 */
+
+#ifdef VERSION_MHG
+/* G's func_0010FD10 (main 0x10FD10, called by load_stage_model): a stage file with a third link entry carries an
+ * environment block, s16 version first. Version 1 or 2: fog colour bytes (4 -> stage_work+0x58), near / far
+ * (8 -> +0x50), the actor lights' directions, colours and second colours (3 x 0x24 -> +0x5C, +0x80, +0xA4;
+ * func_0010F9F0 / func_0010FA40); version 2 also the sun (func_0010FAA0: position 12 -> +0xC8, the gradient's lines
+ * 4 -> +0xD4, 8 colours stored r,g,b,a -> 0xAARRGGBB words at +0xD8). stage_work+0x4D keeps the version (0: none;
+ * other values are cleared): stage_fog_set and light_init take the block's fog / lights while it is > 0, and
+ * stage_set_set keeps the block's sun when it is 2 [asm read; PCSX2: stage 74 has version 1, fog 0xCFCFCF 200-14000]. */
+void rt_stage_env(const unsigned char *p, size_t n)
+{
+    u8 *w = (u8 *)&stage_work;
+    int v = p && n >= 2 ? *(const s16 *)p : 0;
+    int i;
+    if (v != 1 && v != 2)
+        v = 0;
+    if (v == 2 && n < 2 + 0xC + 0x6C + 0x30)
+        v = 1;
+    if (v >= 1 && n < 2 + 0xC + 0x6C)
+        v = 0;
+    w[0x4D] = (u8)v;
+    if (v == 0)
+        return;
+    p += 2;
+    memcpy(w + 0x58, p, 4);
+    memcpy(w + 0x50, p + 4, 8);
+    p += 0xC;
+    memcpy(w + 0x5C, p, 0x24);
+    memcpy(w + 0x80, p + 0x24, 0x24);
+    memcpy(w + 0xA4, p + 0x48, 0x24);
+    p += 0x6C;
+    if (v == 2) {
+        memcpy(w + 0xC8, p, 0xC);
+        memcpy(w + 0xD4, p + 0xC, 4);
+        for (i = 0; i < 8; i++) {
+            const u8 *c = p + 0x10 + 4 * i;
+            *(u32 *)(w + 0xD8 + 4 * i) = (u32)c[3] << 24 | (u32)c[0] << 16 | (u32)c[1] << 8 | c[2];
+        }
+    }
+    if (getenv("RT_FOG_TRACE"))
+        fprintf(stderr, "stage environment block version %d\n", v);
+}
+#endif
 RT_SET_MDLW *set_mdlw;               /* 0x38A184 */
 static RT_SET_MDLW set_mdl, stage_mdl;
 static CLAY stage_clay[64];

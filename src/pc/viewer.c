@@ -1059,6 +1059,18 @@ static int load_stage_models(int st)
     stage_tex = load_stage_file(0x2EDB40, st, &keep[1]);    /* STAGE_TEX */
     set_link = load_stage_file(0x2ECD70, st, &keep[2]);     /* set_model_data */
     set_tex = load_stage_file(0x2EF130, st, &keep[3]);      /* SET_TEX */
+#ifdef VERSION_MHG
+    {   /* G: the stage file's environment block (link entry 2: fog, lights, sun), as load_stage_model's
+         * func_0010FD10 reads it (rt_game.c rt_stage_env) */
+        void rt_stage_env(const unsigned char *p, size_t n);
+        if (stage_link.p && fmt_link_count(stage_link, FMT_LE) >= 3) {
+            fmt_blob e = fmt_link_entry(stage_link, 2, FMT_LE);
+            rt_stage_env(e.p, e.n);
+        } else {
+            rt_stage_env(NULL, 0);
+        }
+    }
+#endif
     /* collision: the game's load_stage_hit (wall + ground HITS files) */
     rt_set_file_loader(afs_entry);
     if (rt_load_stage_hit(st) != 0)

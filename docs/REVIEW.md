@@ -785,3 +785,14 @@ obvious workarounds.
 - **Dropped:** for the G PC build, MH1's eft05_i / eft05_m / eft05_d / eft05_t / Eft05_set (kept for MH1); **now** G's
   (eft05_nm.c VERSION_MHG). **Changed:** rt_weapon_afs takes G's 225 weapon models (was 124: every G weapon with a model
   from 124 on had no model on the PC, any class).
+
+## G picture match and quest lane (agent A, 16 Oct 2026)
+- **Added:** stage_spr_disp is called by the PC's rt_game_draw (MH1: game modes 2/3 as trans(); G: always, its own
+  tests). **Why:** the PS2 draws this full-screen colour gradient every frame; without it every G outdoor stage was too
+  bright / untinted. RT_NO_STAGE_SPR=1 leaves it out. **Changed:** the 3D clear colour is black (was a fixed blue).
+- **Dropped:** for G, MH1's stage_set_set, set19_i / set19_trans (G raw bytes), set06_i / set06_m / set06_trans,
+  stage_fog_set, eft13_t, em16_to_normal, em08 em_move04 / em_dmg05 behaviour (kept for MH1); **now** G's.
+  set19_i / set19_trans left config/mhg/c_rawfuncs.txt (now C that matches G).
+- **Changed:** rt_bind_set_model with no set model unbinds the old clays (was: kept pointers to freed clays).
+  tools/test_activities.py map_item: green-pixel threshold 200 -> 150 (the gradient darkens what is behind the map).
+- **To revert:** the commits "G picture match: stage screen gradient ..." and "G: stage environment block, set13 kind 8 ...".

@@ -238,7 +238,22 @@ void em16_init2(EMW *em) {
 }
 
 void em16_to_normal(em) EMW *em; {
+#ifdef VERSION_MHG
+    switch (em->kind) {         /* G (game 0x5FCA00): the action speed per kind; any other kind keeps its speed */
+    case 13:
+        em->act_spd = 1.2f;
+        break;
+    case 16:
+    case 35:
+        em->act_spd = 1.0f;
+        break;
+    case 30:
+        em->act_spd = 1.1f;
+        break;
+    }
+#else
     em->act_spd = 1.0f;
+#endif
     em->x388 = 0;
     em->x3F4 = 0;
     em->x839 = 1;

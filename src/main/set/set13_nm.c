@@ -101,11 +101,31 @@ void set13_m(SETW *sw) {
                 hide = 1;
             }
             break;
+#ifdef VERSION_MHG
+        case 0x07:              /* G (sub_main 0x4E6730) */
+#endif
         case 0x39:
             if (pl->pos[2] <= 100.0f || pl->pos[2] >= 10400.0f) {
                 hide = 1;
             }
             break;
+#ifdef VERSION_MHG
+        case 0x59:
+            if (pl->pos[0] < 8832.0f || pl->pos[2] > 10675.0f) {
+                hide = 1;
+            }
+            break;
+        case 0x5A:
+            if (pl->pos[2] > 10500.0f) {
+                hide = 1;
+            }
+            break;
+        case 0x5B:
+            if (pl->pos[0] < 8212.0f || pl->pos[2] < 8318.0f) {
+                hide = 1;
+            }
+            break;
+#endif
         }
         if (hide != 0) {
             sw->speed -= 0.07f;
@@ -135,7 +155,11 @@ void set13_m(SETW *sw) {
     case 1:
         flvecCopy(dir, rview_mat[2]);
         set13_disp_pos_calc(disp, dir, -50.0f);
+#ifdef VERSION_MHG
+        if (game_w.stage == 0x22) {             /* G: no longer stage 0x18 */
+#else
         if (game_w.stage == 0x22 || game_w.stage == 0x18) {
+#endif
             amin = 0.1f;
             lim = 500;
             thr = 4000000.0f;
@@ -287,6 +311,9 @@ void set13_m(SETW *sw) {
         step = 1.0f;
         sw->cnt++;
         switch (game_w.stage) {
+#ifdef VERSION_MHG
+        case 0x1D:              /* G: stage 0x1D as 0x2D */
+#endif
         case 0x2D:
             x1lo = 2800.0f;
             lim = 0x2BC;
@@ -384,6 +411,21 @@ void set13_m(SETW *sw) {
             }
         }
         break;
+#ifdef VERSION_MHG
+    case 8: {                   /* G: three scrolling layers in front of the camera, each with its own period */
+        static const s16 lim8[3] = { 70, 60, 50 };     /* G main 0x2EC528 */
+        u8 *w = sw->u.work;
+        int i8;
+        for (i8 = 0; i8 < 3; i8++, w += 0xC) {
+            if (++*(s16 *)(w + 8) >= lim8[i8]) {
+                *(s16 *)(w + 8) = 0;
+            }
+        }
+        flvecCopy(dir, rview_mat[2]);
+        set13_disp_pos_calc(disp, dir, -50.0f);
+        break;
+    }
+#endif
     }
     if (sw->prim != 0) {
         sw->prim->pos[0] = disp[0];
@@ -574,6 +616,29 @@ void set13_trans(PRIM *pr) {
             break;
         }
         break;
+#ifdef VERSION_MHG
+    case 8: {                   /* G (sub_main 0x4E79C0): the three layers at the camera-facing matrix, each scrolled in v
+                                 * by its timer over its period, faded by speed */
+        static const s16 lim8[3] = { 70, 60, 50 };
+        u8 *w = sw->u.work;
+        int i8;
+        flSetRenderState(0x1A, (u32)&m);
+        for (i8 = 0; i8 < 3; i8++, w += 0xC) {
+            cl = &mw->clay[no + i8];
+            flmatMakeTrans(&uv, 0.0f, (1.0f / lim8[i8]) * *(s16 *)(w + 8), 0.0f);
+            flSetRenderState(0x19, (u32)&uv);
+            flSetRenderState(0x67, ((u8)(255.0f * sw->speed) << 24) | 0xFFFFFF);
+            if (cl != 0 && cl->handle != -1) {
+                clay_attr_set(cl->attr);
+                flExecuteClay(cl->handle, 0);
+            }
+        }
+        clay_attr_reset();
+        flSetRenderState(0x6C, 1);
+        flSetRenderState(0x6D, 3);
+        return;
+    }
+#endif
     }
     flSetRenderState(0x1A, (u32)&m);
     if (cl != 0 && cl->handle != -1) {

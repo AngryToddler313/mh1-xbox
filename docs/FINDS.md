@@ -321,3 +321,14 @@ lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The
   hunter's name (online: the network handle); there is no score number anywhere in the code.
 - **Cephadrome's unused-in-MH1 attack slots** [checked: asm]: MH1's em08 atk03 / atk04 are 8-byte stubs that only return to
   swimming; G fills both with three-way sand spreads (motions 0x74 / 0x75), which suggests the slots were reserved in MH1.
+
+## G's set19 tables that were never filled (agent A, 16 Oct 2026)
+- [checked: G asm game 0x657580 / 0x657860, PCSX2 memory read in a quest] G's set19 (UV-scrolled stage pieces) reads the
+  piece positions of stages 15, 24, 67, 73-75 and 91, and the mask of stage 24, from tables in the game overlay's (and
+  main's) bss that nothing writes: all zero. So G places those pieces at the world origin, out of sight. MH1 had real
+  positions for 67 and 73/75 (the pieces show on the MH1 PC build); G moved them to new, empty tables. A leftover of a
+  table move, or a deliberate way to drop the pieces: not known.
+- [checked: G asm sub_main 0x4D3300 eft13_t; game 0x63FF80] G's eft13 has five new smoke/flash types (35-39), and the
+  Velocidrome family's em27 die04 no longer calls Quest_enemy_revival_set or moves the monster to a start point itself.
+- [checked: asm, game 0x54A290] G gives nine monster kinds (6, 8, 0xF, 0x14, 0x16, 0x26, 0x27, 0x2D, 0x30) their own
+  landing-dust hit (shell01 0x2C-0x30 instead of 0x20-0x27) in eft20_pos_set.
