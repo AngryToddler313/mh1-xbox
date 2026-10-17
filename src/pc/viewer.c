@@ -1107,6 +1107,9 @@ static int load_stage_models(int st)
             at[k] = part_attr(&set, k);
         }
         set_h0 = rt_bind_set_model(c, at, nc);
+    } else {                    /* no set model here: the previous stage's set clays are released below, so set_mdlw
+                                 * must not keep them (G stage 24 after an area change drew freed clays) */
+        set_h0 = rt_bind_set_model(NULL, NULL, 0);
     }
     {                           /* the stage's light rows into light_work (init_light_work in the game's stage change) */
         extern unsigned char game_w[];
@@ -3003,7 +3006,7 @@ int main(int argc, char **argv)
         rt_set_camera(camw);
         flmat_perspective(proj, game_cam && have_view ? gc_fov : view_fov, scene_aspect(), 10.0f, 80000.0f);
 
-        gfx_begin_frame(0x8098B8);
+        gfx_begin_frame(0);            /* black, as the game's setBGcolor(0) (G stage 24: black below the jungle edge on the PS2) */
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
         gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
         gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);

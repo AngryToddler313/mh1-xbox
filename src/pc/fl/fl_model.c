@@ -119,6 +119,28 @@ static void build_part(fl_model *m, int pi)
         }
     }
 
+    if (getenv("RT_COL_TRACE") && p->col) {     /* vertex colour statistics per part (stage brightness work) */
+        double sum[4] = { 0 }, mx[4] = { 0 };
+        int c;
+        for (k = 0; k < p->nvert; k++)
+            for (c = 0; c < 4; c++) {
+                sum[c] += p->col[4 * k + c];
+                if (p->col[4 * k + c] > mx[c])
+                    mx[c] = p->col[4 * k + c];
+            }
+        fprintf(stderr, "col part %d verts %d mean %.1f %.1f %.1f %.1f max %.1f %.1f %.1f %.1f attr %d %d %d %d %d %d %d %d %d %d %d\n",
+                (int)(p - m->amo.part), p->nvert, sum[0] / p->nvert, sum[1] / p->nvert, sum[2] / p->nvert, sum[3] / p->nvert,
+                mx[0], mx[1], mx[2], mx[3], p->attr[0], p->attr[1], p->attr[2], p->attr[3], p->attr[4], p->attr[5], p->attr[6],
+                p->attr[7], p->attr[8], p->attr[9], p->attr[10]);
+    }
+    if (getenv("RT_COL_TRACE") && pi == 0) {
+        int q;
+        for (q = 0; q < m->amo.nmat; q++)
+            fprintf(stderr, "mat %d a %.2f %.2f %.2f %.2f b %.2f %.2f %.2f %.2f c %.2f %.2f %.2f %.2f\n", q,
+                    m->amo.mat[q].col_a[0], m->amo.mat[q].col_a[1], m->amo.mat[q].col_a[2], m->amo.mat[q].col_a[3],
+                    m->amo.mat[q].col_b[0], m->amo.mat[q].col_b[1], m->amo.mat[q].col_b[2], m->amo.mat[q].col_b[3],
+                    m->amo.mat[q].col_c[0], m->amo.mat[q].col_c[1], m->amo.mat[q].col_c[2], m->amo.mat[q].col_c[3]);
+    }
     fp->skinned = p->infl_n != NULL;
     fp->is_sky = p->has_attr && p->attr[4] != 0;   /* attr +0x10 (stage.md 2) */
     memset(&d, 0, sizeof d);

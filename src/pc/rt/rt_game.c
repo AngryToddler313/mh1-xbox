@@ -69,8 +69,15 @@ typedef struct {                     /* stage_work, 0x64 bytes (set14_nm.c STAGE
     u8 _pad40[8];
     void *data;                      /* 0x48 stage_w_init: Stage_data_get(stage) (floor heights) */
     u8 _pad4C[0x64 - 0x4C];
+#ifdef VERSION_MHG
+    u8 _pad64[0x100 - 0x64];         /* G: 0x100 bytes (the sun data at 0xC8, flow.h STGW) */
+#endif
 } RT_STAGE_WORK;
+#ifdef VERSION_MHG
+_Static_assert(sizeof(RT_STAGE_WORK) == 0x100 && offsetof(RT_STAGE_WORK, mdl) == 0x3C, "STAGE_WORK layout");
+#else
 _Static_assert(sizeof(RT_STAGE_WORK) == 0x64 && offsetof(RT_STAGE_WORK, mdl) == 0x3C, "STAGE_WORK layout");
+#endif
 
 RT_STAGE_WORK stage_work;            /* 0x3D8230 */
 RT_SET_MDLW *set_mdlw;               /* 0x38A184 */
@@ -128,12 +135,14 @@ int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
         old[i] = set_mdl.flag && set_clay[i].handle >= 0 ? set_clay[i].handle : -1;
     memset(set_clay, 0, sizeof set_clay);
     for (i = 0; i < 64; i++) {
+        if (i >= n && old[i] >= 0 && old[i] < nclays)
+            clays[old[i]] = NULL;       /* a handle of the previous set model no longer in use: its clay is freed */
         set_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
         if (i < n)
             pick_note_handle(set_clay[i].handle, PK_SET, rt_stage_model_no, i, 1);
     }
-    set_mdl.flag = 1;
+    set_mdl.flag = n > 0;
     set_mdl.nclay = (s16)(n < 64 ? n : 64);
     set_mdl.clay = set_clay;
     set_mdlw = &set_mdl;
@@ -552,6 +561,22 @@ void rt_game_draw(void)
     rt_prof_end(RTP_EFT_DRAW);
     rt_fl_reset_states();
     draw_ot(4);
+    {   /* stage_spr_disp (f_stage_nm.c): the stage's full-screen colour gradient (st_sun_rgba_tbl, faded by the view's
+         * angle to the sun: stage 8's green haze, 27's blue/dark, 29's dusk) and the sun-glare flash. MH1's trans()
+         * calls it in game modes 2 and 3, G's every frame (its own stage tests). Drawn as a 2D layer before the HUD. */
+        void stage_spr_disp(void);
+        static int off = -1;            /* RT_NO_STAGE_SPR=1: leave it out (before/after pictures) */
+        if (off < 0)
+            off = getenv("RT_NO_STAGE_SPR") != NULL;
+#ifndef VERSION_MHG
+        if (game_w.mode == 2 || game_w.mode == 3)
+#endif
+        if (!off) {
+            PICK(PK_OTHER, 0, 0, 0, 0);
+            stage_spr_disp();
+            rt_fl_reset_states();
+        }
+    }
     PICK(PK_OTHER, 0, 0, 0, 0);
 }
 

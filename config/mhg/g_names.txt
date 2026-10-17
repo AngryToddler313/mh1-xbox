@@ -92,3 +92,47 @@ PROVIDE(pl_at091 = 0x0055CC90);
 PROVIDE(pl_at093 = 0x0055CDF0);
 PROVIDE(pl_at094 = 0x0055D0A0);
 PROVIDE(pl_at102 = 0x0055D2E0);
+/* set19 (G set19_i / set19_trans, agent A): mask tables mhg_map put the MH1 names off by one or two (0x2EE968 is stage
+ * 15's, 0x2EE970 stage 21's, 0x2EF830 stage 24's) and G's new tables; the 0x6E05xx ones and 0x2EF830 are bss (zero) */
+PROVIDE(set19g_s11_mask = 0x002EE958);
+PROVIDE(set19g_s12_mask = 0x002EE960);
+PROVIDE(set19g_s15_mask = 0x002EE968);
+PROVIDE(set19g_s21_mask = 0x002EE970);
+PROVIDE(set19g_s24_mask = 0x002EF830);
+PROVIDE(set19g_s91_mask = 0x002EE9C0);
+PROVIDE(set19g_s15_pos = 0x006E0598);
+PROVIDE(set19g_s24_pos = 0x006E05B0);
+PROVIDE(set19g_s67_pos = 0x006E05E0);
+PROVIDE(set19g_s73_pos = 0x006E05F0);
+PROVIDE(set19g_s91_pos = 0x006E0600);
+/* G stage_set_set (sub_main 0x4A0E50, src/main/stage/stage_set.c, agent A): the game-overlay set functions it calls and
+ * its sun tables (sun_pos_tbl, st_sun_tb_tbl, st_sun_rgba_tbl: per stage, G sub_main) */
+PROVIDE(set00_set = 0x00651F50);
+PROVIDE(Set03_set = 0x0064F510);
+PROVIDE(Set04_set = 0x0064FAC0);
+PROVIDE(Set05_set = 0x00650310);
+PROVIDE(set07_set = 0x00651200);
+PROVIDE(set08_set = 0x006516B0);
+PROVIDE(set09_set = 0x00648E40);
+PROVIDE(Set10_set = 0x006527E0);
+PROVIDE(set11_set = 0x00652D20);
+PROVIDE(set14_set = 0x00653570);
+PROVIDE(set15_set = 0x00655100);
+PROVIDE(set16_set = 0x006561E0);
+PROVIDE(set17_set = 0x00656710);
+PROVIDE(Set18_set = 0x00656CA0);
+PROVIDE(Set19_set = 0x006574B0);
+PROVIDE(Set20_set = 0x006582A0);
+PROVIDE(Set22_set = 0x00658C60);
+PROVIDE(Eft14_set2 = 0x00574B00);
+PROVIDE(Shell10_set = 0x00666440);
+PROVIDE(Set13_set = 0x0064EFA0);
+PROVIDE(sun_pos_tbl = 0x005243E0);
+PROVIDE(st_sun_tb_tbl = 0x00524550);
+PROVIDE(st_sun_rgba_tbl = 0x005246C0);
+/* G set06 (agent A): the town's / tavern's candle positions (sub_main) and the area-model clay numbers (main sdata) */
+PROVIDE(set06_st76_pos = 0x005083C0);
+PROVIDE(set06_st77_pos = 0x005083F0);
+PROVIDE(set06_st76_clay = 0x002EC388);
+PROVIDE(set06_st77_clay = 0x002EC390);
+PROVIDE(set06_trans = 0x004E1810); /* G-only row in mhg_map (MH1's set06_trans 'missing') */

@@ -76,7 +76,16 @@ typedef struct STGW {
     struct STG_MDLS *mdls; /* 0x3C stage model set (flag byte at +0, count s16 at +0x2C, CLAY array at +0x30) */
     u8 _pad40[0x48 - 0x40];
     u8 *x48;            /* 0x48 stage data: f32 floor height at +0x1C (f_sphr GetGroundHitArea outside the hit grid) */
-    u8 _pad4C[0x64 - 0x4C];
+    u8 _pad4C[0x4D - 0x4C];
+    u8 x4D;             /* 0x4D G: version of the stage file's environment block (func_0010FD10; 0 none, 1 fog + lights, 2 + sun) */
+    u8 _pad4E[0x64 - 0x4E];
+#ifdef VERSION_MHG      /* G's stage_work is 0x100 bytes */
+    u8 _pad64[0xC8 - 0x64];
+    f32 sun_pos[3];     /* 0xC8 G: sun position (stage_set_set from sun_pos_tbl; stage_spr_disp) */
+    s16 sun_tb[2];      /* 0xD4 G: the screen gradient's top / bottom line */
+    u32 sun_col[8];     /* 0xD8 G: the gradient's colours 0xAARRGGBB (4 top, 4 bottom: by the view's angle to the sun) */
+    u8 _padF8[0x100 - 0xF8];
+#endif
 } STGW;
 extern STGW stage_work;
 extern u8 Plsel_task[];

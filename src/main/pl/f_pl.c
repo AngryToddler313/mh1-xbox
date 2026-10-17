@@ -7828,7 +7828,9 @@ static void tame_com_ck(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+/* pl_at024: a charge ("tame") move (arg 0/1/2). G (game 0x559290) adds arg 3, the Dual Swords' (action 0x67): arg 0's
+   charge with motion 0x3EE started at frame 6, blend 0xC. */
+#if !defined(G_PART) || G_PART == 50
 static void pl_at024(PLW *pl, s32 arg1) {
     u8 s;
 
@@ -7840,7 +7842,15 @@ static void pl_at024(PLW *pl, s32 arg1) {
         pl->work08 = 0;
         switch (arg1) {
         case 0:
+#ifdef VERSION_MHG
+        case 3:
+#endif
             pl->x05 = 2;
+#ifdef VERSION_MHG
+            if (arg1 == 3) {
+                pl_chr_set2(pl, 0x3EE, 6, 0xC);
+            } else
+#endif
             pl_chr_set2(pl, 0x3EE, 4, 0);
             pl->work87C = 0;
             Eft06_set(4.0f, pl, 6, 0, 2);

@@ -30,8 +30,13 @@ s32 Stage_item_probability_get(int n)
  * list header; 0 or -1 is returned as is */
 s32 *Em_data_com_adrs_get(s32 *p, int which)
 {
-    s32 v = which == 0 ? p[2] : p[3];
+    s32 v;
 
+#ifndef __MWERKS__     /* PC: no monster list without a quest (the viewer's --stage monsters: G's eft09_set asks) */
+    if (p == 0)
+        return 0;
+#endif
+    v = which == 0 ? p[2] : p[3];
     if (quest_w.no == 0) {
         return (s32 *)v;
     }

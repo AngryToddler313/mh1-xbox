@@ -59,7 +59,134 @@ static void set06_move(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G (sub_main 0x4E12C0 / 0x4E1530 / 0x4E1810): stages 0x4C (the town, four candles) and 0x4D (the tavern, a candle and
+ * its flame) light candles that are parts of the AREA model (stage_work.mdl, clay numbers set06_st76_clay /
+ * set06_st77_clay) at set06_st76_pos / set06_st77_pos. They fade (speed: alpha) when the camera comes within 200 of
+ * them (looking past them: 150 ahead of the camera), drawn in ot0 while translucent; the tavern's flame (arg 1) is
+ * drawn in ot3 and flickers between the two halves of its texture every two frames. Stage 0x56 is handled as 0x57. */
+extern f32 set06_st76_pos[][3];
+extern f32 set06_st77_pos[][3];
+extern u8 ot3[];
+extern s16 set06_st76_clay[4];
+extern s16 set06_st77_clay[2];
+extern FLMAT rview_mat;
+typedef struct SET06_STGW {
+    u8 _pad00[0x3C];
+    SET_MDLW *mdl;      /* 0x3C the area model (flow.h STGW.mdls) */
+} SET06_STGW;
+extern SET06_STGW stage_work;
+f32 flvecCalcDistance(f32 *, f32 *);
+void flvecCopy(f32 *, f32 *);
+
+#if !defined(G_PART) || G_PART == 4
+static void set06_i(SETW *sw) {
+    sw->mode++;
+    sw->be_flag = 1;
+    sw->work14 = 0;
+    sw->cnt = 0;
+    sw->timer = 0;
+    sw->speed = 1.0f;
+    switch (game_w.stage) {
+    default:
+        break;
+    case 0x4C:
+        sw->pos[0] = set06_st76_pos[sw->arg][0];
+        sw->pos[1] = set06_st76_pos[sw->arg][1];
+        sw->pos[2] = set06_st76_pos[sw->arg][2];
+        break;
+    case 0x4D:
+        sw->pos[0] = set06_st77_pos[sw->arg][0];
+        sw->pos[1] = set06_st77_pos[sw->arg][1];
+        sw->pos[2] = set06_st77_pos[sw->arg][2];
+        if (sw->arg == 1) {
+            sw->speed = 0.0f;
+        }
+        break;
+    case 0x4E:
+        sw->pos[0] = set06_st78_pos[sw->arg][0];
+        sw->pos[1] = set06_st78_pos[sw->arg][1];
+        sw->pos[2] = set06_st78_pos[sw->arg][2];
+        break;
+    case 0x56:
+    case 0x57:
+        sw->pos[0] = set06_st87_pos[0];
+        sw->pos[1] = set06_st87_pos[1];
+        sw->pos[2] = set06_st87_pos[2];
+        break;
+    }
+    sw->prim_no = get_prim();
+    sw->prim = get_prim_ptr(sw->prim_no);
+    if (sw->prim != 0) {
+        sw->prim->owner = sw;
+        sw->prim->trans = set06_trans;
+        set06_m(sw);
+    } else {
+        push_set_work(sw);
+    }
+}
+
+static void set06_m(SETW *sw) {
+    int no = game_w.master;
+    PLW *pl = &player_work[no];
+    f32 dir[3];
+    f32 p[3];
+    f32 d;
+
+    sw->timer++;
+    sw->prim->pos[0] = sw->pos[0];
+    sw->prim->pos[1] = sw->pos[1];
+    sw->prim->pos[2] = sw->pos[2];
+    switch (game_w.stage) {
+    default:
+        break;
+    case 0x4D:
+        if (sw->arg == 1) {
+            add_prim(ot3, sw->prim, 8, 0);
+            return;
+        }
+    case 0x4C:
+        flvecCopy(dir, rview_mat[2]);
+        p[1] = 0.0f;
+        p[0] = rview_mat[3][0] - 150.0f * dir[0];
+        p[2] = rview_mat[3][2] - 150.0f * dir[2];
+        if (flvecCalcDistance(sw->pos, p) < 200.0f) {
+            p[0] = rview_mat[3][0];
+            p[2] = rview_mat[3][2];
+            d = flvecCalcDistance(sw->pos, p) / 200.0f;
+            if (sw->speed > d) {
+                sw->speed -= 0.1f;
+                if (sw->speed < d) {
+                    sw->speed = d;
+                }
+            } else {
+                sw->speed += 0.1f;
+                if (sw->speed > d) {
+                    sw->speed = d;
+                }
+                if (sw->speed > 1.0f) {
+                    sw->speed = 1.0f;
+                }
+            }
+        } else {
+            sw->speed = 1.0f;
+        }
+        break;
+    case 0x56:
+    case 0x57:
+        if (pl->char0 == 0x287 && frame_check(pl, 0, no, 232.0f) != 0) {
+            sw->be_flag = 0;
+        }
+        break;
+    }
+    if (sw->speed < 1.0f) {
+        add_prim(ot0, sw->prim, 0x40, 0);
+    } else {
+        add_prim(ot1, sw->prim, 0x20, 0);
+    }
+}
+#endif
+#elif !defined(G_PART)
 static void set06_i(SETW *sw) {
     sw->mode++;
     sw->be_flag = 1;
@@ -90,7 +217,7 @@ static void set06_i(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(VERSION_MHG) && !defined(G_PART)
 static void set06_m(SETW *sw) {
     u8 no = game_w.master;
     PLW *pl = &player_work[no];
@@ -124,7 +251,90 @@ static void set06_e(SETW *sw) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef VERSION_MHG
+#if !defined(G_PART) || G_PART == 5
+static void set06_trans(PRIM *pr) {
+    FLMAT mat;
+    FLMAT uv;
+    SETW *sw = pr->owner;
+    SET06_STGW *stw = &stage_work;
+    SET_MDLW *mw = set_mdlw;
+    CLAY *cl;
+
+    if (sw->be_flag != 0) {
+        flmatInit(&mat);
+        switch (game_w.stage) {
+        case 0x4C:
+            if (stw->mdl == 0) {
+                return;
+            }
+            if (stw->mdl->flag == 0) {
+                return;
+            }
+            cl = &stw->mdl->clay[set06_st76_clay[sw->arg]];
+            flSetRenderState(0x67, ((u8)(255.0f * sw->speed) << 24) | 0xFFFFFF);
+            break;
+        case 0x4D:
+            if (stw->mdl == 0) {
+                return;
+            }
+            if (stw->mdl->flag == 0) {
+                return;
+            }
+            cl = &stw->mdl->clay[set06_st77_clay[sw->arg]];
+            if (sw->arg == 0) {
+                flSetRenderState(0x67, ((u8)(255.0f * sw->speed) << 24) | 0xFFFFFF);
+            } else {
+                flSetRenderState(0x67, -1);
+                flmatMakeTrans(&uv, 0.0f, 0.5f * (f32)((sw->timer >> 1) & 1), 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+            }
+            break;
+        case 0x56:
+        case 0x57:
+            if (mw == 0) {
+                return;
+            }
+            if (mw->flag == 0) {
+                return;
+            }
+            flSetRenderState(0x1A, (u32)&mat);
+            cl = &mw->clay[1];
+            flSetRenderState(0x67, -1);
+            if (cl != 0 && cl->handle != -1) {
+                clay_attr_set(cl->attr);
+                flExecuteClay(cl->handle, 0);
+            }
+            flmatRotXYZ33(&mat, set06_st87_rot[0], set06_st87_rot[1], set06_st87_rot[2]);
+            cl = &mw->clay[sw->arg];
+            break;
+        default:
+            if (mw == 0) {
+                return;
+            }
+            if (mw->flag == 0) {
+                return;
+            }
+            flSetRenderState(0x67, -1);
+            cl = &mw->clay[sw->arg];
+            break;
+        }
+        flmatSetTrans(&mat, sw->pos[0], sw->pos[1], sw->pos[2]);
+        flSetRenderState(0x1A, (u32)&mat);
+        if (sw->speed == 1.0f) {
+            flSetRenderState(0x60, 0x80);
+        } else {
+            flSetRenderState(0x60, 0);
+        }
+        if (cl != 0 && cl->handle != -1) {
+            clay_attr_set(cl->attr);
+            flExecuteClay(cl->handle, 0);
+        }
+        clay_attr_reset();
+    }
+}
+#endif
+#elif !defined(G_PART)
 static void set06_trans(PRIM *pr) {
     FLMAT mat;
     SETW *sw = pr->owner;

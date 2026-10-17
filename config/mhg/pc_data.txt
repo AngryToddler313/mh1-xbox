@@ -236,7 +236,8 @@ item_get_rows_main = 0x002EEC68; // size:0x88 noptr
 [sub_main]
 stage_fog_tbl = 0x00521000; // size:0x170 allptr
 ground_tbl_add = 0x005239C0; // size:0x170 allptr
-st_sun_rgba_tbl = 0x005246C0; // size:0x170 allptr
+st_sun_rgba_tbl = 0x005246C0; // size:0x170 allptr    # stage_spr_disp: 8 colour words (0xAARRGGBB) per stage
+st_sun_tb_tbl = 0x00524550; // size:0x170 allptr      # stage_spr_disp: the gradient's top / bottom line per stage
 [main]
 pl_light_tbl2 = 0x00257D20; // size:0x170 allptr
 
@@ -420,3 +421,18 @@ ds_type_ranges = 0x00253F50; // size:0x14 noptr      # G only: Dual Swords weapo
 [main]
 weapon_model_data = 0x00258DB0; // size:0x384 noptr  # AFS index of each weapon model
 WEAPON_TEX = 0x0025CBE0; // size:0x384 noptr         # AFS index of each weapon model's textures
+# set19 masks at their real G addresses (G set19_trans, set19.c; mhg_map's set19_s11/s12/s21_mask_tbl names sit on the
+# next table: agent A). Stage 24's mask and the new position tables are G bss: zero arrays in set19.c on the PC.
+[main]
+set19g_s11_mask = 0x002EE958; // size:0x8 noptr
+set19g_s12_mask = 0x002EE960; // size:0x8 noptr
+set19g_s15_mask = 0x002EE968; // size:0x8 noptr
+set19g_s21_mask = 0x002EE970; // size:0x8 noptr
+set19g_s91_mask = 0x002EE9C0; // size:0x8 noptr
+# set06 candles of stages 0x4C / 0x4D (G set06_i / set06_trans, agent A)
+[sub_main]
+set06_st76_pos = 0x005083C0; // size:0x30 noptr
+set06_st77_pos = 0x005083F0; // size:0x18 noptr
+[main]
+set06_st76_clay = 0x002EC388; // size:0x8 noptr
+set06_st77_clay = 0x002EC390; // size:0x4 noptr

@@ -14,6 +14,10 @@
 #         default 0); X Z where he stands (default the stage's start position, stage_start_pos)
 #   --out DIR   pictures: DIR/sNN[_a].png (pair), DIR/ps2_sNN[_a].png, DIR/pc_sNN[_a].png (default build/ref)
 #   --no-pc     PS2 pictures only
+#   POKE="CMDS" after each PS2 picture, run tools/pcsx2/pine.py CMDS and take a second one, OUT/ps2_TAG_poke.png
+#   PCQUEST=N   the PC picture from a quest (N = 10001, the state's quest) after the same area change, with the game's
+#               camera, set objects and HUD, instead of the --stage viewer (the camera is not forced: compare after the
+#               camera has settled behind the hunter on both)
 #   --pc-only   the PC pictures again (after a PC change) from the cameras of an earlier run (DIR/views.txt); no PCSX2
 #   NEWSTATE=1  make the in-quest save state again (STEPSHOTS=1: a picture after each scripted step, DIR/step_NNN.png)
 #   WEAPON=KIND:ID  the hunter takes this weapon into the quest (KIND 6 sword, 7 gun; poked into the equipped item-box
@@ -48,12 +52,21 @@ while [ $# -gt 0 ]; do
     *) break ;;
     esac
 done
-[ $# -gt 0 ] || [ -n "$COMBO" ] || { sed -n '2,33p' "$0"; exit 2; }
+[ $# -gt 0 ] || [ -n "$COMBO" ] || { sed -n '2,36p' "$0"; exit 2; }
 mkdir -p "$OUT"
 # the PC picture of one shot: pc_shot TAG STAGE VIEW
 pc_shot() {
+    if [ -n "$PCQUEST" ]; then  # in a quest: the same area change as on the PS2 (RT_AREA_GO), the game's own camera,
+        # set objects, effects, the stage's screen gradient and the HUD; the picture 300 ticks after the change
+        AG="100,$2"; [ -z "$X" ] || AG="$AG,$X,$Z,$(printf %x "$ANG")"
+        (ulimit -v 1500000; MH1_HIDDEN=1 RT_NOMOVIE=1 RT_AREA_GO="$AG" RT_SHOTS=400 timeout 300 build/mhg/pc/mhview_g \
+            disc/mhg --quest "$PCQUEST" --input 'idle*2000' --size 640x480 --shot "$OUT/pcq_$1.png" --time 15 \
+            > "$OUT/pc_$1.txt" 2>&1)
+        mv -f "$OUT/pcq_$1_400.png" "$OUT/pc_$1.png" 2>/dev/null
+    else
     (ulimit -v 1500000; MH1_HIDDEN=1 timeout 120 build/mhg/pc/mhview_g disc/mhg --stage "$2" --view "$3" \
         --size 640x480 --shot "$OUT/pc_$1.png" > "$OUT/pc_$1.txt" 2>&1)
+    fi
     ffmpeg -nostdin -v error -y -i "$OUT/ps2_$1.png" -i "$OUT/pc_$1.png" -filter_complex hstack "$OUT/$1.png" \
         && echo "  pair: $OUT/$1.png (PS2 left, PC right)"
 }
@@ -197,8 +210,20 @@ for S in "$@"; do
     V=$(p rf 0x2FF0C0 12 | awk '{print $2","$3","$4","$5","$6","$7","$13}')
     VP=$(p r32 0x2EF28C | awk '{print $2}')
     [ "$VP" = 0x2FF0C0 ] || V=$(p rf "$VP" 12 | awk '{print $2","$3","$4","$5","$6","$7","$13}')
-    echo "stage $STG: PS2 camera $V -> $OUT/ps2_$TAG.png"
+    # the fl render state the stage is drawn with (G main: flFogColor 0x2EF458, flFogEnd / Start 0x2EF45C / 0x2EF460,
+    # flPS2FadeColor 0x384530, flPS2Ambient 0x384540): OUT/fl_TAG.txt
+    { echo "fogcol $(p r32 0x2EF458 | awk '{print $2}') fog end/start $(p rf 0x2EF45C 2 | awk '{print $2, $3}')"
+      echo "fade $(p rf 0x384530 4 | awk '{print $2, $3, $4, $5}') ambient $(p rf 0x384540 4 | awk '{print $2, $3, $4, $5}')"
+    } > "$OUT/fl_$TAG.txt"
+    echo "stage $STG: PS2 camera $V -> $OUT/ps2_$TAG.png ($(head -1 "$OUT/fl_$TAG.txt"))"
     echo "$STG $ANG $X $Z view $V" >> "$OUT/views.txt"
+    if [ -n "$POKE" ]; then      # an experiment: POKE="pine.py commands" (e.g. "wf 0x2EF45C 1e9 1e9": no fog), then
+        # a second picture OUT/ps2_TAG_poke.png
+        p $POKE > "$OUT/poke_$TAG.txt"
+        sleep 1
+        grab "$OUT/ps2_${TAG}_poke.png"
+        echo "  after POKE: $OUT/ps2_${TAG}_poke.png"
+    fi
     if [ -n "$PC" ]; then
         pc_shot "$TAG" "$STG" "$V"
     fi

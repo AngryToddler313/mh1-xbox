@@ -3,6 +3,10 @@
  * written from the asm but never compiled or compared. */
 
 #include "flow.h"
+#ifndef __MWERKS__
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 extern s16 flash_flag;
 extern s16 flash_timer;
@@ -385,14 +389,33 @@ void stage_spr_disp(void)
     int s0;
     u32 u;
 
+#ifdef VERSION_MHG
+    /* G (sub_main 0x4A6740, called by trans() every frame, no mode test): nothing before the stage is up
+     * (stage_work +0 / +1) and nothing on stage 0. The sun data are in stage_work+0xC8..0xF4, which G's stage_set_set
+     * fills from sun_pos_tbl / st_sun_tb_tbl / st_sun_rgba_tbl (colour words already 0xAARRGGBB) unless the stage
+     * file's environment block (version 2, func_0010FAA0) did [asm read; the environment block is not ported: none of
+     * the stages read in PCSX2 (8, 15, 24, 27, 29) had one]. The gradient is 0x200 wide (G's frame). */
+    if (stage_work.x00 == 0 || stage_work.x01 == 0 || game_w.stage == 0)
+        return;
+#define SKY_W 0x200
+#else
+#define SKY_W 0x280
+#endif
     flSetRenderState(0x60, 0);
+#ifdef VERSION_MHG
+    sz = stage_work.sun_pos[2];
+    sx = stage_work.sun_pos[0];
+#else
     sp = sun_pos_tbl[game_w.stage];
     sz = sp[2];
     sx = sp[0];
+#endif
     switch (game_w.stage) {
+#ifndef VERSION_MHG
     case 0:
+#endif
     case 0x1A:
-        sky.r[2] = 0x280;
+        sky.r[2] = SKY_W;
         sky.r[0] = 0;
         sky.r[3] = 0xE0;
         sky.r[1] = 0;
@@ -405,11 +428,25 @@ void stage_spr_disp(void)
     default:
         sv = (u16)(int)(0.5f + 65536.0f * flArcTan2(-rview_mat[8], -rview_mat[10]) / 6.2831855f);
         v = (u16)(int)(0.5f + 65536.0f * flArcTan2(sx, sz) / 6.2831855f);
+#ifdef VERSION_MHG
+        sky.r[0] = 0;
+        sky.r[1] = stage_work.sun_tb[0];
+        sky.r[2] = SKY_W;
+        sky.r[3] = stage_work.sun_tb[1];
+        t8 = stage_work.sun_col[0];
+        t7 = stage_work.sun_col[1];
+        t6 = stage_work.sun_col[2];
+        t5 = stage_work.sun_col[3];
+        t4 = stage_work.sun_col[4];
+        t3 = stage_work.sun_col[5];
+        t2 = stage_work.sun_col[6];
+        t1 = stage_work.sun_col[7];
+#else
         c = st_sun_rgba_tbl[game_w.stage];
         tb = st_sun_tb_tbl[game_w.stage];
         sky.r[0] = 0;
         sky.r[1] = tb[0];
-        sky.r[2] = 0x280;
+        sky.r[2] = SKY_W;
         sky.r[3] = tb[1];
         t8 = SUN_COL(c, 0);
         t7 = SUN_COL(c, 4);
@@ -419,6 +456,7 @@ void stage_spr_disp(void)
         t3 = SUN_COL(c, 20);
         t2 = SUN_COL(c, 24);
         t1 = SUN_COL(c, 28);
+#endif
         v = (v - (u16)sv) & 0xFFFF;
         if ((int)v < 0x4000) {
             sky.c[0] = spr_disp_sub((f32)v / 16384.0f, t8, t6);
@@ -444,9 +482,19 @@ void stage_spr_disp(void)
         flps0005(&sky);
         break;
     }
+#ifndef __MWERKS__
+    {   /* RT_SKY_TRACE=1: the gradient once per stage (PC) */
+        static int last = -1;
+        if (getenv("RT_SKY_TRACE") && last != game_w.stage) {
+            last = game_w.stage;
+            fprintf(stderr, "stage_spr_disp: stage %d sun %.0f %.0f lines %d-%d colours %08X %08X %08X %08X\n", game_w.stage,
+                    sx, sz, sky.r[1], sky.r[3], (unsigned)sky.c[0], (unsigned)sky.c[1], (unsigned)sky.c[2], (unsigned)sky.c[3]);
+        }
+    }
+#endif
     if (flash_flag != 0) {
         fl.r[0] = 0;
-        fl.r[2] = 0x280;
+        fl.r[2] = SKY_W;
         fl.r[3] = 0x1C0;
         fl.r[1] = 0;
         if (flash_flag == 1) {
@@ -479,3 +527,4 @@ void stage_spr_disp(void)
     }
     flSetRenderState(0x60, 0x80);
 }
+#undef SKY_W

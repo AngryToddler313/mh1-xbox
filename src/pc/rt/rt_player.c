@@ -369,6 +369,24 @@ void rt_player_tick(int no)
                 s++;
         }
     }
+    if (getenv("RT_AREA_GO") && no == 0) {  /* test aid "tick,stage[,x,z[,ang]]": at that player tick the area change an exit
+                                             * makes (PLW+0x738.., rt_dbg_area_warp) to that stage, at x,z (default its
+                                             * stage_start_pos) facing ang (hex): tools/g_ref_shot.sh does the same on the PS2 */
+        extern f32 stage_start_pos[][3];
+        int t = -1, st = 0, nf;
+        unsigned a = 0;
+        float d[4];
+        nf = sscanf(getenv("RT_AREA_GO"), "%d,%d,%f,%f,%x", &t, &st, &d[0], &d[2], &a);
+        if (nf >= 2 && aid_tick() == t && st >= 0 && st < 88) {
+            if (nf < 4) {
+                d[0] = stage_start_pos[st][0];
+                d[2] = stage_start_pos[st][2];
+            }
+            d[1] = nf < 4 ? stage_start_pos[st][1] : 0.0f;
+            d[3] = (float)(a & 0xFFFF);
+            rt_dbg_area_warp(st, d);
+        }
+    }
     if (getenv("RT_PL_RIDE")) {     /* test aid "tick[,quad]": at that player tick put the hunter on ride quad n (default 0) of the
                                      * first Lao-Shan Lung (kind 7) on his stage, 20 above its centre; em_ride_sub then starts the ride */
         static int tk;
