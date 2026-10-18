@@ -123,6 +123,9 @@ tools/xbox_serve.py --xbe build/xbox/f_test.xbe; the PC was restarted 13 Oct, so
 Merge F after that test (it must not hang at audio open; RT_AC97_NOCODEC=1 disables the codec part). Still pending: new loader install (tools/xbox_upload.sh
 --loader), load: timing lines from the next returned log.
 Queue (owner, 15 Oct evening; start when a slot frees, two agents max):
+0d. Cross-game audit (owner, 17 Oct): every G-only change since 13 Oct (#ifdef VERSION_MHG, rt_ver_mhg(), src/mhg/,
+   config/mhg; ~900 branches): does MH1 have the same fault? Fix it there too. And the reverse: MH1-only fixes
+   (#ifndef VERSION_MHG, !rt_ver_mhg(), MH1-only files) checked against G (BRIEF "Fixes go to both games").
 0. DONE 16 Oct (agent D). One loader per game (owner asked): today only E:\Games\MH1\default.xbe is the loader and it
    updates whichever game xbox_serve.py serves. Wanted: launching G updates G, launching Monster Hunter
    updates MH1. Loader learns its own folder (MH1 / MHG) and asks /version?game=..., /<game>.xbe;

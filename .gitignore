@@ -41,3 +41,4 @@ text/
 
 # output of ./mh1 (holds the player's copy of the game files)
 dist/
+xemu.lock
