@@ -332,3 +332,29 @@ lobby / plaza tables have 26 / 35 entries instead of 14 / 10 (room table 8). The
   Velocidrome family's em27 die04 no longer calls Quest_enemy_revival_set or moves the monster to a start point itself.
 - [checked: asm, game 0x54A290] G gives nine monster kinds (6, 8, 0xF, 0x14, 0x16, 0x26, 0x27, 0x2D, 0x30) their own
   landing-dust hit (shell01 0x2C-0x30 instead of 0x20-0x27) in eft20_pos_set.
+
+## Petting Poogie does not change drops or luck (MH1 and G) [checked: code, 18 Oct 2026]
+The long-standing rumour: pet Poogie successfully before a hunt and you get better drops. In MH1 and MH G it cannot
+happen:
+- The pig is a lobby NPC (em32 model, em04 motions shared with the Mosswine; `npcPig*` in src/lobby/f/lb_npc.c). Petting
+  ends in npcPigJOY (happy) or npcPigATACK (tackle), which write `lb_sys.x88[room] = 2` or `1` (room = stage - 0x51,
+  the guest rooms; G: lb_sys+0x89.., include/lbsys_g.h).
+- Every read of that value is lobby code (src/lobby/f/lb_village_nm.c, lb_by168.c, lb_npc_init.c): the pig walks around
+  after a happy pet, leaves after a tackle (one NPC fewer), and cannot be petted again (no approach, no camera zoom).
+- No other module references it: searched asm/ main, game, select, yn (MH1) and main, sub_main, game, select, yn,
+  nethttp (G) for lb_sys and the addresses of x88: only lobby code.
+- lobby.bin and game.bin (the hunt) load at the same address (MH1 0x533980, G 0x542600), so the value is overwritten
+  when a quest loads; Clear_lobby_ram clears lb_sys on every lobby entry; it is never saved.
+- Only side effect: the tackle draws a few numbers from ran_suu (dust effect timing), which shifts the random sequence
+  like any other random event; the odds of anything are unchanged.
+Later games (Dos, Freedom 2, Unite, Portable 3rd) have different Poogie code and are not covered here.
+
+### Dos (MH2): petting does give something, a gift, not luck [read in the community mh2-decomp, 18 Oct 2026; not run]
+Source: github.com/Batenkaitos-dev/mh2-decomp (facts and names only; no code copied). In Dos the pet code is
+Poogie_UpdatePetting / PoogieMenu_Update (lobby). Two successful pets in a row (gPoogiePetStreak reaches 2; a tackle
+or a fail resets it) set gOnlineBonusState = 1, which lives in sub_main (0x5D4780) and so survives a quest. On the next
+lobby entry (LobbyScreen_InitLists), offline mode, it becomes 2 unless D_5D4924 == 7 (meaning of 7 not pinned down; a
+guess: not back from a quest). At the next Poogie visit: notice "the pet is holding something in its mouth" and
+Pouch_GiveItem with a random item from a weighted table (D_007E81FC / D_007E8204, lobby data; contents need a Dos disc),
+then the state clears. Only lobby code reads the flag (gm_sub and sub_main only reset it): the hunt's drops and carves are
+not affected. Likely origin of the rumour: pet twice, hunt, come back to a present.
