@@ -816,3 +816,16 @@ Both games unless marked.
   The referee turns it on; for players it is the owner's call (it would make the game's float math match the PS2,
   e.g. motion loops ending on the same tick, but the host's own float code runs under it too).
 - **To revert:** the commits "referee: ..." on agent-D.
+
+## G Xbox bugs 11-14 (agent A, 17 Oct 2026)
+- **Dropped:** write_png's stdio writes (fopen/fwrite of each chunk) and pick.c write_text's fwrite; **now** the file is
+  built in memory and written by viewer_write_file (Xbox: one CreateFile/WriteFile in xbox_report.c xbox_write_file).
+  **Why:** pdclib's fwrite copies byte by byte and writes 1 KB at a time: a report took about 80 s on the owner's Xbox.
+- **Changed:** the reporter's Enter / Start / keyboard Enter no longer save at once: one frozen frame with
+  "SAVING THE BUG REPORT..." first (save_pending), input ignored meanwhile. end_session restores the game's texture.
+- **Changed:** weapon_follow (the host's weapon model follows PLW+0x34C) runs in the offline village too, not only the
+  online town; its trace line says "village:" or "online:".
+- **Changed:** G vs_square_init's lobby_bgm_set gets the stage (was called without argument: house music bug);
+  lb_village_nm.c prototypes lobby_bgm_set(int).
+- **Changed:** stage_spr_disp is not drawn in the reporter's id pass.
+- **To revert:** the commit "G GB5 bugs 11-14: weapon model after equip, house music, report save, reporter texture".

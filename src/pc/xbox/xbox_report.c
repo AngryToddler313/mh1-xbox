@@ -176,3 +176,17 @@ int xbox_report_send_now(const char *dir)
     return 0;
 #endif
 }
+
+/* one whole file in one WriteFile (viewer_write_file: the bug report's pictures and texts). pdclib's fwrite went to the
+ * disk a kilobyte at a time: saving a report took over a minute on the owner's Xbox (RELEASE_G GB5 bug 12). */
+int xbox_write_file(const char *path, const void *data, size_t n)
+{
+    HANDLE h = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    DWORD w = 0;
+    BOOL ok;
+    if (h == INVALID_HANDLE_VALUE)
+        return -1;
+    ok = WriteFile(h, data, (DWORD)n, &w, NULL);
+    CloseHandle(h);
+    return ok && w == (DWORD)n ? 0 : -1;
+}

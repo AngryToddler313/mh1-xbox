@@ -1134,3 +1134,23 @@ Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, buil
   colour black.
 - **Checks**: tools/full_check.sh (see the commit), VERSION=mhg rebuild 7 OK, G Xbox build. Pictures: build/A/look.
 - Progress (VERSION=mhg tools/progress.py): all G 20.16% (round 13) -> 20.575%.
+
+## G Xbox bugs 11-14 and the tint triangle (17 Oct 2026)
+
+- **13 (both games)**: the host weapon model followed PLW+0x34C only in the online town. Village equip (shop
+  shop_armor2_stack / armor_set_myArmor -> Set_userdata; the PS2 also Lb_player_release/Lb_player_load) changes it:
+  weapon_follow now runs in the offline village too. Checked with tools/gvil_ev.py (W="x,z,0;tick,x,z" puts a second
+  warp after the shop, to see the hunter): Iron Sword model 10, Bone Lance (G id 103) model 6.
+- **11**: the owner's report was the weapon shop's comparison with the just-bought Bone Lance as current: correct.
+  Top box = current weapon, bottom = the one to buy (attack red/blue lower/higher).
+- **14 (G)**: G vs_square_init (lobby 0x59EF00) -> lobby_bgm_set with no argument (m2c draft); the asm keeps the stage
+  byte in a0. Garbage 0 -> Snd_bgm_tbl[0] = M6_TAKI1 (waterfall) at 127. G Snd_bgm_tbl = main 0x288E40 (house 86 ->
+  stream 0x1C vol 0x37). Wrong lead first: an x87-stack-leak theory (cos/sqrt of the ADX filter going NaN); tested with
+  a fnstenv tag-word check in xemu: no leak; dropped. All G AFS00 ADX are 2 ch 48 kHz (format not the cause).
+- **12**: pdclib fwrite = byte copy + 1 KB flushes. PNG now built in memory, one write (xbox_write_file). Message frame
+  first. xemu save time: 5832 ms before (pictures 5791 ms), 247 ms after (pictures 219 ms); xemu_pick_test G 15/15 PASS
+  (one earlier run froze at ~40 s with the host at load 8 and other agents' builds; the rerun passed: not explained).
+- **1 again**: not reproduced. Owner's session had debug-menu money and three reporter freezes. Fixed: reporter's
+  end_session restores the game's texture (rt_2d_restore_texture; the game caches its bound texture); stage_spr_disp
+  skipped in the id pass (xemu_pick_test G failed 'stage' pick: the full-screen layer covered everything). PC GL
+  near-plane trace (temporary) at the weapon shop: skinned clays fully behind the eye only, none crossing.
