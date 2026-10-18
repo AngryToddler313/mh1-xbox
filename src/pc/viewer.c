@@ -441,69 +441,100 @@ static uint32_t crc32_update(uint32_t c, const uint8_t *p, size_t n)
     return ~c;
 }
 
-static void put32(FILE *f, uint32_t v)
+static uint8_t *put32(uint8_t *o, uint32_t v)
 {
-    uint8_t b[4] = { (uint8_t)(v >> 24), (uint8_t)(v >> 16), (uint8_t)(v >> 8), (uint8_t)v };
-    fwrite(b, 1, 4, f);
+    o[0] = (uint8_t)(v >> 24); o[1] = (uint8_t)(v >> 16); o[2] = (uint8_t)(v >> 8); o[3] = (uint8_t)v;
+    return o + 4;
 }
 
-static void chunk(FILE *f, const char *type, const uint8_t *d, size_t n)
+/* a PNG chunk at o (length, type, data already at o + 8, CRC); returns the end */
+static uint8_t *chunk(uint8_t *o, const char *type, size_t n)
 {
-    uint32_t c = crc32_update(0, (const uint8_t *)type, 4);
-    c = crc32_update(c, d, n);
-    put32(f, (uint32_t)n);
-    fwrite(type, 1, 4, f);
-    fwrite(d, 1, n, f);
-    put32(f, c);
+    uint32_t c;
+    put32(o, (uint32_t)n);
+    memcpy(o + 4, type, 4);
+    c = crc32_update(0, o + 4, 4 + n);
+    return put32(o + 8 + n, c);
 }
 
-/* PNG with stored (uncompressed) deflate blocks: no zlib needed. */
-static int write_png(const char *path, int w, int h, const uint8_t *rgb)
+/* one whole file in one write. The Xbox's C library (pdclib) copies fwrite data byte by byte into a 1 KB buffer and
+ * writes each kilobyte to the disk on its own: a bug report's three 900 KB pictures took over a minute on the owner's
+ * Xbox (RELEASE_G GB5 bug 12); there the file goes to the disk in one WriteFile (xbox_write_file). */
+#ifdef XBOX
+int xbox_write_file(const char *path, const void *data, size_t n);
+#endif
+int viewer_write_file(const char *path, const void *data, size_t n)
 {
+#ifdef XBOX
+    return xbox_write_file(path, data, n);
+#else
     FILE *f = fopen(path, "wb");
-    size_t raw_n = (size_t)h * (w * 3 + 1), i, nblk, pos = 0, o = 0;
-    uint8_t *raw, *z, ihdr[13];
-    uint32_t a = 1, b = 0;
-    int y;
+    size_t w;
     if (!f)
         return -1;
-    raw = malloc(raw_n);
-    for (y = 0; y < h; y++) {
-        raw[y * (w * 3 + 1)] = 0;
-        memcpy(raw + y * (w * 3 + 1) + 1, rgb + (size_t)y * w * 3, (size_t)w * 3);
-    }
-    nblk = (raw_n + 65534) / 65535;
-    z = malloc(2 + raw_n + nblk * 5 + 4);
-    z[o++] = 0x78;
-    z[o++] = 0x01;
+    w = fwrite(data, 1, n, f);
+    return fclose(f) == 0 && w == n ? 0 : -1;
+#endif
+}
+
+/* PNG with stored (uncompressed) deflate blocks: no zlib needed. Built in memory, written in one go. */
+static int write_png(const char *path, int w, int h, const uint8_t *rgb)
+{
+    size_t raw_n = (size_t)h * (w * 3 + 1), nblk = (raw_n + 65534) / 65535, pos = 0, i;
+    size_t zn = 2 + raw_n + nblk * 5 + 4, total = 8 + 12 + 13 + 12 + zn + 12;
+    uint8_t *png = malloc(total), *o, *z;
+    uint32_t a = 1, b = 0;
+    int y, r;
+    if (!png)
+        return -1;
+    memcpy(png, "\x89PNG\r\n\x1a\n", 8);
+    o = png + 8;
+    put32(o + 8, (uint32_t)w);
+    put32(o + 12, (uint32_t)h);
+    o[16] = 8; o[17] = 2; o[18] = o[19] = o[20] = 0;
+    o = chunk(o, "IHDR", 13);
+    z = o + 8;                          /* the IDAT data: zlib header, stored blocks of the filtered rows, Adler-32 */
+    *z++ = 0x78;
+    *z++ = 0x01;
     for (i = 0; i < nblk; i++) {
-        size_t len = raw_n - pos > 65535 ? 65535 : raw_n - pos;
-        z[o++] = (uint8_t)(i == nblk - 1);
-        z[o++] = (uint8_t)len;
-        z[o++] = (uint8_t)(len >> 8);
-        z[o++] = (uint8_t)~len;
-        z[o++] = (uint8_t)(~len >> 8);
-        memcpy(z + o, raw + pos, len);
-        o += len;
+        size_t len = raw_n - pos > 65535 ? 65535 : raw_n - pos, k = 0;
+        z[0] = (uint8_t)(i == nblk - 1);
+        z[1] = (uint8_t)len;
+        z[2] = (uint8_t)(len >> 8);
+        z[3] = (uint8_t)~len;
+        z[4] = (uint8_t)(~len >> 8);
+        z += 5;
+        while (k < len) {               /* row bytes: filter 0 at each row start */
+            size_t rp = (pos + k) % (size_t)(w * 3 + 1), take;
+            y = (int)((pos + k) / (size_t)(w * 3 + 1));
+            if (rp == 0) {
+                z[k++] = 0;
+                continue;
+            }
+            take = (size_t)(w * 3 + 1) - rp;
+            if (take > len - k)
+                take = len - k;
+            memcpy(z + k, rgb + (size_t)y * w * 3 + (rp - 1), take);
+            k += take;
+        }
+        for (k = 0; k < len; ) {        /* Adler-32, the modulo once per 5552 bytes */
+            size_t end = k + 5552 < len ? k + 5552 : len;
+            for (; k < end; k++) {
+                a += z[k];
+                b += a;
+            }
+            a %= 65521;
+            b %= 65521;
+        }
+        z += len;
         pos += len;
     }
-    for (i = 0; i < raw_n; i++) {
-        a = (a + raw[i]) % 65521;
-        b = (b + a) % 65521;
-    }
-    z[o++] = (uint8_t)(b >> 8); z[o++] = (uint8_t)b;
-    z[o++] = (uint8_t)(a >> 8); z[o++] = (uint8_t)a;
-    fwrite("\x89PNG\r\n\x1a\n", 1, 8, f);
-    ihdr[0] = (uint8_t)(w >> 24); ihdr[1] = (uint8_t)(w >> 16); ihdr[2] = (uint8_t)(w >> 8); ihdr[3] = (uint8_t)w;
-    ihdr[4] = (uint8_t)(h >> 24); ihdr[5] = (uint8_t)(h >> 16); ihdr[6] = (uint8_t)(h >> 8); ihdr[7] = (uint8_t)h;
-    ihdr[8] = 8; ihdr[9] = 2; ihdr[10] = ihdr[11] = ihdr[12] = 0;
-    chunk(f, "IHDR", ihdr, 13);
-    chunk(f, "IDAT", z, o);
-    chunk(f, "IEND", NULL, 0);
-    fclose(f);
-    free(raw);
-    free(z);
-    return 0;
+    z = put32(z, b << 16 | a);
+    o = chunk(o, "IDAT", zn);
+    o = chunk(o, "IEND", 0);
+    r = viewer_write_file(path, png, (size_t)(o - png));
+    free(png);
+    return r;
 }
 
 int viewer_write_png(const char *path, int w, int h, const uint8_t *rgb) { return write_png(path, w, h, rgb); }
@@ -1164,6 +1195,7 @@ static void weapon_load(monster *w, int no)
 /* a hunter's weapon model again when the game changed it (player_work.work34C): the online town's hunters (their mini
  * data names the weapon; a hunter can change it in the town), the local hunter after a purchase. *have = the model
  * loaded, -1 = none yet. */
+static int rt_online_town(void);
 static int weapon_have = -1;         /* the local hunter's weapon model loaded */
 __attribute__((unused)) static void weapon_follow(monster *w, int no, int *have)
 {
@@ -1176,8 +1208,9 @@ __attribute__((unused)) static void weapon_follow(monster *w, int no, int *have)
         w->game = 0;
     }
     weapon_load(w, no);
-    if (getenv("RT_ONLINE_TRACE"))
-        fprintf(stderr, "online: slot %d weapon model %d (was %d)%s\n", no, m, *have, w->game ? "" : ", not loaded");
+    if (getenv("RT_ONLINE_TRACE") || getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "%s: slot %d weapon model %d (was %d)%s\n", rt_online_town() ? "online" : "village", no, m, *have,
+                w->game ? "" : ", not loaded");
     *have = m;
 }
 
@@ -2980,7 +3013,12 @@ int main(int argc, char **argv)
         hunter_pose(&pl, fr, light_hunter(lp));
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
             sync_joints(&pl, hunter_yoff);
-        if (rt_online_town() && pl.game && play)    /* the town: a weapon bought or changed there (and the slot's) */
+        if ((rt_online_town() || rt_village_active()) && pl.game && play)
+            /* the town and the offline village: a weapon bought or equipped there (shop, item box). The PS2's
+             * lobby reloads the hunter on equip (armor_set_myArmor: Lb_player_release + Set_userdata +
+             * Lb_player_load, whose pl_create_model makes the weapon model); the host's weapon model follows
+             * PLW+0x34C here. Before 17 Oct 2026 only the online town did: a weapon bought in the village kept
+             * the old model on the back until the next quest (RELEASE_G GB5 bug 13, MH1 too) */
             weapon_follow(&weapon, lp, &weapon_have);
         if (weapon.game && pl.game && play)
             weapon_pose(light_hunter(lp));

@@ -614,7 +614,8 @@ void rt_game_draw(void)
 #ifndef VERSION_MHG
         if (game_w.mode == 2 || game_w.mode == 3)
 #endif
-        if (!off) {
+        if (!off && !gfx_pick_pass) {   /* not in the bug reporter's id pass: a full-screen layer, it hid every
+                                         * object under it (G draws it every frame: the reporter picked "other") */
             PICK(PK_OTHER, 0, 0, 0, 0);
             stage_spr_disp();
             rt_fl_reset_states();

@@ -243,7 +243,7 @@ int load_busy_ck();
 int load_eft();
 int load_pit();
 int load_shadow();
-int lobby_bgm_set();
+void lobby_bgm_set(int n);     /* prototyped: a call without the stage compiled silently (GB5 bug 14) */
 int lobby_bgm_set2();
 int memcmp();
 int npc_create_model();
@@ -848,7 +848,11 @@ void vs_square_init(void) {
         } else if (*(u8 *)0x3F3404 == 0x4E && M2C_FIELD(cw, u32 *, 0x11AB0) >= 4U) {
             lobby_bgm_set2(0x13);
         } else {
-            lobby_bgm_set();
+            /* the stage byte the asm compared with 0x4E is still in a0 here (lobby 0x59F028): before 17 Oct 2026 the
+             * call had no argument and read garbage (0 on the PC and the Xbox: Snd_bgm_tbl[0], the waterfall stream
+             * M6_TAKI1 at full volume in the house and again after leaving it; RELEASE_G GB5 bug 14). G's table gives
+             * the house (86) the village stream at volume 0x37 */
+            lobby_bgm_set(*(u8 *)0x3F3404);
         }
         if (Online_ck() == 1 || M2C_FIELD(lb_sys, u8 *, LBSYS_OFS(0)) == 0) {
             Lb_npc_set(M2C_FIELD(pl, u16 *, 0x73A));
