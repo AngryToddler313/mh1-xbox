@@ -796,3 +796,16 @@ obvious workarounds.
 - **Changed:** rt_bind_set_model with no set model unbinds the old clays (was: kept pointers to freed clays).
   tools/test_activities.py map_item: green-pixel threshold 200 -> 150 (the gradient darkens what is behind the map).
 - **To revert:** the commits "G picture match: stage screen gradient ..." and "G: stage environment block, set13 kind 8 ...".
+
+## G Xbox bugs 11-14 (agent A, 17 Oct 2026)
+- **Dropped:** write_png's stdio writes (fopen/fwrite of each chunk) and pick.c write_text's fwrite; **now** the file is
+  built in memory and written by viewer_write_file (Xbox: one CreateFile/WriteFile in xbox_report.c xbox_write_file).
+  **Why:** pdclib's fwrite copies byte by byte and writes 1 KB at a time: a report took about 80 s on the owner's Xbox.
+- **Changed:** the reporter's Enter / Start / keyboard Enter no longer save at once: one frozen frame with
+  "SAVING THE BUG REPORT..." first (save_pending), input ignored meanwhile. end_session restores the game's texture.
+- **Changed:** weapon_follow (the host's weapon model follows PLW+0x34C) runs in the offline village too, not only the
+  online town; its trace line says "village:" or "online:".
+- **Changed:** G vs_square_init's lobby_bgm_set gets the stage (was called without argument: house music bug);
+  lb_village_nm.c prototypes lobby_bgm_set(int).
+- **Changed:** stage_spr_disp is not drawn in the reporter's id pass.
+- **To revert:** the commit "G GB5 bugs 11-14: weapon model after equip, house music, report save, reporter texture".

@@ -87,11 +87,13 @@ static void now_text(char *out, int n, int iso)
 #endif
 
 int viewer_write_png(const char *path, int w, int h, const uint8_t *rgb);
+int viewer_write_file(const char *path, const void *data, size_t n);
 char *pick_game_json(void);
 int rt_seed_get(void);
 const char *rt_log_build(void);
 void pick_json_str(char *out, int cap, const char *s);
 void audio_pause(int on);
+void rt_2d_restore_texture(void);
 
 enum { PS_OFF, PS_ARMED, PS_PASS, PS_FROZEN };
 static int state, W, H;
@@ -112,6 +114,7 @@ static int osk_open, osk_r, osk_c, osk_shift, osk_rep;  /* the on-screen keyboar
 static char toast[96];                  /* "report saved" for a few seconds after the freeze */
 static Uint32 toast_ms;
 #endif
+static int save_pending;                /* 1: save asked (the next frozen frame shows "Saving"), 2: shown, save after it */
 
 /* ------------------------------------------------------------ CPU drawing into an RGB image */
 static void px(uint8_t *img, int x, int y, int r, int g, int b)
@@ -471,13 +474,8 @@ static int unproject(int x, int y, float out[3])
 static void write_text(const char *dir, const char *name, const char *text)
 {
     char p[1000];
-    FILE *f;
     snprintf(p, sizeof p, "%s" PSEP "%s", dir, name);
-    f = fopen(p, "wb");
-    if (f) {
-        fwrite(text, 1, strlen(text), f);
-        fclose(f);
-    }
+    viewer_write_file(p, text, strlen(text));      /* one write (pdclib's fwrite: 1 KB at a time on the Xbox) */
 }
 
 static void idbuffer_png(const char *dir)
@@ -770,6 +768,7 @@ static void save_report(void)
     size_t l;
     uint8_t *ann;
     char p[1100];
+    Uint32 t0, t1;
     now_text(stamp, sizeof stamp, 0);
     snprintf(base, sizeof base, "%s", ld);
     l = strlen(base);
@@ -792,6 +791,7 @@ static void save_report(void)
             snprintf(dir, sizeof dir, "%s" PSEP "%s", base, name);
         }
     }
+    t0 = SDL_GetTicks();
     rt_mkdirs(dir);
     snprintf(p, sizeof p, "%s" PSEP "screenshot.png", dir);
     viewer_write_png(p, W, H, shot);
@@ -801,6 +801,7 @@ static void save_report(void)
     viewer_write_png(p, W, H, ann);
     free(ann);
     idbuffer_png(dir);
+    t1 = SDL_GetTicks();
     json = report_json(name);
     if (json) write_text(dir, "report.json", json);
     free(json);
@@ -814,7 +815,8 @@ static void save_report(void)
     snprintf(p, sizeof p, "%s/clip.gif", dir);
     write_gif(p);
 #endif
-    rt_log("bug report saved: %s (note: %d characters, %d objects picked)", rt_log_path(dir), (int)strlen(note), nsel);
+    rt_log("bug report saved: %s (note: %d characters, %d objects picked; written in %u ms, pictures %u ms)", rt_log_path(dir),
+           (int)strlen(note), nsel, (unsigned)(SDL_GetTicks() - t0), (unsigned)(t1 - t0));
     fprintf(stderr, "bug report saved: %s\n", dir);
 #ifdef XBOX
     snprintf(toast, sizeof toast, "Bug report saved: %.60s", name);
@@ -869,6 +871,7 @@ void pick_arm(void)
 static void end_session(void)
 {
     state = PS_OFF;
+    save_pending = 0;
     audio_pause(0);
     os_text_input(0);
     os_cursor(0);
@@ -883,6 +886,10 @@ static void end_session(void)
     gfx_set_render_state(GFX_RS_BLEND, 1);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
     if (dtex) { gfx_release_texture(dtex); dtex = NULL; }
+    /* the game's texture back (the frozen frame's dtex was the bound one): the game caches its texture stage and binds
+     * again only on a change, so its next 2D draws used the released texture (GL: a deleted name; Xbox: none, drawn
+     * as plain colour quads) until it changed texture. Before 17 Oct 2026; RELEASE_G GB5 (1 again), both games */
+    rt_2d_restore_texture();
     free(shot); shot = NULL;
     free(disp); disp = NULL;
     free(idbuf); idbuf = NULL;
@@ -1278,8 +1285,19 @@ void pick_frozen_frame(void)
         ui_quad((float)(x - 10), (float)(yy - 1), (float)(x + 11), (float)(yy + 2), 0xFFFFFFFFu);
         ui_quad((float)(x - 1), (float)(yy - 10), (float)(x + 2), (float)(yy + 11), 0xFFFFFFFFu);
     }
+    if (save_pending) {         /* the save takes seconds on the Xbox: say so on the frozen frame first */
+        static const char msg[] = "SAVING THE BUG REPORT...";
+        int bs = sc * 2, tw = (int)(sizeof msg - 1) * 6 * bs, bx = (W - tw) / 2, by = H / 2 - 5 * bs;
+        ui_quad((float)(bx - 4 * bs), (float)(by - 4 * bs), (float)(bx + tw + 4 * bs), (float)(by + 11 * bs), 0x000000E0u);
+        ui_text(bx, by, msg, bs, 0xFFFF80FFu);
+    }
     ui_flush();
     ui_script_step();
+    if (save_pending == 2) {    /* the frame before this one showed the message: write now */
+        save_report();
+        end_session();
+    } else if (save_pending)
+        save_pending = 2;
 }
 
 static void cancel(void)
@@ -1305,15 +1323,14 @@ int pick_event(const void *vev)
         return 0;
     if (ev->type == SDL_QUIT)
         return 0;
-    if (state != PS_FROZEN)
+    if (state != PS_FROZEN || save_pending)
         return 1;
     switch (ev->type) {
     case SDL_KEYDOWN:
         if (ev->key.keysym.sym == SDLK_ESCAPE)
             cancel();
         else if (ev->key.keysym.sym == SDLK_RETURN || ev->key.keysym.sym == SDLK_KP_ENTER) {
-            save_report();
-            end_session();
+            save_pending = 1;     /* saved after a frame that says so (pick_frozen_frame) */
         } else if (ev->key.keysym.sym == SDLK_BACKSPACE)
             utf8_pop(note);
         else if (ev->key.keysym.sym == SDLK_v && (ev->key.keysym.mod & KMOD_CTRL)) {
@@ -1453,7 +1470,7 @@ void pick_pad(const pad_state *p)
     int b = p->bits, pr = b & ~pad_prev, rel = ~b & pad_prev;
     static int drep;
     pad_prev = b;
-    if (state != PS_FROZEN)
+    if (state != PS_FROZEN || save_pending)
         return;
     if (getenv("RT_PICK_TRACE"))
         fprintf(stderr, "pick_pad %04X rx %d ry %d at %.0f,%.0f\n", b, p->rx, p->ry, pmx, pmy);
@@ -1464,9 +1481,8 @@ void pick_pad(const pad_state *p)
         while (state == PS_FROZEN && kbm_key(&key, &mods)) {
             char c = kbm_ascii(key, mods);
             if (key == KBM_ENTER) {
-                save_report();
-                end_session();
-                return;
+                save_pending = 1;     /* saved after a frame that says so (pick_frozen_frame) */
+                    return;
             } else if (key == KBM_ESC || key == KBM_F8) {
                 cancel();
                 return;
@@ -1495,8 +1511,7 @@ void pick_pad(const pad_state *p)
         return;
     }
     if (pr & PAD_START) {
-        save_report();
-        end_session();
+        save_pending = 1;     /* saved after a frame that says so (pick_frozen_frame) */
         return;
     }
     if (osk_open) {
