@@ -2381,3 +2381,6 @@ lobby 0x00584110 0x00584190 mhg/lobby/f/lb_cli_p76
 lobby 0x0058E180 0x0058E1FC lobby/b/lb_by119
 lobby 0x00554DF0 0x00554E48 mhg/lobby/f/lb_tu_ib_p9
 lobby 0x005580F0 0x005581E0 mhg/lobby/f/lb_tu_ib_p10
+lobby 0x0059D750 0x0059D7A4 lobby/f/lb_n05
+lobby 0x00569050 0x0056908C lobby/f/lb_i01
+lobby 0x005A3C40 0x005A3C8C lobby/b/lb_bz103

@@ -20,7 +20,11 @@ int guild_input_pass();
 int guild_input_message();
 void han2zen();
 void KinshiYogo_chk();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 int lb_rule_seet_set(void) {
     char sp30[0x50];
     int col;

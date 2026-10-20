@@ -4,7 +4,11 @@ extern s8 armor_shop_r;
 extern u8 buki_sei_tbl[];
 extern u8 bou_sei_tbl[];
 extern char User_data[];
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 void armor_set_myArmor();
 s32 shop_armor2_stack();
 s32 shop_armor2_question(void) {

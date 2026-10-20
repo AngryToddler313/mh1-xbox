@@ -239,7 +239,11 @@ void pl_flag_clr();
 void flvecApplyMat33();
 void Lb_put_hint();
 void adx_se_set();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();   /* G returns whether the message was shown */
+#else
 void Lb_put_set01();
+#endif
 int Lb_check_hotel();
 void NPCZoomInCameraCancel();
 void Eft06_set();

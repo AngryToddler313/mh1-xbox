@@ -3,7 +3,11 @@
 extern s8 armor_shop_r;
 extern char User_data[];
 void armor_set_myArmor();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 void lb_armor_tag_decide01();
 s32 shop_armor_question(void) {
     s32 id;

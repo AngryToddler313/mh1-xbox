@@ -18,7 +18,11 @@ void Lb_shop_init();
 int Event_flag_ck();
 void Lb_send_data_to_myself();
 void Lb_send_chair_req();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 void SetDialogData();
 void SetDialogYesNo();
 void fade_set();

@@ -8,9 +8,20 @@
 
 
 
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01(int n) {
+    if (lb_sys.x72 == 0) {
+        set01_set2(lb_set01_msg[n]);
+        lb_sys.x72 = 0x5A;
+        return 1;
+    }
+    return 0;
+}
+#else
 void Lb_put_set01(int n) {
     if (lb_sys.x72 == 0) {
         set01_set2(lb_set01_msg[n]);
         lb_sys.x72 = 0x5A;
     }
 }
+#endif
