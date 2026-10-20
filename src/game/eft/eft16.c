@@ -125,7 +125,7 @@ static void eft16_move(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static void eft16_i(EFTW *ew) {
     s16 n;
     EFT16_PIECE *p = ew->work;
@@ -218,6 +218,14 @@ static void eft16_i(EFTW *ew) {
                 p->size = ew->scale;
                 p->alpha = 0xFF;
                 break;
+#ifdef MHG_PS2 /* G: kind 15 */
+            case 15:
+                p->no = i;
+                p->lag = 0;
+                p->size = ew->scale * (0.5f + 0.5f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF)));
+                p->uv = 0;
+                break;
+#endif
             }
             p->pos[0] = ew->pos[0];
             p->pos[1] = ew->pos[1];
