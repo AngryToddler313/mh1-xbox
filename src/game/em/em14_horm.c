@@ -24,6 +24,7 @@ int em_frame_check2(EMW *, int, f32);
 void pl_flag_set(EMW *, u32);
 void pl_flag_clr(EMW *, u32);
 
+#if !defined(G_PART) || G_PART == 1
 void em14_horm_init(EMW *em) {
     EM_HORMW *w = (EM_HORMW *)em->ex;
     PLW *pl;
@@ -41,7 +42,9 @@ void em14_horm_init(EMW *em) {
     World_calc2(pl->stg, p, q);
     em->horm_ang = Em_Calc_angY(em->x754, q);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int em14_horm_main(EMW *em) {
     EM_HORMW *w = (EM_HORMW *)em->ex;
     u32 a;
@@ -97,9 +100,11 @@ int em14_horm_main(EMW *em) {
     }
     return 0;
 }
+#endif
 
 u8 Em_stg_ck(EMW *);
 
+#if !defined(G_PART) || G_PART == 1
 int em14_suna_ck(EMW *em) {
     if (Em_stg_ck(em) == 0) {
         return 0;
@@ -109,7 +114,9 @@ int em14_suna_ck(EMW *em) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int em14_sasari_ck(EMW *em) {
     EM14_SASW *w = (EM14_SASW *)em->ex;
 
@@ -124,11 +131,14 @@ int em14_sasari_ck(EMW *em) {
     }
     return 0;
 }
+#endif
 
 extern s16 em15_stay_timer_tbl[];
 extern s16 em15_runaway_timer_tbl[];
 
+#if !defined(G_PART)
 void em15_local_area_move_init(EMW *em) {
     em->stay_tm = em15_stay_timer_tbl[em->stg];
     em->runaway_tm = em15_runaway_timer_tbl[em->stg];
 }
+#endif

@@ -1925,3 +1925,4 @@ game 0x00642A70 0x00642C68 mhg/game/em/em29_p2
 game 0x005F7600 0x005F77F4 mhg/game/em/em15_r12_p1
 game 0x005F78A0 0x005F7900 mhg/game/em/em15_r12_p2
 game 0x005F79C0 0x005F7A5C mhg/game/em/em15_r12_p3
+game 0x005EDD60 0x005EE098 mhg/game/em/em14_horm_p1
