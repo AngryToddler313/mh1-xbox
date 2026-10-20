@@ -239,9 +239,26 @@ static void shell14_i(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+void game_func_00668640(SHLW *sh); /* G: m of the new barrels */
+#endif
+#if !defined(G_PART) || G_PART == 8
 static void shell14_m(SHLW *sh) {
+#ifdef MHG_PS2
+    switch (sh->arg) {
+    case 0:
+    default:
+    case 1:
+        shell14_m00(sh);
+        break;
+    case 2:
+    case 3:
+        game_func_00668640(sh);
+        break;
+    }
+#else
     shell14_m00(sh);
+#endif
     if (sh->prim != 0) {
         flvecCopy(&sh->prim->pos, &sh->pos2);
         add_prim(ot1, sh->prim, 0x20, 0);
