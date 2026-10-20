@@ -2651,3 +2651,7 @@ main 0x0010ECD0 0x0010EDA4 main/model/light02
 main 0x0014E8A0 0x0014E954 mhg/main/fl/flsys02_p4
 main 0x0010EE80 0x0010EF44 main/load/lf04
 main 0x0020A050 0x0020A10C mhg/main/sk/f_sk_p17
+lobby 0x0056C240 0x0056C2A8 mhg/lobby/f/lb_plz2_p1
+lobby 0x005BBED0 0x005BBF58 mhg/lobby/cnet/cnlbs_p115
+lobby 0x005BC110 0x005BC18C mhg/lobby/cnet/cnlbs_p116
+lobby 0x00581BE0 0x00581C6C mhg/lobby/f/lb_cli_p77

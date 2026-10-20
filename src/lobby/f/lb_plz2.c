@@ -1,5 +1,6 @@
 /* lb_plz2 - one translation unit 0x00594260-0x00598DB0: plaza_moveMain, plaza_enterLobby, plaza_movePlaza, plaza_backToServer, getFriendNow, getUserInfo, Lb_get_comment, plaza_checkFriend, mail_input, get_friend_page_num, get_page_num, plaza_searchAll, plaza_searchMember, my_comment_input, plaza_checkMyStatus, plaza_setMyComment, Plaza_add_friend, plaza_req_input, getHandleFromID, plaza_mailBox, plaza_setChatMode, lb_chatMemberCheck, Lb_checkChatID. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
+#include "g_alias.h"
 #pragma readonly_strings on
 #define plaza_movePlaza plaza_movePlaza_hdr
 #define plaza_searchAll plaza_searchAll_hdr
@@ -86,6 +87,7 @@ int my_comment_input();
 #ifdef __MWERKS__
 #endif
 /* original bytes: build/raw/plaza_mailBox.inc (config/c_rawfuncs.txt) */
+#if !defined(G_PART)
 void plaza_moveMain(void)
 {
     LB_NETW *a = pNet;
@@ -155,7 +157,9 @@ void plaza_moveMain(void)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int plaza_enterLobby()
 {
     u16 sw = Get_sw2(0);
@@ -265,9 +269,11 @@ int plaza_enterLobby()
     }
     return 2;
 }
+#endif
 
 #undef X0A
 #define X0A (*(u8 *)&a->x0A)
+#if !defined(G_PART)
 void plaza_movePlaza(a)
 LB_NETW *a;
 {
@@ -382,11 +388,13 @@ LB_NETW *a;
         break;
     }
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
 #undef X0A
 #define X0A (*(u8 *)&pNet->x0A)
+#if !defined(G_PART)
 void plaza_backToServer(a)
 LB_NETW *a;
 {
@@ -430,7 +438,9 @@ LB_NETW *a;
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 int getFriendNow(a, n, cnt)
 LB_NETW *a;
 u8 n;
@@ -477,13 +487,24 @@ s8 cnt;
     }
     return 2;
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#ifdef MHG_PS2
+#if !defined(G_PART) || G_PART == 1
+int getUserInfo(id)
+int id;
+{
+    switch (Lbs_SeekId(100, id)) {
+    case 0:
+        Lbc_RequestNetComment(id);
+#else
 int getUserInfo() {
     switch (Lbs_SeekId()) {
     case 0:
         Lbc_RequestNetComment(CW->x2F80);
+#endif
         return 0;
     case 1:
         return 1;
@@ -491,7 +512,9 @@ int getUserInfo() {
         return 2;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_get_comment(a)
 int a;
 {
@@ -504,7 +527,9 @@ int a;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int plaza_checkFriend()
 {
     u16 sw = Get_sw2(0);
@@ -865,9 +890,11 @@ int plaza_checkFriend()
     }
     return 2;
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 int mail_input(a, buf)
 LB_NETW *a;
 int buf;
@@ -898,7 +925,9 @@ int buf;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void get_friend_page_num(a)
 LB_NETW *a;
 {
@@ -912,10 +941,12 @@ LB_NETW *a;
         a->x26 = 1;
     }
 }
+#endif
 
 #ifdef __MWERKS__
 static
 #endif
+#if !defined(G_PART)
 int get_page_num(a, b)
 s16 a;
 s16 b;
@@ -931,7 +962,9 @@ s16 b;
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_searchAll(void)
 {
     u16 sw = Get_sw2(0);
@@ -1103,7 +1136,9 @@ void plaza_searchAll(void)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_searchMember(a)
 LB_NETW *a;
 {
@@ -1381,9 +1416,11 @@ LB_NETW *a;
         break;
     }
 }
+#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
+#if !defined(G_PART)
 int my_comment_input(buf)
 int buf;
 {
@@ -1413,7 +1450,9 @@ int buf;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_checkMyStatus(void) {
     int sw = Get_sw2(0) & 0xFFFF;
     s16 *p;
@@ -1451,7 +1490,9 @@ void plaza_checkMyStatus(void) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int plaza_setMyComment(void) {
     u16 sw = Get_sw2(0);
     LB_NETW *n = pNet;
@@ -1483,15 +1524,19 @@ int plaza_setMyComment(void) {
     }
     return 2;
 }
+#endif
 
 /* original bytes: build/raw/Plaza_add_friend.inc (config/c_rawfuncs.txt); C near-match in lb_pz12_nm.c */
+#if !defined(G_PART)
 #ifdef __MWERKS__
 asm int Plaza_add_friend()
 {
 #include "Plaza_add_friend.inc"
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 int plaza_req_input(a, buf)
 LB_NETW *a;
 int buf;
@@ -1531,7 +1576,9 @@ int buf;
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 int getHandleFromID(a)
 LB_NETW *a;
 {
@@ -1562,6 +1609,7 @@ LB_NETW *a;
     }
     return 2;
 }
+#endif
 
 #define MXA (*(u8 *)&pNet->x0A)
 #define MXE (*(u8 *)&pNet->x0E)
@@ -1573,6 +1621,7 @@ int Lb_select();
 int Lbc_SendMail();
 void SetDialogYesNo();
 int KinshiYogo_chk();
+#if !defined(G_PART)
 int plaza_mailBox()
 {
     u16 sw = Get_sw2(0);
@@ -1803,7 +1852,9 @@ int plaza_mailBox()
     }
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_setChatMode(a)
 LB_NETW *a;
 {
@@ -1961,7 +2012,9 @@ LB_NETW *a;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int lb_chatMemberCheck(void) {
     u8 *p;
     s16 i;
@@ -2008,7 +2061,9 @@ int lb_chatMemberCheck(void) {
     }
     return 2;
 }
+#endif
 
+#if !defined(G_PART)
 int Lb_checkChatID(id)
 u8 *id;
 {
@@ -2026,4 +2081,5 @@ u8 *id;
         }
     }
 }
+#endif
 

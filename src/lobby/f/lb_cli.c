@@ -2955,7 +2955,7 @@ s32 Lbc_getDate() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 77
 void CallBack_GetDate(CNET_RES res) {
     u8 *temp_a0;
     u8 *temp_a1;
@@ -2964,9 +2964,9 @@ void CallBack_GetDate(CNET_RES res) {
     if ((F(u8, temp_a1, CW_OFS(0x2C31)) != 5) && (F(u8, temp_a1, CW_OFS(0x2C45)) == CBW(0x17))) {
         F(u8, temp_a1, CW_OFS(0x2C45)) = 0U;
         if (res.val == 0) {
-            cnLBS_Get_TimingValue((u8 *)cw + CW_OFS(0xBF3C), temp_a1, temp_a1 + CW_OFS(0x2C45));
+            cnLBS_Get_TimingValue((u8 *)cw + GV(0xBF3C, 0x11AB0), temp_a1, temp_a1 + CW_OFS(0x2C45));
         } else {
-            F(s32, (u8 *)cw, CW_OFS(0xBF3C)) = 0;
+            F(s32, (u8 *)cw, GV(0xBF3C, 0x11AB0)) = 0;
         }
         temp_a0 = (u8 *)cw;
         F(u8, temp_a0, CW_OFS(0x2C35)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C35)) + 1);

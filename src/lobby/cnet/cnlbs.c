@@ -1201,7 +1201,10 @@ void _cnet_RecvFromLbs_BothRoomJoinInfo(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 116
+#ifdef MHG_PS2
+u16 lobby_func_005BC190();
+#endif
 int cnLBS_RoomCreate(arg0, arg1)
 int arg0;
 int arg1;
@@ -1210,8 +1213,13 @@ int arg1;
     u16 cmd;
 
     if (slot != -1) {
+#ifdef MHG_PS2
+        __cnet_KeepEntryFloorInfo(2, arg0);
+        cmd = lobby_func_005BC190(arg0);    /* G's own room-create request */
+#else
         cmd = __cnet_SendReq_RoomCreate(arg0);
         __cnet_KeepEntryFloorInfo(2, arg0);
+#endif
         CnetSys_w.bg[slot].cmd = cmd;
         return slot;
     }
@@ -1257,7 +1265,10 @@ int cnLBS_Set_RoomRuleFinish(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 115
+#ifdef MHG_PS2
+u16 lobby_func_005BBF60();
+#endif
 int cnLBS_RoomEntry(arg0, arg1)
 int arg0;
 int arg1;
@@ -1266,8 +1277,13 @@ int arg1;
     u16 cmd;
 
     if (slot != -1) {
+#ifdef MHG_PS2
+        __cnet_KeepEntryFloorInfo(2, arg0);
+        cmd = lobby_func_005BBF60(arg0, arg1);    /* G's own room-entry request */
+#else
         cmd = __cnet_SendReq_RoomEntry(arg0, arg1);
         __cnet_KeepEntryFloorInfo(2, arg0);
+#endif
         CnetSys_w.bg[slot].cmd = cmd;
         return slot;
     }
