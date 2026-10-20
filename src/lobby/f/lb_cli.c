@@ -3515,7 +3515,7 @@ s32 Lbs_LobbyExit() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 71
 void CallBack_Result_Lobby_LobbyExit(CNET_RES res) {
     if ((((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C45 == CBW(0x16))) {
         ((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C45 = 0U;
@@ -3523,10 +3523,15 @@ void CallBack_Result_Lobby_LobbyExit(CNET_RES res) {
             ((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 + 1);
             return;
         }
+#ifdef MHG_PS2
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_SRVMSG);   /* G: shows the server's message and goes to step 99 */
+        ((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 = 99;
+#else
         F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
         F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
         F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
         cnLbc_EraseDialog(0x4C);
+#endif
     }
 }
 #endif

@@ -2341,3 +2341,14 @@ lobby 0x0059D160 0x0059D23C lobby/f/lb_gad02
 lobby 0x005AC9A0 0x005ACAE0 mhg/lobby/cnet/cnlbs_p114
 lobby 0x005AF4F0 0x005AF584 mhg/lobby/cnet/cnlbse_p47
 lobby 0x005B6B90 0x005B6C70 mhg/lobby/f/lb_tu_browser_p27
+lobby 0x00549BF0 0x00549E54 mhg/lobby/f/lb_sh1a_p6
+lobby 0x0054A250 0x0054A270 mhg/lobby/f/lb_sh1a_p7
+lobby 0x0054A670 0x0054A6E8 mhg/lobby/f/lb_sh1a_p8
+lobby 0x0054E670 0x0054E690 mhg/lobby/f/lb_sh1c_p3
+lobby 0x005830E0 0x00583164 mhg/lobby/f/lb_cli_p71
+lobby 0x0059F690 0x0059F6AC mhg/lobby/f/lb_ui_p9
+lobby 0x005C1700 0x005C1748 lobby/b/lb_bz132
+lobby 0x0059E1C0 0x0059E26C lobby/f/lb_e09
+lobby 0x00599440 0x005994D8 mhg/lobby/f/lb_k01_p3
+lobby 0x0059A4F0 0x0059A584 lobby/f/lb_gad01
+lobby 0x00589750 0x00589820 lobby/b/lb_cip01

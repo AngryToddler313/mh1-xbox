@@ -519,13 +519,15 @@ asm void set_dialog_square()
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void SetSceneTitle(a, b)
 int a;
 int b;
 {
     pSceneTitle = text_lobby_msg[a];
-    pSceneTitle = pSceneTitle + b;
+#ifndef MHG_PS2
+    pSceneTitle = pSceneTitle + b;   /* G takes the title as it is */
+#endif
 }
 #endif
 

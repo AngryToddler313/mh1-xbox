@@ -1,4 +1,5 @@
 /* lb_sh1c - one translation unit 0x0053AB50-0x0053C23C (lbtu3). */
+#include "g_alias.h"
 #include "lobby_s.h"
 extern s8 r_no_process;
 extern s32 armorIndex;
@@ -37,7 +38,11 @@ extern char lit_1287_006555F0[];
 extern char item_str[];
 void Lb_put_job();
 void Lb_put_icon_free2();
+#ifdef MHG_PS2
+extern s32 shop_armor00_tag[];   /* G: not in the small data */
+#else
 extern s32 shop_armor00_tag[1];
+#endif
 s32 shop_process_after();
 s32 shop_armor2_stack(int kind, int id);
 s32 shop_armor2_question();
@@ -465,7 +470,7 @@ void armor_shop2_trans() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void lb_armor_init() {
     lbShop.tag = (shop_armor00_tag);
     lbShop.x17 = 2;

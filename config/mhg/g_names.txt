@@ -145,3 +145,4 @@ PROVIDE(RoomInfo_c105 = 0x006DE120); /* G's room table, as RoomInfo_g (MH1 alias
 PROVIDE(func_0010EF50 = 0x0010EF50);
 PROVIDE(Lb_make_price_str_g = 0x0054A000); /* Lb_make_price_str, called with three arguments in lb_put_shopHelp */
 PROVIDE(bs_strtbl_err_dialog_g = 0x006387E0); /* bs_strtbl_err_dialog, G table (lb_tu_browser BsStrtblGet) */
+PROVIDE(flfntLocate_a2 = 0x001D5890); /* flfntLocate called with a sign-extended y (MH1 alias, lb_sh1a) */
