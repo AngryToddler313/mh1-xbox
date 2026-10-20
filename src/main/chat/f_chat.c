@@ -725,17 +725,38 @@ void SoftKeyboard_set(int, int, int, int);
 void func_00220F40(int, int, int, int);
 #endif
 void Chat_move(int);
+#ifdef MHG_PS2
+int func_00595530(int, int);    /* lobby: whether the room is in the city */
+int func_001193D0(void);
+void func_0020B990(int);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 36
 void Chat_init(void) {
     int k = 0;
 
+#ifdef MHG_PS2
+    if (((u8 *)&game_w)[0x3F] != 0) {
+        u8 *pw = (u8 *)&player_work[game_w.master];
+
+        if (func_00595530(pw[0x14], pw[0x15]) == 1 || NPCZoomInCameraCheck() == 1) {
+            k = 4;
+        }
+    } else if (func_001193D0() == 1) {
+        k = 4;
+    }
+    PitMenu.open++;
+    SoftKeyboard_pos_set(80.0f, 0x50);
+    func_00220F40(k | 0x80000000, 0xE, 0x2C, 0);
+    func_0020B990(*(s32 *)&PitMenu._padG[4]);
+#else
     if (GW(0x1DC) != 0 && NPCZoomInCameraCheck() == 1) {
         k = 4;
     }
     PitMenu.open++;
     SoftKeyboard_pos_set(80.0f, 0x50);
     SoftKeyboard_set(k, 0xE, 0x2C, 0);
+#endif
     PitMenu.x0F = PitMenu.x0C = 0;
     se_req(7, 0x11, 0);
     Chat_move(0);

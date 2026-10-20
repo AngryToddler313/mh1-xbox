@@ -2658,3 +2658,6 @@ sub_main 0x004B2920 0x004B2B68 mhg/main/npc/npc_p2
 main 0x0011C720 0x0011C808 mhg/main/menu/menu26_p1
 main 0x001D6430 0x001D651C mhg/main/flfnt/flfnt04_p1
 main 0x00210A30 0x00210B50 mhg/main/hk/f_hk_p20
+main 0x00238860 0x00238A60 main/aq/aq10
+sub_main 0x004CCBA0 0x004CCD24 main/pl/pl_slash
+main 0x00220F90 0x0022109C mhg/main/chat/f_chat_p36

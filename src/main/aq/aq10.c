@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0022D2F0-0x0022D4E8: get_AQdata (quest network: pulls received packets into the per-player slots, handles disconnect/error states). See aq_nm.c. The callee's third argument is a u8 in its prototype (changes the argument evaluation order). */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 
@@ -78,6 +79,12 @@ extern char lit_182_0036C8F0[];
 extern u8 player_work[];
 extern char lit_253_0036C910[];
 extern char lit_254_0036C930[];
+#ifdef MHG_PS2
+extern char *D_002EC1D8;     /* G: message words get_AQdata prints */
+extern char *D_002EC1DC;
+extern char gstr_002EA9D8[]; /* "%s" */
+extern char gstr_002EA9E0[]; /* "%s%s" */
+#endif
 u8 *CngNetAQDataSearch();
 int CngNetAQDataTrans2Work(void *, void *, u8);
 int CngReceiveBuffAdjust();
@@ -178,7 +185,11 @@ void get_AQdata(void) {
         if (*p != 0xFF) {
             *p = 0xFF;
             pw = player_work + id * 0xA00;
+#ifdef MHG_PS2
+            sprintf(err_str, gstr_002EA9E0, pw + 0x8D4, D_002EC1DC);
+#else
             sprintf(err_str, lit_253_0036C910, pw + 0x8D4);
+#endif
             set01_set2_use_mem(err_str);
             if ((s16)act_ck(pw, 4, 5) == 0) {
                 Pl_act_set(pw, 4, 5, 2);
@@ -192,7 +203,11 @@ void get_AQdata(void) {
         v = *p;
         if (v != 0xFF) {
             *p = 0xFF;
+#ifdef MHG_PS2
+            sprintf(err_str, gstr_002EA9D8, D_002EC1D8);
+#else
             sprintf(err_str, lit_254_0036C930, mcsls_get_error_code(v));
+#endif
             set01_set2(err_str);
             AQ_session_exit_online();
             Quest_error_set();

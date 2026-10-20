@@ -201,3 +201,7 @@ PROVIDE(gstr_002BD250 = 0x002BD250); /* "INITIAL_LATENCY" */
 PROVIDE(gstr_002BD260 = 0x002BD260); /* "1600" */
 PROVIDE(gstr_002BD268 = 0x002BD268); /* "PS2_DVD_INIT" */
 PROVIDE(gstr_002BD278 = 0x002BD278); /* "1" */
+PROVIDE(D_002EC1DC = 0x002EC1DC); /* small-data word, get_AQdata */
+PROVIDE(gstr_002EA9D8 = 0x002EA9D8); /* "%s" */
+PROVIDE(gstr_002EA9E0 = 0x002EA9E0); /* "%s%s" */
+PROVIDE(func_00595530 = 0x00595530); /* lobby function Chat_init calls */
