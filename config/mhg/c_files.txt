@@ -1920,3 +1920,5 @@ game 0x00579FF0 0x0057A090 mhg/game/eft/eft16_p5
 game 0x0060E1C0 0x0060E3B4 mhg/game/em/em17_r26_p1
 game 0x0060E460 0x0060E4FC mhg/game/em/em17_r26_p2
 game 0x0060E5C0 0x0060E65C mhg/game/em/em17_r26_p3
+game 0x00642730 0x0064274C mhg/game/em/em29_p1
+game 0x00642A70 0x00642C68 mhg/game/em/em29_p2

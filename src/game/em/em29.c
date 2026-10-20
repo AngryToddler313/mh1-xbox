@@ -51,6 +51,7 @@ void Shell09_set(f32 *, int, u8);
 void em29_to_normal(EMW *em);
 void em29_main_sub(EMW *em);
 
+#if !defined(G_PART)
 void em29_init(EMW *em) {
     EM29W *w = (EM29W *)em->ex;
     EM29_TYPE *t = &em29_type_tbl[em->type];
@@ -91,18 +92,26 @@ void em29_init(EMW *em) {
     em_dur_init(em);
     em->x734 = 3;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em29_act_set(EMW *em, int a, int b) {
     em_act_set(em, a, b);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em29_to_normal(EMW *em) {
     em->x839 = 1;
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act00(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move00(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -112,11 +121,15 @@ static void em_move00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov00(EMW *em) {
     em29_to_normal(em);
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move01(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -124,11 +137,15 @@ static void em_move01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk00(EMW *em) {
     em29_to_normal(em);
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move03(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -136,7 +153,9 @@ static void em_move03(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dm00(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -150,11 +169,15 @@ static void em_dm00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dm01(EMW *em) {
     em29_to_normal(em);
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move04(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -165,7 +188,9 @@ static void em_move04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move05(EMW *em) {
     EM29_TYPE *t = &em29_type_tbl[em->type];
 
@@ -192,7 +217,9 @@ static void em_move05(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em29_main(EMW *em) {
     u8 dmg[4];
     EM29W *w = (EM29W *)em->ex;
@@ -237,7 +264,9 @@ void em29_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em29_main_sub(EMW *em) {
     switch (em->mode) {
     case 0:
@@ -266,7 +295,9 @@ void em29_main_sub(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em29_effect_move(EMW *em) {
     EM29W *w = (EM29W *)em->ex;
 
@@ -277,8 +308,11 @@ void em29_effect_move(EMW *em) {
         break;
     }
 }
+#endif
 
 /* A file static in the original; named by its address because data outside
  * this file (the monster program tables) points at it. */
+#if !defined(G_PART) || G_PART == 2
 void dummy_em_prog_006147C0(void) {
 }
+#endif
