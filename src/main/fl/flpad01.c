@@ -41,7 +41,7 @@ void flpad_ram_clear(s32 *p, int n) {
 void flPADWorkClear(void);
 void flPADConfigSet(PADPAIR *, int);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int flPADInitialize(void) {
     int i;
     int r;
@@ -50,9 +50,13 @@ int flPADInitialize(void) {
     flPADWorkClear();
     flpad_adr[0] = flpad_root;
     flpad_adr[1] = flpad_conf;
+#ifdef MHG_PS2
+    flPADConfigSet((PADPAIR *)fltpad_config_basic, 0);     /* G: port 0 only */
+#else
     for (i = 0; i < 2; i++) {
         flPADConfigSet((PADPAIR *)fltpad_config_basic, i);
     }
+#endif
     return r;
 }
 #endif

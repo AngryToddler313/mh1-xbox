@@ -83,6 +83,7 @@ PROVIDE(func_001C1F58 = 0x001C1F58); /* ADXT_GetStat (labelled ADXT_SetTimeMode)
 /* names the shared C uses for G places that the module's own symbol files do not know (calls into the lobby overlay, a pad flag, a static of a part) */
 PROVIDE(DispLobbyMenu = 0x0058E7E0);
 PROVIDE(lobby_func_005C0E20 = 0x005C0E20);
+PROVIDE(lobby_func_005831C0 = 0x005831C0); /* called from main Menu_mix_i */
 PROVIDE(eft_ds_aura_set = 0x005688E0); /* game (src/mhg/.../eft_ds_g.c), called from sub_main pl_init */
 PROVIDE(menu_equip_get_equip_g = 0x0011C720); /* G's menu_equip_get_equip (out, no, pl): the C's G name (src/main/menu/menu26.c) */
 PROVIDE(flPadFixedAnalogSelectSwitch = 0x002EF4AC); /* gp-14020 */
