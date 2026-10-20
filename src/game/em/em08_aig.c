@@ -274,6 +274,7 @@ void toride_eff_set(EMW *);
         ty[i] = 0xFF;     \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 void em_dmg01_0059FB90(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -291,7 +292,9 @@ void em_dmg01_0059FB90(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_dmg02_0059FC20(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -309,7 +312,9 @@ void em_dmg02_0059FC20(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_dmg03_0059FCB0(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -327,7 +332,9 @@ void em_dmg03_0059FCB0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_dmg04_0059FD40(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -360,7 +367,9 @@ void em_dmg04_0059FD40(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg05_0059FE40(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -403,7 +412,9 @@ void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
     switch (em->x05) {
     case 0:
@@ -435,7 +446,9 @@ void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg07_005A00F0(EMW *em, EM08W *w) {
     s32 temp_v0;
 
@@ -479,7 +492,9 @@ void em_dmg07_005A00F0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg08_005A0250(EMW *em, EM08W *w) {
     s8 temp_v0;
 
@@ -512,7 +527,9 @@ void em_dmg08_005A0250(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg09_005A0350(EMW *em, EM08W *w) {
     switch (em->x05) {
     case 0:
@@ -545,7 +562,9 @@ void em_dmg09_005A0350(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg10_005A0470(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -564,7 +583,9 @@ void em_dmg10_005A0470(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg11_005A0500(EMW *em, EM08W *w) {
     s32 temp_v0;
 
@@ -593,7 +614,9 @@ void em_dmg11_005A0500(EMW *em, EM08W *w) {
     }
     em_mahi_eff_set(em, 2);
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg12_005A05E0(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -621,7 +644,9 @@ void em_dmg12_005A05E0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg13_005A06C0(EMW *em, EM08W *w) {
     s8 temp_v0;
 
@@ -653,7 +678,9 @@ void em_dmg13_005A06C0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg14_005A07B0(EMW *em, EM08W *w) {
     s32 temp_v0;
 
@@ -688,7 +715,9 @@ void em_dmg14_005A07B0(EMW *em, EM08W *w) {
     }
     em_mahi_eff_set(em, 2);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg15_005A08C0(EMW *em, EM08W *w) {
     switch (em->x05) {
     case 0:
@@ -760,7 +789,9 @@ void em_dmg15_005A08C0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg16_005A0B60(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -789,7 +820,9 @@ void em_dmg16_005A0B60(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg17_005A0C40(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -858,7 +891,9 @@ void em_dmg17_005A0C40(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg18_005A0E60(EMW *em, EM08W *w) {
     s32 temp_v0;
 
@@ -888,7 +923,9 @@ void em_dmg18_005A0E60(EMW *em, EM08W *w) {
     }
     em_mahi_eff_set(em, 2);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg19_005A0F50(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -908,3 +945,4 @@ void em_dmg19_005A0F50(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
