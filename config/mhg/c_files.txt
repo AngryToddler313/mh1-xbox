@@ -2009,3 +2009,4 @@ game 0x00544590 0x00544D9C game/em/em_core_d
 game:rodata 0x006D6780 0x006D680C game/em/em_core_d
 game 0x00582750 0x00584574 game/em/em_taisei
 game:rodata 0x006D7720 0x006D78CC game/em/em_taisei
+game 0x0064FAC0 0x0065030C game/set/set04
