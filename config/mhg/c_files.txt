@@ -2037,3 +2037,4 @@ lobby 0x005BDF30 0x005BDFA4 mhg/lobby/cnet/cnlbs_p23
 lobby 0x005BE060 0x005BE108 mhg/lobby/cnet/cnlbs_p24
 lobby 0x005BE400 0x005BE480 mhg/lobby/cnet/cnlbs_p26
 game 0x005D25F0 0x005D2980 mhg/game/em/em08_p4
+lobby 0x005BE830 0x005BE89C mhg/lobby/cnet/cnlbs_p27
