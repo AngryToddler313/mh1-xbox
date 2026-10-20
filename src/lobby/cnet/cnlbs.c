@@ -635,7 +635,7 @@ int cnLBS_Get_PlazaStatus(int idx, u8 *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 108
 void _cnet_RecvFromLbs_BothPlazaStatus(void) {
     u8 st;
     u16 id;
@@ -645,10 +645,12 @@ void _cnet_RecvFromLbs_BothPlazaStatus(void) {
         CnetSys_w.plaza[id - 1].id = id;
         CnetSys_w.plaza[id - 1].status = st;
         CnetSys_w.last_id = id;
-        CnetSys_w.last_status = st;
+#ifndef MHG_PS2
+        CnetSys_w.last_status = st;   /* G keeps no last status */
+#endif
         CnetSys_w.plaza[id - 1].flags |= 2;
     }
-    _cnet_Return_CallBack(0x10);
+    _cnet_Return_CallBack(GV(0x10, 0x16));
 }
 #endif
 
@@ -860,20 +862,22 @@ int cnLBS_Get_LobbyStatus(int idx, u8 *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 109
 void _cnet_RecvFromLbs_BothLobbyStatus(void) {
     u8 st;
     u16 id;
 
     if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceStatus(&id, &st);
+        GV(__cnet_Recv_PieceStatus, lobby_func_005BF8D0)(&id, &st);
         CnetSys_w.lobby[id - 1].id = id;
         CnetSys_w.lobby[id - 1].status = st;
         CnetSys_w.last_id = id;
-        CnetSys_w.last_status = st;
+#ifndef MHG_PS2
+        CnetSys_w.last_status = st;   /* G keeps no last status */
+#endif
         CnetSys_w.lobby[id - 1].flags |= 2;
     }
-    _cnet_Return_CallBack(0x15);
+    _cnet_Return_CallBack(GV(0x15, 0x1F));
 }
 #endif
 
@@ -1046,20 +1050,22 @@ int cnLBS_Get_RoomStatus(int idx, u8 *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 113
 void _cnet_RecvFromLbs_BothRoomStatus(void) {
     u8 st;
     u16 id;
 
     if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceStatus(&id, &st);
+        GV(__cnet_Recv_PieceStatus, __cnet_Recv_WordByte)(&id, &st);
         CnetSys_w.room[id - 1].id = id;
         CnetSys_w.room[id - 1].status = st;
         CnetSys_w.last_id = id;
-        CnetSys_w.last_status = st;
+#ifndef MHG_PS2
+        CnetSys_w.last_status = st;   /* G keeps no last status */
+#endif
         CnetSys_w.room[id - 1].flags |= 2;
     }
-    _cnet_Return_CallBack(0x1A);
+    _cnet_Return_CallBack(GV(0x1A, 0x12));
 }
 #endif
 
@@ -1179,7 +1185,7 @@ int __cnet_SendReq_RoomJoinInfo(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 110
 void _cnet_RecvFromLbs_BothRoomJoinInfo(void) {
     u16 id;
     CNET_PIECE *p;
@@ -1187,10 +1193,11 @@ void _cnet_RecvFromLbs_BothRoomJoinInfo(void) {
     if (CnetSys_w.rres == 0) {
         int r = GetRecvData16(&id, recv_work);
         p = &CnetSys_w.room[id - 1];
-        GetRecvData16(&p->ri[4], GetRecvData16(&p->ri[2], GetRecvData16(&p->ri[3], GetRecvData16(&p->ri[1], GetRecvData16(&p->ri[0], r)))));
+        /* G stores the last four words one slot on (one more word after ri[0]) */
+        GetRecvData16(&p->ri[0] + GV(4, 5), GetRecvData16(&p->ri[0] + GV(2, 3), GetRecvData16(&p->ri[0] + GV(3, 4), GetRecvData16(&p->ri[0] + GV(1, 2), GetRecvData16(&p->ri[0], r)))));
         p->flags |= 0x20;
     }
-    _cnet_Return_CallBack(0x1D);
+    _cnet_Return_CallBack(GV(0x1D, 0x21));
 }
 #endif
 
@@ -1527,14 +1534,20 @@ int cnLBS_Read_RoomPasswordPermission(int arg0, int arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 111
 void _cnet_RecvFromLbs_AnswerRoomPasswordPermission(void) {
+#ifdef MHG_PS2
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte((u8 *)&CnetSys_w + 0xA3BD);   /* G receives into the table (G address 0x704BC5; LB CNET_SYS places ruletbl 0xA8 later, unverified) */
+    }
+#else
     u8 v;
 
     if (CnetSys_w.rres == 0) {
         __cnet_Recv_Byte(&v);
         CnetSys_w.ruletbl.pw_perm = v;
     }
+#endif
     _cnet_Return_CallBack(0);
 }
 #endif
@@ -1578,7 +1591,7 @@ int __cnet_SendReq_RoomPasswordInfo(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 112
 void _cnet_RecvFromLbs_BothRoomPasswordInfo(void) {
     u8 pw;
     u16 id;
@@ -1588,9 +1601,11 @@ void _cnet_RecvFromLbs_BothRoomPasswordInfo(void) {
         CnetSys_w.room[id - 1].pwinfo = pw;
         CnetSys_w.room[id - 1].flags |= 0x10;
         CnetSys_w.last_id = id;
-        CnetSys_w.last_pwinfo = pw;
+#ifndef MHG_PS2
+        CnetSys_w.last_pwinfo = pw;   /* G keeps no last password info */
+#endif
     }
-    _cnet_Return_CallBack(0x1E);
+    _cnet_Return_CallBack(GV(0x1E, 0x22));
 }
 #endif
 

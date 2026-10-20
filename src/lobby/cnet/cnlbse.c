@@ -971,10 +971,13 @@ int cnetGet_Login_DecideUserHandle(char *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 void _cnet_RecvFromLbs_RequestConnectionPair(void) {
     GetRecvData16(CNWP(0xFEE), &recv_work);
     __cnet_SendSet_ConnectionPair();
+#ifdef MHG_PS2
+    __cnet_SendSet_TelephoneNumber();   /* G only */
+#endif
 }
 #endif
 

@@ -2325,3 +2325,10 @@ lobby 0x00563210 0x005633AC mhg/lobby/f/lb_npc_p22
 lobby 0x005633B0 0x00563568 mhg/lobby/f/lb_npc_p23
 lobby 0x00563790 0x00564120 mhg/lobby/f/lb_npc_p24
 lobby 0x005651B0 0x00565468 mhg/lobby/f/lb_npc_p25
+lobby 0x005AC350 0x005AC3D4 mhg/lobby/cnet/cnlbs_p108
+lobby 0x005BB680 0x005BB704 mhg/lobby/cnet/cnlbs_p109
+lobby 0x005BBB70 0x005BBC20 mhg/lobby/cnet/cnlbs_p110
+lobby 0x005BDFB0 0x005BDFE4 mhg/lobby/cnet/cnlbs_p111
+lobby 0x005BE180 0x005BE1F4 mhg/lobby/cnet/cnlbs_p112
+lobby 0x005E37F0 0x005E3874 mhg/lobby/cnet/cnlbs_p113
+lobby 0x005AF470 0x005AF4A8 mhg/lobby/cnet/cnlbse_p46
