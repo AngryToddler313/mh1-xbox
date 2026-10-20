@@ -1954,3 +1954,5 @@ game 0x0058BC80 0x0058BD00 game/em/em_cmd_r99
 game 0x0056B410 0x0056BB24 game/eft/eft04b
 game 0x00572B10 0x00574D94 game/eft/eft14
 game:rodata 0x006D73D0 0x006D74B8 game/eft/eft14
+game 0x00574E70 0x00576B24 game/eft/eft15
+game:rodata 0x006D74C0 0x006D7594 game/eft/eft15
