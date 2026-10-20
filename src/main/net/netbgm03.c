@@ -1,4 +1,5 @@
 /* netbgm03 - f_netbgm 0x00267350-0x002673D0: Ncm_mmbb_spr_create. Whole file in netbgm_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct NETCW {
@@ -68,6 +69,9 @@ int Net_fade_execute();
 extern u8 D_6DD7E0[];
 int Ncm_mmbb_spr_load(void);
 int Ncm_mmbb_spr_create(void);
+#ifdef MHG_PS2
+void func_0010EF50();
+#endif
 void net_bgm_set(void);
 
 
@@ -88,10 +92,14 @@ int Ncm_mmbb_spr_create(void) {
         return 2;
     }
     if (NetLoadWait() == 0) {
+#ifdef MHG_PS2
+        func_0010EF50(NET_CON_TEX[0], 0x174, 0);    /* G: no soft keyboard load here */
+#else
         load_texlist(NET_CON_TEX[0], 0x14D, 0);
         if (mem_tex.x470 == 0) {
             SoftkeyLoad();
         }
+#endif
         ret = 1;
     }
     return ret;

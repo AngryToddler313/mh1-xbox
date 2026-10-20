@@ -2210,3 +2210,6 @@ sub_main 0x004C40B0 0x004C4158 mhg/main/set/set01_p9
 sub_main 0x004C4160 0x004C4304 mhg/main/set/set01_p10
 main 0x0012E5F0 0x0012E6E0 mhg/main/weapon/trans_p1
 main 0x0012E760 0x0012E7DC mhg/main/weapon/trans_p2
+main 0x001D5560 0x001D55E4 mhg/main/flfnt/flfnt01_p3
+main 0x002378E0 0x00237960 main/net/patch01
+main 0x00211620 0x00211688 main/net/netbgm03

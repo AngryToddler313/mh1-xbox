@@ -3,7 +3,11 @@
  * version string and a 4 character tag at +0x20000). Main steps DR_NO_0: copy the received half, request the
  * overlay data, wait for the load, then run the patch (func_A2FD30 applies one step, > 0 done, < 0 failed).
  * Returns DP_end (0 running, 1 nothing to do, 2 patched, -1 failed). Names are from the symbol table. */
+#include "g_alias.h"
 #include "types.h"
+#ifdef MHG_PS2
+void MakeMediaVersion(void);
+#endif
 
 extern u8 patch_buff[];
 extern u8 MediaVersion[];
@@ -27,6 +31,9 @@ void PatchInitCS()
 
     memset(patch_buff, 0, 0x10000);
     memset(patch_buff + 0x10000, 0, 0x10000);
+#ifdef MHG_PS2
+    MakeMediaVersion();     /* G builds the version string here */
+#endif
     strncpy(t, MediaVersion, 0xA);
     strncpy(t + 0xA, lit_98_00385088, 4);
     *(s32 *)(t + 0x14) = 0;
