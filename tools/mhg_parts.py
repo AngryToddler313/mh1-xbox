@@ -109,6 +109,16 @@ def spans(lines, names):
                                 out[n] = (a, b)
                             break
                 break
+        if n not in out:
+            # a function made by a macro at top level: DMG_SIMPLE(em_dmg00_00570530, 0x3C)
+            mp = re.compile(r'^[A-Z_][A-Z0-9_]*\(\s*%s\s*[,)]' % re.escape(n))
+            for i, l in enumerate(lines):
+                if mp.match(l):
+                    j = i
+                    while j < len(lines) and lines[j].count('(') <= lines[j].count(')') and not lines[j].rstrip().endswith(')') and j - i < 50:
+                        j += 1
+                    out[n] = (i, i) if l.rstrip().endswith((')', ');')) else (i, j)
+                    break
     return out
 
 
