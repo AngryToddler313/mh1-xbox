@@ -546,13 +546,17 @@ void lb_armor_listItem(int arg0, int arg1, int arg2, s16 arg3) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void armor_shop_trans() {
     u8 *e;
 
     e = lb_pit.pos + lb_pit.x08 * 8;
     switch (lbShop.step) {
+#ifdef MHG_PS2
+    case 1:     /* G: no talk on step 1 rather than step 0 */
+#else
     case 0:
+#endif
     case 2:
         break;
     default:
