@@ -6,6 +6,7 @@
  * files (g_em19_*). Height while flying is kept between the ground
  * (EMW+0x5AC) and 1000 above it. Names of the action steps follow the split
  * (em_act00, em_fly00...). */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 
@@ -23,7 +24,11 @@ typedef struct EM19W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 no;             /* 0x08 quest number (u16 in G) */
+#else
     s16 no;             /* 0x08 quest number */
+#endif
 } QUEST_W;
 
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
@@ -1288,9 +1293,12 @@ static void em_move07(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em19_main(EMW *em) {
     u8 dmg[4];
+#ifdef MHG_PS2
+    u16 q;
+#endif
 
     em->act_spd = 1.0f;
     em_mode_timer_sub(em);
@@ -1355,11 +1363,28 @@ void em19_main(EMW *em) {
         em->x839 = 0;
         break;
     }
+#ifdef MHG_PS2      /* G: quest numbers 10010 / 10046 (stage 70, event 26: act 6, 1) */
+    q = quest_w.no;
+    if (q == 10010) {
+        if (em->stg != 0x25 || Event_flag_ck(0xD) != 0) {
+            goto normal;
+        }
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em19_act_set(em, 6, 0, 1);
+        }
+    } else if (q == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em19_act_set(em, 6, 1, 1);
+        }
+    } else {
+normal:
+#else
     if (quest_w.no == 0x8A && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em19_act_set(em, 6, 0, 1);
         }
     } else {
+#endif
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {
