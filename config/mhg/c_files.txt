@@ -2259,3 +2259,7 @@ main 0x00215CA0 0x00215E34 mhg/main/net/netwk02_p2
 main 0x0020EB30 0x0020EBD4 mhg/main/hk/f_hk_p18
 sub_main 0x004DD5B0 0x004DD6D0 mhg/main/em/emmk01_p3
 yn 0x00A0C650 0x00A0C778 mhg/yn/ui05_p3
+main 0x00227780 0x002277B0 mhg/main/sk/sk20_p2
+main 0x001021B0 0x00102250 main/fade/fd03
+main 0x002276E0 0x00227780 mhg/main/chat/f_chat_p34
+main 0x002275F0 0x00227644 mhg/main/chat/f_chat_p35

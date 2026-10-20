@@ -1858,8 +1858,33 @@ void Init_reibun(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 35
 static void chcnfg_reibun_set(s8 *src, int no) {
+#ifdef MHG_PS2
+    /* G: a byte copy of up to 44 bytes, then the short form by main 0x2277B0 (10 bytes) */
+    REIBUN *r = &str_tbl_reibun0[no & 0xFF];
+    int n;
+    s8 *d;
+    s8 *s;
+    s8 c;
+    s = src;
+    n = 44;
+    d = r->edit;
+
+    do {
+        c = *s;
+        if (c == 0) {
+            break;
+        }
+        *d = c;
+        n--;
+        s++;
+        d++;
+    } while (n > 0);
+    *d = 0;
+    func_002277B0((s8 *)r, 10, src);
+}
+#else
     REIBUN *r = &str_tbl_reibun0[no & 0xFF];
     u32 n = 0x16;
     s8 *d = r->edit;
@@ -1901,6 +1926,7 @@ static void chcnfg_reibun_set(s8 *src, int no) {
     } while (1);
 }
 #endif
+#endif
 
 int softkey_ck();
 
@@ -1920,13 +1946,24 @@ int Reibun_Edit_Start(int no) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 34
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
 
+#ifdef VERSION_MHG
+    u16 k = *(u16 *)((u8 *)&Psw + 4);
+
+    if (k & 0x4000) {       /* G: this button ends the edit */
+        SoftKeyboard_exit();
+        return 1;
+    }
+    buf[0] = 0;
+    r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), (s16)k);
+#else
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));
+#endif
     if (r != 0) {
         if (buf[0] != 0 && r > 0) {
             chcnfg_reibun_set(buf, no);

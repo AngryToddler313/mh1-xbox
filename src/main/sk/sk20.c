@@ -9,10 +9,20 @@ void mkTexture(int, int, int);
 void reload_tex(int, int);
 void SetTextureStage(int);
 void SetTrnslMode(int, int);
+#ifdef MHG_PS2
+#define RP_T int        /* G passes the count through unmasked */
+void func_002277B0(char *, int, char *);
+#else
+#define RP_T u8
+#endif
 
-#if !defined(G_PART)
-void Reibun_print(u8 n, char *src) {
+#if !defined(G_PART) || G_PART == 2
+void Reibun_print(RP_T n, char *src) {
     char buf[0x30];
+#ifdef MHG_PS2
+    func_002277B0(buf, n, src);     /* G: the copy with a length (main 0x2277B0) */
+    font_print_uf(buf);
+#else
     int cnt;
     char *d;
     char *p;
@@ -37,6 +47,7 @@ void Reibun_print(u8 n, char *src) {
     *p++ = 0x64;
     *p = 0;
     font_print_uf(buf);
+#endif
 }
 #endif
 

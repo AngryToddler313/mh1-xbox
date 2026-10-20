@@ -36,10 +36,24 @@ int Fade_busy_ck(void) {
     FADE_W *w = &fade_w;
     FADE_ENT *d;
 
+#ifdef VERSION_MHG
+    /* G: also busy while byte 1 (set by fade_set) is set; at the end value a fade that is not cleared and still
+     * running counts as busy */
+    if ((fade_w.state != 0 || w->_pad01[0] != 0) && w->req != 0) {
+    } else {
+        return 0;
+    }
+    d = &fade_data[w->cur - 1];
+    if (w->alpha != d->end || (d->hold == 0 && w->state == 1)) {
+        return 1;
+    }
+    return 2;
+#else
     if (fade_w.state != 0 && w->req != 0) {
     } else {
         return 0;
     }
     d = &fade_data[w->cur - 1];
     return (w->alpha != d->end) ? 1 : 2;
+#endif
 }
