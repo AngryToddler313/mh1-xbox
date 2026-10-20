@@ -2668,3 +2668,6 @@ game 0x0063DEA0 0x0063DFA0 mhg/game/em/em27a_p20
 game 0x005E5130 0x005E5300 mhg/game/em/em14_r09_p3
 game 0x005F45D0 0x005F4758 mhg/game/em/em15_r10_p11
 game 0x005F4F90 0x005F5104 mhg/game/em/em15_r10_p12
+game 0x00666440 0x00666570 mhg/game/shell/shell10_p3
+game 0x00666720 0x00666848 mhg/game/shell/shell10_p4
+game 0x00666940 0x00666A10 mhg/game/shell/shell10_p5
