@@ -45,12 +45,15 @@ void em_rate_clear(EMW *);
 void speed_add_g(EMW *, s32 *);
 u8 em21_senkai_pos_no(EMW *em, f32 *out);
 
+#if !defined(G_PART) || G_PART == 1
 void em21_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     em->x388 = 0;
     em_act_set2(em, 0, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em21_move_act_set(EMW *em, u16 no, u16 arg) {
     EM21W *w = (EM21W *)em->ex;
 
@@ -147,7 +150,9 @@ void em21_move_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 1, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em21_fly_act_set(EMW *em, u16 no, u16 arg) {
     EM21W *w = (EM21W *)em->ex;
     f32 pt[3];
@@ -279,7 +284,9 @@ void em21_fly_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 2, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em21_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM21W *w = (EM21W *)em->ex;
 
@@ -306,7 +313,9 @@ void em21_atk_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 3, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em21_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -352,7 +361,9 @@ void em21_act_set(EMW *em, int kind, u16 no, u16 arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em21_fly_adjy2_init(EMW *em, u8 type) {
     EM21W *w = (EM21W *)em->ex;
 
@@ -383,11 +394,15 @@ void em21_fly_adjy2_init(EMW *em, u8 type) {
     }
     em_rate_clear(em);
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subx(EMW *em, EM21W *w) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_suby(EMW *em, EM21W *w) {
     f32 (*tbl)[2] = fly_adjy2_hosei_tbl_006712B0[w->adj_type];
     u8 ret = 0;
@@ -425,7 +440,9 @@ static u8 fly_adjy2_suby(EMW *em, EM21W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subz(EMW *em, EM21W *w) {
     f32 (*tbl)[2] = fly_adjz2_hosei_tbl_00671418[w->adj_type];
     u8 ret = 0;
@@ -460,7 +477,9 @@ static u8 fly_adjy2_subz(EMW *em, EM21W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 u8 em21_fly_adjy2(EMW *em) {
     EM21W *w = (EM21W *)em->ex;
     u8 ret = 0;
@@ -483,7 +502,9 @@ u8 em21_fly_adjy2(EMW *em) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 u8 em21_senkai_pos_no(EMW *em, f32 *out) {
     u32 i;
     EM_STG_POS *p;
@@ -529,3 +550,4 @@ u8 em21_senkai_pos_no(EMW *em, f32 *out) {
     out[2] = pos[i][2];
     return n;
 }
+#endif
