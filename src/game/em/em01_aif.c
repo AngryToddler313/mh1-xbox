@@ -82,6 +82,12 @@ void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_act_set(EMW *, int, u16);
 void em01_act_set(EMW *em, int kind, u16 no, u16 arg);
+#ifdef MHG_PS2 /* G: new attacks of em_move03 */
+void game_func_0059A330(EMW *em, EM01W *w);
+void game_func_0059A420(EMW *em, EM01W *w);
+void game_func_0059A640(EMW *em, EM01W *w);
+void game_func_0059A860(EMW *em, EM01W *w);
+#endif
 int em_frame_check(EMW *, f32, int);
 int em_frame_check2(EMW *, int, f32);
 u16 Em_Calc_angY(f32 *, f32 *);
@@ -562,7 +568,53 @@ void em_atk19(EMW *em, EM01W *w) {
 #endif
 
 /* A file static in the original. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
+#ifdef MHG_PS2
+void em_atk20(EMW *em, EM01W *w) {
+    int done = 0;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x5C, 0, 0);
+        em01_fly_adjy2_init(em, 0xA);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 94.0f)) {
+            em->x388 = 2;
+            done = (u8)em01_fly_adjy2(em);
+        }
+        if (done != 0 && em->pos[1] <= 372.0f + em->x5AC) {
+            em->x05++;
+            em_char_set(em, 0x5D, 0, 0);
+            em01_fly_adjy2_init(em, 0xB);
+        }
+        break;
+    case 2:
+        em01_fly_adjy2(em);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em_char_set(em, 0x5E, 0, 0);
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            ground_land_eff_set_0057A7E0(em);
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    if (em->pos[1] < em->x5AC) {
+        em->pos[1] = em->x5AC;
+    }
+}
+#else
 void em_atk20(EMW *em, EM01W *w) {
     int done = 0;
 
@@ -603,6 +655,7 @@ void em_atk20(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 #endif
 
 /* Variant of atk 8 that lands (ground contact after the pursuit). */
@@ -2586,7 +2639,7 @@ void em_move02_00573A50(EMW *em, EM01W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 void em_move03_00573C20(EMW *em, EM01W *w) {
     switch (em->x15) {
     case 0: em_atk00_0056CAA0(em, w); break;
@@ -2614,6 +2667,12 @@ void em_move03_00573C20(EMW *em, EM01W *w) {
     case 23: em_atk23(em, w); break;
     case 24: em_atk24(em, w); break;
     case 25: em_atk25(em, w); break;
+#ifdef MHG_PS2 /* G's new attacks 26-29 */
+    case 26: game_func_0059A330(em, w); break;
+    case 27: game_func_0059A420(em, w); break;
+    case 28: game_func_0059A640(em, w); break;
+    case 29: game_func_0059A860(em, w); break;
+#endif
     }
 }
 #endif
