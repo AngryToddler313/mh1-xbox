@@ -2870,3 +2870,16 @@ lobby 0x0059E270 0x0059E278 mhg/lobby/f/lb_ui_p34
 lobby 0x0059F6F0 0x0059F71C mhg/lobby/f/lb_ui_p35
 lobby 0x005C0B90 0x005C0BA4 mhg/lobby/f/lb_ui_p36
 lobby 0x005C2120 0x005C2148 mhg/lobby/f/lb_ui_p37
+lobby 0x00547A70 0x00547AA8 mhg/lobby/f/lb_cli_p87
+lobby 0x00558B40 0x00558B78 mhg/lobby/f/lb_cli_p88
+lobby 0x00559C30 0x00559C6C mhg/lobby/f/lb_cli_p89
+lobby 0x0056A810 0x0056A848 mhg/lobby/f/lb_cli_p90
+lobby 0x0056D730 0x0056D768 mhg/lobby/f/lb_cli_p91
+lobby 0x005831C0 0x005831F4 mhg/lobby/f/lb_cli_p92
+lobby 0x005871D0 0x00587210 mhg/lobby/f/lb_cli_p93
+lobby 0x00587260 0x005872A0 mhg/lobby/f/lb_cli_p94
+lobby 0x005872A0 0x005872E0 mhg/lobby/f/lb_cli_p95
+lobby 0x005872E0 0x0058731C mhg/lobby/f/lb_cli_p96
+lobby 0x00587810 0x00587850 mhg/lobby/f/lb_cli_p97
+lobby 0x005894A0 0x005894D8 mhg/lobby/f/lb_cli_p98
+lobby 0x0058BD30 0x0058BD6C mhg/lobby/f/lb_cli_p99
