@@ -1853,3 +1853,8 @@ game 0x005D8E50 0x005D94F8 mhg/game/em/em10_p2
 game 0x005DA260 0x005DA474 mhg/game/em/em10_p3
 game 0x005DA520 0x005DA5B8 mhg/game/em/em10_p4
 game 0x005DAD80 0x005DADE8 mhg/game/em/em10_p5
+game 0x005F4240 0x005F45C4 mhg/game/em/em15_r10_p1
+game 0x005F4760 0x005F4F88 mhg/game/em/em15_r10_p2
+game 0x005F5110 0x005F58B8 mhg/game/em/em15_r10_p3
+game 0x005F5AA0 0x005F5BB8 mhg/game/em/em15_r10_p4
+game 0x005F62E0 0x005F6AB4 mhg/game/em/em15_r10_p5
