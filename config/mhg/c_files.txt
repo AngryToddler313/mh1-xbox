@@ -2247,3 +2247,5 @@ main 0x00222AB0 0x00222BC0 mhg/main/chat/f_chat_p32
 main 0x0011A630 0x0011A724 mhg/main/menu/menu05_p3
 main 0x0011A840 0x0011A8D4 mhg/main/menu/menu05_p4
 sub_main 0x004F2730 0x004F27A8 mhg/main/pl/pl79_p1
+main 0x00102610 0x00102714 mhg/main/game/f_game_p4
+main 0x00125A50 0x00125AEC main/menu/menu33
