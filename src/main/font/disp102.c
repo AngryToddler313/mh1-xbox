@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00163050-0x001631A0: Disp_load_start_sub .. Disp_NowLoading. See disp1_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 
@@ -25,6 +26,14 @@ void flfntSetSize(int, int);
 void font_print_double(int, int, int, int, char *);
 int strlen(const char *);
 u16 *Start_item_data_adrs_get(void);
+#ifdef MHG_PS2
+/* G (main 0x12D600, 0x12D690; the PC's G version is disp1_nm.c): the loading screen is a request (load_req) */
+void disp_load_msg(void);
+int func_001D5970();
+void func_0012D450(int);
+extern int D_002EF26C;      /* load_req */
+extern char *D_002EF27C;    /* load_req_msg */
+#endif
 
 
 
@@ -32,6 +41,31 @@ u16 *Start_item_data_adrs_get(void);
 
 
 
+#ifdef MHG_PS2
+#if !defined(G_PART) || G_PART == 1
+void Disp_load_start_sub(int arg) {
+    disp_load_msg();
+    if ((u16)arg != 0) {
+        flfntSetSize(0x18, 0x18);
+        font_print_double((s16)((0x280 - func_001D5970(quest_title) * 12) / 2), 200, 1, 0, quest_title);
+    }
+    font_draw_stack_no(0);
+}
+#endif
+
+#if !defined(G_PART) || G_PART == 1
+void Disp_load_start(int arg, int mode) {
+    if (mode == 1) {
+        font_stack_reset();
+        Disp_load_start_sub(arg);
+        func_0012D450(0);
+    } else {
+        D_002EF26C = 1;
+        D_002EF27C = quest_title;
+    }
+}
+#endif
+#else
 void Disp_load_start_sub(int arg) {
     disp_load_spr();
     if ((u16)arg != 0) {
@@ -51,7 +85,9 @@ void Disp_load_start(int arg) {
         disp_load_msg();
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Disp_NowLoading(void) {
     s16 i;
 
@@ -61,3 +97,4 @@ void Disp_NowLoading(void) {
         disp_load_msg();
     }
 }
+#endif

@@ -2226,3 +2226,6 @@ select 0x005466A0 0x00546704 mhg/select/edit04_p4
 main 0x00117D00 0x00117D74 mhg/main/option/option01_p7
 main 0x00124BB0 0x00124C04 main/menu/menu16
 sub_main 0x004D43B0 0x004D4424 mhg/main/eft/eft13b_p4
+yn 0x00A063B0 0x00A06450 yn/nc06
+sub_main 0x004E88A0 0x004E8900 main/staff/staff
+main 0x0012D600 0x0012D6E8 mhg/main/font/disp102_p1
