@@ -2156,3 +2156,8 @@ lobby 0x005631A0 0x00563204 mhg/lobby/f/lb_npc_p18
 game 0x005AE200 0x005AE454 mhg/game/em/em02_aib_p9
 game 0x0055D370 0x0055DA34 mhg/main/pl/f_pl_p54
 lobby 0x00585680 0x005859D8 mhg/lobby/f/lb_cli_p17
+select 0x0054A180 0x0054A1E4 mhg/select/edit07_p3
+select 0x00543DB0 0x00543E28 mhg/select/demo_p3
+select 0x00544120 0x005441D4 mhg/select/demo_p4
+select 0x005442F0 0x00544398 mhg/select/demo_p5
+select 0x00544420 0x00544560 mhg/select/demo_p6
