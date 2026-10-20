@@ -2699,3 +2699,4 @@ lobby 0x00584BD0 0x00584C4C mhg/lobby/f/lb_cli_p81
 lobby 0x00579BF0 0x00579C64 mhg/lobby/f/lb_cli_p82
 lobby 0x0057A0A0 0x0057A114 mhg/lobby/f/lb_cli_p83
 lobby 0x005BCE20 0x005BCE6C mhg/lobby/cnet/cnlbs_p117
+lobby 0x0058D430 0x0058D560 lobby/b/lb_bz102
