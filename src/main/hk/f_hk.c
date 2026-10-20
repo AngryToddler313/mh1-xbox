@@ -20,6 +20,7 @@ char *strcat(char *, const char *);
 u32 strlen(const char *);
 int strncmp(const char *, const char *, int);
 char *strncpy(char *, const char *, int);
+char *strncat(char *, const char *, int);
 char *strchr(const char *, int);
 
 static void hk_kbd_input();
@@ -943,7 +944,7 @@ static int hk_yn_hardkeyboard_check(void *p) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void cmd_kakutei_all(void) {
     char buf[0x100];
     int n;
@@ -953,15 +954,25 @@ void cmd_kakutei_all(void) {
         if (SKB(0x2F) != 0) {
             apiask_24_AllKakutei(lpSKey + SKO(0x258));
             SKB(0x2F) = 0;
+#ifdef VERSION_MHG
+            if (SKS8(0x30) == 1) {
+                SKS8(0x26) = 0;
+            }
+            memset(buf, 0, 0x100);
+            strncpy(buf, (char *)lpSKey + SKO(0x358), 0xFF);
+            strncat(buf, (char *)lpSKey + SKO(0x458), 0xFF);
+            strncat(buf, (char *)lpSKey + SKO(0x558), 0xFF);
+#else
             SKS8(0x26) = 0;
             memset(buf, 0, 0x100);
             strcpy(buf, (char *)lpSKey + SKO(0x358));
             strcat(buf, (char *)lpSKey + SKO(0x458));
             strcat(buf, (char *)lpSKey + SKO(0x558));
+#endif
             Han2zen(buf, (char *)lpSKey + SKO(0x258));
         }
         n = kbd_insert(lpSKey + SKO(0x44), lpSKey + SKO(0x258), SKU16(0x2A), SKU16(0x3A));
-        memset(lpSKey + SKO(0x158), 0, 0x100);
+        memset(lpSKey + SKO(0x158), 0, GV(0x100, 0xFF));
         SKU16(0x2A) = SKU16(0x2A) + n;
         SKS16(0x2C) = 0;
         SKS8(0x28) = 0;

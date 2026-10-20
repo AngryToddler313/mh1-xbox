@@ -725,17 +725,38 @@ void SoftKeyboard_set(int, int, int, int);
 void func_00220F40(int, int, int, int);
 #endif
 void Chat_move(int);
+#ifdef MHG_PS2
+int func_00595530(int, int);    /* lobby: whether the room is in the city */
+int func_001193D0(void);
+void func_0020B990(int);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 36
 void Chat_init(void) {
     int k = 0;
 
+#ifdef MHG_PS2
+    if (((u8 *)&game_w)[0x3F] != 0) {
+        u8 *pw = (u8 *)&player_work[game_w.master];
+
+        if (func_00595530(pw[0x14], pw[0x15]) == 1 || NPCZoomInCameraCheck() == 1) {
+            k = 4;
+        }
+    } else if (func_001193D0() == 1) {
+        k = 4;
+    }
+    PitMenu.open++;
+    SoftKeyboard_pos_set(80.0f, 0x50);
+    func_00220F40(k | 0x80000000, 0xE, 0x2C, 0);
+    func_0020B990(*(s32 *)&PitMenu._padG[4]);
+#else
     if (GW(0x1DC) != 0 && NPCZoomInCameraCheck() == 1) {
         k = 4;
     }
     PitMenu.open++;
     SoftKeyboard_pos_set(80.0f, 0x50);
     SoftKeyboard_set(k, 0xE, 0x2C, 0);
+#endif
     PitMenu.x0F = PitMenu.x0C = 0;
     se_req(7, 0x11, 0);
     Chat_move(0);
@@ -817,7 +838,7 @@ extern u8 chat_font_color[8];
 extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 37
 static void chat_log_add(int who, s8 *s, PIT_CHAT *src CLA_P) {
     PIT_CHAT *l;
     s8 c;
@@ -853,6 +874,52 @@ static void chat_log_add(int who, s8 *s, PIT_CHAT *src CLA_P) {
     if (PitMenu.lognum > 0x40) {
         PitMenu.lognum = 0x40;
     }
+#ifdef MHG_PS2
+    /* G: the plaza flag picks the width; a double-byte character is not checked against the room left */
+    if ((u8)g4 == 0) {
+        room = 0x16;
+    } else {
+        room = 0x1E;
+    }
+    l->nline = 0;
+    i = 0;
+    o = (s8 *)l->text[0];
+    for (; i < 2; i++, o += sizeof(l->text[0])) {
+        o[room] = 0;
+        d = o;
+        if (*s == 0) {
+            *o = 0;
+            return;
+        }
+        left = room;
+        while (1) {
+            c = *s;
+            if (c == 0) {
+                *d = 0;
+                l->nline++;
+                return;
+            }
+            uc = c & 0xFF;
+            if ((uc >= 0x80 && uc <= 0x9F) || (uc >= 0xE0 && uc <= 0xFF)) {
+                *d = uc;
+                left -= 2;
+                d[1] = s[1];
+                s += 2;
+                d += 2;
+            } else {
+                *d = uc;
+                s++;
+                d++;
+                left--;
+            }
+            if (left <= 0) {
+                break;
+            }
+        }
+        *d = 0;
+        l->nline++;
+    }
+#else
     if ((who & 0xFF) == 0xFF) {
         room = 0x1E;
     } else {
@@ -899,6 +966,7 @@ static void chat_log_add(int who, s8 *s, PIT_CHAT *src CLA_P) {
         *d = 0;
         l->nline++;
     }
+#endif
 }
 #endif
 

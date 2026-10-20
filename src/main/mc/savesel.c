@@ -25,7 +25,15 @@ void Sel_csr_disp(s16, s16, int, int, u32);
 
 void font_print_ex(s16, s16, s16, char *, ...);
 
-void disp_savesel_waku(u8 *e, int a, u8 c) {
+#ifdef VERSION_MHG
+#define DSW_PARAMS u8 *e, int a, u8 c, s8 sel   /* G: the cursor row comes as an argument */
+#define DSW_SEL sel
+#else
+#define DSW_PARAMS u8 *e, int a, u8 c
+#define DSW_SEL e[1]
+#endif
+#if !defined(G_PART) || G_PART == 1
+void disp_savesel_waku(DSW_PARAMS) {
     SFRM fr;
     s16 i;
 
@@ -44,7 +52,7 @@ void disp_savesel_waku(u8 *e, int a, u8 c) {
         fr.mode = 4;
     }
     for (i = 0; i < 3; i++) {
-        if (i == e[1]) {
+        if (i == DSW_SEL) {
             if (a == 0 || a == 2 || c >= 2) {
                 Sel_csr_disp(fr.x + 115, fr.y - 3, 280, 70, 0xFF20C0C0);
             }
@@ -53,7 +61,9 @@ void disp_savesel_waku(u8 *e, int a, u8 c) {
         fr.y += 88;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void disp_savesel_moji(u8 *e) {
     s16 i;
     s16 y;
@@ -80,3 +90,4 @@ void disp_savesel_moji(u8 *e) {
         s += 1152;
     }
 }
+#endif

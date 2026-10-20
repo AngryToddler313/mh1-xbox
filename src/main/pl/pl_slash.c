@@ -1,9 +1,16 @@
 /* Player code (SLPM_654.95 0x001536D0-0x001537D0): Pl_slash_calc - adds dv to the weapon sharpness (work87E,
  * capped at work884) and queues the sharpness-change message when the level from Pl_slash_lv_ck changes. */
+#include "g_alias.h"
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
-#ifdef VERSION_MHG
+#ifdef MHG_PS2
+/* G: the three messages are pointer variables (set at run time), not literals; absolute (not gp) access */
+extern char *slash_msg_down[], *slash_msg_up[], *slash_msg_max[];
+#define SLASH_MSG_DOWN slash_msg_down[0]
+#define SLASH_MSG_UP slash_msg_up[0]
+#define SLASH_MSG_MAX slash_msg_max[0]
+#elif defined(VERSION_MHG)
 /* G: the three messages are pointer variables (set at run time), not literals */
 extern char *slash_msg_down, *slash_msg_up, *slash_msg_max;
 #define SLASH_MSG_DOWN slash_msg_down
@@ -30,7 +37,6 @@ void Pl_slash_calc(PLW *pl, int dv) {
     }
 #ifdef VERSION_MHG
     /* G: skills 0x3F / 0x40 halve or double sharpness loss */
-    /* G near-match: logic believed right, 60/97 insns differ only in saved-register choice (original: up s0, dv s1, pl s2, (s16)dv s3) */
     if ((s16)dv < 0) {
         if (Pl_Skill_ck(pl, 0x3F) == 1) {
             dv = (s16)((s16)dv / 2);
