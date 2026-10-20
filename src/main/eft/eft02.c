@@ -52,6 +52,7 @@ static void eft02_d(EFTW *ew);
 static void eft02_e(EFTW *ew);
 void eft02_t(PRIM *pr);
 
+#if !defined(G_PART) || G_PART == 1
 void eft02_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -68,7 +69,9 @@ void eft02_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft02_i(EFTW *ew) {
     FLMAT m;
     f32 v[3];
@@ -134,7 +137,9 @@ static void eft02_i(EFTW *ew) {
         push_eft_work(ew);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft02_m(EFTW *ew) {
     f32 v[3];
     s16 n;
@@ -213,16 +218,22 @@ static void eft02_m(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft02_d(EFTW *ew) {
     ew->mode++;
     release_prim(ew->prim_no);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft02_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART)
 void eft02_t(PRIM *pr) {
     EFTW *ew = pr->owner;
     f32 v[3];
@@ -421,3 +432,4 @@ void eft02_t(PRIM *pr) {
         }
     }
 }
+#endif
