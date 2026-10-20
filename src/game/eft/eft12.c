@@ -606,7 +606,7 @@ static void eft12_m02(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 static void eft12_t02(EFTW *ew, PRIM *pr) {
     f32 v[3];
     f32 d[3];
@@ -627,6 +627,14 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
     if (ew->x07 == game_w.stage && mw != 0 && mw->flag != 0) {
         cl = &mw->clay[58];
         flmatMakeTrans(&m, ew->pos[0], ew->pos[1], ew->pos[2]);
+#ifdef VERSION_MHG /* G: only the spit of arg 3, coloured by its kind (stg) */
+        mr = eft12_sp_meat_col[ew->stg][0];
+        mg = eft12_sp_meat_col[ew->stg][1];
+        mb = eft12_sp_meat_col[ew->stg][2];
+        br = eft12_sp_bone_col[ew->stg][0];
+        bg = eft12_sp_bone_col[ew->stg][1];
+        bb = eft12_sp_bone_col[ew->stg][2];
+#else
         switch (ew->arg) {
         case 2:
             mr = eft12_meat_col[ew->mode2][0];
@@ -677,6 +685,7 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
             bb = eft12_sp_bone_col[ew->stg][2];
             break;
         }
+#endif
         flmatRotY33(&m, DEG2RAD(ANG2DEG(ew->u0A.joint)));
         flSetRenderState(0x1A, (u32)&m);
         flSetRenderState(0x67, -1);
@@ -701,6 +710,7 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
             clay_attr_set(cl->attr);
             flExecuteClay(cl->handle, 0);
         }
+#ifndef VERSION_MHG
         if (ew->arg == 2) {
             v[0] = -52.0f;
             v[1] = 0.0f;
@@ -719,6 +729,7 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
                 flExecuteClay(cl->handle, 0);
             }
         }
+#endif
         clay_attr_reset();
     }
 }
