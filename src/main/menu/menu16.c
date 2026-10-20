@@ -1,4 +1,5 @@
 /* f_menu run (SLPM_654.95 0x001324B0-0x0013250C): WyvernAreaMove. Whole file in menu_nm.c. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -13,6 +14,9 @@ void se_req(int, int, int);
 #include "version.h"
 extern u8 Item_data[327][ITEM_ROW];
 void PlayerStatusWindow(PLW *, u8);
+#ifdef MHG_PS2
+int func_00124B50(PLW *);
+#endif
 void DispFrameMessage(void *, int);
 void flfntLocate(int, int);
 void font_print_sp(void *);
@@ -139,7 +143,11 @@ int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
 void WyvernAreaMove(PLW *em) {
+#ifdef MHG_PS2
+    if (func_00124B50(em) != 0 && lpPit->x05 == 0 && lpPit->lb == 0 && lpPit->x83 == 0) {  /* G: its own check (main 0x124B50) */
+#else
     if (enemy_mark_chk(lpPit->pl, (EMW *)em) != 0 && lpPit->x05 == 0 && lpPit->lb == 0 && lpPit->x83 == 0) {
+#endif
         lpPit->x3F = 0x1A;
     }
 }

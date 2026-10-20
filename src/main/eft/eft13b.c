@@ -404,11 +404,18 @@ void eft13_t(PRIM *pr) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void eft13_se_req(EFTW *ew) {
     switch (ew->arg) {
     case 0x1A:
+#ifdef VERSION_MHG
+        /* G: only for the master's own effect */
+        if (*(u16 *)((u8 *)ew->owner + 0xC) == game_w.master || ew->x1E == game_w.master) {
+            se_req2(1, 0x71, 0, ew->pos, 1, 0);
+        }
+#else
         se_req2(1, 0x71, 0, ew->pos, 1, 0);
+#endif
         break;
     }
 }
