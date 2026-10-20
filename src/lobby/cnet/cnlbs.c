@@ -2183,3 +2183,178 @@ int lobby_func_005AC230(u16 i, u16 *out) {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 132
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ADF20(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 133
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE6F0(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 136
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC4A0(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 137
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD210(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 138
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BFB30(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 139
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BFF10(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 142
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E2F10(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 135
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BB0C0(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    if (*(u16 *)((u8 *)&CnetSys_w + 0x43B8) == 0) {
+        a[0x21] = 1;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 143
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E30F0(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    if (*(u16 *)((u8 *)&CnetSys_w + 0x43B4) == 0) {
+        a[0x21] = 1;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 131
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_cn_00700E98[];
+int lobby_func_005AC580(u16 i, u32 *out) {
+    *out = *(u32 *)(g_cn_00700E98 + i * 356);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 134
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE760(u8 *a) {
+    a[0x22]++;
+    *(u16 *)((u8 *)&CnetSys_w + 0x1032) = 0;
+    *(int *)(a + 8) = 1;
+    *(int *)(a + 0xC) = 1;
+    a[0x23] = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 140
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005C0580() {
+    __cnet_Recv_ServerMessage();
+    _cnet_Return_CallBack(45);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 141
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005C0620(u8 *a, u8 **b) {
+    if (a != 0) {
+        *a = *(u8 *)((u8 *)&CnetSys_w + 0x3A5EC);
+    }
+    if (b != 0) {
+        *b = (u8 *)&CnetSys_w + 0x3A5F4;
+    }
+    return 0;
+}
+#endif
+#endif

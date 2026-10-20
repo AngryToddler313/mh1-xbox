@@ -2797,3 +2797,16 @@ lobby 0x005E3420 0x005E3434 mhg/lobby/cnet/cnlbs_p127
 lobby 0x005E3C20 0x005E3C34 mhg/lobby/cnet/cnlbs_p128
 lobby 0x005E6680 0x005E6694 mhg/lobby/cnet/cnlbs_p129
 lobby 0x005E6EC0 0x005E6ED4 mhg/lobby/cnet/cnlbs_p130
+lobby 0x005AC580 0x005AC5A8 mhg/lobby/cnet/cnlbs_p131
+lobby 0x005ADF20 0x005ADF50 mhg/lobby/cnet/cnlbs_p132
+lobby 0x005AE6F0 0x005AE720 mhg/lobby/cnet/cnlbs_p133
+lobby 0x005AE760 0x005AE788 mhg/lobby/cnet/cnlbs_p134
+lobby 0x005BB0C0 0x005BB0F0 mhg/lobby/cnet/cnlbs_p135
+lobby 0x005BC4A0 0x005BC4D0 mhg/lobby/cnet/cnlbs_p136
+lobby 0x005BD210 0x005BD240 mhg/lobby/cnet/cnlbs_p137
+lobby 0x005BFB30 0x005BFB60 mhg/lobby/cnet/cnlbs_p138
+lobby 0x005BFF10 0x005BFF40 mhg/lobby/cnet/cnlbs_p139
+lobby 0x005C0580 0x005C05A4 mhg/lobby/cnet/cnlbs_p140
+lobby 0x005C0620 0x005C0648 mhg/lobby/cnet/cnlbs_p141
+lobby 0x005E2F10 0x005E2F40 mhg/lobby/cnet/cnlbs_p142
+lobby 0x005E30F0 0x005E3120 mhg/lobby/cnet/cnlbs_p143
