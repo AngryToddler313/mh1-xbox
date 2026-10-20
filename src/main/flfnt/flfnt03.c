@@ -1,4 +1,5 @@
 /* flfnt03 - 0x00216AC0-0x00216DD4: flfntDraw, flfntDrawAll, flfntMakeHandle. Whole file in flfnt_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef unsigned __int128 u128;
@@ -68,7 +69,11 @@ void flSetRenderState(int, int);
 void SetTrnslMode(int, int);
 void flfntDrawStart(void);
 void flfntDrawTerm(void);
+#ifdef MHG_PS2
+void flfntFontPuts();    /* G: takes the request only */
+#else
 void flfntFontPuts(char *, FREQ *);
+#endif
 extern u8 system_w[];
 int flCreateTextureHandle(void *, int);
 int flCreatePaletteHandle(void *, int);
@@ -87,10 +92,25 @@ int flfntSjis2Index(u32 c);
 void flfntPaletteTrans();
 void flnecCheckFont(int idx);
 
+#if !defined(G_PART) || G_PART == 1
 void flfntDraw(int layer) {
     FREQ *r;
     int i;
 
+#ifdef MHG_PS2
+    /* G: six layers, nothing for an empty one; the render state is left to flfntDrawStart and flfntFontPuts takes
+     * the request only; x58 keeps the layer being drawn */
+    if (layer < 6 && np->cnt[layer] != 0) {
+        np->x58 = layer;
+        flfntDrawStart();
+        r = (FREQ *)np->list[layer];
+        for (i = 0; i < np->cnt[layer]; i++) {
+            flfntFontPuts(r);
+            r++;
+        }
+        flfntDrawTerm();
+    }
+#else
     if (layer < 5) {
         flSetRenderState(0x61, 0x1000000);
         system_w[0x2C] = 0xFF;
@@ -110,8 +130,11 @@ void flfntDraw(int layer) {
         flSetRenderState(0x60, 0);
         SetTrnslMode(4, 5);
     }
+#endif
 }
+#endif
 
+#if !defined(G_PART)
 void flfntDrawAll(void) {
     FREQ *r;
     int j;
@@ -137,7 +160,9 @@ void flfntDrawAll(void) {
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);
 }
+#endif
 
+#if !defined(G_PART)
 s32 flfntMakeHandle(void) {
     int i;
 
@@ -152,3 +177,4 @@ s32 flfntMakeHandle(void) {
     flfntCacheFlush();
     return np->texh[0];
 }
+#endif

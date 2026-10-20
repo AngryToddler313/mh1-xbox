@@ -440,8 +440,26 @@ int Ud_item_erase(s16 i) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 27
 s16 Ud_stock_item_num_ck(u16 id) {
+#ifdef MHG_PS2
+    s16 i;
+    UDW *u;
+    s16 cnt;
+
+    /* G: the box size comes from sub_main_func_004C9250; an item with Item_data[3] == 0xFF counts as 999 */
+    u = User_data;
+    cnt = sub_main_func_004C9250(u);
+    for (i = 0; i < cnt; i++) {
+        if (u->stock[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                return 999;
+            }
+            return u->stock[i].num;
+        }
+    }
+    return 0;
+#else
     s16 i;
     UDW *u = User_data;
     for (i = 0; i < 100; i++) {
@@ -450,11 +468,31 @@ s16 Ud_stock_item_num_ck(u16 id) {
         }
     }
     return 0;
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 26
 s16 Ud_stock_item_num_ck3(u16 id) {
+#ifdef MHG_PS2
+    s16 i;
+    UDW *u;
+    s16 n;
+    s16 cnt;
+
+    /* G: the box size comes from sub_main_func_004C9250; an item with Item_data[3] == 0xFF counts as 999 */
+    u = User_data;
+    cnt = sub_main_func_004C9250(u);
+    n = 0;
+    for (i = 0; i < cnt; i++) {
+        if (u->stock[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                return 999;
+            }
+            n += u->stock[i].num;
+        }
+    }
+#else
     s16 i;
     UDW *u = User_data;
     s16 n = 0;
@@ -463,6 +501,7 @@ s16 Ud_stock_item_num_ck3(u16 id) {
             n += u->stock[i].num;
         }
     }
+#endif
     return n;
 }
 #endif

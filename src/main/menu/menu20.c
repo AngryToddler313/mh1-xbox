@@ -345,14 +345,22 @@ void font_print_quest_lv(int n) {
 #endif
 
 /* 0x12BD60 */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void font_print_quest_target(int a, int b) {
     char buf[8];
     u16 out[12];
     u16 *o;
     char *p;
 
+#ifdef VERSION_MHG
+    if (!(((u8 *)lpPit)[0x97] & 8)) {     /* G: pit byte 0x97 bit 3 set: only the first number (lit_2264) */
+        sprintf(buf, (char *)lit_2222, (u16)a, (u16)b);
+    } else {
+        sprintf(buf, (char *)lit_2264, (u16)a);
+    }
+#else
     sprintf(buf, (char *)lit_2222, (u16)a, (u16)b);
+#endif
     o = out;
     for (p = buf; *p != 0; p++, o++) {
         if (*p == 0x2F) {

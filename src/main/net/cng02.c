@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0022E1B0-0x0022E344: CngNetPS2ModuleBootInitialize .. CngNetMcsP2PInit. See cng_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 /* message ring (CngNet_MSG_*, 0x14 bytes) */
@@ -210,7 +211,14 @@ void CngNetPS2ModuleBootInitialize(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+/* G: network option table (key/value pairs, then PS2_DVD_INIT) filled at init */
+extern char inet_opt_k0[], inet_opt_v0[], inet_opt_k1[], inet_opt_v1[];
+extern char *inet_opt_tbl[];
+extern char gstr_002BD238[], gstr_002BD248[], gstr_002BD250[], gstr_002BD260[], gstr_002BD268[], gstr_002BD278[];
+char *strncpy(char *, const char *, unsigned int);
+#endif
+#if !defined(G_PART) || G_PART == 3
 void InetSramInitialize(void) {
     CurDevice = 0;
     memset(DeviceWork, 0xFF, 0x3D4);
@@ -238,6 +246,20 @@ void InetSramInitialize(void) {
     MyGateway = 0;
     MySnapPerformance = 0;
     memset(MySnapRegWeb, 0, 0x100);
+#ifdef MHG_PS2
+    strncpy(inet_opt_k0, gstr_002BD238, 32);
+    strncpy(inet_opt_v0, gstr_002BD248, 16);
+    strncpy(inet_opt_k1, gstr_002BD250, 32);
+    strncpy(inet_opt_v1, gstr_002BD260, 16);
+    inet_opt_tbl[6] = 0;
+    inet_opt_tbl[0] = inet_opt_k0;
+    inet_opt_tbl[1] = inet_opt_v0;
+    inet_opt_tbl[2] = inet_opt_k1;
+    inet_opt_tbl[3] = inet_opt_v1;
+    inet_opt_tbl[4] = gstr_002BD268;
+    inet_opt_tbl[5] = gstr_002BD278;
+    inet_opt_tbl[7] = 0;
+#endif
 }
 #endif
 
