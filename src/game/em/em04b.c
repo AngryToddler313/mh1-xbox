@@ -12,6 +12,7 @@ typedef struct QUEST_W {
 extern QUEST_W quest_w;
 extern GAME_W game_w;
 
+#if !defined(G_PART)
 static void em_dm04(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -34,7 +35,9 @@ static void em_dm04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move04(EMW *em) {
     switch (em->x15) {
     case 0: em_dm00_0058CFB0(em); break;
@@ -44,7 +47,9 @@ static void em_move04(EMW *em) {
     case 4: em_dm04(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_die00(EMW *em) {
     FLMAT mat;
     f32 in[3];
@@ -133,7 +138,9 @@ static void em_die00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_die01(EMW *em) {
     FLMAT mat;
     f32 in[3];
@@ -216,7 +223,9 @@ static void em_die01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_die_rev(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -266,7 +275,9 @@ static void em_die_rev(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move05(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -280,7 +291,9 @@ static void em_move05(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_demo00(EMW *em) {
     em->x9E1 = 5;
     em->x40C = 5;
@@ -302,7 +315,9 @@ static void em_demo00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move06(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -310,7 +325,9 @@ static void em_move06(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em04_main(EMW *em) {
     u8 dmg[4];
     EM04W *w = (EM04W *)em->ex;
@@ -404,7 +421,9 @@ void em04_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em04_main_sub(EMW *em) {
     switch (em->mode) {
     case 0: em_move00_0058C350(em); break;
@@ -417,4 +436,5 @@ void em04_main_sub(EMW *em) {
     case 7: em_move04(em); break;
     }
 }
+#endif
 
