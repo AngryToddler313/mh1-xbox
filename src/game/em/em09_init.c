@@ -36,6 +36,7 @@ void em_dur_init(EMW *);
 
 void Item_stolen(s32, u16, s16);
 
+#if !defined(G_PART)
 void em09_init(EMW *em) {
     EM_INITW *w = (EM_INITW *)em->ex;
 
@@ -80,7 +81,9 @@ void em09_init(EMW *em) {
     em_dur_init(em);
     em->x734 = 3;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void Em09_item_sub(EMW *em) {
     EM_INITW *w = (EM_INITW *)em->ex;
 
@@ -88,3 +91,4 @@ void Em09_item_sub(EMW *em) {
         Item_stolen(w->x24, w->item, w->item_num);
     }
 }
+#endif
