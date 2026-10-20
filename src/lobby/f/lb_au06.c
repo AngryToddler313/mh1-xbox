@@ -1,4 +1,5 @@
 /* lb_au06 - browser quit/poster/init states, page work 0x005FD2C0-0x005FD3A4: To_ReqCancelWait, SetNextURL. Whole file in lb_au.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 extern u8 *bsCsv;
@@ -39,7 +40,7 @@ void flfntInit();
 int strcmp();
 char *strcpy();
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void To_ReqCancelWait(int a, int b, int c) {
     int s;
     s = (s8)a;
@@ -51,11 +52,23 @@ void To_ReqCancelWait(int a, int b, int c) {
     case 0xF:
         goto go;
     default:
+#ifdef MHG_PS2
+        if (bsSys->x38 == 0) {   /* G: also waits on x3A */
+            if ((s8)bsSys->x3A == 0) {
+                goto go;
+            }
+        }
+        return;
+go:
+        BsRequestCancelAll();
+        bsSys->x02 = a;
+#else
         if (bsSys->x38 == 0) {
 go:
             BsRequestCancelAll(s, b);
             bsSys->x02 = a;
         }
+#endif
     }
 }
 #endif
