@@ -339,6 +339,7 @@ extern u8 *em17_act_add[3];
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void ground_land_eff_set_005E63F0(EMW *em) {
     f32 pos[3];
 
@@ -354,7 +355,9 @@ void ground_land_eff_set_005E63F0(EMW *em) {
         Eft20_set(1.0f, em, 0xB, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 s32 kyusyu_char_set2_005E64A0(EMW *em) {
     f32 temp_f0;
 
@@ -368,7 +371,9 @@ s32 kyusyu_char_set2_005E64A0(EMW *em) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em17_atk_end_sel(EMW *em, EM17W *w) {
     if (em->x734 == 3) {
         em17_to_normal(em, 0, 0);
@@ -380,7 +385,10 @@ void em17_atk_end_sel(EMW *em, EM17W *w) {
     }
     em17_to_normal(em, 0, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void dummy_em_prog_005E65C0(void) {
 
 }
+#endif
