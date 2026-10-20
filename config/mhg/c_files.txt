@@ -1987,3 +1987,4 @@ game 0x005AF5B0 0x005AF6B8 mhg/game/em/em02_aib_p8
 game 0x005BC2B0 0x005BEB7C game/em/em07_aic
 game:rodata 0x006D87B0 0x006D8878 game/em/em07_aic
 game 0x005CEA10 0x005D1FE4 mhg/game/em/em08_aij_p1
+game 0x005D2070 0x005D227C game/em/em08_aik
