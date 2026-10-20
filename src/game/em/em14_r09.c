@@ -1,4 +1,5 @@
 /* em14_r09 - monster 14 AI 0x005B9730-0x005B9EC8: em_atk30_005B9730, em_atk31_005B97B0, em_dmg00_005B9830, em_dmg01_005B98C0, em_dmg02_005B9950, em_dmg03_005B99E0, em_dmg04_005B9A70, em_dmg05_005B9C40, em_dmg06_005B9D60. Whole file in em14_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -460,7 +461,7 @@ void em_dmg03_005B99E0(EMW *em, EM14W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em_dmg04_005B9A70(EMW *em, EM14W *w) {
     f32 temp_f1;
     u32 var_a0;
@@ -480,7 +481,11 @@ void em_dmg04_005B9A70(EMW *em, EM14W *w) {
         Em_Sleep_Flag_Ck(em);
         break;
     case 1:
+#ifdef MHG_PS2 /* G: not for kind 0x27 either */
+        if ((em_frame_check(em, 0, 6.0f) != 0) && ((s8) em->ex[0xA3] != 0) && (em->kind != 0x14) && (em->kind != 0x27)) {
+#else
         if ((em_frame_check(em, 0, 6.0f) != 0) && ((s8) em->ex[0xA3] != 0) && (em->kind != 0x14)) {
+#endif
             em->ex[0xA3] = 0;
         }
         if ((em_frame_check2(em, 0, 52.0f) != 0) && (em_frame_check2(em, 0, 122.0f) == 0)) {
