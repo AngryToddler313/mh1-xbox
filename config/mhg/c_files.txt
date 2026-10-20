@@ -2219,3 +2219,6 @@ main 0x00221940 0x002219C0 mhg/main/chat/f_chat_p30
 main 0x002275A0 0x002275F0 mhg/main/chat/f_chat_p31
 main 0x001023F0 0x00102494 mhg/main/fade/fd02_p3
 main 0x00129640 0x001296E4 mhg/main/sound/sndc04_p3
+main 0x001E0FE0 0x001E104C mhg/main/cam/camq1_p2
+main 0x0021D7D0 0x0021D85C main/menu/pit01
+main 0x001E5810 0x001E590C mhg/main/net/mcsls_r02_p3
