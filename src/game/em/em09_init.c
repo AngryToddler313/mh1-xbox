@@ -1,12 +1,17 @@
 /* em09_init - game.bin 0x005A7F70-0x005A81A4: monster 9 setup and
  * Em09_item_sub (gives back a stolen item through Item_stolen). Guesses. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 
 /* quest_w (0x3C7440): only the quest number is used here. */
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 no;             /* 0x08 current quest (u16 in G) */
+#else
     s16 no;             /* 0x08 current quest (0: free play?) */
+#endif
 } QUEST_W;
 
 /* Part of the per-monster work at EMW+0x444 set up by the init code. */
@@ -36,7 +41,14 @@ void em_dur_init(EMW *);
 
 void Item_stolen(s32, u16, s16);
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+int game_func_005499A0(EMW *em, s16 no);
+void Em_Mode_Chg(EMW *, int, int);
+extern s16 em_atk_mode_timer_tbl[];
+#endif
+
+#if !defined(G_PART) || G_PART == 2
 void em09_init(EMW *em) {
     EM_INITW *w = (EM_INITW *)em->ex;
 
@@ -53,6 +65,22 @@ void em09_init(EMW *em) {
     }
     em->x88B = 1;
     em->x8C3 = 0;
+#ifdef MHG_PS2      /* G: init-time char set, kind 12 variant, hit points from the vital table */
+    game_func_00549FE0(em, 1, 0, 0);
+    em->x388 = 0;
+    if (em->type == 12) {
+        em_act_set(em, 0, 1);
+    } else if (game_w.stage == 0x37) {
+        if (em->type != 0) {
+            em->x40C = 10;
+            em->x40E = 10;
+        }
+        em_act_set(em, 0, 1);
+    } else {
+        em_act_set(em, 1, 8);
+    }
+    em->x792 = em->x302 = game_func_005499A0(em, 0);
+#else
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     if (game_w.stage == 0x37) {
@@ -65,6 +93,7 @@ void em09_init(EMW *em) {
         em_act_set(em, 1, 8);
     }
     em->x792 = em->x302 = em_hp_vital_set(em, 0x20);
+#endif
     w->x0E = 0;
     w->x0C = 0;
     w->home[0] = em->pos[0];
@@ -78,6 +107,14 @@ void em09_init(EMW *em) {
         em->scale[1] = 10.0f;
         em->scale[0] = 10.0f;
     }
+#ifdef MHG_PS2
+    switch (em->x95B) {
+    case 1:
+        em->x95B = 0;
+        Em_Mode_Chg(em, 1, em_atk_mode_timer_tbl[em->kind]);
+        break;
+    }
+#endif
     em_dur_init(em);
     em->x734 = 3;
 }
