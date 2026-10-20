@@ -1806,3 +1806,11 @@ main 0x001060A0 0x0010ADF8 mhg/main/hit/f_sphr_p2
 main 0x0010B5E0 0x0010D150 mhg/main/hit/f_sphr_p3
 game 0x005BF1A0 0x005BF444 mhg/game/em/em07_aie_p1
 game 0x005BF650 0x005C57C4 mhg/game/em/em07_aie_p2
+game 0x005FC510 0x005FC518 mhg/game/em/em16a_p1
+game 0x005FCB20 0x005FE07C mhg/game/em/em16a_p2
+game 0x005FEB90 0x005FF654 mhg/game/em/em16a_p3
+game 0x005FF780 0x005FFAB4 mhg/game/em/em16a_p4
+game 0x005FFDC0 0x006003DC mhg/game/em/em16a_p5
+game 0x00600820 0x006025E8 mhg/game/em/em16a_p6
+game 0x00602750 0x00602CF4 mhg/game/em/em16a_p7
+game 0x00603510 0x006035D4 mhg/game/em/em16a_p8
