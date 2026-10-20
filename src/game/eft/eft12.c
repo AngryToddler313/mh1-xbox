@@ -534,11 +534,18 @@ static void eft12_t01(EFTW *ew, PRIM *pr) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 static void eft12_i02(EFTW *ew) {
     ew->mode2 = 0;
     ew->work14 = 0;
     ew->timer = 0;
+#ifdef VERSION_MHG /* G: no spit set down on stage 21 (arg 2); the prim kind follows prim2 */
+    if (ew->prim2 == 0) {
+        ew->prim_no = get_prim();
+    } else {
+        ew->prim_no = get_prim2();
+    }
+#else
     if (ew->arg == 2) {
         ew->pos[0] = eft12_st21_set_pos[ew->stg][0];
         ew->pos[1] = eft12_st21_set_pos[ew->stg][1];
@@ -549,6 +556,7 @@ static void eft12_i02(EFTW *ew) {
     } else if (ew->arg == 3) {
         ew->prim_no = get_prim2();
     }
+#endif
     if (ew->prim_no != -1) {
         if (ew->prim2 == 0) {
             ew->prim = get_prim_ptr(ew->prim_no);
@@ -565,11 +573,20 @@ static void eft12_i02(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 static void eft12_m02(EFTW *ew) {
     EFT12_WORK *w = ew->work;
 
     ew->timer++;
+#ifdef VERSION_MHG /* G: only the spit of arg 3 is left (no arg 2) */
+    if (ew->timer > 5400 || w->smoke.done != 0) {
+        ew->mode++;
+        ew->be_flag = 0;
+        pull_smell(&w->smoke);
+        return;
+    }
+    ew->mode2 = 0;
+#else
     if (ew->arg == 2) {
         ew->mode2 = 1;
     } else {
@@ -581,6 +598,7 @@ static void eft12_m02(EFTW *ew) {
         }
         ew->mode2 = 0;
     }
+#endif
     ew->prim->pos[0] = ew->pos[0];
     ew->prim->pos[1] = ew->pos[1];
     ew->prim->pos[2] = ew->pos[2];

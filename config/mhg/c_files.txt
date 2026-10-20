@@ -2676,3 +2676,5 @@ game 0x006680D0 0x006681DC mhg/game/shell/shell14_p5
 game 0x00668A80 0x00668BEC mhg/game/shell/shell14_p6
 game 0x00572150 0x00572250 mhg/game/eft/eft12_p12
 game 0x00572390 0x005727CC mhg/game/eft/eft12_p13
+game 0x00570C20 0x00570CF0 mhg/game/eft/eft12_p14
+game 0x00570CF0 0x00570D94 mhg/game/eft/eft12_p15
