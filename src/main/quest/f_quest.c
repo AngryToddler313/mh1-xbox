@@ -2567,7 +2567,7 @@ int flag;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 static void em_herb_set(void)
 {
     QEM q;
@@ -2575,6 +2575,9 @@ static void em_herb_set(void)
     q.id = 0xA;
     q.x02 = 0;
     q.x08 = -1;
+#ifdef VERSION_MHG
+    q.x30 = 100;    /* G: size 100 */
+#endif
     q.pos[0] = 0;
     q.pos[1] = 0;
     q.pos[2] = 0;

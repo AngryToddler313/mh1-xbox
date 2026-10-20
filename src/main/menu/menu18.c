@@ -21,8 +21,17 @@ void DispFrameMessage(void *, int);
 void flfntLocate(int, int);
 void font_print_sp(void *);
 extern u8 frame_retire[];
+#ifdef MHG_PS2
+/* G keeps these in .data (not the small-data area) */
+extern int retire_str[];
+#define RETIRE_STR (retire_str[0])
+void func_0012BDD0(void *);  /* G: prints the yes/no text (main 0x12BDD0; MH1 font_print_sp) */
+extern void *retire_yesno_str[];
+#else
 extern int retire_str;
 extern void *retire_yesno_str[2];
+#define RETIRE_STR retire_str
+#endif
 extern f32 wyvern_area_tbl[][4];
 void SetFilterMode(int);
 void SetTextureStage(int);
@@ -98,6 +107,10 @@ void trans_pit_1(void);
 void trans_pit_2(void);
 void trans_pit_1_lb(void);
 void trans_pit_2_lb(void);
+#ifdef MHG_PS2
+extern u8 D_002FF2B4[];
+void func_00126C20(void);
+#endif
 void func_5B3D70();
 void func_609750();
 int Item_ok_chk(PLW *);
@@ -142,11 +155,11 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void disp_retire(void) {
-    DispFrameMessage(frame_retire, retire_str);
+    DispFrameMessage(frame_retire, RETIRE_STR);
     flfntLocate(0x18F, 0x106);
-    font_print_sp(retire_yesno_str[lpPit->yn]);
+    GV(font_print_sp, func_0012BDD0)(retire_yesno_str[lpPit->yn]);
 }
 #endif
 
@@ -214,7 +227,7 @@ void trans_pit_1(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void trans_pit_2(void) {
     font_set_stack_no(2);
     disp_item_sub_select_ex();
@@ -233,6 +246,11 @@ void trans_pit_2(void) {
     if ((s8)SoftKeyboard_alive_check() != 0) {
         SetTrnslMode(4, 5);
         DispSoftkeyboard(FLD8(system_w, 0x31));
+#ifdef MHG_PS2
+        if (D_002FF2B4[0] != 0) {  /* G: one more soft keyboard layer (main 0x126C20, G only) */
+            func_00126C20();
+        }
+#endif
     }
 }
 #endif
@@ -255,7 +273,7 @@ void trans_pit_1_lb(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void trans_pit_2_lb(void) {
     font_set_stack_no(2);
     if (PitMenu.x06 != 0) {
@@ -270,6 +288,11 @@ void trans_pit_2_lb(void) {
     if ((s8)SoftKeyboard_alive_check() != 0) {
         SetTrnslMode(4, 5);
         DispSoftkeyboard(FLD8(system_w, 0x31));
+#ifdef MHG_PS2
+        if (D_002FF2B4[0] != 0) {  /* G: one more soft keyboard layer (main 0x126C20, G only) */
+            func_00126C20();
+        }
+#endif
     }
 }
 #endif

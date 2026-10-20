@@ -1,4 +1,5 @@
 /* select.bin 0x00533BE0-0x0053452C: title / logo / opening demo (Demo_task and its drawing helpers). */
+#include "g_alias.h"
 #include "select.h"
 
 void demo_task_sub(STASK *t);
@@ -7,8 +8,13 @@ void middle_logo(int n);
 void capcom_logo(void);
 void title_disp(int a);
 void opening_demo(void);
+#ifdef MHG_PS2
+void func_0010EF50(int, int, int);
+extern void *gptr_005287F4[];
+extern void *gptr_005287F8[];
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Demo_task(STASK *t) {
     switch (t->step) {
     case 0:
@@ -16,7 +22,7 @@ void Demo_task(STASK *t) {
         all_reset();
         init_demo_work();
         demo_w.mode = 0;
-        load_texlist(PIT_TEX[0], 2, 0);
+        GV(load_texlist, func_0010EF50)(PIT_TEX[0], 2, 0);
     case 1:
         demo_task_sub(t);
         break;
@@ -107,7 +113,7 @@ void demo_task_sub(STASK *t) {
 
 extern char lit_112_0053B350[], lit_113_0053B370[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void violence_logo(void) {
     SPR s;
     reload_tex(1, 6);
@@ -123,8 +129,8 @@ void violence_logo(void) {
     s.v = 0;
     flps0008(&s);
     flfntSetSize(0x1A, 0x1A);
-    font_print_double2(0x63, 0xC8, 1, 0, lit_112_0053B350);
-    font_print_double2(0x63, 0xF0, 1, 0, lit_113_0053B370);
+    font_print_double2(0x63, 0xC8, 1, 0, GSTR(lit_112_0053B350, gptr_005287F4));
+    font_print_double2(0x63, 0xF0, 1, 0, GSTR(lit_113_0053B370, gptr_005287F8));
     font_draw();
 }
 #endif
@@ -157,8 +163,33 @@ void capcom_logo(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void middle_logo(int n) {
+#ifdef VERSION_MHG
+    SPR s;
+    int m;
+    int tex;
+    SetFilterMode(0);
+    m = n & 0xFF;
+    tex = m + 4;
+    reload_tex(1, tex);
+    SetTextureStage(tex);
+    s.w = 0x200;
+    s.x = 0;
+    if (m == 6) {
+        s.y = -0x20;
+    } else {
+        s.y = 0;
+    }
+    s.h = 0x200;
+    s.col = -1;
+    s.v = 0;
+    s.u = 0;
+    s.u2 = 0x1FF;
+    s.v2 = 0x1FF;
+    flps0008(&s);
+    SetFilterMode(1);
+#else
     SPR s;
     int tex;
     SetFilterMode(0);
@@ -176,6 +207,7 @@ void middle_logo(int n) {
     s.u = 0;
     flps0008(&s);
     SetFilterMode(1);
+#endif
 }
 #endif
 
@@ -201,12 +233,12 @@ extern char lit_163_0053B3A0[];
 extern char lit_164_0053B3D0[];
 extern char lit_165_0053B3F0[];
 
-#ifdef VERSION_MHG
 /* G's title_disp (select 0x544420, read from G's code): the title art is one 512x512 texture page drawn
  * 512x448 (MH1: a 256x256 page, u/v 1..0xFE, 640 wide unless system_w.x31), and the one-line menu is
  * shown for x1A 0/2/4 at x 0x5F / 0x73 (MH1: 0/2/3 at 0x6C / 0x80). */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void title_disp(int a) {
+#ifdef VERSION_MHG
     SPR s;
     u8 m;
     SetFilterMode(1);
@@ -227,8 +259,8 @@ void title_disp(int a) {
     m = system_w.x1A;
     switch (m) {
     case 0:
-    case 2:
     case 4:
+    case 2:
         c_disp(0x5F, 0x178);
         font_print_ex(0x73, 0x178, 0, lit_163_0053B3A0);
         break;
@@ -239,10 +271,7 @@ void title_disp(int a) {
         font_print_ex(0x80, 0x18C, 0, lit_165_0053B3F0);
         break;
     }
-}
-#endif
 #else
-void title_disp(int a) {
     SPR s;
     u8 m;
     SetFilterMode(1);
@@ -279,8 +308,8 @@ void title_disp(int a) {
         font_print_ex(0x80, 0x18C, 0, lit_165_0053B3F0);
         break;
     }
+#endif
 }
-
 #endif
 
 #if !defined(G_PART)

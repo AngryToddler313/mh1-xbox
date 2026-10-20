@@ -11,6 +11,9 @@ extern u8 D_6EAEBC[];       /* lb_sys + 0x6C (the PS2 MH1 main module only sees 
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
+#ifdef MHG_PS2
+extern char gstr_002B17B0[];   /* G main: "%-8.8s" */
+#endif
 
 extern u8 Psw[];
 extern u8 enemy_icon_tbl[];
@@ -129,7 +132,7 @@ void player_name_print(char *name) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void player_name_id_print(PLW *pl) {
     char *name = (char *)pl + 0x8D4;
 
@@ -140,6 +143,10 @@ void player_name_id_print(PLW *pl) {
             name = (char *)func_5B4D30(*(u16 *)((u8 *)pl + 0xC));
         }
     }
+#ifdef MHG_PS2
+    font_print(gstr_002B17B0, name);    /* G: "%-8.8s" */
+#else
     player_name_print(name);
+#endif
 }
 #endif

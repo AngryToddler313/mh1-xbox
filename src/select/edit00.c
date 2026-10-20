@@ -55,6 +55,11 @@ void cont_trans(TSKH *tk);
 
 
 
+#ifdef VERSION_MHG
+int func_0012AE80();
+#endif
+
+#if !defined(G_PART) || G_PART == 1
 void char_make_init(void) {
     EDIT_W *e = &edit_w;
     s16 i;
@@ -75,8 +80,14 @@ void char_make_init(void) {
     e->x3B = 0;
     e->x3C = 0;
     e->x3D = 0;
+#ifdef VERSION_MHG
+    B8(e, 0x45) = 0;    /* G: two more bytes of the edit work (in MH1's padding) */
+    B8(e, 0x46) = 0;
+#endif
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void user_data_copy(UDC_SRC *src, u8 slot) {
     UDC_DST *dst;
     s16 i;
@@ -89,7 +100,11 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     B8(dst, 0) = 1;
     B8(dst, 1) = B8(src, 4);
     B8(dst, 2) = B8(src, 5);
+#ifdef VERSION_MHG
+    B8(dst, 0xC7F) = B8(src, 6);
+#else
     B8(dst, 0x3D7) = B8(src, 6);
+#endif
     B8(dst, 3) = B8(src, 7);
     B32(dst, 4) = B32(src, 8);
     for (i = 0; i < 0x12; i++) {
@@ -97,6 +112,22 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     }
     BS16(dst, 0x1A) = 0x7D00;
     B32(dst, 0x20) = 0;
+#ifdef VERSION_MHG
+    /* G (select 0x544850): the G save layout (five u16 0xFFFF at 0xD00.., the flag at 0xC95, rank at 0xC23) and
+     * main 0x12AE80's value at 0xD0A */
+    B16(dst, 0xD00) = 0xFFFF;
+    B16(dst, 0xD02) = 0xFFFF;
+    B16(dst, 0xD04) = 0xFFFF;
+    B16(dst, 0xD06) = 0xFFFF;
+    B16(dst, 0xD08) = 0xFFFF;
+    BS8(dst, 0xC95) = 1;
+    B32(dst, 0x1C) = 0;
+    B8(dst, 0xC23) = 0;
+    Warehouse_equip(dst, (u16)(s16)Warehouse_equip_stack(dst, 6, 0x9C, 0));
+    Set_equip_idx(dst);
+    *(s8 *)((int)dst + 0xC23) = Get_hunter_rank(dst);
+    BS16(dst, 0xD0A) = func_0012AE80();
+#else
     B8(dst, 0x457) = 0xFF;
     B8(dst, 0x458) = 0xFF;
     B8(dst, 0x459) = 0xFF;
@@ -106,4 +137,6 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     Warehouse_equip(dst, (u8)(s16)(Warehouse_equip_stack(dst, 6, 0x9C, 0) & 0xFF));
     Set_equip_idx(dst);
     BS8(dst, 0x37B) = Get_hunter_rank(dst);
+#endif
 }
+#endif

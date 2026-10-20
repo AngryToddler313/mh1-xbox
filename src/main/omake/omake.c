@@ -180,6 +180,7 @@ void func_0010EF50(int file, int base, int type) { load_texlist(file, base, type
 void func_0012DD90(f32 s, int a, int b, int c, int d) { Disp_button(s, a, b, c, d); } /* G: Disp_button with a fifth argument (-1) */
 #endif
 void View_move();
+#if !defined(G_PART)
 void Select_task(tsk)
 SELT *tsk;
 {
@@ -222,6 +223,7 @@ SELT *tsk;
         trans();
     }
 }
+#endif
 #else
 void Select_task(tsk)
 SELT *tsk;
@@ -263,6 +265,7 @@ SELT *tsk;
 }
 #endif
 
+#if !defined(G_PART)
 OSTATIC void csub00(tsk)
 SELT *tsk;
 {
@@ -297,7 +300,9 @@ SELT *tsk;
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int ck_start_sw(void)
 {
     int r = 0;
@@ -307,6 +312,7 @@ int ck_start_sw(void)
     }
     return r;
 }
+#endif
 
 #ifdef VERSION_MHG
 /* G: the menu has a 3D scene behind it (hunter model, own camera and light). */
@@ -321,6 +327,7 @@ void CameraInit();
 void CameraWorkInit();
 void light_init();
 #define VF(o) (*(f32 *)((u8 *)lpView + (o)))
+#if !defined(G_PART)
 void func_001EE9F0(void) {
     Event_flag_clear(0x1E);
     D_0035ED48[0] = 0x20;
@@ -342,7 +349,9 @@ void func_001EE9F0(void) {
     VF(0x2C) = 1.0471976f;
     VF(0x34) = 0.7853982f;
 }
+#endif
 
+#if !defined(G_PART)
 OSTATIC void init_mode_sel(tsk)
 SELT *tsk;
 {
@@ -365,6 +374,7 @@ SELT *tsk;
         }
     }
 }
+#endif
 #else
 OSTATIC void init_mode_sel(tsk)
 SELT *tsk;
@@ -382,6 +392,7 @@ SELT *tsk;
 }
 #endif
 
+#if !defined(G_PART)
 OSTATIC void sel_sel_sub(held, push, p, n)
 u16 held;
 u16 push;
@@ -409,7 +420,9 @@ u8 n;
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 #if OMAKE_PART == 0
 #ifdef VERSION_MHG
 void Edit_task();
@@ -467,10 +480,18 @@ int push;
             tsk->sub++;
             return;
         case 0:
+#ifdef VERSION_MHG
+            if (Fade_busy_ck() == 1) {
+                return;
+            }
+            Tsk_Exit(tsk);
+            Tsk_Execute(Edit_task, 4);
+#else
             if (Fade_busy_ck() != 1) {
                 Tsk_Exit(tsk);
                 Tsk_Execute(Edit_task, 4);
             }
+#endif
             return;
         case 1:
             if (Fade_busy_ck() == 1) {
@@ -675,12 +696,14 @@ int push;
 
 #endif
 #endif
+#endif
 
 #if OMAKE_PART == 0 || OMAKE_PART == 2
 #ifdef VERSION_MHG
 extern u8 D_0035F013[], D_0035F015[];
 void Demo_task();
 void sub_main_func_004A9960();
+#if !defined(G_PART)
 OSTATIC void mode_sel_end(tsk)
 SELT *tsk;
 {
@@ -739,7 +762,9 @@ SELT *tsk;
         return;
     }
 }
+#endif
 
+#if !defined(G_PART)
 OSTATIC void mode_sel_exit(tsk)
 SELT *tsk;
 {
@@ -761,6 +786,7 @@ SELT *tsk;
         break;
     }
 }
+#endif
 
 #else
 OSTATIC void mode_sel_end(tsk)
@@ -836,6 +862,7 @@ SELT *tsk;
 }
 #endif
 
+#if !defined(G_PART)
 int key_rept_du(int pad, u16 held, u16 push) {
     int v = push;
     s16 n;
@@ -868,7 +895,9 @@ int key_rept_du(int pad, u16 held, u16 push) {
     return v;
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 #if OMAKE_PART == 0
 #ifdef VERSION_MHG
 extern char *main_menu_msg[];
@@ -1054,8 +1083,10 @@ OSTATIC void disp_mode_menu(void)
 #endif
 #endif
 #endif
+#endif
 
 #if OMAKE_PART == 0 || OMAKE_PART == 3
+#if !defined(G_PART)
 void Sel_back_disp(a)
 int a;
 {
@@ -1082,12 +1113,14 @@ int a;
     flSetRenderState(0x6C, 1);
 #endif
 }
+#endif
 
 #ifdef VERSION_MHG
 #define SEL_SMALL(n) ((n) == 4 || (n) == 5 || (n) == 7 || (n) == 8)
 #else
 #define SEL_SMALL(n) ((n) == 4 || (n) == 5)
 #endif
+#if !defined(G_PART)
 void Sel_menu_disp(n)
 s16 n;
 {
@@ -1158,7 +1191,9 @@ s16 n;
     spr.x += 0x100;
     Put_2TF(&spr);
 }
+#endif
 
+#if !defined(G_PART)
 void Sel_csr_disp(x, y, w, h, rgb)
 s16 x, y, w, h;
 u32 rgb;
@@ -1188,6 +1223,7 @@ u32 rgb;
     flps0005(&c);
     flSetRenderState(0x60, 0);
 }
+#endif
 #endif
 
 #if OMAKE_PART == 0 && !defined(VERSION_MHG)   /* G has no such menu: its Omake_task (main 0x1180F0) is NETWORK OPTIONS, src/main/omake/omake_g.c */

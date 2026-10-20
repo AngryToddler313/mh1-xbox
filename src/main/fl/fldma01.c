@@ -2,6 +2,7 @@
  * IntGsStoreImageHandler (file-static), flPS2DmaInterrupt and flPS2DmaSend use `ei` / 128 bit register moves and stay original bytes
  * (config/c_rawfuncs.txt). The control block holds two queues (double buffered by flPs2State.tmp_idx): buffer handle, entry count,
  * write and read index; +0x2C is the tag being sent, +0x30 a store-image-in-progress flag, +0x34 / +0x38 the last queued tag and its address. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct DMACTL {
@@ -196,7 +197,10 @@ int flPS2DmaWait(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
+#ifdef MHG_PS2
+extern int ps2_v_counter_hi;
+#endif
 int flPS2DmaTerminate(void) {
     if (flPs2VIF1Control.cnt[0] == 0 && flPs2VIF1Control.cnt[1] == 0) {
         return 0;
@@ -208,6 +212,9 @@ int flPS2DmaTerminate(void) {
     flPS2DmaSend();
     flPS2DmaWait();
     flPS2SystemTmpBuffFlush();
+#ifdef MHG_PS2
+    ps2_v_counter_hi = 2;   /* G: the word system_work_init clears (gp-14204) */
+#endif
     return 1;
 }
 #endif

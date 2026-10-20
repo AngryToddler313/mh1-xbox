@@ -3,6 +3,7 @@
  * tinted by that player's colour (col_tbl, by +0x8ED) and raised by
  * ofs_tbl. What +0x3B0 really points to is a guess (it has a position at
  * +0xAC like PLW). */
+#include "g_alias.h"
 #include "eft.h"
 #include "game.h"
 #include "pl.h"
@@ -104,7 +105,7 @@ static void eft26_i(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void eft26_m(EFTW *ew) {
     PLW *pl = (PLW *)ew->owner;
     EFT26_TGT *tgt;
@@ -126,7 +127,7 @@ static void eft26_m(EFTW *ew) {
         ew->prim->pos[0] = tgt->pos[0];
         ew->prim->pos[1] = y + (tgt->pos[1] + ofs_tbl[n]);
         ew->prim->pos[2] = tgt->pos[2];
-        add_prim(ot0, ew->prim, 0x40, 0);
+        add_prim(ot0, ew->prim, GV(0x40, 32), 0);
     }
 }
 #endif
