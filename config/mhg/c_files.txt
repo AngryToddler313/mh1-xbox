@@ -1936,3 +1936,4 @@ game 0x0062DBD0 0x0062DCA8 mhg/game/em/em21_r02_p2
 game 0x00606A10 0x00606B88 mhg/game/em/em17_r02_p1
 game 0x00612C50 0x00612D88 mhg/game/em/em17_r18_p1
 game 0x005901C0 0x005902B0 mhg/game/em/em_modechg_p1
+game 0x00569F90 0x00569F98 mhg/game/eft/eft04_p1

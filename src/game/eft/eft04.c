@@ -95,6 +95,7 @@ void eft04_type3_init(EFTW *ew, EFT04_PIECE *p);
 void eft04_type8_init(EFTW *ew, EFT04_PIECE *p);
 void eft04_z_adj(FLMAT *m, f32 *pos);
 
+#if !defined(G_PART)
 void eft04_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -111,7 +112,9 @@ void eft04_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void eft04_i(EFTW *ew) {
     f32 v[3];
     s16 n;
@@ -272,7 +275,9 @@ void eft04_i(EFTW *ew) {
     }
     eft04_m(ew);
 }
+#endif
 
+#if !defined(G_PART)
 void eft04_m(EFTW *ew) {
     f32 a;
     f32 v[3];
@@ -531,7 +536,9 @@ void eft04_m(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void eft04_d(EFTW *ew) {
     s16 n;
     s16 i;
@@ -548,7 +555,10 @@ void eft04_d(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void eft04_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
