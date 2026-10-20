@@ -267,19 +267,28 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 void npcMvWARP(em)
 EMW *em;
 {
     LB_NPCMV *mv = (LB_NPCMV *)em->ex;
     s16 i;
     LB_ROUTE *r;
+#ifdef MHG_PS2
+    /* G: the warp keeps its route at +4 and its index at +0x2C */
+    struct { u8 _p0[4]; LB_ROUTE *route; u8 _p8[0x2C - 8]; s16 idx; } *wv = (void *)em->ex;
+#define WARP_ROUTE (wv->route)
+#define WARP_IDX (wv->idx)
+#else
+#define WARP_ROUTE (mv->route)
+#define WARP_IDX (mv->idx)
+#endif
 
-    if (mv->route == 0) {
+    if (WARP_ROUTE == 0) {
         Lb_act_set(em, 0, 0);
     }
-    i = mv->idx;
-    r = &mv->route[i];
+    i = WARP_IDX;
+    r = &WARP_ROUTE[i];
     *(VEC3 *)em->pos = *(VEC3 *)r->pos;
     Lb_act_set(em, 0, 0, i);
 }

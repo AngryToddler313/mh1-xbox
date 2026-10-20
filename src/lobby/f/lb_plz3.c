@@ -3,6 +3,12 @@
 #define Lb_on_dialog Lb_on_dialog_hdr
 #include "g_alias.h"
 #ifdef MHG_PS2
+void func_0010EF50();
+#endif
+#ifdef MHG_PS2
+void func_0012DE30();
+#endif
+#ifdef MHG_PS2
 int font_print_double();
 #endif
 #include "lbui_proto.h"
@@ -200,7 +206,7 @@ void Lb_clearChatList() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void plaza_ReibunEdit() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -219,7 +225,7 @@ void plaza_ReibunEdit() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void plaza_checkChatLog() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -923,7 +929,7 @@ asm int plaza_setMyCommentTrans()
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void lb_put_comment(x, y, c, f)
 int x;
 int y;
@@ -931,11 +937,11 @@ int c;
 s8 f;
 {
     if (f != 0) {
-        Draw_square((s16)((s16)x - 6), (s16)((s16)y - 2), 0x12C, 0x42, 0xFFAA8820);
-        Draw_square((s16)((s16)x - 7), (s16)((s16)y - 3), 0x12E, 0x44, 0xFFAA8820);
+        Draw_square((s16)((s16)x - 6), (s16)((s16)y - 2), GV(0x12C, 0x134), 0x42, 0xFFAA8820);
+        Draw_square((s16)((s16)x - 7), (s16)((s16)y - 3), GV(0x12E, 0x136), 0x44, 0xFFAA8820);
     }
     KinshiYogo_chk(c);
-    Put_comment(x, (s16)((s16)y - 0x16), 0x16, c);
+    GV(Put_comment, func_0012DE30)(x, (s16)((s16)y - 0x16), 0x16, c);
 }
 #endif
 
@@ -1298,12 +1304,12 @@ u8 *a;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void put_main_cursor(int n) {
     R12 a = lit_3380;
     R12 b = lit_3382;
 
-    if (((u8 *)pNet)[0xC] == 0) {
+    if (((u8 *)pNet)[GV(0xC, 0x2D)] == 0) {
         a.v[1] = n * 0x16 + 0x8C;
         a.v[3] = a.v[1] + 0x16;
         b.v[1] = a.v[1] - 2;
@@ -1314,7 +1320,7 @@ void put_main_cursor(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void put_main_cursor2(int x, int y, s32 n) {
     R12 a = lit_3397;
     s16 t = x;
@@ -1325,7 +1331,7 @@ void put_main_cursor2(int x, int y, s32 n) {
     b = lit_3399;
     b.v[0] = t + 1;
     b.v[2] = t + 0x193;
-    if (((u8 *)pNet)[0xC] == 0) {
+    if (((u8 *)pNet)[GV(0xC, 0x2D)] == 0) {
         a.v[1] = (s16)y + 0x3C + n * 0x16;
         a.v[3] = a.v[1] + 0x16;
         b.v[1] = a.v[1] - 2;
@@ -1354,10 +1360,10 @@ char *dst;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void Lbs_load() {
     load_pit();
-    load_texlist(*(int *)0x3876A8, 0x14D, 0);
+    GV(load_texlist, func_0010EF50)(*(int *)GV(0x3876A8, 0x2EBE10), GSLOT(0x14D, 0x174), 0);
 }
 #endif
 

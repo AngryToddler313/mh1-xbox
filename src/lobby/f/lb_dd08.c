@@ -1,4 +1,5 @@
 /* lb_dd08 - browser: BsCsMove07_NetError 0x005F8850-0x005F89BC (cursor state of the network error dialog). Hand-written from the asm. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 extern u8 *lpSKey;
@@ -18,7 +19,7 @@ void BsCsMove07_NetError() {
     BSWK **p;
     BSWK *e;
     BsDialogReq = 0xB;
-    if ((*(u16 *)(BsPsw + 4) & 0x20) || lpSKey[0x658] == 0x28) {
+    if ((*(u16 *)(BsPsw + 4) & 0x20) || lpSKey[GV(0x658, 0x664)] == 0x28) {
         cnWrap_SoundRequest(0);
         switch (MMBB_LOGIN) {
         case 0:

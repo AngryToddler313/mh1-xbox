@@ -1,6 +1,7 @@
 /* lb_by23 - agent B promoted near-match 0x005C4CF0-0x005C4D3C: lb_npc_ef_move (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_a.h"
-typedef struct { u8 pad[0x2A]; s8 eff; } LBEFW;
+typedef struct { u8 pad[GV(0x2A, 0x36)]; s8 eff; } LBEFW;   /* G: the effect step at +0x36 */
 void ef_move_sub_005C49F0();
 
 void lb_npc_ef_move(u8 *em) {

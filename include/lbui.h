@@ -19,6 +19,34 @@ typedef struct LB_DIALOG {
 } LB_DIALOG;
 
 /* net window state pointed to by pNet (main .sbss); also the argument of tl_menu_cursor_up/down */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+/* PS2 G's layout (from tl_exit_sub_menu and the plaza menus): the three s16 fields moved in front of the bytes, which
+   start at +0x22; idx and x06 are not placed from G yet */
+typedef struct LB_NETW {
+    s16 idx;            /* 0x00 (not checked against G) */
+    u8 _g02[0x1C - 0x2];
+    s16 x24;            /* 0x1C */
+    s16 x26;            /* 0x1E */
+    s16 x28;            /* 0x20 */
+    u8 depth;           /* 0x22 */
+    u8 step;            /* 0x23 */
+    u8 x04;             /* 0x24 */
+    u8 x05;             /* 0x25 */
+    s8 x06;             /* 0x26 (not checked against G) */
+    u8 _g27;
+    u8 sel;             /* 0x28 */
+    u8 menu;            /* 0x29 */
+    u8 cur;             /* 0x2A */
+    s8 x0A;             /* 0x2B */
+    u8 _g2C;
+    u8 x0C;             /* 0x2D */
+    s8 x0D;             /* 0x2E */
+    s8 x0E;             /* 0x2F */
+    u8 yesno;           /* 0x30 */
+    u8 x10;             /* 0x31 */
+    s8 x12;             /* 0x32 */
+} LB_NETW;
+#else
 typedef struct LB_NETW {
     s16 idx;            /* 0x00 loop index (chat members) */
     u8 depth;           /* 0x02 menu depth */
@@ -43,6 +71,7 @@ typedef struct LB_NETW {
     s16 x26;            /* 0x26 */
     s16 x28;            /* 0x28 */
 } LB_NETW;
+#endif
 typedef LB_NETW LB_TLMENU;
 /* the yes/no flag of the net window: G keeps it at +0x30 (PS2 G only; the PC keeps MH1's layout, see lbsys_g.h) */
 #if defined(VERSION_MHG) && defined(__MWERKS__)

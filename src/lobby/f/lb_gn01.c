@@ -1,4 +1,8 @@
 /* lb_gn01 - near-match fixes 0x005D62F0-0x005D639C: lb_send_dataTU. Whole file in lb_n.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2
+int cnLBS_Send_ChatMessageTU();
+#endif
 #include "lobby_f.h"
 
 
@@ -29,6 +33,6 @@ int a3;
         if (len & 0xFF) {
             flMemcpy(sendDat + 1, data, len & 0xFF);
         }
-        cnLBS_Send_ChatBinaryTU(a3, sendDat, (u8)(((u8)len) + 1), CallBack_Result_SendChatBinaryTU);
+        GV(cnLBS_Send_ChatBinaryTU, cnLBS_Send_ChatMessageTU)(a3, sendDat, (u8)(((u8)len) + 1), CallBack_Result_SendChatBinaryTU);
     }
 }

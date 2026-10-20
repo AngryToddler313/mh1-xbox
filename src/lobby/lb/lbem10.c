@@ -1,8 +1,9 @@
 /* lbem10, run 1: sound_call_0053D7D0 .. dummy_em_prog_0053DCF0 (lobby.bin 0x0053D7D0-0x0053DCF8): the whole lb_em10 file. */
+#include "g_alias.h"
 #include "lobby.h"
 #include "em.h"
 
-typedef struct { u8 pad[0x2A]; s8 eff; } LBEFW;
+typedef struct { u8 pad[GV(0x2A, 0x36)]; s8 eff; } LBEFW;   /* G: the effect step at +0x36 */
 
 int em_frame_check(EMW *, f32, int);
 int em_frame_check3(EMW *, int, f32, f32);
@@ -100,7 +101,7 @@ void ef_move_sub_0053D830(EMW *em, LBEFW *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void em10_effect_move_0053DC90(EMW *em) {
     LBEFW *w = (LBEFW *)em->ex;
 

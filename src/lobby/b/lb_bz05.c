@@ -5,15 +5,15 @@ extern char Friend_data[];
 extern char tmp_friend_data[];
 extern char CNFile[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 s32 tk_sw_on_ck(s32 arg0) {
-    return (arg0 & (*(u16 *)0x3F3714 | *(u16 *)0x3F3728)) != 0;
+    return (arg0 & (*(u16 *)GV(0x3F3714, 0x35F054) | *(u16 *)GV(0x3F3728, 0x35F068))) != 0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 s32 tk_sw_new_ck(s32 arg0) {
-    return (*(u16 *)0x3F3710 & arg0) != 0;
+    return (*(u16 *)GV(0x3F3710, 0x35F050) & arg0) != 0;
 }
 #endif
 

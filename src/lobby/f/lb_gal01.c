@@ -1,4 +1,5 @@
 /* lb_gal01 - near-match fixes 0x005E43C0-0x005E441C: SoftKeyboard. Whole file in lb_al.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 extern s8 BsBgImgReq;
@@ -42,7 +43,7 @@ void flfntSetSize();
 char *SoftKeyboard(void) {
     s8 sx;
     flfntSetSize(0x16, 0x16);
-    if ((sx = SoftKeyboard_move(inputStrBuf, *(s16 *)BsPsw, *(s16 *)0x3F3714)) != 0) {
+    if ((sx = SoftKeyboard_move(inputStrBuf, *(s16 *)BsPsw, *(s16 *)GV(0x3F3714, 0x35F054))) != 0) {
         return inputStrBuf;
     }
     return 0;

@@ -389,9 +389,9 @@ void _cnet_RecvFromLbs_NoticeChatBinaryTU(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 48
 void _cnet_RecvFromLbs_MatchStart(void) {
-    _cnetEvent_JumpCallBack(1, 0);
+    CNEVT(1, 0);
 }
 #endif
 
@@ -1021,7 +1021,7 @@ int __cnetSub_Get_RestBgWork(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 47
 int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     int i;
     int c16;
@@ -1042,7 +1042,7 @@ int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     ft = lbs_fromto_tbl;
     ct = lbs_category_tbl;
     jmp = lbs_command_jmp;
-    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
+    for (; i < GV(0x102, 0x125); i++, h++, l++, ft++, ct++, jmp++) {
         hi = (*h << 8) & 0xFFFF;
         full = (hi | *l) & 0xFFFF;
         if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {

@@ -1,5 +1,6 @@
 /* lb_ab01 - lobby 0x005CD6D0-0x005CD7CC: Lb_load_player_all (load every member model once, then the four NPC models; lb_sys.x70 = done).
    The flag pointers (c = cw + CW_OFS(0x2C06) / cw + i + 0x2BFE) are separate from the compared byte: that gives the original addiu before the lb. Whole file in lb_ab.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
 extern PLW player_work[];
@@ -22,8 +23,8 @@ void Lb_load_player_all(void) {
         pl = (u8 *)player_work;
         do {
             if (*pl != 0) {
-                c = (s8 *)(cw + i + 0x2BFE);
-                if (*(s8 *)(cw + i + 0x2BFE) == 0) {
+                c = (s8 *)(cw + i + CW_OFS(0x2BFE));
+                if (*(s8 *)(cw + i + CW_OFS(0x2BFE)) == 0) {
                     *c = 1;
                     Lb_player_load(pl);
                     Lbc_connect();
@@ -31,7 +32,7 @@ void Lb_load_player_all(void) {
             }
             i += 1;
             pl += 0xA00;
-        } while (i < 8U);
+        } while (i < GV(8U, 10U));
         npc_create_model(0);
         Lbc_connect();
         npc_create_model(1);

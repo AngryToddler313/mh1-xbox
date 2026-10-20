@@ -373,6 +373,9 @@ void _cnet_Return_CallBack();
 void lobby_func_005BF880();   /* G only, 0xC bytes: what G's AnswerLobbyNumOfLobby calls */
 int lobby_func_005AD450();   /* G: the lobby / room exit request (G's __cnet_SendReq_PieceExit takes no kind) */
 int lobby_func_005AE230();
+int lobby_func_005AE360();
+void lobby_func_005E3BE0();
+void lobby_func_005BF910();
 int g_SendReq_005BCE20();   /* G 0x5BCE20 (the map calls it _cnet_RecvFromLbs_AnswerRoomNamePermission): the request of G's cnLBS_Set_RoomRuleFinish; config/mhg/g_names.txt */
 #endif
 void cnLBS_Init_LobbyBgProcess();

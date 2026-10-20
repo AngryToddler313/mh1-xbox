@@ -1,3 +1,5 @@
+/* G: several cnlbs wrappers call the G function whose map name is a neighbour's (the names of the cnLBS_Read_* / Piece*
+ * requests in config/mhg/symbols/lobby.txt look shifted); GV() names the G symbol at the address G calls. */
 /* cnlbs, run 1: _cnet_RecvFromLbs_NoticeMailMessage .. _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60 (lobby.bin 0x005A2A20-0x005A6EC4): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
@@ -401,7 +403,7 @@ void _cnet_CallBack_Result_PersonalDataChange(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 107
 void __cnet_bgProg_RegistPersonalData(void) {
     CNET_BURST *b = &CnetSys_w.burst[GV(9, 11)];
     CNET_RES res;
@@ -767,12 +769,12 @@ void _cnet_RecvFromLbs_AnswerLobbyNumOfLobby(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 102
 int cnLBS_Read_LobbyName(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceName(1, arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceName(1, arg0), __cnet_SendReq_PieceJoinUser(2, arg0));
         return slot;
     }
     return -1;
@@ -875,30 +877,30 @@ void _cnet_RecvFromLbs_BothLobbyStatus(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 103
 int cnLBS_Read_LobbyExplain(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExplain(1, arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceExplain(1, arg0), __cnet_SendReq_PieceName(2, arg0));
         return slot;
     }
     return -1;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 106
 void _cnet_RecvFromLbs_AnswerLobbyExplain(void) {
     char buf[0x108];
     u16 id;
 
     if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceExplain(&id, buf);
+        GV(__cnet_Recv_PieceExplain, lobby_func_005E3BE0)(&id, buf);
         CnetSys_w.lobby[id - 1].id = id;
         strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + CNOE(0x4EAC), buf);
         CnetSys_w.lobby[id - 1].flags |= 8;
     }
-    _cnet_Return_CallBack(0x16);
+    _cnet_Return_CallBack(GV(0x16, 0x13));
 }
 #endif
 
@@ -992,12 +994,12 @@ void _cnet_RecvFromLbs_AnswerRoomNumOfRoom(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 101
 int cnLBS_Read_RoomJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceJoinUser(2, arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceJoinUser(2, arg0), lobby_func_005AE360(arg0));
         return slot;
     }
     return -1;
@@ -1025,12 +1027,12 @@ void _cnet_RecvFromLbs_BothRoomJoinUser(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 105
 int cnLBS_Read_RoomStatus(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(2, arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceStatus(2, arg0), __cnet_SendReq_RoomProperty(arg0));
         return slot;
     }
     return -1;
@@ -1122,18 +1124,18 @@ char *d;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 104
 void _cnet_RecvFromLbs_BothRoomExplain(void) {
     char buf[0x108];
     u16 id;
 
     if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceExplain(&id, buf);
+        GV(__cnet_Recv_PieceExplain, lobby_func_005BF910)(&id, buf);
         CnetSys_w.room[id - 1].id = id;
         strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + CNOE(0x6224), buf);
         CnetSys_w.room[id - 1].flags |= 8;
     }
-    _cnet_Return_CallBack(0x1B);
+    _cnet_Return_CallBack(GV(0x1B, 0x20));
 }
 #endif
 

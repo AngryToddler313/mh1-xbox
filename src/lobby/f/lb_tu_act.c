@@ -288,12 +288,12 @@ void Lb_Pl_adj_calc(PLW *pl, int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void Lb_Em_adj_calc(PLW *pl, s16 n) {
-    F(s16, pl, 0x468) = n;
-    F(f32, pl, 0x45C) = (F(f32, pl, 0x934) - pl->pos[0]) / (f32)n;
-    F(f32, pl, 0x460) = (F(f32, pl, 0x938) - pl->pos[1]) / (f32)n;
-    F(f32, pl, 0x464) = (F(f32, pl, 0x93C) - pl->pos[2]) / (f32)n;
+    F(s16, pl, GV(0x468, 0x472)) = n;
+    F(f32, pl, GV(0x45C, 0x450)) = (F(f32, pl, 0x934) - pl->pos[0]) / (f32)n;
+    F(f32, pl, GV(0x460, 0x454)) = (F(f32, pl, 0x938) - pl->pos[1]) / (f32)n;
+    F(f32, pl, GV(0x464, 0x458)) = (F(f32, pl, 0x93C) - pl->pos[2]) / (f32)n;
 }
 #endif
 

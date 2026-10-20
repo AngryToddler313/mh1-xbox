@@ -596,22 +596,22 @@ s32 itembox_sortup(s32 pad) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void yes_no_select(pad)
 u16 pad;
 {
     u8 *t;
     u8 *q;
     t = ib;
-    q = t + 0x21;
+    q = t + IBO(0x21);
     if (*q == 0) {
         if (pad & 0x400) {
             *q = 1;
-            se_req(7, 0x16, 0);
+            se_req(7, GV(0x16, 0x17), 0);
         }
     } else if (pad & 0x800) {
         *q = 0;
-        se_req(7, 0x16, 0);
+        se_req(7, GV(0x16, 0x17), 0);
     }
 }
 #endif
@@ -756,12 +756,12 @@ void kosuu_select(int pad, int c) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 u8 *sortup_idx_chk(int a) {
     u8 *u;
     int v;
     u = User_data;
-    v = a & 0xFF;
+    v = a & GV(0xFF, 0xFFFF);
     if (v == UDEQ(User_data, 1)) {
         return (u + UDEQO(1));
     }
@@ -843,7 +843,7 @@ done:
 #endif
 
 /* original bytes: build/raw/equip_ok_chk.inc (config/c_rawfuncs.txt) */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 int equip_ok_chk(u8 *e) {
   int r;
   int new_var[2];
@@ -856,7 +856,7 @@ int equip_ok_chk(u8 *e) {
   }
   u = User_data;
   new_var[0] = Get_equip_data_ptr()[2];
-  if (!(new_var[0] & ((((*((u8 *) 0x3C6FC1)) == 0) ? (1) : (2)) & 0xFF)))
+  if (!(new_var[0] & ((((*((u8 *) GV(0x3C6FC1, 0x32C211))) == 0) ? (1) : (2)) & 0xFF)))
   {
     return 0;
   }

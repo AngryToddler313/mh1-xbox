@@ -1,8 +1,9 @@
 /* lbem04, run 1: move_default_0053E350 .. move_default_0053E350 (lobby.bin 0x0053E350-0x0053E358): the matching functions of lb_em04_nm.c. */
+#include "g_alias.h"
 #include "lobby.h"
 #include "em.h"
 
-typedef struct { u8 pad[0x2A]; s8 eff; } LBEFW;
+typedef struct { u8 pad[GV(0x2A, 0x36)]; s8 eff; } LBEFW;   /* G: the effect step at +0x36 */
 
 int em_frame_check(EMW *, f32, int);
 int em_frame_check3(EMW *, int, f32, f32);

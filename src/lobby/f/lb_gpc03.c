@@ -1,4 +1,8 @@
 /* lb_gpc03 - item box / plaza chat / eft25 0x0060DFA0-0x0060E180: Plaza_log_id_chk, Plaza_ReibunEdit_i, Plaza_ReibunEdit_mv. Whole file in lb_pc.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2
+unsigned char lobby_func_0058F660();
+#endif
 #include "lobby_f.h"
 extern char PitMenu[];
 /* plaza chat log state bytes (bss 0x39DADE..) */
@@ -92,7 +96,7 @@ void Plaza_ReibunEdit_i(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int Plaza_ReibunEdit_mv(int arg) {
     s8 r;
     int pad;
@@ -101,7 +105,7 @@ int Plaza_ReibunEdit_mv(int arg) {
     e = &reibun_edit;
     switch (reibun_edit.state) {
     case 0:
-        e->sel = Reibun_select_mv(arg, e->sel);
+        e->sel = GV(Reibun_select_mv, lobby_func_0058F660)(arg, e->sel);
         if ((u16)pad & 0x40) {
             e->b2 = 0;
             e->sel = 0;

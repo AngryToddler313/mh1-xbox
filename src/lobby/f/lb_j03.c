@@ -1,4 +1,5 @@
 /* lb_j03 - lobby move handlers 0x005D15B0-0x005D1820: lb_pl_mv063, lb_pl_mv064, lb_pl_mv065. Whole file in lb_j.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 
 
@@ -78,7 +79,7 @@ void lb_pl_mv064(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void lb_pl_mv065(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -87,11 +88,11 @@ void lb_pl_mv065(PLW *pl) {
         pl->x05 = s + 1;
         pl->work39C = 0;
         Lb_Pl_basic_flagset(pl, 0, 0, 0);
-        Lb_pl_chr_set(pl, 0x2A7, 6, 0);
+        Lb_pl_chr_set(pl, GV(0x2A7, 0x262), GV(6, 4), 0);
         return;
     case 1:
         if (F(s32, pl, 0x194) <= 0) {
-            Lb_pl_to_normal(pl, 0, 6, 0);
+            Lb_pl_to_normal(pl, 0, GV(6, 4), 0);
         }
         break;
     }

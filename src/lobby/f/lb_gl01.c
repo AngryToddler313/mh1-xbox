@@ -1,4 +1,5 @@
 /* lb_gl01 - near-match fixes 0x005D0750-0x005D09DC: trade_get_ck_005D0750. Whole file in lb_l.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 
 
@@ -27,18 +28,18 @@ int trade_get_ck_005D0750(PLW *pl) {
                             pl->work904 = o->work904;
                             pl->work906 = o->work906;
                             if (Pl_master_ck(pl) == 1) {
-                                Lb_send_item_request(CWPLAYER(i) + 0x132C, o);
+                                Lb_send_item_request(CWPLAYER(i) + CWP_ID, o);
                             }
                             Lb_Pl_act_set2(pl, 0, 0x2E, 0);
                         } else {
-                            set01_set2(lit_516_00664D50);
+                            set01_set2(GSTR(lit_516_00664D50, gptr_00528410));
                             pl->work936 = 0x5A;
                         }
                     } else if ((s16)Ud_item_num_ck2(o->work904) >= o->work906) {
                         pl->work904 = o->work904;
                         pl->work906 = o->work906;
                         if (Pl_master_ck(pl) == 1) {
-                            Lb_send_item_request(CWPLAYER(i) + 0x132C, o);
+                            Lb_send_item_request(CWPLAYER(i) + CWP_ID, o);
                         }
                         Lb_Pl_act_set2(pl, 0, 0x2E, 0);
                     } else {
@@ -51,6 +52,6 @@ int trade_get_ck_005D0750(PLW *pl) {
         }
         i++;
         o++;
-    } while (i < 8);
+    } while (i < GV(8, 10));
     return 0;
 }
