@@ -2070,3 +2070,116 @@ void lobby_func_005BD370(u8 *a) {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 124
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD8A0(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 8) = 0;
+    *(int *)(a + 0xC) = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 125
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BDA40(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 0xC) = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 126
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005C02B0();
+void _cnet_CallBack_Result_PersonalDataChange();
+void lobby_func_005BFBA0(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    lobby_func_005C02B0(_cnet_CallBack_Result_PersonalDataChange);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 127
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005E3420(u16 *p) {
+    *p = *(u16 *)((u8 *)&CnetSys_w + 0x43B4);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 128
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E3CD0(f32);
+void lobby_func_005E3C20() {
+    lobby_func_005E3CD0(1.0f);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 129
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005E6680(u8 **p) {
+    *p = (u8 *)&CnetSys_w + 0x38E5E;
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 130
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005E6EC0(u8 **p) {
+    *p = (u8 *)&CnetSys_w + 0x39632;
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 121
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ABA60(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 122
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ABC40(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    if (*(u16 *)((u8 *)&CnetSys_w + 0x43B6) == 0) {
+        a[0x21] = 1;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 123
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_cn_00700EA2[];
+int lobby_func_005AC230(u16 i, u16 *out) {
+    *out = *(u16 *)(g_cn_00700EA2 + i * 356);
+    return 0;
+}
+#endif
+#endif

@@ -2787,3 +2787,13 @@ lobby 0x0059F6C0 0x0059F6DC mhg/lobby/f/lb_ui_p15
 lobby 0x0059F750 0x0059F764 mhg/lobby/f/lb_ui_p16
 lobby 0x005BC510 0x005BC524 mhg/lobby/cnet/cnlbs_p119
 lobby 0x005BD370 0x005BD388 mhg/lobby/cnet/cnlbs_p120
+lobby 0x005ABA60 0x005ABA90 mhg/lobby/cnet/cnlbs_p121
+lobby 0x005ABC40 0x005ABC70 mhg/lobby/cnet/cnlbs_p122
+lobby 0x005AC230 0x005AC258 mhg/lobby/cnet/cnlbs_p123
+lobby 0x005BD8A0 0x005BD8B8 mhg/lobby/cnet/cnlbs_p124
+lobby 0x005BDA40 0x005BDA54 mhg/lobby/cnet/cnlbs_p125
+lobby 0x005BFBA0 0x005BFBBC mhg/lobby/cnet/cnlbs_p126
+lobby 0x005E3420 0x005E3434 mhg/lobby/cnet/cnlbs_p127
+lobby 0x005E3C20 0x005E3C34 mhg/lobby/cnet/cnlbs_p128
+lobby 0x005E6680 0x005E6694 mhg/lobby/cnet/cnlbs_p129
+lobby 0x005E6EC0 0x005E6ED4 mhg/lobby/cnet/cnlbs_p130
