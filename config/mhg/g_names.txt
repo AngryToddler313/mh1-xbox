@@ -69,6 +69,7 @@ PROVIDE(func_001C1F58 = 0x001C1F58); /* ADXT_GetStat (labelled ADXT_SetTimeMode)
 /* names the shared C uses for G places that the module's own symbol files do not know (calls into the lobby overlay, a pad flag, a static of a part) */
 PROVIDE(DispLobbyMenu = 0x0058E7E0);
 PROVIDE(lobby_func_005C0E20 = 0x005C0E20);
+PROVIDE(menu_equip_get_equip_g = 0x0011C720); /* G's menu_equip_get_equip (out, no, pl): the C's G name (src/main/menu/menu26.c) */
 PROVIDE(flPadFixedAnalogSelectSwitch = 0x002EF4AC); /* gp-14020 */
 PROVIDE(soncho_no_oshie = 0x0066E230);
 PROVIDE(em_hagi_type_tbl = 0x006D5D50); /* G: 4 pointers to per-kind carve tables (Em_hagi_point_set) */

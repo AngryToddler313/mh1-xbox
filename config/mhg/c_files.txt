@@ -2161,3 +2161,7 @@ select 0x00543DB0 0x00543E28 mhg/select/demo_p3
 select 0x00544120 0x005441D4 mhg/select/demo_p4
 select 0x005442F0 0x00544398 mhg/select/demo_p5
 select 0x00544420 0x00544560 mhg/select/demo_p6
+sub_main 0x004F09F0 0x004F0A74 mhg/main/set/set12_p5
+main 0x0011C830 0x0011C930 mhg/main/menu/menu09_p3
+sub_main 0x004DC030 0x004DC1B8 mhg/main/eft/eft26_p5
+main 0x001EEC50 0x001EF060 mhg/main/omake/omake_p1
