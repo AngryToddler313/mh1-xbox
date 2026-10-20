@@ -156,6 +156,7 @@ static void add_vec_sub2(f32 *, f32 *, f32);
 static int check_slide(HPOLY *, u8 *, s32 *, f32 *, f32);
 static void check_angle(f32 *, s32 *);
 
+#if !defined(G_PART)
 #ifndef VERSION_MHG
 void load_stage_hit(int stg) {
     int off = stg * 4;
@@ -190,7 +191,9 @@ void load_stage_hit(int stg) {
     GroundHitInit((u32 *)a);
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void WallHitInit(u32 *h) {
     u8 *base = (u8 *)h + 8;
     u32 i;
@@ -214,7 +217,9 @@ static void WallHitInit(u32 *h) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void GroundHitInit(u32 *h) {
     u8 *base = (u8 *)h + 8;
     u32 i;
@@ -238,11 +243,13 @@ static void GroundHitInit(u32 *h) {
         }
     }
 }
+#endif
 
 /* GetWallHitBitPl: 2 x 2 cells, player wall mask 0x7FFF (stage 0x27-0x2B in
  * the arena: 0xFFFF otherwise). r is the player radius. */
 /* GetWallHitBitPl: original bytes kept (build/raw/GetWallHitBitPl.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (51 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 1
 #ifdef __MWERKS__
 asm void GetWallHitBitPl(f32 r, f32 *seg, u16 mask, HENT *pl)
 {
@@ -376,9 +383,11 @@ void GetWallHitBitPl(f32 r, f32 *seg, u16 mask, HENT *pl) {
     }
 }
 #endif
+#endif
 
 /* GetWallHitBitEm: monsters; the grid area is sized by the sphere (n x n
  * cells, 2x2 when small). */
+#if !defined(G_PART)
 void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, HENT *em) {
     HV3 c;
     HSWEEP sw;
@@ -479,7 +488,9 @@ void GetWallHitBitEm(f32 r, f32 *seg, u16 mask, HENT *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask) {
     HV3 c;
     HSWEEP sw;
@@ -560,7 +571,9 @@ int GetWallHitBit2(f32 r, f32 *a, f32 *b, f32 *pos, u16 mask) {
     }
     return PushAdjust3(&sw, pos, &flag);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static int BlockPlaceCgeck(f32 *p) {
     f32 x;
     int iz;
@@ -584,7 +597,9 @@ static int BlockPlaceCgeck(f32 *p) {
     if (!(z < t)) r += 2;
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int GroundFieldInCheck(f32 *p) {
     f32 x = p[0];
     f32 z;
@@ -593,7 +608,9 @@ int GroundFieldInCheck(f32 *p) {
     if (x < (f32)((u32)diorama_w.gcsx * (u32)diorama_w.gnx) - 8.0f && z < (f32)((u32)diorama_w.gcsz * (u32)diorama_w.gnz) - 8.0f) return 1;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int WallFieldInCheck(f32 *p) {
     f32 x = p[0];
     f32 z;
@@ -602,7 +619,9 @@ int WallFieldInCheck(f32 *p) {
     if (x < (f32)((u32)diorama_w.wcsx * (u32)diorama_w.wnx) - 8.0f && z < (f32)((u32)diorama_w.wcsz * (u32)diorama_w.wnz) - 8.0f) return 1;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int AreaFieldInCheck(int stg, f32 *p) {
     STAGE_SZ *sd = Stage_data_get(stg & 0xFFFF);
     f32 x = p[0];
@@ -612,7 +631,9 @@ int AreaFieldInCheck(int stg, f32 *p) {
     if (x < sd->sx - 8.0f && z < sd->sz - 8.0f) return 1;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 *GetWallTblAdrs(f32 *p) {
     f32 csz = (u32)diorama_w.wcsz;
     f32 csx = (u32)diorama_w.wcsx;
@@ -621,11 +642,13 @@ s32 *GetWallTblAdrs(f32 *p) {
 
     return diorama_w.wtbl[iz + ix * diorama_w.wnz];
 }
+#endif
 
 /* sphr_face_o3 (0x00116A00): same test for players (no radius-adjusted height
  * test, nearest points keep their own y). */
 /* sphr_face_o3: original bytes kept (build/raw/sphr_face_o3.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (33 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 2
 #ifdef __MWERKS__
 static asm int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos)
 {
@@ -766,10 +789,12 @@ static int sphr_face_o3(HSWEEP *sw, HPOLY *pl, f32 *pos) {
     return 0;
 }
 #endif
+#endif
 
 /* sphr_face_o4 (0x00117190): monsters. */
 /* sphr_face_o4: original bytes kept (build/raw/sphr_face_o4.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (37 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 2
 #ifdef __MWERKS__
 static asm int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos)
 {
@@ -912,10 +937,12 @@ static int sphr_face_o4(HSWEEP *sw, HPOLY *pl, f32 *pos) {
     return 0;
 }
 #endif
+#endif
 
 /* 0x00117970: where does the edge e0-e1 reach plane (normal n) near p?
  * Returns 0 when both ends are on the same side, 1 / 2 and the crossing
  * point in out otherwise. */
+#if !defined(G_PART) || G_PART == 2
 static int FaceLinePos(f32 *e, f32 *n, f32 *p, f32 *out) {
     f32 v[4];
     f32 d[6];
@@ -955,9 +982,11 @@ static int FaceLinePos(f32 *e, f32 *n, f32 *p, f32 *out) {
     }
     return r;
 }
+#endif
 
 /* 0x00117BA0: is point p inside the triangle seen from direction n (all three
  * edge normals on the same side)? */
+#if !defined(G_PART) || G_PART == 2
 int NormalClipFace(f32 *p, f32 *tri, f32 *n) {
     f32 e[3];
 
@@ -969,6 +998,7 @@ int NormalClipFace(f32 *p, f32 *tri, f32 *n) {
     if (flvecInnerProduct(e, n) < 0.0f) return 0;
     return 1;
 }
+#endif
 
 /* Edge-sharing test: do polygons pa and pb share two vertices? If so
  * *odd = the vertex of pb that is not shared; returns 1, else 0. */
@@ -998,6 +1028,7 @@ static inline int share_edge(HPOLY *pa, HPOLY *pb, f32 *odd) {
 
 /* PushAdjust3: original bytes kept (build/raw/PushAdjust3.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (1027 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 2
 #ifdef __MWERKS__
 static asm int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp)
 {
@@ -1172,7 +1203,9 @@ static int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
     return hit_poly_num;
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static int hosei_sub(HSWEEP *sw, f32 *out, s8 idx, u8 *flagp) {
     f32 e[4];
     f32 b[4];
@@ -1233,9 +1266,11 @@ static int hosei_sub(HSWEEP *sw, f32 *out, s8 idx, u8 *flagp) {
     SetVector(out, a[0], a[1], a[2]);
     return 1;
 }
+#endif
 
 /* 0x00119010: push box v (size 6 floats: min x,y,z / max x,y,z, then extents)
  * outwards by v with limit r. Guess from the code. */
+#if !defined(G_PART) || G_PART == 2
 static void add_vec_sub2(f32 *v, f32 *b, f32 r) {
     f32 x;
 
@@ -1294,7 +1329,9 @@ static void add_vec_sub2(f32 *v, f32 *b, f32 r) {
         b[11] = v[2] + r;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 f32 GetGroundHit(f32 *pos) {
     f32 h[8];
     HV3 tri[3];
@@ -1365,7 +1402,9 @@ f32 GetGroundHit(f32 *pos) {
     if (r == -0.0f) r = 0.0f;
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 f32 GetGroundShellHit(f32 *pos) {
     f32 h[8];
     HV3 tri[3];
@@ -1444,8 +1483,10 @@ f32 GetGroundShellHit(f32 *pos) {
     if (r == -0.0f) r = 0.0f;
     return r;
 }
+#endif
 
 /* 0x001198B0 */
+#if !defined(G_PART) || G_PART == 2
 int GetGroundHitArea(HENT *ent, f32 *pos, f32 *out) {
     f32 h[8];
     HV3 tri[3];
@@ -1532,9 +1573,11 @@ int GetGroundHitArea(HENT *ent, f32 *pos, f32 *out) {
     if (*out == -0.0f) *out = 0.0f;
     return 1;
 }
+#endif
 
 /* 0x00119CA0: like GetGroundHitArea but looks for the ground ABOVE y (the
  * lowest height above it, else the highest). */
+#if !defined(G_PART) || G_PART == 2
 int GetGroundHitAreaUpper(HENT *ent, f32 *pos, f32 *out) {
     f32 h[8];
     HV3 tri[3];
@@ -1619,9 +1662,11 @@ int GetGroundHitAreaUpper(HENT *ent, f32 *pos, f32 *out) {
     if (*out == -0.0f) *out = 0.0f;
     return 1;
 }
+#endif
 
 /* 0x0011A080: player version: also the polygon attribute (GATTR) of the
  * chosen height; *flag is cleared when off the ground. */
+#if !defined(G_PART) || G_PART == 2
 int GetGroundHitStatusAreaPl(HENT *ent, f32 *pos, GATTR *at, f32 *out, f32 *flag) {
     GATTR a[8];
     f32 h[8];
@@ -1746,10 +1791,12 @@ int GetGroundHitStatusAreaPl(HENT *ent, f32 *pos, GATTR *at, f32 *out, f32 *flag
     if (ent->x604 != 0) at->b1 = 2;
     return 1;
 }
+#endif
 
 /* 0x0011A600: monster version. A kind with x0E set marks a special surface
  * (ent+0x7E9 = its value, attribute kept in sp), a kind with water set
  * gives the water height in *flag (relative to ent+0x7E0) and attribute. */
+#if !defined(G_PART) || G_PART == 2
 int GetGroundHitStatusAreaEm(HENT *ent, f32 *pos, GATTR *at, f32 *out, f32 *flag) {
     GATTR a[8];
     f32 h[8];
@@ -1928,7 +1975,9 @@ int GetGroundHitStatusAreaEm(HENT *ent, f32 *pos, GATTR *at, f32 *out, f32 *flag
     if (*out == -0.0f) *out = 0.0f;
     return 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 GetWaterHit(f32 *pos, f32 *out) {
     HV3 tri[3];
     HV3 pt;
@@ -1962,7 +2011,9 @@ u8 GetWaterHit(f32 *pos, f32 *out) {
     if (*out == -0.0f) *out = 0.0f;
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 GetTenjoHit(f32 *pos, f32 *out, HPOLY *attr) {
     HV3 tri[3];
     HV3 pt;
@@ -1995,7 +2046,9 @@ u8 GetTenjoHit(f32 *pos, f32 *out, HPOLY *attr) {
     if (*out == -0.0f) *out = 0.0f;
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 GetYouganHit(f32 *pos) {
     HV3 tri[3];
     HV3 pt;
@@ -2025,7 +2078,9 @@ u8 GetYouganHit(f32 *pos) {
     }
     return r;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 s32 *GetGroundTblAdrs(f32 *p) {
     f32 csz = (u32)diorama_w.gcsz;
     f32 csx = (u32)diorama_w.gcsx;
@@ -2034,9 +2089,11 @@ s32 *GetGroundTblAdrs(f32 *p) {
 
     return (s32 *)diorama_w.gtbl[iz + ix * diorama_w.gnz];
 }
+#endif
 
 /* GetWallHitLine: original bytes kept (build/raw/GetWallHitLine.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (124 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 3
 #ifdef __MWERKS__
 asm int GetWallHitLine(f32 *a, f32 *b, f32 *out, u16 mask)
 {
@@ -2157,9 +2214,11 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, u16 mask) {
     return 0;
 }
 #endif
+#endif
 
 /* GetEyeHitLine: original bytes kept (build/raw/GetEyeHitLine.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (338 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 3
 #ifdef __MWERKS__
 asm int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask)
 {
@@ -2311,7 +2370,9 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     return 0;
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int GetFloorSlide(HENT *ent, f32 *out, int flag) {
     HPOLY *pp[8];
     f32 h[8];
@@ -2414,9 +2475,11 @@ int GetFloorSlide(HENT *ent, f32 *out, int flag) {
     }
     return -1;
 }
+#endif
 
 /* 0x0011C920: slide vector for a polygon pl under entity e (pos at +0xAC):
  * plane distance of the point lowered by ang/10000*scale, written to out. */
+#if !defined(G_PART) || G_PART == 3
 static int check_slide(HPOLY *pl, u8 *e, s32 *ang, f32 *out, f32 scale) {
     f32 nn;
     int new_var; /* permuter: matching register choice */
@@ -2434,8 +2497,10 @@ static int check_slide(HPOLY *pl, u8 *e, s32 *ang, f32 *out, f32 scale) {
     out[2] = -(pl->n[2] * t / nn);
     return new_var;
 }
+#endif
 
 /* 0x0011C9F0: angle (0x10000 = 360 degrees) between normal n and up. */
+#if !defined(G_PART) || G_PART == 3
 static void check_angle(f32 *n, s32 *out) {
     f32 up[3];
 
@@ -2444,9 +2509,11 @@ static void check_angle(f32 *n, s32 *out) {
     up[2] = 0.0f;
     *out = (s32)(0.5f + 65536.0f * flArcCos(flvecInnerProduct(n, up)) / 6.2831855f) & 0xFFFF;
 }
+#endif
 
 /* HitWallPlayer: original bytes kept (build/raw/HitWallPlayer.inc, config/c_rawfuncs.txt); the C below is the
  * near-match the PC build uses (4 lines off, tools/align.py). */
+#if !defined(G_PART) || G_PART == 3
 #ifdef __MWERKS__
 asm void HitWallPlayer(HENT *ent, int keep)
 {
@@ -2525,6 +2592,7 @@ void HitWallPlayer(HENT *ent, int keep) {
         }
     }
 }
+#endif
 #endif
 
 

@@ -1801,3 +1801,6 @@ sub_main 0x004E1810 0x004E1BE8 mhg/main/set/set06_p5
 sub_main 0x004A0DB0 0x004A0E48 mhg/main/sprite/putspr2_p2
 sub_main 0x004D3300 0x004D43A4 mhg/main/eft/eft13b_p3
 sub_main:rodata 0x0052BEB0 0x0052BF70 mhg/main/eft/eft13b_p3
+main 0x001047A0 0x001051C4 mhg/main/hit/f_sphr_p1
+main 0x001060A0 0x0010ADF8 mhg/main/hit/f_sphr_p2
+main 0x0010B5E0 0x0010D150 mhg/main/hit/f_sphr_p3
