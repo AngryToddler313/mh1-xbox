@@ -877,7 +877,7 @@ static void eft12_t03(EFTW *ew, PRIM *pr) {
 #endif
 
 #if !defined(G_PART)
-#if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
+#if !defined(VERSION_MHG)    /* MH1; G after #else */
 static void eft12_i04(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 i;
@@ -911,27 +911,37 @@ static void eft12_i04(EFTW *ew) {     /* G 0x571830: arg 6 is one puff (no sound
     ew->work14 = 0;
     ew->timer = 0;
     ew->u0A.joint = 0;
-    if (ew->arg != 6) {
+    switch (ew->arg) {
+    case 5:
+    default:
         eft12_se_req(ew, 0);
         n = 6;
-    } else {
+        break;
+    case 6:
         n = 1;
+        break;
     }
     for (i = 0; i < n; i++, p++) {
         p->prim_no = get_prim();
         if (p->prim_no != -1) {
-            p->no = i;
-            if (ew->arg != 6) {
+            switch (ew->arg) {
+            case 5:
+            default:
+                p->no = i;
                 p->lag = -i * 5;
                 p->rot = ran_suu(1);
-            } else {
+                flvecCopy(p->pos, ew->pos);
+                break;
+            case 6:
+                p->no = i;
                 p->lag = 0;
                 p->rot = ran_suu(1);
                 p->drot = ((u16)ran_suu(1) & 0x1FF) - 0x100;
                 p->fade = 0.15f;
                 p->size = (f32)(1.6 + (double)(0.6f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF))));
+                flvecCopy(p->pos, ew->pos);
+                break;
             }
-            flvecCopy(p->pos, ew->pos);
             p->prim = get_prim_ptr(p->prim_no);
             p->prim->owner = ew;
             p->prim->no = i;
@@ -1151,7 +1161,7 @@ static void eft12_t04(EFTW *ew, PRIM *pr) {   /* G 0x571ED0: arg 5 coloured by i
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static void eft12_d(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 n;
@@ -1172,7 +1182,7 @@ static void eft12_d(EFTW *ew) {
     case 5:
         n = 6;
         break;
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#ifdef VERSION_MHG
     case 6:
         n = 1;
         break;
@@ -1230,7 +1240,7 @@ static EFTW *eft12_pull_work(s16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void eft12_set(PLW *pl, s16 arg) {
     FLMAT jm;
     f32 v[3];
@@ -1312,13 +1322,16 @@ void eft12_set(PLW *pl, s16 arg) {
                 flmatRotXYZ33(&egg->mat, rx, ry, rz);
                 flmatMul33_2(&egg->mat, &jm);
                 break;
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#if defined(VERSION_MHG)
             case 6:     /* G 0x5726F0: a puff between the hands (joints 14 and 18), 15 up */
                 get_joint_pos(pl, 0xE, ew->pos);
                 get_joint_pos(pl, 0x12, v);
-                ew->pos[0] = 0.5f * (ew->pos[0] + v[0]);
-                ew->pos[1] = 0.5f * (ew->pos[1] + v[1]);
-                ew->pos[2] = 0.5f * (ew->pos[2] + v[2]);
+                ew->pos[0] += v[0];
+                ew->pos[1] += v[1];
+                ew->pos[2] += v[2];
+                ew->pos[0] *= 0.5f;
+                ew->pos[1] *= 0.5f;
+                ew->pos[2] *= 0.5f;
                 ew->pos[1] += 15.0f;
                 break;
 #endif
