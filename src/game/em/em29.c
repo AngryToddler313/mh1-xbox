@@ -5,6 +5,7 @@
  * from em29_type_tbl by variant (EMW+0x1B). When it breaks (mode 5) it
  * plays the sound, splashes, and variant 4 also drops shells (Shell09).
  * Names of the action steps follow the split (em_act00, em_move00...). */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 
@@ -29,7 +30,11 @@ typedef struct EM29_TYPE {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 non-zero: a quest is running */
+#endif
 } QUEST_W;
 
 extern EM29_TYPE em29_type_tbl[];
@@ -51,7 +56,12 @@ void Shell09_set(f32 *, int, u8);
 void em29_to_normal(EMW *em);
 void em29_main_sub(EMW *em);
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+void sub_main_func_004E92D0(EMW *em);
+#endif
+
+#if !defined(G_PART) || G_PART == 3
 void em29_init(EMW *em) {
     EM29W *w = (EM29W *)em->ex;
     EM29_TYPE *t = &em29_type_tbl[em->type];
@@ -71,7 +81,7 @@ void em29_init(EMW *em) {
     em->x9E1 = 5;
     em->ex[0x90] = 0;
     em->x8C3 = 0;
-    em_char_set(em, 1, 0, 0);
+    GV(em_char_set, game_func_00549FE0)(em, 1, 0, 0);
     em->x388 = 2;
     em_act_set(em, 0, 1);
     if (t->hp <= 0) {
@@ -82,7 +92,12 @@ void em29_init(EMW *em) {
         w->no_hp = 0;
         em->x792 = em->x302 = t->hp;
     }
+#ifdef MHG_PS2      /* G: keeps the base scale and applies the monster's size */
+    em->base_scale = em->scale[0] = em->scale[1] = em->scale[2] = t->scale;
+    sub_main_func_004E92D0(em);     /* G sub_main: the size scale (em_size_scale_set) */
+#else
     em->scale[0] = em->scale[1] = em->scale[2] = t->scale;
+#endif
     em->ex[0xA2] = 0;
     em->ex[0xA3] = 0;
     em->ex[0xA4] = 0;

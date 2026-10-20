@@ -4,6 +4,7 @@
  * forward motion from the distance), fly_adjy and fly_adjy2 (as em02).
  * Many actions compute a time in work08 from the target distance
  * (dist / 7 or (x39A % 120 + 180) / 2 without a target). */
+#include "g_alias.h"
 #include "em.h"
 
 /* em14's part of the per-monster work at EMW+0x444. */
@@ -13,7 +14,13 @@ typedef struct EM14W {
     u16 dang;           /* 0x14 angle left to turn */
     u8 _pad16;
     u8 has_tgt;         /* 0x17 */
+#ifdef MHG_PS2
+    u8 _pad18[2];
+    u8 x1A;             /* 0x1A G: count of act 7 of the die/damage kinds */
+    u8 _pad1B[0x30 - 0x1B];
+#else
     u8 _pad18[0x30 - 0x18];
+#endif
     s32 spd[3];         /* 0x30 passed to speed_add(_g) (angle in [1]) */
     u8 _pad3C[4];
     s32 turn;           /* 0x40 maximum turn per call */
@@ -41,6 +48,10 @@ void mot_miration_ret(EMW *, f32 *);
 void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);
 void em14_act_set(EMW *em, int kind, u16 no, u16 arg);
+void em14_act_act_set(EMW *em, u16 no, u16 arg);
+void em14_move_act_set(EMW *em, u16 no, u16 arg);
+void em14_fly_act_set(EMW *em, u16 no, u16 arg);
+void em14_atk_act_set(EMW *em, u16 no, u16 arg);
 
 #define DIST_CLAMP(w, d)            \
     w->dist -= d;                   \
@@ -309,8 +320,12 @@ void em14_atk_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em14_act_set(EMW *em, int kind, u16 no, u16 arg) {
+#ifdef MHG_PS2
+    EM14W *w = (EM14W *)em->ex;
+#endif
+
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
     }
@@ -330,6 +345,11 @@ void em14_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 4:
     case 5:
     case 6:
+#ifdef MHG_PS2
+        if (no == 7) {
+            w->x1A++;
+        }
+#endif
         em->act_spd = 1.0f;
         em_act_set2(em, kind, no, arg);
         break;

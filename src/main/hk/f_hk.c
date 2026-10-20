@@ -33,7 +33,12 @@ static void hk_key_han_zen(void);
 static void hk_key_eisuu(void);
 static void hk_key_f1(void);
 static void hk_key_f2(void);
-void hk_key_f3(void *);
+#ifdef MHG_PS2
+#define HKF3_T u8   /* G: the key code (palette 0x3A + n) */
+#else
+#define HKF3_T void *
+#endif
+void hk_key_f3(HKF3_T);
 void hk_key_f4(void *);
 static void hk_key_f6(void);
 static void hk_key_f7(void);
@@ -206,9 +211,13 @@ static void hk_key_esc(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 void hk_key_space(int a) {
+#ifdef VERSION_MHG
+    if (SKB(0x2F) != 1) {
+#else
     if (SKB(0x2F) == 0) {
+#endif
         if (SKB(0x158) == 0) {
             if (a == 0) {
                 sk_cmd_input(SKP(8));
@@ -360,9 +369,26 @@ static void hk_key_f2(void) {
 }
 #endif
 
-#if !defined(G_PART)
-void hk_key_f3(void *a) {
+#if !defined(G_PART) || G_PART == 19
+void hk_key_f3(HKF3_T a) {
+#ifdef MHG_PS2
+    if (palette_ng_sub((u8)(a - 0x3A), lpSKey + SKO(0x1F), lpSKey + SKO(0x1E)) == 0) {
+        SK_SE(0x16);
+        SKS8(0x35) = 0;
+        *(u8 *)(lpSKey + 0x4B) &= ~2;   /* G-only field (G offset) */
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        sk_set_yn_kigou_f();
+        if (SKS8(0x36) != 0) {
+            sk_henkan_sub();
+        }
+    } else {
+        SK_SE(0x15);
+    }
+#else
     int snd = 0x15;
+
 
     if (SKB(0x2F) == 0 && *(s32 *)(SKP(0x10) + 0x20) != 0) {
         if (palette_ng_sub(4, lpSKey + SKO(0x1F), lpSKey + SKO(0x1E)) == 0) {
@@ -377,6 +403,7 @@ void hk_key_f3(void *a) {
         }
     }
     SK_SE(snd);
+#endif
 }
 #endif
 
@@ -597,7 +624,7 @@ asm static void hk_cursor_mv(s16 dir)
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 int hk_cursor_check(void) {
     u8 f;
 
@@ -605,6 +632,11 @@ int hk_cursor_check(void) {
         if (SKB(0x2F) != 0) {
             return 0;
         }
+#ifdef VERSION_MHG
+        if (*(u8 *)(lpSKey + 0x4B) & 2) {   /* G-only field (G offset) */
+            return 0;
+        }
+#endif
         f = SKB(0x1F);
         if (f == 4 && !(SKB(0x35) & 0xF)) {
             return 1;

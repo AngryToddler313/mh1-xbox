@@ -24,9 +24,14 @@ void em_status_init(EMW *);
         if (x9ea) (em)->x9EA = 5;                                       \
         if (Quest_enemy_revival_ck(em) != 0 && --(em)->work08 <= 0) {   \
             (em)->x05 += 1;                                             \
-            if (x9ea) (em)->x9EA = 0;                                   \
-            Em_hagi_point_clr(em);                                      \
-            (em)->work08 = 150;                                         \
+            if (x9ea) {                                                 \
+                (em)->x9EA = 0;                                         \
+                Em_hagi_point_clr(em);                                  \
+                (em)->work08 = 150;                                     \
+            } else {                                                    \
+                (em)->work08 = 150;                                     \
+                Em_hagi_point_clr(em);                                  \
+            }                                                           \
         }                                                               \
     } while (0)
 
@@ -36,10 +41,12 @@ void em_status_init(EMW *);
         if ((em)->work08 > 0) {                                         \
             (em)->work08 -= 1;                                          \
         }                                                               \
-        if ((em)->work08 > 0) {                                         \
+        if ((em)->work08 <= 0) {                                        \
+            if ((em)->x8C3 == 0) {                                      \
+                act_set(em, 5, 3, 4);                                   \
+            }                                                           \
+        } else {                                                        \
             (em)->x798 = (f32)(em)->work08 / 150.0f;                    \
-        } else if ((em)->x8C3 == 0) {                                   \
-            act_set(em, 5, 3, 4);                                       \
         }                                                               \
     } while (0)
 
@@ -57,10 +64,10 @@ void em_status_init(EMW *);
         }                                                               \
     } while (0)
 
-/* act_set(em, 5, 3, ..): the revival itself, then the em's start point (init) */
+/* act_set(em, 4..6, 3, ..) (G checks only the act number): the revival itself, then the em's start point (init) */
 #define EMG_ACT_REVIVE(em, kind, no, init)                              \
     do {                                                                \
-        if ((u16)(kind) == 5 && (u16)(no) == 3 && Quest_enemy_revival_ck(em) == 1) { \
+        if ((u16)(no) == 3 && Quest_enemy_revival_ck(em) == 1) {        \
             Quest_enemy_revival_set(em);                                \
             em_status_init(em);                                         \
             init(em);                                                   \

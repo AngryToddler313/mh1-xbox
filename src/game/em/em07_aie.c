@@ -1,5 +1,6 @@
 /* em07_ai, run 5: sound_call_005937E0 .. ef_move_sub_00593B30 (game.bin 0x005937E0-0x00599C04). Matching functions of em07_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -282,24 +283,24 @@ static void sound_call_005937E0(EMW *em, int frame, int se, int joint, int vol) 
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static void sound_call_mov(EMW *em, int f0, int f1, int se, int joint, int vol) {
     f32 pos[3];
 
     sound_call_005937E0(em, f0, se, joint, vol);
-    if (em_frame_check3(em, 0, (f32)f0, (f32)f1) && (*(u16 *)0x3F340E % 4) == 0) {
+    if (em_frame_check3(em, 0, (f32)f0, (f32)f1) && (*(u16 *)GV(0x3F340E, 0x35ED3E) % 4) == 0) {
         flmatGetTrans(pos, (u8 *)em->mdl->bone + joint * 400);
         Em_se_req2(em, se, 0, pos, vol, 1);
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void sound_call_mov2(EMW *em, int f0, int f1, int se, int joint, int vol) {
     f32 pos[3];
 
     sound_call_005937E0(em, f0, se, joint, vol);
-    if (em_frame_check3(em, 1, (f32)f0, (f32)f1) && (*(u16 *)0x3F340E % 4) == 0) {
+    if (em_frame_check3(em, 1, (f32)f0, (f32)f1) && (*(u16 *)GV(0x3F340E, 0x35ED3E) % 4) == 0) {
         flmatGetTrans(pos, (u8 *)em->mdl->bone + joint * 400);
         Em_se_req2(em, se, 0, pos, vol, 1);
     }

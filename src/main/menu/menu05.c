@@ -10,6 +10,7 @@ extern u8 room_member_id[];
 
 void *memset(void *, int, int);
 void se_req(int, int, int);
+s16 get_pl_item_type(u8 no);
 #include "version.h"
 extern u8 Item_data[327][ITEM_ROW];
 void PlayerStatusWindow(PLW *, u8);
@@ -209,7 +210,7 @@ void menu_item_back_sub(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int item_present_chk(void) {
     if (Online_ck() == 0) {
         return 0;
@@ -227,17 +228,31 @@ int item_present_chk(void) {
 }
 #endif
 
-#if !defined(G_PART)
-void Menu_item_i(void) {
+#ifdef VERSION_MHG
+#define MII_RET int     /* G's Menu_item_i returns 0 (as the other menu init functions) */
+#else
+#define MII_RET void
+#endif
+#if !defined(G_PART) || G_PART == 4
+MII_RET Menu_item_i(void) {
     lpPit->x48 = 0;
     lpPit->x49 = 0;
+#ifdef VERSION_MHG
+    *(s16 *)&lpPit->x4A = 0;
+#endif
     lpPit->x4C = 0;
     if (game_w.master == 0) {
         lpPit->x4C = 1;
     }
+#ifdef VERSION_MHG
+    ((u8 *)lpPit)[0x93] = 0;   /* G-only byte */
+#endif
     PitMenu.x10 = 1;
     PitMenu.x11 = 1;
     PitMenu.x12 = get_pl_item_type(lpPit->x49) + 0x18;
+#ifdef VERSION_MHG
+    return 0;
+#endif
 }
 #endif
 

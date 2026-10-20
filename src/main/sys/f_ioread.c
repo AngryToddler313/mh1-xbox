@@ -241,7 +241,7 @@ void MakeMediaVersion(void) {
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void system_w_set(void) {
     system_w.x1A = 0;
     system_w.x3C = 0;
@@ -251,8 +251,10 @@ void system_w_set(void) {
     system_w.x38 = 0;
     system_w.x3A = 0;
     system_w.x3B = 0;
+#ifndef VERSION_MHG
     system_w.x07 = 1;
     system_w.x04 = 0;
+#endif
     system_w.x24 = 0;
     system_w.x14 = 1;
     system_w.x31 = 1;
@@ -263,7 +265,10 @@ void system_w_set(void) {
     system_w.bgm_vol = option_w[2];
     str_outmode(system_w.outmode);
     str_master_vol(0);
-    flAdjustScreen(option_w[5], option_w[6]);
+    flAdjustScreen(option_w[GV(5, 7)], option_w[GV(6, 8)]);
+#ifdef VERSION_MHG
+    ((u8 *)&system_w)[0x42] = 0;   /* G-only byte */
+#endif
 }
 #endif
 

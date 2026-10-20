@@ -1,4 +1,5 @@
 /* lb_gdr01 - browser draw 0x005DB9C0-0x005DBA54: http_test_18. Whole file in lb_dr.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 void BsDrawRectangle(f32, f32, f32, f32, u32);
 void BsDrawTriangle();
@@ -40,7 +41,7 @@ void http_test_18(u8 *p) {
         return;
     }
     id = atoi(*(char **)(p + 4) + 9);
-    load_file_mdl(*(int *)(p + 0x10), id + 0x886);
-    *(int *)(p + 0x38) = afs_file_length((id + 0x886) | 0x20000);
+    load_file_mdl(*(int *)(p + 0x10), id + GV(0x886, 0xC8B));
+    *(int *)(p + 0x38) = afs_file_length((id + GV(0x886, 0xC8B)) | 0x20000);
     *(u8 *)(p + 0x40) = *(u8 *)(p + 0x40) + 1;
 }

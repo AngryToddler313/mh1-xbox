@@ -30,6 +30,9 @@ void func_5AD620(int);
 void *memset(void *, int, u32);
 void str_server(void);
 void load_task(void);
+#ifdef MHG_PS2
+void func_00100940(void);
+#endif
 void ADXT_Pause(int, int);
 void ADXT_Stop(int);
 int ADXT_GetStat(int);
@@ -66,8 +69,26 @@ void load_work_init(void) {
     }
 }
 #endif
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void load_bin_req(u32 id, void *dst) {
+#ifdef MHG_PS2
+    /* G: the slot may still be in use; main 0x100940 waits for it first */
+    LOADW *w = &load_w;
+    LOADQ *q = &load_q[w->wr];
+    int n;
+
+    if (q->kind >= 0) {
+        func_00100940();
+        q = &load_q[w->wr];
+    }
+    q->kind = 0;
+    q->id = id;
+    q->dst = dst;
+    w->busy = 1;
+    n = w->wr + 1;
+    w->wr = n;
+    w->wr = n % 32;
+#else
     LOADQ *q = &load_q[load_w.wr];
     int n;
 
@@ -78,6 +99,7 @@ void load_bin_req(u32 id, void *dst) {
     n = load_w.wr + 1;
     load_w.wr = n;
     load_w.wr = n % GV(64, 32);
+#endif
 }
 #endif
 void next_que_set(LOADQ *q);

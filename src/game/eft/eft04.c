@@ -1,6 +1,7 @@
 /* eft04 - game.bin 0x0053FFD0-0x005412A8: eft04_move to eft04_e. eft04_t is
  * still assembly (near-match in eft04_nm.c); the rest is in eft04b.c. See
  * eft04_nm.c for what the effect does. */
+#include "g_alias.h"
 #include "eft.h"
 #include "em.h"
 #include "game.h"
@@ -30,6 +31,9 @@ typedef struct EFT04_PIECE {
     u8 joint;           /* 0x2D type 0: entry in eft04_em15_pos */
     u8 alpha;           /* 0x2E */
     u8 speed;           /* 0x2F type 2: rise per frame times time */
+#ifdef MHG_PS2
+    u8 _padG30[0xC];    /* G: a piece is 0x3C bytes */
+#endif
 } EFT04_PIECE;
 
 /* Joint offsets for type 0 (0x14 bytes each). */
@@ -538,7 +542,7 @@ void eft04_m(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void eft04_d(EFTW *ew) {
     s16 n;
     s16 i;

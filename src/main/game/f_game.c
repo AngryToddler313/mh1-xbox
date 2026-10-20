@@ -6,8 +6,14 @@
 
 #define PL8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
 #define PL16(p, o) (*(u16 *)((u8 *)(p) + (o)))
+#ifdef MHG_PS2
+int func_0012D170(void);
+void func_0012D6F0(void);
+void func_002397C0(int, int);
+void sub_main_func_004BE4B0(void);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void game0(void) {
     s16 i;
 
@@ -27,15 +33,38 @@ void game0(void) {
         game_w.x1E8[i][7] = 0;
     }
     Copy_user_id(game_w.master);
+#ifdef MHG_PS2
+    if (func_0012D170() == 1) {
+        func_0012D6F0();
+    } else {
+        Disp_NowLoading2(5);
+    }
+    func_002397C0(2, 2);
+    if (func_0012D170() == 1) {
+        Tsk_Execute(sub_main_func_004BE4B0, 6);
+    } else {
+        Tsk_Execute(Plsel_task, 6);
+    }
+#else
     Disp_NowLoading2(5);
     Load_overlay(2, 1);
     Tsk_Execute(Plsel_task, 6);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+int func_0012D170(void);
+#endif
+#if !defined(G_PART) || G_PART == 3
 void game10(void) {
+#ifdef MHG_PS2
+    if (func_0012D170() == 0) {     /* G: main 0x12D170 first */
+        Disp_NowLoading2(4);
+    }
+#else
     Disp_NowLoading2(4);
+#endif
     if (game_w.x12 == 0) {
         all_reset();
         game_w.step++;

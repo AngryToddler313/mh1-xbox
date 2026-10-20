@@ -1,5 +1,6 @@
 /* em10, one translation unit: game.bin 0x005ACC60-0x005AF528. Matching functions of em10_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "em.h"
 #include "pl.h"
 #include "game.h"
@@ -16,6 +17,9 @@ typedef struct EM10W {
     u8 _pad19;
     u8 x1A;             /* 0x1A cleared each frame by talk_move */
     u8 sel;             /* 0x1B yes/no cursor (0 yes) */
+#ifdef MHG_PS2
+    s16 x1C;            /* 0x1C G: 30 after a message of kind 1, 4 or 5 */
+#endif
 } EM10W;
 
 /* One row of talk_tbl (8 bytes). */
@@ -111,17 +115,33 @@ int em10_search_set(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void em10_msg_set(EMW *em, u16 no) {
+#ifdef MHG_PS2
+    EM10W *w = (EM10W *)em->ex;
+
+#endif
     ((PLW *)player_work)[game_w.master].x8C6 = 10;
     em->x2D6 = 0;
     em->x2D8 = no;
     em->x2DA = 0;
     ((EM10W *)em->ex)->sel = 1;
+#ifdef MHG_PS2
+    switch (talk_tbl[em->x2D8].kind) {
+    case 1:
+    case 4:
+    case 5:
+        w->x1C = 30;
+        break;
+    default:
+        w->x1C = 0;
+        break;
+    }
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em10_msg_set2(EMW *em) {
     s16 r2;
     s16 sum;
@@ -161,6 +181,18 @@ void em10_msg_set2(EMW *em) {
     em->x2D6 = 0;
     em->x2DA = 0;
     w->sel = 1;
+#ifdef MHG_PS2
+    switch (talk_tbl[em->x2D8].kind) {
+    case 1:
+    case 4:
+    case 5:
+        w->x1C = 30;
+        break;
+    default:
+        w->x1C = 0;
+        break;
+    }
+#endif
 }
 #endif
 
@@ -592,7 +624,7 @@ void em_act02(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void em_act03_005AE060(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
     PLW *pl = &player_work[game_w.master];

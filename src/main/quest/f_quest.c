@@ -1930,14 +1930,14 @@ static void sub_main_func_004B78D0(QEM *e, int *cnt)
 #endif
 
 /* G (sub_main 0x4B7920): monster kinds that get a random size */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
 static int sub_main_func_004B7920(s16 kind)
 {
     switch (kind) {
-    case 0x21: case 0x1F: case 0x1C: case 0x1B: case 0x2C: case 0x1A: case 0x30: case 0x16:
-    case 0x2E: case 0x15: case 0x27: case 0x14: case 0x2F: case 0x11: case 0x2D: case 0x0F:
-    case 0x2B: case 0x0E: case 0x31: case 0x29: case 0x0B: case 0x08: case 0x26: case 0x06:
-    case 0x25: case 0x2A: case 0x01:
+    case 0x01: case 0x2A: case 0x25: case 0x06: case 0x26: case 0x08: case 0x0B: case 0x29:
+    case 0x31: case 0x0E: case 0x2B: case 0x0F: case 0x2D: case 0x11: case 0x2F: case 0x14:
+    case 0x27: case 0x15: case 0x2E: case 0x16: case 0x30: case 0x1A: case 0x2C: case 0x1B:
+    case 0x1C: case 0x1F: case 0x21:
         return 1;
     }
     return 0;
@@ -2567,7 +2567,7 @@ int flag;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 static void em_herb_set(void)
 {
     QEM q;
@@ -2575,6 +2575,9 @@ static void em_herb_set(void)
     q.id = 0xA;
     q.x02 = 0;
     q.x08 = -1;
+#ifdef VERSION_MHG
+    q.x30 = 100;    /* G: size 100 */
+#endif
     q.pos[0] = 0;
     q.pos[1] = 0;
     q.pos[2] = 0;

@@ -272,6 +272,15 @@ void flmatGetTrans(f32 *, void *);
         ty[i] = 0xFF; \
     } while (0)
 
+#ifdef MHG_PS2
+void game_func_005AF150(EMW *em, EM02W *w);
+void game_func_005AC150(EMW *em, EM02W *w);
+void game_func_005AC580(EMW *em, EM02W *w, int kind);
+void game_func_005ACFB0(EMW *em, EM02W *w);
+void game_func_005AD140(EMW *em, EM02W *w);
+void game_func_005AD470(EMW *em, EM02W *w, int kind);
+#endif
+
 #if !defined(G_PART) || G_PART == 1
 void em_fly00_005803B0(EMW *em, EM02W *w) {
     switch (em->x05) {
@@ -955,7 +964,7 @@ void em_dmg02_00581EE0(EMW *em, EM02W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 void em_dmg03_00581FA0(EMW *em, EM02W *w) {
     switch (em->x05) {
     case 0:
@@ -982,7 +991,7 @@ void em_dmg03_00581FA0(EMW *em, EM02W *w) {
     case 2:
         if (em->x194 == 0) {
             em->x05++;
-            em_char_set(em, 8, 0, 0);
+            em_char_set(em, 8, GV(0, 4), 0);
         }
         break;
     case 3:
@@ -1329,7 +1338,7 @@ void em_move01_00582BF0(EMW *em, EM02W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void em_move02_00582C40(EMW *em, EM02W *w) {
     switch (em->x15) {
     case 0: em_fly00_005803B0(em, w); break;
@@ -1343,18 +1352,25 @@ void em_move02_00582C40(EMW *em, EM02W *w) {
     case 8: em_fly08_00580E00(em, w); break;
     case 9: em_fly09_00580F10(em, w); break;
     case 10: em_fly10_00581040(em, w); break;
+#ifdef MHG_PS2
+    case 11: game_func_005AC150(em, w); break;
+#endif
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void em_move03_00582D30(EMW *em, EM02W *w) {
     switch (em->x15) {
     case 0: em_atk00_005811C0(em, w); break;
     case 1: em_atk01_00581240(em, w); break;
     case 2: em_atk02_005812C0(em, w); break;
     case 3: em_atk03_005813A0(em, w); break;
+#ifdef MHG_PS2
+    case 4: game_func_005AC580(em, w, 0); break;     /* G: em_atk04 takes a kind (0-4) */
+#else
     case 4: em_atk04_00581480(em, w); break;
+#endif
     case 5: em_atk05_00581500(em, w, 0); break;
     case 6: em_atk06_00581770(em, w); break;
     case 7: em_atk07_00581930(em, w); break;
@@ -1362,6 +1378,15 @@ void em_move03_00582D30(EMW *em, EM02W *w) {
     case 9: em_atk09_00581B50(em, w); break;
     case 10: em_atk05_00581500(em, w, 1); break;
     case 11: em_atk05_00581500(em, w, 2); break;
+#ifdef MHG_PS2
+    case 12: game_func_005ACFB0(em, w); break;
+    case 13: game_func_005AD140(em, w); break;
+    case 14: game_func_005AC580(em, w, 1); break;
+    case 15: game_func_005AC580(em, w, 2); break;
+    case 16: game_func_005AC580(em, w, 3); break;
+    case 17: game_func_005AC580(em, w, 4); break;
+    case 18: game_func_005AD470(em, w, 4); break;
+#endif
     }
 }
 #endif
@@ -1616,13 +1641,16 @@ void em_demo02_00583610(EMW *em, EM02W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void em_move06_005837B0(EMW *em, EM02W *w) {
     em->act_spd = 1.0f;
     switch (em->x15) {
     case 0: em_demo00_00582F70(em, w); break;
     case 1: em_demo01_00583120(em, w); break;
     case 2: em_demo02_00583610(em, w); break;
+#ifdef MHG_PS2
+    case 3: game_func_005AF150(em, w); break;
+#endif
     }
 }
 #endif

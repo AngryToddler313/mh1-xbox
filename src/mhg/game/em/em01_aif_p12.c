@@ -1,0 +1,3 @@
+/* G: part 12 of src/game/em/em01_aif.c (the functions of this file that match G; see tools/mhg_parts.py) */
+#define G_PART 12
+#include "../src/game/em/em01_aif.c"

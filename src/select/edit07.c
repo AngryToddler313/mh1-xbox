@@ -85,7 +85,7 @@ void cmn_mongon_check_filter(s8 *out, s8 *str, int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int cmn_mongon_look(s8 *a) {
     s8 c = *a;
     if (c == 0) {
@@ -94,8 +94,15 @@ int cmn_mongon_look(s8 *a) {
     if (!(_ctype_[1 + c] & 7)) {
         return 1;
     }
+#ifdef VERSION_MHG
+    {
+        int r = cmn_mongon_look_sub(a, check_mongon);
+        return r != 0;
+    }
+#else
     cmn_mongon_look_sub(a, check_mongon);
     return 1;
+#endif
 }
 #endif
 

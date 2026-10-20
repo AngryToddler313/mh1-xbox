@@ -43,11 +43,18 @@ void Set13_set(int arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+SETW *sub_main_func_004E5EC0(void);
+#endif
+#if !defined(G_PART) || G_PART == 3
 void Set13_set2(int arg, f32 *pos, int n) {
     SETW *sw;
 
+#ifdef MHG_PS2
+    if ((sw = sub_main_func_004E5EC0()) != 0) {     /* G: its own pull (sub_main 0x4E5EC0) */
+#else
     if ((sw = pull_set_work(0)) != 0) {
+#endif
         sw->type = 13;
         sw->arg = arg;
         flvecCopy(sw->pos, pos);

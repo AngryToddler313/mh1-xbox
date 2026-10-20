@@ -21,13 +21,15 @@ typedef struct FNP {
     u8 sh;              /* 0x1D size h */
     s16 pal;            /* 0x1E palette 0..31 */
     u8 *palbuf;         /* 0x20 palette data (0x40 bytes each) */
+#ifdef VERSION_MHG
+    s32 cnt[6];         /* G: six layers (font_set_stack_no) */
+    u8 *list[6];
+#else
     s32 cnt[5];         /* 0x24 requests per layer */
     u8 *list[5];        /* 0x38 request lists */
+#endif
     u32 strlen;         /* 0x4C bytes used in the string buffer */
     u8 *str;            /* 0x50 string buffer */
-#ifdef VERSION_MHG
-    s32 _g50[2];        /* G: 8 more bytes before halftype */
-#endif
     s32 halftype;       /* 0x54 */
     s32 x58;            /* 0x58 */
     s32 x5C;            /* 0x5C */
@@ -110,13 +112,16 @@ int flfntGetSystemMemorySize(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void flfntStackReset(void) {
     np->cnt[0] = 0;
     np->cnt[1] = 0;
     np->cnt[2] = 0;
     np->cnt[3] = 0;
     np->cnt[4] = 0;
+#ifdef VERSION_MHG
+    np->cnt[5] = 0;
+#endif
     np->x = 0;
     np->y = 0;
     np->z = 10.0f;
@@ -125,7 +130,9 @@ void flfntStackReset(void) {
     np->pal = 0;
     np->strlen = 0;
     np->halftype = 1;
+#ifndef VERSION_MHG
     np->x60 = np->x5C;
+#endif
 }
 #endif
 

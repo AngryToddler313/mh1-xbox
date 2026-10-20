@@ -4,6 +4,7 @@
  * 1000-2100 above the stage floor, switching flight animations), plus
  * senkai_target / fly_adjy / fly_adjy2 as in em02/em14. Meanings of the
  * constants are guesses. */
+#include "g_alias.h"
 #include "em.h"
 
 /* em17's part of the per-monster work at EMW+0x444. */
@@ -40,7 +41,11 @@ extern f32 (*fly_adjy_hosei_tbl_006646E0[])[2];
 extern f32 (*fly_adjy2_hosei_tbl_00664AF0[])[2];
 extern f32 (*fly_adjz2_hosei_tbl_00664CB0[])[2];
 extern u16 st58_dir[4];
+#ifdef MHG_PS2
+extern u16 st64_dir[];     /* G: in .data, not small data */
+#else
 extern u16 st64_dir[4];
+#endif
 extern u16 st75_dir[4];
 
 f32 CalcDistanceXZ(f32 *, f32 *);
@@ -66,7 +71,18 @@ void speed_add_g(EMW *, s32 *);
         w->dist = 0.0f;             \
     }
 
-#if !defined(G_PART)
+void em17_act_act_set(EMW *em, u16 no, u16 arg);
+void em17_move_act_set(EMW *em, u16 no, u16 arg);
+void em17_fly_act_set(EMW *em, u16 no, u16 arg);
+void em17_atk_act_set(EMW *em, u16 no, u16 arg);
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+void em17_init(EMW *em);
+void game_func_00606800(EMW *em);
+int game_func_00606000(EMW *em);
+#endif
+
+#if !defined(G_PART) || G_PART == 3
 void em17_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     switch (no) {
@@ -253,11 +269,34 @@ void em17_fly_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em17_atk_act_set(EMW *em, u16 no, u16 arg) {
+#ifndef MHG_PS2
     EM17W *w = (EM17W *)em->ex;
+#endif
 
     em->act_spd = 1.0f;
+#ifdef MHG_PS2      /* G: homing set-up for acts 0, 8 and 1, 4, 11 only */
+    switch (no) {
+    case 0:
+    case 8:
+        em17_horm_init(em);
+        break;
+    case 1:
+    case 4:
+    case 11:
+        em17_horm_init(em);
+        break;
+    case 2:
+    case 3:
+    case 5:
+    case 6:
+    case 7:
+    case 9:
+    case 10:
+        break;
+    }
+#else
     switch (no) {
     case 0:
     case 5:
@@ -280,31 +319,49 @@ void em17_atk_act_set(EMW *em, u16 no, u16 arg) {
     case 9:
         break;
     }
+#endif
     em_act_set2(em, 3, no, arg);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 #ifdef VERSION_MHG
-#include "em_revive_g.h"
-void em17_init(EMW *em);
 /* G game 0x606800: the start point of a returning monster (kinds 0x16 / 0x30 on stage 64, the others on
  * stage 90; by type em+0x1B), then em17_init and x839 = 1 */
-static void em17_revive_init(EMW *em)
+void game_func_00606800(EMW *em)
 {
     if (em->kind == 0x16 || em->kind == 0x30) {
         em->stg = 64;
-        if (em->type == 2) {
-            EMG_PLACE(em, 0x3D2E, 3881.19995f, 636.599976f, 6862.3999f);
-        } else {
-            EMG_PLACE(em, 0x57C, 13333.0996f, 1291.19995f, 4873.10010f);
+        switch (em->type) {
+        case 1:
+        default:
+            em->pos[0] = 13333.0996f;
+            em->pos[1] = 1291.19995f;
+            em->pos[2] = 4873.10010f;
+            em->ang[1] = 0x57C;
+            break;
+        case 2:
+            em->pos[0] = 3881.19995f;
+            em->pos[1] = 636.599976f;
+            em->pos[2] = 6862.3999f;
+            em->ang[1] = 0x3D2E;
+            break;
         }
     } else {
         em->stg = 90;
-        if (em->type == 1) {
-            EMG_PLACE(em, 0x8A76, 11948.9004f, 1010.0f, 15923.7998f);
-        } else {
-            EMG_PLACE(em, 0xDA3D, 15949.7002f, 1010.0f, 7225.7998f);
+        switch (em->type) {
+        default:
+            em->pos[0] = 15949.7002f;
+            em->pos[1] = 1010.0f;
+            em->pos[2] = 7225.7998f;
+            em->ang[1] = 0xDA3D;
+            break;
+        case 1:
+            em->pos[0] = 11948.9004f;
+            em->pos[1] = 1010.0f;
+            em->pos[2] = 15923.7998f;
+            em->ang[1] = 0x8A76;
+            break;
         }
     }
     em17_init(em);
@@ -313,11 +370,24 @@ static void em17_revive_init(EMW *em)
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
     }
+#ifdef MHG_PS2      /* G: one check function */
+    if (Online_ck() == 0) {
+        if (game_func_00606000(em) == 1) {
+            kind = 0;
+            no = 12;
+        }
+    } else if ((u8)arg != 0) {
+        if (game_func_00606000(em) == 1) {
+            kind = 0;
+            no = 12;
+        }
+    }
+#else
     if (Online_ck() == 0) {
         if (act_ck(em, 0, 0x16) != 0 || act_ck(em, 0, 0x1A) != 0) {
             kind = 0;
@@ -329,6 +399,7 @@ void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
             no = 12;
         }
     }
+#endif
     switch ((u16)kind) {
     case 0:
         em17_act_act_set(em, no, arg);
@@ -346,10 +417,10 @@ void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 5:
     case 6:
 #ifdef VERSION_MHG      /* G em17_act_set (game 0x604C30): its die act is 4 */
-        if ((u16)kind == 5 && no == 4 && Quest_enemy_revival_ck(em) == 1) {
+        if (no == 4 && Quest_enemy_revival_ck(em) == 1) {     /* G checks only the act number */
             Quest_enemy_revival_set(em);
             em_status_init(em);
-            em17_revive_init(em);
+            game_func_00606800(em);
         }
 #endif
         em->act_spd = 1.0f;

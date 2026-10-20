@@ -6,13 +6,17 @@
 void DemoCameraRequest(int, s32);
 extern u8 em_work[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void FishWyvernCameraRequest(void) {
     u8 *e = em_work;
     int i = 20;
 
     do {
+#ifdef VERSION_MHG
+        if (e[0] != 0 && (e[2] == 0x15 || e[2] == 0x2E)) {   /* G: kind 0x2E is a fish wyvern too */
+#else
         if (e[0] != 0 && e[2] == 0x15) {
+#endif
             DemoCameraRequest(0x11, (s32)e);
             return;
         }

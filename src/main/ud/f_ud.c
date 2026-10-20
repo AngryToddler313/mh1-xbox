@@ -109,10 +109,24 @@ int Ud_item_erase(s16);
 s16 Ud_item_num_ck(u16);
 extern u32 D_0035178C[];
 int Now_equip_ck(UDW *u, int idx);
+#ifdef MHG_PS2
+s16 sub_main_func_004C9250(UDW *u);     /* G: the size of the equipment box (sub_main 0x4C9250) */
+#define WH_RET u16
+#define WH_FULL 0xFFFF
+#else
+#define WH_RET u8
+#define WH_FULL 0xFF
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
+#ifdef MHG_PS2
+extern u16 D_002EF374;  /* G: small-data copy of User_data+0xD0A (gp-14332) */
+#endif
 void Load_userdata(int slot) {
     memcpy(User_data, option_w + (slot & 0xFF) * UD_SLOT + 0x10, UD_SLOT);
+#ifdef MHG_PS2
+    D_002EF374 = *(u16 *)(User_data + 0xD0A);
+#endif
 }
 #endif
 
@@ -176,8 +190,23 @@ void Gold_add(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 22
 u8 Get_hunter_rank(UDW *u) {
+#ifdef VERSION_MHG
+    /* G (sub_main 0x4C50E0): no rank before the hunter rank flag (+0xC23) */
+    u32 *p;
+    u8 r;
+
+    if (*((u8 *)u + 0xC23) == 0) {
+        return 0;
+    }
+    for (p = h_rank_tbl, r = 0; *p != 0x98967F; p++, r++) {
+        if (u->point < *p) {
+            return r;
+        }
+    }
+    return r;
+#else
     u32 *p = h_rank_tbl;
     u8 r = 0;
     u32 t = *p;
@@ -193,14 +222,23 @@ u8 Get_hunter_rank(UDW *u) {
         } while (t != 0x98967F);
     }
     return r;
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 23
 void Get_hunter_status(UDW *u, u8 *rank, u32 *cur, u32 *next) {
     u32 *p;
     u32 t;
 
+#ifdef VERSION_MHG
+    if (*((u8 *)u + 0xC23) == 0) {    /* G: no rank yet: rank 1, no next limit */
+        *rank = 1;
+        *cur = u->point;
+        *next = 0;
+        return;
+    }
+#endif
     *rank = 1;
     *cur = u->point;
     t = h_rank_tbl[1];
@@ -658,23 +696,36 @@ int Quest_clear_bit_ck(int n) {
 }
 #endif
 
-#if !defined(G_PART)
-u8 Warehouse_search_space(void) {
+/* G (sub_main 0x4C75D0, 0x4C7650): the box size comes from sub_main_func_004C9250, and a full box gives 0xFFFF */
+#if !defined(G_PART) || G_PART == 24
+WH_RET Warehouse_search_space(void) {
     UDW *u = User_data;
     s16 i;
+#ifdef MHG_PS2
+    s16 n;
+    n = sub_main_func_004C9250(u);
+    for (i = 0; i < n; i++) {
+#else
     for (i = 0; i < 64; i++) {
+#endif
         if (u->ware[i].use == 0) {
             return i;
         }
     }
-    return 0xFF;
+    return WH_FULL;
 }
 #endif
 
-#if !defined(G_PART)
-u8 Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
+#if !defined(G_PART) || G_PART == 25
+WH_RET Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
     s16 i;
+#ifdef MHG_PS2
+    s16 n;
+    n = sub_main_func_004C9250(u);
+    for (i = 0; i < n; i++) {
+#else
     for (i = 0; i < 64; i++) {
+#endif
         if (u->ware[i].use == 0) {
             u->ware[i].use = 1;
             u->ware[i].kind = kind;
@@ -683,7 +734,7 @@ u8 Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
             return i;
         }
     }
-    return 0xFF;
+    return WH_FULL;
 }
 #endif
 

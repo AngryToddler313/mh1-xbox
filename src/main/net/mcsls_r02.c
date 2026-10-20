@@ -10,6 +10,9 @@ void *memmove(void *, void *, int);
 int CCnNetMsg_CnGetBuffSizeLeft();
 int CCnNetMsg_CnGetMsgSize();
 int CCnNetMsg_CnGetReadSize();
+#ifdef MHG_PS2
+extern int D_002EF75C;
+#endif
 int CCnNetMsg_CnGetReadTopPtr();
 int CCnNetMsg_CnPurgeData();
 int CCnNetMsg_CnRead();
@@ -133,7 +136,7 @@ int mcsls_app_push_is_ready(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void mcsls_app_push(int data, int n) {
     if (CCnNetMsg_CnGetBuffSizeLeft(&app_send_que) <= n + 2) {
         MCSLS_ERR_SYNC();
@@ -141,6 +144,15 @@ void mcsls_app_push(int data, int n) {
     }
     CCnNetMsg_CnWriteU16(&app_send_que, ((mcsls_w.me << 12) | (n & 0xFFF)) & 0xFFFF);
     CCnNetMsg_CnWrite(&app_send_que, data, n);
+#ifdef MHG_PS2
+    {   /* G: keeps the largest queue fill seen (a small-data word, gp-13844) */
+        int max = D_002EF75C;
+        int r = CCnNetMsg_CnGetReadSize(&app_send_que);
+        if (max < r) {
+            D_002EF75C = r;
+        }
+    }
+#endif
     mcsls_w.napp++;
 }
 #endif

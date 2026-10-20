@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0026B6B0-0x0026BB48: ms_network_yn_file .. ms_net_end_wait. See netwk_nm.c. */
+#include "g_alias.h"
 #include "gwx.h"
 #include "types.h"
 
@@ -188,7 +189,7 @@ void Ncm_spr_kill2(int m);
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int ms_network_yn_file(void) {
     int ret = 0;
 
@@ -199,7 +200,7 @@ int ms_network_yn_file(void) {
         Net_work_init_all();
         Net_fade_kill();
         game_w[GWX(0x1DC)] = 0;
-        Load_overlay(4, 1);
+        Load_overlay(GV(4, 3), GV(1, 3));
         break;
     case 1:
         net_common_w.step++;
@@ -225,7 +226,7 @@ int ms_network_yn_file(void) {
     case 5:
         if ((Fade_busy_ck() & 0xFF) == 2) {
             net_common_w.step++;
-            Load_overlay(3, 1);
+            Load_overlay(3, GV(1, 2));
             game_w[GWX(0x1DC)] = 1;
         }
         break;

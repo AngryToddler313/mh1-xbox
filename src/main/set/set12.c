@@ -1,5 +1,6 @@
 /* set12 - SLPM_654.95 0x001567C0-0x001569D8.
  * A set object that plays a sound every 5 frames until its timer runs out. */
+#include "g_alias.h"
 #include "set.h"
 
 void set12_move(SETW *sw);
@@ -28,8 +29,12 @@ void set12_i(SETW *sw);
 void set12_m(SETW *sw);
 void set12_d(SETW *sw);
 void set12_e(SETW *sw);
+#ifdef MHG_PS2
+/* G's symbol map names G's set12_e (sub_main 0x4F0B50, j push_set_work) PowerOffHandler */
+void PowerOffHandler(SETW *sw);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void set12_move(SETW *sw) {
     switch (sw->mode) {
     case 0:
@@ -42,7 +47,7 @@ void set12_move(SETW *sw) {
         set12_d(sw);
         break;
     case 3:
-        set12_e(sw);
+        GV(set12_e, PowerOffHandler)(sw);
         break;
     }
 }

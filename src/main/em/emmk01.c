@@ -137,7 +137,7 @@ static void mlCalcTransEM(EMW *em, u8 *bone, f32 *unused) {
 
 /* Builds the monster's world matrix (scale, rotation, translation) into mat[], poses the per-kind special joints
    (mlCalcTransEM) and hands the skeleton to flCalcTransSI. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void enemy_mk(EMW *em) {
     f32 m[16];
     f32 scale[16];
@@ -150,8 +150,14 @@ void enemy_mk(EMW *em) {
     flmatMul33_2(m, scale);
     flmatCopy((f32 *)((u8 *)em + 0x60), m);
     kind = em->kind;
+#ifdef VERSION_MHG
+    /* G adds kinds 0x25..0x27 and 0x29..0x32 */
+    if (kind == 1 || (u32)(kind - 6) <= 2 || kind == 0xB || (u32)(kind - 0xE) <= 1 || kind == 0x11 || (u32)(kind - 0x25) <= 2
+        || (u32)(kind - 0x14) <= 2 || kind == 0x1A || (u32)(kind - 0x29) <= 9 || kind == 0x21 || kind == 0x22) {
+#else
     if (kind == 1 || (u32)(kind - 6) <= 2 || kind == 0xB || (u32)(kind - 0xE) <= 1 || kind == 0x11 || (u32)(kind - 0x14) <= 2 || kind == 0x1A
         || kind == 0x21 || kind == 0x22) {
+#endif
         mlCalcTransEM(em, md->bone, m);
     }
     flCalcTransSI(md->bone, m);

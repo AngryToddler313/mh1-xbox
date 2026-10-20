@@ -85,7 +85,7 @@ void Menu_equipment_i(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int Menu_equipment_mv(int sw) {
     PLW *pl = lpPit->pl;
     u8 sel;

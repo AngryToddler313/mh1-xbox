@@ -6,6 +6,9 @@
 #include "menu.h"
 #include "ud.h"
 #include "pl.h"
+#ifdef MHG_PS2
+extern void *gptr_002EC61C[];
+#endif
 
 #define F8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define FS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
@@ -16,7 +19,15 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-static void chat_log_add(int, s8 *, struct PIT_CHAT *);
+#ifdef MHG_PS2
+#define CLA_P , int g4      /* G's chat_log_add has a fourth argument (1 from Plaza_chat_log_add, else 0) */
+#define CLA_A(x) , x
+void func_00221900(void);
+#else
+#define CLA_P
+#define CLA_A(x)
+#endif
+static void chat_log_add(int, s8 *, struct PIT_CHAT * CLA_P);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -86,11 +97,11 @@ extern u8 pf_menu_sub[];
 extern u8 btn_menu_sub[8];
 extern u8 lit_2047[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 28
 void Disp_name_or_id(s16 v) {
     FS16(pf_menu_sub, 2) = v;
-    DispFrameMessage(pf_menu_sub, lit_2047);
-    FS16(btn_menu_sub, 2) = v;
+    DispFrameMessage(pf_menu_sub, GSTR(lit_2047, gptr_002EC61C));
+    FS16(btn_menu_sub, 2) = v + GV(0, -1);
     PutButtonICON(btn_menu_sub, 1);
 }
 #endif
@@ -735,7 +746,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, s16, s16);
-static void chat_log_add(int, s8 *, PIT_CHAT *);
+static void chat_log_add(int, s8 *, PIT_CHAT * CLA_P);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, u8);
 void set01_set(int, int, int);
@@ -781,7 +792,7 @@ void Chat_move(int a)
           v = (PitMenu.x16 & v) & 0xFF;
         }
  new_var = 0; do { w = v; } while (new_var);
-        chat_log_add(pl->id, buf, 0);
+        chat_log_add(pl->id, buf, 0 CLA_A(0));
         net_send_chat(pl->id, 1, buf, w);
       }
       else
@@ -807,7 +818,7 @@ extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
 #if !defined(G_PART)
-static void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
+static void chat_log_add(int who, s8 *s, PIT_CHAT *src CLA_P) {
     PIT_CHAT *l;
     s8 c;
     int i;
@@ -892,29 +903,41 @@ static void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 29
 void Chat_log_add(int who, u8 *msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
-    chat_log_add(who, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
+    chat_log_add(who, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg CLA_A(0));
     if ((u32)Get_chat_line_num() > 0xB) {
         PitMenu.logscr++;
         if (PitMenu.logscr > 0x3F) {
             PitMenu.logscr = 0x3F;
         }
     }
+#ifdef MHG_PS2
+    /* G (main 0x221820): the sound goes through main 0x221900, and x0E marks the hunter's own line */
+    PitMenu.x0C = 0x12C;
+    PitMenu.x0F = 1;
+    if ((who & 0xFF) != GW(0xD1)) {
+        func_00221900();
+        PitMenu.x0E = 0;
+    } else {
+        PitMenu.x0E = 1;
+    }
+#else
     PitMenu.x0E = 0;
     PitMenu.x0F = 1;
     PitMenu.x0C = 0x12C;
     if ((who & 0xFF) != GW(0xD1)) {
         se_req(7, 0x18, 0);
     }
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 30
 void Plaza_chat_log_add(u8 *msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
-    chat_log_add(255, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
+    chat_log_add(255, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg CLA_A(1));
     if ((u32)Plaza_get_chat_line_num() > 9) {
         PitMenu.logscr++;
         if (PitMenu.logscr > 0x3F) {
@@ -960,7 +983,7 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     e.col[3] = chat_cnfg_font_color[k & 0xFF];
     strcpy(e.uid, (char *)player_work + p * 0xA00 + 0x8D4);
     strcpy(e.name, room_member_id[p]);
-    chat_log_add(who, msg, (PIT_CHAT *)&e);
+    chat_log_add(who, msg, (PIT_CHAT *)&e CLA_A(0));
     if ((u32)Get_chat_line_num() > 0xB) {
         PitMenu.logscr++;
         if (PitMenu.logscr > 0x3F) {
@@ -1047,9 +1070,27 @@ static u32 chat_log_disp_line(u8 top) {
 extern u8 pf_chat_log_base[];
 extern u8 lit_3171[];
 extern char *str_3166[];
+#ifdef MHG_PS2
+/* G's Pit_disp_chat: the frame and the megaphone are drawn by main 0x221E00 (frame data, chat colour), and the log
+ * by disp_chat_log_sub (0x221F00) with the colour as a 4th argument; the colour comes from a byte table indexed by
+ * option_w[6] */
+extern u8 D_002EC1B4[4];
+extern void *D_002EC628[];
+extern s16 D_002FF29C[];
+void func_00221E00(void *, int);
+void func_00221F00(int, int, int, int);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 33
 void Pit_disp_chat(void) {
+#ifdef MHG_PS2
+    u8 c = D_002EC1B4[((s8 *)&option_w)[6]];
+
+    func_00221E00(D_002EC628[0], c);
+    func_00221F00(0, 0, 0, c);
+    D_002FF29C[0] = 0;
+    return;
+#endif
     DispFrameMessage(pf_chat_log_base, lit_3171);
     Put_megaphone(0x97, 0xBB, PitMenu.x17);
     flfntSetSize(0x15, 0x12);
@@ -1184,7 +1225,7 @@ void ClearMessageHaltFlag(void) {
 
 int func_5D8370(s8);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 32
 void Join_pl_chk(void) {
     u32 i;
     u8 *g;
@@ -1193,19 +1234,20 @@ void Join_pl_chk(void) {
     PitMenu.x19 = 0;
     if (GW(0x1DC) == 0) {
         for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-            if (game_w.master != i && g[0x208] == 1) {
+            if (game_w.master != i && g[GWX(0x208)] == 1) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu.x1A++;
             }
         }
     } else {
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < GV(8, 10); i++) {
             if (game_w.master != i && func_5D8370(i) == 0) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu.x1A++;
             }
         }
     }
+#ifndef VERSION_MHG
     if (PitMenu.x16 != 0) {
         PitMenu.x16 &= PitMenu.x19;
         if (PitMenu.x16 == 0) {
@@ -1215,6 +1257,7 @@ void Join_pl_chk(void) {
             PitMenu.x18 = 1;
         }
     }
+#endif
 }
 #endif
 
@@ -1760,6 +1803,9 @@ int ChatKinsoku_chk(u8 *s) {
 extern u8 default_reibun[];
 void *memcpy(void *, const void *, int);
 void Init_reibun(void);
+#ifdef MHG_PS2
+void func_002277B0(s8 *, int, s8 *);
+#endif
 
 #if !defined(G_PART) || G_PART == 27
 void Default_reibun_set(void) {
@@ -1796,20 +1842,49 @@ static void init_reibun_sub(s8 *d, s8 *s) {
 typedef struct REIBUN { s8 *s[3]; s8 *edit; } REIBUN;
 extern REIBUN str_tbl_reibun0[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 31
 void Init_reibun(void) {
     REIBUN *r = str_tbl_reibun0;
     int n = 12;
 
     do {
+#ifdef MHG_PS2
+        func_002277B0((s8 *)r, 10, r->edit);    /* G: the copy with a length (main 0x2277B0) */
+#else
         init_reibun_sub((s8 *)r, r->edit);
+#endif
         r++;
     } while (--n != 0);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 35
 static void chcnfg_reibun_set(s8 *src, int no) {
+#ifdef MHG_PS2
+    /* G: a byte copy of up to 44 bytes, then the short form by main 0x2277B0 (10 bytes) */
+    REIBUN *r = &str_tbl_reibun0[no & 0xFF];
+    int n;
+    s8 *d;
+    s8 *s;
+    s8 c;
+    s = src;
+    n = 44;
+    d = r->edit;
+
+    do {
+        c = *s;
+        if (c == 0) {
+            break;
+        }
+        *d = c;
+        n--;
+        s++;
+        d++;
+    } while (n > 0);
+    *d = 0;
+    func_002277B0((s8 *)r, 10, src);
+}
+#else
     REIBUN *r = &str_tbl_reibun0[no & 0xFF];
     u32 n = 0x16;
     s8 *d = r->edit;
@@ -1851,6 +1926,7 @@ static void chcnfg_reibun_set(s8 *src, int no) {
     } while (1);
 }
 #endif
+#endif
 
 int softkey_ck();
 
@@ -1870,13 +1946,24 @@ int Reibun_Edit_Start(int no) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 34
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
 
+#ifdef VERSION_MHG
+    u16 k = *(u16 *)((u8 *)&Psw + 4);
+
+    if (k & 0x4000) {       /* G: this button ends the edit */
+        SoftKeyboard_exit();
+        return 1;
+    }
+    buf[0] = 0;
+    r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), (s16)k);
+#else
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));
+#endif
     if (r != 0) {
         if (buf[0] != 0 && r > 0) {
             chcnfg_reibun_set(buf, no);

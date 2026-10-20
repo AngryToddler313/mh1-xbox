@@ -1,4 +1,5 @@
 /* em17_r26 - monster 17 AI 0x005E1F80-0x005E638C: sound_call_sub_005E1F80, sound_call_005E1FF0, sound_call_parts_005E2090, quake_call_005E2130, move_default_005E2180, ef_move_sub_005E21D0 (file-static helpers, aliased in config/game_aliases.txt). Whole file in em17_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -391,10 +392,15 @@ extern u8 *em17_act_add[3];
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
     f32 pos[3];
 
+#ifdef MHG_PS2
+    if (em->type == 1 && (u32)se >= 66 && (u32)se < 98) {     /* G: variant 1 plays its own sounds */
+        se += 30;
+    }
+#endif
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
@@ -416,11 +422,16 @@ static void sound_call_005E1FF0(EMW *em, int frame, int se, int joint) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void sound_call_parts_005E2090(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
     if (em_frame_check(em, layer, (f32)frame) != 0) {
+#ifdef MHG_PS2
+        if (em->type == 1 && (u32)se >= 66 && (u32)se < 98) {     /* G: variant 1 plays its own sounds */
+            se += 30;
+        }
+#endif
         flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
         Em_se_req2(em, se, 0, pos, 3, 0);
     }

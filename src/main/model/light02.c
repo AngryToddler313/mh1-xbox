@@ -1,6 +1,7 @@
 /* light02 - release all textures (SLPM_654.95 0x0011E860-0x0011E904): release_tex_all. Whole file in light_nm.c. */
 /* light_nm - SLPM_654.95 0x0011DB04-0x0011E9D8 (light_init.s) small parts: light_set, light_change_normal, Pl_light_init,
    release_tex_all; get_mdlw_ptr (0x00123C70). light_work: 2 sets of 0x140 bytes (3 lights of 0x68 starting at +0x18). Working file. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 extern GAME_W game_w;
@@ -20,8 +21,18 @@ void release_tex_all(void) {
     int i;
     s32 *p;
 
+#ifdef MHG_PS2     /* PS2 only: the PC keeps 0x159 texture slots */
+    /* G: 386 slots, and the slots 0, 323, 383 and 384 are kept */
+    for (i = 0, p = mem_tex; i < 386; i++, p++) {
+        if (*p != 0) {
+            switch (i) {
+            case 0: case 323: case 384: case 383:
+                continue;
+            }
+#else
     for (i = 0, p = mem_tex; i < 0x159; i++, p++) {
         if (*p != 0) {
+#endif
             if ((*p & 0xFFFF0000) != 0 && flReleasePaletteHandle((*p & 0xFFFF0000) >> 16) == 1) {
                 *p = (u16)*p;
             }

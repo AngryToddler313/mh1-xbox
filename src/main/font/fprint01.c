@@ -1,6 +1,7 @@
 /* fprint01 - printf-style text helpers (SLPM_654.95 0x00161970-0x00161C18): font_print, font_print2, font_print_ex (use include/va.h). Whole file in fprint_nm.c. */
 /* fprint_nm - SLPM_654.95 0x00161970-0x00161C18 (font_print.s): printf-style text helpers over flfntPrintf. The
    buffers are 0x400-byte statics (tmpstr_*), "%s" is lit_377_0035BB08. Working file. */
+#include "g_alias.h"
 #include "types.h"
 #include "va.h"
 extern s32 font_reset_flag;
@@ -12,17 +13,27 @@ void flfntLocate();
 void flfntPrintf(char *, ...);
 void font_set_palette();
 int vsprintf(char *, const char *, va_list);
+#ifdef MHG_PS2
+int func_00169230(char *, int, const char *, va_list);   /* G: vsnprintf */
+#endif
+#if !defined(G_PART) || G_PART == 1
 void font_print(char *fmt, ...) {
     va_list ap;
 
     if (font_reset_flag == 0) {
         va_start(ap, fmt);
+#ifdef MHG_PS2
+        func_00169230(tmpstr_369, 0x400, fmt, ap);
+#else
         vsprintf(tmpstr_369, fmt, ap);
+#endif
         flfntPrintf(lit_377_0035BB08, tmpstr_369);
     }
 }
+#endif
 /* Like font_print but only the first `limit` characters (double-byte characters count once); 0 prints
    nothing, -1 everything. */
+#if !defined(G_PART)
 void font_print2(s16 limit, char *fmt, ...) {
     va_list ap;
     s16 i;
@@ -55,6 +66,8 @@ void font_print2(s16 limit, char *fmt, ...) {
         flfntPrintf(lit_377_0035BB08, tmpstr_388);
     }
 }
+#endif
+#if !defined(G_PART) || G_PART == 1
 void font_print_ex(int x, int y, int pal, char *fmt, ...) {
     va_list ap;
 
@@ -62,7 +75,12 @@ void font_print_ex(int x, int y, int pal, char *fmt, ...) {
         flfntLocate(x, y);
         font_set_palette(pal);
         va_start(ap, fmt);
+#ifdef MHG_PS2
+        func_00169230(tmpstr_443, 0x400, fmt, ap);
+#else
         vsprintf(tmpstr_443, fmt, ap);
+#endif
         flfntPrintf(lit_377_0035BB08, tmpstr_443);
     }
 }
+#endif

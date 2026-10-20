@@ -87,7 +87,7 @@ void Eft02_set2(u16 a, u16 b, int arg, f32 *pos) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
     EFTW *ew;
 
@@ -107,6 +107,10 @@ void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
             ew->u0A.joint = ang;
             if (em->x10 != 0 && (em->kind == 0x13 || em->kind == 0x18)) {
                 ew->x1E = 2;
+#ifdef VERSION_MHG
+            } else if (em->x10 != 0 && (em->kind == 8 || em->kind == 0x22)) {
+                ew->x1E = 3;
+#endif
             } else {
                 ew->x1E = 0;
             }
@@ -134,7 +138,7 @@ void Eft02_set4(u16 a, int ang, int arg, f32 *pos, f32 scale) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void Eft02_set5(EMW *em, s16 kind, int arg, int joint, f32 *pos, f32 scale) {
     EFTW *ew;
 
@@ -165,6 +169,10 @@ void Eft02_set5(EMW *em, s16 kind, int arg, int joint, f32 *pos, f32 scale) {
                 ew->stg = 0;
                 if (em->x10 != 0 && (em->kind == 0x13 || em->kind == 0x18)) {
                     ew->x1E = 2;
+#ifdef VERSION_MHG
+                } else if (em->x10 != 0 && (em->kind == 8 || em->kind == 0x22)) {
+                    ew->x1E = 3;
+#endif
                 }
                 break;
             }

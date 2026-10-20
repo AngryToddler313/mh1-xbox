@@ -186,14 +186,29 @@ void user_load(void *unused, PLW *pl, s16 n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void roll_move(PLW *w, s16 unused) {
+#ifdef MHG_PS2
+    /* G (select 0x5466A0): turns the first hunter and copies the angle to the other two preview hunters */
+    u16 b = *(u16 *)&Psw[4];
+    s32 a;
+    if (b & 8) {
+        player_work[0].ang[1] -= 0x400;
+    }
+    if (b & 4) {
+        player_work[0].ang[1] += 0x400;
+    }
+    a = player_work[0].ang[1];
+    player_work[1].ang[1] = a;
+    player_work[2].ang[1] = a;
+#else
     if (*(volatile u16 *)&Psw[4] & 8) {
         w->ang[1] -= 0x400;
     }
     if (*(volatile u16 *)&Psw[4] & 4) {
         w->ang[1] += 0x400;
     }
+#endif
 }
 #endif
 

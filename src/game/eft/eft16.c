@@ -11,6 +11,7 @@
  * (on a hit character, position kept relative to a joint), Eft16_set_ex
  * (neck) and Eft16_set_ex3 / Eft16_set_impact (at a point). Names of the
  * work fields are guesses from use. */
+#include "g_alias.h"
 #include "eft.h"
 #include "em.h"
 #include "pl.h"
@@ -897,7 +898,7 @@ static s16 eft16_rot(s16 no) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static s16 eft16_col_type_sel(u8 flag) {
     s16 c;
 
@@ -905,6 +906,11 @@ static s16 eft16_col_type_sel(u8 flag) {
     case 0x80:
         c = 2;
         break;
+#ifdef MHG_PS2
+    case 0x40:          /* G: a third colour type */
+        c = 6;
+        break;
+#endif
     default:
         c = 0;
         break;
@@ -1085,7 +1091,7 @@ void Eft16_set_ex3(f32 *pos, int arg, s16 ang, int cnt, f32 scale) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void Eft16_set_impact(PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale) {
     EFTW *ew;
 
@@ -1125,9 +1131,19 @@ void Eft16_set_impact(PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale) {
                 ew->stg = 1;
                 break;
             default:
+#ifdef MHG_PS2
+                if (pl->x10 != 0) {
+                    if (pl->kind == 0x13 || pl->kind == 0x18) {
+                        ew->mode2 |= 0x80;
+                    } else if (pl->kind == 8 || pl->kind == 0x22) {     /* G: two more weapon kinds */
+                        ew->mode2 |= 0x40;
+                    }
+                }
+#else
                 if (pl->x10 != 0 && (pl->kind == 0x13 || pl->kind == 0x18)) {
                     ew->mode2 |= 0x80;
                 }
+#endif
                 break;
             }
             ew->scale = scale;

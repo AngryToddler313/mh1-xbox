@@ -11,6 +11,9 @@ extern char lit_505_0035BB10[];
 
 typedef struct NP { u8 _pad00[0xC]; void *area; } NP;
 extern NP *np;
+#ifdef MHG_PS2
+extern s16 D_002FEE70[6];
+#endif
 
 void flfntStackReset(void);
 void flfntDraw(int);
@@ -77,10 +80,18 @@ void font_set2(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void font_stack_reset(void) {
     flfntStackReset();
     font_reset_flag = 0;
+#ifdef MHG_PS2
+    {   /* G: six per-stack halfwords (main 0x2FEE70), cleared with the stacks */
+        int i;
+        for (i = 0; i < 6; i++) {
+            D_002FEE70[i] = 0;
+        }
+    }
+#endif
 }
 #endif
 

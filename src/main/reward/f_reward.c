@@ -7,6 +7,11 @@
  * version is src/main/reward/f_reward_g.c (the G MWCC build still takes the functions that match G, G_PART). */
 #include "g_alias.h"
 #include "reward.h"
+#ifdef MHG_PS2
+void font_set_stack_no(int);
+void func_0012EAF0(void);
+void func_0012DD90(f32, int, int, int, int);
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 int key_quest_ck(s16 no)
@@ -67,22 +72,33 @@ void disp_mark(void)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void trans_result_0(void)
 {
+#ifdef MHG_PS2
+    font_set_stack_no(4);
+    Disp_back();
+    PS8(&system_w, 0x32) = 1;
+    func_0012EAF0();    /* G (main 0x12EAF0) in place of disp_mark */
+    disp_reward();
+#else
     Disp_back();
     disp_mark();
     disp_reward();
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void trans_result_1(void)
 {
     GAME_W *gw = &game_w;
     int i;
     s32 *p;
 
+#ifdef MHG_PS2
+    font_set_stack_no(4);
+#endif
     Disp_back();
     disp_mark();
     flSetRenderState(0x60, 0);
@@ -91,15 +107,28 @@ void trans_result_1(void)
     for (i = 0; i < 5; i++, p++) {
         DispFrameListA(*p, 0, -1, 0xFF);
     }
+#ifdef MHG_PS2
+    if (gw->step == 5 || gw->step == 6) {   /* G: steps 5/6 show the button from sub 9 */
+        if (gw->sub >= 9) {
+            func_0012DD90(1.0f, 0x14, 0x32, 0x16D, 0x141);
+        }
+    } else if (gw->sub >= 6) {
+        func_0012DD90(1.0f, 0x14, 0x32, 0x16D, 0x141);
+    }
+#else
     if (gw->sub >= 6) {
         Disp_button(1.0f, 0, 0x32, 0x16D, 0x11A);
     }
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void trans_result_2(void)
 {
+#ifdef MHG_PS2
+    font_set_stack_no(4);
+#endif
     Disp_back();
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);
@@ -107,15 +136,22 @@ void trans_result_2(void)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void trans_result_3(void)
 {
+#ifdef MHG_PS2
+    font_set_stack_no(4);
+#endif
     Disp_back();
     flSetRenderState(0x60, 0);
     SetTrnslMode(4, 5);
     DispFrameListA(card_list_frame_tbl_00357850[0], 0, -1, 0xFF);
     if (game_w.sub != 0) {
+#ifdef MHG_PS2
+        func_0012DD90(1.0f, 0x14, 0x230, 0xF7, 0x141);
+#else
         Disp_button(1.0f, 0, 0x230, 0xF7, 0x11A);
+#endif
     }
 }
 #endif
