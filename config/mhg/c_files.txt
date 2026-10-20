@@ -1972,3 +1972,5 @@ game 0x0059DE10 0x0059E2F4 mhg/game/em/em01_aif_p7
 game 0x0059E510 0x0059E684 mhg/game/em/em01_aif_p8
 game 0x0059E720 0x0059E7B4 mhg/game/em/em01_aif_p9
 game 0x0059F2B0 0x0059F3B8 mhg/game/em/em01_aif_p10
+game 0x0059F3C0 0x005A5320 game/em/em01_aig
+game:rodata 0x006D7E80 0x006D8008 game/em/em01_aig
