@@ -76,9 +76,38 @@ int Cockpit_menu_chk_lobby(void) {
 }
 #endif
 
-#if !defined(G_PART)
-int enemy_mark_chk(PLW *pl, EMW *em) {
+#ifdef MHG_PS2
+/* G (main 0x119330): takes the monster only; for a marked kind the answer is the pit byte 0x96 (bit 0 set when
+ * em+0x56A is set), 0 when that is 2. G's WyvernAreaMove uses its own check, so only the PS2 build takes this. */
+#define EMC_PARAMS EMW *em
+#else
+#define EMC_PARAMS PLW *pl, EMW *em
+#endif
+#if !defined(G_PART) || G_PART == 4
+int enemy_mark_chk(EMC_PARAMS) {
     u8 c;
+#ifdef MHG_PS2
+    int r;
+
+    if (em->be_flag == 0) {
+        return 0;
+    }
+    c = enemy_icon_tbl[em->kind];
+    if (c == 0xFF || (c & 0xC0) == 0x80) {
+        if (em->x56A != 0) {
+            return 1;
+        }
+        return 0;
+    }
+    r = ((u8 *)lpPit)[0x96];
+    if (em->x56A != 0) {
+        r = (u8)(r | 1);
+    }
+    if ((u8)r == 2) {
+        return 0;
+    }
+    return r;
+#else
 
     if (em->be_flag == 0) {
         return 0;
@@ -97,6 +126,7 @@ int enemy_mark_chk(PLW *pl, EMW *em) {
         return 1;
     }
     return Pl_Skill_ck(pl, 0x29);
+#endif
 }
 #endif
 

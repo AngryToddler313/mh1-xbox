@@ -84,7 +84,11 @@ void save_file_req();
 void Tsk_Exit();
 void Load_overlay();
 void Select_Tsk_Execute();
+#ifdef MHG_PS2
+void option_init(OPTTSK *, u16);
+#else
 void option_init();
+#endif
 void option_main_menu();
 #ifdef MHG_PS2
 void option_sub_menu();     /* G passes a third argument 0 (as to option_exit; option_init gets a second 0) */
@@ -159,15 +163,36 @@ void Option_task(OPTTSK *t) {
 }
 #endif
 
-#if !defined(G_PART)
-void option_init(OPTTSK *t) {
+#ifdef MHG_PS2
+#define OI_PARAMS OPTTSK *t, u16 mode   /* G: mode != 0 skips the BGM and draws the menu with main 0x118460 */
+void func_00118460(OPTTSK *);
+#else
+#define OI_PARAMS OPTTSK *t
+#endif
+#if !defined(G_PART) || G_PART == 9
+void option_init(OI_PARAMS) {
     if ((Fade_busy_ck() & 0xFF) != 1) {
         t->cur = 0;
+#ifdef MHG_PS2
+        t->sub2 = 0;
+        t->step++;
+        if (mode == 0) {
+            str_play(0, GBGM(0x4E));
+        }
+        setBGcolor(0);
+        fade_set(2);
+        if (mode == 0) {
+            disp_option_menu(t);
+        } else {
+            func_00118460(t);
+        }
+#else
         t->step++;
         str_play(0, GBGM(0x4E));
         setBGcolor(0);
         fade_set(2);
         disp_option_menu(t);
+#endif
     }
 }
 #endif
