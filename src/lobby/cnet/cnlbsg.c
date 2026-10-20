@@ -1100,3 +1100,13 @@ int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     return 0;
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 53
+#ifdef MHG_PS2
+/* G only */
+void BsWorkTrans();
+void lobby_func_005B16E0() {
+    BsWorkTrans(0);
+}
+#endif
+#endif

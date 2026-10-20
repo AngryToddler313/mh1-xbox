@@ -2639,3 +2639,161 @@ void lobby_func_005AE450() {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 164
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AEFC0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 165
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005B07F0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 166
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005B0BA0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 169
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCB80() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 170
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCC90() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 171
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCDA0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 172
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCE70() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 175
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BF830() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 181
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E6C00() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 177
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E1CE0() {
+    _cnet_Return_CallBack(5);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 167
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC770(u8 *a) {
+    a[0x22]++;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 168
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCA70() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 178
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E27B0() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 179
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E27C0() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 180
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E27D0() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 173
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCEC0() {
+    _sub_InOutRoomMember(2);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 174
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCED0() {
+    _sub_InOutRoomMember(3);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 176
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BF880(void *a) {
+    GetRecvData16(a, recv_work);
+}
+#endif
+#endif
