@@ -91,6 +91,7 @@ void eft01_set(EMW *, s16);
 void em10_main_sub(EMW *em);
 void em10_to_normal(EMW *em, int flag, int a, int b);
 
+#if !defined(G_PART) || G_PART == 1
 int em10_search_set(EMW *em) {
     PLW *pl = &player_work[game_w.master];
 
@@ -108,7 +109,9 @@ int em10_search_set(EMW *em) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static void em10_msg_set(EMW *em, u16 no) {
     ((PLW *)player_work)[game_w.master].x8C6 = 10;
     em->x2D6 = 0;
@@ -116,7 +119,9 @@ static void em10_msg_set(EMW *em, u16 no) {
     em->x2DA = 0;
     ((EM10W *)em->ex)->sel = 1;
 }
+#endif
 
+#if !defined(G_PART)
 void em10_msg_set2(EMW *em) {
     s16 r2;
     s16 sum;
@@ -157,7 +162,9 @@ void em10_msg_set2(EMW *em) {
     em->x2DA = 0;
     w->sel = 1;
 }
+#endif
 
+#if !defined(G_PART)
 int talk_move(EMW *em) {
     u16 *sp;
     EM10_TALK *t;
@@ -329,7 +336,9 @@ int talk_move(EMW *em) {
     w->x1A = 0;
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em10_init(EMW *em) {
     u16 n;
     EM10W *w = (EM10W *)em->ex;
@@ -408,7 +417,9 @@ void em10_init(EMW *em) {
     em_dur_init(em);
     em->x734 = 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em10_to_normal(EMW *em, int flag, int a, int b) {
     EM10W *w = (EM10W *)em->ex;
 
@@ -439,7 +450,9 @@ void em10_to_normal(EMW *em, int flag, int a, int b) {
     }
     em->ex[0x90] = 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em10_turn_sub(EMW *em) {
     u32 spd;
     u16 tgt;
@@ -458,7 +471,9 @@ void em10_turn_sub(EMW *em) {
         em->ang[1] = (ang - spd) & 0xFFFF;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act00(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
     PLW *pl = &player_work[game_w.master];
@@ -501,7 +516,9 @@ void em_act00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act01(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
 
@@ -527,7 +544,9 @@ void em_act01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act02(EMW *em) {
     f32 d[3];
     f32 v[3];
@@ -571,7 +590,9 @@ void em_act02(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act03_005AE060(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
     PLW *pl = &player_work[game_w.master];
@@ -625,7 +646,9 @@ static void em_act03_005AE060(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act04(EMW *em) {
     PLW *pl = &player_work[game_w.master];
 
@@ -645,7 +668,9 @@ void em_act04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act05(EMW *em, int type) {
     EM10W *w = (EM10W *)em->ex;
     PLW *pl = &player_work[game_w.master];
@@ -684,7 +709,9 @@ void em_act05(EMW *em, int type) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act06(EMW *em) {
     PLW *pl = &player_work[game_w.master];
 
@@ -721,7 +748,9 @@ void em_act06(EMW *em) {
         em_act_set(em, 0, 3);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act09(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
     PLW *pl = &player_work[game_w.master];
@@ -750,7 +779,9 @@ void em_act09(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act10(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
     PLW *pl = &player_work[game_w.master];
@@ -781,7 +812,9 @@ void em_act10(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_act11(EMW *em) {
     PLW *pl = &player_work[game_w.master];
 
@@ -801,7 +834,9 @@ void em_act11(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_move00_005AE9A0(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -844,7 +879,9 @@ void em_move00_005AE9A0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em10_main(EMW *em) {
     em->x40C = 0x63;
     em->x40E = 0x63;
@@ -855,7 +892,9 @@ void em10_main(EMW *em) {
     }
     em10_turn_sub(em);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em10_main_sub(EMW *em) {
     switch (em->mode) {
     case 0:
@@ -884,7 +923,9 @@ void em10_main_sub(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void sound_call(EMW *em, int frame, int code, int joint) {
     f32 p[3];
 
@@ -893,7 +934,9 @@ void sound_call(EMW *em, int frame, int code, int joint) {
         Em_se_req2(em, code, 0, p, 6, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void sound_call_com(EMW *em, int frame, int code, int joint) {
     f32 p[3];
 
@@ -902,7 +945,9 @@ void sound_call_com(EMW *em, int frame, int code, int joint) {
         Em_se_req2_com(em, code, 0, p, 6, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void ef_move_sub(EMW *em, EM10W *w) {
     if (em->char0 != w->char0) {
         w->char0 = em->char0;
@@ -1016,9 +1061,11 @@ void ef_move_sub(EMW *em, EM10W *w) {
         break;
     }
 }
+#endif
 
 /* File statics in the original, named by address because data outside
  * this file (the monster program tables) points at them. */
+#if !defined(G_PART) || G_PART == 5
 void em10_effect_move_005AF4C0(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
 
@@ -1031,10 +1078,15 @@ void em10_effect_move_005AF4C0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void em10_local_init_005AF510(EMW *em) {
     eft01_set(em, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void dummy_em_prog_005AF520(void) {
 }
+#endif
