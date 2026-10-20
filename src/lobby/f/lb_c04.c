@@ -14,5 +14,5 @@
 
 
 u8 *GetAdrsMiniData(int id) {
-    return CWPLAYER(id & 0xFF) + 0x1346;
+    return CWPLAYER(id & 0xFF) + CWP_MINI;
 }

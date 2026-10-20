@@ -60,7 +60,7 @@ void Lb_equip_set(u16 *p, int a1) {
     Set_userdata(p);
     ((u8 *)&lb_sys)[LBSYS_OFS(0x78)] = 1;
     Lb_set_mini_data((u8 *)&lbCommer[p[6]] + 0x1C);
-    Lb_set_mini_data(CWPLAYER(p[6]) + 0x1346);
+    Lb_set_mini_data(CWPLAYER(p[6]) + CWP_MINI);
 }
 
 void Lb_cockpit_move(void) {

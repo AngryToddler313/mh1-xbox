@@ -36,7 +36,7 @@ void Lb_menu_quest_info(s32 *p) {
 }
 
 u8 *GetAdrsMiniData(int id) {
-    return CWPLAYER(id & 0xFF) + 0x1346;
+    return CWPLAYER(id & 0xFF) + CWP_MINI;
 }
 
 void Lb_put_msg_type2(s16 *p) {

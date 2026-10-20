@@ -68,7 +68,7 @@ void lb_trade_result(u8 *data) {
 int lb_check_mini_data(int a0, int a1, u8 *mini) {
     int ret = 0;
     s8 id = a0;
-    u8 *m = CWPLAYER(id) + 0x1346;
+    u8 *m = CWPLAYER(id) + CWP_MINI;
     if (memcmp(m + 0xE, mini + 0xE, 6) != 0) {
         if ((s8)cw[id + 0x2BFE] == 0) {
             Lb_set_mini_data_to_pl(a0, mini);

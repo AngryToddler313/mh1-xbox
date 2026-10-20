@@ -843,7 +843,7 @@ done:
 #endif
 
 /* original bytes: build/raw/equip_ok_chk.inc (config/c_rawfuncs.txt) */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 int equip_ok_chk(u8 *e) {
   int r;
   int new_var[2];
@@ -856,7 +856,7 @@ int equip_ok_chk(u8 *e) {
   }
   u = User_data;
   new_var[0] = Get_equip_data_ptr()[2];
-  if (!(new_var[0] & ((((*((u8 *) 0x3C6FC1)) == 0) ? (1) : (2)) & 0xFF)))
+  if (!(new_var[0] & ((((*((u8 *) GV(0x3C6FC1, 0x32C211))) == 0) ? (1) : (2)) & 0xFF)))
   {
     return 0;
   }

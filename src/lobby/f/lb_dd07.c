@@ -1,4 +1,5 @@
 /* lb_dd07 - browser: BsCsMove05_CapRegist 0x005F86C0-0x005F87C4 (cursor state of the registration dialog). Hand-written from the asm. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 extern u8 *bsCur;
@@ -15,7 +16,7 @@ void To_QuitMain_Init();
 void BsCloseCapDlg();
 void BsCsMove05_CapRegist() {
     BsDlgMvCsr(2);
-    if ((*(u16 *)(BsPsw + 4) & 0x20) || lpSKey[0x658] == 0x28) {
+    if ((*(u16 *)(BsPsw + 4) & 0x20) || lpSKey[GV(0x658, 0x664)] == 0x28) {
         switch (bsCur[2]) {
         case 1:
             memcpy(BrPersonalData, bs_user_prof, 0x1D0);
@@ -32,7 +33,7 @@ void BsCsMove05_CapRegist() {
             break;
         }
     }
-    if ((*(u16 *)(BsPsw + 4) & 0x40) || lpSKey[0x658] == 0x29) {
+    if ((*(u16 *)(BsPsw + 4) & 0x40) || lpSKey[GV(0x658, 0x664)] == 0x29) {
         BsCloseCapDlg(0);
     }
 }

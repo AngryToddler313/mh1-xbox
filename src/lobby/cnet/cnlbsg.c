@@ -389,9 +389,9 @@ void _cnet_RecvFromLbs_NoticeChatBinaryTU(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 48
 void _cnet_RecvFromLbs_MatchStart(void) {
-    _cnetEvent_JumpCallBack(1, 0);
+    CNEVT(1, 0);
 }
 #endif
 

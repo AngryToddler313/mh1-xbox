@@ -35,8 +35,13 @@ typedef struct CNET_BURST {
     u8 _pad1C[4];
     u8 state;           /* 0x20 (CnetSys_w+0xE38) 1 = run */
     u8 x21;             /* 0x21 progress */
+#ifdef MHG_PS2
+    u8 cnt;             /* 0x22 (G: assumed, swapped with res) */
+    u8 res;             /* 0x23 G: result: 1 ok, 2 failed */
+#else
     u8 res;             /* 0x22 result: 1 ok, 2 failed */
     u8 cnt;             /* 0x23 */
+#endif
 #ifdef MHG_PS2
     u8 gx24[4];         /* 0x24 G: the slot is 0x28 bytes (4 more at the end: a guess) */
 #endif

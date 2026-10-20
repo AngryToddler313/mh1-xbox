@@ -29,12 +29,12 @@ int cnt;
         break;
     default:
         for (i = 0, p = (u8 *)&User_data; i < 20; i++, p += 4) {
-            if (*(u16 *)(p + 0x37C) == (id & 0xFFFF)) {
-                if (*(s16 *)(p + 0x37E) == 0xFF) {
+            if (*(u16 *)(p + UDO(0x37C)) == (id & 0xFFFF)) {
+                if (*(s16 *)(p + UDO(0x37E)) == 0xFF) {
                     if ((s8)cnt < 2) {
                         return 1;
                     }
-                } else if (*(s16 *)(p + 0x37E) >= (s8)cnt) {
+                } else if (*(s16 *)(p + UDO(0x37E)) >= (s8)cnt) {
                     return 1;
                 }
             }

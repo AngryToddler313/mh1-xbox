@@ -435,13 +435,13 @@ u16 len;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void SetSendStringData2(w, src, len)
 SEND_WORK *w;
 char *src;
 int len;
 {
-    char buf[0x108];
+    char buf[GV(0x108, 0x208)];
     int n;
 
     n = lbs_encode_ex(buf, src, (((w->seq_h << 8) & 0xFFFF) + w->seq_l) & 0xFFFF, len & 0xFFFF, CnetSys_w.xfee);
@@ -451,13 +451,13 @@ int len;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void SetSendEncodeStringData(w, src, len)
 SEND_WORK *w;
 char *src;
 int len;
 {
-    char buf[0x108];
+    char buf[GV(0x108, 0x208)];
     int n;
 
     n = lbs_encode_ex(buf, src, (((w->seq_h << 8) & 0xFFFF) + w->seq_l) & 0xFFFF, len & 0xFFFF, CnetSys_w.xfee);

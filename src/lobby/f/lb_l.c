@@ -24,7 +24,7 @@ int trade_get_ck_005D0750(PLW *pl) {
                             pl->work904 = o->work904;
                             pl->work906 = o->work906;
                             if (Pl_master_ck(pl) == 1) {
-                                Lb_send_item_request(CWPLAYER(i) + 0x132C, o);
+                                Lb_send_item_request(CWPLAYER(i) + CWP_ID, o);
                             }
                             Lb_Pl_act_set2(pl, 0, 0x2E, 0);
                         } else {
@@ -35,7 +35,7 @@ int trade_get_ck_005D0750(PLW *pl) {
                         pl->work904 = o->work904;
                         pl->work906 = o->work906;
                         if (Pl_master_ck(pl) == 1) {
-                            Lb_send_item_request(CWPLAYER(i) + 0x132C, o);
+                            Lb_send_item_request(CWPLAYER(i) + CWP_ID, o);
                         }
                         Lb_Pl_act_set2(pl, 0, 0x2E, 0);
                     } else {

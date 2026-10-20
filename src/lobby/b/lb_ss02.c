@@ -1,4 +1,5 @@
 /* lb_ss02 - agent C 0x005B6420-0x005B65B8: server_select_01 (next server / retry; get_next_server takes no args). */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern s8 COM_R_No_2;
 extern s8 COM_R_No_3;
@@ -31,8 +32,8 @@ s32 server_select_01(void) {
             COM_R_No_2 = 0;
             COM_R_No_3 = 0;
             COM_R_No_1 = (u8) (COM_R_No_1 + 1);
-            memset(&network_work, 0, 0x2C);
-            F(s8, pNet, 6) = 1;
+            memset(&network_work, 0, GV(0x2C, 56));
+            F(s8, pNet, GV(6, 0x27)) = 1;
             cnLbc_MoveMenuServerSelect(&network_work);
         }
     } else if (CnetWork.x05 == 3) {

@@ -4122,14 +4122,14 @@ void lbc_matching_failed_02() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 34
 void lbc_matching_failed_03() {
     void *temp_a0;
 
-    F(s8, pNet_c127, PNET_OFS(0xC)) = 1;
+    F(s8, pNet_c127, GV(PNET_OFS(0xC), 0x2D)) = 1;
     if ((Fade_busy_ck() & 0xFF) != 1) {
         temp_a0 = (u8 *)cw;
-        F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
+        F(u8, temp_a0, CW_OFS(0x2C33)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C33)) + 1);
     }
 }
 #endif
@@ -4813,14 +4813,14 @@ int arg0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 35
 void CallBack_Logout_ShutDown() {
     u8 temp_a0_2;
     void *temp_a0;
 
     temp_a0 = (u8 *)cw;
-    if (F(u8, temp_a0, 0x2C45) == 0x26) {
-        F(u8, temp_a0, 0x2C45) = 0U;
+    if (F(u8, temp_a0, CW_OFS(0x2C45)) == GV(0x26, 0x36)) {
+        F(u8, temp_a0, CW_OFS(0x2C45)) = 0U;
         temp_a0_2 = COM_R_No_Logout_c142;
         if (temp_a0_2 == 2) {
             COM_R_No_Logout_c142 = (u8) (temp_a0_2 + 1);
@@ -5438,15 +5438,15 @@ void CallBack_Event_ShutDownOpponent(void) {
 /* ---- formerly b/lb_by03.c ---- */
 /* lb_by03 - agent B promoted near-match 0x005C0AC0-0x005C0B04: CallBack_Event_MatchCancel (first drafted by tools/lbauto.py). */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 36
 void CallBack_Event_MatchCancel(CNET_RES res) {
     u8 temp_a0;
     int temp_a1;
 
     temp_a1 = (int)cw;
-    temp_a0 = F(u8, temp_a1, 0x2C31);
+    temp_a0 = F(u8, temp_a1, CW_OFS(0x2C31));
     if ((temp_a0 != 5) && (temp_a0 == 4)) {
-        cnLBS_Get_ServerMessage(temp_a1 + 0x32D1, temp_a1);
+        cnLBS_Get_ServerMessage(GV(temp_a1 + 0x32D1, (int)((u8 *)temp_a1 + 0xF75D)), temp_a1);
         F(s8, (u8 *)cw, CW_OFS(0x2C0D)) = 2;
     }
 }
@@ -5687,14 +5687,14 @@ void CallBack_Event_PlazaJoinUser(void) {
 /* lb_bz54 - lobby UI/client 0x005C1210-0x005C1254: CallBack_Event_LobbyJoinUser (first drafted by tools/lbauto.py). */
 extern char LobbyInfo_bz54[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 37
 void CallBack_Event_LobbyJoinUser(void) {
     u16 sp1E;
     int temp_v0;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
     temp_v0 = (int)&LobbyInfo_bz54 + ((sp1E - 1) * 0x15C);
-    cnLBS_Get_mhLobbyJoinUser(sp1E, (void *)(temp_v0 + 2), (void *)(temp_v0 + 0xE));
+    GV(cnLBS_Get_mhLobbyJoinUser, cnLBS_Get_mhPlazaJoinUser)(sp1E, (void *)(temp_v0 + GV(2, 6)), (void *)(temp_v0 + GV(0xE, 0x12)));
 }
 #endif
 
