@@ -1730,7 +1730,7 @@ block_31:
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 51
 static void ex_atk_ck(PLW *pl, s32 arg1) {
     s32 temp_a0;
     s32 temp_v0;
@@ -10027,7 +10027,7 @@ static void pl_dm001(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 52
 static void pl_dm002(PLW *pl) {
     f32 sp90[3];
     f32 sp80[3];
@@ -10194,7 +10194,7 @@ b:
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 53
 static void pl_dm005(PLW *pl) {
     f32 sp90[3];
     f32 sp80[3];
