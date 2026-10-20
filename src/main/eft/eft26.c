@@ -48,7 +48,7 @@ static void eft26_d(EFTW *ew);
 static void eft26_e(EFTW *ew);
 static void eft26_t(PRIM *pr);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void Eft26_set(PLW *pl) {
     EFTW *ew;
 
@@ -65,7 +65,7 @@ void Eft26_set(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static void eft26_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -84,7 +84,7 @@ static void eft26_move(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void eft26_i(EFTW *ew) {
     ew->mode++;
     ew->mode2 = 0;

@@ -2132,3 +2132,6 @@ main 0x001552D0 0x001559E8 mhg/main/fl/amo_all_p3
 main 0x00139EB0 0x00139F5C mhg/main/fl/fldma01_p4
 main 0x0013A490 0x0013A7AC mhg/main/fl/fldma01_p5
 main 0x0013A7B0 0x0013A980 mhg/main/fl/fldma01_p6
+sub_main 0x004DBEA0 0x004DBF00 mhg/main/eft/eft26_p2
+sub_main 0x004DBF00 0x004DBF84 mhg/main/eft/eft26_p3
+sub_main 0x004DBF90 0x004DC028 mhg/main/eft/eft26_p4
