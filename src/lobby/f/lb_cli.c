@@ -344,7 +344,11 @@ s32 Check_CallBackWait();
 s32 internet_lobby_act();
 void Lbc_connect();
 void lobby_client_login();
+#ifdef MHG_PS2
+void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+#else
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2);
+#endif
 void lbc_text_lobby_trans(ARG_lbc_text_lobby_trans_arg0 *arg0);
 void text_lobby_trans_ot0(ARG_text_lobby_trans_ot0_arg0 *arg0);
 void text_lobby_trans_ot3(u8 *arg0);
@@ -517,16 +521,16 @@ static void CallBackWaitInit() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 82
 s32 Check_CallBackWait() {
     void *temp_v1;
     void *temp_v1_2;
 
     temp_v1 = (u8 *)cw;
-    F(s32, temp_v1, 0x35DC) = (F(s32, temp_v1, 0x35DC) - 1);
+    F(s32, temp_v1, CW_OFS(0x35DC)) = (F(s32, temp_v1, CW_OFS(0x35DC)) - 1);
     temp_v1_2 = (u8 *)cw;
-    if (F(s32, temp_v1_2, 0x35DC) < 0) {
-        F(s8, temp_v1_2, 0x35D9) = 1;
+    if (F(s32, temp_v1_2, CW_OFS(0x35DC)) < 0) {
+        F(s8, temp_v1_2, CW_OFS(0x35D9)) = 1;
         To_LogOut(4);
         return 1;
     }
@@ -644,9 +648,24 @@ void lobby_client_login() {
 }
 #endif
 
-#ifdef VERSION_MHG
+#ifdef MHG_PS2
+extern char lb_prim_g1[], lb_prim_g2[], lb_prim_g3[];
+#endif
+#if !defined(G_PART) || G_PART == 83
+#ifdef MHG_PS2
+/* G (lobby 0x57A0A0): four prims, their pointers at the front of G's net window */
+void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    F(int, pNet, 0x0) = (int)&lb_prim;
+    F(s32, F(int, pNet, 0x0), 0x14) = arg0;
+    F(int, pNet, 0x4) = (int)lb_prim_g1;
+    F(s32, F(int, pNet, 0x4), 0x14) = arg1;
+    F(int, pNet, 0x8) = (int)lb_prim_g2;
+    F(s32, F(int, pNet, 0x8), 0x14) = arg2;
+    F(int, pNet, 0xC) = (int)lb_prim_g3;
+    F(s32, F(int, pNet, 0xC), 0x14) = arg3;
+}
+#elif defined(VERSION_MHG)
 /* G (lobby 0x57A0A0): the prims are lb_prim[0..] 0x20 apart (MH1's D_3EBC90.. have no G address); pNet is MH1's layout here */
-#if !defined(G_PART)
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
     F(s32, F(int, pNet, PNET_OFS(0x14)), 0x14) = arg0;
@@ -655,7 +674,6 @@ void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(int, pNet, PNET_OFS(0x1C)) = (int)&lb_prim + 0x40;
     F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x14) = arg2;
 }
-#endif
 #else
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
@@ -665,6 +683,7 @@ void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(int, pNet, PNET_OFS(0x1C)) = (int)&D_3EBCB0;
     F(s32, F(int, pNet, PNET_OFS(0x1C)), 0x14) = arg2;
 }
+#endif
 #endif
 
 #ifdef __MWERKS__
@@ -3009,7 +3028,7 @@ s32 Lbc_ReserveRoom() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 80
 void CallBack_Result_Lobby_RoomCreate(CNET_RES res) {
     u8 *temp_a0;
     u8 *temp_a1;
@@ -3018,7 +3037,7 @@ void CallBack_Result_Lobby_RoomCreate(CNET_RES res) {
     if ((F(u8, temp_a1, CW_OFS(0x2C31)) != 5) && (F(u8, temp_a1, CW_OFS(0x2C45)) == CBW(0xF))) {
         F(u8, temp_a1, CW_OFS(0x2C45)) = 0U;
         if (res.val == 0) {
-            F(s8, (u8 *)cw, CW_OFS(0x32C5)) = 1;
+            F(s8, (u8 *)cw, GV(0x32C5, 0xF751)) = 1;
             temp_a0 = (u8 *)cw;
             F(u8, temp_a0, CW_OFS(0x2C35)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C35)) + 1);
             return;
@@ -3639,12 +3658,28 @@ void To_EnterRoom() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 78
 void CallBack_Result_InRoom00_Member(CNET_RES res) {
     int i;
     int off;
 
     if (((CWS_im *)cw)->x2C31 != 5) {
+#ifdef MHG_PS2
+        /* G: a 0x5C-byte member entry at cw+0x21C, and an error dialog on failure */
+        memset(cw + 0x21C, 0, 0x170);
+        if (res.val == 0) {
+            i = 0;
+            off = 0;
+            do {
+                u8 *p = cw + off;
+                cnLBS_Get_RoomMemberList((u16)i, p + 0x21C, p + 0x224, p + 0x238);
+                i++;
+                off += 0x5C;
+            } while (i < 4);
+        } else {
+            To_LogOut(4);   /* G map name of the error dialog setter (0x5842B0) */
+        }
+#else
         memset(cw + 0x4BC, 0, 0xBF0);
         if (res.val == 0) {
             i = 0;
@@ -3656,6 +3691,7 @@ void CallBack_Result_InRoom00_Member(CNET_RES res) {
                 off += 0x2FC;
             } while (i < 4);
         }
+#endif
     }
 }
 #endif
@@ -3679,16 +3715,16 @@ void CallBack_Result_InRoom00_JoinUser(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 79
 void CallBack_Result_InRoom00_EntryJoinUser(CNET_RES res) {
     u8 *temp_v0;
     if (res.val == 0) {
         temp_v0 = (u8 *)cw;
-        cnLBS_Get_MatchEntryJoinUser(F(u8, &ClassInfo_c106, 8), temp_v0 + 0x32C6, temp_v0 + 0x32C8);
+        cnLBS_Get_MatchEntryJoinUser(F(u8, &ClassInfo_c106, 8), temp_v0 + GV(0x32C6, 0xF752), temp_v0 + GV(0x32C8, 0xF754));
         return;
     }
-    F(s16, (u8 *)cw, CW_OFS(0x32C6)) = 0;
-    F(s16, (u8 *)cw, CW_OFS(0x32C8)) = 0;
+    F(s16, (u8 *)cw, GV(0x32C6, 0xF752)) = 0;
+    F(s16, (u8 *)cw, GV(0x32C8, 0xF754)) = 0;
 }
 #endif
 
@@ -4498,24 +4534,35 @@ void To_GoToTop() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 81
 void lobby_client_goto_top() {
     s32 temp_a1;
     u8 temp_a0_2;
     int temp_a0;
 
+#ifdef MHG_PS2
+    ((u8 *)pNet)[PNET_G(0xC)] = 1;   /* G: raises the dialog flag first */
+#endif
     temp_a0 = (int)cw;
     temp_a1 = temp_a0 + CW_OFS(0x2C34);
     temp_a0_2 = F(u8, temp_a0, CW_OFS(0x2C34));
     switch (temp_a0_2) {                            /* irregular */
     case 0:
         F(u8, temp_a0, CW_OFS(0x2C34)) = (u8) (temp_a0_2 + 1);
+#ifdef MHG_PS2
+        CallBackWaitInit();
+#else
         CallBackWaitInit(temp_a0_2, temp_a1);
+#endif
         F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x22);
         cnLBS_TopPageJump(&CallBack_Result_GotoTop_o);
         return;
     case 1:
+#ifdef MHG_PS2
+        Check_CallBackWait();
+#else
         Check_CallBackWait(temp_a0_2, temp_a1);
+#endif
     }
 }
 #endif
@@ -5633,7 +5680,11 @@ void CallBack_Event_MatchStart(CNET_RES res) {
     char *mini;
 
     F(s8, (u8 *)cw, CW_OFS(0x2C0C)) = 1;
+#ifdef MHG_PS2
+    Lbc_set_prim(0, 0, 0, 0);
+#else
     Lbc_set_prim(0, 0, 0);
+#endif
     *(s8 *)0x3F3404 = 0;
     Lb_send_stage();
     fade_set(0xA);

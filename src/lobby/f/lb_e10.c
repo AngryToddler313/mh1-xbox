@@ -1,6 +1,36 @@
 /* lb_e10 - room members list 0x005CB220-0x005CB308: lb_put_room_member_005CB220. Whole file in lb_e.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern char lit_249_00664AE0[];
+#ifdef MHG_PS2
+extern u8 my_user_id[];
+/* G: the 0x5C-byte member entries at cw+0x21C, the format through a pointer cell taking the handle first, and offline
+   the own handle / id */
+void lb_put_room_member_005CB220(void) {
+    u32 i;
+    int y;
+    int off;
+    u8 *p;
+    if (Online_ck() == 1) {
+        y = 0xA2;
+        i = 0;
+        off = 0;
+        do {
+            if (*(s8 *)(cw + off + 0x21C) != 0) {
+                flfntLocate(0x179, y);
+                p = cw + off;
+                font_print(*(char **)0x6364DC, p + 0x224, p + 0x21C);
+            }
+            y = (s16)(y + 0x28);
+            off += 0x5C;
+            i += 1;
+        } while (i < 4U);
+        return;
+    }
+    flfntLocate(0x179, 0xA2);
+    font_print(*(char **)0x6364DC, my_user_handle, my_user_id);
+}
+#else
 void lb_put_room_member_005CB220(void) {
     u32 i;
     int y;
@@ -26,3 +56,4 @@ void lb_put_room_member_005CB220(void) {
     p = (u8 *)&lb_player[game_w.master];
     font_print(lit_249_00664AE0, p + 0x24, p + 4);
 }
+#endif

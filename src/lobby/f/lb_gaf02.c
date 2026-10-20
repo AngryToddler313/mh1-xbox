@@ -1,4 +1,5 @@
 /* lb_gaf02 - near-match fixes 0x005D8680-0x005D875C: Local_main. Whole file in lb_af.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern u8 *pNet;
@@ -68,23 +69,32 @@ void Lbc_SendMiniData();
 int Lbc_getDate();
 void Lb_check_newCommer();
 
+#ifdef MHG_PS2
+#define LBC_SET_PRIM0() Lbc_set_prim(0, 0, 0, 0)   /* G: a fourth argument */
+#else
+#define LBC_SET_PRIM0() Lbc_set_prim(0, 0, 0)
+#endif
 int Local_main(void) {
-    pNet[0xC] = 0;
-    pNet[0x11] = 0;
+    pNet[PNET_G(0xC)] = 0;
+    pNet[GV(0x11, 0x31)] = 0;
     font_set_stack_no(0);
     vs_square_func_213[lb_sys.x03]();
-    if (pNet[0x11] == 0) {
+    if (pNet[GV(0x11, 0x31)] == 0) {
+#ifdef MHG_PS2
+        lbc_text_lobby_trans();
+#else
         lbc_text_lobby_trans(network_work);
+#endif
     }
-    if (lb_sys.x68 == 32) {
-        *(s8 *)0x3F35CC = 0;
+    if (lb_sys.x68 == GV(32, 34)) {
+        *(s8 *)GV(0x3F35CC, 0x35ED5F) = 0;
         Pit_reset();
-        Lbc_set_prim(0, 0, 0);
+        LBC_SET_PRIM0();
         return 1;
     }
-    if (lb_sys.x68 == 37) {
+    if (lb_sys.x68 == GV(37, 39)) {
         Pit_reset();
-        Lbc_set_prim(0, 0, 0);
+        LBC_SET_PRIM0();
         return -1;
     }
     return 0;

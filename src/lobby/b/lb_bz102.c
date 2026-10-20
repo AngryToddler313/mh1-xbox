@@ -1,6 +1,46 @@
 /* lb_bz102 - lobby UI/client 0x005B38A0-0x005B39AC: lm_logout_mv (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_a.h"
 
+#ifdef MHG_PS2
+int Cockpit_chat_chk();
+/* G: nothing while the cockpit chat is open, the keys come back */
+s32 lm_logout_mv(s32 arg0) {
+    s32 temp_a1;
+
+    if (Cockpit_chat_chk() == 1) {
+        return arg0;
+    }
+    temp_a1 = arg0 & 0xFFFF;
+    F(s8, pNet, PNET_G(0xC)) = 1;
+    if (temp_a1 & 0x20) {
+        if (F(u8, pNet, PNET_G(0xF)) == 0) {
+            Lbs_LogOutRequest();
+            cnWrap_SoundRequest(6);
+            return 0;
+        }
+        return 0x40;
+    }
+    if (temp_a1 & 0x40) {
+        if (F(u8, pNet, PNET_G(0xF)) == 1) {
+            return 0x40;
+        }
+        SetDialogYesNo(1);
+        cnWrap_SoundRequest(3);
+        return 0;
+    }
+    if (temp_a1 & 0x800) {
+        if (F(u8, pNet, PNET_G(0xF)) != 0) {
+            cnWrap_SoundRequest();
+            SetDialogYesNo(0);
+        }
+    } else if ((temp_a1 & 0x400) && (F(u8, pNet, PNET_G(0xF)) != 1)) {
+        cnWrap_SoundRequest();
+        SetDialogYesNo(1);
+    }
+    return arg0;
+}
+#else
 s32 lm_logout_mv(s32 arg0) {
     s32 temp_a1;
 
@@ -34,3 +74,4 @@ s32 lm_logout_mv(s32 arg0) {
 block_16:
     return 0;
 }
+#endif

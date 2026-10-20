@@ -1,4 +1,5 @@
 /* lb_gab02 - near-match fixes 0x005CD7D0-0x005CD924: Lb_set_player. Whole file in lb_ab.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern char lit_236_00664CC0[];
@@ -53,7 +54,9 @@ u8 *c;
         *(s32 *)(*(u8 **)(pl + 0x564) + 0x18) = *(u16 *)(pl + 0xC);
         *(void **)(*(u8 **)(pl + 0x564) + 0x14) = Lb_trans_pl;
     }
-    *(s8 *)(pl + 0x8F0) = 1;
+#ifndef MHG_PS2
+    *(s8 *)(pl + 0x8F0) = 1;   /* not in G */
+#endif
     Lb_pl_to_normal(pl, 0, 0, 0);
     *(u8 **)(pl + 0x3CC) = pl01_adr_tbl;
     (**(void (**)(u8 *))(*(u8 **)(pl + 0x3CC) + 0xC))(pl);

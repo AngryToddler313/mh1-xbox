@@ -52,23 +52,26 @@ void Lb_send_chat();
 
 
 
+#if !defined(G_PART) || G_PART == 1
 int plaza_chat_log_disp_line(int a) {
     int n = a & 0xFF;
     int sum = 0;
-    int head = *(u8 *)0x39DADE - 1;
+    int head = *(u8 *)GV(0x39DADE, 0x2FF2B5) - 1;
     int i = head - n;
-    int cnt = *(u8 *)0x39DADF - n;
+    int cnt = *(u8 *)GV(0x39DADF, 0x2FF2B6) - n;
     if (cnt != 0) {
         do {
             i &= 0x3F;
             cnt -= 1;
-            sum = (sum + *(u8 *)(PitMenu + i * 0x5D + 0x61)) & 0xFF;
+            sum = (sum + *(u8 *)(PitMenu + i * GV(0x5D, 0x5F) + GV(0x61, 0x6A))) & 0xFF;
             i -= 1;
         } while (cnt != 0);
     }
     return sum;
 }
+#endif
 
+#if !defined(G_PART)
 void plaza_name_sprint(s8 *dst, s8 *src) {
     int n;
     s8 *d;
@@ -101,3 +104,4 @@ void plaza_name_sprint(s8 *dst, s8 *src) {
     dst[11] = 0x46;
     dst[12] = 0;
 }
+#endif
