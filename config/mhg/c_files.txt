@@ -2270,3 +2270,4 @@ sub_main 0x004D18F0 0x004D19B8 mhg/main/eft/eft06b_p3
 main 0x002178B0 0x0021795C main/net/netwk13
 main 0x0020BD80 0x0020BE24 mhg/main/sk/f_sk_p16
 main 0x001005B0 0x00100660 mhg/main/sys/adxs02_p4
+main 0x0020F190 0x0020F23C mhg/main/hk/f_hk_p19
