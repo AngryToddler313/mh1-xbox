@@ -105,6 +105,7 @@ static s16 eft16_rot(s16 no);
 static s16 eft16_col_type_sel(u8 flag);
 static void eft16_se_req(EFTW *ew, f32 *pos);
 
+#if !defined(G_PART) || G_PART == 1
 static void eft16_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -121,7 +122,9 @@ static void eft16_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft16_i(EFTW *ew) {
     s16 n;
     EFT16_PIECE *p = ew->work;
@@ -227,7 +230,9 @@ static void eft16_i(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft16_m(EFTW *ew) {
     int y15;
     int x5;
@@ -660,7 +665,9 @@ static void eft16_m(EFTW *ew) {
     } while (x5 += 5, y15 += 5, i++, i < n);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft16_d(EFTW *ew) {
     s16 n;
     s16 i;
@@ -674,11 +681,15 @@ static void eft16_d(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft16_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART)
 static void eft16_t(PRIM *pr) {
     f32 rot[3];
     f32 sc[3];
@@ -868,7 +879,9 @@ static void eft16_t(PRIM *pr) {
         flSetRenderState(0x6C, 1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static s16 eft16_rot(s16 no) {
     switch (no & 6) {
     case 0:
@@ -882,7 +895,9 @@ static s16 eft16_rot(s16 no) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static s16 eft16_col_type_sel(u8 flag) {
     s16 c;
 
@@ -896,7 +911,9 @@ static s16 eft16_col_type_sel(u8 flag) {
     }
     return c;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void eft16_se_req(EFTW *ew, f32 *pos) {
     switch (ew->arg) {
     case 0:
@@ -933,7 +950,9 @@ static void eft16_se_req(EFTW *ew, f32 *pos) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft16_set(PLW *pl, int arg, s16 hit, f32 *pos, f32 scale) {
     FLMAT m;
     FLMAT inv;
@@ -1018,7 +1037,9 @@ void Eft16_set(PLW *pl, int arg, s16 hit, f32 *pos, f32 scale) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft16_set_ex(EMW *em, int arg, int joint) {
     EFTW *ew;
     EFT16_NECK *nk;
@@ -1043,7 +1064,9 @@ void Eft16_set_ex(EMW *em, int arg, int joint) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void Eft16_set_ex3(f32 *pos, int arg, s16 ang, int cnt, f32 scale) {
     EFTW *ew;
 
@@ -1060,7 +1083,9 @@ void Eft16_set_ex3(f32 *pos, int arg, s16 ang, int cnt, f32 scale) {
         ew->pos[2] = pos[2];
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Eft16_set_impact(PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale) {
     EFTW *ew;
 
@@ -1114,3 +1139,4 @@ void Eft16_set_impact(PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale) {
         }
     }
 }
+#endif
