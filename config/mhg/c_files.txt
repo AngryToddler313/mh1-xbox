@@ -2015,3 +2015,5 @@ game:rodata 0x006DAA70 0x006DAB38 game/set/set09
 game 0x00658370 0x00658C54 game/set/set20
 game 0x0065C470 0x0065CF58 game/shell/shell06
 game:rodata 0x006DAC60 0x006DAC98 game/shell/shell06
+game 0x0065F780 0x00660DFC game/shell/shell08
+game:rodata 0x006DADB0 0x006DAE00 game/shell/shell08
