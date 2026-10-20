@@ -2057,3 +2057,4 @@ lobby 0x005E7350 0x005E73B8 mhg/lobby/cnet/cnlbs_p41
 lobby 0x005E7410 0x005E74B8 mhg/lobby/cnet/cnlbs_p42
 lobby 0x005BB590 0x005BB5C4 mhg/lobby/cnet/cnlbs_p45
 lobby 0x005ACCD0 0x005ACE44 mhg/lobby/cnet/cnlbs_p7
+lobby 0x005AE320 0x005AE354 mhg/lobby/cnet/cnlbs_p8
