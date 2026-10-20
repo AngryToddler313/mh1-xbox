@@ -1609,7 +1609,7 @@ static void em_dmg05_00610D90(EMW *em, EM27W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 static void em_dmg06_00610E20(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
@@ -1621,7 +1621,9 @@ static void em_dmg06_00610E20(EMW *em, EM27W *w) {
         break;
     case 1:
         if (--em->work08 <= 0) {
+#ifndef MHG_PS2     /* G: the paralysis ends elsewhere */
             Em_Mahi_End(em);
+#endif
             em->x05++;
             em27_act_set(em, 0, 0xA, 4);
         }

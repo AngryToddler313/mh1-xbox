@@ -1,4 +1,5 @@
 /* em17_r02 - monster 17 AI 0x005DA580-0x005DAAC8: em_act_search2_005DA580, act_dist_select_005DA5C0, em17_to_normal, em17_to_fly, em17_frame_reset, em_act00_005DA9F0. Whole file in em17_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -439,12 +440,14 @@ void em17_to_normal(EMW *em, s16 a, s16 b) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void em17_to_fly(EMW *em, int flag) {
+#ifndef MHG_PS2     /* G: no ground check */
     if (em->x734 != 3) {
         act_dist_select_005DA5C0(em);
         return;
     }
+#endif
     em->x839 = 1;
     em->act_spd = 1.0f;
     switch (flag & 0xFF) {

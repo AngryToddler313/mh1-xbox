@@ -86,6 +86,7 @@ void em_mahi_eff_set(EMW *, int);
 
 #ifdef MHG_PS2
 void game_func_005B6A30(EMW *em);
+void em03_dmg02_g(EMW *em, EM03W *w, int kind);
 #endif
 
 #if !defined(G_PART)
@@ -1233,14 +1234,21 @@ static void em_dmg04(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_move04_00589E00(EMW *em, EM03W *w) {
     switch (em->x15) {
     case 0: em_dmg00(em); break;
     case 1: em_dmg01(em); break;
+#ifdef MHG_PS2
+    case 2: em03_dmg02_g(em, w, 0); break;
+#else
     case 2: em_dmg02(em, w); break;
+#endif
     case 3: em_dmg03(em); break;
     case 4: em_dmg04(em); break;
+#ifdef MHG_PS2
+    case 5: em03_dmg02_g(em, w, 1); break;     /* G: em_dmg02 takes a kind */
+#endif
     }
 }
 #endif

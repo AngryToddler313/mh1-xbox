@@ -5,6 +5,7 @@
  * Most fly and attack actions first fall back to em02_act_set(em, 2, 0, 1)
  * while x8C3 and x388 are clear (meaning of x388 is a guess: some
  * movement state, 2 in the attack check). */
+#include "g_alias.h"
 #include "em.h"
 #include "pl.h"
 
@@ -105,7 +106,7 @@ void em02_move_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em02_fly_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     switch (no) {
@@ -170,6 +171,13 @@ void em02_fly_act_set(EMW *em, u16 no, u16 arg) {
         em->adj_z = 10.0f;
         em->work08 = 300;
         break;
+#ifdef MHG_PS2
+    case 11:            /* G: a flight that cannot be cut short */
+        em_rate_clear(em);
+        em->adj_z = 10.0f;
+        em->work08 = 300;
+        break;
+#endif
     default:
         return;
     }
@@ -360,7 +368,7 @@ void em02_fly_adjy(EMW *em, int type) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em02_fly_adjy2_init(EMW *em, u8 type) {
     EM02W *w = (EM02W *)em->ex;
 
@@ -370,6 +378,9 @@ void em02_fly_adjy2_init(EMW *em, u8 type) {
     w->adj_type = type;
     switch (w->adj_type) {
     case 0:
+#ifdef MHG_PS2
+    case 6:
+#endif
         w->adj_y = 1;
         w->adj_tm = 0x86;
         break;
@@ -382,6 +393,17 @@ void em02_fly_adjy2_init(EMW *em, u8 type) {
         w->adj_z = 1;
         w->adj_tm = 0x46;
         break;
+#ifdef MHG_PS2      /* G: two more approach types */
+    case 4:
+        w->adj_z = 1;
+        w->adj_tm = 0x46;
+        break;
+    case 5:
+        w->adj_y = 1;
+        w->adj_z = 1;
+        w->adj_tm = 0x3C;
+        break;
+#endif
     }
     em_rate_clear(em);
 }

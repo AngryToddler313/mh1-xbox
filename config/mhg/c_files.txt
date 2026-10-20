@@ -2224,3 +2224,9 @@ game 0x00633A10 0x00633AF8 mhg/game/em/em21_r10_p4
 game 0x00633F30 0x00634038 mhg/game/em/em21_r10_p5
 game 0x00634040 0x00634148 mhg/game/em/em21_r10_p6
 game 0x00634150 0x006341F0 mhg/game/em/em21_r10_p7
+game 0x005B6340 0x005B63D4 mhg/game/em/em03_p10
+game 0x006069C0 0x00606A04 mhg/game/em/em17_r02_p2
+game 0x0063F4C0 0x0063F59C mhg/game/em/em27a_p16
+game 0x00572330 0x0057238C mhg/game/eft/eft12_p11
+game 0x005A8ED0 0x005A91C8 mhg/game/em/em02_p3
+game 0x005A98F0 0x005A99A8 mhg/game/em/em02_p4
