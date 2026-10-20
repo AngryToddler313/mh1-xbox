@@ -2079,3 +2079,4 @@ lobby 0x005B0580 0x005B05C8 mhg/lobby/cnet/cnlbsg_p5
 lobby 0x005B0AB0 0x005B0B24 mhg/lobby/cnet/cnlbsg_p7
 lobby 0x005B0D50 0x005B1384 mhg/lobby/cnet/cnlbsg_p8
 lobby 0x005B1650 0x005B16D8 mhg/lobby/cnet/cnlbsg_p9
+lobby 0x005E19D0 0x005E1CAC mhg/lobby/cnet/cnlbsh_p1
