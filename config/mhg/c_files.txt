@@ -2088,3 +2088,4 @@ lobby 0x00551910 0x00551940 mhg/lobby/f/lb_ui_p1
 lobby 0x00552460 0x00552468 mhg/lobby/f/lb_ui_p2
 lobby 0x0059F6B0 0x0059F6B8 mhg/lobby/f/lb_ui_p3
 main 0x00218C00 0x00218C1C mhg/main/net/f_disp_p1
+main 0x002125A0 0x002128C4 mhg/main/net/netbgm04_p1
