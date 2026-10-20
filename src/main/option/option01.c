@@ -86,7 +86,11 @@ void Load_overlay();
 void Select_Tsk_Execute();
 void option_init();
 void option_main_menu();
+#ifdef MHG_PS2
+void option_sub_menu();     /* G passes a third argument 0 (as to option_exit; option_init gets a second 0) */
+#else
 void option_sub_menu(OPTTSK *, int);
+#endif
 void option_exit();
 void disp_option_menu();
 void disp_option_sub_menu(OPTTSK *, u16);
@@ -113,12 +117,28 @@ void option_default_set(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void Option_task(OPTTSK *t) {
     int pad = (Psw[2] | Psw[12]) & 0xFFFF;
 
     SetTrnslMode(4, 5);
     switch (t->step) {
+#ifdef MHG_PS2
+    case 0:
+        option_init(t, 0);
+        break;
+    case 1:
+        option_main_menu(t, pad);
+        break;
+    case 2:
+        option_sub_menu(t, pad, 0);
+        break;
+    case 3:
+        break;
+    case 4:
+        option_exit(t, pad, 0);
+        break;
+#else
     case 0:
         option_init(t);
         break;
@@ -133,6 +153,7 @@ void Option_task(OPTTSK *t) {
     case 4:
         option_exit(t, pad);
         break;
+#endif
     }
     trans();
 }

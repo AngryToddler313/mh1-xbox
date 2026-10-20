@@ -2253,3 +2253,5 @@ main 0x002346A0 0x0023476C main/mc/netfile2f
 main 0x001046E0 0x0010479C mhg/main/hit/f_sphr_p4
 main 0x0011D620 0x0011D708 main/menu/menu38
 main 0x00221DA0 0x00221DFC mhg/main/chat/f_chat_p33
+main 0x001174F0 0x001175DC mhg/main/option/option01_p8
+main 0x00214D30 0x00214E54 mhg/main/net/netwk01_p3

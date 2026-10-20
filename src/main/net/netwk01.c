@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x0026A2F0-0x0026AA94: network_work_init .. ms_network_save_game. See netwk_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct NETCW {
@@ -344,7 +345,7 @@ int ms_network_sub(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int ms_network_init(void) {
     int ret = 0;
 
@@ -355,7 +356,9 @@ int ms_network_init(void) {
         Net_work_init_all();
         Net_setBGcolor(0);
         net_common_w.x11 = 1;
+#ifndef MHG_PS2     /* G does not call it */
         func_59DB00();
+#endif
         Lbs_se_load();
         break;
     case 1:
