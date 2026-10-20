@@ -435,6 +435,19 @@ u8 *a;
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 10
+#ifdef MHG_PS2
+/* G 0x59F3B0 (the map calls it Lb_eat_to_bell): SetDialogData_HTML with kind 1 */
+void g_SetDialogHtml1_0059F3B0(arg0)
+int arg0;
+{
+    htmlStr = arg0;
+    dialogData.html = 1;
+    set_dialog_square(0x1F4, 0x17C);
+}
+#endif
+#endif
+
 #if !defined(G_PART) || G_PART == 7
 void SetDialogData_HTML(arg0)
 int arg0;

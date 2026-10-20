@@ -222,3 +222,4 @@ PROVIDE(lobby_to_quest = 0x005917E0);
 PROVIDE(Lb_ItemBox_init = 0x00552470);
 PROVIDE(lb_msg_g = 0x0059D7B0);
 PROVIDE(lb_pl_mv094 = 0x00596810); /* the map: disp_lm_room_member */
+PROVIDE(g_SetDialogHtml1_0059F3B0 = 0x0059F3B0); /* G: SetDialogData_HTML with html kind 1 (the map: Lb_eat_to_bell) */

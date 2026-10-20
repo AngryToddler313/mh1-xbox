@@ -2769,3 +2769,4 @@ lobby 0x0058BD70 0x0058BD8C lobby/b/lb_bz76
 lobby 0x005917E0 0x00591800 mhg/lobby/b/lb_bz64_p1
 lobby 0x00552470 0x005524B8 mhg/lobby/f/lb_tu_ib_p12
 lobby 0x00596810 0x005968D0 mhg/lobby/f/lb_j10_p3
+lobby 0x0059F3B0 0x0059F3CC mhg/lobby/f/lb_ui_p10
