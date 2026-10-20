@@ -1877,3 +1877,5 @@ game 0x00571180 0x005712A8 mhg/game/eft/eft12_p3
 game 0x005714B0 0x00571830 mhg/game/eft/eft12_p4
 game 0x00572250 0x00572324 mhg/game/eft/eft12_p5
 game 0x005727D0 0x00572B10 mhg/game/eft/eft12_p6
+game 0x006044E0 0x00604B90 mhg/game/em/em17_p1
+game 0x00604DD0 0x00605A38 mhg/game/em/em17_p2

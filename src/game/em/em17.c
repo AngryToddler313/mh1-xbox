@@ -66,6 +66,7 @@ void speed_add_g(EMW *, s32 *);
         w->dist = 0.0f;             \
     }
 
+#if !defined(G_PART)
 void em17_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     switch (no) {
@@ -102,7 +103,9 @@ void em17_act_act_set(EMW *em, u16 no, u16 arg) {
     em->x388 = 0;
     em_act_set2(em, 0, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em17_move_act_set(EMW *em, u16 no, u16 arg) {
     EM17W *w = (EM17W *)em->ex;
 
@@ -199,7 +202,9 @@ void em17_move_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 1, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em17_fly_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     switch (no) {
@@ -246,7 +251,9 @@ void em17_fly_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 2, no, arg);
 }
+#endif
 
+#if !defined(G_PART)
 void em17_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM17W *w = (EM17W *)em->ex;
 
@@ -275,7 +282,9 @@ void em17_atk_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 3, no, arg);
 }
+#endif
 
+#if !defined(G_PART)
 #ifdef VERSION_MHG
 #include "em_revive_g.h"
 void em17_init(EMW *em);
@@ -302,7 +311,9 @@ static void em17_revive_init(EMW *em)
     em->x839 = 1;
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -346,7 +357,9 @@ void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em17_senkai_sub(EMW *em, int flags, int mode) {
     EM17W *w = (EM17W *)em->ex;
     STAGE_DATA *sd = Stage_data_get(em->stg);
@@ -537,7 +550,9 @@ void em17_senkai_sub(EMW *em, int flags, int mode) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u16 em17_senkai_target(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
     int a;
@@ -569,7 +584,9 @@ u16 em17_senkai_target(EMW *em) {
     em->ang[1] = (u16)em->ang[1];
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em17_fly_adjy(EMW *em, int type) {
     f32 (*tbl)[2] = fly_adjy_hosei_tbl_006646E0[type];
     EM17W *w = (EM17W *)em->ex;
@@ -601,7 +618,9 @@ void em17_fly_adjy(EMW *em, int type) {
         speed_add(em, w->spd);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em17_fly_adjy2_init(EMW *em, u8 type) {
     EM17W *w = (EM17W *)em->ex;
 
@@ -653,11 +672,15 @@ void em17_fly_adjy2_init(EMW *em, u8 type) {
     }
     em_rate_clear(em);
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subx(EMW *em, EM17W *w) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_suby(EMW *em, EM17W *w) {
     int i;
     f32 (*tbl)[2] = fly_adjy2_hosei_tbl_00664AF0[w->adj_type];
@@ -694,7 +717,9 @@ static u8 fly_adjy2_suby(EMW *em, EM17W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subz(EMW *em, EM17W *w) {
     f32 (*tbl)[2] = fly_adjz2_hosei_tbl_00664CB0[w->adj_type];
     u8 ret = 0;
@@ -723,7 +748,9 @@ static u8 fly_adjy2_subz(EMW *em, EM17W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 u8 em17_fly_adjy2(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
     u8 ret = 0;
@@ -746,3 +773,4 @@ u8 em17_fly_adjy2(EMW *em) {
     }
     return ret;
 }
+#endif
