@@ -2156,3 +2156,13 @@ lobby 0x005631A0 0x00563204 mhg/lobby/f/lb_npc_p18
 game 0x005AE200 0x005AE454 mhg/game/em/em02_aib_p9
 game 0x0055D370 0x0055DA34 mhg/main/pl/f_pl_p54
 lobby 0x00585680 0x005859D8 mhg/lobby/f/lb_cli_p17
+lobby 0x00590DC0 0x00590DC8 lobby/b/lb_bz04
+lobby 0x0059DA80 0x0059DA88 lobby/f/lb_z05
+lobby 0x005AEBD0 0x005AEBD8 lobby/f/lb_m02
+lobby 0x005B0A50 0x005B0A58 mhg/lobby/cnet/cnlbsg_p45
+lobby 0x00547BB0 0x00547BC4 mhg/lobby/f/lb_mix_p3
+lobby 0x0059F3D0 0x0059F3EC mhg/lobby/f/lb_ui_p7
+lobby 0x0059F3F0 0x0059F404 mhg/lobby/f/lb_ui_p8
+lobby 0x005AE1F0 0x005AE224 mhg/lobby/cnet/cnlbs_p89
+lobby 0x005BB490 0x005BB4C4 mhg/lobby/cnet/cnlbs_p90
+lobby 0x005BC0D0 0x005BC104 mhg/lobby/cnet/cnlbs_p91

@@ -369,6 +369,9 @@ void _cnetEvent_JumpCallBack();
 #define CNEVT(a, g) _cnetEvent_JumpCallBack(a, 0)
 #endif
 void _cnet_Return_CallBack();
+#ifdef MHG_PS2
+void lobby_func_005BF880();   /* G only, 0xC bytes: what G's AnswerLobbyNumOfLobby calls */
+#endif
 void cnLBS_Init_LobbyBgProcess();
 void cnLBS_Init_LobbyBgBurstProcess();
 int __cnetSub_Set_BgProcess();

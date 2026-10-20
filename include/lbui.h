@@ -44,6 +44,12 @@ typedef struct LB_NETW {
     s16 x28;            /* 0x28 */
 } LB_NETW;
 typedef LB_NETW LB_TLMENU;
+/* the yes/no flag of the net window: G keeps it at +0x30 (PS2 G only; the PC keeps MH1's layout, see lbsys_g.h) */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+#define PNET_YESNO(p) (((u8 *)(p))[0x30])
+#else
+#define PNET_YESNO(p) ((p)->yesno)
+#endif
 
 /* plaza / lobby info tables (main .bss): 0x15C bytes per entry */
 typedef struct LB_PINFO {

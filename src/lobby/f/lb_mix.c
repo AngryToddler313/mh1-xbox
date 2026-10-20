@@ -1,4 +1,5 @@
 /* lb_mix - one translation unit 0x00535240-0x00536724 (lbtu3). */
+#include "g_alias.h"
 #include "lobby.h"
 #include "pl.h"
 #include "em.h"
@@ -511,9 +512,9 @@ s16 qty;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Lb_shop_init() {
-    memset(&lbShop, 0, LBSHOP_SIZE);
+    memset(GV(&lbShop, (void *)lbShop.pos), 0, GV(LBSHOP_SIZE, 0x94));   /* G: from the first field */
 }
 #endif
 

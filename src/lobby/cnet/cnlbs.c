@@ -758,10 +758,10 @@ int cnLBS_Get_LobbyCount(u16 *arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 90
 void _cnet_RecvFromLbs_AnswerLobbyNumOfLobby(void) {
     if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_NumOfPiece(CNWP(0x4050));
+        GV(__cnet_Recv_NumOfPiece, lobby_func_005BF880)(CNWP(0x4050));
     }
     _cnet_Return_CallBack(0);
 }
@@ -983,10 +983,10 @@ int cnLBS_Get_RoomCount(u16 *arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 89
 void _cnet_RecvFromLbs_AnswerRoomNumOfRoom(void) {
     if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_NumOfPiece(CNWP(0x4052));
+        GV(__cnet_Recv_NumOfPiece, __cnet_Recv_Byte)(CNWP(0x4052));
     }
     _cnet_Return_CallBack(0);
 }
@@ -1210,10 +1210,10 @@ int arg1;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 91
 void _cnet_RecvFromLbs_AnswerRoomCreate(void) {
     if (CNW(s8, 0xFEC) == 0) {
-        __cnet_SetEntryFloorInfo(2);
+        GV(__cnet_SetEntryFloorInfo, __cnet_ClearEntryFloorInfo)(2);
     }
     _cnet_Return_CallBack(0);
 }

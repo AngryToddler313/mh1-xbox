@@ -1,4 +1,5 @@
 /* cnlbs, run 7: __cnet_Login_Return .. __cnet_RecvFromLbs (lobby.bin 0x005AADE0-0x005AD61C): the matching functions of cnlbs_nm.c. */
+#include "g_alias.h"
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -416,9 +417,9 @@ int __cnet_SendReq_MatchEntry(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 45
 void _cnet_RecvFromLbs_MatchEntry(void) {
-    _cnet_Return_CallBack(0);
+    _cnet_Return_CallBack(GV(0, 1));
 }
 #endif
 
