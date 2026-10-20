@@ -14,6 +14,22 @@
 #define SE1(sw) ((sw)->se1)
 #endif
 
+#ifdef MHG_PS2
+/* G's entry is 0x30 bytes: the message number is a halfword after seq, the string copy 32 bytes */
+typedef struct SET01_STACK {
+    u8 type;            /* 0x00 0xFF = string given directly */
+    u8 seq;             /* 0x01 game_w.info_seq when queued */
+    s16 msg;            /* 0x02 index into info_str* */
+    s16 arg;            /* 0x04 item number or player number */
+    u8 _pad06[2];
+    char *str;          /* 0x08 */
+    char buf[32];       /* 0x0C copy of the string (set01_set2_use_mem) */
+    u8 x2A;             /* 0x2C (named after MH1's offset) */
+    u8 x2B;             /* 0x2D */
+    u8 _pad2E[2];
+} SET01_STACK;
+#define SET01_BUF 32
+#else
 typedef struct SET01_STACK {
     u8 type;            /* 0x00 0xFF = string given directly */
     u8 msg;             /* 0x01 index into info_str* */
@@ -26,6 +42,8 @@ typedef struct SET01_STACK {
     u8 x2A;             /* 0x2A */
     u8 x2B;             /* 0x2B */
 } SET01_STACK;
+#define SET01_BUF 30
+#endif
 
 extern SET01_STACK set01_stack[20];
 extern s8 set01_stack_ptr;
@@ -89,7 +107,7 @@ void Info_Initialization(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 int Info_stack_ck(u8 seq) {
     s16 i;
 
@@ -105,7 +123,7 @@ int Info_stack_ck(u8 seq) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void Info_control(void) {
     SET01_STACK *st;
 
@@ -149,7 +167,7 @@ static void set01_set_sub(int type, int msg, s16 arg, u8 seq) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 u8 set01_set(int type, int msg, s16 arg) {
     s8 i;
 
@@ -167,12 +185,15 @@ u8 set01_set(int type, int msg, s16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void set01_set2_sub(char *str, u8 seq) {
     SETW *sw = pull_set_work(1);
 
     if (sw != 0) {
         sw->type = 1;
+#ifdef VERSION_MHG
+        sw->flag3E = 1;
+#endif
         sw->move = set01_move;
         sw->arg = 4;
         *sw->u.str = str;
@@ -181,7 +202,7 @@ static void set01_set2_sub(char *str, u8 seq) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 u8 set01_set2(char *str) {
     s8 i;
 
@@ -198,7 +219,7 @@ u8 set01_set2(char *str) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 u8 set01_set2_use_mem(char *str) {
     s8 i;
     int j;
@@ -211,12 +232,12 @@ u8 set01_set2_use_mem(char *str) {
     set01_stack[i].seq = game_w.info_seq;
     set01_stack[i].type = 0xFF;
     set01_stack[i].str = set01_stack[i].buf;
-    if (strlen(str) < 30) {
+    if (strlen(str) < SET01_BUF) {
         strcpy(set01_stack[i].buf, str);
         set01_stack[i].x2A = 0;
         set01_stack[i].x2B = 0;
     } else {
-        for (j = 0; j < 30; j++) {
+        for (j = 0; j < SET01_BUF; j++) {
             set01_stack[i].buf[j] = str[j];
         }
         set01_stack[i].x2A = 0;

@@ -2199,3 +2199,12 @@ main 0x00208DC0 0x00208E6C mhg/main/sk/f_sk_p12
 main 0x0020A5B0 0x0020A654 mhg/main/sk/f_sk_p13
 main 0x0020BE30 0x0020BEA0 mhg/main/sk/f_sk_p14
 main 0x0020BEA0 0x0020C068 mhg/main/sk/f_sk_p15
+sub_main 0x004F7530 0x004F75D0 mhg/main/reward/f_reward3_p2
+main 0x0012B480 0x0012B4D0 mhg/main/font/fs2_01_p2
+main 0x0011C1B0 0x0011C200 main/menu/menu07
+sub_main 0x004C3D80 0x004C3E20 mhg/main/set/set01_p5
+sub_main 0x004C3E20 0x004C3EFC mhg/main/set/set01_p6
+sub_main 0x004C3F80 0x004C4038 mhg/main/set/set01_p7
+sub_main 0x004C4040 0x004C40AC mhg/main/set/set01_p8
+sub_main 0x004C40B0 0x004C4158 mhg/main/set/set01_p9
+sub_main 0x004C4160 0x004C4304 mhg/main/set/set01_p10
