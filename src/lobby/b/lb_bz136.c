@@ -1,4 +1,5 @@
 /* lb_bz136 - lobby UI/client 0x005B5050-0x005B514C: connecting_20 (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_a.h"
 extern s16 Vs_Cnt_1;
 extern s8 PPP_ErrorStatus;
@@ -22,9 +23,9 @@ s32 connecting_20(void) {
         }
     }
     if ((tk_sw_new_ck(0x8000) != 0) && (COM_R_No_5 == 0)) {
-        *(s16 *)0x4E4746 = (s16) (*(s16 *)0x4E4746 + 1);
+        *(s16 *)GV(0x4E4746, 0x3E31B6) = (s16) (*(s16 *)GV(0x4E4746, 0x3E31B6) + 1);
     } else {
-        *(s16 *)0x4E4746 = 0;
+        *(s16 *)GV(0x4E4746, 0x3E31B6) = 0;
     }
     temp_v0 = InetConnectAll();
     switch (temp_v0) {                              /* irregular */
@@ -33,9 +34,9 @@ s32 connecting_20(void) {
         break;
     case 4:
         var_s0 = -1;
-        PPP_ErrorStatus = (s8) *(s8 *)0x4E474F;
+        PPP_ErrorStatus = (s8) *(s8 *)GV(0x4E474F, 0x3E31BF);
         break;
     }
-    *(s16 *)0x3A6E94 = (s16) *(u8 *)0x4E474D;
+    *(s16 *)GV(0x3A6E94, 0x30C0D4) = (s16) *(u8 *)GV(0x4E474D, 0x3E31BD);
     return var_s0;
 }

@@ -1,4 +1,5 @@
 /* cnlbs, run 5: _cnet_CallBack_Result_RoomSetFinish .. _cnet_RecvFromLbs_NoticeLoginOk (lobby.bin 0x005A83A0-0x005AA8FC): the matching functions of cnlbs_nm.c. */
+#include "g_alias.h"
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -351,9 +352,9 @@ void __cnet_Recv_PieceName(void *a, void *b) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 43
 void __cnet_Recv_PieceJoinUser(void *a, void *b) {
-    GetRecvData16(b, GetRecvData16(a, recv_work));
+    GV(GetRecvData16, GetRecvDataString)(b, GetRecvData16(a, recv_work));
 }
 #endif
 
@@ -595,12 +596,12 @@ void _cnet_RecvFromLbs_NoticeLobbyCommer(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 44
 int cnLBS_Read_MatchEntryJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_MatchEntryUser(arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_MatchEntryUser, lobby_func_005AE230)(arg0);
         return slot;
     }
     return -1;
@@ -621,20 +622,20 @@ u16 *b;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 45
 void _cnet_RecvFromLbs_AnswerMatchEntryUser(void) {
     u16 id;
 
     if (CnetSys_w.rres == 0) {
-        GetRecvData16(&CnetSys_w.room[id - 1].mb, GetRecvData16(&CnetSys_w.room[id - 1].ma, GetRecvData16(&id, recv_work), id));
+        GetRecvData16(&CnetSys_w.room[id - 1].mb + GV(0, 1), GetRecvData16(&CnetSys_w.room[id - 1].ma + GV(0, 1), GetRecvData16(&id, recv_work), id));   /* G: 2 bytes on */
         CnetSys_w.room[id - 1].flags |= 0x40;
         CnetSys_w.last_id = id;
     }
-    _cnet_Return_CallBack(0x21);
+    _cnet_Return_CallBack(GV(0x21, 0x26));
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 48
 void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
     int id;
     u8 *s0;
@@ -642,10 +643,10 @@ void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
     if (CnetSys_w.rres == 0) {
         id = CNW(u8, 0x4060);
         s0 = (u8 *)&CnetSys_w + ((id - 1) * 0x164);
-        GetRecvData16(s0 + CNO(0x61DE), GetRecvData16(s0 + 0x61DC, recv_work));
+        GetRecvData16(s0 + GV(CNO(0x61DE), 0x9960), GetRecvData16(s0 + GV(0x61DC, 0x995E), recv_work));   /* G: room[].ma / mb two bytes on */
         CnetSys_w.last_id = id;
     }
-    _cnet_Return_CallBack(0x21);
+    _cnet_Return_CallBack(GV(0x21, 0x26));
 }
 #endif
 
@@ -787,13 +788,17 @@ int cnLBS_Get_TimingValue(int *arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 49
 void _cnet_RecvFromLbs_BothTimingValue(void) {
     s32 v;
 
     if (CnetSys_w.rres == 0) {
+#ifdef MHG_PS2
+        __cnet_Recv_Long((u8 *)&CnetSys_w + 0x3A5D8);   /* G receives in place (0x734DE0) */
+#else
         __cnet_Recv_Long(&v);
         CNW(s32, 0x3BA54) = v;
+#endif
     }
     _cnet_Return_CallBack(0x2B);
 }
@@ -970,10 +975,13 @@ int cnetGet_Login_DecideUserHandle(char *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 void _cnet_RecvFromLbs_RequestConnectionPair(void) {
     GetRecvData16(CNWP(0xFEE), &recv_work);
     __cnet_SendSet_ConnectionPair();
+#ifdef MHG_PS2
+    __cnet_SendSet_TelephoneNumber();   /* G only */
+#endif
 }
 #endif
 
@@ -987,7 +995,7 @@ void _cnet_RecvFromLbs_RequestFirstData(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 47
 void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
     int t = (CnetSys_w.rcnt * 0x10) & 0xFFFF;
 
@@ -999,6 +1007,9 @@ void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
     }
     CnetSys_w.firstdata.h[14] = (u32)CnetSys_w.echo_sum >> 2;
     __cnet_SendSet_FirstData(t);
+#ifdef MHG_PS2
+    lobby_func_005B02C0();   /* G only */
+#endif
 }
 #endif
 

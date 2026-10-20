@@ -3,6 +3,7 @@
  * 0xE == 3) it draws the item model (clay set 0x21E8 into the set-model work
  * at D_3C8DC0) at two joints (0x12, 0xE) with fixed offsets/rotations, then
  * calls the player version. Which NPC/item this is: not identified (guess). */
+#include "g_alias.h"
 #include "lobby.h"
 #include "em.h"
 #include "fl.h"
@@ -29,7 +30,7 @@ void lb_npc_item_trans(EMW *em) {
     CLAY *c;
     u8 *mat;
     s16 n;
-    LBSETMDL *mw = *(LBSETMDL **)0x3C8DC0;
+    LBSETMDL *mw = *(LBSETMDL **)GV(0x3C8DC0, 0x32EA90);
     s16 i;
     FLMAT m;
     FLMAT jm;
@@ -45,7 +46,7 @@ void lb_npc_item_trans(EMW *em) {
         n = 0;
         switch (em->kind) {
         case 0:
-            switch (ex[0xE]) {
+            switch (ex[GV(0xE, 0x34)]) {
             case 3:
                 switch (em->char0) {
                 case 0x2AD:

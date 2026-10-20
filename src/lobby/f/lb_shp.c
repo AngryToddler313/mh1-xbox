@@ -1,5 +1,6 @@
 /* lb_shp - one translation unit 0x00536730-0x00537B98 (lbtu3). */
 #define F(T, p, o) (*(T *)((u8 *)(p) + (o)))
+#include "g_alias.h"
 #include "lobby.h"
 #include "pl.h"
 void Lbc_set_prim();
@@ -249,8 +250,8 @@ void Lb_shop_trans2(int arg0) {
         font_set_stack_no(F(s32, arg0, 0x18));
         flfntSetSize(0x14, 0x14);
         font_set_palette(0);
-        reload_tex(1, 0x157);
-        SetTextureStage(0x157);
+        reload_tex(1, GSLOT(0x157, 0x180));
+        SetTextureStage(GSLOT(0x157, 0x180));
         SetFilterMode(1);
         flSetRenderState(0x60, 0);
         if (lbShop.x15 >= 5) {
@@ -300,7 +301,7 @@ void Lb_shop_trans2(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Lb_shop_trans_sub(int arg0) {
     if ((lbShop.x15 >= 5) && (lbShop.x84 == 0)) {
         if ((lbShop.x8E != 0) && (lbShop.x8E != 3)) {
@@ -309,8 +310,8 @@ void Lb_shop_trans_sub(int arg0) {
             }
         } else {
 block_6:
-            reload_tex(1, 0x157);
-            SetTextureStage(0x157);
+            reload_tex(1, GSLOT(0x157, 0x180));
+            SetTextureStage(GSLOT(0x157, 0x180));
             SetFilterMode(1);
             flSetRenderState(0x60, 0);
             font_set_stack_no(F(s32, arg0, 0x18));

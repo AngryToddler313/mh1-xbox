@@ -1,5 +1,10 @@
 /* lb_d01 - lobby send functions 0x005D5BA0-0x005D5F34: check_sender1, Lb_send_pl_pos, Lb_send_pl_warp, Lb_send_pl_chidori_off, check_sender0, Lb_send_pl_status, Lb_send_stage, Lb_send_commer, Lb_send_chair_req, Lb_send_chair_release. Whole file in lb_d.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
+#ifdef MHG_PS2
+void lobby_func_0059A830();
+extern PLW player_work[];
+#endif
 
 
 
@@ -45,13 +50,20 @@ void Lb_send_pl_pos(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Lb_send_pl_warp(PLW *pl) {
+#ifdef MHG_PS2
+    s16 p[4];   /* G sends x / z as halfwords, packet 4 */
+    p[0] = pl->pos[0];
+    p[1] = pl->pos[2];
+    lb_send_data(4, 2, p);
+#else
     LBPKPOS p;
     p.x = pl->pos[0];
     p.z = pl->pos[2];
     p.ang = *(u16 *)&pl->ang_y;
     lb_send_data(0xA, 2, &p);
+#endif
 }
 #endif
 
@@ -119,11 +131,14 @@ void Lb_send_stage(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void Lb_send_commer(void) {
     u8 buf[0x18];
     memcpy(buf, my_user_handle, 0x10);
     lb_send_data(0x10, 0x10, buf);
+#ifdef MHG_PS2
+    lobby_func_0059A830(&player_work[game_w.master]);   /* G only */
+#endif
 }
 #endif
 

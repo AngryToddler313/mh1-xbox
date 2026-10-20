@@ -22,7 +22,11 @@ void KinshiYogo_chk();
 RI *Lbs_GetRoomInfo();
 
 void lb_select_set_data(s32);
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 s32 lb_select_room(void) {
     RI *r;
     s32 sw;

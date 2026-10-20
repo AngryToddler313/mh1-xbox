@@ -1,4 +1,5 @@
 /* lb_k03 - lobby chat handlers 0x005D5090-0x005D5750: lb_pl_chat07, lb_pl_chat08, lb_pl_chat09, lb_pl_chat10, lb_pl_chat11, lb_pl_chat12, lb_pl_chat16. Whole file in lb_k.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 int frame_check2(f32, PLW *, int);
 void Pl_basic_flagset();
@@ -18,6 +19,7 @@ void Lb_Pl_act_set2();
 
 
 
+#if !defined(G_PART) || G_PART == 2
 void lb_pl_chat07(PLW *pl) {
     int t;
     u8 s;
@@ -37,8 +39,12 @@ void lb_pl_chat07(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {
@@ -47,7 +53,9 @@ void lb_pl_chat07(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void lb_pl_chat08(PLW *pl) {
     int t;
     u8 s;
@@ -67,8 +75,12 @@ void lb_pl_chat08(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {
@@ -77,7 +89,9 @@ void lb_pl_chat08(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void lb_pl_chat09(PLW *pl, int k) {
     u8 s;
     s = pl->x05;
@@ -91,11 +105,15 @@ void lb_pl_chat09(PLW *pl, int k) {
     case 1:
         if (F(s32, pl, 0x194) == 0) {
             Lb_pl_to_normal(pl, 0, chat09_chr_tbl_0064E1C0[k * 2 + 1], 0);
-            pl->work8F0 = 1;
+#ifndef MHG_PS2
+            pl->work8F0 = 1;   /* not in G */
+#endif
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void lb_pl_chat10(PLW *pl) {
     int t;
     u8 s;
@@ -115,8 +133,12 @@ void lb_pl_chat10(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {
@@ -125,7 +147,9 @@ void lb_pl_chat10(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 void lb_pl_chat11(PLW *pl) {
     int t;
     u8 s;
@@ -145,8 +169,12 @@ void lb_pl_chat11(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {
@@ -155,7 +183,9 @@ void lb_pl_chat11(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void lb_pl_chat12(PLW *pl) {
     int t;
     u8 s;
@@ -175,8 +205,12 @@ void lb_pl_chat12(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {
@@ -185,7 +219,9 @@ void lb_pl_chat12(PLW *pl) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 void lb_pl_chat16(PLW *pl) {
     int t;
     u8 s;
@@ -205,8 +241,12 @@ void lb_pl_chat16(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {
@@ -215,3 +255,4 @@ void lb_pl_chat16(PLW *pl) {
         }
     }
 }
+#endif

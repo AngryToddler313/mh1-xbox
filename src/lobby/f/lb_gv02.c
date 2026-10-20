@@ -9,7 +9,11 @@ int Get_sw2();
 int get_questLevelNum();
 int lb_get_quest_level();
 int Event_flag_ck();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 s8 Lb_talk_check_default();
 int Lb_put_npc_default();
 int NPC_Message();

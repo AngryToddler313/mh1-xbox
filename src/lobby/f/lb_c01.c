@@ -1,4 +1,5 @@
 /* lb_c01 - lobby small helpers 0x005C8750-0x005C8804: lb_rule_seet_trans_ot2, Lb_Matching, get_questLevelNum. Whole file in lb_c.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
 
@@ -23,9 +24,9 @@ void lb_rule_seet_trans_ot2(s32 *p) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void Lb_Matching(void) {
-    u8 m = CW8(CW_OFS(0x32C5));
+    u8 m = CW8(GV(CW_OFS(0x32C5), 0xF751));
     if (m == 1) {
         Lbs_MatchStart(m);
     }

@@ -1,11 +1,15 @@
 /* lb_gpc01 - item box / plaza chat / eft25 0x0060D710-0x0060D748: Plaza_chat_init. Whole file in lb_pc.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2
+int func_00220F40();
+#endif
 #include "lobby_f.h"
 extern char PitMenu[];
 /* plaza chat log state bytes (bss 0x39DADE..) */
 #define PZ_HEAD (*(u8 *)0x39DADE)   /* newest entry index */
 #define PZ_COUNT (*(u8 *)0x39DADF)  /* number of entries */
-#define PZ_TOP (*(u8 *)0x39DAE0)    /* first visible entry */
-#define PZ_ATEND (*(u8 *)0x39DAE1)  /* window shows the last entry */
+#define PZ_TOP (*(u8 *)GV(0x39DAE0, 0x2FF2B7))    /* first visible entry */
+#define PZ_ATEND (*(u8 *)GV(0x39DAE1, 0x2FF2B8))  /* window shows the last entry */
 #define PZ_ARROWS (*(u8 *)0x39DAE2) /* bit0 scroll down arrow, bit1 scroll up arrow, bit2/3 scrolled this frame */
 void SoftKeyboard_pos_set(f32, int);
 int SoftKeyboard_set();
@@ -53,5 +57,5 @@ void Lb_send_chat();
 
 int Plaza_chat_init(void) {
     SoftKeyboard_pos_set(100.0f, 0x140);
-    return SoftKeyboard_set(1, 0xE, 0x3C, 0);
+    return GV(SoftKeyboard_set, func_00220F40)(1, 0xE, 0x3C, 0);
 }

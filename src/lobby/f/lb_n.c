@@ -1,4 +1,5 @@
 /* Lobby: generic senders, sound call, set01 helper (SLPM_654.95 lobby overlay 0x5D3640-0x5D6420). Whole file; runs split into lb_nNN.c */
+#include "g_alias.h"
 #include "lbsys_g.h"
 #include "lobby_f.h"
 
@@ -30,7 +31,7 @@ s8 res;
 {
     struct { s16 item; s16 num; u8 id[8]; s8 r; } t;
     PLW *pl = &player_work[game_w.master];
-    memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
+    memcpy(t.id, CWPLAYER(pl->work909) + CWP_ID, 8);
     t.item = pl->work904;
     t.num = pl->work906;
     t.r = res;
@@ -90,7 +91,11 @@ u8 *data;
     }
 }
 
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01(int n) {   /* G returns whether the message was shown */
+#else
 void Lb_put_set01(int n) {
+#endif
 #ifdef VERSION_MHG
     /* G inserted messages: MH1 number -> G's lb_set01_msg entry (made by comparing the texts; 6 and 9 are reworded) */
     static const unsigned char g_set01_map[18] = { 0, 1, 2, 3, 4, 5, 8, 9, 10, 14, 11, 12, 13, 33, 14, 15, 24, 25 };
@@ -99,7 +104,13 @@ void Lb_put_set01(int n) {
     if (lb_sys.x72 == 0) {
         set01_set2(lb_set01_msg[n]);
         lb_sys.x72 = 0x5A;
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+        return 1;
+#endif
     }
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    return 0;
+#endif
 }
 
 s8 Lb_get_quest_type(u16 *p) {
@@ -141,16 +152,16 @@ void Lb_guild_trans(u8 *p) {
 #endif
 
 int Lb_check_existF(void) {
-    if (Quest_clear_bit_ck(0x67) == 1) {
+    if (Quest_clear_bit_ck(GV(0x67, 3004)) == 1) {
         return 0;
     }
-    if (Quest_clear_bit_ck(0x68) == 1) {
+    if (Quest_clear_bit_ck(GV(0x68, 3005)) == 1) {
         return 0;
     }
-    if (Quest_clear_bit_ck(0x69) == 1) {
+    if (Quest_clear_bit_ck(GV(0x69, 3006)) == 1) {
         return 0;
     }
-    if (Quest_clear_bit_ck(0x6A) != 1) {
+    if (Quest_clear_bit_ck(GV(0x6A, 3007)) != 1) {
         return 1;
     }
     return 0;

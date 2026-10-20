@@ -3,6 +3,7 @@
  * damage and death, sound/effect script). Names of the steps follow the
  * split (em_act00, em_move00...). em33.c is the same code for monster 33.
  * Field meanings are mostly guesses. Every function matches. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -16,11 +17,18 @@ typedef struct EM03W {
     s32 spd[3];         /* 0x08 speed handed to speed_add_g ([1] = angle) */
     f32 x14;            /* 0x14 time left (counted down by the motion step) */
     u8 x18;             /* 0x18 non-zero: turn toward the target */
+#ifdef MHG_PS2
+    u8 x19;             /* 0x19 G: 1 when the monster started angry (x95B) */
+#endif
 } EM03W;
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;
@@ -83,8 +91,24 @@ void Quest_enemy_escape(EMW *);
 void em03_init(EMW *);
 void em_mahi_eff_set(EMW *, int);
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+void game_func_005B6A30(EMW *em);
+void em03_dmg02_g(EMW *em, EM03W *w, int kind);
+#ifdef MHG_PS2
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+int game_func_005499A0(EMW *em, s16 no);
+void sub_main_func_004E92D0(EMW *em);
+int Event_flag_ck(int);
+void em16_act_set(EMW *em, int kind, u16 no, u16 arg);
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 11
 void em03_init(EMW *em) {
+#ifdef MHG_PS2
+    EM03W *w = (EM03W *)em->ex;
+#endif
+
     if (quest_w.x08 == 0) {
         switch (game_w.stage) {
         case 0xF:
@@ -125,6 +149,32 @@ void em03_init(EMW *em) {
         } else {
             em->x11 = em->type;
         }
+#ifdef MHG_PS2      /* G: hit points from the vital table, size scale, init-time char set */
+        em->x792 = em->x302 = game_func_005499A0(em, 0);
+        if (em->x11 != 0) {
+            em->x792 = em->x302 = game_func_005499A0(em, 1);
+            em->scale[0] *= 0.85f;
+            em->scale[1] *= 0.85f;
+            em->scale[2] *= 0.85f;
+        }
+        em->base_scale = em->scale[0];
+    }
+    sub_main_func_004E92D0(em);
+    game_func_00549FE0(em, 1, 0, 0);
+    if (em->x11 != 0) {
+        em_char_set2(em, 0x4B1, 0, 0, 1);
+    }
+    em_dur_init(em);
+    em_act_set(em, 0, 1);
+    switch (em->x95B) {
+    case 1:
+        w->x19 = 1;
+        break;
+    default:
+        w->x19 = 0;
+        break;
+    }
+#else
         em->x792 = em->x302 = em_hp_vital_set(em, 0x30);
         if (em->x11 != 0) {
             em->x792 = em->x302 = em_hp_vital_set(em, 0x30);
@@ -136,13 +186,17 @@ void em03_init(EMW *em) {
     em03_char_set(em, 1, 0, 0);
     em_dur_init(em);
     em_act_set(em, 0, 1);
+#endif
 }
 #endif
 
 #define EM03_HAGI0(em) ((em)->hagi[0].hp)
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void em03_main(EMW *em) {
+#ifdef MHG_PS2
+    EM03W *w = (EM03W *)em->ex;
+#endif
     u8 dmg[4];
     u8 b = 0;
     u8 c = 0;
@@ -207,8 +261,10 @@ void em03_main(EMW *em) {
         em03_act_set(em, 0, 8, 2);
         break;
     case 10:
+#ifndef MHG_PS2     /* G: no wake-up here */
         em->x88B = 1;
         Em_Sleep_End(em);
+#endif
         em03_act_set(em, 4, 2, 2);
         break;
     case 12:
@@ -244,10 +300,32 @@ void em03_main(EMW *em) {
         em_cmd_reset(em);
         em->x839 = 1;
     }
+#ifdef MHG_PS2      /* G: quest 10008 on stage 0x26, before event 0x15: scripted acts */
+    switch (quest_w.x08) {
+    case 10008:
+        if (em->stg == 0x26 && !Event_flag_ck(0x15)) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                if (w->x19 == 0) {
+                    em16_act_set(em, 6, 2, 0);
+                } else {
+                    em16_act_set(em, 6, 1, 0);
+                }
+            }
+            break;
+        }
+    default:
+        if (em->x839 != 0) {
+            em_cmd_ck(em);
+            em->x839 = 0;
+        }
+        break;
+    }
+#else
     if (em->x839 != 0) {
         em_cmd_ck(em);
         em->x839 = 0;
     }
+#endif
     em03_move_sub(em);
     if (em->x6FF != 0) {
         em03_move_sub(em);
@@ -1228,19 +1306,26 @@ static void em_dmg04(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_move04_00589E00(EMW *em, EM03W *w) {
     switch (em->x15) {
     case 0: em_dmg00(em); break;
     case 1: em_dmg01(em); break;
+#ifdef MHG_PS2
+    case 2: em03_dmg02_g(em, w, 0); break;
+#else
     case 2: em_dmg02(em, w); break;
+#endif
     case 3: em_dmg03(em); break;
     case 4: em_dmg04(em); break;
+#ifdef MHG_PS2
+    case 5: em03_dmg02_g(em, w, 1); break;     /* G: em_dmg02 takes a kind */
+#endif
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 static void em_die00_00589EA0(EMW *em, EM03W *w) {
     em->x40C = 10;
     em->x40E = 10;
@@ -1249,6 +1334,9 @@ static void em_die00_00589EA0(EMW *em, EM03W *w) {
     case 0:
         em->x05++;
         em03_char_set(em, 62, 0, 0);
+#ifdef MHG_PS2      /* G: fall facing away from the hit */
+        em->ang[1] = (u16)em->dm_ang + 0x8000;
+#endif
         em->act_spd = 1.0f;
         em_rate_clear(em);
         em->rate_x = 0.0f;
@@ -1378,7 +1466,7 @@ static void em_move06_0058A310(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em03_move_sub(EMW *em) {
     EM03W *w = (EM03W *)em->ex;
 
@@ -1389,8 +1477,8 @@ void em03_move_sub(EMW *em) {
     case 3: em_move03_00589910(em, w); break;
     case 4: em_move04_00589E00(em, w); break;
     case 5: em_move05_0058A210(em, w); break;
-    case 6: em_move06_0058A310(em); break;
-    case 7: em_move06_0058A310(em); break;
+    case 6: GV(em_move06_0058A310, game_func_005B6A30)(em); break;
+    case 7: GV(em_move06_0058A310, game_func_005B6A30)(em); break;
     }
 }
 #endif

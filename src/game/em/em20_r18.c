@@ -1,4 +1,5 @@
 /* em20_r18 - monster 20 AI 0x005F41D0-0x005F691C: em_atk31_005F41D0, em_dmg00_005F4260, em_dmg01_005F42F0, em_dmg02_005F4380, em_dmg03_005F4410, em_dmg04_005F44A0, em_dmg05_005F44B0, em_dmg06_005F45D0, em_dmg07_005F46F0, em_dmg08_005F47E0, em_dmg09_005F4940, em_dmg10_005F4AD0, em_dmg11_005F4B60, em_dmg12_005F4C40, em_dmg13_005F4D70, em_dmg14_005F4EA0, em_dmg15_005F4FC0, em_dmg16_005F5090, em_dmg17_005F5160, em_dmg18_005F5290, em_dmg19_005F5390, em_dmg20_005F5490, em_demo00_005F55D0, em_demo04_005F5870, em_die00_005F5990, em_die01_005F5B30, em_die02_005F5CB0, em_move00_005F5F20, em_move01_005F6180, em_move02_005F6270, em_move03_005F6440, em_move04_005F6680, em_move05_005F6810, em_move06_005F6880. Whole file in em20_ai_nm.c. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -237,6 +238,9 @@ static void em_dmg18_005F5290(EMW *em, EM20W *w);
 static void em_dmg19_005F5390(EMW *em, EM20W *w);
 static void em_dmg20_005F5490(EMW *em, EM20W *w);
 static void em_demo00_005F55D0(EMW *em, EM20W *w);
+#ifdef MHG_PS2
+void game_func_00622400(EMW *em, EM20W *w);
+#endif
 static void em_demo04_005F5870(EMW *em, EM20W *w);
 static void em_die00_005F5990(EMW *em, EM20W *w);
 static void em_die01_005F5B30(EMW *em, EM20W *w);
@@ -1853,7 +1857,7 @@ void em_move05_005F6810(EMW *em, EM20W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em_move06_005F6880(EMW *em, EM20W *w) {
     u8 temp_a2;
 
@@ -1863,7 +1867,7 @@ void em_move06_005F6880(EMW *em, EM20W *w) {
         em_demo00_005F55D0(em, w);
         break;
     case 1:
-        em_demo00_005F55D0(em, w);
+        GV(em_demo00_005F55D0, game_func_00622400)(em, w);
         break;
     case 2:
         em_demo00_005F55D0(em, w);

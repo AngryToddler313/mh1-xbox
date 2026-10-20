@@ -1,4 +1,5 @@
 /* lb_k01 - lobby chat handlers 0x005D4AA0-0x005D4DF8: lb_pl_chat00, lb_pl_chat01, lb_pl_chat02, lb_pl_chat03. Whole file in lb_k.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 int frame_check2(f32, PLW *, int);
 void Pl_basic_flagset();
@@ -43,7 +44,7 @@ void lb_pl_chat00(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void lb_pl_chat01(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -58,13 +59,15 @@ void lb_pl_chat01(PLW *pl) {
     case 1:
         if (F(s32, pl, 0x194) == 0) {
             Lb_pl_to_normal(pl, 0, 4, 0);
-            pl->work8F0 = 1;
+#ifndef MHG_PS2
+            pl->work8F0 = 1;   /* not in G */
+#endif
         }
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void lb_pl_chat02(PLW *pl) {
     int t;
     u8 s;
@@ -84,8 +87,12 @@ void lb_pl_chat02(PLW *pl) {
         }
         if (Pl_master_ck(pl) == 1 && pl->work08 == 0) {
             if (pl->sw.pow[0] >= 0x28) {
+#ifdef MHG_PS2
+                Lb_Pl_act_set(pl, 1, 0x11, 0);   /* G */
+#else
                 Lb_pl_to_normal(pl, 0, 4, 0);
                 pl->work8F0 = 1;
+#endif
                 return;
             }
             if (PLU8(pl, 0x8C4) != 0) {

@@ -10,6 +10,16 @@
 extern u8 *cw;                 /* client work (D_6DD7E0, 0xBF40 bytes): u8 accessed by offset */
 #define CW8(o)  (*(u8 *)(cw + (o)))
 #define CWPLAYER(i) (cw + (i) * 0x2FC)  /* per member records start at cw+0x1334 */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+/* G: 0x5C-byte member records; the id (MH1 +0x132C) at +0x38C and the mini data (MH1 +0x1346) at +0x3A8 */
+#undef CWPLAYER
+#define CWPLAYER(i) (cw + (i) * 0x5C)
+#define CWP_ID 0x38C
+#define CWP_MINI 0x3A8
+#else
+#define CWP_ID 0x132C
+#define CWP_MINI 0x1346
+#endif
 
 typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x5C - 0x18]; } LBCOMMER; /* 0x5C bytes x8 at lbCommer */
 extern LBCOMMER lbCommer[8];
@@ -229,7 +239,11 @@ void pl_flag_clr();
 void flvecApplyMat33();
 void Lb_put_hint();
 void adx_se_set();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();   /* G returns whether the message was shown */
+#else
 void Lb_put_set01();
+#endif
 int Lb_check_hotel();
 void NPCZoomInCameraCancel();
 void Eft06_set();

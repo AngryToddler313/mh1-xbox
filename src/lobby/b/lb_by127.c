@@ -1,4 +1,5 @@
 /* lb_by127 - agent B 0x005C4660-0x005C488C: Lb_npc_mk (NPC model matrix: scale, rotation, head turn towards the hunter, then joint transform). */
+#include "g_alias.h"
 #include "lbnpc_proto.h"
 #include "fl.h"
 f32 flConvertStoR();
@@ -24,7 +25,7 @@ void Lb_npc_mk(EMW *em) {
     flmatSetTrans(&m2, em->pos[0], em->pos[1], em->pos[2]);
     flmatMul33_2(&m2, &m1);
     flmatCopy((u8 *)em + 0x60, &m2);
-    if (em->char0 != 0x284 && em->char0 != 0x286 && ex[0xE] != 5) {
+    if (em->char0 != 0x284 && em->char0 != 0x286 && ex[GV(0xE, 0x34)] != 5) {
         if (em->kind != 0) {
             j = get_joint_mat_em(em, 0xC);
             lim = 10.0f;
@@ -43,10 +44,10 @@ void Lb_npc_mk(EMW *em) {
             } else if (!(ang <= lim)) {
                 ang = lim;
             }
-            old = *(f32 *)(ex + 4);
+            old = *(f32 *)(ex + GV(4, 0x24));
             cur = old + 0.2f * (ang - old);
             flmatRotY33(j, 3.1415927f * cur / 180.0f);
-            *(f32 *)(ex + 4) = cur;
+            *(f32 *)(ex + GV(4, 0x24)) = cur;
         }
     }
     flCalcTransSI(*(s32 *)((u8 *)mdl + 0x24), &m2);

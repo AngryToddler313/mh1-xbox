@@ -1,4 +1,5 @@
 /* lb_ui - one translation unit 0x00590D40-0x005931B0 (lbtu3). */
+#include "g_alias.h"
 #define flfntLocate flfntLocate_hdr
 #define DispDialogData DispDialogData_hdr
 #include "lbui_proto.h"
@@ -434,22 +435,22 @@ u8 *a;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void SetDialogData_HTML(arg0)
 int arg0;
 {
     htmlStr = arg0;
-    dialogData.html = 1;
+    dialogData.html = GV(1, 2);
     set_dialog_square(0x1F4, 0x17C);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void SetDialogYesNo(v)
 s8 v;
 {
     dialogData.yesno = v;
-    pNet->yesno = v;
+    PNET_YESNO(pNet) = v;
 }
 #endif
 
@@ -518,13 +519,15 @@ asm void set_dialog_square()
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void SetSceneTitle(a, b)
 int a;
 int b;
 {
     pSceneTitle = text_lobby_msg[a];
-    pSceneTitle = pSceneTitle + b;
+#ifndef MHG_PS2
+    pSceneTitle = pSceneTitle + b;   /* G takes the title as it is */
+#endif
 }
 #endif
 

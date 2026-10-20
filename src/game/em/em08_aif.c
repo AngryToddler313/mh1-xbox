@@ -1,5 +1,6 @@
 /* em08_ai, run 6: em_fly10_0059D720 .. em_atk08_0059F910 (game.bin 0x0059D720-0x0059FAA4). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -527,7 +528,7 @@ void em_fly15_0059DF70(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em_fly16_0059E020(EMW *em, EM08W *w) {
     f32 temp_f0;
     s32 temp_v0;
@@ -566,7 +567,7 @@ void em_fly16_0059E020(EMW *em, EM08W *w) {
             em->x388 = 4;
         }
         if (em->adj_y < 0.0f) {
-            if (*(u8 *)0x3F3404 == em->stg) {
+            if (*(u8 *)GV(0x3F3404, 0x35ED34) == em->stg) {
                 if (em->x7E9 != 0) {
                     if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                         em->x05++;
@@ -624,7 +625,7 @@ void em_fly16_0059E020(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em_fly17_0059E400(EMW *em, EM08W *w) {
     f32 temp_f0;
     s32 temp_v0;
@@ -666,7 +667,7 @@ void em_fly17_0059E400(EMW *em, EM08W *w) {
             em->x388 = 4;
         }
         if (em->adj_y < 0.0f) {
-            if (*(u8 *)0x3F3404 == em->stg) {
+            if (*(u8 *)GV(0x3F3404, 0x35ED34) == em->stg) {
                 if (em->x7E9 != 0) {
                     if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                         em->x05++;

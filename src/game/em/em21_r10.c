@@ -1,4 +1,5 @@
 /* em21_r10 - monster 21 AI 0x006060F0-0x00607CD4: em_dmg16_006060F0, em_dmg17_006061D0, em_dmg18_006063E0, em_dmg19_00606600, em_dmg20_00606700, em_dmg21, em_dmg22, em_demo00_00606B70, em_die00_00606C90, em_die01_00606E20, em_die02_00606F90, em_die03_006073F0, em_move00_006075D0, em_move01_00607730, em_move02_006077C0, em_move03_006079A0, em_move04_00607A60, em_move05_00607C10, em_move06_00607CA0. Whole file in em21_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -329,7 +330,12 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+/* G: sets x388 and picks the range from it */
+void game_func_0062DB60(EMW *em, int x388, int flag);
+#endif
+
+#if !defined(G_PART) || G_PART == 4
 static void em_dmg16_006060F0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -338,7 +344,11 @@ static void em_dmg16_006060F0(EMW *em, EM21W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+#else
         em->x388 = 0;
+#endif
         em_char_set(em, 0x79, 0xC, 0);
         em_cmd_reset(em);
         break;
@@ -503,7 +513,7 @@ static void em_dmg18_006063E0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void em_dmg19_00606600(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -512,11 +522,15 @@ static void em_dmg19_00606600(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+#else
         em->x388 = 0;
+#endif
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep_End(em);
+        GV(Em_Sleep_End, Em_Sleep2_End)(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -539,7 +553,7 @@ static void em_dmg19_00606600(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static void em_dmg20_00606700(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -548,11 +562,15 @@ static void em_dmg20_00606700(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+#else
         em->x388 = 0;
+#endif
         em->x3F4 = 0;
         em_char_set(em, 0x62, 0, 0);
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        GV(Em_Sleep2_End, Em_Sleep_End)(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -575,7 +593,7 @@ static void em_dmg20_00606700(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void em_dmg21(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -585,7 +603,11 @@ void em_dmg21(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_char_set(em, 0x7C, 0, 0);
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 1, 0);
+#else
         em->x388 = 1;
+#endif
         em_cmd_reset(em);
         Em_Mahi_End(em);
         break;

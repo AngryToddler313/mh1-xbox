@@ -1,4 +1,6 @@
 /* lb_by10 - agent B promoted near-match 0x005B6600-0x005B6710: server_select_03 (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
+#include "lbsys_g.h"
 #include "lobby_f.h"
 extern s32 lbs_select_timer;
 extern s8 COM_R_No_2;
@@ -19,7 +21,7 @@ s32 server_select_03(void) {
         COM_R_No_1 = 5U;
         COM_R_No_3 = 0;
     }
-    if (*(u16 *)0x3F3710 != 0) {
+    if (*(u16 *)GV(0x3F3710, 0x35F050) != 0) {
         cnWrap_IsBBConnect();
         lbs_select_timer = 0x8CA0;
     }
@@ -34,7 +36,7 @@ s32 server_select_03(void) {
     temp_v0_2 = cnLbc_MoveMenuServerSelect(&network_work);
     switch (temp_v0_2) {                            /* irregular */
     case 0:
-        memcpy(&ConnectLbsId, (u8 *)&BsLbsInfo + (F(u8, pNet, 8) * 0x102), 0xC);
+        memcpy(&ConnectLbsId, (u8 *)&BsLbsInfo + (F(u8, pNet, PNET_G(8)) * 0x102), 0xC);
         var_s0 = 1;
         break;
     case -1:

@@ -1,5 +1,9 @@
 /* lb_j02 - lobby move handlers 0x005D09E0-0x005D0E60: lb_pl_mv045, lb_pl_mv046, lb_pl_mv047, lb_pl_mv048, lb_pl_mv051. Whole file in lb_j.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
+#ifdef MHG_PS2
+void lobby_func_0059B0A0();
+#endif
 
 
 
@@ -29,7 +33,7 @@ void lb_pl_mv045(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void lb_pl_mv046(PLW *pl) {
     int t;
     u8 s;
@@ -55,13 +59,18 @@ void lb_pl_mv046(PLW *pl) {
                 Lb_Pl_act_set2(pl, 0, 0x30, 0);
             } else {
                 Lb_pl_to_normal(pl, 0, 2, 0);
+#ifdef MHG_PS2
+                if (*(u16 *)((u8 *)pl + 0xC) == game_w.master) {   /* G only */
+                    lobby_func_0059B0A0();
+                }
+#endif
             }
         }
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void lb_pl_mv047(PLW *pl) {
     u8 s;
     PLU8(pl, 0x90B) = 1;
@@ -76,7 +85,9 @@ void lb_pl_mv047(PLW *pl) {
         return;
     case 1:
         if (F(s32, pl, 0x194) == 0) {
-            pl->work8F0 = 1;
+#ifndef MHG_PS2
+            pl->work8F0 = 1;   /* not in G */
+#endif
             Lb_pl_to_normal(pl, 0, 6, 0);
         }
     }
@@ -104,7 +115,7 @@ void lb_pl_mv048(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void lb_pl_mv051(PLW *pl) {
     u8 s;
     if (pl->id != game_w.master) {
@@ -114,13 +125,17 @@ void lb_pl_mv051(PLW *pl) {
     s = pl->x05;
     switch (s) {
     case 0:
-        lb_sys.x68 = 0x13;
+        lb_sys.x68 = GV(0x13, 0x15);
+#ifdef MHG_PS2
+        Lbc_set_prim(0, 0, 0, 0);
+#else
         Lbc_set_prim(0, 0, 0);
+#endif
         pl->x05 = pl->x05 + 1;
         Lb_Pl_basic_flagset(pl, 0, 0, 0);
         pl->work39C = 0;
         Lb_pl_chr_set(pl, 0x1AA, 6, 0);
-        *(s8 *)0x3F36AB = 0;
+        *(s8 *)GV(0x3F36AB, 0x35EFEB) = 0;
         return;
     case 1:
         if (F(s32, pl, 0x194) == 0) {

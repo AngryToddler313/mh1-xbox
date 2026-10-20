@@ -1,4 +1,5 @@
 /* Lobby browser: quit/poster/init states, page work push/pull, hand-written from m2c drafts. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 extern u8 *bsCsv;
@@ -144,10 +145,10 @@ int SetNextURL(char *url, int b, int c) {
     return BsUrlSet(bsUrl, bsSys->meta);
 }
 void BsCsMove06_CapWarn(void) {
-    if ((*(u16 *)(BsPsw + 4) & 0x20) || lpSKey[0x658] == 0x28) {
+    if ((*(u16 *)(BsPsw + 4) & 0x20) || lpSKey[GV(0x658, 0x664)] == 0x28) {
         BsCloseCapDlg(1);
     }
-    if ((*(u16 *)(BsPsw + 4) & 0x40) || lpSKey[0x658] == 0x29) {
+    if ((*(u16 *)(BsPsw + 4) & 0x40) || lpSKey[GV(0x658, 0x664)] == 0x29) {
         BsCloseCapDlg(0);
     }
 }

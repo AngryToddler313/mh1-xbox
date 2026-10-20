@@ -1,10 +1,12 @@
 /* lb_bz134 - lobby UI/client 0x005B1CE0-0x005B1E00: lb_join_talk, Lb_join_trans (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lbsys_g.h"
 #include "lobby_a.h"
 extern char lb_pit[];
 extern s32 joinQuest;
 typedef struct { u8 pad0000[0x18]; s32 x0018; } ARG_Lb_join_trans_arg0;
 
+#if !defined(G_PART) || G_PART == 1
 void lb_join_talk(void) {
     int temp_a1;
 
@@ -13,13 +15,15 @@ void lb_join_talk(void) {
     case 7:
     case 9:
     case 2:
-    case 0x10:
-    case 0xD:
+    case GV(0x10, 0x12):
+    case GV(0xD, 0xE):
         F(s8, &lb_pit, 0xB) = NPC_Message(F(s32, temp_a1, 4), F(s32, &lb_pit, 0), F(u16, temp_a1, 0), F(s8, &lb_pit, 9));
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_join_trans(ARG_Lb_join_trans_arg0 *arg0) {
     if (joinQuest >= 0xC8) {
         get_quest_info();
@@ -33,3 +37,4 @@ void Lb_join_trans(ARG_Lb_join_trans_arg0 *arg0) {
         lb_select_trans(F(s8, &lb_sys, LBSYS_OFS(6)));
     }
 }
+#endif

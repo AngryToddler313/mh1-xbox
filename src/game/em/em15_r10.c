@@ -1,4 +1,5 @@
 /* em15_r10 - monster 15 AI 0x005C89A0-0x005CAE9C: em_atk00_005C89A0, em_atk01_005C8AF0, em_atk02_005C8BB0, em_atk03_005C8C30, em_atk04_005C8CB0, em_atk05_005C8D30, em_atk06_005C8E00, em_atk07_005C8ED0, em_atk08_005C8F80, em_dmg00_005C90D0, em_dmg01_005C9160, em_dmg02_005C92D0, em_dmg03_005C9360, em_dmg04_005C93F0, em_dmg05_005C9510, em_dmg08_005C9630, em_dmg10_005C9770, em_dmg11_005C98B0, em_dmg12_005C99A0, em_dmg13_005C9AD0, em_dmg14_005C9C00, em_dmg15_005C9D20, em_dmg16_005C9E20, em_demo04_005C9F20, em_die00_005CA040, em_die01_005CA1D0, em_die02_005CA340, em_move00_005CA5B0, em_move01_005CA890, em_move02_005CA930, em_move03_005CABA0, em_move04_005CAC70, em_move05_005CAD90, em_move06_005CAE00. Whole file in em15_nm.c. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -189,6 +190,9 @@ static void em_dmg14_005C9C00(EMW *em, EM15W *w);
 static void em_dmg15_005C9D20(EMW *em, EM15W *w);
 static void em_dmg16_005C9E20(EMW *em, EM15W *w);
 static void em_demo04_005C9F20(EMW *em, EM15W *w);
+#ifdef MHG_PS2
+void game_func_005F58C0(EMW *em, EM15W *w);
+#endif
 static void em_die00_005CA040(EMW *em, EM15W *w);
 static void em_die01_005CA1D0(EMW *em, EM15W *w);
 static void em_die02_005CA340(EMW *em, EM15W *w);
@@ -350,6 +354,15 @@ void em_cmd_ck(EMW *);
 
 
 
+
+#ifdef MHG_PS2
+void game_func_005F6260(EMW *em, EM15W *w);
+#endif
+
+#ifdef MHG_PS2
+#include "em_revive_g.h"
+void em15_act_set(EMW *em, int kind, u16 no, u16 arg);
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 static void em_atk00_005C89A0(EMW *em, EM15W *w) {
@@ -1160,7 +1173,7 @@ static void em_demo04_005C9F20(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void em_die00_005CA040(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1181,7 +1194,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1189,8 +1202,15 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x3:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1200,6 +1220,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -1212,7 +1233,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static void em_die01_005CA1D0(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1231,7 +1252,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         break;
     case 0x1:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1239,8 +1260,15 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_WAIT(em, 1);
+#endif
         break;
     case 0x3:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1250,6 +1278,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -1262,7 +1291,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_die02_005CA340(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1306,7 +1335,7 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         break;
     case 0x3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1315,8 +1344,19 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         break;
     case 0x4:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        if (Quest_enemy_revival_ck(em) != 0 && --em->work08 <= 0) {
+            em->x05 += 1;
+            Em_hagi_point_clr(em);
+            em->work08 = 150;
+        }
+#endif
         break;
     case 0x5:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1326,6 +1366,7 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -1664,7 +1705,7 @@ void em_move04_005CAC70(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void em_move05_005CAD90(EMW *em, EM15W *w) {
     u8 temp_a2;
 
@@ -1679,18 +1720,23 @@ void em_move05_005CAD90(EMW *em, EM15W *w) {
     case 2:
         em_die02_005CA340(em, w);
         break;
+#ifdef MHG_PS2
+    case 3:
+        game_func_005F6260(em, w);
+        break;
+#endif
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em_move06_005CAE00(EMW *em, EM15W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x15;
     switch (temp_a2) {                              /* irregular */
     case 0:
-        em_demo04_005C9F20(em, w);
+        GV(em_demo04_005C9F20, game_func_005F58C0)(em, w);
         break;
     case 1:
         em_demo04_005C9F20(em, w);

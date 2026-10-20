@@ -1,4 +1,5 @@
 /* em08_ai_r01 - monster 8 AI 0x0059A2C0-0x0059A674: em08_init. Whole file in em08_ai_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -10,6 +11,16 @@
 #define EMF(em, T, o) (*(T *)((u8 *)(em) + (o)))
 
 /* em08's part of the per-monster work at EMW+0x444. */
+#ifdef MHG_PS2
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+int game_func_005499A0(EMW *em, s16 no);
+void sub_main_func_004DC5D0(EMW *em, int part);
+void game_func_0054A1D0(EMW *em, s16 *tbl);
+void game_func_0054A230(EMW *em, s16 *tbl);
+extern s16 em08_stay_tm_g[];
+extern s16 em08_runaway_tm_g[];
+#endif
+
 typedef struct EM08W {
     u8 _pad00[4];
     s16 anim;           /* 0x04 animation the sound/effect script follows */
@@ -409,6 +420,116 @@ void toride_eff_set(EMW *);
 
 
 void em08_init(EMW *em) {
+#ifdef MHG_PS2
+    /* G: init-time char set, both part resets, hit points from the vital table, stage timer lists, hire slots cleared */
+    EM08W *w = (EM08W *)em->ex;
+    u8 t;
+
+    game_func_00549FE0(em, 1, 0, 0);
+    sub_main_func_004DC5D0(em, 3);
+    sub_main_func_004DC5D0(em, 4);
+    if (quest_w.no == 0) {
+        em->ang[1] = 0x8000;
+        switch (game_w.stage) {
+        case 0x36:
+            em->pos[0] = 6000.0f + (1500.0f * (f32)(u32)em->x13);
+            em->pos[1] = 0.0f;
+            em->pos[2] = 10000.0f;
+            em->ang[1] = 0x4000;
+            em->x388 = 4;
+            em08_act_set(em, 2, 0, 0);
+            break;
+        default:
+            em->pos[0] = 5000.0f + (1500.0f * (f32)(u32)em->x13);
+            em->pos[1] = 0.0f;
+            em->pos[2] = 9000.0f;
+            em->x388 = 0;
+            em08_act_set(em, 2, 0, 0);
+            break;
+        }
+    } else {
+        switch (game_w.stage) {
+        case 0x36:
+            em->x388 = 4;
+            em08_act_set(em, 2, 0, 0);
+            break;
+        case 0x2D:
+            em->x388 = 4;
+            em08_act_set(em, 2, 0, 0);
+            break;
+        default:
+            em->x388 = 4;
+            em08_act_set(em, 2, 0, 0);
+            break;
+        }
+    }
+    w->x10 = 0;
+    em->x839 = 1;
+    em->x88B = 1;
+    em->x792 = em->x302 = game_func_005499A0(em, 0);
+    if (em->kind == 8) {
+        em->x765 = 1;
+    } else {
+        em->x8C3 = 0;
+        em->x765 = 0;
+    }
+    em->x8C2 = 0;
+    em->x56A = 0;
+    game_func_0054A1D0(em, em08_stay_tm_g);
+    game_func_0054A230(em, em08_runaway_tm_g);
+    w->dang = 0x4000;
+    w->x28 = 0x100;
+    w->x2C = 0x200;
+    w->x30 = 0x100;
+    w->x18 = 0x2000;
+    w->x14 = 0;
+    w->x38 = 0;
+    w->x39 = 0;
+    w->x3A = 0;
+    w->xF = 0;
+    for (t = 0; t < 4; t++) {
+        w->tm[t] = 0;
+        w->st[t].a = 0;
+        w->st[t].b = 0;
+        w->ang[t].a = 0;
+        w->ang[t].b = 0;
+    }
+    if (em->kind == 8) {
+        em->x7E0 = 450.0f;
+    } else {
+        em->x7E0 = 250.0f;
+    }
+    t = em->x948 & 1;
+    em->x948 = t;
+    if (t == 0 && em->kind != 0x27 && em->kind != 0x14) {
+        switch (em->kind) {
+        case 1:
+        case 0x2A:
+        case 0x25:
+        case 6:
+        case 0x26:
+        case 8:
+        case 0xB:
+        case 0x29:
+        case 0x31:
+        case 0xF:
+        case 0x2D:
+        case 0xE:
+        case 0x2B:
+        case 0x11:
+        case 0x2F:
+        case 0x15:
+        case 0x2E:
+        case 0x16:
+        case 0x30:
+        case 0x22:
+            em->ex[0xA3] = 0;
+            eft09_set(em);
+            break;
+        }
+    }
+}
+#else
     EM08W *w = (EM08W *)em->ex;
     u8 t;
 
@@ -497,3 +618,4 @@ void em08_init(EMW *em) {
         }
     }
 }
+#endif

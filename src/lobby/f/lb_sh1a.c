@@ -1,4 +1,9 @@
 /* lb_sh1a - one translation unit 0x00537C10-0x00539A90 (lbtu3). */
+#include "g_alias.h"
+void Lb_num_to_str();
+#ifdef MHG_PS2
+void lobby_func_005935A0();
+#endif
 #include "lobby_s.h"
 #include "lbsys_g.h"
 extern f32 tagMoveY[];
@@ -19,7 +24,11 @@ typedef struct { s16 x; s16 y; u8 pad[0x10]; } SPR20;
 extern SPR20 shop_tex_tbl[];
 extern char D_3F3728[];
 extern char D_3F3714[];
+#ifdef MHG_PS2
+extern s32 shop_process00_tag[];   /* G: not in the small data */
+#else
 extern s32 shop_process00_tag[1];
+#endif
 extern s8 r_no_process;
 extern char D_3E4FA0[];
 extern s32 armor_shop_tmp[7];
@@ -32,7 +41,11 @@ void lb_armor2_listItem(int x, int y, int z, s16 n);
 void armor_shop2_trans();
 s8 Lb_talk_check_default();
 extern s32 armorIndex;
+#ifdef MHG_PS2
+extern s32 shop_process01_tag[];   /* G: not in the small data */
+#else
 extern s32 shop_process01_tag[3];
+#endif
 typedef struct { u8 x0; u8 kind; u16 id; u8 x4[4]; } EQB;
 typedef struct { u8 kind; u8 x1; u16 id; u8 x4[0x14]; } SEIENT;
 typedef struct { u8 x0; u8 kind; u16 id; u16 x4; } EQREC;
@@ -83,6 +96,11 @@ s32 check_items(u8 *p, s8 stocked);
 void lb_process_make_kyoukaList();
 int Lb_make_mySrcEquip_k();
 int Lb_make_price_str_k();
+int font_print_sp();
+#ifdef MHG_PS2
+int Lb_make_price_str_g(); /* G calls Lb_make_price_str (0x54A000) with the _k arguments */
+void func_0012BDD0();
+#endif
 int check_items_k();
 #if !defined(G_PART) || G_PART == 1
 s32 Lb_shop_move_x() {
@@ -156,7 +174,7 @@ void Lb_put_shopCursor() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void lb_put_shopList() {
     char buf[0x20];
     LB_SHOPITEM *it;
@@ -165,11 +183,11 @@ void lb_put_shopList() {
     int y0;
 
     it = (LB_SHOPITEM *)((u8 *)lbShop.list + lbShop.x6C * 0x118);
-    Draw_menu_square(0x118, 0x30, 0x152, 0x122, 0, 0);
+    Draw_menu_square(0x118, 0x30, 0x152, 0x122, 0, GV(0, 0xA0000000));
     if (lbShop.count == 0) {
         if (lbShop.x8E == 3) {
             flfntSetSize(0x14, 0x14);
-            font_print_double(0x140, 0x96, 1, 4, lit_835_00654DB0);
+            font_print_double(0x140, 0x96, 1, 4, GV(lit_835_00654DB0, *(char **)0x6365E8));   /* G: through a pointer cell */
         }
         return;
     }
@@ -211,15 +229,15 @@ void lb_put_shopList() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void lb_put_shopHelp() {
     if (lbShop.count != 0) {
         if (lbShop.help != 0) {
-            Draw_menu_square(0x118, 0x160, 0x152, 0x50, 1, 0x7030100B);
+            Draw_menu_square(0x118, 0x160, 0x152, 0x50, 1, GV(0x7030100B, 0x700B3010));
             flfntSetSize(0x12, 0x12);
             font_set_palette(0);
             flfntLocate(0x122, 0x16C);
-            font_print_sp(Lb_make_price_str_k(lbShop.help, lbShop.qty * ((LB_SHOPITEM *)lbShop.list)[lbShop.cur].price, lbShop.cur));
+            GV(font_print_sp, func_0012BDD0)(GV(Lb_make_price_str_k, Lb_make_price_str_g)(lbShop.help, lbShop.qty * ((LB_SHOPITEM *)lbShop.list)[lbShop.cur].price, lbShop.cur));
             if (lbShop.x15 == 7) {
                 Lb_put_shopYesNo(lbShop.x15);
             }
@@ -255,7 +273,7 @@ void Lb_put_shopYesNo() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 char *Lb_make_price_str(char *arg0, int arg1) {
     char *temp_v0;
 
@@ -264,7 +282,7 @@ char *Lb_make_price_str(char *arg0, int arg1) {
     if (temp_v0 == 0) {
         return arg0;
     }
-    Lb_num_to_str(arg1, temp_v0);
+    GV(Lb_num_to_str, lobby_func_005935A0)(arg1, temp_v0);
     strcat(shopStr, (char *)strrchr(arg0, 0x24) + 1);
     return shopStr;
 }
@@ -319,7 +337,7 @@ int arg0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void lb_process_init() {
     lbShop.tag = (shop_process00_tag);
     lbShop.x17 = 2;
@@ -423,7 +441,7 @@ void Lb_process_shop() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void lb_process_tag_decide00() {
     if (lbShop.mode == 0) {
         lbShop.tag = (shop_process01_tag);
@@ -432,9 +450,17 @@ void lb_process_tag_decide00() {
         lbShop.tag = (shop_process01_tag + 2);
         lbShop.x17 = 5;
     }
+#ifdef MHG_PS2
+    lbShop.x6C = 0;   /* G also clears the page */
+    armorIndex = 0;
+    lbShop.xG7C = 0;
+    lbShop.x70 = 0;
+    lbShop.f40 = 0;
+#else
     lbShop.x70 = 0;
     armorIndex = 0;
     lbShop.f40 = 0;
+#endif
 }
 #endif
 
@@ -675,7 +701,7 @@ void lb_process_tag_decide01() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void Lb_make_mySrcEquip(int arg0) {
     F(s8, &lbShop, LBSHOP_OFS(0x55)) = (s8) arg0;
     switch ((s16)arg0) {
@@ -684,19 +710,19 @@ void Lb_make_mySrcEquip(int arg0) {
         *(S3 *)((u8 *)&lbShop + LBSHOP_OFS(0x54)) = *(S3 *)&D_3C738C;
         break;
     case 2:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7393;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7393, 0x32CE8B);
         break;
     case 3:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7394;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7394, 0x32CE8C);
         break;
     case 4:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7395;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7395, 0x32CE8D);
         break;
     case 5:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7396;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7396, 0x32CE8E);
         break;
     case 0:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7392;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7392, 0x32CE8A);
         break;
     }
     F(s8, &lbShop, LBSHOP_OFS(0x54)) = 1;

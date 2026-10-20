@@ -4,10 +4,16 @@
  * em01_demo_senkai_target (senkai_target without the "no target" exit).
  * senkai_sub* take extra flags 8 (skip the turn-rate update) and 0x10 (skip
  * the animation change). Meanings of the constants are guesses. */
+#include "g_alias.h"
 #include "em.h"
 #include "version.h"
 #include "pl.h"
 #include "game.h"
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+void em01_init(EMW *em);
+void game_func_00590920(EMW *em);
+#endif
 
 /* em01's part of the per-monster work at EMW+0x444. */
 typedef struct EM01W {
@@ -66,6 +72,10 @@ u16 calc_vec_ang(f32, f32, f32, f32);
 void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);
 void em01_act_set(EMW *em, int kind, u16 no, u16 arg);
+void em01_act_act_set(EMW *em, u16 no, u16 arg);
+void em01_move_act_set(EMW *em, u16 no, u16 arg);
+void em01_fly_act_set(EMW *em, u16 no, u16 arg);
+void em01_atk_act_set(EMW *em, u16 no, u16 arg);
 void ground_point_search(EMW *em);
 
 #define DIST_CLAMP(w, d)            \
@@ -89,16 +99,28 @@ void em01_act_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void em01_move_act_set(EMW *em, u16 no, u16 arg) {
     EM01W *w = (EM01W *)em->ex;
+#ifdef MHG_PS2
+    f32 r;
+#endif
 
     em->x388 = 0;
     em->act_spd = 1.0f;
     switch (no) {
     case 0:
     case 2:
+#ifdef MHG_PS2
+        if (em->kind == 1 || em->kind == 0x2A || em->kind == 0x25) {
+            r = 0.1f;
+        } else {
+            r = 0.3f;
+        }
+        if (em->x302 < (s16)(em->x792 * r)) {
+#else
         if (em->x302 < (s16)(em->x792 * ((em->kind == 1) ? 0.1f : 0.3f))) {
+#endif
             no = 6;
             goto act6;
         }
@@ -300,7 +322,7 @@ void em01_fly_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM01W *w = (EM01W *)em->ex;
     f32 p2[3];
@@ -314,6 +336,13 @@ void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
     case 7:
         em01_horm_init(em);
         break;
+#ifdef MHG_PS2
+    case 6:     /* G: the other variant on odd counts */
+        if (em->x39A & 1) {
+            no = 26;
+        }
+        break;
+#endif
     case 2:
         em01_horm_init(em);
         if (em->x617 == -1) {
@@ -381,8 +410,14 @@ void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
     case 10:
     case 17:
     case 22:
+#ifdef MHG_PS2
+    case 29:
+#endif
         w->x1A = em->x39A % 2 + 1;
     case 9:
+#ifdef MHG_PS2
+    case 28:
+#endif
         if (em->x617 == -1) {
             em->work08 = 200;
             em01_act_set(em, 2, 2, 1);
@@ -402,6 +437,9 @@ void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
         }
         break;
     case 18:
+#ifdef MHG_PS2
+    case 27:
+#endif
         if (em->x617 == -1) {
             em->work08 = 150;
             w->has_tgt = 0;
@@ -431,7 +469,9 @@ void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
         break;
     case 3:
     case 5:
+#ifndef MHG_PS2
     case 6:
+#endif
     case 12:
     case 13:
     case 14:
@@ -443,13 +483,11 @@ void em01_atk_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 #ifdef VERSION_MHG
-#include "em_revive_g.h"
-void em01_init(EMW *em);
 /* G game 0x590920: em01_init and the start point of a returning monster (kinds 1, 0x25, 0x2A at one point,
  * the others at another; the stage is Quest_enemy_revival_set's) */
-static void em01_revive_init(EMW *em)
+void game_func_00590920(EMW *em)
 {
     em01_init(em);
     if (em->kind == 1 || em->kind == 0x2A || em->kind == 0x25) {
@@ -461,7 +499,7 @@ static void em01_revive_init(EMW *em)
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void em01_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -483,7 +521,12 @@ void em01_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 5:
     case 6:
 #ifdef VERSION_MHG      /* G em01_act_set (game 0x5A64D0): die act 3 brings the monster back */
-        EMG_ACT_REVIVE(em, kind, no, em01_revive_init);
+        /* G em01 checks only the act number, not the kind */
+        if ((u16)no == 3 && Quest_enemy_revival_ck(em) == 1) {
+            Quest_enemy_revival_set(em);
+            em_status_init(em);
+            game_func_00590920(em);
+        }
 #endif
         em->act_spd = 1.0f;
         em_act_set2(em, kind, no, arg);
@@ -1271,7 +1314,7 @@ void em01_fly_adjy(EMW *em, int type) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em01_fly_adjy2_init(EMW *em, u8 type) {
     EM01W *w = (EM01W *)em->ex;
 
@@ -1287,6 +1330,9 @@ void em01_fly_adjy2_init(EMW *em, u8 type) {
     case 7:
         break;
     case 2:
+#ifdef MHG_PS2
+    case 15:
+#endif
         w->adj_y = 1;
         w->adj_tm = 0x26;
         break;
@@ -1327,6 +1373,12 @@ void em01_fly_adjy2_init(EMW *em, u8 type) {
         w->adj_y = 1;
         w->adj_tm = 0;
         break;
+#ifdef MHG_PS2
+    case 16:
+        w->adj_y = 1;
+        w->adj_tm = 0x40;
+        break;
+#endif
     }
     em_rate_clear(em);
 }

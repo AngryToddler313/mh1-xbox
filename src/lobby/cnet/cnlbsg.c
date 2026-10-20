@@ -1,4 +1,5 @@
 /* cnlbs, run 7: __cnet_Login_Return .. __cnet_RecvFromLbs (lobby.bin 0x005AADE0-0x005AD61C): the matching functions of cnlbs_nm.c. */
+#include "g_alias.h"
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -314,12 +315,12 @@ void _cnet_RecvFromLbs_NoticeChatBinary(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 int cnLBS_Send_ChatMessageTU(int arg0, int arg1, int arg2, int arg3) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg3);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendSet_ChatMessageTU(arg0, arg1, arg2);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendSet_ChatMessageTU, __cnet_SendSet_ChatBinaryTU)(arg0, arg1, arg2);
         return slot;
     }
     return -1;
@@ -388,9 +389,9 @@ void _cnet_RecvFromLbs_NoticeChatBinaryTU(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 48
 void _cnet_RecvFromLbs_MatchStart(void) {
-    _cnetEvent_JumpCallBack(1, 0);
+    CNEVT(1, 0);
 }
 #endif
 
@@ -416,9 +417,9 @@ int __cnet_SendReq_MatchEntry(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 45
 void _cnet_RecvFromLbs_MatchEntry(void) {
-    _cnet_Return_CallBack(0);
+    _cnet_Return_CallBack(GV(0, 1));
 }
 #endif
 
@@ -1020,7 +1021,7 @@ int __cnetSub_Get_RestBgWork(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 47
 int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     int i;
     int c16;
@@ -1041,7 +1042,7 @@ int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     ft = lbs_fromto_tbl;
     ct = lbs_category_tbl;
     jmp = lbs_command_jmp;
-    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
+    for (; i < GV(0x102, 0x125); i++, h++, l++, ft++, ct++, jmp++) {
         hi = (*h << 8) & 0xFFFF;
         full = (hi | *l) & 0xFFFF;
         if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {

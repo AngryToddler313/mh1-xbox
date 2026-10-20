@@ -1,7 +1,11 @@
 /* lb_tu_act - one translation unit 0x005CDF70-0x005CF100 (all functions are C now): Lb_Pl_act_set, ck_pl_send, Lb_pl_to_normal, lb_pl_to_normal_clr, lb_pl_to_normal_clr2, lb_to_normal, lb_action_timer_calc, Lb_act_ck, Lb_stick_pow_get, Lb_stick_dir_set, Lb_Pl_basic_flagset, Lb_Pl_adj_calc, Lb_Em_adj_calc, Lb_Pl_pos_adj, Lb_Em_pos_adj, lb_pl_flag_clr, Lb_pl_flag_set, Lb_St_unique_adr_set, lb_ck_unique_act, Lb_put_unique_act_hint, Lb_Pl_stg_ck, Lb_hit_stop_calc, Lb_act_set. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
+#include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
+#ifdef MHG_PS2
+void Lb_send_pl_status_g();   /* the G map names 0x59A820 check_sender0 */
+#endif
 f32 *Stage_data_get(int stg);
 int Get_view_dir();
 f32 flvecCalcDistance(f32 *, f32 *);
@@ -20,7 +24,7 @@ int Online_ck();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
 int SoftKeyboard_alive_check();
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void Lb_Pl_act_set(pl, a, b, flags)
 PLW *pl;
 u8 a;
@@ -55,6 +59,20 @@ int flags;
     pl->work394 = 0;
     pl->chr_spd0 = 2.0f;
     pl->chr_spd1 = 2.0f;
+#ifdef MHG_PS2
+    /* G: another player's act only goes on when Lb_act_ck allows it, and keeps motion 1 */
+    if (pl->id != game_w.master) {
+        if ((s16)Lb_act_ck(pl, 0, 0) == 0) {
+            return;
+        }
+        if (pl->char0 != 1) {
+            Lb_pl_to_normal(pl, 0, 4, 0);
+        }
+    }
+    if (ck_pl_send(pl) == 1) {
+        Lb_send_pl_status_g(pl);
+    }
+#else
     if (pl->id != game_w.master) {
         if ((s16)Lb_act_ck(pl, 0, 0) != 0) {
             Lb_pl_to_normal(pl, 0, 4, 0);
@@ -66,6 +84,7 @@ send:
             Lb_send_pl_status(pl);
         }
     }
+#endif
 }
 #endif
 
@@ -162,7 +181,7 @@ void lb_pl_to_normal_clr2(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void lb_to_normal(PLW *pl, int blend, int tm) {
     pl->act_tm0 = tm;
     pl->act_tm1 = tm;
@@ -173,7 +192,7 @@ void lb_to_normal(PLW *pl, int blend, int tm) {
     pl->flag14 = 0;
     pl->flag15 = 0;
     if (ck_pl_send(pl) != 0) {
-        Lb_send_pl_status(pl);
+        GV(Lb_send_pl_status, check_sender0)(pl);
     }
 }
 #endif
@@ -287,12 +306,12 @@ void Lb_Pl_adj_calc(PLW *pl, int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void Lb_Em_adj_calc(PLW *pl, s16 n) {
-    F(s16, pl, 0x468) = n;
-    F(f32, pl, 0x45C) = (F(f32, pl, 0x934) - pl->pos[0]) / (f32)n;
-    F(f32, pl, 0x460) = (F(f32, pl, 0x938) - pl->pos[1]) / (f32)n;
-    F(f32, pl, 0x464) = (F(f32, pl, 0x93C) - pl->pos[2]) / (f32)n;
+    F(s16, pl, GV(0x468, 0x472)) = n;
+    F(f32, pl, GV(0x45C, 0x450)) = (F(f32, pl, 0x934) - pl->pos[0]) / (f32)n;
+    F(f32, pl, GV(0x460, 0x454)) = (F(f32, pl, 0x938) - pl->pos[1]) / (f32)n;
+    F(f32, pl, GV(0x464, 0x458)) = (F(f32, pl, 0x93C) - pl->pos[2]) / (f32)n;
 }
 #endif
 
@@ -310,16 +329,16 @@ void Lb_Pl_pos_adj(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void Lb_Em_pos_adj(PLW *pl) {
-    u16 t = F(u16, pl, 0x468);
+    u16 t = F(u16, pl, GV(0x468, 0x472));
     u8 *p = (u8 *)pl + 0x444;
     if (t != 0) {
-        F(s16, p, 0x24) = t - 1;
+        F(s16, p, GV(0x24, 0x2E)) = t - 1;
         if (t > 0) {
-            pl->pos[0] = pl->pos[0] + F(f32, p, 0x18);
-            pl->pos[1] = pl->pos[1] + F(f32, p, 0x1C);
-            pl->pos[2] = pl->pos[2] + F(f32, p, 0x20);
+            pl->pos[0] = pl->pos[0] + F(f32, p, GV(0x18, 0xC));
+            pl->pos[1] = pl->pos[1] + F(f32, p, GV(0x1C, 0x10));
+            pl->pos[2] = pl->pos[2] + F(f32, p, GV(0x20, 0x14));
         }
     }
 }

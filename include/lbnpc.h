@@ -16,25 +16,26 @@ typedef struct LB_ROUTE {
 
 /* movement part of the NPC work at EMW+0x444 */
 typedef struct LB_NPCMV {
-    u8 _pad00[8];
-    LB_ROUTE *route;    /* 0x08 */
-    s16 idx;            /* 0x0C current waypoint */
-    u8 kind;            /* 0x0E npc kind (as LB_NPCW.kind) */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
-    u8 _pad0F;
-#else
-    s8 f0F;
-#endif
-    s32 cnt;            /* 0x10 frames waited at the waypoint */
-#if defined(VERSION_MHG) && defined(__MWERKS__)
-    u8 _pad14[0x30 - 0x14];
+    u8 _pad00[4];
+    LB_ROUTE *route;    /* G: 0x04 (MH1 0x08) */
+    u8 _pad08[0x28 - 0x8];
+    s32 cnt;            /* G: 0x28 (MH1 0x10) */
+    s16 idx;            /* G: 0x2C (MH1 0x0C) */
+    u8 _pad2E[0x30 - 0x2E];
     u16 x26;            /* G: 0x30 (MH1 0x26, LB_NPCW.item) */
     s16 x28;            /* G: 0x32 (MH1 0x28, LB_NPCW.num) */
-    u8 _pad34[0x35 - 0x34];
+    u8 kind;            /* G: 0x34 (MH1 0x0E) */
     s8 f0F;             /* G: 0x35 (MH1 0x0F) */
     u8 _pad36[0x39 - 0x36];
     s8 x2D;             /* G: 0x39 (MH1 0x2D) */
 #else
+    u8 _pad00[8];
+    LB_ROUTE *route;    /* 0x08 */
+    s16 idx;            /* 0x0C current waypoint */
+    u8 kind;            /* 0x0E npc kind (as LB_NPCW.kind) */
+    s8 f0F;
+    s32 cnt;            /* 0x10 frames waited at the waypoint */
     u8 _pad14[0x26 - 0x14];
     u16 x26;            /* 0x26 (LB_NPCW.item) */
     s16 x28;            /* 0x28 (LB_NPCW.num) */
@@ -45,12 +46,21 @@ typedef struct LB_NPCMV {
 
 /* waiter cat: route/work at EMW+0x444 */
 typedef struct {
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    u8 _pad00[0x28];
+    s32 idx;            /* G: 0x28 (MH1 0x10) */
+    u8 _pad2C[0x30 - 0x2C];
+    s16 x26;            /* G: 0x30 (MH1 0x26) */
+    u8 _pad32[0x3C - 0x32];
+    f32 *route;         /* G: 0x3C (MH1 0x30) */
+#else
     u8 _pad00[0x10];
     s32 idx;            /* 0x10 current waypoint */
     u8 _pad14[0x26 - 0x14];
     s16 x26;            /* 0x26 */
     u8 _pad28[0x30 - 0x28];
     f32 *route;         /* 0x30 waypoint list (3 floats each) */
+#endif
 } LB_WAITEX;
 
 #define LBS8(o) (*((s8 *)&lb_sys + (o)))

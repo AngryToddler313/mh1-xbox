@@ -1,6 +1,16 @@
 /* lb_plz3 - one translation unit 0x00598DB0-0x0059DB40 (lbtu3). */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #define Lb_on_dialog Lb_on_dialog_hdr
+#include "g_alias.h"
+#ifdef MHG_PS2
+void func_0010EF50();
+#endif
+#ifdef MHG_PS2
+void func_0012DE30();
+#endif
+#ifdef MHG_PS2
+int font_print_double();
+#endif
 #include "lbui_proto.h"
 #include "lbsys_g.h"
 #undef Lb_on_dialog
@@ -196,7 +206,7 @@ void Lb_clearChatList() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void plaza_ReibunEdit() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -215,7 +225,7 @@ void plaza_ReibunEdit() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void plaza_checkChatLog() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -363,7 +373,7 @@ int silent;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 void Lb_put_new_mail(x, y)
 int x;
 int y;
@@ -374,8 +384,8 @@ int y;
     int ys;
     s16 f;
 
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     i = 0;
     p = (u8 *)RecvMailInfo;
     do {
@@ -426,8 +436,8 @@ u8 *a;
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(textLobbyTbl);
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     Lb_put_new_mail(0x1AA, 0x1C);
     if (pNet->depth < 2) {
         DispFrameListA(pfl_menu_2138, 0, pNet->cur, 0xFF);
@@ -479,14 +489,14 @@ LB_NETW *a;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void put_titles(a, b, c)
 int a;
 int b;
 int c;
 {
     flfntSetSize(0x12, 0x12);
-    font_print_double_k(a, b, 1, 5, c);
+    GV(font_print_double_k, font_print_double)(a, b, 1, 5, c);
 }
 #endif
 
@@ -513,7 +523,7 @@ int y;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void put_mainWindowTex(x, y)
 int x;
 int y;
@@ -521,10 +531,10 @@ int y;
     int xs = (s16)x;
     int ys;
 
-    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, 0);
+    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, GV(0, 0xA0000000));
     ys = (s16)y;
-    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
-    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
+    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, GV(0xFF602020, 0xFF537F56));
+    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, GV(0xFF602020, 0xFF537F56));
 }
 #endif
 
@@ -678,7 +688,7 @@ int Lb_get_cursor_col() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void Put_page_num(int x, int y, int page, s16 pages, int flag) {
     char buf[0x20];
     char buf2[0x20];
@@ -701,8 +711,8 @@ void Put_page_num(int x, int y, int page, s16 pages, int flag) {
         font_print(lit_2316, buf);
     }
     if (pages > 1) {
-        reload_tex(1, 0x157);
-        SetTextureStage(0x157);
+        reload_tex(1, GSLOT(0x157, 0x180));
+        SetTextureStage(GSLOT(0x157, 0x180));
         if (flag != 0) {
             if (pages < 10) {
                 Lb_put_icon_free((s16)x - 0x18, (s16)y - 1, 0x14, col, 0);
@@ -759,8 +769,8 @@ int disp_status(int x0, int y0, int id, int handle, int mini_, int page_, int pa
     int k;
     u16 n;
     put_titles(xt, y, *(int *)(tl_mail_tbl + 0x2C));
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_page_num((s16)(xt + 0x12C), y, page, (s8)pages, 0);
@@ -919,7 +929,7 @@ asm int plaza_setMyCommentTrans()
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void lb_put_comment(x, y, c, f)
 int x;
 int y;
@@ -927,11 +937,11 @@ int c;
 s8 f;
 {
     if (f != 0) {
-        Draw_square((s16)((s16)x - 6), (s16)((s16)y - 2), 0x12C, 0x42, 0xFFAA8820);
-        Draw_square((s16)((s16)x - 7), (s16)((s16)y - 3), 0x12E, 0x44, 0xFFAA8820);
+        Draw_square((s16)((s16)x - 6), (s16)((s16)y - 2), GV(0x12C, 0x134), 0x42, 0xFFAA8820);
+        Draw_square((s16)((s16)x - 7), (s16)((s16)y - 3), GV(0x12E, 0x136), 0x44, 0xFFAA8820);
     }
     KinshiYogo_chk(c);
-    Put_comment(x, (s16)((s16)y - 0x16), 0x16, c);
+    GV(Put_comment, func_0012DE30)(x, (s16)((s16)y - 0x16), 0x16, c);
 }
 #endif
 
@@ -1154,8 +1164,8 @@ LB_NETW *a;
     if (pNet->depth > 1) {
         Put_F(sp60);
     }
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(textLobbyTbl + 0x14);
@@ -1294,12 +1304,12 @@ u8 *a;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void put_main_cursor(int n) {
     R12 a = lit_3380;
     R12 b = lit_3382;
 
-    if (((u8 *)pNet)[0xC] == 0) {
+    if (((u8 *)pNet)[GV(0xC, 0x2D)] == 0) {
         a.v[1] = n * 0x16 + 0x8C;
         a.v[3] = a.v[1] + 0x16;
         b.v[1] = a.v[1] - 2;
@@ -1310,7 +1320,7 @@ void put_main_cursor(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void put_main_cursor2(int x, int y, s32 n) {
     R12 a = lit_3397;
     s16 t = x;
@@ -1321,7 +1331,7 @@ void put_main_cursor2(int x, int y, s32 n) {
     b = lit_3399;
     b.v[0] = t + 1;
     b.v[2] = t + 0x193;
-    if (((u8 *)pNet)[0xC] == 0) {
+    if (((u8 *)pNet)[GV(0xC, 0x2D)] == 0) {
         a.v[1] = (s16)y + 0x3C + n * 0x16;
         a.v[3] = a.v[1] + 0x16;
         b.v[1] = a.v[1] - 2;
@@ -1350,10 +1360,10 @@ char *dst;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void Lbs_load() {
     load_pit();
-    load_texlist(*(int *)0x3876A8, 0x14D, 0);
+    GV(load_texlist, func_0010EF50)(*(int *)GV(0x3876A8, 0x2EBE10), GSLOT(0x14D, 0x174), 0);
 }
 #endif
 

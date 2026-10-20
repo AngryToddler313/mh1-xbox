@@ -4,12 +4,17 @@
  * shells, damage reactions, death and revival), em09_main (damage system), em09_main_sub
  * (mode dispatch) and the per-animation sound/effect script ef_move_sub. Names of the steps
  * follow the split; field meanings are guesses. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
 #include "pl.h"
 #include "plf.h"
 #include "fl.h"
+#ifdef MHG_PS2
+#include "quest.h"
+int Event_flag_ck(int);
+#endif
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM09W {
@@ -63,6 +68,9 @@ int shell02_set(EMW *, int);
 void em_rate_add_g(EMW *);
 void flvecRotY(f32 *, f32);
 void em09_act_set();
+#ifdef MHG_PS2
+void game_func_005D6680(EMW *em);     /* G: em09 mode 6 has its own handler */
+#endif
 void em_escape_mind_set(EMW *, u8, u8);
 void em_cmd_reset(EMW *);
 void em_ikari_add(EMW *, s16);
@@ -101,6 +109,14 @@ int em09_dir_calc(s32 *, s32 *, int);
 
 void oikake_ck(EMW *em);
 void em09_act_set();
+
+#ifdef MHG_PS2
+void game_func_005D58B0(EMW *em);
+#endif
+
+#ifdef MHG_PS2
+void game_func_005D4210(EMW *em);
+#endif
 
 #if !defined(G_PART)
 static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
@@ -146,7 +162,7 @@ static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void item_return(EMW *em, EM09W *w) {
     if (w->item != -1) {
         switch ((u16)Pl_item_stack(w->pl, (u16)w->item, (s16)-w->item_num)) {
@@ -168,6 +184,9 @@ static void item_return(EMW *em, EM09W *w) {
             }
             break;
         }
+#ifdef MHG_PS2
+        w->item = -1;       /* G: the stolen item goes back only once */
+#endif
     }
 }
 #endif
@@ -447,7 +466,7 @@ static void em_act14_005A8F90(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void em_move00_005A90A0(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -467,6 +486,9 @@ static void em_move00_005A90A0(EMW *em) {
     case 12: em_act12_005A8E30(em); break;
     case 13: em_act13_005A8F00(em); break;
     case 14: em_act14_005A8F90(em); break;
+#ifdef MHG_PS2
+    case 15: game_func_005D4210(em); break;
+#endif
     }
 }
 #endif
@@ -982,13 +1004,19 @@ static void em_atk02_005AA420(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static void em_move03_005AA670(EMW *em) {
     switch (em->x15) {
     case 0: em_atk00_005A9F70(em); break;
     case 1: em_atk01_005AA1F0(em); break;
     case 2: em_atk02_005AA420(em); break;
     case 3: em_atk01_005AA1F0(em); break;
+#ifdef MHG_PS2
+    case 4: game_func_005D58B0(em); break;
+#endif
+#ifdef MHG_PS2
+    case 5: game_func_005D58B0(em); break;
+#endif
     }
 }
 #endif
@@ -1265,7 +1293,7 @@ static void em_die01_005AAF20(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_die_rev_005AB090(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1281,11 +1309,20 @@ static void em_die_rev_005AB090(EMW *em) {
         Quest_enemy_revival_set(em);
         switch (em->stg) {
         case 6:
+#ifdef MHG_PS2
+        case 0x49:
+        case 0x4B:
+#endif
             Quest_enemy_escape(em);
             em->x04++;
             em->x01 = 0;
             break;
         default:
+#ifdef MHG_PS2      /* G: the kind 12 variant stands */
+            if (em->type == 12) {
+                em_act_set(em, 0, 1);
+            } else
+#endif
             if (em->type & 0x10) {
                 em09_act_set(em, 1, 2, 0);
             }
@@ -1308,7 +1345,7 @@ static void em_move05_005AB180(EMW *em) {
 
 void em09_main_sub(EMW *em);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void em09_main(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
     u8 dmg[4];
@@ -1404,6 +1441,13 @@ void em09_main(EMW *em) {
             w->x4B = 1;
         }
     }
+#ifdef MHG_PS2      /* G: quest 10028, kind 23 on stage 69, before event 20: scripted act */
+    if (quest_w.no == 10028 && em->kind == 23 && em->stg == 69 && !Event_flag_ck(20)) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em09_act_set(em, 6, 0, 1);
+        }
+    } else
+#endif
     switch (em->x734) {
     case 3:
         if (em->x839 != 0) {
@@ -1420,7 +1464,7 @@ void em09_main(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em09_main_sub(EMW *em) {
     switch (em->mode) {
     case 0: em_move00_005A90A0(em); break;
@@ -1429,7 +1473,7 @@ void em09_main_sub(EMW *em) {
     case 3: em_move03_005AA670(em); break;
     case 4: em_move04_005AAC30(em); break;
     case 5: em_move05_005AB180(em); break;
-    case 6: em_move00_005A90A0(em); break;
+    case 6: GV(em_move00_005A90A0, game_func_005D6680)(em); break;
     case 7: em_move00_005A90A0(em); break;
     }
 }
