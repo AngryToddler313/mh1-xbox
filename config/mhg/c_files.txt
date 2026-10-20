@@ -1906,3 +1906,5 @@ sub_main 0x004C2390 0x004C2A68 mhg/main/eft/eft02_p1
 game 0x005BAD60 0x005BAE14 mhg/game/em/em04b_p1
 game 0x00641DD0 0x00642024 mhg/game/em/em27_p1
 game 0x00642170 0x00642210 mhg/game/em/em27_p2
+game 0x0060CFF0 0x0060D46C mhg/game/em/em17_r14_p1
+game 0x0060D570 0x0060D6F4 mhg/game/em/em17_r14_p2
