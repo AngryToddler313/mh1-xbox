@@ -958,7 +958,7 @@ static void eft16_se_req(EFTW *ew, f32 *pos) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void Eft16_set(PLW *pl, int arg, s16 hit, f32 *pos, f32 scale) {
     FLMAT m;
     FLMAT inv;
@@ -1006,6 +1006,12 @@ void Eft16_set(PLW *pl, int arg, s16 hit, f32 *pos, f32 scale) {
                 case 0x18:
                     ew->mode2 |= 0x82;
                     break;
+#ifdef MHG_PS2 /* G: kinds 8 and 0x22 */
+                case 8:
+                case 0x22:
+                    ew->mode2 |= 0x40;
+                    break;
+#endif
                 }
                 if (CHR_X4D8(pl) != 0 && (jl = *(s16 **)(CHR_X4D8(pl) + 0xA0)) != 0) {
                     ew->x07 = *jl;
