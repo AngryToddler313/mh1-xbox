@@ -1,5 +1,6 @@
 /* em08_ai, run 3: em_act00_0059A7B0 .. em_mv01_0059C310 (game.bin 0x0059A7B0-0x0059C47C). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -1000,7 +1001,7 @@ void em_act19_0059BE30(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em_act20_0059BF00(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -1021,7 +1022,7 @@ void em_act20_0059BF00(EMW *em, EM08W *w) {
                 em->x828 = em->x951;
                 em->x829 = em->x952;
                 cmd_target_kind_set(em, em->tgt_pos);
-                em->_pad9F4[0xC] = 1;
+                em->_pad9F4[GV(0xC, 0xE)] = 1;
                 em_niku_eat_set(em);
                 em_hungry_add(em, 0x2710);
             }
@@ -1035,7 +1036,7 @@ void em_act20_0059BF00(EMW *em, EM08W *w) {
             em->x828 = em->x951;
             em->x829 = em->x952;
             cmd_target_kind_set(em, em->tgt_pos);
-            em->_pad9F4[0xC] = 1;
+            em->_pad9F4[GV(0xC, 0xE)] = 1;
             em_niku_eat_set(em);
             em_hungry_add(em, 0x2710);
             em08_act_set(em, 0, 0x28, 4);

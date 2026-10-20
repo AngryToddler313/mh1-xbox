@@ -13,6 +13,7 @@
  * PROVIDEd at the G addresses in config/mhg/g_names.txt, so only the PS2 G build uses them */
 extern void *gptr_002EC620[];
 extern void *gptr_002EC62C[];
+extern void *gptr_002EC65C[];
 extern void *gptr_00527ED4[];
 extern void *gptr_00528410[];
 extern void *gptr_00528414[];

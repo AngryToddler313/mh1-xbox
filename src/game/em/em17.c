@@ -4,6 +4,7 @@
  * 1000-2100 above the stage floor, switching flight animations), plus
  * senkai_target / fly_adjy / fly_adjy2 as in em02/em14. Meanings of the
  * constants are guesses. */
+#include "g_alias.h"
 #include "em.h"
 
 /* em17's part of the per-monster work at EMW+0x444. */
@@ -40,7 +41,11 @@ extern f32 (*fly_adjy_hosei_tbl_006646E0[])[2];
 extern f32 (*fly_adjy2_hosei_tbl_00664AF0[])[2];
 extern f32 (*fly_adjz2_hosei_tbl_00664CB0[])[2];
 extern u16 st58_dir[4];
+#ifdef MHG_PS2
+extern u16 st64_dir[];     /* G: in .data, not small data */
+#else
 extern u16 st64_dir[4];
+#endif
 extern u16 st75_dir[4];
 
 f32 CalcDistanceXZ(f32 *, f32 *);
@@ -66,7 +71,7 @@ void speed_add_g(EMW *, s32 *);
         w->dist = 0.0f;             \
     }
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em17_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     switch (no) {

@@ -150,7 +150,7 @@ static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void item_return(EMW *em, EM09W *w) {
     if (w->item != -1) {
         switch ((u16)Pl_item_stack(w->pl, (u16)w->item, (s16)-w->item_num)) {
@@ -172,6 +172,9 @@ static void item_return(EMW *em, EM09W *w) {
             }
             break;
         }
+#ifdef MHG_PS2
+        w->item = -1;       /* G: the stolen item goes back only once */
+#endif
     }
 }
 #endif

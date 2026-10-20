@@ -46,8 +46,11 @@ PROVIDE(func_533A00 = 0x00542680); /* softreset's Tsk_Execute target (MH1 0x533A
 /* string pointer cells G code loads (include/g_alias.h GSTR) */
 PROVIDE(Equip_moji_color_rare_g = 0x0021EA20);
 PROVIDE(param_change_sub_g = 0x005462E0);
+PROVIDE(em16_atk04_g = 0x005FE490); /* G em16 em_atk04_005D2500, which takes a kind (src/game/em/em16a.c) */
+PROVIDE(em27_atk06_g = 0x0063DEA0); /* G em27 em_atk06_0060F860, which takes a kind (src/game/em/em27a.c) */
 PROVIDE(gptr_002EC620 = 0x002EC620); /* help text item level format */
 PROVIDE(gptr_002EC62C = 0x002EC62C); /* chat_log_name format */
+PROVIDE(gptr_002EC65C = 0x002EC65C); /* soncho_no_oshie text */
 PROVIDE(gptr_00527ED4 = 0x00527ED4); /* Put_shousai text */
 PROVIDE(gptr_00528410 = 0x00528410); /* trade_get_ck message */
 PROVIDE(gptr_00528414 = 0x00528414); /* pick_set_sub message */

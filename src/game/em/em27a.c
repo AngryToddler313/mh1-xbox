@@ -2,6 +2,7 @@
  * em27_to_normal, action steps em_act00-11, move states (turning/walking, fly), attacks em_atk00-13
  * (shells and jumps), damage reactions em_dmg00-06, death (em_die00-04), demo, revival, em27_main (damage
  * system) and em27_main_sub (mode dispatch). The whole file is in em27_nm.c. Field meanings are guesses. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -108,6 +109,11 @@ void em_mahi_eff_set(EMW *, int);
 f32 CalcDistanceXZ(f32 *, f32 *);
 void em_rate_clear(EMW *);
 void speed_add_g(EMW *, s32 *);
+
+#ifdef MHG_PS2
+/* G: em_atk06_0060F860 with a kind argument (config/mhg/g_names.txt) */
+void em27_atk06_g(EMW *em, EM27W *w, int kind);
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 void em27_local_init(EMW *em) {
@@ -1385,7 +1391,7 @@ static void em_atk13_006104A0(EMW *em, EM27W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em_move03_006105E0(EMW *em, EM27W *w) {
     switch (em->x15) {
     case 0: em_atk00_0060EB80(em, w); break;
@@ -1394,7 +1400,11 @@ void em_move03_006105E0(EMW *em, EM27W *w) {
     case 3: em_atk03_0060F160(em, w); break;
     case 4: em_atk04_0060F280(em, w); break;
     case 5: em_atk05_0060F570(em, w); break;
+#ifdef MHG_PS2     /* G: this attack takes a kind */
+    case 6: em27_atk06_g(em, w, 0); break;
+#else
     case 6: em_atk06_0060F860(em, w); break;
+#endif
     case 7: em_atk07_0060F910(em, w); break;
     case 8: em_atk08_0060FA40(em, w); break;
     case 9: em_atk09_0060FC40(em, w); break;
@@ -1402,6 +1412,9 @@ void em_move03_006105E0(EMW *em, EM27W *w) {
     case 11: em_atk11_0060FF80(em, w); break;
     case 12: em_atk12_00610210(em, w); break;
     case 13: em_atk13_006104A0(em, w); break;
+#ifdef MHG_PS2
+    case 14: em27_atk06_g(em, w, 1); break;
+#endif
     }
 }
 #endif
@@ -1500,12 +1513,12 @@ static void em_dmg02_006108E0(EMW *em, EM27W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_dmg03_00610A70(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, GV(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1522,7 +1535,7 @@ static void em_dmg03_00610A70(EMW *em, EM27W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x24, 0, 0);
+                em_char_set(em, GV(0x24, 0x26), 0, 0);
             }
         }
         break;
@@ -1539,12 +1552,12 @@ static void em_dmg03_00610A70(EMW *em, EM27W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 static void em_dmg04_00610C00(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, GV(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1561,7 +1574,7 @@ static void em_dmg04_00610C00(EMW *em, EM27W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x26, 0, 0);
+                em_char_set(em, GV(0x26, 0x24), 0, 0);
             }
         }
         break;
@@ -1637,7 +1650,7 @@ void em_move04_00610F10(EMW *em, EM27W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static void em_die00_00610FC0(EMW *em, EM27W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1696,14 +1709,14 @@ static void em_die00_00610FC0(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, GV(2, 4));
         }
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 static void em_die01_00611200(EMW *em, EM27W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1762,14 +1775,14 @@ static void em_die01_00611200(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, GV(2, 4));
         }
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 static void em_die02_00611450(EMW *em, EM27W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1777,7 +1790,7 @@ static void em_die02_00611450(EMW *em, EM27W *w) {
         em->x05++;
         ((u8 *)w)[0x50] = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, GV(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1792,7 +1805,7 @@ static void em_die02_00611450(EMW *em, EM27W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x24, 0, 0);
+            em_char_set(em, GV(0x24, 0x26), 0, 0);
         }
         break;
     case 2:
@@ -1828,14 +1841,14 @@ static void em_die02_00611450(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, GV(2, 4));
         }
         break;
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 static void em_die03_006116A0(EMW *em, EM27W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1843,7 +1856,7 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
         em->x05++;
         ((u8 *)w)[0x50] = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, GV(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1858,7 +1871,7 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x26, 0, 0);
+            em_char_set(em, GV(0x26, 0x24), 0, 0);
         }
         break;
     case 2:
@@ -1894,7 +1907,7 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, GV(2, 4));
         }
         break;
     }

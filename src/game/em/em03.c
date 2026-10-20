@@ -3,6 +3,7 @@
  * damage and death, sound/effect script). Names of the steps follow the
  * split (em_act00, em_move00...). em33.c is the same code for monster 33.
  * Field meanings are mostly guesses. Every function matches. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -82,6 +83,10 @@ void em_status_init(EMW *);
 void Quest_enemy_escape(EMW *);
 void em03_init(EMW *);
 void em_mahi_eff_set(EMW *, int);
+
+#ifdef MHG_PS2
+void game_func_005B6A30(EMW *em);
+#endif
 
 #if !defined(G_PART)
 void em03_init(EMW *em) {
@@ -1378,7 +1383,7 @@ static void em_move06_0058A310(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em03_move_sub(EMW *em) {
     EM03W *w = (EM03W *)em->ex;
 
@@ -1389,8 +1394,8 @@ void em03_move_sub(EMW *em) {
     case 3: em_move03_00589910(em, w); break;
     case 4: em_move04_00589E00(em, w); break;
     case 5: em_move05_0058A210(em, w); break;
-    case 6: em_move06_0058A310(em); break;
-    case 7: em_move06_0058A310(em); break;
+    case 6: GV(em_move06_0058A310, game_func_005B6A30)(em); break;
+    case 7: GV(em_move06_0058A310, game_func_005B6A30)(em); break;
     }
 }
 #endif

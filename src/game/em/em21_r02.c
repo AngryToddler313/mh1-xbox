@@ -1,4 +1,5 @@
 /* em21_r02 - monster 21 AI 0x00600360-0x0060186C: em21_to_normal, em21_to_swim, em21_act_sub, em_act00_00600490, em_act01_00600570, em_act02_00600650, em_act04_00600700, em_act05_006007F0, em_act06_00600900, em_act07_006009D0, em_act08_00600A50, em_act10_00600B90, em_act12_00600CD0, em_act13_00600DE0, em_act14_00600EB0, em_act15_00601000, em_act16_006010D0, em_act17_00601220, em_act18_006012F0, em_act19_00601440, em_act20_00601510, em_mv00_006015A0, em_mv01_00601700. Whole file in em21_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -35,6 +36,10 @@ void Eft19_set(EMW *, int, int);
 void em_cmd_reset(EMW *);
 int Pl_stg_ck_tw(EMW *, PLW *);
 void Em_Sleep_End(EMW *);
+#ifdef MHG_PS2
+/* G: sets x388 and picks the range from it (flag 1: range 1) */
+void game_func_0062DB60(EMW *em, int x388, int flag);
+#endif
 void Em_Sleep_Start(EMW *);
 int em_frame_check(EMW *, int, f32);
 void Em_Mahi_End(EMW *);
@@ -489,7 +494,7 @@ void em_act04_00600700(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em_act05_006007F0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -498,10 +503,16 @@ void em_act05_006007F0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 1);
+        em->x3F4 = 0;
+        em_char_set(em, 0x26, 0, 0);
+#else
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x26, 0, 0);
         em_range_set(em, 1);
+#endif
         em->x88B = 0;
         Em_Sleep_Start(em);
         break;
@@ -529,7 +540,7 @@ void em_act05_006007F0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em_act06_00600900(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -537,11 +548,16 @@ void em_act06_00600900(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+        em_char_set(em, 0x25, 0, 0);
+#else
         em->x388 = 0;
         em_char_set(em, 0x25, 0, 0);
         em_range_set(em, 0);
+#endif
         em->x88B = 1;
-        Em_Sleep_End(em);
+        GV(Em_Sleep_End, Em_Sleep2_End)(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -579,7 +595,7 @@ void em_act07_006009D0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em_act08_00600A50(EMW *em, EM21W *w) {
     f32 v[3];
     s32 temp_v0;
@@ -590,10 +606,16 @@ void em_act08_00600A50(EMW *em, EM21W *w) {
     switch (temp_v1) {                              /* irregular */
     case 0:
         em->x05 = temp_v1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 1);
+        em->x3F4 = 0;
+        em_char_set(em, 0x61, 0, 0);
+#else
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x61, 0, 0);
         em_range_set(em, 1);
+#endif
         em->x88B = 0;
         Em_Sleep_Start(em);
         break;
@@ -621,7 +643,7 @@ void em_act08_00600A50(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em_act10_00600B90(EMW *em, EM21W *w) {
     f32 v[3];
     s32 temp_v0;
@@ -632,10 +654,16 @@ void em_act10_00600B90(EMW *em, EM21W *w) {
     switch (temp_v1) {                              /* irregular */
     case 0:
         em->x05 = temp_v1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 1);
+        em->x3F4 = 0;
+        em_char_set(em, 0x61, 0, 0);
+#else
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x61, 0, 0);
         em_range_set(em, 1);
+#endif
         em->x88B = 0;
         Em_Sleep2_Start(em);
         break;
@@ -663,7 +691,7 @@ void em_act10_00600B90(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void em_act12_00600CD0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -672,10 +700,16 @@ void em_act12_00600CD0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 1);
+        em->x3F4 = 0;
+        em_char_set(em, 0x26, 0, 0);
+#else
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x26, 0, 0);
         em_range_set(em, 1);
+#endif
         em->x88B = 0;
         Em_Sleep2_Start(em);
         break;
@@ -703,7 +737,7 @@ void em_act12_00600CD0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void em_act13_00600DE0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -711,11 +745,17 @@ void em_act13_00600DE0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+        em_char_set(em, 0x25, 0, 0);
+        em->x88B = 1;
+#else
         em->x388 = 0;
         em_char_set(em, 0x25, 0, 0);
         em->x88B = 1;
         em_range_set(em, 0);
-        Em_Sleep2_End(em);
+#endif
+        GV(Em_Sleep2_End, Em_Sleep_End)(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -779,7 +819,7 @@ void em_act14_00600EB0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em_act15_00601000(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -787,11 +827,16 @@ void em_act15_00601000(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+        em_char_set(em, 0x7C, 0, 0);
+#else
         em->x388 = 0;
         em_char_set(em, 0x7C, 0, 0);
         em_range_set(em, 0);
+#endif
         em->x88B = 1;
-        Em_Sleep_End(em);
+        GV(Em_Sleep_End, Em_Sleep2_End)(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -808,7 +853,7 @@ void em_act15_00601000(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 void em_act16_006010D0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
@@ -817,10 +862,16 @@ void em_act16_006010D0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 1);
+        em->x3F4 = 0;
+        em_char_set(em, 0x4B, 0, 0);
+#else
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x4B, 0, 0);
         em_range_set(em, 1);
+#endif
         em->x88B = 0;
         Em_Sleep2_Start(em);
         break;
@@ -855,7 +906,7 @@ void em_act16_006010D0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void em_act17_00601220(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -863,11 +914,16 @@ void em_act17_00601220(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+        em_char_set(em, 0x7C, 0, 0);
+#else
         em->x388 = 0;
         em_char_set(em, 0x7C, 0, 0);
         em_range_set(em, 0);
+#endif
         em->x88B = 1;
-        Em_Sleep2_End(em);
+        GV(Em_Sleep2_End, Em_Sleep_End)(em);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -884,7 +940,7 @@ void em_act17_00601220(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void em_act18_006012F0(EMW *em, EM21W *w) {
     s16 temp_a0;
     s16 temp_v1;
@@ -895,10 +951,16 @@ void em_act18_006012F0(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 1);
+        em->x3F4 = 0;
+        em_char_set(em, 0x20, 0, 0);
+#else
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x20, 0, 0);
         em_range_set(em, 1);
+#endif
         em->x88B = 0;
         em->x762 = 2;
         em->work08 = 0x708;
@@ -936,7 +998,7 @@ void em_act18_006012F0(EMW *em, EM21W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void em_act19_00601440(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -944,9 +1006,14 @@ void em_act19_00601440(EMW *em, EM21W *w) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
+#ifdef MHG_PS2
+        game_func_0062DB60(em, 0, 0);
+        em_char_set(em, 0x21, 0, 0);
+#else
         em->x388 = 0;
         em_char_set(em, 0x21, 0, 0);
         em_range_set(em, 0);
+#endif
         em->x88B = 1;
         em_suimin_end(em);
         break;

@@ -2,6 +2,7 @@
  * em16_init2, em16_to_normal, action steps em_act00-12, move states, attacks em_atk00-12, damage reactions,
  * death (em_die00-09), demo, revival, em16_main and em16_main_sub. The whole file is in em16_nm.c.
  * Field meanings are guesses. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -122,6 +123,15 @@ int Quest_enemy_revival_ck(EMW *);
 void Quest_enemy_revival_set(EMW *);
 void em16_init(EMW *);
 void Quest_enemy_escape(EMW *);
+
+#ifdef MHG_PS2
+void game_func_006025F0(EMW *em, EM16W *w);
+#endif
+
+#ifdef MHG_PS2
+/* G: em_atk04_005D2500 with a kind argument (config/mhg/g_names.txt) */
+void em16_atk04_g(EMW *em, EM16W *w, int kind);
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 void em16_local_init(EMW *em) {
@@ -1383,14 +1393,18 @@ static void em_atk12_005D3510(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em_move03_005D3660(EMW *em, EM16W *w) {
     switch (em->x15) {
     case 0: em_atk00_005D1F90(em, w); break;
     case 1: em_atk01_005D2100(em, w); break;
     case 2: em_atk02_005D2110(em, w); break;
     case 3: em_atk03_005D2400(em, w); break;
+#ifdef MHG_PS2     /* G: this attack takes a kind */
+    case 4: em16_atk04_g(em, w, 0); break;
+#else
     case 4: em_atk04_005D2500(em, w); break;
+#endif
     case 5: em_atk05_005D25B0(em, w); break;
     case 6: em_atk06_005D28A0(em, w); break;
     case 7: em_atk07_005D2B90(em, w); break;
@@ -1399,6 +1413,9 @@ void em_move03_005D3660(EMW *em, EM16W *w) {
     case 10: em_atk10_005D2FF0(em, w); break;
     case 11: em_atk11_005D3280(em, w); break;
     case 12: em_atk12_005D3510(em, w); break;
+#ifdef MHG_PS2
+    case 13: em16_atk04_g(em, w, 1); break;
+#endif
     }
 }
 #endif
@@ -1493,12 +1510,12 @@ static void em_dmg02_005D3930(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, GV(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1515,7 +1532,7 @@ static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x24, 0, 0);
+                em_char_set(em, GV(0x24, 0x26), 0, 0);
             }
         }
         break;
@@ -1531,12 +1548,12 @@ static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 static void em_dmg04_005D3C30(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, GV(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1553,7 +1570,7 @@ static void em_dmg04_005D3C30(EMW *em, EM16W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x26, 0, 0);
+                em_char_set(em, GV(0x26, 0x24), 0, 0);
             }
         }
         break;
@@ -1738,7 +1755,7 @@ static void em_die01_005D41B0(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static void em_die02_005D43D0(EMW *em, EM16W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1746,7 +1763,7 @@ static void em_die02_005D43D0(EMW *em, EM16W *w) {
         em->x05++;
         w->x60 = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, GV(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1761,7 +1778,7 @@ static void em_die02_005D43D0(EMW *em, EM16W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x24, 0, 0);
+            em_char_set(em, GV(0x24, 0x26), 0, 0);
         }
         break;
     case 2:
@@ -1797,7 +1814,7 @@ static void em_die02_005D43D0(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 static void em_die03_005D45F0(EMW *em, EM16W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1805,7 +1822,7 @@ static void em_die03_005D45F0(EMW *em, EM16W *w) {
         em->x05++;
         w->x60 = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, GV(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1820,7 +1837,7 @@ static void em_die03_005D45F0(EMW *em, EM16W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x26, 0, 0);
+            em_char_set(em, GV(0x26, 0x24), 0, 0);
         }
         break;
     case 2:
@@ -2478,7 +2495,7 @@ static void em_demo05_005D6530(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 void em_move06_005D65E0(EMW *em, EM16W *w) {
     switch (em->x15) {
     case 0: em_demo00_005D5CC0(em, w); break;
@@ -2487,6 +2504,9 @@ void em_move06_005D65E0(EMW *em, EM16W *w) {
     case 3: em_demo03_005D63F0(em, w); break;
     case 4: em_demo04_005D6480(em, w); break;
     case 5: em_demo05_005D6530(em, w); break;
+#ifdef MHG_PS2
+    case 6: game_func_006025F0(em, w); break;
+#endif
     }
 }
 #endif
