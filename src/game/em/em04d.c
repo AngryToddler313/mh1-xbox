@@ -87,9 +87,12 @@ extern GAME_W game_w;
 
 /* A file static in the original; data tables point at it. */
 
+#if !defined(G_PART) || G_PART == 1
 static void move_default_0058E4F0(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it */
     if (em->char0 != w->anim) {
         w->anim = em->char0;
@@ -291,3 +294,4 @@ void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it
         break;
     }
 }
+#endif

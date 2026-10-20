@@ -1944,3 +1944,4 @@ game 0x0058DD20 0x0058DD38 mhg/game/em/em_cmd_r22_p2
 game 0x0060A740 0x0060A7BC mhg/game/em/em17_r10_p1
 lobby 0x005C0E80 0x005C0EC4 mhg/lobby/b/lb_bz05_p1
 game 0x005D32B0 0x005D32E4 mhg/game/em/em09_init_p1
+game 0x005BAE20 0x005BAE28 mhg/game/em/em04d_p1
