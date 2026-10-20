@@ -57,10 +57,10 @@ void em_status_init(EMW *);
         }                                                               \
     } while (0)
 
-/* act_set(em, 5, 3, ..): the revival itself, then the em's start point (init) */
+/* act_set(em, 4..6, 3, ..) (G checks only the act number): the revival itself, then the em's start point (init) */
 #define EMG_ACT_REVIVE(em, kind, no, init)                              \
     do {                                                                \
-        if ((u16)(kind) == 5 && (u16)(no) == 3 && Quest_enemy_revival_ck(em) == 1) { \
+        if ((u16)(no) == 3 && Quest_enemy_revival_ck(em) == 1) {        \
             Quest_enemy_revival_set(em);                                \
             em_status_init(em);                                         \
             init(em);                                                   \

@@ -17,6 +17,9 @@ typedef struct QUEST_W {
 extern QUEST_W quest_w;
 extern GAME_W game_w;
 
+#ifdef MHG_PS2
+void Em_Sleep2_End(EMW *em);
+#endif
 #if !defined(G_PART)
 static void em_dm04(EMW *em) {
     switch (em->x05) {
@@ -332,10 +335,13 @@ static void em_move06(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void em04_main(EMW *em) {
     u8 dmg[4];
     EM04W *w = (EM04W *)em->ex;
+#ifdef MHG_PS2
+    u16 q;
+#endif
 
     if (w->x0C != 0) {
         w->x0C--;
@@ -381,7 +387,7 @@ void em04_main(EMW *em) {
         break;
     case 10:
         em->x88B = 1;
-        Em_Sleep_End(em);
+        GV(Em_Sleep_End, Em_Sleep2_End)(em);
         if (em->x388 == 2) {
             em_act_set(em, 4, 2);
         } else {
@@ -406,11 +412,28 @@ void em04_main(EMW *em) {
         em_dur_set(em, 0);
         break;
     }
+#ifdef MHG_PS2      /* G: quest numbers 10005 / 10028 (stage 0x45, event 20: act 6, 1) */
+    q = quest_w.x08;
+    if (q == 10005 && em->kind == 5) {
+        if (em->stg != 0x2A || Event_flag_ck(0xF) != 0) {
+            goto normal;
+        }
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em04_act_set(em, 6, 0, 1);
+        }
+    } else if (q == 10028 && em->kind == 5 && em->stg == 0x45 && Event_flag_ck(20) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em04_act_set(em, 6, 1, 1);
+        }
+    } else {
+normal:
+#else
     if (quest_w.x08 == 0x87 && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em04_act_set(em, 6, 0, 1);
         }
     } else {
+#endif
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {

@@ -57,6 +57,16 @@ u8 em15_senkai_pos_no(EMW *em, f32 *out);
         w->dist = 0.0f;             \
     }
 
+void em15_act_act_set(EMW *em, u16 no, u16 arg);
+void em15_move_act_set(EMW *em, u16 no, u16 arg);
+void em15_fly_act_set(EMW *em, u16 no, u16 arg);
+void em15_atk_act_set(EMW *em, u16 no, u16 arg);
+#ifdef VERSION_MHG
+#include "em_revive_g.h"
+void em15_init(EMW *em);
+void game_func_005EE6B0(EMW *em);
+#endif
+
 #if !defined(G_PART) || G_PART == 1
 void em15_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
@@ -385,26 +395,33 @@ void em15_atk_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 #ifdef VERSION_MHG
-#include "em_revive_g.h"
-void em15_init(EMW *em);
 /* G game 0x5EE6B0: the start point of a returning monster by its type (em+0x1B), then em15_init */
-static void em15_revive_init(EMW *em)
+void game_func_005EE6B0(EMW *em)
 {
-    if (em->type != 1) {
+    switch (em->type) {
+    default:
         em->stg = 19;
-        EMG_PLACE(em, 0xE990, 13696.5996f, 500.0f, 6752.7998f);
-    } else {
+        em->pos[0] = 13696.5996f;
+        em->pos[1] = 500.0f;
+        em->pos[2] = 6752.7998f;
+        em->ang[1] = 0xE990;
+        break;
+    case 1:
         em->stg = 3;
-        EMG_PLACE(em, 0x64D, 8966.40039f, 1600.0f, 3934.1001f);
+        em->pos[0] = 8966.40039f;
+        em->pos[1] = 1600.0f;
+        em->pos[2] = 3934.1001f;
+        em->ang[1] = 0x64D;
+        break;
     }
     em15_init(em);
 }
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em15_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -426,7 +443,7 @@ void em15_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 5:
     case 6:
 #ifdef VERSION_MHG      /* G em15_act_set (game 0x5FBB20): die act 3 brings the monster back */
-        EMG_ACT_REVIVE(em, kind, no, em15_revive_init);
+        EMG_ACT_REVIVE(em, kind, no, game_func_005EE6B0);
 #endif
         em->act_spd = 1.0f;
         em_act_set2(em, kind, no, arg);

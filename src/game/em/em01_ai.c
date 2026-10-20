@@ -69,7 +69,18 @@ extern void *em01_rail_add[2];
 extern void *em01_rail_half_add[2];
 
 void Eft19_set(EMW *, int, int);
+#ifdef MHG_PS2
+void eft09_set();
+void sub_main_func_004DC5D0(EMW *em, int part);
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+int game_func_005499A0(EMW *em, s16 no);
+void game_func_0054A1D0(EMW *em, s16 *tbl);
+void game_func_0054A230(EMW *em, s16 *tbl);
+extern s16 em01_stay_tm_g[];
+extern s16 em01_runaway_tm_g[];
+#else
 void eft09_set(EMW *, int);
+#endif
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
@@ -271,12 +282,17 @@ void em01_local_init(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em01_init(EMW *em) {
     EM01W *w = (EM01W *)em->ex;
     u8 f;
     int k;
 
+#ifdef MHG_PS2      /* G: part resets */
+    sub_main_func_004DC5D0(em, 3);
+    sub_main_func_004DC5D0(em, 4);
+    sub_main_func_004DC5D0(em, 8);
+#endif
     if (quest_w.x08 == 0) {
         em->ang[1] = 0x8000;
         switch (game_w.stage) {
@@ -328,6 +344,38 @@ void em01_init(EMW *em) {
             break;
         }
     }
+#ifdef MHG_PS2      /* G: init-time char set, no act set, hit points from the vital table, stage timer lists */
+    game_func_00549FE0(em, 1, 0, 0);
+    em->x388 = 0;
+    w->x06 = 0;
+    em->x792 = em->x302 = game_func_005499A0(em, 0);
+    em->x839 = 1;
+    em->x88B = 1;
+    em->x765 = 1;
+    game_func_0054A1D0(em, em01_stay_tm_g);
+    game_func_0054A230(em, em01_runaway_tm_g);
+    w->dang = 0x4000;
+    w->pitch_spd = 0x100;
+    w->turn = 0x200;
+    w->bank_spd = 0x100;
+    w->bank_max = 0x2000;
+    w->turn_left = 0;
+    em->x734 = 3;
+    EMF(em, u8, 0x735) = 0;
+    w->x48 = 0;
+    w->x49 = 0;
+    w->x4A = 0;
+    f = em->x948 & 1;
+    em->x948 = f;
+    if (f == 0) {
+        switch (em->kind) {
+        case 1: case 0x2A: case 0x25: case 0xB: case 0x29: case 0x31:
+            em->ex[0xA3] = 0;
+            eft09_set(em);
+            break;
+        }
+    }
+#else
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     em01_act_set(em, 0, 1, 0);
@@ -367,6 +415,7 @@ void em01_init(EMW *em) {
         }
         }
     }
+#endif
 }
 #endif
 
