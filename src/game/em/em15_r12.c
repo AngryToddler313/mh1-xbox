@@ -1,4 +1,5 @@
 /* em15_r12 - em15 0x005CBA30-0x005CEFC8: sound_call_sub_005CBA30, sound_call_005CBAA0, sound_call_parts_005CBB00, quake_call_005CBBA0, move_default_005CBBF0, ef_move_sub_005CBC40 (all file-static, aliased in config/game_aliases.txt). Whole file in em15_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -402,10 +403,15 @@ void em_cmd_ck(EMW *);
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void sound_call_sub_005CBA30(EMW *em, int se, int joint) {
     f32 pos[3];
 
+#ifdef MHG_PS2
+    if (em->type == 1 && (u32)se >= 66 && (u32)se < 98) {     /* G: variant 1 plays its own sounds */
+        se += 30;
+    }
+#endif
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
@@ -419,11 +425,16 @@ static void sound_call_005CBAA0(EMW *em, int frame, int se, int joint) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
     if (em_frame_check(em, layer, (f32)frame) != 0) {
+#ifdef MHG_PS2
+        if (em->type == 1 && (u32)se >= 66 && (u32)se < 98) {     /* G: variant 1 plays its own sounds */
+            se += 30;
+        }
+#endif
         flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
         Em_se_req2(em, se, 0, pos, 3, 0);
     }

@@ -1022,7 +1022,7 @@ DMG_SIMPLE(em_dmg01_005705C0, 0x42)
 DMG_SIMPLE(em_dmg02_00570650, 0x3F)
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void em_dmg03_005706E0(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -1031,11 +1031,19 @@ void em_dmg03_005706E0(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em_cmd_reset(em);
         em_char_set(em, 0x40, 0, 0);
+#ifdef MHG_PS2
+        if (em->kind == 1 || em->kind == 0x2A || em->kind == 0x25) {     /* G: two G kinds too */
+            Quest_enemy_hagi_set(em, 2);
+        } else {
+            Quest_enemy_hagi_set(em, 8);
+        }
+#else
         if (em->kind == 1) {
             Quest_enemy_hagi_set(em, 2);
         } else {
             Quest_enemy_hagi_set(em, 8);
         }
+#endif
         break;
     case 1:
         if (em->x194 == 0) {
@@ -1047,7 +1055,7 @@ void em_dmg03_005706E0(EMW *em, EM01W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void em_dmg04_005707A0(EMW *em, EM01W *w) {
     em->x40C = 5;
     switch (em->x05) {
@@ -1062,7 +1070,11 @@ void em_dmg04_005707A0(EMW *em, EM01W *w) {
         Em_Sleep_Flag_Ck(em);
         break;
     case 1:
+#ifdef MHG_PS2
+        if (em_frame_check(em, 6.0f, 0) && (s8)em->ex[0xA3] != 0) {     /* G: for every kind */
+#else
         if (em_frame_check(em, 6.0f, 0) && (s8)em->ex[0xA3] != 0 && em->kind != 0x14) {
+#endif
             em->ex[0xA3] = 0;
         }
         if (em_frame_check2(em, 0, 52.0f) && em_frame_check2(em, 0, 122.0f) == 0) {

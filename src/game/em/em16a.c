@@ -126,6 +126,8 @@ void Quest_enemy_escape(EMW *);
 
 #ifdef MHG_PS2
 void game_func_006025F0(EMW *em, EM16W *w);
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+int game_func_005499A0(EMW *em, s16 no);
 #endif
 
 #ifdef MHG_PS2
@@ -179,6 +181,9 @@ void em16_init(EMW *em) {
     em_act_set(em, 0, 0xC);
     switch (em->kind) {
     case 16:
+#ifdef MHG_PS2
+    case 35:
+#endif
         em->x792 = em->x302 = em_hp_vital_set(em, 0x3C);
         break;
     case 13:
@@ -208,11 +213,17 @@ void em16_init(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 void em16_init2(EMW *em) {
     EM16W *w = (EM16W *)em->ex;
 
     em_status_init(em);
+#ifdef MHG_PS2      /* G: init-time char set; hit points from the per-kind vital table */
+    game_func_00549FE0(em, 1, 0, 0);
+    em->x388 = 0;
+    em_act_set(em, 0, 0xC);
+    em->x792 = em->x302 = game_func_005499A0(em, 0);
+#else
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     em_act_set(em, 0, 0xC);
@@ -230,6 +241,7 @@ void em16_init2(EMW *em) {
         em->x792 = 0x78;
         break;
     }
+#endif
     em->x88B = 1;
     w->yobi_st = 0;
     em_dur_init(em);
@@ -874,7 +886,7 @@ static void em_atk01_005D2100(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 static void em_atk02_005D2110(EMW *em, EM16W *w) {
     u8 landed = 0;
 
@@ -898,6 +910,9 @@ static void em_atk02_005D2110(EMW *em, EM16W *w) {
         if (em_frame_check(em, 40.0f, 0) != 0) {
             switch (em->kind) {
             case 16:
+#ifdef MHG_PS2
+            case 35:
+#endif
                 shell13_set(em, 3);
                 break;
             case 13:
@@ -947,7 +962,7 @@ static void em_atk02_005D2110(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 static void em_atk03_005D2400(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
@@ -958,6 +973,9 @@ static void em_atk03_005D2400(EMW *em, EM16W *w) {
         if (em_frame_check(em, 16.0f, 0) != 0) {
             switch (em->kind) {
             case 16:
+#ifdef MHG_PS2
+            case 35:
+#endif
                 shell13_set(em, 5);
                 break;
             case 13:
@@ -995,7 +1013,7 @@ static void em_atk04_005D2500(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 static void em_atk05_005D25B0(EMW *em, EM16W *w) {
     u8 landed = 0;
 
@@ -1019,6 +1037,9 @@ static void em_atk05_005D25B0(EMW *em, EM16W *w) {
         if (em_frame_check(em, 40.0f, 0) != 0) {
             switch (em->kind) {
             case 16:
+#ifdef MHG_PS2
+            case 35:
+#endif
                 shell13_set(em, 5);
                 break;
             case 13:
@@ -1068,7 +1089,7 @@ static void em_atk05_005D25B0(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 static void em_atk06_005D28A0(EMW *em, EM16W *w) {
     u8 landed = 0;
 
@@ -1092,6 +1113,9 @@ static void em_atk06_005D28A0(EMW *em, EM16W *w) {
         if (em_frame_check(em, 40.0f, 0) != 0) {
             switch (em->kind) {
             case 16:
+#ifdef MHG_PS2
+            case 35:
+#endif
                 shell13_set(em, 5);
                 break;
             case 13:
