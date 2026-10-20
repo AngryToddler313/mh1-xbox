@@ -445,7 +445,66 @@ void em_atk16_0056EAD0(EMW *em, EM01W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
+#ifdef MHG_PS2
+void em_atk17_0056EC80(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05++;
+            em->x05++;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+    case 3:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 4:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 5:
+        em01_fly_adjy(em, 1);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#else
 void em_atk17_0056EC80(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -509,6 +568,7 @@ void em_atk17_0056EC80(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2
@@ -879,7 +939,67 @@ void em_atk21_0056F340(EMW *em, EM01W *w) {
 #endif
 
 /* A file static in the original. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
+#ifdef MHG_PS2
+void em_atk22(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05++;
+            em->x05++;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+    case 3:
+    case 4:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 5:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 6:
+        em01_fly_adjy(em, 1);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#else
 void em_atk22(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -944,6 +1064,7 @@ void em_atk22(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 #endif
 
 /* A file static in the original. */
