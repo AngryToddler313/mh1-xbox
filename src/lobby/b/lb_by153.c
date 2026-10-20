@@ -11,7 +11,11 @@ void random_stack();
 void shop_armor2_stack();
 s32 shop_armor2_question();
 void lb_process_tag_decide01();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+int Lb_put_set01();
+#else
 void Lb_put_set01();
+#endif
 void Lb_act_set();
 void cnWrap_SoundRequest();
 s32 shop_process_after(void) {

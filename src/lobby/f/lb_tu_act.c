@@ -3,6 +3,9 @@
 #include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
+#ifdef MHG_PS2
+void Lb_send_pl_status_g();   /* the G map names 0x59A820 check_sender0 */
+#endif
 f32 *Stage_data_get(int stg);
 int Get_view_dir();
 f32 flvecCalcDistance(f32 *, f32 *);
@@ -21,7 +24,7 @@ int Online_ck();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
 int SoftKeyboard_alive_check();
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void Lb_Pl_act_set(pl, a, b, flags)
 PLW *pl;
 u8 a;
@@ -56,6 +59,20 @@ int flags;
     pl->work394 = 0;
     pl->chr_spd0 = 2.0f;
     pl->chr_spd1 = 2.0f;
+#ifdef MHG_PS2
+    /* G: another player's act only goes on when Lb_act_ck allows it, and keeps motion 1 */
+    if (pl->id != game_w.master) {
+        if ((s16)Lb_act_ck(pl, 0, 0) == 0) {
+            return;
+        }
+        if (pl->char0 != 1) {
+            Lb_pl_to_normal(pl, 0, 4, 0);
+        }
+    }
+    if (ck_pl_send(pl) == 1) {
+        Lb_send_pl_status_g(pl);
+    }
+#else
     if (pl->id != game_w.master) {
         if ((s16)Lb_act_ck(pl, 0, 0) != 0) {
             Lb_pl_to_normal(pl, 0, 4, 0);
@@ -67,6 +84,7 @@ send:
             Lb_send_pl_status(pl);
         }
     }
+#endif
 }
 #endif
 

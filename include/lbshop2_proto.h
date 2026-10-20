@@ -23,7 +23,11 @@ extern s32 shop_default_help[];
 extern void lb_shop_put_shopHelp();
 extern int lb_monster_list_check();
 extern int Monster_list_chk();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+extern int Lb_put_set01();   /* G returns whether the message was shown */
+#else
 extern void Lb_put_set01();
+#endif
 extern void Lb_draw_square();
 extern void Lb_put_button();
 extern void Lb_put_itemIcon();

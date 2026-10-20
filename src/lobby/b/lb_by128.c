@@ -11,7 +11,11 @@ extern char User_data[];
  * The list holds 523 entries (memset 20920) and a full item box shows message 10. */
 extern SHENT *armor_shop_tbl[];
 extern int get_questLevelNum();
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+extern int Lb_put_set01();
+#else
 extern void Lb_put_set01();
+#endif
 static int armor_tbl_group(int job1) {
     if (Online_ck() == 1) {
         if (get_questLevelNum(34)) return job1 ? 0x88 : 0x60;
