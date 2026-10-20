@@ -2004,3 +2004,4 @@ game 0x00587FA0 0x0058835C game/em/em_cmd_r09
 game 0x0058BD00 0x0058C09C game/em/em_cmd_r16
 game 0x0058C510 0x0058C644 game/em/em_cmd_r17
 game 0x0058CAE0 0x0058CC40 game/em/em_cmd_r90
+game 0x0058FA80 0x0058FB58 game/em/em_cmd_r98
