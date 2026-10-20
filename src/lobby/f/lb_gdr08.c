@@ -1,4 +1,5 @@
 /* lb_gdr08 - browser tags/tables/http 0x005D9560-0x005D961C: HttpTaskInitialize. Whole file in lb_dr2.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern u8 *bsw;
 extern u8 BFontSizeN[];
@@ -29,6 +30,11 @@ int BsMemFree();
 void sceHTTPSetMallocFunction();
 void sceHTTPSetReallocFunction();
 void sceHTTPSetFreeFunction();
+#ifdef MHG_PS2
+/* G's symbol map is one function off here: G's sceHTTPSetMalloc/Realloc/FreeFunction are at nethttp 0xA13BB8/0xA13BE0/0xA13C08,
+ * which it names nethttp_func_00A13BB8 / sceHTTPSetMallocFunction / sceHTTPSetReallocFunction */
+void nethttp_func_00A13BB8();
+#endif
 int sceHTTPInit();
 int get_CA_size();
 int sceHTTPSInitCertFromMemory();
@@ -122,9 +128,9 @@ int HttpTaskInitialize(void) {
     memset(HttpWork, 0, 0xC0);
     CpInetHttpInitialize();
     BsMemAllocInitialize();
-    sceHTTPSetMallocFunction(BsMemAlloc);
-    sceHTTPSetReallocFunction(BsMemRealloc);
-    sceHTTPSetFreeFunction(BsMemFree);
+    GV(sceHTTPSetMallocFunction, nethttp_func_00A13BB8)(BsMemAlloc);
+    GV(sceHTTPSetReallocFunction, sceHTTPSetMallocFunction)(BsMemRealloc);
+    GV(sceHTTPSetFreeFunction, sceHTTPSetReallocFunction)(BsMemFree);
     if (sceHTTPInit() < 0) {
         return -1;
     }

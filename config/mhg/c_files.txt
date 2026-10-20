@@ -2165,3 +2165,8 @@ sub_main 0x004F09F0 0x004F0A74 mhg/main/set/set12_p5
 main 0x0011C830 0x0011C930 mhg/main/menu/menu09_p3
 sub_main 0x004DC030 0x004DC1B8 mhg/main/eft/eft26_p5
 main 0x001EEC50 0x001EF060 mhg/main/omake/omake_p1
+sub_main 0x004F0F00 0x004F10A0 mhg/main/pl/f_pl_p55
+nethttp 0x00A08710 0x00A087A4 lobby/f/lb_gdr01
+nethttp 0x00A062B0 0x00A0636C lobby/f/lb_gdr08
+select 0x00544720 0x00544840 mhg/select/edit00_p1
+select 0x00544850 0x00544A24 mhg/select/edit00_p2

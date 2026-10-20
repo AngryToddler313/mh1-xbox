@@ -492,7 +492,7 @@ void player_mv(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 55
 void pl_init(int mode) {
     int i;
     PLW *pl;
@@ -500,7 +500,7 @@ void pl_init(int mode) {
     pl_cnt_w[1] = 0;
     pl_cnt_w[0] = 1;
     pl = player_work;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < GV(8, 10); i++) {
         if (pl->be_flag != 0) {
             pl->work568 = get_prim();
             if (pl->work568 != -1) {
