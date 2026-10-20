@@ -8,6 +8,10 @@
 #include "g_alias.h"
 #include "reward.h"
 #ifdef MHG_PS2
+extern RESULT_W result_w_g[];   /* G: result_w is outside small data (absolute access) */
+#define result_w result_w_g[0]
+#endif
+#ifdef MHG_PS2
 void font_set_stack_no(int);
 void func_0012EAF0(void);
 void func_0012DD90(f32, int, int, int, int);
@@ -382,7 +386,7 @@ void result_prog(void)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 int gold_init(GAME_W *t)
 {
     int i;
@@ -413,7 +417,7 @@ int gold_init(GAME_W *t)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 int gold_main(GAME_W *t)
 {
     int amt;

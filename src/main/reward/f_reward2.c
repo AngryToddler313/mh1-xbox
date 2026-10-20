@@ -1,8 +1,14 @@
 /* Quest result screen, second part (0x291D30-0x292508): money payout display
  * (gold_disp) and the hunter-point payout (result_init/result_main). Split
  * from f_reward.c so that each file owns only its own jump tables. */
+#include "g_alias.h"
 #include "reward.h"
+#ifdef MHG_PS2
+extern RESULT_W result_w_g[];   /* G: result_w is outside small data (absolute access) */
+#define result_w result_w_g[0]
+#endif
 
+#if !defined(G_PART)
 void gold_disp(GAME_W *t)
 {
     char buf[0x70];
@@ -67,7 +73,9 @@ void gold_disp(GAME_W *t)
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 int result_init(GAME_W *t)
 {
     int i;
@@ -99,7 +107,9 @@ int result_init(GAME_W *t)
     fade_set(2);
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int result_main(GAME_W *t)
 {
     int amt;
@@ -147,7 +157,7 @@ int result_main(GAME_W *t)
         if (result_w.gold != 0) {
             amt = 1;
             if (Psw[0] & 0x20) {
-                amt += 0x14;
+                amt += GV(0x14, 1240);
             }
             if (result_w.gold > 0) {
                 if (result_w.gold < amt) {
@@ -167,7 +177,7 @@ int result_main(GAME_W *t)
             result_w.rank_new = Get_hunter_rank(&User_data);
             if (result_w.rank_new != result_w.rank_old) {
                 if (result_w.rank_old < result_w.rank_new) {
-                    str_play(1, 0xF);
+                    str_play(1, GV(0xF, 0x11));
                 } else {
                     se_req(7, 0xD, 0);
                 }
@@ -188,3 +198,4 @@ int result_main(GAME_W *t)
     }
     return 0;
 }
+#endif

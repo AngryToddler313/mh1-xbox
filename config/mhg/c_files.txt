@@ -2672,3 +2672,6 @@ sub_main 0x004EA570 0x004EA7A8 mhg/main/emw/emu03_p3
 sub_main 0x004C7790 0x004C78B0 mhg/main/ud/f_ud_p28
 main 0x002215A0 0x00221814 mhg/main/chat/f_chat_p37
 main 0x001E44E0 0x001E45DC mhg/main/boot/boot02_p2
+sub_main 0x004F5980 0x004F5A98 mhg/main/reward/f_reward_p7
+sub_main 0x004F5AA0 0x004F5D40 mhg/main/reward/f_reward_p8
+sub_main 0x004F6AC0 0x004F6DE4 mhg/main/reward/f_reward2_p1
