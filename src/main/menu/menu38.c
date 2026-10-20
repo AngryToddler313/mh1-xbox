@@ -1,6 +1,7 @@
 /* menu38 - f_menu 0x0012B5A0-0x0012B688: menu_chcnfg_reibun (chat-preset editor input). Whole file in menu_nm.c. */
 /* menu_nm - f_menu (SLPM_654.95 0x00127440-0x00134950, main.bin): the whole pit menu file as near-match C, not built; matching runs are built from it as menuNN.c.
  * Field meanings are guesses. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -168,7 +169,7 @@ int menu_chcnfg_reibun(int sw) {
         }
         a = r & 0xFFFF;
         if (!(a & 0x40)) {
-            PitMenu.x12 = 3;
+            PitMenu.x12 = GV(3, 0);
             PitMenu.x1B = Reibun_select_mv(sw, PitMenu.x1B);
             if ((a & 0x20) && Reibun_Edit_Start(PitMenu.x1B) == 1) {
                 lpPit->x7F++;
@@ -176,7 +177,7 @@ int menu_chcnfg_reibun(int sw) {
         }
         break;
     case 1:
-        PitMenu.x12 = 4;
+        PitMenu.x12 = GV(4, 1);
         r = (u16)(r & 0x7FBF);
         if ((s8)Reibun_Edit_Core(PitMenu.x1B) != 0) {
             lpPit->x7F = 0;

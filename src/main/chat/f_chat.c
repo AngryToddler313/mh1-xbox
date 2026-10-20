@@ -1070,9 +1070,27 @@ static u32 chat_log_disp_line(u8 top) {
 extern u8 pf_chat_log_base[];
 extern u8 lit_3171[];
 extern char *str_3166[];
+#ifdef MHG_PS2
+/* G's Pit_disp_chat: the frame and the megaphone are drawn by main 0x221E00 (frame data, chat colour), and the log
+ * by disp_chat_log_sub (0x221F00) with the colour as a 4th argument; the colour comes from a byte table indexed by
+ * option_w[6] */
+extern u8 D_002EC1B4[4];
+extern void *D_002EC628[];
+extern s16 D_002FF29C[];
+void func_00221E00(void *, int);
+void func_00221F00(int, int, int, int);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 33
 void Pit_disp_chat(void) {
+#ifdef MHG_PS2
+    u8 c = D_002EC1B4[((s8 *)&option_w)[6]];
+
+    func_00221E00(D_002EC628[0], c);
+    func_00221F00(0, 0, 0, c);
+    D_002FF29C[0] = 0;
+    return;
+#endif
     DispFrameMessage(pf_chat_log_base, lit_3171);
     Put_megaphone(0x97, 0xBB, PitMenu.x17);
     flfntSetSize(0x15, 0x12);
