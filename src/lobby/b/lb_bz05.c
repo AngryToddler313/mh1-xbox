@@ -5,15 +5,21 @@ extern char Friend_data[];
 extern char tmp_friend_data[];
 extern char CNFile[];
 
+#if !defined(G_PART)
 s32 tk_sw_on_ck(s32 arg0) {
     return (arg0 & (*(u16 *)0x3F3714 | *(u16 *)0x3F3728)) != 0;
 }
+#endif
 
+#if !defined(G_PART)
 s32 tk_sw_new_ck(s32 arg0) {
     return (*(u16 *)0x3F3710 & arg0) != 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void cpn_GetCNData(void) {
     memcpy(&Friend_data, &CNFile, 0x960);
     memcpy(&tmp_friend_data, &CNFile, GV(0x960, 192));
 }
+#endif
