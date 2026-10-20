@@ -1,5 +1,6 @@
 /* return_mc_save (0x00271EA0-0x00271FB0): step machine that resets the game, runs a memory card operation (8) and fades out;
  * returns 1 when done (COM_R_No_1 == 3). */
+#include "g_alias.h"
 #include "types.h"
 
 extern u8 COM_R_No_1;
@@ -23,7 +24,11 @@ int return_mc_save() {
     case 0:
         all_reset();
         Net_all_reset(0);
+#ifdef MHG_PS2
+        func_5B7460(0, 0, Disp_back, 0);  /* G: a fourth argument */
+#else
         func_5B7460(0, 0, Disp_back);
+#endif
         fade_set(2);
         func_5B2620();
         McOperationSet(8);

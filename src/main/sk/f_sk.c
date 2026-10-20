@@ -162,10 +162,18 @@ s8 sk_get_key_code() {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+extern u8 D_002EF650;       /* G: a soft keyboard flag in small data (gp-13600) */
+void func_00208EB0(void);   /* G only (main 0x208EB0) */
+#endif
+#if !defined(G_PART) || G_PART == 11
 void SoftKeyboard_init(void) {
     lpSKey = softkeyboard;
     SKB(0x37) = 0;
+#ifdef MHG_PS2
+    D_002EF650 = 0;
+    func_00208EB0();
+#endif
     SoftkeyAppInit();
 }
 #endif

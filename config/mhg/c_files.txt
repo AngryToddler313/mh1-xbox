@@ -2193,3 +2193,5 @@ sub_main 0x004C50E0 0x004C5158 mhg/main/ud/f_ud_p22
 sub_main 0x004C5160 0x004C51F0 mhg/main/ud/f_ud_p23
 sub_main 0x004C75D0 0x004C7648 mhg/main/ud/f_ud_p24
 sub_main 0x004C7650 0x004C7714 mhg/main/ud/f_ud_p25
+main 0x0021D6C0 0x0021D7D0 main/net/mcsave_ret
+main 0x00208E70 0x00208EA8 mhg/main/sk/f_sk_p11
