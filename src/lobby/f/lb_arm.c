@@ -216,9 +216,16 @@ s32 lb_armor_itemBuy() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
+#ifdef MHG_PS2
+int lobby_func_0054F360();
+#endif
 s32 lb_armor_itemSell() {
+#ifdef MHG_PS2
+    Lb_make_mySrcEquip(*(s16 *)((char *)lbShop.tbl + lobby_func_0054F360(lbShop.tbl, lbShop.cur) * 8));   /* G maps the cursor first */
+#else
     Lb_make_mySrcEquip(*(s16 *)((char *)lbShop.tbl + lbShop.cur * 8));
+#endif
     cnWrap_SoundRequest(0);
     return 1;
 }
