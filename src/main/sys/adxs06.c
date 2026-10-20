@@ -3,6 +3,7 @@
    queue (load_bin = blocking load, load_bin_req/load_task = background queue of 64 entries x 0x100 bytes) and the
    two BGM stream channels (str_*: play/pause/stop, master volume, fades). Working file: matching functions are
    split into runs. Names of fields are guesses from use. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 extern GAME_W game_w;
@@ -39,7 +40,38 @@ void ADXT_SetOutputMono(int);
 void flSndOutputMode(int);
 /* Blocking AFS load: open file id (hi 16 bits partition, low 16 bits file), read it into buf and wait,
    keeping the quest timer and network running (checked every v-blank); returns 1. */
+#ifdef MHG_PS2
+void func_00100940(void);
+void func_001003B0(void);
+#endif
 int load_bin(u32 id, void *buf) {
+#ifdef MHG_PS2
+    u16 part;
+    u16 file;
+    int h;
+    int st;
+
+    func_00100940();
+    part = id >> 16;
+    file = id;
+    do {
+        do {
+            st = part;
+            h = ADXF_OpenAfs(st, file);
+        } while (h == 0);
+        st = ADXF_GetFsizeSct(h);
+        ADXF_ReadNw(h, st, buf);
+        for (;;) {
+            st = ADXF_GetStat(h);
+            if (st != 2) {
+                break;
+            }
+            func_001003B0();    /* G: the per-frame work while waiting */
+        }
+        ADXF_Close(h);
+    } while (st != 3);
+    return 1;
+#else
     u16 part = id >> 16;
     u16 file = id;
     int h;
@@ -71,6 +103,7 @@ int load_bin(u32 id, void *buf) {
         ADXF_Close(h);
     } while (st != 3);
     return 1;
+#endif
 }
 typedef struct LOADW {
     s8 busy;            /* 0x00 queue not empty */

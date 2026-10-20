@@ -623,7 +623,13 @@ void disp_cont_spr(void *unused) {
 }
 #endif
 
-#if !defined(G_PART)
+void func_0012DD90(f32, int, int, int, int);
+#ifdef MHG_PS2
+int select_func_00544840(void);
+void select_func_005485B0(u8 *, int);
+extern char *gptr_005284F0[];   /* G: the "back" button text */
+#endif
+#if !defined(G_PART) || G_PART == 5
 void cont_trans(TSKH *tk) {
     STASK *s = tk->work;
     u8 *e = (u8 *)&edit_w;
@@ -636,16 +642,27 @@ void cont_trans(TSKH *tk) {
             disp_save_info(e, 1);
         }
         if (s->step >= 2) {
+#ifdef MHG_PS2
+            disp_savesel(e, 1, s->step, 0);
+            if (select_func_00544840() == 0) {
+                GV(Disp_button, func_0012DD90)(1.0f, 0x12, 0x206, 0x60, 8);
+                flfntSetSize(0x14, 0x14);
+                font_print_ex(0x220, 0x60, 0, gptr_005284F0[0]);
+            } else {
+                select_func_005485B0(e, 1);
+            }
+#else
             disp_savesel(e, 1, s->step);
-            Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
+            GV(Disp_button, func_0012DD90)(1.0f, 0x12, 0x206, 0x60, 8);
             font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+#endif
         }
     }
     if (s->step == 5) {
         Mem_mes_disp(0x160, 0x28);
         DispFrameMessageA(help_mess_005387B0, 0, 0x80);
         if (!((edit_w.x38 / 15) & 1)) {
-            Disp_button(1.0f, 0, 0x232, 0x184, 8);
+            GV(Disp_button, func_0012DD90)(1.0f, GV(0, 0x14), 0x232, 0x184, 8);
         }
     }
 }
