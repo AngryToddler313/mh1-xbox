@@ -1,5 +1,6 @@
 /* em08_ai, run 8: em_demo01_005A1700 .. em_move06_005A2D90 (game.bin 0x005A1700-0x005A2DDC). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -660,7 +661,7 @@ void em_die04_005A21F0(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em_die05_005A22A0(EMW *em, EM08W *w) {
     f32 temp_f1;
     s32 temp_v1;
@@ -685,11 +686,13 @@ void em_die05_005A22A0(EMW *em, EM08W *w) {
     case 0x1:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
+#ifndef MHG_PS2
         if (!(em->pos[1] < em->x7E4)) {
             em->x388 = 2;
         } else {
             em->x388 = 4;
         }
+#endif
         if (em->pos[1] < em->x5AC) {
             em->x05++;
             em->x388 = 0;
@@ -991,7 +994,7 @@ void em_move03_005A2AA0(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em_move04_005A2B70(EMW *em, EM08W *w) {
     u8 temp_v1;
 
@@ -1013,7 +1016,11 @@ void em_move04_005A2B70(EMW *em, EM08W *w) {
         em_dmg04_0059FD40(em, w);
         break;
     case 5:
+#ifdef MHG_PS2
+        em_dmg05_0059FE40(em, w, 1);
+#else
         em_dmg05_0059FE40(em, w);
+#endif
         break;
     case 6:
         em_dmg06_0059FFE0(em, w);
@@ -1021,9 +1028,11 @@ void em_move04_005A2B70(EMW *em, EM08W *w) {
     case 7:
         em_dmg07_005A00F0(em, w);
         break;
+#ifndef MHG_PS2 /* G: no acts 8, 12, 13, 14, 18 */
     case 8:
         em_dmg08_005A0250(em, w);
         break;
+#endif
     case 9:
         em_dmg09_005A0350(em, w);
         break;
@@ -1033,15 +1042,21 @@ void em_move04_005A2B70(EMW *em, EM08W *w) {
     case 11:
         em_dmg11_005A0500(em, w);
         break;
+#ifndef MHG_PS2 /* G: no acts 8, 12, 13, 14, 18 */
     case 12:
         em_dmg12_005A05E0(em, w);
         break;
+#endif
+#ifndef MHG_PS2 /* G: no acts 8, 12, 13, 14, 18 */
     case 13:
         em_dmg13_005A06C0(em, w);
         break;
+#endif
+#ifndef MHG_PS2 /* G: no acts 8, 12, 13, 14, 18 */
     case 14:
         em_dmg14_005A07B0(em, w);
         break;
+#endif
     case 15:
         em_dmg15_005A08C0(em, w);
         break;
@@ -1051,11 +1066,18 @@ void em_move04_005A2B70(EMW *em, EM08W *w) {
     case 17:
         em_dmg17_005A0C40(em, w);
         break;
+#ifndef MHG_PS2 /* G: no acts 8, 12, 13, 14, 18 */
     case 18:
         em_dmg18_005A0E60(em, w);
         break;
+#endif
     case 19:
         em_dmg19_005A0F50(em, w);
+#ifdef MHG_PS2
+        break;
+    case 0x14:
+        em_dmg05_0059FE40(em, w, 0);
+#endif
     default:
         break;
     }

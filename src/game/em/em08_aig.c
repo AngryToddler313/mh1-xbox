@@ -1,5 +1,6 @@
 /* em08_ai, run 7: em_dmg01_0059FB90 .. em_dmg19_005A0F50 (game.bin 0x0059FB90-0x005A0FE8). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -369,28 +370,35 @@ void em_dmg04_0059FD40(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+/* G: the side comes from the caller (em_move04: act 5 = 1, act 0x14 = 0) instead of em->x07 */
+void em_dmg05_0059FE40(EMW *em, EM08W *w, int side) {
+#define EM08_SIDE side
+#else
 void em_dmg05_0059FE40(EMW *em, EM08W *w) {
+#define EM08_SIDE em->x07
+#endif
 
     switch (em->x05) {
     case 0:
         em->x05++;
         em->x3F4 = 0;
         em_cmd_reset(em);
-        em_char_set(em, (s16)(em->x07 ? 0x45 : 0x4A), 0, 0);
+        em_char_set(em, (s16)(EM08_SIDE ? 0x45 : 0x4A), 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
             em->x05++;
             em->work08 = 0;
-            em_char_set(em, (s16)(em->x07 ? 0x46 : 0x4B), 0, 0);
+            em_char_set(em, (s16)(EM08_SIDE ? 0x46 : 0x4B), 0, 0);
             break;
         }
         break;
     case 2:
         if (em->x194 == 0) {
             em->x05++;
-            em_char_set(em, (s16)(em->x07 ? 0x81 : 0x80), 0, 0);
+            em_char_set(em, (s16)(EM08_SIDE ? 0x81 : 0x80), 0, 0);
             break;
         }
         break;
@@ -398,7 +406,7 @@ void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         if (em->x194 == 0) {
             em->x05++;
             em->work08 = 0;
-            em_char_set(em, (s16)(em->x07 ? 0x47 : 0x7C), 0, 0);
+            em_char_set(em, (s16)(EM08_SIDE ? 0x47 : 0x7C), 0, 0);
             break;
         }
         break;
@@ -412,6 +420,7 @@ void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         break;
     }
 }
+#undef EM08_SIDE
 #endif
 
 #if !defined(G_PART) || G_PART == 2
