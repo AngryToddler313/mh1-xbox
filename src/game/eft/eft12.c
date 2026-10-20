@@ -1212,7 +1212,7 @@ static void eft12_se_req(EFTW *ew, s16 kind) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 static EFTW *eft12_pull_work(s16 arg) {
     switch (arg) {
     case 1:
@@ -1220,7 +1220,7 @@ static EFTW *eft12_pull_work(s16 arg) {
     case 3:
     case 4:
     case 5:
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#if defined(VERSION_MHG)
     case 6:
 #endif
         return pull_eft_work(1);

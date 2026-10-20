@@ -157,9 +157,9 @@ int Tutorial_flag_set(int flag) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void soncho_no_oshie(void) {
-    set01_set2(lit_173_0068A530);
+    set01_set2(GSTR(lit_173_0068A530, gptr_002EC65C));
     se_req(7, (ran_suu(1) & 3) + 0x28, 0);
 }
 #endif

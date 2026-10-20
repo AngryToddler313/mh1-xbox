@@ -106,6 +106,14 @@ int em09_dir_calc(s32 *, s32 *, int);
 void oikake_ck(EMW *em);
 void em09_act_set();
 
+#ifdef MHG_PS2
+void game_func_005D58B0(EMW *em);
+#endif
+
+#ifdef MHG_PS2
+void game_func_005D4210(EMW *em);
+#endif
+
 #if !defined(G_PART)
 static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
     int list[20];
@@ -150,7 +158,7 @@ static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void item_return(EMW *em, EM09W *w) {
     if (w->item != -1) {
         switch ((u16)Pl_item_stack(w->pl, (u16)w->item, (s16)-w->item_num)) {
@@ -172,6 +180,9 @@ static void item_return(EMW *em, EM09W *w) {
             }
             break;
         }
+#ifdef MHG_PS2
+        w->item = -1;       /* G: the stolen item goes back only once */
+#endif
     }
 }
 #endif
@@ -451,7 +462,7 @@ static void em_act14_005A8F90(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void em_move00_005A90A0(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -471,6 +482,9 @@ static void em_move00_005A90A0(EMW *em) {
     case 12: em_act12_005A8E30(em); break;
     case 13: em_act13_005A8F00(em); break;
     case 14: em_act14_005A8F90(em); break;
+#ifdef MHG_PS2
+    case 15: game_func_005D4210(em); break;
+#endif
     }
 }
 #endif
@@ -986,13 +1000,19 @@ static void em_atk02_005AA420(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static void em_move03_005AA670(EMW *em) {
     switch (em->x15) {
     case 0: em_atk00_005A9F70(em); break;
     case 1: em_atk01_005AA1F0(em); break;
     case 2: em_atk02_005AA420(em); break;
     case 3: em_atk01_005AA1F0(em); break;
+#ifdef MHG_PS2
+    case 4: game_func_005D58B0(em); break;
+#endif
+#ifdef MHG_PS2
+    case 5: game_func_005D58B0(em); break;
+#endif
     }
 }
 #endif

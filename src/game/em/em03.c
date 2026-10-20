@@ -3,6 +3,7 @@
  * damage and death, sound/effect script). Names of the steps follow the
  * split (em_act00, em_move00...). em33.c is the same code for monster 33.
  * Field meanings are mostly guesses. Every function matches. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -20,7 +21,11 @@ typedef struct EM03W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;
@@ -82,6 +87,11 @@ void em_status_init(EMW *);
 void Quest_enemy_escape(EMW *);
 void em03_init(EMW *);
 void em_mahi_eff_set(EMW *, int);
+
+#ifdef MHG_PS2
+void game_func_005B6A30(EMW *em);
+void em03_dmg02_g(EMW *em, EM03W *w, int kind);
+#endif
 
 #if !defined(G_PART)
 void em03_init(EMW *em) {
@@ -1228,14 +1238,21 @@ static void em_dmg04(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_move04_00589E00(EMW *em, EM03W *w) {
     switch (em->x15) {
     case 0: em_dmg00(em); break;
     case 1: em_dmg01(em); break;
+#ifdef MHG_PS2
+    case 2: em03_dmg02_g(em, w, 0); break;
+#else
     case 2: em_dmg02(em, w); break;
+#endif
     case 3: em_dmg03(em); break;
     case 4: em_dmg04(em); break;
+#ifdef MHG_PS2
+    case 5: em03_dmg02_g(em, w, 1); break;     /* G: em_dmg02 takes a kind */
+#endif
     }
 }
 #endif
@@ -1378,7 +1395,7 @@ static void em_move06_0058A310(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em03_move_sub(EMW *em) {
     EM03W *w = (EM03W *)em->ex;
 
@@ -1389,8 +1406,8 @@ void em03_move_sub(EMW *em) {
     case 3: em_move03_00589910(em, w); break;
     case 4: em_move04_00589E00(em, w); break;
     case 5: em_move05_0058A210(em, w); break;
-    case 6: em_move06_0058A310(em); break;
-    case 7: em_move06_0058A310(em); break;
+    case 6: GV(em_move06_0058A310, game_func_005B6A30)(em); break;
+    case 7: GV(em_move06_0058A310, game_func_005B6A30)(em); break;
     }
 }
 #endif

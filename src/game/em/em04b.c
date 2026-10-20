@@ -3,11 +3,16 @@
  * (em_die00 / em_die01: fall, hagi/part loss timer; em_die_rev: revival or
  * escape), the demo state, em04_main (damage system, quest 0x87 special
  * case) and em04_main_sub (mode dispatch). */
+#include "g_alias.h"
 #include "em04.h"
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number */
+#endif
 } QUEST_W;
 extern QUEST_W quest_w;
 extern GAME_W game_w;

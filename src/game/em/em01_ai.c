@@ -1,5 +1,6 @@
 /* em01 AI, run 1: em01_local_init .. em01_to_fly (game.bin 0x00566630-0x005670A4). Matching functions of em01_ai_nm.c (that file holds the
  * whole AI including the near-matches). See em01_ai_nm.c for the description. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -51,7 +52,11 @@ typedef struct EM01W {
 /* The effect flag at ex+0xA3 (EMW+0x4E7) is read as xA3 in em01_ai. */
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;
@@ -424,8 +429,11 @@ void act_dist_select_00566CD0(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em01_to_normal(em, a, b) EMW *em; s16 a; s16 b; {
+#ifdef MHG_PS2
+    f32 r;
+#endif
     if (em->x734 != 0) {
         act_dist_select_00566CD0(em);
         return;
@@ -435,7 +443,16 @@ void em01_to_normal(em, a, b) EMW *em; s16 a; s16 b; {
         em->x388 = 0;
         em->x3F4 = 0;
         em->x839 = 1;
+#ifdef MHG_PS2
+        if (em->kind == 1 || em->kind == 0x2A || em->kind == 0x25) {
+            r = 0.1f;
+        } else {
+            r = 0.3f;
+        }
+        if (em->x302 < (s16)(em->x792 * r)) {
+#else
         if (em->x302 < (s16)(em->x792 * ((em->kind == 1) ? 0.1f : 0.3f))) {
+#endif
             em01_act_set(em, 0, 1, 0);
         } else if (em->x888 == 0) {
             em01_act_set(em, 0, 1, 0);

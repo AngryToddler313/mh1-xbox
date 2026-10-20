@@ -355,6 +355,10 @@ void em_cmd_ck(EMW *);
 
 
 
+#ifdef MHG_PS2
+void game_func_005F6260(EMW *em, EM15W *w);
+#endif
+
 #if !defined(G_PART) || G_PART == 1
 static void em_atk00_005C89A0(EMW *em, EM15W *w) {
     f32 temp_f1;
@@ -1668,7 +1672,7 @@ void em_move04_005CAC70(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void em_move05_005CAD90(EMW *em, EM15W *w) {
     u8 temp_a2;
 
@@ -1683,6 +1687,11 @@ void em_move05_005CAD90(EMW *em, EM15W *w) {
     case 2:
         em_die02_005CA340(em, w);
         break;
+#ifdef MHG_PS2
+    case 3:
+        game_func_005F6260(em, w);
+        break;
+#endif
     }
 }
 #endif
