@@ -259,11 +259,14 @@ void em01_reset_char_set();
         ty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 void em01_local_init(EMW *em) {
     Eft19_set(em, 0x22, 0);
     eft01_set((PLW *)em, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void em01_init(EMW *em) {
     EM01W *w = (EM01W *)em->ex;
     u8 f;
@@ -360,7 +363,9 @@ void em01_init(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static u16 *em_act_search2_00566C90(EMW *em, u16 *tbl) {
     EM01W *w = (EM01W *)em->ex;
     u16 *p = &tbl[w->x19++ * 2];
@@ -371,7 +376,9 @@ static u16 *em_act_search2_00566C90(EMW *em, u16 *tbl) {
     }
     return p;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void act_dist_select_00566CD0(EMW *em) {
     u8 type = em->x734;
     u8 idx = EMF(em, u8, 0x735);
@@ -415,7 +422,9 @@ void act_dist_select_00566CD0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em01_to_normal(em, a, b) EMW *em; s16 a; s16 b; {
     if (em->x734 != 0) {
         act_dist_select_00566CD0(em);
@@ -448,7 +457,9 @@ void em01_to_normal(em, a, b) EMW *em; s16 a; s16 b; {
     em->x3F4 = 0;
     em01_act_set(em, 0, 1, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em01_to_fly(em, mode) EMW *em; int mode; {
     if (em->x734 != 3) {
         act_dist_select_00566CD0(em);
@@ -465,3 +476,4 @@ void em01_to_fly(em, mode) EMW *em; int mode; {
         break;
     }
 }
+#endif
