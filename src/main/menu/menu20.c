@@ -54,6 +54,9 @@ void quest_condition_print(u8);
 void disp_item_list_present(int, void *, void *);
 void put_mix_material(u8, u16);
 extern u8 pfl_quest[];
+#ifdef MHG_PS2
+extern void *gptr_00527BB4[];
+#endif
 extern u8 lit_2124[], lit_2125[], lit_2126[], lit_2127[], lit_2128[];
 extern u8 lit_2155[], lit_2176[], lit_2222[], lit_2242[], lit_2264[], lit_2265[];
 extern u8 lit_2328[], lit_2329[], lit_2330[], lit_2331[], lit_2332[];
@@ -384,7 +387,7 @@ void font_print_Bdragon(void) {
 #endif
 
 /* 0x12BE90 */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void font_print_BBQquest(void *pl, int y) {
     char buf[8];
     u16 out[12];
@@ -397,9 +400,15 @@ void font_print_BBQquest(void *pl, int y) {
     sprintf(buf, (char *)lit_2264, (s16)Share_item_num_ck(*(u16 *)(quest_w + 0x1C), *(u16 *)((u8 *)pl + 0xC) + 2));
     o = out;
     for (p = buf; *p != 0; p++, o++) {
+#ifdef VERSION_MHG
+        if (*p == ' ') {
+            *o = 0x2020;
+            continue;
+        }
+#endif
         *o = ((*p + 0x1F) << 8) | 0x82;
     }
     *o = 0;
-    font_print(lit_2265, out);
+    font_print(GSTR(lit_2265, gptr_00527BB4), out);
 }
 #endif

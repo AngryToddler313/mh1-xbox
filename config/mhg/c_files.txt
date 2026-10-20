@@ -2236,3 +2236,7 @@ main 0x001512B0 0x00151304 mhg/main/fl/flpad01_p3
 main 0x0011B800 0x0011B8AC mhg/main/menu/menu06_p2
 nethttp 0x00A084B0 0x00A08520 lobby/f/lb_gt01
 main 0x001581D0 0x00158214 mhg/main/fl/tarpad03_p2
+main 0x0020FB00 0x0020FB90 mhg/main/hk/f_hk_p17
+sub_main 0x004B7920 0x004B7A58 mhg/main/quest/f_quest_p21
+main 0x0011DF40 0x0011E010 mhg/main/menu/menu20_p3
+main 0x001100D0 0x001101B8 mhg/main/sys/f_ioread_p3
