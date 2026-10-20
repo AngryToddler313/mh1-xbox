@@ -256,43 +256,63 @@ int kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 53
 int __cnet_SendReq_NumOfRule(int arg0) {
+#ifdef MHG_PS2
+    int cmd = SetSendCommand(&send_work, 167) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, strlen(arg0) & 0xFFFF);   /* G: a string */
+#else
     int cmd = SetSendCommand(&send_work, 0x59) & 0xFFFF;
     SetSendData16(&send_work, arg0);
+#endif
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 51
 int __cnet_SendReq_RuleListHeadWord(int arg0, int arg1) {
+#ifdef MHG_PS2
+    int cmd = SetSendCommand(&send_work, 95) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, arg1);   /* G: a string and its length */
+#else
     int cmd = SetSendCommand(&send_work, 0x5B) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
+#endif
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 52
 int __cnet_SendReq_RuleNumOfChoice(int arg0, int arg1) {
+#ifdef MHG_PS2
+    int cmd = SetSendCommand(&send_work, 99) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, arg1);   /* G: a string and its length */
+#else
     int cmd = SetSendCommand(&send_work, 0x61) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
+#endif
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 54
 int __cnet_SendReq_RuleListNow(int arg0, int arg1) {
+#ifdef MHG_PS2
+    int cmd = SetSendCommand(&send_work, 171) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, arg1);   /* G: a string and its length */
+#else
     int cmd = SetSendCommand(&send_work, 0x5F) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
+#endif
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
