@@ -1822,3 +1822,11 @@ game 0x0063F430 0x0063F4B8 mhg/game/em/em27a_p5
 game 0x0063F5A0 0x0063F644 mhg/game/em/em27a_p6
 game 0x006400B0 0x00640794 mhg/game/em/em27a_p7
 game 0x00640ED0 0x00640F94 mhg/game/em/em27a_p8
+game 0x005B4680 0x005B4784 mhg/game/em/em03_p1
+game 0x005B4850 0x005B4C5C mhg/game/em/em03_p2
+game 0x005B5540 0x005B5704 mhg/game/em/em03_p3
+game 0x005B5E10 0x005B5EE4 mhg/game/em/em03_p4
+game 0x005B6630 0x005B6860 mhg/game/em/em03_p5
+game 0x005B6B60 0x005B7008 mhg/game/em/em03_p6
+game 0x005B7020 0x005B7108 mhg/game/em/em03_p7
+game 0x005B7F60 0x005B7FAC mhg/game/em/em03_p8

@@ -83,6 +83,7 @@ void Quest_enemy_escape(EMW *);
 void em03_init(EMW *);
 void em_mahi_eff_set(EMW *, int);
 
+#if !defined(G_PART)
 void em03_init(EMW *em) {
     if (quest_w.x08 == 0) {
         switch (game_w.stage) {
@@ -136,9 +137,11 @@ void em03_init(EMW *em) {
     em_dur_init(em);
     em_act_set(em, 0, 1);
 }
+#endif
 
 #define EM03_HAGI0(em) ((em)->hagi[0].hp)
 
+#if !defined(G_PART)
 void em03_main(EMW *em) {
     u8 dmg[4];
     u8 b = 0;
@@ -251,10 +254,14 @@ void em03_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act00(EMW *em, EM03W *w) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act01(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -269,7 +276,9 @@ static void em_act01(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act02(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -284,7 +293,9 @@ static void em_act02(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act03(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -299,7 +310,9 @@ static void em_act03(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act04(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -314,7 +327,9 @@ static void em_act04(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act05(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -329,7 +344,9 @@ static void em_act05(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act06(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -344,7 +361,9 @@ static void em_act06(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act07(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -364,7 +383,9 @@ static void em_act07(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act08(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -387,7 +408,9 @@ static void em_act08(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act09(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -404,7 +427,9 @@ static void em_act09(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act10(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -421,7 +446,9 @@ static void em_act10(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act11(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -436,7 +463,9 @@ static void em_act11(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_move00_00588180(EMW *em, EM03W *w) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -455,7 +484,9 @@ static void em_move00_00588180(EMW *em, EM03W *w) {
     case 11: em_act11(em, w); break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv00(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -472,6 +503,7 @@ static void em_mv00(EMW *em) {
     }
     cpRotMatrix(em->ang, em->mat);
 }
+#endif
 
 /* Turn toward the target by at most 0x40 per frame. */
 #define EM03_TURN(em) \
@@ -491,6 +523,7 @@ static void em_mv00(EMW *em) {
         } \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mv01_00588350(EMW *em, EM03W *w) {
     f32 mv[4];
 
@@ -512,7 +545,9 @@ static void em_mv01_00588350(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mv02_00588480(EMW *em, EM03W *w, int mode) {
     f32 mv[4];
 
@@ -540,7 +575,9 @@ static void em_mv02_00588480(EMW *em, EM03W *w, int mode) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mv03_005885F0(EMW *em, EM03W *w, int mode) {
     f32 mv[4];
 
@@ -568,7 +605,9 @@ static void em_mv03_005885F0(EMW *em, EM03W *w, int mode) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv04(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -589,7 +628,9 @@ static void em_mv04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv05(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -610,7 +651,9 @@ static void em_mv05(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv06(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -634,7 +677,9 @@ static void em_mv06(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv07(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -658,7 +703,9 @@ static void em_mv07(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv08(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -673,7 +720,9 @@ static void em_mv08(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv11(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -706,7 +755,9 @@ static void em_mv11(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv12(EMW *em) {
     s32 spd;
     f32 fr;
@@ -762,7 +813,9 @@ static void em_mv12(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mv13(EMW *em, EM03W *w) {
     u8 f = 0;
 
@@ -812,7 +865,9 @@ static void em_mv13(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_move01_00589040(EMW *em, EM03W *w) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -833,7 +888,9 @@ static void em_move01_00589040(EMW *em, EM03W *w) {
     case 13: em_mv13(em, w); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_atk00_00589170(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -852,7 +909,9 @@ static void em_atk00_00589170(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk01(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -873,7 +932,9 @@ static void em_atk01(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk02(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -894,7 +955,9 @@ static void em_atk02(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk03(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -913,7 +976,9 @@ static void em_atk03(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk04(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -932,7 +997,9 @@ static void em_atk04(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk05(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -951,7 +1018,9 @@ static void em_atk05(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk06(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -970,7 +1039,9 @@ static void em_atk06(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk07(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -989,7 +1060,9 @@ static void em_atk07(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk08(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -1008,7 +1081,9 @@ static void em_atk08(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void em_move03_00589910(EMW *em, EM03W *w) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -1024,7 +1099,9 @@ static void em_move03_00589910(EMW *em, EM03W *w) {
     case 8: em_atk08(em, w); break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg00(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1040,7 +1117,9 @@ static void em_dmg00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg01(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1056,7 +1135,9 @@ static void em_dmg01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg02(EMW *em, EM03W *w) {
     switch (em->x05) {
     case 0:
@@ -1100,7 +1181,9 @@ static void em_dmg02(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg03(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1119,7 +1202,9 @@ static void em_dmg03(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg04(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1141,7 +1226,9 @@ static void em_dmg04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move04_00589E00(EMW *em, EM03W *w) {
     switch (em->x15) {
     case 0: em_dmg00(em); break;
@@ -1151,7 +1238,9 @@ static void em_move04_00589E00(EMW *em, EM03W *w) {
     case 4: em_dmg04(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_die00_00589EA0(EMW *em, EM03W *w) {
     em->x40C = 10;
     em->x40E = 10;
@@ -1211,7 +1300,9 @@ static void em_die00_00589EA0(EMW *em, EM03W *w) {
         em->pos[1] = em->x5AC;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void em_die04_0058A0E0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1226,7 +1317,9 @@ static void em_die04_0058A0E0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void em_die05_0058A160(EMW *em) {
     em->x40C = 5;
     switch (em->x05) {
@@ -1245,7 +1338,9 @@ static void em_die05_0058A160(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void em_move05_0058A210(EMW *em, EM03W *w) {
     switch (em->x15) {
     case 0: em_die00_00589EA0(em, w); break;
@@ -1253,7 +1348,9 @@ static void em_move05_0058A210(EMW *em, EM03W *w) {
     case 5: em_die05_0058A160(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void em_demo00_0058A280(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1269,7 +1366,9 @@ static void em_demo00_0058A280(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move06_0058A310(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -1277,7 +1376,9 @@ static void em_move06_0058A310(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em03_move_sub(EMW *em) {
     EM03W *w = (EM03W *)em->ex;
 
@@ -1292,9 +1393,11 @@ void em03_move_sub(EMW *em) {
     case 7: em_move06_0058A310(em); break;
     }
 }
+#endif
 
 /* Sets the monster's next action: first the distance / time it moves for
  * (from the target), then the generic em_act_set2. */
+#if !defined(G_PART) || G_PART == 6
 void em03_act_set(EMW *em, int kind, u16 no, u16 arg) {
     EM03W *w = (EM03W *)em->ex;
     f32 v;
@@ -1379,7 +1482,9 @@ void em03_act_set(EMW *em, int kind, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     em_act_set2(em, kind, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void em03_to_normal(EMW *em) {
     em->act_spd = 1.0f;
     em->x388 = 0;
@@ -1387,7 +1492,9 @@ void em03_to_normal(EMW *em) {
     em->x839 = 1;
     em03_act_set(em, 0, 1, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void em03_char_set(EMW *em, int no, int a, int b) {
     int n;
 
@@ -1408,32 +1515,44 @@ void em03_char_set(EMW *em, int no, int a, int b) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 void em03_local_init(void) {
 }
+#endif
 
+#if !defined(G_PART)
 void dummy_em_prog_0058A8D0(void) {
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void sound_call_sub_0058A8E0(EMW *em, int se, int idx) {
     f32 pos[3];
 
     flmatGetTrans(pos, (u8 *)em->mdl->bone + idx * 400);
     Em_se_req2(em, se, 0, pos, 6, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void sound_call_0058A950(EMW *em, int frame, int se, int idx) {
     if (em_frame_check(em, 0, (f32)frame)) {
         sound_call_sub_0058A8E0(em, se, idx);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 7
 static void move_default_0058A9B0(EMW *em) {
 }
+#endif
 
 /* Sound and effect script per animation (sound_call_0058A950(em, frame, se, joint)
  * plays a sound at the joint's position once the animation reaches the
  * frame; Eft13_set_em_scl and shell02_set spawn effects). */
+#if !defined(G_PART)
 static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
     f32 v[3];
 
@@ -1665,7 +1784,9 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 8
 void em03_effect_move(EMW *em) {
     EM03W *w = (EM03W *)em->ex;
 
@@ -1678,3 +1799,4 @@ void em03_effect_move(EMW *em) {
         break;
     }
 }
+#endif
