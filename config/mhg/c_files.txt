@@ -2679,3 +2679,5 @@ game 0x00572390 0x005727CC mhg/game/eft/eft12_p13
 game 0x00570C20 0x00570CF0 mhg/game/eft/eft12_p14
 game 0x00570CF0 0x00570D94 mhg/game/eft/eft12_p15
 game 0x00570DA0 0x00571178 mhg/game/eft/eft12_p16
+game 0x005809D0 0x00580B30 mhg/game/eft/eft23_p5
+game 0x00581C90 0x00581E24 mhg/game/eft/eft23_p6

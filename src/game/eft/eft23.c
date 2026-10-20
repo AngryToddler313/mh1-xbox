@@ -3,6 +3,7 @@
  * (eft22, found by uki_serch), nibbles and bites (atari), and once a
  * player hooks it (turare) it follows the float until landed. The fish
  * kind comes from weighted per-spot tables (fish_type_set). */
+#include "g_alias.h"
 #include "eft.h"
 #include "game.h"
 #include "pl.h"
@@ -97,6 +98,9 @@ void Eft20_set2(f32, f32 *, int, int);
 static void eft23_move(EFTW *ew);
 static void eft23_i(EFTW *ew);
 static EFTW *uki_serch(EFTW *ew, FISH *w, int mode);
+#ifdef MHG_PS2
+int game_func_00580910(PLW *pl, s8 type);     /* G: does the bait of pl suit fish type type */
+#endif
 static void eft23_toujyou_mv(EFTW *ew, FISH *w);
 static void eft23_normal_mv(EFTW *ew, FISH *w);
 static void eft23_atari_mv(EFTW *ew, FISH *w);
@@ -144,13 +148,24 @@ static void eft23_i(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static EFTW *uki_serch(EFTW *ew, FISH *w, int mode) {
     s32 i;
     EFTW *e;
     u16 a;
 
     for (i = 0, e = eft_work; i < 128; i++, e++) {
+#ifdef MHG_PS2 /* G: the bait must also suit this fish type (game_func_00580910) */
+        if (e->type == 22 && e->arg != 1 && e->mode2 == 2 && e->x07 == 0 &&
+            Pl_master_ck((PLW *)e->owner) == 1 && game_func_00580910((PLW *)e->owner, w->type) &&
+            CalcDistanceXZ(w->home, e->pos) < w->range) {
+            a = Em_Calc_angY(ew->pos, e->pos);
+            if ((u16)(a - w->rot[1] + 0x3000) < 0x6000) {
+                if (mode == 0) {
+                    w->tgt_ang = a;
+                    return e;
+                }
+#else
         if (e->type == 22 && e->arg != 1 && e->mode2 == 2 && e->x07 == 0 &&
             Pl_master_ck((PLW *)e->owner) == 1 && CalcDistanceXZ(w->home, e->pos) < w->range) {
             a = Em_Calc_angY(ew->pos, e->pos);
@@ -159,6 +174,7 @@ static EFTW *uki_serch(EFTW *ew, FISH *w, int mode) {
                     w->tgt_ang = a;
                     return e;
                 }
+#endif
                 if ((w->dist = CalcDistanceXZ(ew->pos, e->pos)) < 30.0f) {
                     e->x07 = 1;
                     return e;
@@ -509,17 +525,21 @@ static void eft23_t(PRIM *pr) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static s8 fish_type_set(EFTW *ew) {
     FISH_CHANCE *p;
     u16 total = 0;
     u16 r;
 
 #ifdef VERSION_MHG    /* G (game.bin 0x581C90): 14 lists per set; the second set when mission header byte 0x42 is 1 or 2 */
-    if (quest_w.x64[0x42] == 2 || quest_w.x64[0x42] == 1) {
+    switch (quest_w.x64[0x42]) {
+    case 1:
+    case 2:
         p = fish_type_tbl[14 + ew->arg];
-    } else {
+        break;
+    default:
         p = fish_type_tbl[ew->arg];
+        break;
     }
 #else
     if (quest_w.x14E > 0) {
@@ -535,10 +555,14 @@ static s8 fish_type_set(EFTW *ew) {
     r = (u16)ran_suu(0) % total;
     total = 0;
 #ifdef VERSION_MHG    /* G (game.bin 0x581C90): 14 lists per set; the second set when mission header byte 0x42 is 1 or 2 */
-    if (quest_w.x64[0x42] == 2 || quest_w.x64[0x42] == 1) {
+    switch (quest_w.x64[0x42]) {
+    case 1:
+    case 2:
         p = fish_type_tbl[14 + ew->arg];
-    } else {
+        break;
+    default:
         p = fish_type_tbl[ew->arg];
+        break;
     }
 #else
     if (quest_w.x14E > 0) {
