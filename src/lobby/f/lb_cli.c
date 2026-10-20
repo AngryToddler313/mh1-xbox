@@ -4122,7 +4122,7 @@ void lbc_matching_failed_00() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 76
 void lbc_matching_failed_01() {
     int temp_a0;
     int temp_v1;
@@ -4130,12 +4130,16 @@ void lbc_matching_failed_01() {
     temp_a0 = (int)cw;
     F(u8, temp_a0, CW_OFS(0x2C33)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C33)) + 1);
     F(s32, (u8 *)cw, CW_OFS(0x2C4C)) = 0;
-    F(s8, pNet, PNET_OFS(0xC)) = 1;
+    F(s8, pNet, GV(PNET_OFS(0xC), PNET_G(0xC))) = 1;
     temp_v1 = (int)cw;
     if (F(u8, temp_v1, CW_OFS(0x2C32)) == 0) {
+#ifdef MHG_PS2
+        SetDialogData(0x58);
+#else
         SetDialogData(0x33, 3);
+#endif
     } else {
-        SETDLG_HTML(temp_v1 + 0x32D1);
+        SETDLG_HTML((u8 *)temp_v1 + CW_SRVMSG);
     }
     F(s32, (u8 *)cw, CW_OFS(0x2C4C)) = 0x14;
     fade_set(2);
