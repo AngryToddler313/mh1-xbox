@@ -2263,3 +2263,4 @@ main 0x00227780 0x002277B0 mhg/main/sk/sk20_p2
 main 0x001021B0 0x00102250 main/fade/fd03
 main 0x002276E0 0x00227780 mhg/main/chat/f_chat_p34
 main 0x002275F0 0x00227644 mhg/main/chat/f_chat_p35
+main 0x0012A180 0x0012A21C mhg/main/sprite/trans2_p2
