@@ -4515,24 +4515,35 @@ void To_GoToTop() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 81
 void lobby_client_goto_top() {
     s32 temp_a1;
     u8 temp_a0_2;
     int temp_a0;
 
+#ifdef MHG_PS2
+    ((u8 *)pNet)[PNET_G(0xC)] = 1;   /* G: raises the dialog flag first */
+#endif
     temp_a0 = (int)cw;
     temp_a1 = temp_a0 + CW_OFS(0x2C34);
     temp_a0_2 = F(u8, temp_a0, CW_OFS(0x2C34));
     switch (temp_a0_2) {                            /* irregular */
     case 0:
         F(u8, temp_a0, CW_OFS(0x2C34)) = (u8) (temp_a0_2 + 1);
+#ifdef MHG_PS2
+        CallBackWaitInit();
+#else
         CallBackWaitInit(temp_a0_2, temp_a1);
+#endif
         F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x22);
         cnLBS_TopPageJump(&CallBack_Result_GotoTop_o);
         return;
     case 1:
+#ifdef MHG_PS2
+        Check_CallBackWait();
+#else
         Check_CallBackWait(temp_a0_2, temp_a1);
+#endif
     }
 }
 #endif

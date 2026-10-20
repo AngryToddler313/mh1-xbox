@@ -2694,3 +2694,5 @@ lobby 0x005BACA0 0x005BAD1C lobby/b/lb_tos01
 lobby 0x00581DD0 0x00581E64 mhg/lobby/f/lb_cli_p80
 lobby 0x0059CCA0 0x0059CD44 lobby/f/lb_z133
 lobby 0x00559850 0x005598E4 lobby/f/lb_ga03
+lobby 0x0059DCF0 0x0059DDC0 lobby/f/lb_e10
+lobby 0x00584BD0 0x00584C4C mhg/lobby/f/lb_cli_p81
