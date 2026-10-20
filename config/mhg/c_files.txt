@@ -2255,3 +2255,4 @@ main 0x0011D620 0x0011D708 main/menu/menu38
 main 0x00221DA0 0x00221DFC mhg/main/chat/f_chat_p33
 main 0x001174F0 0x001175DC mhg/main/option/option01_p8
 main 0x00214D30 0x00214E54 mhg/main/net/netwk01_p3
+main 0x00215CA0 0x00215E34 mhg/main/net/netwk02_p2
