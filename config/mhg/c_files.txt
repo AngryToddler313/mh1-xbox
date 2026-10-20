@@ -2401,3 +2401,4 @@ lobby 0x00567410 0x0056754C mhg/lobby/f/lb_tu_act_p9
 lobby 0x0059A070 0x0059A1E4 lobby/f/lb_z134
 lobby:rodata 0x0063EAE0 0x0063EB24 lobby/f/lb_z134
 lobby 0x00596D60 0x00596E80 mhg/lobby/f/lb_j14_p3
+lobby 0x00557740 0x005577B0 mhg/lobby/f/lb_tu_ib_p11

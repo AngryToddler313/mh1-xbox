@@ -94,6 +94,7 @@ extern char frame_itembox_cmd[];
 extern u32 D_3C733C[];
 extern char *yes_or_no[2];
 #ifdef MHG_PS2
+void lobby_func_00557520();
 extern char *yes_or_no_g[];   /* G: outside the small data (0x2EC5D8) */
 int func_0012BDD0();
 #endif
@@ -956,8 +957,11 @@ int ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
 /* flps0008 textured icon */
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 int disp_itembox_cmd(int a) {
+#ifdef MHG_PS2
+    lobby_func_00557520(0);   /* G only */
+#endif
     if (!(a & 0xFF)) {
         *(s32 *)(frame_itembox_cmd + 0x10) = 0xA9182;
     } else {
