@@ -251,6 +251,7 @@ EM_POSP gp_ptr_ck(EMW *em, EM_STG_POS *p);
 
 /* Target position for a commanded monster (x827 = target kind, x828/x829
  * its arguments). */
+#if !defined(G_PART) || G_PART == 1
 void cmd_target_kind_set(EMW *em, f32 *pos) {
     EM_POSP p;
     STAGE_DATA *sd;
@@ -551,7 +552,9 @@ void cmd_target_kind_set(EMW *em, f32 *pos) {
     em->x882 = em->x828;
     em->x883 = em->x829;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void target_kind_set(EMW *em, f32 *pos) {
     EM_POSP p;
     STAGE_DATA *sd;
@@ -835,7 +838,9 @@ void target_kind_set(EMW *em, f32 *pos) {
     em->x828 = em->x882;
     em->x829 = em->x883;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 u8 pl_ninshiki_ck(EMW *em) {
     int i;
 
@@ -851,11 +856,13 @@ u8 pl_ninshiki_ck(EMW *em) {
     }
     return em->x88F;
 }
+#endif
 
 extern f32 *em_absolute_ninshiki_len_tbl[];
 void SetVector(f32 *, f32, f32, f32);
 s8 direction_no_ret(EMW *, int);
 
+#if !defined(G_PART) || G_PART == 1
 void kehai_set(EMW *em) {
     int i;
     PLW *pl;
@@ -915,7 +922,9 @@ void kehai_set(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void kehai_ck(EMW *em) {
     int i;
     s32 max = em_max_kehai_hate_tbl[em->kind][em->x916];
@@ -930,7 +939,9 @@ void kehai_ck(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_escape_mind_set(EMW *em, u8 kind, u8 lv) {
     if (em->x9E3 <= lv) {
         em->x9E3 = lv;
@@ -939,7 +950,9 @@ void em_escape_mind_set(EMW *em, u8 kind, u8 lv) {
         em->x84E = 1;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int em_cancel_act_ck(EMW *em, u8 flag) {
     int i;
     u8 mask;
@@ -957,6 +970,7 @@ int em_cancel_act_ck(EMW *em, u8 flag) {
     }
     return (em->x83B & mask) != 0;
 }
+#endif
 
 void em01_local_area_move_init(EMW *);
 void em07_local_area_move_init(EMW *);
@@ -968,6 +982,7 @@ void em20_local_area_move_init(EMW *);
 void em21_local_area_move_init(EMW *);
 void em27_local_area_move_init(EMW *);
 
+#if !defined(G_PART)
 void em_area_move_init(EMW *em) {
     em->x928 = -1;
     em->x929 = -1;
@@ -1008,15 +1023,19 @@ void em_area_move_init(EMW *em) {
         break;
     }
 }
+#endif
 
 u16 calc_vec_ang(f32, f32, f32, f32);
 f32 CalcDistanceXZ(f32 *, f32 *);
 f32 flAbs(f32);
 
+#if !defined(G_PART) || G_PART == 2
 u16 Em_Calc_angY(f32 *a, f32 *b) {
     return calc_vec_ang(a[0], a[2], b[0], b[2]) - 0x4000;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void xang_calc_pl(EMW *em, int *ang, f32 a, f32 b) {
     f32 ppos[3];
 
@@ -1026,11 +1045,14 @@ void xang_calc_pl(EMW *em, int *ang, f32 a, f32 b) {
                                             ppos[1] + a));
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void xang_calc_target(EMW *em, int *ang, f32 a, f32 b) {
     *ang = (u16)(0x10000 - calc_vec_ang(flAbs(CalcDistanceXZ(em->pos, em->tgt_pos) - -b), em->pos[1], 0.0f,
                                         em->tgt_pos[1] + a));
 }
+#endif
 
 typedef struct STAGE_HATE {
     f32 pos[3];         /* 0x00 */
@@ -1041,6 +1063,7 @@ typedef struct STAGE_HATE {
 
 extern STAGE_HATE *stage_hate_add_tbl[];
 
+#if !defined(G_PART)
 void Stage_Hate_Add(EMW *em) {
     PLW *pl;
     int i;
@@ -1065,7 +1088,9 @@ void Stage_Hate_Add(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 int em_pl_pos_set(EMW *em, u8 pl, f32 *pos) {
     PLW *p;
 
@@ -1094,11 +1119,13 @@ int em_pl_pos_set(EMW *em, u8 pl, f32 *pos) {
     }
     return 1;
 }
+#endif
 
 extern u8 em_action_priority_tbl[][8];
 extern s16 *em_nest_tbl[];
 void em_escape_mind_set(EMW *em, u8 kind, u8 lv);
 
+#if !defined(G_PART) || G_PART == 2
 void em_escape_action_ck(EMW *em) {
     s16 *nest = em_nest_tbl[em->kind];
 
@@ -1135,7 +1162,9 @@ void em_escape_action_ck(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_hinshi_ck(EMW *em, f32 rate) {
     s16 *nest = em_nest_tbl[em->kind];
 
@@ -1160,9 +1189,11 @@ void em_hinshi_ck(EMW *em, f32 rate) {
         em->x9E4 = 1;
     }
 }
+#endif
 
 extern u8 em_egg_action_flag_tbl[];
 
+#if !defined(G_PART) || G_PART == 2
 void em_egg_ck(EMW *em) {
     s8 i;
 
@@ -1187,6 +1218,7 @@ void em_egg_ck(EMW *em) {
         }
     }
 }
+#endif
 
 typedef struct EM_NEED {
     s32 x0;
@@ -1199,6 +1231,7 @@ typedef struct EM_NEED {
 extern EM_NEED *em_thirst_tbl[];
 extern EM_NEED *em_suimin_tbl[];
 
+#if !defined(G_PART) || G_PART == 2
 void em_hungry_ck(EMW *em) {
     EM_HUNGRY *t = em_hungry_tbl[em->kind];
     s32 d;
@@ -1220,7 +1253,9 @@ void em_hungry_ck(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_thirst_ck(EMW *em) {
     EM_NEED *t = em_thirst_tbl[em->kind];
     s32 d;
@@ -1242,7 +1277,9 @@ void em_thirst_ck(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_sleep_ck(EMW *em) {
     EM_NEED *t = em_suimin_tbl[em->kind];
     s32 d;
@@ -1264,7 +1301,9 @@ void em_sleep_ck(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 s8 direction_no_ret(EMW *em, int pl) {
     int i;
     u16 a = *(u16 *)((u8 *)em + pl * 2 + 0x904);
@@ -1276,9 +1315,11 @@ s8 direction_no_ret(EMW *em, int pl) {
     }
     return i;
 }
+#endif
 
 void net_send_em(EMW *, int, int);
 
+#if !defined(G_PART) || G_PART == 3
 void net_act_set(EMW *em, int kind, u16 no, int x) {
     em->x794 = kind;
     em->x795 = no;
@@ -1302,7 +1343,9 @@ void net_act_set(EMW *em, int kind, u16 no, int x) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int Em_Smoke_Ck(EMW *em) {
     int i;
     EM_SPOT *s;
@@ -1315,7 +1358,9 @@ int Em_Smoke_Ck(EMW *em) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 int Em_Unko_Smoke_Ck(EMW *em) {
     int i;
     EM_SPOT *s;
@@ -1329,7 +1374,9 @@ int Em_Unko_Smoke_Ck(EMW *em) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 u8 Em_Senko_Ck(EM_SPOT *s) {
     int i;
     int hit = 0;
@@ -1356,6 +1403,7 @@ u8 Em_Senko_Ck(EM_SPOT *s) {
     }
     return hit;
 }
+#endif
 
 extern s32 (*em_hate_add_tbl[])[2];
 int Pl_silencer_ck(PLW *);
