@@ -26,6 +26,7 @@ void em_act_set2(EMW *, int, u16, u16);
 void em_rate_clear(EMW *);
 void speed_add_g(EMW *, s32 *);
 
+#if !defined(G_PART) || G_PART == 1
 void em27_act_act_set(EMW *em, u16 no, u16 arg) {
     switch (no) {
     case 1:
@@ -38,7 +39,9 @@ void em27_act_act_set(EMW *em, u16 no, u16 arg) {
     em->x388 = 0;
     em_act_set2(em, 0, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em27_move_act_set(EMW *em, u16 no, u16 arg) {
     EM27W *w = (EM27W *)em->ex;
 
@@ -72,11 +75,15 @@ void em27_move_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 1, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em27_fly_act_set(EMW *em, u16 no, u16 arg) {
     em_act_set2(em, 2, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em27_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM27W *w = (EM27W *)em->ex;
 
@@ -103,7 +110,9 @@ void em27_atk_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 3, no, arg);
 }
+#endif
 
+#if !defined(G_PART)
 void em27_act_set(EMW *em, int kind, u16 no, u16 arg) {
     switch ((u16)kind) {
     case 0:
@@ -128,7 +137,9 @@ void em27_act_set(EMW *em, int kind, u16 no, u16 arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em27_fly_adjy2_init(EMW *em, u8 type) {
     EM27W *w = (EM27W *)em->ex;
 
@@ -158,11 +169,15 @@ void em27_fly_adjy2_init(EMW *em, u8 type) {
     }
     em_rate_clear(em);
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subx(EMW *em, EM27W *w) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_suby(EMW *em, EM27W *w) {
     f32 (*tbl)[2] = fly_adjy2_hosei_tbl_006741E0[w->adj_type];
     u8 ret = 0;
@@ -196,7 +211,9 @@ static u8 fly_adjy2_suby(EMW *em, EM27W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subz(EMW *em, EM27W *w) {
     f32 (*tbl)[2] = fly_adjz2_hosei_tbl_00674270[w->adj_type];
     u8 ret = 0;
@@ -230,7 +247,9 @@ static u8 fly_adjy2_subz(EMW *em, EM27W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 u8 em27_fly_adjy2(EMW *em) {
     EM27W *w = (EM27W *)em->ex;
     u8 ret = 0;
@@ -253,3 +272,4 @@ u8 em27_fly_adjy2(EMW *em) {
     }
     return ret;
 }
+#endif
