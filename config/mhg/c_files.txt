@@ -2023,3 +2023,4 @@ sub_main 0x004F4190 0x004F41A8 mhg/lobby/b/lb_bz73_p2
 lobby 0x005AB760 0x005AB890 mhg/lobby/cnet/cnlbs_p1
 lobby 0x005AECF0 0x005AED70 mhg/lobby/cnet/cnlbs_p10
 lobby 0x005BB470 0x005BB484 mhg/lobby/cnet/cnlbs_p11
+lobby 0x005BB550 0x005BB58C mhg/lobby/cnet/cnlbs_p12
