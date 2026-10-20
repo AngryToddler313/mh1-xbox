@@ -1804,3 +1804,5 @@ sub_main:rodata 0x0052BEB0 0x0052BF70 mhg/main/eft/eft13b_p3
 main 0x001047A0 0x001051C4 mhg/main/hit/f_sphr_p1
 main 0x001060A0 0x0010ADF8 mhg/main/hit/f_sphr_p2
 main 0x0010B5E0 0x0010D150 mhg/main/hit/f_sphr_p3
+game 0x005BF1A0 0x005BF444 mhg/game/em/em07_aie_p1
+game 0x005BF650 0x005C57C4 mhg/game/em/em07_aie_p2

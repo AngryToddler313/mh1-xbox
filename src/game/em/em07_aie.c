@@ -184,6 +184,7 @@ static void ef_move_sub_00593B30(EMW *em, EM07W *w);
         em->uvty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void em_uvmove(EMW *em) {
     int i;
 
@@ -226,6 +227,7 @@ static void em_uvmove(EMW *em) {
         }
     }
 }
+#endif
 
 void net_send_em(EMW *, int, int);
 int Quest_clear_ck(int);
@@ -269,6 +271,7 @@ void em07_main_sub(EMW *em);
         ty[i] = 0xFF;     \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void sound_call_005937E0(EMW *em, int frame, int se, int joint, int vol) {
     f32 pos[3];
 
@@ -277,7 +280,9 @@ static void sound_call_005937E0(EMW *em, int frame, int se, int joint, int vol) 
         Em_se_req2(em, se, 0, pos, vol, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void sound_call_mov(EMW *em, int f0, int f1, int se, int joint, int vol) {
     f32 pos[3];
 
@@ -287,7 +292,9 @@ static void sound_call_mov(EMW *em, int f0, int f1, int se, int joint, int vol) 
         Em_se_req2(em, se, 0, pos, vol, 1);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void sound_call_mov2(EMW *em, int f0, int f1, int se, int joint, int vol) {
     f32 pos[3];
 
@@ -297,13 +304,17 @@ void sound_call_mov2(EMW *em, int f0, int f1, int se, int joint, int vol) {
         Em_se_req2(em, se, 0, pos, vol, 1);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void quake_call_00593A90(EMW *em, int frame, int v) {
     if (em_frame_check(em, (f32)frame, 0)) {
         Em_set_quake_sub(em, v);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void move_default_00593AE0(EMW *em) {
     f32 (*uv)[3] = (f32 (*)[3])((u8 *)em + 0x5C0);
     u16 *tm = (u16 *)((u8 *)em + 0x5F0);
@@ -326,7 +337,9 @@ static void move_default_00593AE0(EMW *em) {
     tm[3] = 0xFFFF;
     ty[3] = 0xFF;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void ef_move_sub_00593B30(EMW *em, EM07W *w) {
 
     if (em->char0 != w->anim) {
@@ -1670,7 +1683,9 @@ static void ef_move_sub_00593B30(EMW *em, EM07W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em07_effect_move(EMW *em) {
     u8 e = em->ex[1];
     EM07W *w = (EM07W *)em->ex;
@@ -1685,3 +1700,4 @@ void em07_effect_move(EMW *em) {
     }
     em_uvmove(em);
 }
+#endif
