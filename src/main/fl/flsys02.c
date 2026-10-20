@@ -190,7 +190,7 @@ int system_hard_init(void) {
 #endif
 
 /* flPS2VSyncCallback (0x0018C110, 172 bytes): original bytes, it ends with the `ei` instruction. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 asm void flPS2VSyncCallback(void)
 {
 #include "flPS2VSyncCallback.inc"
