@@ -596,22 +596,22 @@ s32 itembox_sortup(s32 pad) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void yes_no_select(pad)
 u16 pad;
 {
     u8 *t;
     u8 *q;
     t = ib;
-    q = t + 0x21;
+    q = t + IBO(0x21);
     if (*q == 0) {
         if (pad & 0x400) {
             *q = 1;
-            se_req(7, 0x16, 0);
+            se_req(7, GV(0x16, 0x17), 0);
         }
     } else if (pad & 0x800) {
         *q = 0;
-        se_req(7, 0x16, 0);
+        se_req(7, GV(0x16, 0x17), 0);
     }
 }
 #endif

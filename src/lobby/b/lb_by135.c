@@ -1,4 +1,5 @@
 /* lb_by135 - agent B 0x005C4220-0x005C4324: lb_set_npc (village NPC placed from its 0x44-byte record in npc_dialog_table+0x60[stage]). */
+#include "g_alias.h"
 #include "lbnpc_proto.h"
 extern u8 *npc_dialog_table[];
 typedef struct { f32 x, y, z; } LV3;
@@ -32,14 +33,14 @@ void lb_set_npc(EMW *em) {
         em->type = r->type;
         em->mdl_no = em->kind = r->x2C;
         *(u8 **)w = r->script;
-        w[0xE] = r->kind;
-        *(f32 **)(w + 8) = r->x28;
-        *(s32 *)(w + 0x14) = r->x24;
+        w[GV(0xE, 0x34)] = r->kind;
+        *(f32 **)(w + GV(8, 4)) = r->x28;
+        *(s32 *)(w + GV(0x14, 8)) = r->x24;
         em->act_spd = r->spd;
         *(LV3 *)em->scale = *(LV3 *)r->scale;
         set_event_npc(em);
-        if (*(f32 **)(w + 8) != 0) {
-            f32 *p = *(f32 **)(w + 8);
+        if (*(f32 **)(w + GV(8, 4)) != 0) {
+            f32 *p = *(f32 **)(w + GV(8, 4));
             *(LV3 *)em->pos = *(LV3 *)p;
         }
     }

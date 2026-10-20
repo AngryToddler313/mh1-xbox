@@ -3,6 +3,9 @@
 #define Lb_on_dialog Lb_on_dialog_hdr
 #include "g_alias.h"
 #ifdef MHG_PS2
+void func_0010EF50();
+#endif
+#ifdef MHG_PS2
 void func_0012DE30();
 #endif
 #ifdef MHG_PS2
@@ -203,7 +206,7 @@ void Lb_clearChatList() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void plaza_ReibunEdit() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -222,7 +225,7 @@ void plaza_ReibunEdit() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void plaza_checkChatLog() {
     int sw = Get_sw2(0) & 0xFFFF;
 
@@ -1357,10 +1360,10 @@ char *dst;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void Lbs_load() {
     load_pit();
-    load_texlist(*(int *)0x3876A8, 0x14D, 0);
+    GV(load_texlist, func_0010EF50)(*(int *)GV(0x3876A8, 0x2EBE10), GSLOT(0x14D, 0x174), 0);
 }
 #endif
 

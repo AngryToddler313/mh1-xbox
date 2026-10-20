@@ -2306,3 +2306,13 @@ lobby 0x00583A40 0x00583A9C mhg/lobby/f/lb_cli_p67
 lobby 0x00583AA0 0x00583AF4 mhg/lobby/f/lb_cli_p68
 lobby 0x00584010 0x00584050 mhg/lobby/f/lb_cli_p69
 lobby 0x00585080 0x005850B4 mhg/lobby/f/lb_cli_p70
+lobby 0x00572E70 0x00572F08 mhg/lobby/f/lb_plz3_p6
+lobby 0x00572F10 0x00572FB8 mhg/lobby/f/lb_plz3_p7
+lobby 0x00579B60 0x00579B90 mhg/lobby/f/lb_plz3_p8
+lobby 0x0059DA30 0x0059DA7C lobby/f/lb_z103
+lobby 0x00567C20 0x00567C74 mhg/lobby/f/lb_tu_act_p7
+lobby 0x005545A0 0x0055461C mhg/lobby/f/lb_tu_ib_p6
+lobby 0x0055F990 0x0055FA14 mhg/lobby/f/lb_n07_p1
+lobby 0x0059D630 0x0059D744 lobby/f/lb_z40
+lobby 0x00590B40 0x00590C44 lobby/b/lb_by135
+lobby 0x00549E60 0x00549FAC mhg/lobby/f/lb_sh1a_p5

@@ -1,4 +1,5 @@
 /* Lobby: generic senders, sound call, set01 helper (SLPM_654.95 lobby overlay 0x5D3640-0x5D6420). Whole file; runs split into lb_nNN.c */
+#include "g_alias.h"
 #include "lbsys_g.h"
 #include "lobby_f.h"
 
@@ -141,16 +142,16 @@ void Lb_guild_trans(u8 *p) {
 #endif
 
 int Lb_check_existF(void) {
-    if (Quest_clear_bit_ck(0x67) == 1) {
+    if (Quest_clear_bit_ck(GV(0x67, 3004)) == 1) {
         return 0;
     }
-    if (Quest_clear_bit_ck(0x68) == 1) {
+    if (Quest_clear_bit_ck(GV(0x68, 3005)) == 1) {
         return 0;
     }
-    if (Quest_clear_bit_ck(0x69) == 1) {
+    if (Quest_clear_bit_ck(GV(0x69, 3006)) == 1) {
         return 0;
     }
-    if (Quest_clear_bit_ck(0x6A) != 1) {
+    if (Quest_clear_bit_ck(GV(0x6A, 3007)) != 1) {
         return 1;
     }
     return 0;

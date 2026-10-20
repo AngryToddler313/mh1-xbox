@@ -88,6 +88,11 @@ s32 check_items(u8 *p, s8 stocked);
 void lb_process_make_kyoukaList();
 int Lb_make_mySrcEquip_k();
 int Lb_make_price_str_k();
+int font_print_sp();
+#ifdef MHG_PS2
+int Lb_make_price_str_g(); /* G calls Lb_make_price_str (0x54A000) with the _k arguments */
+void func_0012BDD0();
+#endif
 int check_items_k();
 #if !defined(G_PART) || G_PART == 1
 s32 Lb_shop_move_x() {
@@ -216,15 +221,15 @@ void lb_put_shopList() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void lb_put_shopHelp() {
     if (lbShop.count != 0) {
         if (lbShop.help != 0) {
-            Draw_menu_square(0x118, 0x160, 0x152, 0x50, 1, 0x7030100B);
+            Draw_menu_square(0x118, 0x160, 0x152, 0x50, 1, GV(0x7030100B, 0x700B3010));
             flfntSetSize(0x12, 0x12);
             font_set_palette(0);
             flfntLocate(0x122, 0x16C);
-            font_print_sp(Lb_make_price_str_k(lbShop.help, lbShop.qty * ((LB_SHOPITEM *)lbShop.list)[lbShop.cur].price, lbShop.cur));
+            GV(font_print_sp, func_0012BDD0)(GV(Lb_make_price_str_k, Lb_make_price_str_g)(lbShop.help, lbShop.qty * ((LB_SHOPITEM *)lbShop.list)[lbShop.cur].price, lbShop.cur));
             if (lbShop.x15 == 7) {
                 Lb_put_shopYesNo(lbShop.x15);
             }
