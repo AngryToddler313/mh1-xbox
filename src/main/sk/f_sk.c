@@ -34,6 +34,7 @@ void sk_conv_init(char *);
 s8 sk_get_key_code();
 #ifdef MHG_PS2
 extern s8 gtbl_002A5FD4[];   /* G: row per key code (main data 0x2A5FD4) */
+void func_0020F240(void);
 #endif
 static void sk_kbd_act_exec(void);
 static void sk_kbd_act_kill();
@@ -362,13 +363,38 @@ asm static void sk_moji_input(u8 *key)
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 static void sk_reibun_input(void) {
     char buf[0x100];
+#ifndef MHG_PS2
     u8 *r = SKP(0xC);
+#endif
     int s;
     int n;
 
+#ifdef MHG_PS2
+    /* G: nothing on the last row; the etc data is refreshed first and the 0x4B bit 1 state ended by main 0x20F240
+     * instead of cmd_kakutei_all; 0x29 is not refreshed */
+    if (SKB(0x25) == ((u8 *)gtbl_002A5FD4)[7]) {
+        return;
+    }
+    sk_set_etc_data();
+    if (SKP(0xC) == 0) {
+        return;
+    }
+    if (*(u8 *)(lpSKey + 0x4B) & 2) {
+        func_0020F240();
+    }
+    s = *(s32 *)(SKP(0xC) + 0xC);
+    if (s == 0) {
+        SK_SE(0x15);
+        return;
+    }
+    strcpy(buf, (char *)s);
+    n = kbd_insert(lpSKey + SKO(0x44), buf, SKU16(0x2A), SKU16(0x3A));
+    SKU16(0x2A) = SKU16(0x2A) + n;
+    SK_SE(0x16);
+#else
     if (r != 0) {
         cmd_kakutei_all();
         s = *(s32 *)(SKP(0xC) + 0xC);
@@ -382,6 +408,7 @@ static void sk_reibun_input(void) {
         SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
         SK_SE(0x16);
     }
+#endif
 }
 #endif
 

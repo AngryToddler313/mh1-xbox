@@ -72,13 +72,15 @@ int system_work_init(void);
 int system_hard_init(void);
 void flPS2VramFullClear(void);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 int flInitialize(void) {
     int t;
 
+#ifndef MHG_PS2     /* G does not call system_work_init here */
     if (system_work_init() == 0) {
         return 0;
     }
+#endif
     if (system_hard_init() == 0) {
         return 0;
     }

@@ -2641,3 +2641,9 @@ lobby 0x005947E0 0x00594900 mhg/lobby/f/lb_j02_p3
 lobby 0x00594900 0x005949B8 mhg/lobby/f/lb_j02_p4
 lobby 0x00594A80 0x00594B68 mhg/lobby/f/lb_j02_p5
 lobby 0x00567410 0x0056754C mhg/lobby/f/lb_tu_act_p9
+main 0x001005B0 0x00100660 mhg/main/sys/adxs02_p4
+main 0x0020F190 0x0020F23C mhg/main/hk/f_hk_p19
+main 0x0010ECD0 0x0010EDA4 main/model/light02
+main 0x0014E8A0 0x0014E954 mhg/main/fl/flsys02_p4
+main 0x0010EE80 0x0010EF44 main/load/lf04
+main 0x0020A050 0x0020A10C mhg/main/sk/f_sk_p17
