@@ -1516,6 +1516,18 @@ int cnLBS_Read_RoomNamePermission(int arg0, int arg1) {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 117
+#ifdef MHG_PS2
+/* G 0x5BCE20 (the map calls it _cnet_RecvFromLbs_AnswerRoomNamePermission): a bare request, command 175 */
+int g_SendReq_005BCE20(void) {
+    int cmd = SetSendCommand(&send_work, 175) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+#endif
+#endif
+
 #if !defined(G_PART)
 void _cnet_RecvFromLbs_AnswerRoomNamePermission(void) {
     u8 v;
