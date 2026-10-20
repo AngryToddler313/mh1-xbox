@@ -1,4 +1,5 @@
 /* cnlbs, run 7: __cnet_Login_Return .. __cnet_RecvFromLbs (lobby.bin 0x005AADE0-0x005AD61C): the matching functions of cnlbs_nm.c. */
+#include "g_alias.h"
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -314,12 +315,12 @@ void _cnet_RecvFromLbs_NoticeChatBinary(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 int cnLBS_Send_ChatMessageTU(int arg0, int arg1, int arg2, int arg3) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg3);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendSet_ChatMessageTU(arg0, arg1, arg2);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendSet_ChatMessageTU, __cnet_SendSet_ChatBinaryTU)(arg0, arg1, arg2);
         return slot;
     }
     return -1;
@@ -416,9 +417,9 @@ int __cnet_SendReq_MatchEntry(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 45
 void _cnet_RecvFromLbs_MatchEntry(void) {
-    _cnet_Return_CallBack(0);
+    _cnet_Return_CallBack(GV(0, 1));
 }
 #endif
 

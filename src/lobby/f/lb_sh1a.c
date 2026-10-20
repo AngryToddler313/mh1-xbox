@@ -1,4 +1,9 @@
 /* lb_sh1a - one translation unit 0x00537C10-0x00539A90 (lbtu3). */
+#include "g_alias.h"
+void Lb_num_to_str();
+#ifdef MHG_PS2
+void lobby_func_005935A0();
+#endif
 #include "lobby_s.h"
 #include "lbsys_g.h"
 extern f32 tagMoveY[];
@@ -255,7 +260,7 @@ void Lb_put_shopYesNo() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 char *Lb_make_price_str(char *arg0, int arg1) {
     char *temp_v0;
 
@@ -264,7 +269,7 @@ char *Lb_make_price_str(char *arg0, int arg1) {
     if (temp_v0 == 0) {
         return arg0;
     }
-    Lb_num_to_str(arg1, temp_v0);
+    GV(Lb_num_to_str, lobby_func_005935A0)(arg1, temp_v0);
     strcat(shopStr, (char *)strrchr(arg0, 0x24) + 1);
     return shopStr;
 }

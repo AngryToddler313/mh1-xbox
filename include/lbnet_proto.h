@@ -369,6 +369,12 @@ void _cnetEvent_JumpCallBack();
 #define CNEVT(a, g) _cnetEvent_JumpCallBack(a, 0)
 #endif
 void _cnet_Return_CallBack();
+#ifdef MHG_PS2
+void lobby_func_005BF880();   /* G only, 0xC bytes: what G's AnswerLobbyNumOfLobby calls */
+int lobby_func_005AD450();   /* G: the lobby / room exit request (G's __cnet_SendReq_PieceExit takes no kind) */
+int lobby_func_005AE230();
+int g_SendReq_005BCE20();   /* G 0x5BCE20 (the map calls it _cnet_RecvFromLbs_AnswerRoomNamePermission): the request of G's cnLBS_Set_RoomRuleFinish; config/mhg/g_names.txt */
+#endif
 void cnLBS_Init_LobbyBgProcess();
 void cnLBS_Init_LobbyBgBurstProcess();
 int __cnetSub_Set_BgProcess();

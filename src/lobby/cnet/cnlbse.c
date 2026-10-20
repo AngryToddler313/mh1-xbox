@@ -1,4 +1,5 @@
 /* cnlbs, run 5: _cnet_CallBack_Result_RoomSetFinish .. _cnet_RecvFromLbs_NoticeLoginOk (lobby.bin 0x005A83A0-0x005AA8FC): the matching functions of cnlbs_nm.c. */
+#include "g_alias.h"
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -351,9 +352,9 @@ void __cnet_Recv_PieceName(void *a, void *b) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 43
 void __cnet_Recv_PieceJoinUser(void *a, void *b) {
-    GetRecvData16(b, GetRecvData16(a, recv_work));
+    GV(GetRecvData16, GetRecvDataString)(b, GetRecvData16(a, recv_work));
 }
 #endif
 
@@ -595,12 +596,12 @@ void _cnet_RecvFromLbs_NoticeLobbyCommer(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 44
 int cnLBS_Read_MatchEntryJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_MatchEntryUser(arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_MatchEntryUser, lobby_func_005AE230)(arg0);
         return slot;
     }
     return -1;

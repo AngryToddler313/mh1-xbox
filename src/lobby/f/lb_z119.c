@@ -1,4 +1,5 @@
 /* lb_z119 - auto-drafted 0x0060DF20-0x0060DF98: plaza_log_id_chk_sub (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_a.h"
 
 s32 plaza_log_id_chk_sub(s32 arg0, int arg1, s32 arg2) {
@@ -9,7 +10,7 @@ s32 plaza_log_id_chk_sub(s32 arg0, int arg1, s32 arg2) {
     var_s0 = arg2;
     if (arg2 != 0) {
 loop_2:
-        if (strcmp((*(s32 *)var_s1) + 0x44, arg0) == 0) {
+        if (strcmp((*(s32 *)var_s1) + GV(0x44, 0x46), arg0) == 0) {
             return 0;
         }
         var_s0 -= 1;

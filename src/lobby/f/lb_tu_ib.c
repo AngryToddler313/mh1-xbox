@@ -1,5 +1,6 @@
 /* lb_tu_ib - one translation unit 0x00609700-0x0060D6E0: Lb_ItemBox_init, Lb_ItemBox_open, Lb_ItemBox_mv, itembox_cursor_mv, itembox_stock, itembox_pickup, itembox_equipchange, itembox_sortup, yes_no_select, itembox_sellout, u_item_chk, u_equip_chk, item_kosuu_sel_chk, pick_kosuu_sel_chk, kosuu_select, sortup_idx_chk, ib_select_sub, equip_ok_chk, ItemboxWindow, ItemboxWindowX, ItemboxWindowCursor, ItemboxWindowCursorX, disp_itembox_cmd, Disp_lb_item_box, item_explanation, kosuu_disp_sub, selling_price_disp_sub, yes_no_disp_sub. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern u8 * ib;
 extern char item_box[];
@@ -637,12 +638,12 @@ static int u_item_chk(int a) {
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static int u_equip_chk(int a) {
     u8 *u;
     int v;
     u = User_data;
-    v = a & 0xFF;
+    v = a & GV(0xFF, 0xFFFF);
     if (*(u8 *)(v * 6 + u + 0x44) == 0) {
         return -1;
     }

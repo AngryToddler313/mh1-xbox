@@ -137,3 +137,5 @@ PROVIDE(set06_st76_clay = 0x002EC388);
 PROVIDE(set06_st77_clay = 0x002EC390);
 PROVIDE(set06_trans = 0x004E1810); /* G-only row in mhg_map (MH1's set06_trans 'missing') */
 PROVIDE(stage_fog_tbl = 0x00521000); /* G stage_fog_set (putspr2_p2, agent A) */
+PROVIDE(RoomInfo_g = 0x006DE120); /* the start of G's room table (the map's RoomInfo is its first entry's id at +4) */
+PROVIDE(g_SendReq_005BCE20 = 0x005BCE20); /* the request G's cnLBS_Set_RoomRuleFinish sends (the map names it _cnet_RecvFromLbs_AnswerRoomNamePermission, a void function) */

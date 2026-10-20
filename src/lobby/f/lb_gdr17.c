@@ -1,4 +1,8 @@
 /* lb_gdr17 - browser tags/tables/http 0x005FE140-0x005FE1CC: tagAct_042. Whole file in lb_dr2.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2
+char *func_00164448();
+#endif
 #include "lobby_f.h"
 extern u8 *bsw;
 extern u8 BFontSizeN[];
@@ -117,7 +121,7 @@ int tagAct_042(u8 **pp, char *s) {
     font_data_clear();
     bsw[0x2D3] = Hn_Size[(u8)((*pp)[-1] - 0x30)] + 0x30;
     bsw[0x2D4] = 0;
-    *pp = (u8 *)strstr((char *)*pp, lit_155_006676E0) + 1;
+    *pp = (u8 *)GV(strstr, func_00164448)((char *)*pp, lit_155_006676E0) + 1;
     tagoutprintf4(s);
     font_data_set();
     return 0;

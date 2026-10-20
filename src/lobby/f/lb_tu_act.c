@@ -1,5 +1,6 @@
 /* lb_tu_act - one translation unit 0x005CDF70-0x005CF100 (all functions are C now): Lb_Pl_act_set, ck_pl_send, Lb_pl_to_normal, lb_pl_to_normal_clr, lb_pl_to_normal_clr2, lb_to_normal, lb_action_timer_calc, Lb_act_ck, Lb_stick_pow_get, Lb_stick_dir_set, Lb_Pl_basic_flagset, Lb_Pl_adj_calc, Lb_Em_adj_calc, Lb_Pl_pos_adj, Lb_Em_pos_adj, lb_pl_flag_clr, Lb_pl_flag_set, Lb_St_unique_adr_set, lb_ck_unique_act, Lb_put_unique_act_hint, Lb_Pl_stg_ck, Lb_hit_stop_calc, Lb_act_set. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
+#include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
 f32 *Stage_data_get(int stg);
@@ -162,7 +163,7 @@ void lb_pl_to_normal_clr2(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void lb_to_normal(PLW *pl, int blend, int tm) {
     pl->act_tm0 = tm;
     pl->act_tm1 = tm;
@@ -173,7 +174,7 @@ void lb_to_normal(PLW *pl, int blend, int tm) {
     pl->flag14 = 0;
     pl->flag15 = 0;
     if (ck_pl_send(pl) != 0) {
-        Lb_send_pl_status(pl);
+        GV(Lb_send_pl_status, check_sender0)(pl);
     }
 }
 #endif
