@@ -2,6 +2,7 @@
  * and its fly_adjy2 height/depth correction. Same code as em16 except that
  * the setters call em_act_set2(em, group, no, arg) and attack covers
  * actions 0-13. */
+#include "g_alias.h"
 #include "em.h"
 
 /* em27's part of the per-monster work at EMW+0x444. */
@@ -25,6 +26,15 @@ f32 CalcDistanceXZ(f32 *, f32 *);
 void em_act_set2(EMW *, int, u16, u16);
 void em_rate_clear(EMW *);
 void speed_add_g(EMW *, s32 *);
+
+#ifdef MHG_PS2
+#include "em_revive_g.h"
+void game_func_0063BA30(EMW *em);
+#endif
+void em27_act_act_set(EMW *em, u16 no, u16 arg);
+void em27_move_act_set(EMW *em, u16 no, u16 arg);
+void em27_fly_act_set(EMW *em, u16 no, u16 arg);
+void em27_atk_act_set(EMW *em, u16 no, u16 arg);
 
 #if !defined(G_PART) || G_PART == 1
 void em27_act_act_set(EMW *em, u16 no, u16 arg) {
@@ -112,7 +122,7 @@ void em27_atk_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em27_act_set(EMW *em, int kind, u16 no, u16 arg) {
     switch ((u16)kind) {
     case 0:
@@ -130,6 +140,13 @@ void em27_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 4:
     case 5:
     case 6:
+#ifdef MHG_PS2      /* G: die act 4 brings the monster back */
+        if (no == 4 && Quest_enemy_revival_ck(em) == 1) {
+            Quest_enemy_revival_set(em);
+            em_status_init(em);
+            game_func_0063BA30(em);
+        }
+#endif
         em_act_set2(em, kind, no, arg);
         break;
     case 7:

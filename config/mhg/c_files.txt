@@ -2268,3 +2268,5 @@ game 0x005FBB20 0x005FBC5C mhg/game/em/em15_p6
 game 0x00604B90 0x00604C24 mhg/game/em/em17_p4
 game 0x00604C30 0x00604DC4 mhg/game/em/em17_p5
 game 0x00606800 0x00606940 mhg/game/em/em17_p6
+game 0x005ED510 0x005ED638 mhg/game/em/em14_p3
+game 0x00642030 0x00642164 mhg/game/em/em27_p3
