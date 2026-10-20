@@ -1984,3 +1984,5 @@ game 0x005ADA20 0x005AE200 mhg/game/em/em02_aib_p5
 game 0x005AE460 0x005AE55C mhg/game/em/em02_aib_p6
 game 0x005AE7D0 0x005AF148 mhg/game/em/em02_aib_p7
 game 0x005AF5B0 0x005AF6B8 mhg/game/em/em02_aib_p8
+game 0x005BC2B0 0x005BEB7C game/em/em07_aic
+game:rodata 0x006D87B0 0x006D8878 game/em/em07_aic
