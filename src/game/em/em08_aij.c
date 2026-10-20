@@ -176,6 +176,7 @@ void em21_target_ang_calc(EMW *em, int arg1);
         em->uvty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void em08_uvmove(EMW *em) {
     int i;
 
@@ -218,6 +219,7 @@ static void em08_uvmove(EMW *em) {
         }
     }
 }
+#endif
 
 void sound_call_sub_005A3CA0(EMW *em, int se, int joint);
 static void sound_call_005A3D10(EMW *em, int frame, int se, int joint);
@@ -326,6 +328,7 @@ void toride_eff_set(EMW *);
     } while (0)
 
 /* G: original bytes (build/mhg/raw/sound_call_sub_005A3CA0.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if !defined(G_PART) || G_PART == 1
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 asm void sound_call_sub_005A3CA0(EMW *em, int se, int joint)
 {
@@ -339,8 +342,10 @@ void sound_call_sub_005A3CA0(EMW *em, int se, int joint) {
     Em_se_req2(em, se, 0, pos, 7, 0);
 }
 #endif
+#endif
 
 /* G: original bytes (build/mhg/raw/sound_call_005A3D10.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if !defined(G_PART) || G_PART == 1
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void sound_call_005A3D10(EMW *em, int frame, int se, int joint)
 {
@@ -356,13 +361,17 @@ static void sound_call_005A3D10(EMW *em, int frame, int se, int joint) {
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void quake_call_005A3DB0(EMW *em, int frame, int v) {
     if (em_frame_check(em, (f32)frame, 0)) {
         Em_set_quake_sub(em, v);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void move_default_005A3E00(EMW *em) {
     f32 (*uv)[3] = (f32 (*)[3])((u8 *)em + 0x5C0);
     u16 *tm = (u16 *)((u8 *)em + 0x5F0);
@@ -385,8 +394,10 @@ static void move_default_005A3E00(EMW *em) {
     tm[3] = 0xFFFF;
     ty[3] = 0xFF;
 }
+#endif
 
 /* G: original bytes (build/mhg/raw/ef_move_sub_005A3E50.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
+#if !defined(G_PART) || G_PART == 1
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 static asm void ef_move_sub_005A3E50(EMW *em, EM08W *w)
 {
@@ -1066,11 +1077,13 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
     }
 }
 #endif
+#endif
 
 extern HIRE_E *hire_normal_add_tbl_00659250[4];
 extern HIRE_E *hire_down_add_tbl_00659300[4];
 
 
+#if !defined(G_PART) || G_PART == 1
 static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
     switch (w->st[i].b) {
     case 0:
@@ -1104,7 +1117,9 @@ static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
     switch (w->st[i].a) {
     case 0:
@@ -1211,7 +1226,9 @@ static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
     }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void hire_move_005A6EB0(EMW *em, EM08W *w) {
     int i;
 
@@ -1222,7 +1239,9 @@ void hire_move_005A6EB0(EMW *em, EM08W *w) {
         i++;
     } while (i < 4);
 }
+#endif
 
+#if !defined(G_PART)
 void em08_effect_move(EMW *em) {
     EM08W *w = (EM08W *)em->ex;
     u8 e = em->ex[0];
@@ -1238,3 +1257,4 @@ void em08_effect_move(EMW *em) {
     }
     em08_uvmove(em);
 }
+#endif
