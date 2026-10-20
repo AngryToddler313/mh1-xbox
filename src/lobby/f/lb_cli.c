@@ -8,6 +8,18 @@ int lobby_func_005E3480();
 #ifdef MHG_PS2
 void cnLBS_Send_ChatMessageTU();
 #endif
+/* the callback-wait message id at cw+0x2C45 (CallBackWaitInit / Check_CallBackWait): G numbers them 0x10 higher */
+#define CBW(n) GV(n, (n) + 0x10)
+#ifdef MHG_PS2
+/* G's room table starts 4 bytes before the address the map names RoomInfo (Lbc_ReadRoomInfo clears from there); G moved
+ * the property to the front of each 0x15C-byte entry: RIO(MH1 offset) = G offset */
+extern char RoomInfo_g[];
+#define ROOMINFO RoomInfo_g
+#define RIO(o) ((o) == 0x158 ? 0 : (o) < 0x10 ? (o) + 4 : (o) + 6)
+#else
+#define ROOMINFO RoomInfo
+#define RIO(o) (o)
+#endif
 #include "lbsys_g.h"
 #include "lobby_b.h"
 #undef Lbs_MatchStart
@@ -1616,8 +1628,8 @@ s32 Lbc_SendBrowserResult() {
     int temp_v1_3;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         CallBackWaitInit(temp_a0);
@@ -1629,7 +1641,7 @@ s32 Lbc_SendBrowserResult() {
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     case 3:
         return 1;
@@ -1873,7 +1885,7 @@ void lbc_top_menu_02() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, temp_a1);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 4;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(4);
         cnLBS_PlazaEntry(cnLbc_CheckInFloorOrder(0) & 0xFFFF, &CallBack_Result_Plaza_PlazaEntry_o);
         return;
     case 1:
@@ -1906,7 +1918,7 @@ int arg0;
     case 0:
         F(u8, (u8 *)cw, CW_OFS(0x2C35))++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 9;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(9);
         cnLBS_PlazaExit(CallBack_Result_Plaza_PlazaExit2);
         break;
     case 1:
@@ -1915,7 +1927,7 @@ int arg0;
     case 2:
         F(u8, (u8 *)cw, CW_OFS(0x2C35))++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 4;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(4);
         cnLBS_PlazaEntry(arg0 & 0xFFFF, CallBack_Result_Plaza_PlazaEntry2);
         break;
     case 3:
@@ -1943,7 +1955,7 @@ void CallBack_Result_Plaza_PlazaExit2(CNET_RES res) {
         F(u8, temp_a0, 0x2C45) = 0U;
         if (res.val == 0) {
             temp_v1 = (int)cw;
-            F(u8, temp_v1, 0x2C35) = (u8) (F(u8, temp_v1, 0x2C35) + 1);
+            F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (F(u8, temp_v1, CW_OFS(0x2C35)) + 1);
             Init_InterruptFlag(temp_a0_2, 5, temp_a0 + 0x2C45);
             return;
         }
@@ -1994,7 +2006,7 @@ void lbc_top_menu_05() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, temp_a1);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 6;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(6);
         cnLBS_Read_PlazaAllocation(0, 7, &CallBack_Result_Plaza_ReadAllocation_o);
         return;
     case 1:
@@ -2132,7 +2144,7 @@ void lbc_in_plaza_00() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, 1, temp_a2);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xB;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xB);
         cnLBS_Read_LobbyAllocation(0, 7, &CallBack_Result_Plaza_ReadLobbyAllocation_o);
         return;
     case 1:
@@ -2225,7 +2237,7 @@ s32 Lbs_request_enter_lobby() {
         F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
         MH_lobbyClear(temp_a0, temp_a1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 8;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(8);
         cnLBS_LobbyEntry(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyEntry_o);
         break;
     case 1:
@@ -2234,7 +2246,7 @@ s32 Lbs_request_enter_lobby() {
     case 2:
         F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
         CallBackWaitInit(temp_a0, temp_a1);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xA);
         cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember_o);
         break;
     case 3:
@@ -2258,23 +2270,23 @@ s32 Lbs_request_enter_lobby2() {
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xA);
         cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember_o);
         break;
     case 1:
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 2;
@@ -2433,7 +2445,7 @@ void lbc_in_plaza_03() {
         case 2:
             F(u8, (u8 *)cw, CW_OFS(0x2C34)) = (u8) (F(u8, (u8 *)cw, CW_OFS(0x2C34)) + 1);
             CallBackWaitInit();
-            F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 9;
+            F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(9);
             cnLBS_PlazaExit(&CallBack_Result_Plaza_PlazaExit_o);
             return;
         }
@@ -2531,7 +2543,7 @@ int arg1;
             sp.item[i] = *arg0++;
         }
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xA);
         cnLBS_ConditionSearchUser(&sp, CallBack_Result_ConditionSearchUser);
         break;
     case 1:
@@ -2572,26 +2584,26 @@ s32 Lbs_SeekId() {
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xA;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xA);
         cnLBS_SerchUserPlace((u8 *)cw + CW_OFS(0x2F80), &CallBack_Result_SearchUserPlace_o);
         break;
     case 1:
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         temp_v0 = (int)cw;
         cnLBS_Get_SerchUserPlace(temp_v0 + 0x30B4, temp_v0 + 0x30B6, temp_v0 + 0x30B8, temp_v0 + 0x30BB);
         cnLBS_Get_SerchUserPlaceMessage((u8 *)cw + CW_OFS(0x30BC));
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         cnLBS_Get_ServerMessage((u8 *)cw + CW_OFS(0x32D1));
         return 1;
     }
@@ -2685,14 +2697,14 @@ void To_EnterLobby() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 38
 void CallBack_Result_Lobby_JoinUser(CNET_RES res) {
     int n;
 
     if (F(u8, cw, CW_OFS(0x2C31)) != 5) {
         n = cnLbc_CheckInFloorOrder(1);
         if (res.val == 0) {
-            cnLBS_Get_mhLobbyJoinUser(n & 0xFFFF, (u8 *)&LobbyInfo_c68[n - 1] + 2, (u8 *)&LobbyInfo_c68[n - 1] + 0xE);
+            GV(cnLBS_Get_mhLobbyJoinUser, cnLBS_Get_mhPlazaJoinUser)(n & 0xFFFF, (u8 *)&LobbyInfo_c68[n - 1] + GV(2, 6), (u8 *)&LobbyInfo_c68[n - 1] + GV(0xE, 0x12));
             return;
         }
         *(s16 *)(D_3A14C6 + n * 0x15C) = 0;
@@ -2728,24 +2740,24 @@ s32 Lbc_DownloadQuest() {
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
         F(s8, (u8 *)cw, CW_OFS(0x2C2F)) = 0;
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xC;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xC);
         cnLBS_Read_FileDownload(mission_area_c70, &CallBack_Result_ReadFileDownload_o);
         break;
     case 1:
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 2;
@@ -2773,37 +2785,37 @@ void CallBack_Result_ReadFileDownload(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 39
 s32 Lbc_ReadRoomInfo() {
     u8 temp_v1_2;
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
-        memset(&RoomInfo, 0, 0xAE0);
-        F(s16, &RoomInfo, 0) = 1;
-        F(s16, &RoomInfo, 0x15C) = 2;
-        F(s16, &RoomInfo, 0x2B8) = 3;
-        F(s16, &RoomInfo, 0x414) = 4;
-        F(s16, &RoomInfo, 0x570) = 5;
-        F(s16, &RoomInfo, 0x6CC) = 6;
-        F(s16, &RoomInfo, 0x828) = 7;
-        F(s16, &RoomInfo, 0x984) = 8;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
+        memset(&ROOMINFO, 0, 0xAE0);
+        F(s16, &ROOMINFO, 0 + RIO(0)) = 1;
+        F(s16, &ROOMINFO, 0x15C + RIO(0)) = 2;
+        F(s16, &ROOMINFO, 0x2B8 + RIO(0)) = 3;
+        F(s16, &ROOMINFO, 0x414 + RIO(0)) = 4;
+        F(s16, &ROOMINFO, 0x570 + RIO(0)) = 5;
+        F(s16, &ROOMINFO, 0x6CC + RIO(0)) = 6;
+        F(s16, &ROOMINFO, 0x828 + RIO(0)) = 7;
+        F(s16, &ROOMINFO, 0x984 + RIO(0)) = 8;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0xE;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0xE);
         cnLBS_Read_RoomAllocation(0, 0xBB, &CallBack_Result_Lobby_ReadRoomAllocation_o);
         break;
     case 1:
-        Check_CallBackWait(temp_v1 + 0x2C35);
+        Check_CallBackWait(temp_v1 + CW_OFS(0x2C35));
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 2;
@@ -2902,19 +2914,19 @@ void lbc_in_lobby_00_05() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 40
 s32 Lbc_getDate() {
     s32 temp_a0;
     u8 temp_v1_2;
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x17;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x17);
         CallBackWaitInit(temp_a0);
         cnLBS_Read_TimingValue(&CallBack_GetDate_o);
         break;
@@ -2922,7 +2934,7 @@ s32 Lbc_getDate() {
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     }
     return 2;
@@ -3216,20 +3228,20 @@ void CallBack_Result_Lobby_GuestRoomMember() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 41
 s32 Lbs_GuestEnterRoom() {
     s32 temp_a0;
     u8 temp_v1_2;
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x15;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x15);
         F(s8, &ClassInfo_c88, 8) = (s8) (F(u8, &lb_sys, LBSYS_OFS(0x73)) + 1);
         cnLBS_RoomEntry(cnLbc_CheckInFloorOrder(2) & 0xFFFF, &RoomRule_c88[2], &CallBack_Result_Lobby_RoomEntry_o);
         break;
@@ -3237,11 +3249,11 @@ s32 Lbs_GuestEnterRoom() {
         Check_CallBackWait();
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         To_EnterRoom();
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 2;
@@ -3478,7 +3490,7 @@ s32 Lbs_LobbyExit() {
     case 1:
         ((CWS_Lbs_LobbyExit *)cw)->x2C35 = (u8) (((CWS_Lbs_LobbyExit *)cw)->x2C35 + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x16;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x16);
         cnLBS_LobbyExit(&CallBack_Result_Lobby_LobbyExit_o);
         break;
     case 2:
@@ -3551,24 +3563,24 @@ s32 Lbs_RoomExit() {
     int temp_v1_3;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
         /* fallthrough */
     case 1:
         temp_v1_3 = (int)cw;
         F(u8, temp_v1_3, 0x2C35) = (u8) (F(u8, temp_v1_3, 0x2C35) + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x18;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x18);
         cnLBS_RoomExit(&CallBack_Result_Lobby_RoomExit_o);
         break;
     case 2:
         Check_CallBackWait(temp_a0);
         break;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 0;
@@ -3629,17 +3641,21 @@ void CallBack_Result_InRoom00_Member(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 42
 void CallBack_Result_InRoom00_JoinUser(CNET_RES res) {
     int n;
 
     if (F(u8, cw, CW_OFS(0x2C31)) != 5) {
         n = ClassInfo_c105[8];
         if (res.val == 0) {
-            cnLBS_Get_mhRoomJoinUser(n & 0xFFFF, (u8 *)&RoomInfo_c105[ClassInfo_c105[8] - 1] + 2, (u8 *)&RoomInfo_c105[ClassInfo_c105[8] - 1] + 0xE);
+            GV(cnLBS_Get_mhRoomJoinUser, cnLBS_Get_mhLobbyJoinUser)(n & 0xFFFF, (u8 *)&RoomInfo_c105[ClassInfo_c105[8] - 1] + GV(2, 6), (u8 *)&RoomInfo_c105[ClassInfo_c105[8] - 1] + GV(0xE, 0x12));
             return;
         }
+#ifdef MHG_PS2
+        *(s16 *)((int)(RoomInfo_g - 0x156) + ClassInfo_c105[8] * 0x15C) = 0;   /* G: the count at +6 of entry ClassInfo[8] - 1 */
+#else
         *(s16 *)((int)(RoomRule_c105 + 0x29406) + ClassInfo_c105[8] * 0x15C) = 0;
+#endif
     }
 }
 #endif
@@ -3657,30 +3673,30 @@ void CallBack_Result_InRoom00_EntryJoinUser(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 43
 s32 Lbs_MatchEntryCancel() {
     s32 temp_a0;
     u8 temp_v1_2;
     int temp_v1;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(u8, temp_v1, CW_OFS(0x2C35)) = (u8) (temp_v1_2 + 1);
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1D;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x1D);
         cnLBS_MatchEntry(0, &CallBack_Result_InRoom_MatchEntryCancel_o);
         break;
     case 1:
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 2;
@@ -3721,7 +3737,7 @@ s32 Lbs_MatchEntry() {
     case 0:
         F(u8, temp_a0, 0x2C35) = (u8) (temp_v1 + 1);
         CallBackWaitInit(temp_a0, temp_a1);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1C;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x1C);
         cnLBS_MatchEntry(1, &CallBack_Result_InRoom_MatchEntry_o);
         break;
     case 1:
@@ -4016,7 +4032,7 @@ void lbc_game_ready_04() {
         temp_v1_4 = (int)cw;
         F(u8, temp_v1_4, 0x2C34) = (u8) (F(u8, temp_v1_4, 0x2C34) + 1);
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x21;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x21);
         cnLBS_LogoutLobbyServer(&CallBack_Result_Match_Logout_o);
         return;
     case 4:
@@ -4464,7 +4480,7 @@ void lobby_client_goto_top() {
     case 0:
         F(u8, temp_a0, 0x2C34) = (u8) (temp_a0_2 + 1);
         CallBackWaitInit(temp_a0_2, temp_a1);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x22;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x22);
         cnLBS_TopPageJump(&CallBack_Result_GotoTop_o);
         return;
     case 1:
@@ -5270,12 +5286,12 @@ s32 Lbc_SendMail(void) {
     int temp_v1_3;
 
     temp_v1 = (int)cw;
-    temp_a0 = temp_v1 + 0x2C35;
-    temp_v1_2 = F(u8, temp_v1, 0x2C35);
+    temp_a0 = temp_v1 + CW_OFS(0x2C35);
+    temp_v1_2 = F(u8, temp_v1, CW_OFS(0x2C35));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x23;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = CBW(0x23);
         temp_v0 = (int)cw;
         cnLBS_SendMessage(temp_v0 + 0x301A, temp_v0 + 0x3033, &CallBack_Result_Mail_SendMail);
         temp_v1_3 = (int)cw;
@@ -5285,10 +5301,10 @@ s32 Lbc_SendMail(void) {
         Check_CallBackWait(temp_a0);
         break;
     case 2:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 0;
     case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
+        F(u8, temp_v1, CW_OFS(0x2C35)) = 0U;
         return 1;
     }
     return 2;
@@ -5792,16 +5808,6 @@ void CallBack_Event_LobbyLeaver(CNET_RES res) {
 /* ---- formerly b/lb_bz55.c ---- */
 /* lb_bz55 - lobby UI/client 0x005C14F0-0x005C1530: CallBack_Event_RoomName (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
-#ifdef MHG_PS2
-/* G's room table starts 4 bytes before the address the map names RoomInfo (Lbc_ReadRoomInfo clears from there); G moved
- * the property to the front of each 0x15C-byte entry: RIO(MH1 offset) = G offset */
-extern char RoomInfo_g[];
-#define ROOMINFO RoomInfo_g
-#define RIO(o) ((o) == 0x158 ? 0 : (o) < 0x10 ? (o) + 4 : (o) + 6)
-#else
-#define ROOMINFO RoomInfo
-#define RIO(o) (o)
-#endif
 
 #if !defined(G_PART) || G_PART == 19
 void CallBack_Event_RoomName(void) {

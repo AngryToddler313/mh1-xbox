@@ -622,16 +622,16 @@ u16 *b;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 45
 void _cnet_RecvFromLbs_AnswerMatchEntryUser(void) {
     u16 id;
 
     if (CnetSys_w.rres == 0) {
-        GetRecvData16(&CnetSys_w.room[id - 1].mb, GetRecvData16(&CnetSys_w.room[id - 1].ma, GetRecvData16(&id, recv_work), id));
+        GetRecvData16(&CnetSys_w.room[id - 1].mb + GV(0, 1), GetRecvData16(&CnetSys_w.room[id - 1].ma + GV(0, 1), GetRecvData16(&id, recv_work), id));   /* G: 2 bytes on */
         CnetSys_w.room[id - 1].flags |= 0x40;
         CnetSys_w.last_id = id;
     }
-    _cnet_Return_CallBack(0x21);
+    _cnet_Return_CallBack(GV(0x21, 0x26));
 }
 #endif
 

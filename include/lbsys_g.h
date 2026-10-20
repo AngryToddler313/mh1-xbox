@@ -16,6 +16,13 @@
 /* PC: pNet points at a host buffer in MH1's layout (Clear_lobby_ram, lb_n.c), so MH1's C (raw pNet[0xC] ... offsets) runs
  * unchanged and PNET_OFS is the identity. G's own layout (prims at +0..0x10, the flags at +0x2D / +0x31) is not used. */
 #define PNET_OFS(o) (o)
+/* PS2 G's own pNet layout (from the G code: MH1 2, 3 -> 0x22, 0x23; 6, 8, 0xC, 0xF -> 0x27, 0x29, 0x2D, 0x30; 4 / 5 not seen):
+ * for the PS2 G build only (the PC keeps MH1's layout, above) */
+#if defined(__MWERKS__)
+#define PNET_G(o) ((o) < 4 ? (o) + 0x20 : (o) + 0x21)
+#else
+#define PNET_G(o) (o)
+#endif
 #define CW_OFS(o) ((o) < 0x2BFE ? (o) : (o) < 0x2C06 ? (o) - 0x2BFE + 0xB64 : (o) < 0x2C2F ? (o) - 0x2C06 + 0xB6E : \
     (o) < 0x2C3C ? (o) - 0x2C2F + 0xB97 : (o) < 0x2C43 ? (o) - 0x2C3C + 0xBA4 : (o) < 0x2C46 ? (o) - 0x2C43 + 0xBA7 : \
     (o) < 0x2C4C ? (o) - 0x2C46 + 0xBB0 : (o) < 0x2C70 ? (o) - 0x2C4C + 0xBB4 : \
@@ -59,6 +66,7 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
 #else
 #define LBSYS_OFS(o) (o)
 #define PNET_OFS(o) (o)
+#define PNET_G(o) (o)
 #define CW_OFS(o) (o)
 #endif
 #ifdef VERSION_MHG
