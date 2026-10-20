@@ -1830,3 +1830,6 @@ game 0x005B6630 0x005B6860 mhg/game/em/em03_p5
 game 0x005B6B60 0x005B7008 mhg/game/em/em03_p6
 game 0x005B7020 0x005B7108 mhg/game/em/em03_p7
 game 0x005B7F60 0x005B7FAC mhg/game/em/em03_p8
+game 0x005A56A0 0x005A56E0 mhg/game/em/em01_p1
+game 0x005A5C70 0x005A5F50 mhg/game/em/em01_p2
+game 0x005A67E0 0x005A85EC mhg/game/em/em01_p3
