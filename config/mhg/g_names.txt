@@ -232,3 +232,7 @@ PROVIDE(g_cn_00700EA2 = 0x00700EA2); /* CnetSys_w+0x669A: u16 per 356-byte entry
 PROVIDE(g_cn_00700E98 = 0x00700E98); /* CnetSys_w+0x6690: u32 per 356-byte entry (lobby_func_005AC580) */
 PROVIDE(g_cn_006FEA7A = 0x006FEA7A); /* CnetSys_w+0x4272, u16 per 356-byte entry */
 PROVIDE(g_cn_006FEA7C = 0x006FEA7C); /* CnetSys_w+0x4274, u16 per 356-byte entry */
+PROVIDE(g_sh_002EFAD4 = 0x002EFAD4); /* G small-data halfwords lobby_func_0059A1F0 sets */
+PROVIDE(g_sh_002EFAD8 = 0x002EFAD8);
+PROVIDE(g_sh_002EFADC = 0x002EFADC);
+PROVIDE(g_sh_002EFAE0 = 0x002EFAE0);
