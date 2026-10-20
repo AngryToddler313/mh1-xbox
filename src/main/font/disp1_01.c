@@ -1,4 +1,5 @@
 /* SLPM_654.95 0x00162F80-0x00163048: disp_load_msg .. disp_load_msg. See disp1_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "game.h"
 
@@ -25,6 +26,13 @@ void flfntSetSize(int, int);
 void font_print_double(int, int, int, int, char *);
 int strlen(const char *);
 u16 *Start_item_data_adrs_get(void);
+#ifdef MHG_PS2
+void flSetRenderState(int, int);
+void func_001500A0(int, int);
+void SetFilterMode(int);
+extern s32 flWidth;
+extern s32 flHeight;
+#endif
 
 
 
@@ -34,6 +42,25 @@ u16 *Start_item_data_adrs_get(void);
 
 void disp_load_msg(void) {
     PUT_2TF q;
+#ifdef MHG_PS2
+    /* G: one full-screen picture (texture slot 383) */
+    flSetRenderState(0x6C, 1);
+    func_001500A0(0, 0);
+    flSetRenderState(0x6C, 0);
+    SetFilterMode(1);
+    reload_tex(1, 383);
+    SetTextureStage(383);
+    q.uv1.a = 255;
+    q.x0 = 0;
+    q.uv1.b = 224;
+    q.y0 = 0;
+    q.col = -1;
+    q.x1 = flWidth;
+    q.uv0.a = 0;
+    q.uv0.b = 0;
+    q.y1 = flHeight;
+    flps0008(&q);
+#else
     s16 i;
     s16 (*t)[2];
 
@@ -52,4 +79,5 @@ void disp_load_msg(void) {
         Put_2TF(&q);
         t++;
     }
+#endif
 }
