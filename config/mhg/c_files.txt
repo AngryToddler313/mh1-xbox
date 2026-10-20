@@ -2002,3 +2002,4 @@ game:rodata 0x006D7990 0x006D79B0 game/em/em_cmd_r01
 game 0x005861C0 0x005867A8 game/em/em_cmd_r03
 game 0x00587FA0 0x0058835C game/em/em_cmd_r09
 game 0x0058BD00 0x0058C09C game/em/em_cmd_r16
+game 0x0058C510 0x0058C644 game/em/em_cmd_r17
