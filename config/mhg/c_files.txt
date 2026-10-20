@@ -2208,3 +2208,5 @@ sub_main 0x004C3F80 0x004C4038 mhg/main/set/set01_p7
 sub_main 0x004C4040 0x004C40AC mhg/main/set/set01_p8
 sub_main 0x004C40B0 0x004C4158 mhg/main/set/set01_p9
 sub_main 0x004C4160 0x004C4304 mhg/main/set/set01_p10
+main 0x0012E5F0 0x0012E6E0 mhg/main/weapon/trans_p1
+main 0x0012E760 0x0012E7DC mhg/main/weapon/trans_p2
