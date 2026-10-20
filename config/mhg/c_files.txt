@@ -1995,3 +1995,5 @@ game:rodata 0x006DA040 0x006DA160 game/em/em20
 game 0x00624610 0x00629D60 game/em/em20_r20
 game:rodata 0x006D9E80 0x006DA034 game/em/em20_r20
 game 0x00636E20 0x0063A3DC game/em/em21_r12
+game 0x00642C70 0x0064705C game/em/em33
+game:rodata 0x006DA880 0x006DA9A0 game/em/em33
