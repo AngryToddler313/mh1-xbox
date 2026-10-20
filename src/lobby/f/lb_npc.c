@@ -327,7 +327,7 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void npcMvTOPL(em)
 EMW *em;
 {
@@ -940,7 +940,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
 void lb_npc_mother_move(em)
 EMW *em;
 {
@@ -1003,7 +1003,11 @@ EMW *em;
             return;
         case 1:
             mv->x2D = 1;
-            if (lb_sys.x68 != 0xC && lb_sys.x68 != 0x2B) {
+            if (lb_sys.x68 != GV(0xC, 0xD) && lb_sys.x68 != GV(0x2B, 0x31)
+#ifdef MHG_PS2
+                && lb_sys.gx04 != 7
+#endif
+                ) {
                 em->x05++;
                 Lb_pl_chr_set(em, 0x2B2, 0xA, 0);
                 return;
@@ -1357,7 +1361,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 22
 void npcCatFOOTWORK(em)
 EMW *em;
 {
@@ -1373,7 +1377,7 @@ EMW *em;
         return;
     case 1:
         if (mv->kind == 0x53) {
-            if (lb_sys.x68 == 0x11 && LBS8(9) == 0 && LBS8(6) == 2 && mv->x26 == 0) {
+            if (lb_sys.x68 == GV(0x11, 0x13) && LBS8(9) == 0 && LBS8(6) == 2 && mv->x26 == 0) {
                 Lb_act_set(em, 0, 0x85);
                 return;
             }
@@ -1396,7 +1400,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 23
 void npcCatRUN(em)
 EMW *em;
 {
@@ -1499,7 +1503,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 24
 void npcCatWAITER(em)
 EMW *em;
 {
@@ -1617,7 +1621,7 @@ EMW *em;
                 em->work08 = 3;
                 return;
             }
-            if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+            if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != GV(0x11, 0x13) || LBS8(6) == 6 || LBS8(6) == 7) {
                 ex->x26 = 0;
                 *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
                 Lb_act_set(em, 0, 0);
@@ -1633,7 +1637,7 @@ EMW *em;
         }
         break;
     case 6:
-        if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+        if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != GV(0x11, 0x13) || LBS8(6) == 6 || LBS8(6) == 7) {
             ex->x26 = 0;
             *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
             ex->idx = 0;
@@ -1660,7 +1664,7 @@ EMW *em;
         }
         break;
     case 7:
-        if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+        if (*(s32 *)((u8 *)&lb_sys + LBSYS_OFS(0x68)) != GV(0x11, 0x13) || LBS8(6) == 6 || LBS8(6) == 7) {
             ex->x26 = 0;
             *(s16 *)((u8 *)&lb_sys + LBSYS_OFS(0x76)) = 0;
             ex->idx = 0;
@@ -1983,7 +1987,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 25
 void npcPigWALK(em)
 EMW *em;
 {

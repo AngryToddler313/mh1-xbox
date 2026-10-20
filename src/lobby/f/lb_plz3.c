@@ -523,7 +523,7 @@ int y;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void put_mainWindowTex(x, y)
 int x;
 int y;
@@ -531,10 +531,10 @@ int y;
     int xs = (s16)x;
     int ys;
 
-    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, 0);
+    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, GV(0, 0xA0000000));
     ys = (s16)y;
-    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
-    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
+    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, GV(0xFF602020, 0xFF537F56));
+    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, GV(0xFF602020, 0xFF537F56));
 }
 #endif
 
