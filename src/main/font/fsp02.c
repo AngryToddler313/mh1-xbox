@@ -1,4 +1,5 @@
 /* fsp02 - font print helpers (SLPM_654.95 0x001623F0-0x00162634): font_print_double, font_print_double2, font_print_uf, strlen_sp. Whole file in fsp_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 extern s32 font_reset_flag;
@@ -47,8 +48,40 @@ void font_print_uf(char *str) {
 #endif
 
 /* Length of a string in characters, escape codes ("~..") counted by their displayed width. */
-#if !defined(G_PART)
+#ifdef MHG_PS2
+char *func_00164448(char *, char *);   /* G's strstr */
+#define SP_STRSTR func_00164448
+#else
+#define SP_STRSTR strstr
+#endif
+#if !defined(G_PART) || G_PART == 2
 int strlen_sp(char *s) {
+#ifdef VERSION_MHG
+    int len;
+    s16 w;
+    s16 f;      /* G: inside a 0x08xx control pair nothing is counted */
+
+    w = 0;
+    f = 0;
+    len = strlen(s);
+    while (*s != 0) {
+        s = SP_STRSTR(s, lit_761_0035BB18);
+        if (s == 0) {
+            return len;
+        }
+        font_sp_ck((s8 *)s, &w, 0);
+        if ((w & 0xFF00) == 0x800) {
+            f ^= 1;
+            s = (char *)font_sp_ck((s8 *)s, &w, 1);
+            len += w;
+        } else if (f == 0) {
+            s = (char *)font_sp_ck((s8 *)s, &w, 1);
+            len += w;
+        } else {
+            s++;
+        }
+    }
+#else
     int len = strlen(s);
     s16 w = 0;
 
@@ -60,6 +93,7 @@ int strlen_sp(char *s) {
         s = (char *)font_sp_ck((s8 *)p, &w, 1);
         len += w;
     }
+#endif
     return len;
 }
 #endif

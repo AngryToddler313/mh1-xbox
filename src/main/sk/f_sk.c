@@ -49,7 +49,11 @@ static void sk_init_mode(u8);
 void HardKeyboard_move(void);
 int Softkey_free_1(void *, void *, int);
 void hk_key_f3(void *);
+#ifdef MHG_PS2
+void hk_key_f4();
+#else
 void hk_key_f4(void *);
+#endif
 void hk_key_space(int);
 void kbd_plt1_move(u8 *, int, void *);
 void kbd_reibun_input_sub(int, int, void *);
@@ -670,12 +674,62 @@ asm void DispSoftkeyboard(int scale)
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 void kbd_plt1_move(u8 *c, int a, void *b) {
     if (palette_ng_sub2(c[3], lpSKey + SKO(0x1F), lpSKey + SKO(0x1E)) != 0) {
         SK_SE(0x15);
         return;
     }
+#ifdef MHG_PS2
+    *(s16 *)(lpSKey + 0x48) = 0;
+    SKS8(0x35) = 0;
+    sk_set_yn_kigou_f();
+    switch (c[3]) {
+    case 4:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        kbd_free_set();
+        sk_set_etc_data();
+        SK_SE(0x16);
+        break;
+    case 3:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        if (SKS8(0x36) != 0) {
+            sk_yn_kigou_func();
+            sk_key_repeat(0, 0);
+        } else {
+            SK_SE(0x16);
+        }
+        sk_set_etc_data();
+        break;
+    case 5:
+        hk_key_f4();
+        break;
+    case 0:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        SK_SE(0x16);
+        break;
+    case 1:
+    case 2:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        SK_SE(0x16);
+        break;
+    case 6:
+    case 7:
+        sk_zen_han_chg();
+        break;
+    case 8:
+    case 9:
+        sk_daisyo_chg();
+        break;
+    }
+}
+#else
     SKS8(0x35) = 0;
     sk_set_yn_kigou_f();
     switch (c[3]) {
@@ -718,6 +772,7 @@ void kbd_plt1_move(u8 *c, int a, void *b) {
     }
     SK_SE(0x16);
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 6
