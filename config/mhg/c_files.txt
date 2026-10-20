@@ -2069,3 +2069,4 @@ lobby 0x005AF940 0x005AF9A0 mhg/lobby/cnet/cnlbsf_p1
 lobby 0x005AFA00 0x005AFB68 mhg/lobby/cnet/cnlbsf_p2
 lobby 0x005E0E60 0x005E1064 mhg/lobby/cnet/cnlbsg_p10
 lobby 0x005E10E0 0x005E11B0 mhg/lobby/cnet/cnlbsg_p11
+lobby 0x005E1430 0x005E1444 mhg/lobby/cnet/cnlbsg_p13
