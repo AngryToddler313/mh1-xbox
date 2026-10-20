@@ -22,6 +22,18 @@ void __cnet_Login_Return(void) {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 52
+#ifdef MHG_PS2
+/* G 0x5B01E0 (the map calls it __cnet_SendSet_TelephoneNumber): command 32 with the byte at CnetSys_w+0x10D2 */
+void g_SendSet_005B01E0(void) {
+    SetSendCommand(&send_work, 32);
+    SetSendData8(&send_work, *((u8 *)&CnetSys_w + 0x10D2));
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+#endif
+#endif
+
 #if !defined(G_PART)
 void _cnet_RecvFromLbs_RequestTelephoneNumber(void) {
     __cnet_SendSet_TelephoneNumber();

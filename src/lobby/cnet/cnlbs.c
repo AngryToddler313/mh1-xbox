@@ -1291,6 +1291,23 @@ int arg1;
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 118
+#ifdef MHG_PS2
+/* G 0x5BC5B0 (the map calls it cnLBS_Read_RoomRuleAllocation): a menu step on a net window */
+void g_step_005BC5B0(u8 *a) {
+    u8 st = a[0x23];
+
+    if (st == 1) {
+        a[0x22]++;
+        a[0x23] = 0;
+    } else if (st == 2) {
+        a[0x21] = 11;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
 #if !defined(G_PART) || G_PART == 19
 void _cnet_RecvFromLbs_AnswerRoomEntry(void) {
     if (CNW(s8, 0xFEC) == 0) {
