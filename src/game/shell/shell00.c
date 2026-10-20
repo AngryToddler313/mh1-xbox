@@ -20,7 +20,7 @@ static void shell00_e(SHLW *sh);
 
 void flvecCopy(void *, void *);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void shell00_set(PLW *pl, int arg) {
     SHLW *sh = pull_shell_work(0);
 
@@ -105,7 +105,7 @@ static void shell00_move(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void shell00_i(SHLW *sh) {
     PLW *pl = &player_work[sh->em_no];
     u8 atk = 0;

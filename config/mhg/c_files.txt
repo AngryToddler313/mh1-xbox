@@ -2120,3 +2120,5 @@ lobby 0x005B6B00 0x005B6B88 mhg/lobby/f/lb_tu_browser_p26
 lobby 0x00551770 0x00551900 mhg/lobby/f/lb_ui_p4
 lobby 0x0059F5E0 0x0059F68C mhg/lobby/f/lb_ui_p5
 lobby 0x0059FB50 0x005A02B0 mhg/lobby/f/lb_ui_p6
+game 0x00669020 0x006690CC mhg/game/shell/shell00_p3
+game 0x00669260 0x006696E0 mhg/game/shell/shell00_p4
