@@ -139,15 +139,21 @@
 
 
 
+#if !defined(G_PART) || G_PART == 1
 u8 *em_cmd_vec_set(EMW *em, u8 *p) {
     em->ang[1] = Em_Calc_angY(em->pos, (f32 *)((u8 *)em_cmd_pos_tbl[em->kind] + *p * 0xC)) & 0xFFFF;
     return p + 1;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *em_cmd_demo_start(EMW *em, u8 *p) {
     return p;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u8 *em_cmd_wait_set(EMW *em, u8 *p) {
     return p;
 }
+#endif
