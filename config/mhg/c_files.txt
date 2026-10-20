@@ -2087,3 +2087,4 @@ lobby 0x00581B10 0x00581B40 mhg/lobby/f/lb_cli_p5
 lobby 0x00551910 0x00551940 mhg/lobby/f/lb_ui_p1
 lobby 0x00552460 0x00552468 mhg/lobby/f/lb_ui_p2
 lobby 0x0059F6B0 0x0059F6B8 mhg/lobby/f/lb_ui_p3
+main 0x00218C00 0x00218C1C mhg/main/net/f_disp_p1
