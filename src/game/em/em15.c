@@ -56,6 +56,7 @@ u8 em15_senkai_pos_no(EMW *em, f32 *out);
         w->dist = 0.0f;             \
     }
 
+#if !defined(G_PART) || G_PART == 1
 void em15_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     switch (no) {
@@ -73,7 +74,9 @@ void em15_act_act_set(EMW *em, u16 no, u16 arg) {
     em->x388 = 0;
     em_act_set2(em, 0, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em15_move_act_set(EMW *em, u16 no, u16 arg) {
     EM15W *w = (EM15W *)em->ex;
 
@@ -155,7 +158,9 @@ void em15_move_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 1, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em15_fly_act_set(EMW *em, u16 no, u16 arg) {
     EM15W *w = (EM15W *)em->ex;
     f32 pt[3];
@@ -340,7 +345,9 @@ void em15_fly_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 2, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em15_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM15W *w = (EM15W *)em->ex;
     f32 p[3];
@@ -375,7 +382,9 @@ void em15_atk_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 3, no, arg);
 }
+#endif
 
+#if !defined(G_PART)
 #ifdef VERSION_MHG
 #include "em_revive_g.h"
 void em15_init(EMW *em);
@@ -392,7 +401,9 @@ static void em15_revive_init(EMW *em)
     em15_init(em);
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 void em15_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -421,7 +432,9 @@ void em15_act_set(EMW *em, int kind, u16 no, u16 arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em15_fly_adjy(EMW *em, int type) {
     f32 (*tbl)[2] = fly_adjy_hosei_tbl_00662C00[type];
     EM15W *w = (EM15W *)em->ex;
@@ -453,7 +466,9 @@ void em15_fly_adjy(EMW *em, int type) {
         speed_add(em, w->spd);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em15_fly_adjy2_init(EMW *em, u8 type) {
     EM15W *w = (EM15W *)em->ex;
 
@@ -521,11 +536,15 @@ void em15_fly_adjy2_init(EMW *em, u8 type) {
     }
     em_rate_clear(em);
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subx(EMW *em, EM15W *w) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_suby(EMW *em, EM15W *w) {
     int i;
     f32 (*tbl)[2] = fly_adjy2_hosei_tbl_006630C0[w->adj_type];
@@ -562,7 +581,9 @@ static u8 fly_adjy2_suby(EMW *em, EM15W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subz(EMW *em, EM15W *w) {
     f32 (*tbl)[2] = fly_adjz2_hosei_tbl_00663300[w->adj_type];
     u8 ret = 0;
@@ -591,7 +612,9 @@ static u8 fly_adjy2_subz(EMW *em, EM15W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 u8 em15_fly_adjy2(EMW *em) {
     EM15W *w = (EM15W *)em->ex;
     u8 ret = 0;
@@ -614,7 +637,9 @@ u8 em15_fly_adjy2(EMW *em) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em15_senkai_sub(EMW *em) {
     EM15W *w = (EM15W *)em->ex;
 
@@ -637,7 +662,9 @@ void em15_senkai_sub(EMW *em) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 u8 em15_senkai_pos_no(EMW *em, f32 *out) {
     u32 i;
     EM_STG_POS *p;
@@ -683,4 +710,5 @@ u8 em15_senkai_pos_no(EMW *em, f32 *out) {
     out[2] = pos[i][2];
     return n;
 }
+#endif
 
