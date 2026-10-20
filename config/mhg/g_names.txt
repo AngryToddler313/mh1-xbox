@@ -242,3 +242,5 @@ PROVIDE(g_sh_002EFAD4 = 0x002EFAD4); /* G small-data halfwords lobby_func_0059A1
 PROVIDE(g_sh_002EFAD8 = 0x002EFAD8);
 PROVIDE(g_sh_002EFADC = 0x002EFADC);
 PROVIDE(g_sh_002EFAE0 = 0x002EFAE0);
+PROVIDE(result_w_g = 0x00542490); /* result_w, accessed absolutely in G */
+PROVIDE(gptr_005284F0 = 0x005284F0); /* G cont_trans button text pointer */

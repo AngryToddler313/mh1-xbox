@@ -2882,3 +2882,10 @@ lobby 0x0059E270 0x0059E278 mhg/lobby/f/lb_ui_p34
 lobby 0x0059F6F0 0x0059F71C mhg/lobby/f/lb_ui_p35
 lobby 0x005C0B90 0x005C0BA4 mhg/lobby/f/lb_ui_p36
 lobby 0x005C2120 0x005C2148 mhg/lobby/f/lb_ui_p37
+sub_main 0x004F5980 0x004F5A98 mhg/main/reward/f_reward_p7
+sub_main 0x004F5AA0 0x004F5D40 mhg/main/reward/f_reward_p8
+sub_main 0x004F6AC0 0x004F6DE4 mhg/main/reward/f_reward2_p1
+main 0x0020B6D0 0x0020B860 mhg/main/sk/f_sk_p19
+main 0x0012C5D0 0x0012C6E8 mhg/main/font/fsp02_p2
+main 0x00100470 0x00100538 main/sys/adxs06
+select 0x00548930 0x00548AB4 mhg/select/edit04_p5
