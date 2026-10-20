@@ -1900,3 +1900,5 @@ game 0x005D2980 0x005D29F4 mhg/game/em/em08_p2
 game 0x005D2B20 0x005D2BB8 mhg/game/em/em08_p3
 game 0x00613CA0 0x00613DE4 mhg/game/em/em18b_p1
 game 0x00614080 0x006140D8 mhg/game/em/em18b_p2
+game 0x005A8CF0 0x005A8EC4 mhg/game/em/em02_p1
+game 0x005A95B0 0x005A98E4 mhg/game/em/em02_p2
