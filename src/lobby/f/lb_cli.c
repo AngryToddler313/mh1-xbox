@@ -1,6 +1,9 @@
 /* lb_cli - one translation unit 0x005B7020-0x005C1B5C (lbtu3): the lobby client, the small HTML text renderer (nwDispStr_Html), the mail / comment requests and the server notice callbacks. */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #include "g_alias.h"
+#ifdef MHG_PS2
+void cnLBS_Send_ChatMessageTU();
+#endif
 #include "lbsys_g.h"
 #include "lobby_b.h"
 #undef Lbs_MatchStart
@@ -5319,10 +5322,10 @@ void CallBack_Result_netComment();
 void CallBack_Result_netCommentSend();
 int cnLBS_Get_RoomMemberList();
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 int Lbc_RequestNetComment(int a) {
     sendDat[0] = 7;
-    cnLBS_Send_ChatBinaryTU(a, sendDat, 1, CallBack_Result_netComment);
+    GV(cnLBS_Send_ChatBinaryTU, cnLBS_Send_ChatMessageTU)(a, sendDat, 1, CallBack_Result_netComment);
     return 0;
 }
 #endif
@@ -5785,13 +5788,23 @@ void CallBack_Event_LobbyLeaver(CNET_RES res) {
 /* ---- formerly b/lb_bz55.c ---- */
 /* lb_bz55 - lobby UI/client 0x005C14F0-0x005C1530: CallBack_Event_RoomName (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
+#ifdef MHG_PS2
+/* G's room table starts 4 bytes before the address the map names RoomInfo (Lbc_ReadRoomInfo clears from there); G moved
+ * the property to the front of each 0x15C-byte entry: RIO(MH1 offset) = G offset */
+extern char RoomInfo_g[];
+#define ROOMINFO RoomInfo_g
+#define RIO(o) ((o) == 0x158 ? 0 : (o) < 0x10 ? (o) + 4 : (o) + 6)
+#else
+#define ROOMINFO RoomInfo
+#define RIO(o) (o)
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
 void CallBack_Event_RoomName(void) {
     u16 sp1E;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_RoomName(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x14);
+    cnLBS_Get_RoomName(sp1E, (u8 *)&ROOMINFO + ((sp1E - 1) * 0x15C) + RIO(0x14));
 }
 #endif
 
@@ -5799,12 +5812,12 @@ void CallBack_Event_RoomName(void) {
 /* lb_bz56 - lobby UI/client 0x005C1530-0x005C1570: CallBack_Event_RoomStatus (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void CallBack_Event_RoomStatus(void) {
     u16 sp1E;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_RoomStatus(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x10);
+    GV(cnLBS_Get_RoomStatus, cnLBS_Get_LobbyStatus)(sp1E, (u8 *)&ROOMINFO + ((sp1E - 1) * 0x15C) + RIO(0x10));
 }
 #endif
 
@@ -5812,12 +5825,12 @@ void CallBack_Event_RoomStatus(void) {
 /* lb_bz57 - lobby UI/client 0x005C1570-0x005C15B0: CallBack_Event_RoomProperty (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
 void CallBack_Event_RoomProperty(void) {
     u16 sp1E;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_RoomProperty(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x158);
+    cnLBS_Get_RoomProperty(sp1E, (u8 *)&ROOMINFO + ((sp1E - 1) * 0x15C) + RIO(0x158));
 }
 #endif
 
@@ -5825,14 +5838,14 @@ void CallBack_Event_RoomProperty(void) {
 /* lb_bz58 - lobby UI/client 0x005C15B0-0x005C15F4: CallBack_Event_RoomJoinUser (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 22
 void CallBack_Event_RoomJoinUser(void) {
     u16 sp1E;
     int temp_v0;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    temp_v0 = (int)&RoomInfo + ((sp1E - 1) * 0x15C);
-    cnLBS_Get_mhRoomJoinUser(sp1E, (void *)(temp_v0 + 2), (void *)(temp_v0 + 0xE));
+    temp_v0 = (int)&ROOMINFO + ((sp1E - 1) * 0x15C);
+    GV(cnLBS_Get_mhRoomJoinUser, cnLBS_Get_mhLobbyJoinUser)(sp1E, (void *)(temp_v0 + RIO(2)), (void *)(temp_v0 + RIO(0xE)));
 }
 #endif
 
@@ -5840,14 +5853,14 @@ void CallBack_Event_RoomJoinUser(void) {
 /* lb_by05 - agent B promoted near-match 0x005C1600-0x005C1650: CallBack_Event_RoomCapacity (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 23
 void CallBack_Event_RoomCapacity(CNET_RES res) {
     u16 sp1E;
     int temp_v0;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    temp_v0 = (int)&RoomInfo + ((sp1E - 1) * 0x15C);
-    cnLBS_Get_RoomJoinInfo(sp1E, (void *)(temp_v0 + 4), (void *)(temp_v0 + 6), (void *)(temp_v0 + 8), (void *)(temp_v0 + 10), (void *)(temp_v0 + 12));
+    temp_v0 = (int)&ROOMINFO + ((sp1E - 1) * 0x15C);
+    cnLBS_Get_RoomJoinInfo(sp1E, (void *)(temp_v0 + RIO(4)), (void *)(temp_v0 + RIO(6)), (void *)(temp_v0 + RIO(8)), (void *)(temp_v0 + RIO(10)), (void *)(temp_v0 + RIO(12)));
 }
 #endif
 
@@ -5855,12 +5868,12 @@ void CallBack_Event_RoomCapacity(CNET_RES res) {
 /* lb_bz59 - lobby UI/client 0x005C1650-0x005C1690: CallBack_Event_RoomPasswordInfo (first drafted by tools/lbauto.py). */
 extern char RoomInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 24
 void CallBack_Event_RoomPasswordInfo(void) {
     u16 sp1E;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_RoomPasswordInfo(sp1E, (u8 *)&RoomInfo + ((sp1E - 1) * 0x15C) + 0x11);
+    cnLBS_Get_RoomPasswordInfo(sp1E, (u8 *)&ROOMINFO + ((sp1E - 1) * 0x15C) + RIO(0x11));
 }
 #endif
 

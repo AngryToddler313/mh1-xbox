@@ -1,4 +1,5 @@
 /* cnlbs, run 5: _cnet_CallBack_Result_RoomSetFinish .. _cnet_RecvFromLbs_NoticeLoginOk (lobby.bin 0x005A83A0-0x005AA8FC): the matching functions of cnlbs_nm.c. */
+#include "g_alias.h"
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -351,9 +352,9 @@ void __cnet_Recv_PieceName(void *a, void *b) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 43
 void __cnet_Recv_PieceJoinUser(void *a, void *b) {
-    GetRecvData16(b, GetRecvData16(a, recv_work));
+    GV(GetRecvData16, GetRecvDataString)(b, GetRecvData16(a, recv_work));
 }
 #endif
 

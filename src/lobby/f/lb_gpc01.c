@@ -1,4 +1,8 @@
 /* lb_gpc01 - item box / plaza chat / eft25 0x0060D710-0x0060D748: Plaza_chat_init. Whole file in lb_pc.c. */
+#include "g_alias.h"
+#ifdef MHG_PS2
+int func_00220F40();
+#endif
 #include "lobby_f.h"
 extern char PitMenu[];
 /* plaza chat log state bytes (bss 0x39DADE..) */
@@ -53,5 +57,5 @@ void Lb_send_chat();
 
 int Plaza_chat_init(void) {
     SoftKeyboard_pos_set(100.0f, 0x140);
-    return SoftKeyboard_set(1, 0xE, 0x3C, 0);
+    return GV(SoftKeyboard_set, func_00220F40)(1, 0xE, 0x3C, 0);
 }
