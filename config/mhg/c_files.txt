@@ -2217,3 +2217,5 @@ main 0x0021E800 0x0021E858 mhg/main/chat/f_chat_p28
 main 0x00221820 0x002218F4 mhg/main/chat/f_chat_p29
 main 0x00221940 0x002219C0 mhg/main/chat/f_chat_p30
 main 0x002275A0 0x002275F0 mhg/main/chat/f_chat_p31
+main 0x001023F0 0x00102494 mhg/main/fade/fd02_p3
+main 0x00129640 0x001296E4 mhg/main/sound/sndc04_p3

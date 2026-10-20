@@ -66,7 +66,7 @@ void fade_draw(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void fade_set(int n) {
     FADE_W *w = &fade_w;
     FADE_ENT *e;
@@ -86,6 +86,9 @@ void fade_set(int n) {
     w->prev = a / b;
     w->cur = w->req;
     w->alpha = fade_data[w->cur - 1].start;
+#ifdef VERSION_MHG
+    *((u8 *)w + 1) = 1;     /* G: the rgb index byte (fade_reset clears it) */
+#endif
 }
 #endif
 
