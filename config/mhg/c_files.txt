@@ -2127,3 +2127,5 @@ game 0x0055E030 0x0055E33C mhg/main/pl/f_pl_p52
 game 0x0055E580 0x0055E88C mhg/main/pl/f_pl_p53
 main 0x00146950 0x00146AB8 mhg/main/flps/fladdm_p4
 main 0x0014EB20 0x0014EBCC mhg/main/fl/flsys02_p3
+main 0x00154CB0 0x001552C8 mhg/main/fl/amo_all_p2
+main 0x001552D0 0x001559E8 mhg/main/fl/amo_all_p3

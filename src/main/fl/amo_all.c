@@ -712,7 +712,7 @@ static int CheckMaterialChangeAMO(u8 *mesh) {
 #endif
 
 /* ConvertModelMeshAMO_NormalModel (0x00192090, 1560 bytes): original bytes, no C yet. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 static asm int ConvertModelMeshAMO_NormalModel(void *clay, void *mesh)
 {
 #include "ConvertModelMeshAMO_NormalModel.inc"
@@ -720,7 +720,7 @@ static asm int ConvertModelMeshAMO_NormalModel(void *clay, void *mesh)
 #endif
 
 /* ConvertModelMeshAMO_WeightModel (0x001926B0, 1816 bytes): original bytes, no C yet. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 static asm int ConvertModelMeshAMO_WeightModel(void *clay, void *mesh)
 {
 #include "ConvertModelMeshAMO_WeightModel.inc"
