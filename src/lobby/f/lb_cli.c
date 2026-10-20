@@ -3639,12 +3639,28 @@ void To_EnterRoom() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 78
 void CallBack_Result_InRoom00_Member(CNET_RES res) {
     int i;
     int off;
 
     if (((CWS_im *)cw)->x2C31 != 5) {
+#ifdef MHG_PS2
+        /* G: a 0x5C-byte member entry at cw+0x21C, and an error dialog on failure */
+        memset(cw + 0x21C, 0, 0x170);
+        if (res.val == 0) {
+            i = 0;
+            off = 0;
+            do {
+                u8 *p = cw + off;
+                cnLBS_Get_RoomMemberList((u16)i, p + 0x21C, p + 0x224, p + 0x238);
+                i++;
+                off += 0x5C;
+            } while (i < 4);
+        } else {
+            To_LogOut(4);   /* G map name of the error dialog setter (0x5842B0) */
+        }
+#else
         memset(cw + 0x4BC, 0, 0xBF0);
         if (res.val == 0) {
             i = 0;
@@ -3656,6 +3672,7 @@ void CallBack_Result_InRoom00_Member(CNET_RES res) {
                 off += 0x2FC;
             } while (i < 4);
         }
+#endif
     }
 }
 #endif
@@ -3679,16 +3696,16 @@ void CallBack_Result_InRoom00_JoinUser(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 79
 void CallBack_Result_InRoom00_EntryJoinUser(CNET_RES res) {
     u8 *temp_v0;
     if (res.val == 0) {
         temp_v0 = (u8 *)cw;
-        cnLBS_Get_MatchEntryJoinUser(F(u8, &ClassInfo_c106, 8), temp_v0 + 0x32C6, temp_v0 + 0x32C8);
+        cnLBS_Get_MatchEntryJoinUser(F(u8, &ClassInfo_c106, 8), temp_v0 + GV(0x32C6, 0xF752), temp_v0 + GV(0x32C8, 0xF754));
         return;
     }
-    F(s16, (u8 *)cw, CW_OFS(0x32C6)) = 0;
-    F(s16, (u8 *)cw, CW_OFS(0x32C8)) = 0;
+    F(s16, (u8 *)cw, GV(0x32C6, 0xF752)) = 0;
+    F(s16, (u8 *)cw, GV(0x32C8, 0xF754)) = 0;
 }
 #endif
 

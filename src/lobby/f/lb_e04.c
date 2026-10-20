@@ -1,4 +1,5 @@
 /* lb_e04 - lobby members/cockpit/icons 0x005CCC90-0x005CCDE4: Lb_put_status, Lb_put_icon_free. Whole file in lb_e.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 
 
@@ -10,6 +11,7 @@
 
 
 
+#if !defined(G_PART) || G_PART == 1
 void Lb_put_status(int a0, int a1, int a2, int a3, int no) {
     switch ((s16)no) {
     case 0:
@@ -26,10 +28,20 @@ void Lb_put_status(int a0, int a1, int a2, int a3, int no) {
     case 4:
         no = 0x12;
         break;
+#ifdef MHG_PS2
+    case 5:     /* G: two more states */
+        no = 0x13;
+        break;
+    case 6:
+        no = 0x2F;
+        break;
+#endif
     }
     Lb_put_icon_free(a0, a1, a2, a3, no);
 }
+#endif
 
+#if !defined(G_PART)
 void Lb_put_icon_free(a0, a1, a2, a3, no)
 int a0;
 s16 a1;
@@ -51,3 +63,4 @@ s16 no;
     pk.f = t[1];
     flps0008(&pk, &pk.f, &pk.e);
 }
+#endif
