@@ -2025,3 +2025,4 @@ lobby 0x005AECF0 0x005AED70 mhg/lobby/cnet/cnlbs_p10
 lobby 0x005BB470 0x005BB484 mhg/lobby/cnet/cnlbs_p11
 lobby 0x005BB550 0x005BB58C mhg/lobby/cnet/cnlbs_p12
 lobby 0x005BB650 0x005BB678 mhg/lobby/cnet/cnlbs_p13
+lobby 0x005BB890 0x005BB904 mhg/lobby/cnet/cnlbs_p14
