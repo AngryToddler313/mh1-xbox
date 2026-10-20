@@ -766,7 +766,7 @@ void em_die05_005A22A0(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void em_move00_005A25C0(EMW *em, EM08W *w) {
     u8 temp_v1;
 
@@ -796,6 +796,7 @@ void em_move00_005A25C0(EMW *em, EM08W *w) {
     case 7:
         em_act07_0059B050(em, w);
         break;
+#ifndef MHG_PS2 /* G: no acts 8-13 */
     case 8:
         em_act08_0059B0D0(em, w);
         break;
@@ -814,6 +815,7 @@ void em_move00_005A25C0(EMW *em, EM08W *w) {
     case 13:
         em_act13_0059B640(em, w);
         break;
+#endif
     case 14:
         em_act14_0059B710(em, w);
         break;
