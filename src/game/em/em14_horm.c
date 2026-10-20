@@ -1,6 +1,7 @@
 /* em14_horm - em14_horm_init / em14_horm_main (turn to face a player, as
  * em01_horm.c), em14_suna_ck / em14_sasari_ck, then em15_local_area_move_init (per-stage timers). The
  * real file boundaries in this stretch are unknown. */
+#include "g_alias.h"
 #include "em.h"
 #include "pl.h"
 
@@ -116,16 +117,25 @@ int em14_suna_ck(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int em14_sasari_ck(EMW *em) {
     EM14_SASW *w = (EM14_SASW *)em->ex;
 
+#ifdef MHG_PS2 /* G: also kinds 0x2B and 0x2C */
+    if ((em->kind == 14 || em->kind == 0x2B) && w->x1A >= 2) {
+        return 0;
+    }
+    if ((em->kind == 26 || em->kind == 0x2C) && w->x1A > 0) {
+        return 0;
+    }
+#else
     if (em->kind == 14 && w->x1A >= 2) {
         return 0;
     }
     if (em->kind == 26 && w->x1A > 0) {
         return 0;
     }
+#endif
     if (em_frame_check2(em, 0, 60.0f) && (em->x74C & 0xC0000003) && em->x95D) {
         return 1;
     }
