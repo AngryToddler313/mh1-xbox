@@ -2256,3 +2256,6 @@ main 0x00221DA0 0x00221DFC mhg/main/chat/f_chat_p33
 main 0x001174F0 0x001175DC mhg/main/option/option01_p8
 main 0x00214D30 0x00214E54 mhg/main/net/netwk01_p3
 main 0x00215CA0 0x00215E34 mhg/main/net/netwk02_p2
+main 0x0020EB30 0x0020EBD4 mhg/main/hk/f_hk_p18
+sub_main 0x004DD5B0 0x004DD6D0 mhg/main/em/emmk01_p3
+yn 0x00A0C650 0x00A0C778 mhg/yn/ui05_p3

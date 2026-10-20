@@ -1,4 +1,5 @@
 /* ui05 - yn.bin screens and text 0x0053A2F0-0x0053A488: yn_keyboard_sub, yn_keyboard_server, yn_draw, yn_view_set. Whole file in ui_strip_tmp.c. */
+#include "g_alias.h"
 #include "yn.h"
 
 int ADXM_ShutdownThrd();
@@ -188,6 +189,10 @@ void yn_keyboard_init();
 s32 yn_keyboard_sub();
 void yn_keyboard_server();
 void yn_draw();
+#ifdef MHG_PS2
+void func_0012B530(int);
+void font_stack_reset(void);
+#endif
 void yn_view_set();
 void yn_sprite_draw_sub();
 void yn_sprite_draw_each();
@@ -341,7 +346,7 @@ void yn_keyboard_server(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void yn_draw(void) {
     flSetRenderState(0x61, 0x01000000);
     flSetRenderState(0x5E, 0x32);
@@ -356,14 +361,23 @@ void yn_draw(void) {
     yn_sprite_draw();
     yn_button_draw();
     flfntDraw(4);
+#ifdef MHG_PS2
+    func_0012B530(4);
+#endif
     flSetRenderState(0x6C, 0);
     flSetRenderState(4, YNF(ynw, s32 *, 0));
     yn_dialog_draw();
     flfntDraw(3);
+#ifdef MHG_PS2
+    func_0012B530(3);
+#endif
     flSetRenderState(0x6C, 0);
-    yn_set_z(250.0f);
+    yn_set_z(GV(250.0f, 216.66667f));
     SoftKey_trans();
     flfntDraw(1);
+#ifdef MHG_PS2
+    font_stack_reset();
+#endif
     flSetRenderState(0x6C, 1);
 }
 #endif
