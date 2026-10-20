@@ -2764,3 +2764,8 @@ lobby 0x005840B0 0x00584104 mhg/lobby/f/lb_cli_p85
 lobby 0x00584360 0x005843E4 mhg/lobby/f/lb_cli_p86
 lobby 0x005BC5B0 0x005BC5F8 mhg/lobby/cnet/cnlbs_p118
 lobby 0x005B01E0 0x005B0230 mhg/lobby/cnet/cnlbsg_p52
+lobby 0x00583190 0x005831B4 mhg/lobby/b/lb_bz09_p4
+lobby 0x0058BD70 0x0058BD8C lobby/b/lb_bz76
+lobby 0x005917E0 0x00591800 mhg/lobby/b/lb_bz64_p1
+lobby 0x00552470 0x005524B8 mhg/lobby/f/lb_tu_ib_p12
+lobby 0x00596810 0x005968D0 mhg/lobby/f/lb_j10_p3

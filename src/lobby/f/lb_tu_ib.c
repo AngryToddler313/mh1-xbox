@@ -128,7 +128,7 @@ int inflateInit2_();
 int ItemboxWindowX(f32, int, int);
 int ItemboxWindowCursorX(f32, int, int, int);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void Lb_ItemBox_init(void) {
     ib = (u8 *)&item_box;
     F(s32, ib, IBO(4)) = 0;
