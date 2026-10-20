@@ -2393,3 +2393,8 @@ lobby 0x00599E60 0x00599F58 mhg/lobby/f/lb_k03_p6
 lobby 0x00599F60 0x0059A058 mhg/lobby/f/lb_k03_p7
 lobby 0x005996D0 0x005997B8 lobby/f/lb_k04
 lobby 0x005998B0 0x00599998 lobby/f/lb_k05
+lobby 0x00595490 0x00595530 mhg/lobby/f/lb_j04_p2
+lobby 0x005947E0 0x00594900 mhg/lobby/f/lb_j02_p3
+lobby 0x00594900 0x005949B8 mhg/lobby/f/lb_j02_p4
+lobby 0x00594A80 0x00594B68 mhg/lobby/f/lb_j02_p5
+lobby 0x00567410 0x0056754C mhg/lobby/f/lb_tu_act_p9

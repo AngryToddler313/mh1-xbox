@@ -152,3 +152,4 @@ PROVIDE(flfntLocate_k = 0x001D5890); /* flfntLocate (MH1 alias, config/lobby_ali
 PROVIDE(my_job_str_g = 0x002EF048); /* my_job_str, G table outside the small data (lb_arm Lb_put_my_job) */
 PROVIDE(Item_data_g3 = 0x004FF1F3); /* Item_data + 3 (G rows 0x14 bytes; lb_tu_ib) */
 PROVIDE(Item_data_g5 = 0x004FF1F5); /* Item_data + 5 */
+PROVIDE(Lb_send_pl_status_g = 0x0059A820); /* Lb_send_pl_status as G calls it from Lb_Pl_act_set (the G map: check_sender0) */
