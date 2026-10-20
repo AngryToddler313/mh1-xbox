@@ -19,6 +19,7 @@ int em_frame_check2(EMW *, int, f32);
 void pl_flag_set(EMW *, u32);
 void pl_flag_clr(EMW *, u32);
 
+#if !defined(G_PART) || G_PART == 1
 void em20_horm_init(EMW *em) {
     EM_HORMW *w = (EM_HORMW *)em->ex;
     PLW *pl;
@@ -36,7 +37,9 @@ void em20_horm_init(EMW *em) {
     World_calc2(pl->stg, p, q);
     em->horm_ang = Em_Calc_angY(em->x754, q);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 int em20_horm_main(EMW *em) {
     EM_HORMW *w = (EM_HORMW *)em->ex;
     u32 a;
@@ -92,11 +95,14 @@ int em20_horm_main(EMW *em) {
     }
     return 0;
 }
+#endif
 
 extern s16 em21_stay_timer_tbl[];
 extern s16 em21_runaway_timer_tbl[];
 
+#if !defined(G_PART)
 void em21_local_area_move_init(EMW *em) {
     em->stay_tm = em21_stay_timer_tbl[em->stg];
     em->runaway_tm = em21_runaway_timer_tbl[em->stg];
 }
+#endif
