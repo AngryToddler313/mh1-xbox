@@ -329,6 +329,7 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+#if !defined(G_PART)
 static void em_dmg16_006060F0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -358,7 +359,9 @@ static void em_dmg16_006060F0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_dmg17_006061D0(EMW *em, EM21W *w) {
     u8 temp_a1;
     u8 temp_a1_2;
@@ -424,7 +427,9 @@ static void em_dmg17_006061D0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_dmg18_006063E0(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a1;
@@ -496,7 +501,9 @@ static void em_dmg18_006063E0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg19_00606600(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -530,7 +537,9 @@ static void em_dmg19_00606600(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dmg20_00606700(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -564,7 +573,9 @@ static void em_dmg20_00606700(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_dmg21(EMW *em, EM21W *w) {
     u8 temp_a1;
 
@@ -586,7 +597,9 @@ void em_dmg21(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_dmg22(EMW *em, EM21W *w) {
     f32 v[3];
     f32 v2[3];
@@ -672,7 +685,9 @@ void em_dmg22(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_demo00_00606B70(EMW *em, EM21W *w) {
     f32 v[3];
     s32 temp_a0;
@@ -709,7 +724,9 @@ static void em_demo00_00606B70(EMW *em, EM21W *w) {
         sound_call_sub_00608D00(em, 0x57, 0x23);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_die00_00606C90(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -759,7 +776,9 @@ static void em_die00_00606C90(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_die01_00606E20(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -807,7 +826,9 @@ static void em_die01_00606E20(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_die02_00606F90(EMW *em, EM21W *w) {
     f32 temp_f1;
     f32 temp_f1_2;
@@ -950,7 +971,9 @@ static void em_die02_00606F90(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_die03_006073F0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1010,7 +1033,9 @@ static void em_die03_006073F0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_move00_006075D0(EMW *em, EM21W *w) {
     switch (em->x15) {
     case 0:
@@ -1069,7 +1094,9 @@ void em_move00_006075D0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_move01_00607730(EMW *em, EM21W *w) {
     u8 temp_a2;
 
@@ -1089,7 +1116,9 @@ void em_move01_00607730(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_move02_006077C0(EMW *em, EM21W *w) {
     switch (em->x15) {
     case 0:
@@ -1172,7 +1201,9 @@ void em_move02_006077C0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_move03_006079A0(EMW *em, EM21W *w) {
     switch (em->x15) {
     case 0:
@@ -1201,7 +1232,9 @@ void em_move03_006079A0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_move04_00607A60(EMW *em, EM21W *w) {
     switch (em->x15) {
     case 0:
@@ -1275,7 +1308,9 @@ void em_move04_00607A60(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_move05_00607C10(EMW *em, EM21W *w) {
     u8 temp_a2;
 
@@ -1295,7 +1330,9 @@ void em_move05_00607C10(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_move06_00607CA0(EMW *em, EM21W *w) {
     switch (em->x15) {
     case 0:
@@ -1303,3 +1340,4 @@ void em_move06_00607CA0(EMW *em, EM21W *w) {
         break;
     }
 }
+#endif
