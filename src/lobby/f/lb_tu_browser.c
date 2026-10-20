@@ -1,5 +1,6 @@
 /* lb_tu_browser - one translation unit 0x005E5F00-0x005E6E80: bs_request_queue_add, bs_request_queue_free_node, bs_request_cache_clear, bs_route_queue_add, bs_route_queue_forward, bs_route_queue_back, bs_route_queue_free_reverse, bs_route_queue_free_after, bs_route_commit, bs_page_status_flag_set, bs_page_status_flag_get, bs_cache_queue_check, bs_cache_queue_get_last, bs_cache_queue_free_node, bs_cache_queue_get, bs_source_cache_clear, bs_image_cache_clear, BsCacheInitialize, BsCacheCleanup, BsRouteForward, BsRouteForwardCheck, BsRouteBack, BsRouteBackCheck, bs_route_current_page_status, BsRouteReload, BsRouteReloadCheck, BsRouteCurrent, BsRequestHtmlGetCached, BsRequestHtmlPost. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSNODE *BcRoute_cur;
 extern BSNODE BcImage_head;
@@ -1319,7 +1320,10 @@ extern char *bs_strtbl_mmbb_dialog[];
 extern char *bs_strtbl_mmbb_ng_msg[];
 extern char *bs_strtbl_cap_dialog[];
 extern char *bs_strtbl_err_dialog[2];
-#if !defined(G_PART)
+#ifdef MHG_PS2
+extern char *bs_strtbl_err_dialog_g[];   /* G: a longer table outside the small data (0x6387E0) */
+#endif
+#if !defined(G_PART) || G_PART == 27
 char *BsStrtblGet(int kind, int idx) {
     switch (kind) {
     case 2:
@@ -1335,7 +1339,7 @@ char *BsStrtblGet(int kind, int idx) {
     case 7:
         return bs_strtbl_cap_dialog[idx];
     case 8:
-        return bs_strtbl_err_dialog[idx];
+        return GV(bs_strtbl_err_dialog, bs_strtbl_err_dialog_g)[idx];
     }
     return 0;
 }

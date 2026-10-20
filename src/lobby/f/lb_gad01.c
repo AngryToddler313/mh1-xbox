@@ -1,4 +1,5 @@
 /* lb_gad01 - near-match fixes 0x005D5B10-0x005D5B9C: CallBack_Result_SendChatMessageTU. Whole file in lb_ad.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
 extern PLW player_work[];
@@ -36,9 +37,9 @@ long a;
 {
     char buf[0x120];
     if (*(s8 *)&a == -1) {
-        sprintf(buf + 0x1C, lit_220_00664EA0);
-        strcpy(buf, lit_221_00664ED0);
-        strcpy(buf + 8, lit_221_00664ED0);
+        sprintf(buf + 0x1C, GV(lit_220_00664EA0, *(char **)0x636BD8));   /* G: through pointer cells */
+        strcpy(buf, GV(lit_221_00664ED0, *(char **)0x6365E4));
+        strcpy(buf + 8, GV(lit_221_00664ED0, *(char **)0x6365E4));
         buf[0x11F] = 6;
         buf[0x11E] = 6;
         buf[0x11D] = 6;

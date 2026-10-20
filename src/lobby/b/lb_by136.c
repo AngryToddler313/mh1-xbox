@@ -1,4 +1,5 @@
 /* lb_by136 - agent B 0x005C4330-0x005C4480: lb_npc_move (village NPC per-frame move: timers, route step, matrix, ground height). */
+#include "g_alias.h"
 #include "lbnpc_proto.h"
 void lb_npc_chr_sub();
 int Lb_pl_timer_calc();
@@ -25,7 +26,7 @@ void lb_npc_move(EMW *em) {
     EM_F32(em, 0x240) = 2.0f * em->act_spd;
     EM_F32(em, 0x290) = 2.0f * em->act_spd;
     lb_npc_chr_sub(em);
-    switch (*(u8 *)((u8 *)em + 0x452)) {
+    switch (*(u8 *)((u8 *)em + GV(0x452, 0x478))) {
     case 0x4A:
     case 0x4D:
     case 0x48:
@@ -38,5 +39,10 @@ void lb_npc_move(EMW *em) {
         return;
     }
     GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &em->x5AC, &em->x7E4);
+#ifdef MHG_PS2
+    if (*((u8 *)em + 0x388) == 2) {   /* G: not when +0x388 is 2 */
+        return;
+    }
+#endif
     em->pos[1] = em->x5AC;
 }

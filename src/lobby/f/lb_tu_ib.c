@@ -14,6 +14,9 @@ extern ITEMSLOT D_3C7184[];
 extern u8 D_3C7186[];
 extern u8 D_3396D3[];
 extern u8 D_3396D5[];
+#ifdef MHG_PS2
+extern u8 Item_data_g3[], Item_data_g5[];   /* G: Item_data (0x4FF1F0, 0x14-byte rows) + 3 / + 5 */
+#endif
 void se_req();
 u8 *Get_equip_data_ptr();
 /* item box slots: 4 bytes per slot at User_data + 0x37C (u16 item id, s16 amount) */
@@ -90,6 +93,10 @@ int itembox_sellout();
 extern char frame_itembox_cmd[];
 extern u32 D_3C733C[];
 extern char *yes_or_no[2];
+#ifdef MHG_PS2
+extern char *yes_or_no_g[];   /* G: outside the small data (0x2EC5D8) */
+int func_0012BDD0();
+#endif
 extern char lit_2148[];
 extern char lit_2149[];
 extern char lit_2150[];
@@ -626,14 +633,18 @@ asm int itembox_sellout()
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static int u_item_chk(int a) {
     u16 id;
-    id = D_3C7184[a & 0xFF].id;
+    id = D_3C7184[a & GV(0xFF, 0xFFFF)].id;
     if (id == 0) {
         return 0;
     }
+#ifdef MHG_PS2
+    return Item_data_g5[id * 0x14] != 0xFF ? 1 : 0;   /* G: Item_data rows are 0x14 bytes (0x4FF1F0) */
+#else
     return D_3396D5[id * 0x10] != 0xFF ? 1 : 0;
+#endif
 }
 #endif
 
@@ -662,6 +673,20 @@ static int item_kosuu_sel_chk() {
     u8 *u = User_data;
     u8 *new_var2;
     unsigned long long new_var;
+#ifdef MHG_PS2
+    /* G: the cursor is a u16 at ib+0x10 and the Item_data rows are 0x14 bytes */
+    a0 = F(u16, ib, IBO(8)) * 4;
+    new_var2 = Item_data_g3;
+    new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * 0x14];
+    if (new_var == 0xFF) {
+        return 0;
+    }
+    p = (u8 *)(a0 + (int)u);
+    if (new_var2[(*((u16 *)(p + UDO(0x1C4)))) * 0x14] == 1) {
+        return 0;
+    }
+    return *(s16 *)(p + UDO(0x1C6)) != 1 ? 1 : 0;
+#else
     a0 = ib[8] * 4;
     new_var2 = D_3396D3;
     new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * 0x10];
@@ -673,6 +698,7 @@ static int item_kosuu_sel_chk() {
         return 0;
     }
     return *(s16 *)(p + UDO(0x1C6)) != 1 ? 1 : 0;
+#endif
 }
 #endif
 
@@ -685,9 +711,13 @@ static int pick_kosuu_sel_chk() {
     if (item_kosuu_sel_chk() == 0) {
         return 0;
     }
-    i = ib[0xB] * 4;
+    i = ib[IBO(0xB)] * 4;
     v = (u8 *)(i + (int)u);
+#ifdef MHG_PS2
+    return (Item_data_g3[*(u16 *)(v + UDO(0x37C)) * 0x14] - *(s16 *)(v + UDO(0x37E))) >= 2;
+#else
     return (D_3396D3[*(u16 *)(v + UDO(0x37C)) * 0x10] - *(s16 *)(v + UDO(0x37E))) >= 2;
+#endif
 }
 #endif
 
@@ -965,14 +995,14 @@ int c;
 #endif
 
 /* amount selector: two-digit number with up/down arrows */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 int kosuu_disp_sub(void) {
     s8 buf[8];
     u8 *w;
     if (F(s16, ib, IBO(0x1A)) != 0x270F) {
         flfntSetSize(0x12, 0x12);
         font_set_palette(0);
-        flfntLocate(0x22E, 0x17A);
+        flfntLocate(GV(0x22E, 0x23A), 0x17A);
         w = ib;
         buf[0] = 0x82;
         buf[1] = F(s16, w, IBO(0x1A)) / 10 + 0x4F;
@@ -981,20 +1011,20 @@ int kosuu_disp_sub(void) {
         buf[4] = 0;
         font_print_uf(buf, 0xA, w, -0x7E);
         SetFilterMode(1);
-        reload_tex(1, 0x11A);
-        SetTextureStage(0x11A);
+        reload_tex(1, GSLOT(0x11A, 0x141));
+        SetTextureStage(GSLOT(0x11A, 0x141));
         if (F(u8, ib, IBO(0x1C)) == 0) {
-            PutArrow(0x234, 0x168, 0x18, 0x12, 0xFF20FF28, 2);
+            PutArrow(GV(0x234, 0x240), 0x168, 0x18, 0x12, 0xFF20FF28, 2);
         }
         if (F(s16, ib, IBO(0x1A)) != 1) {
-            PutArrow(0x234, 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
+            PutArrow(GV(0x234, 0x240), 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
         }
     }
 }
 #endif
 
 /* selling price (value + two-byte full-width digits) and the yes/no label */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 int selling_price_disp_sub(void) {
     u16 wide[16];
     s8 txt[16];
@@ -1021,21 +1051,21 @@ int selling_price_disp_sub(void) {
         d[0] = 0x9A82;
         d[1] = 0;
         font_set_palette(5);
-        font_print_sp(lit_2149, wide);
+        GV(font_print_sp, func_0012BDD0)(GV(lit_2149, *(char **)0x636780), wide);   /* G: strings through pointer cells */
     } else {
         font_set_palette(0);
-        font_print_uf(lit_2150);
+        font_print_uf(GV(lit_2150, *(char **)0x636784));
     }
     flfntLocate(0x1B0, 0x18E);
-    font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
+    GV(font_print_sp, func_0012BDD0)(GV(yes_or_no, yes_or_no_g)[F(u8, ib, IBO(0x21))]);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 int yes_no_disp_sub(void) {
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x1B0, 0x18E);
-    return font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
+    return GV(font_print_sp, func_0012BDD0)(GV(yes_or_no, yes_or_no_g)[F(u8, ib, IBO(0x21))]);
 }
 #endif
 

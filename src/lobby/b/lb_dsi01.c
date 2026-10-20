@@ -1,6 +1,7 @@
 /* lb_dsi01 - agent C 0x005C2280-0x005C2370: disp_string_id (handle-name select list: ID line; (s8)cw[0xB+n*8] test, han2zen). */
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
+#include "g_alias.h"
 #include "lobby_a.h"
 #undef flfntLocate
 #undef font_print_double
@@ -20,7 +21,7 @@ u8 b;
 
     memset(buf, 0, 0x1E);
     if ((s8)cw[0xB + b * 8] == 0) {
-        strcpy(buf, lit_273_0065EC20);
+        strcpy(buf, GV(lit_273_0065EC20, *(char **)0x6364F4));   /* G: through a pointer cell */
     } else {
         han2zen(cw + 0xB + b * 8, buf);
     }
@@ -30,5 +31,5 @@ u8 b;
     y = idx * 0x58 + 0x7A;
     font_print_double(0x1A4, y, 1, (s8)sel, buf);
     flfntLocate(0x168, y);
-    font_print(lit_274_0065EC28);
+    font_print(GV(lit_274_0065EC28, *(char **)0x636D40));
 }

@@ -635,7 +635,7 @@ void _cnet_RecvFromLbs_AnswerMatchEntryUser(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 48
 void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
     int id;
     u8 *s0;
@@ -643,10 +643,10 @@ void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
     if (CnetSys_w.rres == 0) {
         id = CNW(u8, 0x4060);
         s0 = (u8 *)&CnetSys_w + ((id - 1) * 0x164);
-        GetRecvData16(s0 + CNO(0x61DE), GetRecvData16(s0 + 0x61DC, recv_work));
+        GetRecvData16(s0 + GV(CNO(0x61DE), 0x9960), GetRecvData16(s0 + GV(0x61DC, 0x995E), recv_work));   /* G: room[].ma / mb two bytes on */
         CnetSys_w.last_id = id;
     }
-    _cnet_Return_CallBack(0x21);
+    _cnet_Return_CallBack(GV(0x21, 0x26));
 }
 #endif
 
@@ -788,13 +788,17 @@ int cnLBS_Get_TimingValue(int *arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 49
 void _cnet_RecvFromLbs_BothTimingValue(void) {
     s32 v;
 
     if (CnetSys_w.rres == 0) {
+#ifdef MHG_PS2
+        __cnet_Recv_Long((u8 *)&CnetSys_w + 0x3A5D8);   /* G receives in place (0x734DE0) */
+#else
         __cnet_Recv_Long(&v);
         CNW(s32, 0x3BA54) = v;
+#endif
     }
     _cnet_Return_CallBack(0x2B);
 }
@@ -971,10 +975,13 @@ int cnetGet_Login_DecideUserHandle(char *d) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 void _cnet_RecvFromLbs_RequestConnectionPair(void) {
     GetRecvData16(CNWP(0xFEE), &recv_work);
     __cnet_SendSet_ConnectionPair();
+#ifdef MHG_PS2
+    __cnet_SendSet_TelephoneNumber();   /* G only */
+#endif
 }
 #endif
 
@@ -988,7 +995,7 @@ void _cnet_RecvFromLbs_RequestFirstData(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 47
 void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
     int t = (CnetSys_w.rcnt * 0x10) & 0xFFFF;
 
@@ -1000,6 +1007,9 @@ void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
     }
     CnetSys_w.firstdata.h[14] = (u32)CnetSys_w.echo_sum >> 2;
     __cnet_SendSet_FirstData(t);
+#ifdef MHG_PS2
+    lobby_func_005B02C0();   /* G only */
+#endif
 }
 #endif
 

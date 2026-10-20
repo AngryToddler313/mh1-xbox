@@ -9,13 +9,13 @@ void Plaza_disp_chat(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void Plaza_chatlog_i(void) {
-    *(s8 *)0x39DAE0 = 0;
+    *(s8 *)GV(0x39DAE0, 0x2FF2B7) = 0;
     if (Plaza_get_chat_line_num() < 0xAU) {
-        *(s8 *)0x39DAE1 = 1;
+        *(s8 *)GV(0x39DAE1, 0x2FF2B8) = 1;
         return;
     }
-    *(u8 *)0x39DAE1 = 0;
+    *(u8 *)GV(0x39DAE1, 0x2FF2B8) = 0;
 }
 #endif

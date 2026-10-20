@@ -16,10 +16,10 @@
 /* PC: pNet points at a host buffer in MH1's layout (Clear_lobby_ram, lb_n.c), so MH1's C (raw pNet[0xC] ... offsets) runs
  * unchanged and PNET_OFS is the identity. G's own layout (prims at +0..0x10, the flags at +0x2D / +0x31) is not used. */
 #define PNET_OFS(o) (o)
-/* PS2 G's own pNet layout (from the G code: MH1 2, 3 -> 0x22, 0x23; 6, 8, 0xC, 0xF -> 0x27, 0x29, 0x2D, 0x30; 4 / 5 not seen):
- * for the PS2 G build only (the PC keeps MH1's layout, above) */
+/* PS2 G's own pNet layout for the byte fields (from the G code: MH1 2..5 -> 0x22..0x25; 6..0x10 -> 0x27..0x31; 0x12 -> 0x32;
+ * the s16 fields 0x24..0x28 sit at 0x1C..0x20, see LB_NETW in lbui.h): for the PS2 G build only (the PC keeps MH1's layout) */
 #if defined(__MWERKS__)
-#define PNET_G(o) ((o) < 4 ? (o) + 0x20 : (o) + 0x21)
+#define PNET_G(o) ((o) < 6 ? (o) + 0x20 : (o) == 0x12 ? 0x32 : (o) + 0x21)
 #else
 #define PNET_G(o) (o)
 #endif

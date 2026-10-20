@@ -373,7 +373,7 @@ int silent;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 void Lb_put_new_mail(x, y)
 int x;
 int y;
@@ -384,8 +384,8 @@ int y;
     int ys;
     s16 f;
 
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     i = 0;
     p = (u8 *)RecvMailInfo;
     do {
@@ -436,8 +436,8 @@ u8 *a;
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(textLobbyTbl);
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     Lb_put_new_mail(0x1AA, 0x1C);
     if (pNet->depth < 2) {
         DispFrameListA(pfl_menu_2138, 0, pNet->cur, 0xFF);
@@ -523,7 +523,7 @@ int y;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void put_mainWindowTex(x, y)
 int x;
 int y;
@@ -531,10 +531,10 @@ int y;
     int xs = (s16)x;
     int ys;
 
-    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, 0);
+    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, GV(0, 0xA0000000));
     ys = (s16)y;
-    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
-    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
+    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, GV(0xFF602020, 0xFF537F56));
+    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, GV(0xFF602020, 0xFF537F56));
 }
 #endif
 
@@ -688,7 +688,7 @@ int Lb_get_cursor_col() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void Put_page_num(int x, int y, int page, s16 pages, int flag) {
     char buf[0x20];
     char buf2[0x20];
@@ -711,8 +711,8 @@ void Put_page_num(int x, int y, int page, s16 pages, int flag) {
         font_print(lit_2316, buf);
     }
     if (pages > 1) {
-        reload_tex(1, 0x157);
-        SetTextureStage(0x157);
+        reload_tex(1, GSLOT(0x157, 0x180));
+        SetTextureStage(GSLOT(0x157, 0x180));
         if (flag != 0) {
             if (pages < 10) {
                 Lb_put_icon_free((s16)x - 0x18, (s16)y - 1, 0x14, col, 0);
@@ -769,8 +769,8 @@ int disp_status(int x0, int y0, int id, int handle, int mini_, int page_, int pa
     int k;
     u16 n;
     put_titles(xt, y, *(int *)(tl_mail_tbl + 0x2C));
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_page_num((s16)(xt + 0x12C), y, page, (s8)pages, 0);
@@ -1164,8 +1164,8 @@ LB_NETW *a;
     if (pNet->depth > 1) {
         Put_F(sp60);
     }
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
+    reload_tex(1, GSLOT(0x157, 0x180));
+    SetTextureStage(GSLOT(0x157, 0x180));
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(textLobbyTbl + 0x14);
