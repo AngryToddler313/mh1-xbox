@@ -1207,7 +1207,7 @@ void ClearMessageHaltFlag(void) {
 
 int func_5D8370(s8);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 32
 void Join_pl_chk(void) {
     u32 i;
     u8 *g;
@@ -1216,19 +1216,20 @@ void Join_pl_chk(void) {
     PitMenu.x19 = 0;
     if (GW(0x1DC) == 0) {
         for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-            if (game_w.master != i && g[0x208] == 1) {
+            if (game_w.master != i && g[GWX(0x208)] == 1) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu.x1A++;
             }
         }
     } else {
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < GV(8, 10); i++) {
             if (game_w.master != i && func_5D8370(i) == 0) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu.x1A++;
             }
         }
     }
+#ifndef VERSION_MHG
     if (PitMenu.x16 != 0) {
         PitMenu.x16 &= PitMenu.x19;
         if (PitMenu.x16 == 0) {
@@ -1238,6 +1239,7 @@ void Join_pl_chk(void) {
             PitMenu.x18 = 1;
         }
     }
+#endif
 }
 #endif
 

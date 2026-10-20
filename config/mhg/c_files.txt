@@ -2240,3 +2240,7 @@ main 0x0020FB00 0x0020FB90 mhg/main/hk/f_hk_p17
 sub_main 0x004B7920 0x004B7A58 mhg/main/quest/f_quest_p21
 main 0x0011DF40 0x0011E010 mhg/main/menu/menu20_p3
 main 0x001100D0 0x001101B8 mhg/main/sys/f_ioread_p3
+sub_main 0x004C3830 0x004C395C mhg/main/eft/eft02b_p4
+sub_main 0x004C3A10 0x004C3B6C mhg/main/eft/eft02b_p5
+main 0x002385C0 0x00238770 mhg/main/aq/aq02_p3
+main 0x00222AB0 0x00222BC0 mhg/main/chat/f_chat_p32

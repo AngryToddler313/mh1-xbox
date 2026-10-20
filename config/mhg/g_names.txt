@@ -157,3 +157,4 @@ PROVIDE(set06_st77_clay = 0x002EC390);
 PROVIDE(set06_trans = 0x004E1810); /* G-only row in mhg_map (MH1's set06_trans 'missing') */
 PROVIDE(stage_fog_tbl = 0x00521000); /* G stage_fog_set (putspr2_p2, agent A) */
 PROVIDE(gptr_00527BB4 = 0x00527BB4); /* font_print_BBQquest format */
+PROVIDE(D_002EC1D8 = 0x002EC1D8); /* small-data word, AQ_exec_load */
