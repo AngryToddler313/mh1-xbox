@@ -7,6 +7,9 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
+#ifdef MHG_PS2
+#include "em_revive_g.h"
+#endif
 
 /* Raw access to EMW fields that em.h does not name yet. */
 #define EMF(em, T, o) (*(T *)((u8 *)(em) + (o)))
@@ -2163,7 +2166,48 @@ void em_demo04_00572FA0(EMW *em, EM01W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
+#ifdef MHG_PS2
+void em_die00_005730C0(EMW *em, EM01W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x44, 0, 0);
+        em->x3F4 = 0;
+        em->x388 = 3;
+        Quest_enemy_die(em);
+        break;
+    case 1:
+        if (em_frame_check(em, 212.0f, 0)) {
+            Em_set_quake_sub(em, 2);
+        }
+        if (em->x194 == 0) {
+            em->work08 = EMG_CARVE_TIME;
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 2:
+        Em_hagi_point_cnt_ck(em);
+        EMG_DIE_REVIVE_WAIT(em, 0);
+        break;
+    case 3:
+        EMG_DIE_REVIVE_FADE(em, em01_act_set);
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+#else
 void em_die00_005730C0(EMW *em, EM01W *w) {
     em->x40E = 5;
     Em_Mode_Chg(em, 0, 0);
@@ -2213,8 +2257,49 @@ void em_die00_005730C0(EMW *em, EM01W *w) {
     }
 }
 #endif
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
+#ifdef MHG_PS2
+void em_die01_00573290(EMW *em, EM01W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x61, 0, 0);
+        em->x3F4 = 0;
+        em->x388 = 3;
+        Quest_enemy_die(em);
+        em->x9EA = 5;
+        break;
+    case 1:
+        em->x9EA = 5;
+        if (em->x194 == 0) {
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+            em->work08 = EMG_CARVE_TIME;
+        }
+        break;
+    case 2:
+        Em_hagi_point_cnt_ck(em);
+        EMG_DIE_REVIVE_WAIT(em, 1);
+        break;
+    case 3:
+        EMG_DIE_REVIVE_FADE(em, em01_act_set);
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+#else
 void em_die01_00573290(EMW *em, EM01W *w) {
     em->x40E = 5;
     Em_Mode_Chg(em, 0, 0);
@@ -2270,8 +2355,76 @@ void em_die01_00573290(EMW *em, EM01W *w) {
     }
 }
 #endif
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
+#ifdef MHG_PS2
+void em_die02_00573480(EMW *em, EM01W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x4D, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        break;
+    case 1:
+        w->spd[1] = em->ang[1];
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x4E, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05++;
+            em->work08 = 0;
+            em_char_set(em, 0x52, 0, 0);
+            em->x388 = 3;
+            Quest_enemy_die(em);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->work08 = EMG_CARVE_TIME;
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 4:
+        Em_hagi_point_cnt_ck(em);
+        if (Quest_enemy_revival_ck(em) != 0 && --em->work08 <= 0) {
+            em->x05 += 1;
+            Em_hagi_point_clr(em);
+            em->work08 = 150;
+        }
+        break;
+    case 5:
+        EMG_DIE_REVIVE_FADE(em, em01_act_set);
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+#else
 void em_die02_00573480(EMW *em, EM01W *w) {
     em->x40E = 5;
     Em_Mode_Chg(em, 0, 0);
@@ -2342,6 +2495,7 @@ void em_die02_00573480(EMW *em, EM01W *w) {
         break;
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 7

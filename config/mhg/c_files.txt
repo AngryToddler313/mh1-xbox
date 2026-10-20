@@ -2650,3 +2650,6 @@ main 0x0020A050 0x0020A10C mhg/main/sk/f_sk_p17
 game 0x00622920 0x00622B18 mhg/game/em/em20_r18_p5
 game 0x00622B20 0x00622D08 mhg/game/em/em20_r18_p6
 game 0x00622D10 0x00622FDC mhg/game/em/em20_r18_p7
+game 0x0059D6C0 0x0059D8B8 mhg/game/em/em01_aif_p14
+game 0x0059D8C0 0x0059DAA8 mhg/game/em/em01_aif_p15
+game 0x0059DAB0 0x0059DD7C mhg/game/em/em01_aif_p16
