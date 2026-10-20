@@ -31,3 +31,76 @@ s32 Lb_menu_move(void) {
     return 0;
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_0058E300() {
+    if (F(u8, lbmw, 5) == 0) {
+        return Get_sw2(0);
+    }
+    return F(u16, lbmw, 6);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 4
+#ifdef MHG_PS2
+/* G only */
+void Skill_set_PL();
+void Menu_mix_i();
+void lobby_func_0058E690() {
+    Skill_set_PL((u8 *)&player_work + (game_w.master * 0xA00));
+    Menu_mix_i();
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 5
+#ifdef MHG_PS2
+/* G only */
+void Skill_set_PL();
+void Menu_data_i();
+void lobby_func_0058E720() {
+    Skill_set_PL((u8 *)&player_work + (game_w.master * 0xA00));
+    Menu_data_i();
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 6
+#ifdef MHG_PS2
+/* G only */
+void func_00224630();
+void func_0011C620();
+void lobby_func_0058E760() {
+    func_00224630((u8 *)&player_work + (game_w.master * 0xA00));
+    func_0011C620();
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 7
+#ifdef MHG_PS2
+/* G only */
+void Skill_set_PL();
+void Menu_equipment_i();
+void lobby_func_0058E7A0() {
+    Skill_set_PL((u8 *)&player_work + (game_w.master * 0xA00));
+    Menu_equipment_i();
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 8
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_00590DD0() {
+    int i;
+
+    for (i = 0; i < 20; i++) {
+        ((u8 *)&em_work)[i * 0xA00 + 1150] = 0;
+    }
+}
+#endif
+#endif

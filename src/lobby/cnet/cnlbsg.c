@@ -1110,3 +1110,14 @@ void lobby_func_005B16E0() {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 54
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005B02C0() {
+    SetSendCommand(&send_work, 34);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+#endif
+#endif

@@ -1069,3 +1069,28 @@ int lobby_func_005C2120(int a) {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 38
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_0054E360() {
+    Paint_square(288, 76, 320, 252, 0xA0202020);
+    Draw_menu_square(288, 196, 320, 132, 0, 0xA0000000);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 39
+#ifdef MHG_PS2
+/* G only */
+extern int g_sd_002EFBC4;
+extern char tl_member_buff[];
+void lobby_func_0056ED00() {
+    memset(tl_member_buff + 24, 0, 4982);
+    SetDialogData(72);
+    SetDialogYesNo(0);
+    ((u8 *)pNet)[45] = 1;
+    cnLBS_Get_ConditionSearchUser(&g_sd_002EFBC4);
+}
+#endif
+#endif
