@@ -1976,3 +1976,11 @@ game 0x0059F3C0 0x005A5320 game/em/em01_aig
 game:rodata 0x006D7E80 0x006D8008 game/em/em01_aig
 game 0x005A9FC0 0x005AB334 game/em/em02_ai
 game:rodata 0x006D8260 0x006D82BC game/em/em02_ai
+game 0x005AB340 0x005AC144 mhg/game/em/em02_aib_p1
+game 0x005AC2C0 0x005AC580 mhg/game/em/em02_aib_p2
+game 0x005AC6F0 0x005ACFA4 mhg/game/em/em02_aib_p3
+game 0x005AD6E0 0x005AD8B8 mhg/game/em/em02_aib_p4
+game 0x005ADA20 0x005AE200 mhg/game/em/em02_aib_p5
+game 0x005AE460 0x005AE55C mhg/game/em/em02_aib_p6
+game 0x005AE7D0 0x005AF148 mhg/game/em/em02_aib_p7
+game 0x005AF5B0 0x005AF6B8 mhg/game/em/em02_aib_p8
