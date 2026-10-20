@@ -19,7 +19,11 @@ typedef struct OPTTSK {
 extern u16 Psw[];
 extern s8 option_w[0x1000];
 extern s8 cfg_default[];
+#ifdef MHG_PS2
+extern u8 option_max_kind[];    /* G: 10 rows, outside small data */
+#else
 extern u8 option_max_kind[8];
+#endif
 extern char lit_295_00358758[];
 extern char lit_389_00358760[];
 extern char lit_390_00358780[];
@@ -262,14 +266,14 @@ u16 pad;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 void param_change_00126B30(OPTTSK *t, long d) {
     u8 row = t->cur;
 
     switch (row) {
-    case 5:
-    case 6:
-    case 7:
+    case GV(5, 7):
+    case GV(6, 8):
+    case GV(7, 9):
         break;
     default:
         if (d < 0 && option_w[row] == 0) {

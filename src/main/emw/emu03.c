@@ -130,7 +130,7 @@ void func_6140B0(EMX *);
 void func_6147D0(EMX *);
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void em_die(EMX *w) {
     pl_timer_calc(w);
     hit_stop_calc(w);
@@ -174,7 +174,7 @@ void em_erase(EMX *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int enemy_mv(EMX *w) {
     switch (w->state) {
     case 0:
@@ -200,13 +200,21 @@ int enemy_mv(EMX *w) {
         w->prim->pos[2] = w->pos[2];
         if (w->prim != 0) {
             if (w->draw_mode == 1.0f) {
+#ifdef VERSION_MHG
+                if (w->kind == 2 || w->kind == 0x24 || w->kind == 7 || w->kind == 0x32) {
+#else
                 if (w->kind == 2 || w->kind == 7) {
+#endif
                     add_prim(ot1, w->prim, 0x20, 1);
                 } else {
                     add_prim(ot1, w->prim, 0x20, 0);
                 }
             } else {
+#ifdef VERSION_MHG
+                if (w->kind == 2 || w->kind == 0x24 || w->kind == 7 || w->kind == 0x32) {
+#else
                 if (w->kind == 2 || w->kind == 7) {
+#endif
                     add_prim(ot0, w->prim, 0x40, 1);
                 } else {
                     add_prim(ot0, w->prim, 0x40, 0);

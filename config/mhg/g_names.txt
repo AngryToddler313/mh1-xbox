@@ -206,3 +206,4 @@ PROVIDE(gstr_002EA9D8 = 0x002EA9D8); /* "%s" */
 PROVIDE(gstr_002EA9E0 = 0x002EA9E0); /* "%s%s" */
 PROVIDE(func_00595530 = 0x00595530); /* lobby function Chat_init calls */
 PROVIDE(pl_supp_tbl_g = 0x004FE6D0); /* G Pl_item_charge other supply table */
+PROVIDE(func_534680 = 0x005433E0); /* em_neck_move (game), called by em_die */
