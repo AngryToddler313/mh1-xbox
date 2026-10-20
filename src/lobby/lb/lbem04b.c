@@ -41,3 +41,13 @@ void sound_call_0053E7E0(EMW *em, int frame, int se) {
 void dummy_em_prog_0053E840(void) {
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+/* G only */
+void eft01_set();
+void lobby_func_00551580(int a) {
+    eft01_set(a, 0);
+}
+#endif
+#endif

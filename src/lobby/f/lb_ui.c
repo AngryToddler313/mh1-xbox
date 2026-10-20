@@ -783,3 +783,32 @@ void DispSceneSubTitle() {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 11
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_00551900() {
+    *(u8 *)0x65490C = 1;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 12
+#ifdef MHG_PS2
+/* G only */
+extern int g_word_002EFAE8;
+void lobby_func_0059F6E0(int a) {
+    g_word_002EFAE8 = a;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 13
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_0059F6F0();
+void lobby_func_0059F740(int a) {
+    *(int *)0x654CF0 = a;
+    lobby_func_0059F6F0();
+}
+#endif
+#endif
