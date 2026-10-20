@@ -2859,7 +2859,273 @@ void em_move06_00573FE0(EMW *em, EM01W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
+#ifdef MHG_PS2
+/* G: the rathalos subspecies (0x2A, 0x25) count as rathalos */
+#define EM01_RATH(em) ((em)->kind == 1 || (em)->kind == 0x2A || (em)->kind == 0x25)
+void game_func_00547C20(EMW *em);
+void em01_main(EMW *em) {
+    EM01W *w = (EM01W *)em->ex;
+    u8 dmg[4];
+    f32 rate;
+    int r;
+    int d;
+
+    em_mode_timer_sub(em);
+    em_no_floor_ck(em);
+    if (EM01_RATH(em)) {
+        rate = 0.1f;
+    } else {
+        rate = 0.3f;
+    }
+    if (em->x8C2 != 1 && em->x8B6 == 0) {
+        if (game_w.x2E != 8 && game_w.x2E != 9 && game_w.x2E != 10) {
+            switch (quest_w.x08) {
+            case 0x2C:
+            case 0x2D:
+            case 0x407:
+            case 0x408:
+            case 0x409:
+            case 0x7EF:
+            case 0x7F0:
+            case 0x7F1:
+                if (EM01_RATH(em)) {
+                    em_hinshi_ck(em, rate);
+                    em_egg_ck(em);
+                    em_thirst_ck(em);
+                    game_func_00547C20(em);
+                    em_sleep_ck(em);
+                } else {
+                    em_egg_ck(em);
+                    em_thirst_ck(em);
+                    em_hungry_ck(em);
+                }
+                break;
+            case 0x40A:
+            case 0x7EE:
+            case 0x802:
+            case 0xEA7A:
+                if (EM01_RATH(em)) {
+                    em_hinshi_ck(em, rate);
+                    em_sleep_ck(em);
+                } else {
+                    em_thirst_ck(em);
+                }
+                game_func_00547C20(em);
+                break;
+            case 0x40D:
+            case 0x800:
+            case 0x801:
+            case 0x273F:
+                if (!EM01_RATH(em)) {
+                    em_thirst_ck(em);
+                }
+                game_func_00547C20(em);
+                break;
+            default:
+                em_hinshi_ck(em, rate);
+                em_egg_ck(em);
+                em_thirst_ck(em);
+                em_hungry_ck(em);
+                em_sleep_ck(em);
+                break;
+            }
+        }
+    }
+    if (w->x06 != 0) {
+        w->x06--;
+    }
+    r = (u8)Em_Dmg_Sys(em, dmg);
+    switch (r) {
+    case 0:
+    case 9:
+    case 14:
+        break;
+    case 1:
+    case 2:
+        if (em->x388 == 2) {
+            em01_act_set(em, 5, 2, 2);
+        } else if (em->x9EA != 0) {
+            em01_act_set(em, 5, 1, 2);
+        } else {
+            em01_act_set(em, 5, 0, 2);
+        }
+        break;
+    case 3:
+    case 4:
+        if (em->x9EA == 0) {
+            if (dmg[0] == 0) {
+                em->x95A = 0x10;
+            } else if (em->x8B6 == 0) {
+                em->x95A = 0xA;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em01_act_set(em, 4, 0xC, 2);
+        }
+        break;
+    case 5:
+        if (em->mode != 4 || em->x15 != 8) {
+            em01_act_set(em, 4, 8, 2);
+        }
+        break;
+    case 6:
+        if (em->x9EA != 0) {
+            em_mahi_dmg_timer_set(em);
+            em01_act_set(em, 4, 0xE, 2);
+        } else if (!(em->mode == 4 && em->x15 == 0xB) && !(em->mode == 4 && em->x15 == 8)) {
+            em_mahi_dmg_timer_set(em);
+            em01_act_set(em, 4, 0xB, 2);
+        }
+        break;
+    case 7:
+        if (em->x9EA != 0) {
+            em_sleep2_dmg_timer_set(em);
+            if (EM01_RATH(em)) {
+                rate = 0.1f;
+            } else {
+                rate = 0.3f;
+            }
+            if ((u8)em_hokaku_ck(em, 0.1f + rate) == 1) {
+                em01_act_set(em, 6, 4, 4);
+            } else {
+                em01_act_set(em, 0, 0x1F, 2);
+            }
+        } else if (!(em->mode == 0 && em->x15 == 0x1B) && !(em->mode == 4 && em->x15 == 8)) {
+            em_sleep2_dmg_timer_set(em);
+            em01_act_set(em, 0, 0x1B, 2);
+        }
+        break;
+    case 8:
+        if (em->x9EA != 0) {
+            em_sleep_dmg_timer_set(em);
+            em01_act_set(em, 0, 0x1D, 2);
+        } else if (!(em->mode == 0 && em->x15 == 0x14) && !(em->mode == 4 && em->x15 == 8)) {
+            em_sleep_dmg_timer_set(em);
+            em01_act_set(em, 0, 0x14, 2);
+        }
+        break;
+    case 10:
+        switch (em->x15) {
+        case 18:
+            em01_act_set(em, 0, 0x17, 2);
+            em->x839 = 0;
+            em_ikari_add(em, em->x8B0);
+            break;
+        case 20:
+            em01_act_set(em, 0, 0x18, 2);
+            em->x839 = 0;
+            break;
+        case 27:
+            em01_act_set(em, 0, 0x1C, 2);
+            em->x839 = 0;
+            break;
+        case 29:
+            em01_act_set(em, 4, 0x12, 2);
+            em->x839 = 0;
+            break;
+        case 31:
+            em01_act_set(em, 4, 0x13, 2);
+            em->x839 = 0;
+            break;
+        }
+        break;
+    case 11:
+        if (!(em->mode == 4 && em->x15 == 0xC) && !(em->mode == 4 && em->x15 == 0xD) &&
+            !(em->mode == 4 && em->x15 == 0x11) && !(em->mode == 4 && em->x15 == 0x12) &&
+            !(em->mode == 4 && em->x15 == 0x13) && em->x388 != 2) {
+            em01_act_set(em, 4, 4, 2);
+        }
+        break;
+    case 12:
+        if (em->x388 == 2) {
+            em01_act_set(em, 4, 8, 2);
+        } else {
+            d = em->x38E;
+            switch (d) {
+            case 0:
+            case 7:
+                em01_act_set(em, 4, 0, 2);
+                break;
+            case 6:
+                if (em->hagi[d].cnt >= 2) {
+                    if (EM01_RATH(em)) {
+                        Quest_enemy_hagi_set(em, 1);
+                    } else {
+                        Quest_enemy_hagi_set(em, 4);
+                    }
+                }
+                /* fallthrough */
+            case 5:
+                em01_act_set(em, 4, 2, 2);
+                break;
+            case 1:
+            case 2:
+                em01_act_set(em, 4, 3, 2);
+                break;
+            default:
+                if (em->hagi[d & 0xFF].cnt >= 2) {
+                    if (d != 3) {
+                        em01_act_set(em, 4, 5, 2);
+                    } else {
+                        em01_act_set(em, 4, 0x10, 2);
+                    }
+                } else {
+                    em01_act_set(em, 4, 1, 2);
+                }
+                break;
+            }
+        }
+        break;
+    case 13:
+        if (em->x388 != 2) {
+            em01_act_set(em, 4, 0, 2);
+            em->x839 = 0;
+        }
+        break;
+    }
+    switch (quest_w.x08) {
+    case 0x271A:
+        if (em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em01_act_set(em, 6, 1, 1);
+            }
+            break;
+        }
+        goto cmd;
+    case 0x2730:
+        if (em->stg == 0x21 && Event_flag_ck(0xE) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em01_act_set(em, 6, 2, 1);
+            }
+            break;
+        }
+        goto cmd;
+    default:
+    cmd:
+        switch (em->x734) {
+        case 3:
+            if (em->x839 != 0) {
+                em_cmd_ck(em);
+                em->x839 = 0;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    }
+    em01_main_sub(em, w);
+    if (em->x6FF != 0) {
+        em01_main_sub(em, w);
+        em->x6FF = 0;
+    }
+    if (em->mode == 2 && w->x18 == 1) {
+        em->x8BB = 2;
+    }
+}
+#else
 void em01_main(EMW *em) {
     EM01W *w = (EM01W *)em->ex;
     u8 dmg[4];
@@ -3102,6 +3368,7 @@ void em01_main(EMW *em) {
         em->x8BB = 2;
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 10
