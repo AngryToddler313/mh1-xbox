@@ -40,7 +40,11 @@ typedef struct EM27W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;
@@ -115,13 +119,22 @@ void speed_add_g(EMW *, s32 *);
 void em27_atk06_g(EMW *em, EM27W *w, int kind);
 #endif
 
+#ifdef MHG_PS2
+void game_func_00549FE0(EMW *em, int no, int a, int b);
+int game_func_005499A0(EMW *em, s16 no);
+void game_func_0054A1D0(EMW *em, s16 *tbl);     /* stay_tm from a (stage, time) list ended by -1, time */
+void game_func_0054A230(EMW *em, s16 *tbl);     /* runaway_tm likewise */
+extern s16 em27_stay_tm_g[];
+extern s16 em27_runaway_tm_g[];
+#endif
+
 #if !defined(G_PART) || G_PART == 1
 void em27_local_init(EMW *em) {
     eft01_set((PLW *)em, 0);
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 void em27_init(EMW *em) {
     EM27W *w = (EM27W *)em->ex;
 
@@ -149,6 +162,16 @@ void em27_init(EMW *em) {
             break;
         }
     }
+#ifdef MHG_PS2      /* G: init-time char set, hit points from the vital table, stay/run-away timers from (stage, time) lists */
+    game_func_00549FE0(em, 1, 0, 0);
+    em->x388 = 0;
+    em->x792 = em->x302 = game_func_005499A0(em, 0);
+    em->x839 = 1;
+    em->x88B = 1;
+    em->x765 = 1;
+    game_func_0054A1D0(em, em27_stay_tm_g);
+    game_func_0054A230(em, em27_runaway_tm_g);
+#else
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     em_act_set(em, 0, 1);
@@ -168,6 +191,7 @@ void em27_init(EMW *em) {
     em->x765 = 1;
     em->stay_tm = em27_stay_timer_tbl[em->stg];
     em->runaway_tm = em27_runaway_timer_tbl[em->stg];
+#endif
     w->yobi_st = 0;
     ((u8 *)w)[0x50] = 0;
     em_dur_init(em);

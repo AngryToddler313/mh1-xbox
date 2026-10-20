@@ -53,7 +53,11 @@ typedef struct EM01W {
 /* The effect flag at ex+0xA3 (EMW+0x4E7) is read as xA3 in em01_ai. */
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;

@@ -2,6 +2,7 @@
  * hit points, scale), em12_act_set / em12_next_act_set, action steps em_act00-13, the
  * action dispatcher em_move00 and move state 0 (em_mov00, turning toward the target). The
  * whole file is in em12_nm.c. Field meanings are guesses. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -36,7 +37,11 @@ typedef struct EM12W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;

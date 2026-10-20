@@ -21,7 +21,11 @@ typedef struct EM03W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;

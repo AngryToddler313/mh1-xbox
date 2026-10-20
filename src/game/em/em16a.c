@@ -45,7 +45,11 @@ typedef struct EM16W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;
@@ -128,6 +132,7 @@ void Quest_enemy_escape(EMW *);
 void game_func_006025F0(EMW *em, EM16W *w);
 void game_func_00549FE0(EMW *em, int no, int a, int b);
 int game_func_005499A0(EMW *em, s16 no);
+extern s16 em_atk_mode_timer_tbl[];
 #endif
 
 #ifdef MHG_PS2
@@ -141,7 +146,7 @@ void em16_local_init(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 20
 void em16_init(EMW *em) {
     EM16W *w = (EM16W *)em->ex;
 
@@ -176,14 +181,29 @@ void em16_init(EMW *em) {
             break;
         }
     }
+#ifdef MHG_PS2      /* G: speed per kind, init-time char set, hit points from the vital table */
+    switch (em->kind) {
+    case 13:
+        em->act_spd = 1.2f;
+        break;
+    case 16:
+    case 35:
+        em->act_spd = 1.0f;
+        break;
+    case 30:
+        em->act_spd = 1.1f;
+        break;
+    }
+    game_func_00549FE0(em, 1, 0, 0);
+    em->x388 = 0;
+    em_act_set(em, 0, 0xC);
+    em->x792 = em->x302 = game_func_005499A0(em, 0);
+#else
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     em_act_set(em, 0, 0xC);
     switch (em->kind) {
     case 16:
-#ifdef MHG_PS2
-    case 35:
-#endif
         em->x792 = em->x302 = em_hp_vital_set(em, 0x3C);
         break;
     case 13:
@@ -193,6 +213,7 @@ void em16_init(EMW *em) {
         em->x792 = em->x302 = em_hp_vital_set(em, 0x78);
         break;
     }
+#endif
     em->x839 = 0;
     em->x88B = 1;
     w->yobi_st = 0;
@@ -210,6 +231,11 @@ void em16_init(EMW *em) {
         em_act_set(em, 0, 0xA);
         break;
     }
+#ifdef MHG_PS2
+    if (em->kind == 30 && em->type == 1) {      /* G: variant 1 of kind 30 starts angry */
+        Em_Mode_Chg(em, 1, em_atk_mode_timer_tbl[em->kind]);
+    }
+#endif
 }
 #endif
 
@@ -265,9 +291,24 @@ void em16_init2(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 21
 void em16_to_normal(em) EMW *em; {
+#ifdef MHG_PS2      /* G: speed per kind */
+    switch (em->kind) {
+    case 13:
+        em->act_spd = 1.2f;
+        break;
+    case 16:
+    case 35:
+        em->act_spd = 1.0f;
+        break;
+    case 30:
+        em->act_spd = 1.1f;
+        break;
+    }
+#else
     em->act_spd = 1.0f;
+#endif
     em->x388 = 0;
     em->x3F4 = 0;
     em->x839 = 1;

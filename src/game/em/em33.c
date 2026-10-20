@@ -6,6 +6,7 @@
  * (mode dispatch), em33_act_set (distance/time for the chosen action),
  * em33_to_normal, em33_char_set and the sound/effect script (ef_move_sub_00617E60).
  * Written from em03; every function matches. Field meanings are guesses. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -24,7 +25,11 @@ typedef struct EM33W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
+#ifdef MHG_PS2
+    u16 x08;            /* 0x08 quest number (u16 in G) */
+#else
     s16 x08;            /* 0x08 quest number (0: free play) */
+#endif
 } QUEST_W;
 
 extern QUEST_W quest_w;
