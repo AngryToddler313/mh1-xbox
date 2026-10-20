@@ -185,7 +185,7 @@ void em02_fly_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 void em02_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM02W *w = (EM02W *)em->ex;
 
@@ -198,12 +198,22 @@ void em02_atk_act_set(EMW *em, u16 no, u16 arg) {
     case 4:
     case 7:
     case 8:
+#ifdef MHG_PS2
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+#endif
         if (em->x8C3 == 0 && em->x388 == 2) {
             em02_act_set(em, 2, 1, 1);
             return;
         }
         break;
     case 6:
+#ifdef MHG_PS2
+    case 12:
+#endif
         if (em->x8C3 == 0 && em->x388 == 2) {
             em02_act_set(em, 2, 1, 1);
             return;
@@ -233,6 +243,23 @@ void em02_atk_act_set(EMW *em, u16 no, u16 arg) {
         }
         w->x1A = 3;
         break;
+#ifdef MHG_PS2
+    case 13:    /* G */
+        if (EM02_ACT_CK(em)) {
+            em02_act_set(em, 2, 0, 1);
+            return;
+        }
+        if (em->x881 == 0) {
+            w->has_tgt = 0;
+            w->dist = 100.0f;
+            em->work08 = (em->x39A % 120 + 180) / 2;
+        } else {
+            w->has_tgt = 1;
+            w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
+            em->work08 = (int)w->dist / 7;
+        }
+        break;
+#endif
     }
     em_act_set2(em, 3, no, arg);
 }

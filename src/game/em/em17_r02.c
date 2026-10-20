@@ -357,8 +357,20 @@ static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void act_dist_select_005DA5C0(EMW *em) {
+#ifdef MHG_PS2      /* G: only the ground case is left */
+    switch (em->x734) {
+    case 3:
+        em->x839 = 1;
+        if (em->x388 == 0) {
+            em17_act_set(em, 0, 1, 0);
+        } else {
+            em17_act_set(em, 2, 2, 0);
+        }
+        break;
+    }
+#else
     EM17W *w = (EM17W *)em->ex;
     u16 *p;
     int k;
@@ -402,11 +414,15 @@ void act_dist_select_005DA5C0(EMW *em) {
         }
         break;
     }
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em17_to_normal(EMW *em, s16 a, s16 b) {
+#ifdef MHG_PS2      /* G: always the distance-based choice */
+    act_dist_select_005DA5C0(em);
+#else
     if (em->x734 != 0) {
         act_dist_select_005DA5C0(em);
         return;
@@ -437,6 +453,7 @@ void em17_to_normal(EMW *em, s16 a, s16 b) {
     em->x388 = 0;
     em->x3F4 = 0;
     em17_act_set(em, 0, 1, 0);
+#endif
 }
 #endif
 
