@@ -1908,3 +1908,5 @@ game 0x00641DD0 0x00642024 mhg/game/em/em27_p1
 game 0x00642170 0x00642210 mhg/game/em/em27_p2
 game 0x0060CFF0 0x0060D46C mhg/game/em/em17_r14_p1
 game 0x0060D570 0x0060D6F4 mhg/game/em/em17_r14_p2
+game 0x005E4E70 0x005E5130 mhg/game/em/em14_r09_p1
+game 0x005E5300 0x005E5588 mhg/game/em/em14_r09_p2
