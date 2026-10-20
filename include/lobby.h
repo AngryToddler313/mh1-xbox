@@ -61,6 +61,17 @@ typedef struct LB_SYS {
 typedef struct LB_NPCW {
     u8 _pad00[0xE];
     u8 kind;            /* 0x0E npc kind (talk table key) */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    /* G (as LB_NPCMV in lbnpc.h): item / num / x2E at 0x30 / 0x32 / 0x3A */
+    u8 _pad0F[0x30 - 0xF];
+    u16 item;           /* G: 0x30 */
+    u16 num;            /* G: 0x32 */
+    u8 _pad34[0x3A - 0x34];
+    s8 x2E;             /* G: 0x3A */
+    u8 _pad3B;
+    s32 flag;           /* G: 0x3C (assumed) */
+} LB_NPCW;
+#else
     u8 _pad0F[0x26 - 0xF];
     u16 item;           /* 0x26 requested/given item id */
     u16 num;            /* 0x28 item count */
@@ -69,6 +80,7 @@ typedef struct LB_NPCW {
     u8 _pad2F;
     s32 flag;           /* 0x30 event flag to set */
 } LB_NPCW;
+#endif
 
 /* lbShop (0x006EABF0, size 0x90): shop / forge / armor-shop menu state shared
  * by lb_mix, lb_shop, lb_process, lb_armor (all field names are guesses) */

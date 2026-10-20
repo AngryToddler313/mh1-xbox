@@ -596,12 +596,12 @@ void _cnet_RecvFromLbs_NoticeLobbyCommer(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 44
 int cnLBS_Read_MatchEntryJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_MatchEntryUser(arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_MatchEntryUser, lobby_func_005AE230)(arg0);
         return slot;
     }
     return -1;

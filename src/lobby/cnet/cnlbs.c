@@ -14,12 +14,12 @@ void _cnet_RecvFromLbs_NoticeMailMessage(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 94
 int cnLBS_SendMessage(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_SendMail(arg0, arg1);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_SendMail, __cnet_SendReq_RoomSetExplain)(arg0, arg1);
         return slot;
     }
     return -1;
@@ -704,12 +704,12 @@ void _cnet_RecvFromLbs_AnswerPlazaEntry(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 95
 int cnLBS_PlazaExit(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExit(0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceExit(0), __cnet_SendReq_PieceExit());
         return slot;
     }
     return -1;
@@ -929,12 +929,12 @@ void _cnet_RecvFromLbs_AnswerLobbyEntry(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 93
 int cnLBS_LobbyExit(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExit(1);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceExit, lobby_func_005AD450)(1);
         return slot;
     }
     return -1;
@@ -1236,12 +1236,12 @@ int cb;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 98
 int cnLBS_Set_RoomRuleFinish(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomSetFinish();
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_RoomSetFinish, g_SendReq_005BCE20)();
         return slot;
     }
     return -1;
@@ -1275,24 +1275,24 @@ void _cnet_RecvFromLbs_AnswerRoomEntry(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 96
 int cnLBS_RoomExit(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExit(2);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_PieceExit, lobby_func_005AD450)(2);
         return slot;
     }
     return -1;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 92
 int cnLBS_Read_RoomProperty(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomProperty(arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_RoomProperty, __cnet_SendReq_RoomCreate)(arg0);
         return slot;
     }
     return -1;
@@ -1479,12 +1479,12 @@ int cnLBS_Read_RoomRuleCount(int arg0, int arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 97
 int cnLBS_Read_RoomNamePermission(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomNamePermission(arg0);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendReq_RoomNamePermission, __cnet_SendReq_RoomSetName)(arg0);
         return slot;
     }
     return -1;
@@ -1816,7 +1816,7 @@ void _cnet_RecvFromLbs_AnswerRuleListHeadWord(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 99
 void _cnet_RecvFromLbs_AnswerRuleListPermission(void) {
     u8 n;
     u8 v;
@@ -1824,7 +1824,7 @@ void _cnet_RecvFromLbs_AnswerRuleListPermission(void) {
     if (CnetSys_w.rres == 0) {
         __cnet_Recv_ByteByte(&n, &v);
         CnetSys_w.ruletbl.e[n].perm = v;
-        CnetSys_w.ruletbl.e[n].flags |= 8;
+        CnetSys_w.ruletbl.e[n].flags |= GV(8, 4);
     }
     _cnet_Return_CallBack(0);
 }
@@ -1844,7 +1844,7 @@ void _cnet_RecvFromLbs_AnswerRuleListNow(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 100
 void _cnet_RecvFromLbs_AnswerRuleListNumOf(void) {
     u8 n;
     u8 v;
@@ -1852,7 +1852,7 @@ void _cnet_RecvFromLbs_AnswerRuleListNumOf(void) {
     if (CnetSys_w.rres == 0) {
         __cnet_Recv_ByteByte(&n, &v);
         CnetSys_w.ruletbl.e[n].numof = v;
-        CnetSys_w.ruletbl.e[n].flags |= 4;
+        CnetSys_w.ruletbl.e[n].flags |= GV(4, 8);
     }
     _cnet_Return_CallBack(0);
 }

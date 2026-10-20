@@ -1,6 +1,10 @@
 /* lb_plz3 - one translation unit 0x00598DB0-0x0059DB40 (lbtu3). */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #define Lb_on_dialog Lb_on_dialog_hdr
+#include "g_alias.h"
+#ifdef MHG_PS2
+int font_print_double();
+#endif
 #include "lbui_proto.h"
 #include "lbsys_g.h"
 #undef Lb_on_dialog
@@ -479,14 +483,14 @@ LB_NETW *a;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void put_titles(a, b, c)
 int a;
 int b;
 int c;
 {
     flfntSetSize(0x12, 0x12);
-    font_print_double_k(a, b, 1, 5, c);
+    GV(font_print_double_k, font_print_double)(a, b, 1, 5, c);
 }
 #endif
 

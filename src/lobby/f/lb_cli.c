@@ -721,12 +721,12 @@ void text_lobby_trans_ot0(ARG_text_lobby_trans_ot0_arg0 *arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 25
 void text_lobby_trans_ot3(u8 *arg0) {
     u8 temp_a0;
 
     font_set_stack_no(F(s32, arg0, 0x18));
-    temp_a0 = F(u8, pNet_c7, PNET_OFS(0xC));
+    temp_a0 = F(u8, pNet_c7, GV(PNET_OFS(0xC), 0x2D));   /* G: the dialog flag at +0x2D */
     if (temp_a0 == 1) {
         DispDialogData(temp_a0);
         Lb_on_dialog();
@@ -5348,11 +5348,11 @@ void CallBack_Result_netComment();
 void CallBack_Result_netCommentSend();
 int cnLBS_Get_RoomMemberList();
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 26
 void Lbc_SendNetComment(int a) {
     sendDat[0] = 8;
     memcpy(sendDat + 1, D_3C73B4, 0x62);
-    cnLBS_Send_ChatBinaryTU(a, sendDat, 0x62, CallBack_Result_netCommentSend);
+    GV(cnLBS_Send_ChatBinaryTU, cnLBS_Send_ChatMessageTU)(a, sendDat, 0x62, CallBack_Result_netCommentSend);
 }
 #endif
 

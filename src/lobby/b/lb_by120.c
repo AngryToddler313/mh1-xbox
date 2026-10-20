@@ -1,8 +1,9 @@
 /* lb_by120 - agent B 0x005C38D0-0x005C395C: lb_normal_material (NPC model material colour override table). */
+#include "g_alias.h"
 #include "lobby_a.h"
 typedef struct { s16 id; s16 mat; s32 col; } NMAT;
 void lb_normal_material(u8 *em, s32 arg1, s32 arg2, int arg3) {
-    NMAT *p = (NMAT *)F(int, em, 0x458);
+    NMAT *p = (NMAT *)F(int, em, GV(0x458, 0x44C));
     if (p != 0) {
         do {
             if (p->id == -1) break;

@@ -315,12 +315,12 @@ void _cnet_RecvFromLbs_NoticeChatBinary(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 46
 int cnLBS_Send_ChatMessageTU(int arg0, int arg1, int arg2, int arg3) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg3);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendSet_ChatMessageTU(arg0, arg1, arg2);
+        CnetSys_w.bg[slot].cmd = GV(__cnet_SendSet_ChatMessageTU, __cnet_SendSet_ChatBinaryTU)(arg0, arg1, arg2);
         return slot;
     }
     return -1;
