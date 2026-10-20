@@ -33,11 +33,23 @@ void Lb_Matching(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+int lobby_func_00542A60();
+int lobby_func_00543180();
+/* G: the count comes from the online or the offline quest table */
+int get_questLevelNum(int a) {
+    if (Online_ck() == 1) {
+        return lobby_func_00542A60(a);
+    }
+    return lobby_func_00543180(a);
+}
+#else
 int get_questLevelNum(void) {
     if (Online_ck() == 1) {
         return 6;
     }
     return 5;
 }
+#endif
 #endif

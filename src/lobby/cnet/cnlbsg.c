@@ -447,11 +447,24 @@ int cnLBS_Read_MatchInfomation(int cb) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 49
 void _cnet_RecvFromLbs_MatchJoin(void) {
     u8 v;
     R7 res;
     if (CnetSys_w.burst[GV(7, 9)].state != 0) {
+#ifdef MHG_PS2
+        /* G: reads the byte in place and asks for the side only on a 2 answer */
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                __cnet_Recv_Byte(CNWP(0x30310));
+                __cnet_SendReq_MatchPlSide(0);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+            }
+        }
+#else
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 __cnet_Recv_Byte(&v);
@@ -464,16 +477,33 @@ void _cnet_RecvFromLbs_MatchJoin(void) {
             }
         }
         __cnet_SendReq_MatchPlSide(0);
+#endif
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 50
 void _cnet_RecvFromLbs_MatchPlSide(void) {
     u8 v;
     R7 res;
 
     if (CnetSys_w.burst[GV(7, 9)].state != 0) {
+#ifdef MHG_PS2
+        /* G: asks for the opponent only on a 2 answer */
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                __cnet_Recv_Byte(&v);
+                if (v != 0) v -= 1;
+                CNW(u8, 0x30311) = v;
+                pl_infoget_ctr = 1;
+                __cnet_SendReq_MatchOpponentInfo(1);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+            }
+        }
+#else
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 __cnet_Recv_Byte(&v);
@@ -488,6 +518,7 @@ void _cnet_RecvFromLbs_MatchPlSide(void) {
         }
         pl_infoget_ctr = 1;
         __cnet_SendReq_MatchOpponentInfo(1);
+#endif
     }
 }
 #endif
@@ -914,13 +945,17 @@ int idx;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 51
 void _cnet_Return_CallBack(arg)
 int arg;
 {
     CNET_RES res;
 
+#ifdef MHG_PS2
+    if (CnetSys_w.rcat == 0x10 || CnetSys_w.rcat == 1) {   /* G: category 1 too */
+#else
     if (CnetSys_w.rcat == 0x10) {
+#endif
         if (arg != 0) {
             _cnetEvent_JumpCallBack(arg, 0);
         }

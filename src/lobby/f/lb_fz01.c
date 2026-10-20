@@ -1,5 +1,6 @@
 /* lb_fz01 0x005D2FF0-0x005D31E0: Lb_pl_to_chair */
 /* Lobby: turn, chair, chat send, npc spawn, talk checks, hand-written from m2c drafts. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern PLW player_work[];
 extern u8 *St_unique_tbl[];
@@ -40,7 +41,7 @@ void Lb_pl_to_chair(void) {
     ang = 0;
     pl = &player_work[game_w.master];
     if (game_w.stage == 0x4D) {
-        if (lb_sys.x68 != 0x18) {
+        if (lb_sys.x68 != GV(0x18, 0x1A)) {
             lb_sys.x6C = 0;
             Lb_send_chair_release(pl);
             lb_sys.x68 = 0;

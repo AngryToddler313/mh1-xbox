@@ -1,5 +1,9 @@
 /* lb_z134 - auto-drafted 0x005D5750-0x005D58B4: lb_pl_chat (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_f.h"
+#ifdef MHG_PS2
+void lobby_func_0059A060();
+#endif
 extern char lit_1807_00664E40[];
 
 void lb_pl_chat(u8 *arg0) {
@@ -58,6 +62,11 @@ void lb_pl_chat(u8 *arg0) {
     case 16:
         lb_pl_chat16(arg0, 0);
         return;
+#ifdef MHG_PS2
+    case 17:
+        lobby_func_0059A060(arg0, 0);   /* G's extra chat */
+        return;
+#endif
     default:
         system_error(&lit_1807_00664E40, F(u8, arg0, 0x14), temp_a1 & 0xFF, F(u8, arg0, 0x17));
         return;

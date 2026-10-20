@@ -187,3 +187,4 @@ PROVIDE(D_002EC628 = 0x002EC628); /* G Pit_disp_chat frame data pointer */
 PROVIDE(D_002FF29C = 0x002FF29C); /* G Pit_disp_chat */
 PROVIDE(func_00221F00 = 0x00221F00); /* disp_chat_log_sub, G 4-argument call */
 PROVIDE(Lb_send_pl_status_g = 0x0059A820); /* Lb_send_pl_status as G calls it from Lb_Pl_act_set (the G map: check_sender0) */
+PROVIDE(lb_msg_type2_tbl_g = 0x00636CF0); /* Lb_put_msg_type2 message table */

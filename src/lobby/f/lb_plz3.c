@@ -914,9 +914,14 @@ asm int plaza_mailBoxTrans()
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void plaza_checkMyStatusTrans() {
+#ifdef MHG_PS2
+    /* G: the id / handle sit at cw+0x1C0 / 0x1C8, the page at net+0x1C, and a ninth argument */
+    disp_status(0xD8, 0x50, (u8 *)CW + 0x1C0, (u8 *)CW + 0x1C8, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x1C), 3, D_3C73B4, 100);
+#else
     disp_status_k(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
+#endif
 }
 #endif
 

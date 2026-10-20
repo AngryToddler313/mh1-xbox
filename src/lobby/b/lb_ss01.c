@@ -1,4 +1,5 @@
 /* lb_ss01 - agent C 0x005B6270-0x005B6418: server_select_00 (server list/connect state machine; if-else chain, not a switch). */
+#include "g_alias.h"
 #include "lobby_a.h"
 extern s8 COM_R_No_0;
 extern s8 COM_R_No_1;
@@ -24,7 +25,7 @@ s32 server_select_00(void) {
         COM_R_No_1 = 2;
         COM_R_No_2 = 0;
         COM_R_No_3 = 0;
-        memset(&network_work, 0, 0x2C);
+        memset(&network_work, 0, GV(0x2C, 0x38));
         cnLbc_MoveMenuServerSelect(&network_work);
     } else if (CnetWork.x05 == 3) {
         if (mcs_connect_flag == 0) {

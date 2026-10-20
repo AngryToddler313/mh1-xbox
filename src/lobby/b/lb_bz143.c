@@ -1,7 +1,12 @@
 /* lb_bz143 - lobby UI/client 0x005C2180-0x005C2278: id_select_02 (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_a.h"
 extern s8 ret_stat_0038A900;
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+typedef struct { u8 pad0000[0x22]; s8 x0002; u8 x0003; u8 pad0024[0x9]; s8 x000C; } ARG_id_select_02_arg0;   /* G's LB_NETW layout */
+#else
 typedef struct { u8 pad0000[0x2]; s8 x0002; u8 x0003; u8 pad0004[0x8]; s8 x000C; } ARG_id_select_02_arg0;
+#endif
 
 void id_select_02(ARG_id_select_02_arg0 *arg0) {
     s32 temp_v0;
@@ -25,8 +30,13 @@ void id_select_02(ARG_id_select_02_arg0 *arg0) {
         case 3:                                     /* switch 2 */
             arg0->x0002 = 1;
             arg0->x0003 = 0U;
+#ifdef MHG_PS2
+            SetSceneTitle(4);    /* G: its own title index, no offset */
+            SetHelpLineMsg(1);
+#else
             SetSceneTitle(1, 0);
             SetHelpLineMsg(1, 1);
+#endif
             return;
         }
         break;
