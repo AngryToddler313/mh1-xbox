@@ -2091,3 +2091,4 @@ main 0x00218C00 0x00218C1C mhg/main/net/f_disp_p1
 main 0x002125A0 0x002128C4 mhg/main/net/netbgm04_p1
 main 0x00237F30 0x00237FD0 mhg/main/net/power01_p1
 sub_main 0x004E27D0 0x004E288C mhg/main/plsel/plsel01_p1
+main 0x00110A80 0x00110CA4 mhg/main/sys/f_ioread_p2
