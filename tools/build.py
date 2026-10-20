@@ -174,7 +174,11 @@ def raw_mnemonics(data, base, vram, size, words):
 
 
 def run(cmd):
-    p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+    # wibo/mwcc can loop forever on some errors (missing include): fail the step instead of hanging the build
+    try:
+        p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=180)
+    except subprocess.TimeoutExpired:
+        return "%s\ntimed out after 180 s" % " ".join(cmd)
     if p.returncode:
         return "%s\n%s%s" % (" ".join(cmd), p.stdout, p.stderr)
     return None

@@ -202,3 +202,6 @@ main 0x002092D0 0xC0 sk_key_repeat
 main 0x0020AC80 0xD8 dakuten_ck
 sub_main 0x004C7FF0 0x74 Gun_level_up
 sub_main 0x004C80C0 0x54 Gun_option_ck
+main 0x00150FC0 0x128 plmemAppendBlockList
+main 0x001510F0 0x80 plmemDeleteBlockList
+main 0x00156740 0xD0 CheckTIM2FileHeader
