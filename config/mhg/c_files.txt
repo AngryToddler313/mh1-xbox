@@ -2666,3 +2666,5 @@ game 0x005EE0A0 0x005EE178 mhg/game/em/em14_horm_p2
 game 0x005FE490 0x005FE590 mhg/game/em/em16a_p23
 game 0x0063DEA0 0x0063DFA0 mhg/game/em/em27a_p20
 game 0x005E5130 0x005E5300 mhg/game/em/em14_r09_p3
+game 0x005F45D0 0x005F4758 mhg/game/em/em15_r10_p11
+game 0x005F4F90 0x005F5104 mhg/game/em/em15_r10_p12
