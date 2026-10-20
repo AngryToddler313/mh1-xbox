@@ -1956,3 +1956,5 @@ game 0x00572B10 0x00574D94 game/eft/eft14
 game:rodata 0x006D73D0 0x006D74B8 game/eft/eft14
 game 0x00574E70 0x00576B24 game/eft/eft15
 game:rodata 0x006D74C0 0x006D7594 game/eft/eft15
+game 0x00563980 0x00567F64 game/eft/eft17
+game:rodata 0x006D7080 0x006D71F4 game/eft/eft17
