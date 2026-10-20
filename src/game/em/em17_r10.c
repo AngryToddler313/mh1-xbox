@@ -339,10 +339,13 @@ extern u8 *em17_act_add[3];
 
 
 
+#if !defined(G_PART)
 void em_atk02_005DE360(EMW *em, EM17W *w) {
 
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_atk03_005DE370(EMW *em, EM17W *w) {
     u8 temp_a2;
 
@@ -363,3 +366,4 @@ void em_atk03_005DE370(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
