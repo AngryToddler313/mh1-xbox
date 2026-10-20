@@ -131,7 +131,7 @@ void Lb_eat()
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 asm void lb_eat_set()
 {
 #include "lb_eat_set.inc"
@@ -509,7 +509,7 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 asm void set_dialog_square()
 {
 #include "set_dialog_square.inc"
@@ -621,7 +621,7 @@ void draw_dialog_square(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 asm int Draw_menu_square()
 {
 #include "Draw_menu_square.inc"

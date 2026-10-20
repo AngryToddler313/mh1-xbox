@@ -2117,3 +2117,6 @@ lobby 0x005B5FE0 0x005B60F4 mhg/lobby/f/lb_tu_browser_p23
 lobby 0x005B63D0 0x005B64B0 mhg/lobby/f/lb_tu_browser_p24
 lobby 0x005B64B0 0x005B6A5C mhg/lobby/f/lb_tu_browser_p25
 lobby 0x005B6B00 0x005B6B88 mhg/lobby/f/lb_tu_browser_p26
+lobby 0x00551770 0x00551900 mhg/lobby/f/lb_ui_p4
+lobby 0x0059F5E0 0x0059F68C mhg/lobby/f/lb_ui_p5
+lobby 0x0059FB50 0x005A02B0 mhg/lobby/f/lb_ui_p6
