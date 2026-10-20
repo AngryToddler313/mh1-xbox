@@ -2010,3 +2010,5 @@ game:rodata 0x006D6780 0x006D680C game/em/em_core_d
 game 0x00582750 0x00584574 game/em/em_taisei
 game:rodata 0x006D7720 0x006D78CC game/em/em_taisei
 game 0x0064FAC0 0x0065030C game/set/set04
+game 0x00648E40 0x0064EF98 game/set/set09
+game:rodata 0x006DAA70 0x006DAB38 game/set/set09
