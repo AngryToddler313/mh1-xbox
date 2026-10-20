@@ -1940,7 +1940,41 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 19
+#ifdef MHG_PS2
+static void em_die04_006118F0(EMW *em, EM27W *w) {
+    switch (em->x05) {
+    case 0:
+        if (Quest_enemy_revival_ck(em) == 1) {
+            em_cmd_reset(em);
+            em->x839 = 0;
+            switch (em->stg) {
+            case 1:
+                em_act_set(em, 7, 0);
+                break;
+            case 0x22:
+                em_act_set(em, 7, 0);
+                break;
+            case 0x26:
+                em_act_set(em, 7, 0);
+                break;
+            case 0x27:
+                em_act_set(em, 7, 0);
+                break;
+            case 0x35:
+                em_act_set(em, 0, 0xB);
+                break;
+            default:
+                em_act_set(em, 0, 0xB);
+                break;
+            }
+        } else {
+            em->x04++;
+        }
+        break;
+    }
+}
+#else
 static void em_die04_006118F0(EMW *em, EM27W *w) {
     f32 v[3];
 
@@ -2004,6 +2038,7 @@ static void em_die04_006118F0(EMW *em, EM27W *w) {
         break;
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 7
