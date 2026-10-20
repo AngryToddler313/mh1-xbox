@@ -3764,7 +3764,7 @@ int arg1;
     case 0:
         F(u8, (u8 *)cw, CW_OFS(0x2C35))++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = 0x1B;
+        F(s8, (u8 *)cw, CW_OFS(0x2C45)) = GV(0x1B, 0x2B);
         cnLBS_Set_RoomProperty(arg1, CallBack_Result_SetRoomPropaty);
         break;
     case 1:

@@ -1,4 +1,5 @@
 /* lb_gpc05 - plaza chat 0x0060E180-0x0060E2A4: Plaza_disp_ReibunEdit. Whole file in lb_pc.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern char PitMenu[];
 /* plaza chat log state bytes (bss 0x39DADE..) */
@@ -65,7 +66,7 @@ int Plaza_disp_ReibunEdit(int arg) {
     y = 0xA4;
     do {
         flfntLocate(0xDA, y);
-        Reibun_print(0x16, *(int *)(p + 0xC));
+        Reibun_print(GV(0x16, 0x2C), *(int *)(p + 0xC));
         n -= 1;
         p += 0x10;
         y = (s16)(y + 0x16);

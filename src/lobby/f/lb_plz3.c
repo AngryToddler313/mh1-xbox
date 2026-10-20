@@ -1298,12 +1298,12 @@ u8 *a;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void put_main_cursor(int n) {
     R12 a = lit_3380;
     R12 b = lit_3382;
 
-    if (((u8 *)pNet)[0xC] == 0) {
+    if (((u8 *)pNet)[GV(0xC, 0x2D)] == 0) {
         a.v[1] = n * 0x16 + 0x8C;
         a.v[3] = a.v[1] + 0x16;
         b.v[1] = a.v[1] - 2;
@@ -1314,7 +1314,7 @@ void put_main_cursor(int n) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void put_main_cursor2(int x, int y, s32 n) {
     R12 a = lit_3397;
     s16 t = x;
@@ -1325,7 +1325,7 @@ void put_main_cursor2(int x, int y, s32 n) {
     b = lit_3399;
     b.v[0] = t + 1;
     b.v[2] = t + 0x193;
-    if (((u8 *)pNet)[0xC] == 0) {
+    if (((u8 *)pNet)[GV(0xC, 0x2D)] == 0) {
         a.v[1] = (s16)y + 0x3C + n * 0x16;
         a.v[3] = a.v[1] + 0x16;
         b.v[1] = a.v[1] - 2;

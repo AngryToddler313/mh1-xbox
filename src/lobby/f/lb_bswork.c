@@ -1,6 +1,7 @@
 /* lb_bswork - one translation unit 0x005E9960-0x005E9EC8: the browser's draw-work pool (BsWorkInitAll, the static
  * pull / push helpers, BsWorkPull / Push / Move / Trans) and its texture handle list (BsTextureFreeAll / Add / Get /
  * Load). Assembled from agent F's runs lb_gav01, lb_av01, lb_gz01, lb_av02 plus BsTextureAdd (agent B, 12 Oct 2026). */
+#include "g_alias.h"
 #include "lobby_f.h"
 
 
@@ -241,7 +242,7 @@ s32 BsTextureGet(int arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void BsTextureLoad(int a, u8 *p) {
     u8 st;
     switch (a) {
@@ -249,7 +250,7 @@ void BsTextureLoad(int a, u8 *p) {
         st = *p;
         switch (st) {
         case 0:
-            load_file_mdl(data_load_ptr, 0x885);
+            load_file_mdl(data_load_ptr, GV(0x885, 0xC8A));
             *p = *p + 1;
             break;
         case 1:

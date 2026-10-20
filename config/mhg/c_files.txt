@@ -2201,3 +2201,13 @@ lobby 0x005901C0 0x0059024C lobby/b/lb_by120
 lobby 0x00591310 0x00591374 lobby/b/lbsnd03
 lobby 0x0058F3E0 0x0058F458 lobby/f/lb_z119
 lobby 0x005D57E0 0x005D586C lobby/f/lb_gdr17
+lobby 0x005551A0 0x00555240 mhg/lobby/f/lb_tu_ib_p4
+lobby 0x0059B220 0x0059B2CC lobby/f/lb_gn01
+lobby 0x00579840 0x005798F4 mhg/lobby/f/lb_plz3_p3
+lobby 0x00579900 0x005799E4 mhg/lobby/f/lb_plz3_p4
+lobby 0x005B86E0 0x005B87B8 mhg/lobby/f/lb_bswork_p2
+lobby 0x005E1730 0x005E180C mhg/lobby/cnet/cnlbsg_p47
+lobby 0x00590250 0x00590330 lobby/b/lb_by121
+lobby 0x0058F580 0x0058F660 mhg/lobby/f/lb_gpc03_p2
+lobby 0x0058F740 0x0058F864 lobby/f/lb_gpc05
+lobby 0x0054DDB0 0x0054DEAC mhg/lobby/f/lb_sh1c_p2

@@ -330,7 +330,7 @@ asm void lb_process_drawHelp()
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void lb_armor2_listItem(int x, int y, int z, s16 n) {
     u16 kind;
     u16 id;

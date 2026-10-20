@@ -756,12 +756,12 @@ void kosuu_select(int pad, int c) {
 
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 u8 *sortup_idx_chk(int a) {
     u8 *u;
     int v;
     u = User_data;
-    v = a & 0xFF;
+    v = a & GV(0xFF, 0xFFFF);
     if (v == UDEQ(User_data, 1)) {
         return (u + UDEQO(1));
     }
