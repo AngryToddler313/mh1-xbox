@@ -102,6 +102,7 @@ int em09_dir_calc(s32 *, s32 *, int);
 void oikake_ck(EMW *em);
 void em09_act_set();
 
+#if !defined(G_PART)
 static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
     int list[20];
     int n;
@@ -143,7 +144,9 @@ static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
     set01_set(1, 6, w->item);
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 static void item_return(EMW *em, EM09W *w) {
     if (w->item != -1) {
         switch ((u16)Pl_item_stack(w->pl, (u16)w->item, (s16)-w->item_num)) {
@@ -167,7 +170,9 @@ static void item_return(EMW *em, EM09W *w) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act00_005A87D0(EMW *em, int unused) {
     switch (em->x05) {
     case 0:
@@ -184,7 +189,9 @@ static void em_act00_005A87D0(EMW *em, int unused) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act01_005A8860(EMW *em, int unused) {
     switch (em->x05) {
     case 0:
@@ -200,7 +207,9 @@ static void em_act01_005A8860(EMW *em, int unused) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act02_005A88E0(EMW *em, int n) {
     switch (em->x05) {
     case 0:
@@ -218,7 +227,9 @@ static void em_act02_005A88E0(EMW *em, int n) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act05_005A89B0(EMW *em, int unused) {
     switch (em->x05) {
     case 0:
@@ -233,7 +244,9 @@ static void em_act05_005A89B0(EMW *em, int unused) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act06_005A8A30(EMW *em, int unused) {
     switch (em->x05) {
     case 0:
@@ -254,7 +267,9 @@ static void em_act06_005A8A30(EMW *em, int unused) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act07_005A8B10(EMW *em, int unused) {
     switch (em->x05) {
     case 0:
@@ -268,7 +283,9 @@ static void em_act07_005A8B10(EMW *em, int unused) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act08_005A8B80(EMW *em, int unused) {
     switch (em->x05) {
     case 0:
@@ -283,7 +300,9 @@ static void em_act08_005A8B80(EMW *em, int unused) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act09_005A8C20(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -304,7 +323,9 @@ static void em_act09_005A8C20(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act10_005A8CE0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -320,7 +341,9 @@ static void em_act10_005A8CE0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act11_005A8D70(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
@@ -345,7 +368,9 @@ static void em_act11_005A8D70(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act12_005A8E30(EMW *em) {
     f32 v[3];
 
@@ -368,7 +393,9 @@ static void em_act12_005A8E30(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void em_act13_005A8F00(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -385,7 +412,9 @@ static void em_act13_005A8F00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act14_005A8F90(EMW *em) {
     EM09W *w;
     switch (em->x05) {
@@ -416,7 +445,9 @@ static void em_act14_005A8F90(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move00_005A90A0(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -438,6 +469,7 @@ static void em_move00_005A90A0(EMW *em) {
     case 14: em_act14_005A8F90(em); break;
     }
 }
+#endif
 
 #define TURN(em, spd) \
     do { \
@@ -446,6 +478,7 @@ static void em_move00_005A90A0(EMW *em) {
         cpRotMatrix((em)->ang, (f32 *)(em)->mat); \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov00_005A91E0(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
@@ -466,7 +499,9 @@ static void em_mov00_005A91E0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov01_005A92D0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -494,7 +529,9 @@ static void em_mov01_005A92D0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov02_005A9410(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -512,7 +549,9 @@ static void em_mov02_005A9410(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov04_005A94F0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -533,7 +572,9 @@ static void em_mov04_005A94F0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov05_005A9630(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -551,7 +592,9 @@ static void em_mov05_005A9630(EMW *em) {
     }
     cpRotMatrix(em->ang, (f32 *)em->mat);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov06_005A9700(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -570,7 +613,9 @@ static void em_mov06_005A9700(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov07_005A97E0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -589,7 +634,9 @@ static void em_mov07_005A97E0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov08_005A98C0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -611,7 +658,9 @@ static void em_mov08_005A98C0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_mov09_005A99B0(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -631,7 +680,9 @@ static void em_mov09_005A99B0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_mov10(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -653,7 +704,9 @@ void em_mov10(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_mov11(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -672,7 +725,9 @@ void em_mov11(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_mov12(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
@@ -696,10 +751,12 @@ void em_mov12(EMW *em) {
         break;
     }
 }
+#endif
 
 void em_mov10(EMW *);
 void em_mov11(EMW *);
 void em_mov12(EMW *);
+#if !defined(G_PART) || G_PART == 2
 static void em_move01_005A9D90(EMW *em) {
     switch (em->x15) {
     case 0: em_mov00_005A91E0(em); break;
@@ -716,7 +773,9 @@ static void em_move01_005A9D90(EMW *em) {
     case 12: em_mov12(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_fly00_005A9E90(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -735,7 +794,9 @@ static void em_fly00_005A9E90(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_move02_005A9F30(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -743,6 +804,7 @@ static void em_move02_005A9F30(EMW *em) {
         break;
     }
 }
+#endif
 
 #define ATK_FLY_START(em) \
     do { \
@@ -758,6 +820,7 @@ static void em_move02_005A9F30(EMW *em) {
         em->x3C0[2] = 0.0f; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 2
 static void em_atk00_005A9F70(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -812,7 +875,9 @@ static void em_atk00_005A9F70(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_atk01_005AA1F0(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
@@ -864,7 +929,9 @@ static void em_atk01_005AA1F0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void em_atk02_005AA420(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -913,7 +980,9 @@ static void em_atk02_005AA420(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move03_005AA670(EMW *em) {
     switch (em->x15) {
     case 0: em_atk00_005A9F70(em); break;
@@ -922,7 +991,9 @@ static void em_move03_005AA670(EMW *em) {
     case 3: em_atk01_005AA1F0(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_dm00_005AA700(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -944,7 +1015,9 @@ static void em_dm00_005AA700(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_dm01_005AA7D0(EMW *em) {
     FLMAT mat;
     f32 in[3];
@@ -996,7 +1069,9 @@ static void em_dm01_005AA7D0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_dm02_005AA990(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1018,7 +1093,9 @@ static void em_dm02_005AA990(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_dm03_005AAA60(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
@@ -1065,7 +1142,9 @@ static void em_dm03_005AAA60(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_move04_005AAC30(EMW *em) {
     switch (em->x15) {
     case 0: em_dm00_005AA700(em); break;
@@ -1074,7 +1153,9 @@ static void em_move04_005AAC30(EMW *em) {
     case 3: em_dm03_005AAA60(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_die00_005AACC0(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
     FLMAT mat;
@@ -1141,7 +1222,9 @@ static void em_die00_005AACC0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void em_die01_005AAF20(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
@@ -1180,7 +1263,9 @@ static void em_die01_005AAF20(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_die_rev_005AB090(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1209,7 +1294,9 @@ static void em_die_rev_005AB090(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void em_move05_005AB180(EMW *em) {
     switch (em->x15) {
     case 0: em_die00_005AACC0(em); break;
@@ -1217,9 +1304,11 @@ static void em_move05_005AB180(EMW *em) {
     case 2: em_die_rev_005AB090(em); break;
     }
 }
+#endif
 
 void em09_main_sub(EMW *em);
 
+#if !defined(G_PART)
 void em09_main(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
     u8 dmg[4];
@@ -1329,7 +1418,9 @@ void em09_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em09_main_sub(EMW *em) {
     switch (em->mode) {
     case 0: em_move00_005A90A0(em); break;
@@ -1342,18 +1433,24 @@ void em09_main_sub(EMW *em) {
     case 7: em_move00_005A90A0(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void move_default_005AB6E0(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void sound_call_005AB6F0(EMW *em, int frame, int se) {
     if (em_frame_check(em, (f32)frame, 0)) {
         Em_se_req2(em, se, 0, em->pos, 6, 0);
     }
 }
+#endif
 
 /* Sound and effect script per animation (sound_call(em, frame, se) plays
  * the sound once the animation reaches the frame). */
+#if !defined(G_PART)
 void ef_move_sub_005AB750(EMW *em, EM09W *w) {
     if (em->char0 != w->anim) {
         w->anim = em->char0;
@@ -1650,3 +1747,4 @@ void ef_move_sub_005AB750(EMW *em, EM09W *w) {
         break;
     }
 }
+#endif
