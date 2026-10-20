@@ -2245,3 +2245,9 @@ game 0x005FC520 0x005FC8F4 mhg/game/em/em16a_p20
 game 0x005FCA00 0x005FCB14 mhg/game/em/em16a_p21
 game 0x0063B770 0x0063B9E8 mhg/game/em/em27a_p17
 game 0x00642530 0x00642728 mhg/game/em/em29_p3
+game 0x00665920 0x006659C4 mhg/game/shell/shell09_p4
+game 0x006659D0 0x00665A58 mhg/game/shell/shell09_p5
+game 0x00665A60 0x00665B1C mhg/game/shell/shell09_p6
+game 0x00665C50 0x00665D90 mhg/game/shell/shell09_p7
+game 0x00665E50 0x00665F90 mhg/game/shell/shell09_p8
+game 0x00665F90 0x00666158 mhg/game/shell/shell09_p9

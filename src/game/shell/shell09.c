@@ -17,7 +17,8 @@ void se_req2(int, int, int, VEC3 *, int, int);
 u16 ran_suu(int);
 void release_prim(s16);
 #ifdef MHG_PS2
-void game_func_00666260(SHLW *sh);     /* G: mode 3 runs shell09_m again for the poison cloud (arg 19), else shell09_d */
+void game_func_00666260(SHLW *sh);
+void game_func_00666350(SHLW *sh);     /* G: mode 3 runs shell09_m again for the poison cloud (arg 19), else shell09_d */
 #endif
 
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
@@ -32,7 +33,7 @@ static void shell09_m(SHLW *sh);
 static void shell09_d(SHLW *sh);
 static void shell09_e(SHLW *sh);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
 static void shell09_set_com(SHLW *sh) {
     sh->type = 9;
@@ -45,16 +46,27 @@ static void shell09_set_com(SHLW *sh) {
     case 0xE:
     case 0xF:
     case 0x10:
+#ifdef MHG_PS2
+    case 20:            /* G: the big bombs */
+    case 22:
+#endif
         shell09_kaze_oto_set(sh);
         break;
     }
+#ifdef MHG_PS2
+    sh->x06 = 0;
+#endif
 }
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
+#ifdef MHG_PS2
+void Shell09_set(VEC3 *pos, int arg, int stg, int skill) {     /* G: x06 = the bomber skill flag */
+#else
 void Shell09_set(VEC3 *pos, int arg, int stg) {
+#endif
     SHLW *sh;
 
     if ((sh = pull_shell_work(0)) != 0) {
@@ -64,12 +76,15 @@ void Shell09_set(VEC3 *pos, int arg, int stg) {
         sh->x7A = 0;
         sh->stg = stg;
         shell09_set_com(sh);
+#ifdef MHG_PS2
+        sh->x06 = skill;
+#endif
     }
 }
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
 void Shell09_set_pl(PLW *pl, VEC3 *pos, int arg) {
     SHLW *sh;
@@ -77,7 +92,11 @@ void Shell09_set_pl(PLW *pl, VEC3 *pos, int arg) {
     if ((sh = pull_shell_work(0)) != 0) {
         sh->arg = arg;
         flvecCopy(&sh->pos2, pos);
+#ifdef MHG_PS2
+        if (arg != 2 && arg != 22) {
+#else
         if (arg != 2) {
+#endif
             sh->em_no = pl->id;
             sh->x7A = ((EMW *)pl)->x10;
             sh->owner = pl;
@@ -128,7 +147,7 @@ void Shell09_set_pl2(PLW *pl, VEC3 *pos, int arg, int stg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
 static void shell09_kaze_oto_set(SHLW *sh) {
     SHLW *nw;
@@ -152,6 +171,14 @@ static void shell09_kaze_oto_set(SHLW *sh) {
     case 4:
         arg = 5;
         break;
+#ifdef MHG_PS2
+    case 20:            /* G: the big bombs have their own wind noise */
+        arg = 21;
+        break;
+    case 22:
+        arg = 23;
+        break;
+#endif
     default:
         return;
     }
@@ -165,6 +192,9 @@ static void shell09_kaze_oto_set(SHLW *sh) {
         nw->xC8 = sh->xC8;
         flvecCopy(&nw->pos2, &sh->pos2);
         nw->stg = sh->stg;
+#ifdef MHG_PS2
+        nw->x06 = 0;
+#endif
     }
 }
 #endif
@@ -201,16 +231,22 @@ static void shell09_move(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
 static void shell09_se_req(SHLW *sh) {
     if (sh->stg == game_w.stage) {
         switch (sh->arg) {
         case 0:
         case 0x10:
+#ifdef MHG_PS2
+        case 20:
+#endif
             se_req2(1, 0x4D, 0, &sh->pos2, 1, 0);
             break;
         case 2:
+#ifdef MHG_PS2
+        case 22:
+#endif
             se_req2(1, 0x4F, 0, &sh->pos2, 1, 0);
             break;
         case 7:
@@ -229,7 +265,7 @@ static void shell09_se_req(SHLW *sh) {
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC: the G block at the end of the file */
 static void shell09_i(SHLW *sh) {
     sh->mode++;
@@ -240,40 +276,56 @@ static void shell09_i(SHLW *sh) {
     case 0:
     case 2:
     case 0x10:
+#ifdef MHG_PS2
+    case 20:
+    case 22:
+#endif
         shell_flag_set(sh, 4);
-        atck_data_set_shl(sh, atck_data_no[sh->arg], shell09_tbl);
+        atck_data_set_shl(sh, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     case 6:
         shell_flag_set(sh, 0);
-        atck_data_set_shl(sh, atck_data_no[sh->arg], shell09_tbl);
+        atck_data_set_shl(sh, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     case 1:
     case 4:
+#ifdef MHG_PS2
+    case 18:
+#endif
         shell_flag_set(sh, 0x200);
-        pl_atck_data_set_shl(sh, sh->owner, atck_data_no[sh->arg], shell09_tbl);
+        pl_atck_data_set_shl(sh, sh->owner, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     case 7:
     case 8:
     case 0xE:
     case 0xF:
         shell_flag_set(sh, 4);
-        pl_atck_data_set_shl(sh, sh->owner, atck_data_no[sh->arg], shell09_tbl);
+        pl_atck_data_set_shl(sh, sh->owner, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     case 9:
     case 0xA:
+#ifdef MHG_PS2
+    case 21:
+    case 23:
+#endif
         shell_flag_set(sh, 0x400);
-        atck_data_set_shl(sh, atck_data_no[sh->arg], shell09_tbl);
+        atck_data_set_shl(sh, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     case 0xD:
         shell_flag_set(sh, 0x400);
-        pl_atck_data_set_shl(sh, sh->owner, atck_data_no[sh->arg], shell09_tbl);
+        pl_atck_data_set_shl(sh, sh->owner, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     default:
         shell_flag_set(sh, 0);
-        pl_atck_data_set_shl(sh, sh->owner, atck_data_no[sh->arg], shell09_tbl);
+        pl_atck_data_set_shl(sh, sh->owner, GV(atck_data_no[sh->arg], sh->arg + 1), shell09_tbl);
         break;
     }
+#ifdef MHG_PS2
+    game_func_00666350(sh);     /* G: the bomber skill raises the blast power */
+    sh->x88 = shell09_body_tbl[sh->body];
+#else
     sh->x88 = shell09_body_tbl[sh->arg];
+#endif
     sh->x8C = 0;
     sh->char0 = 0;
     sh->prim = 0;
