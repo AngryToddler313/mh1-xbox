@@ -3009,7 +3009,7 @@ s32 Lbc_ReserveRoom() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 80
 void CallBack_Result_Lobby_RoomCreate(CNET_RES res) {
     u8 *temp_a0;
     u8 *temp_a1;
@@ -3018,7 +3018,7 @@ void CallBack_Result_Lobby_RoomCreate(CNET_RES res) {
     if ((F(u8, temp_a1, CW_OFS(0x2C31)) != 5) && (F(u8, temp_a1, CW_OFS(0x2C45)) == CBW(0xF))) {
         F(u8, temp_a1, CW_OFS(0x2C45)) = 0U;
         if (res.val == 0) {
-            F(s8, (u8 *)cw, CW_OFS(0x32C5)) = 1;
+            F(s8, (u8 *)cw, GV(0x32C5, 0xF751)) = 1;
             temp_a0 = (u8 *)cw;
             F(u8, temp_a0, CW_OFS(0x2C35)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C35)) + 1);
             return;
