@@ -206,9 +206,13 @@ static void hk_key_esc(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 void hk_key_space(int a) {
+#ifdef VERSION_MHG
+    if (SKB(0x2F) != 1) {
+#else
     if (SKB(0x2F) == 0) {
+#endif
         if (SKB(0x158) == 0) {
             if (a == 0) {
                 sk_cmd_input(SKP(8));

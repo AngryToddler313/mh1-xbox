@@ -301,11 +301,16 @@ void eft06_se_req(EFTW *ew, f32 *pos) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 EFTW *eft06_set_com(void *chr, s16 arg, int x05) {
     EFTW *ew;
 
+#ifdef VERSION_MHG
+    /* G: also for kind 3 with the bytes 0x10 and 0x1E set, whatever the stage */
+    if (arg != 7 && !(((u8 *)chr)[0x10] != 0 && ((u8 *)chr)[0x1E] != 0 && ((u8 *)chr)[2] == 3) && Pl_stg_ck(chr) == 0) {
+#else
     if (arg != 7 && Pl_stg_ck(chr) == 0) {
+#endif
         return 0;
     }
     ew = pull_eft_work(1);

@@ -1070,9 +1070,27 @@ static u32 chat_log_disp_line(u8 top) {
 extern u8 pf_chat_log_base[];
 extern u8 lit_3171[];
 extern char *str_3166[];
+#ifdef MHG_PS2
+/* G's Pit_disp_chat: the frame and the megaphone are drawn by main 0x221E00 (frame data, chat colour), and the log
+ * by disp_chat_log_sub (0x221F00) with the colour as a 4th argument; the colour comes from a byte table indexed by
+ * option_w[6] */
+extern u8 D_002EC1B4[4];
+extern void *D_002EC628[];
+extern s16 D_002FF29C[];
+void func_00221E00(void *, int);
+void func_00221F00(int, int, int, int);
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 33
 void Pit_disp_chat(void) {
+#ifdef MHG_PS2
+    u8 c = D_002EC1B4[((s8 *)&option_w)[6]];
+
+    func_00221E00(D_002EC628[0], c);
+    func_00221F00(0, 0, 0, c);
+    D_002FF29C[0] = 0;
+    return;
+#endif
     DispFrameMessage(pf_chat_log_base, lit_3171);
     Put_megaphone(0x97, 0xBB, PitMenu.x17);
     flfntSetSize(0x15, 0x12);
@@ -1207,7 +1225,7 @@ void ClearMessageHaltFlag(void) {
 
 int func_5D8370(s8);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 32
 void Join_pl_chk(void) {
     u32 i;
     u8 *g;
@@ -1216,19 +1234,20 @@ void Join_pl_chk(void) {
     PitMenu.x19 = 0;
     if (GW(0x1DC) == 0) {
         for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-            if (game_w.master != i && g[0x208] == 1) {
+            if (game_w.master != i && g[GWX(0x208)] == 1) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu.x1A++;
             }
         }
     } else {
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < GV(8, 10); i++) {
             if (game_w.master != i && func_5D8370(i) == 0) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu.x1A++;
             }
         }
     }
+#ifndef VERSION_MHG
     if (PitMenu.x16 != 0) {
         PitMenu.x16 &= PitMenu.x19;
         if (PitMenu.x16 == 0) {
@@ -1238,6 +1257,7 @@ void Join_pl_chk(void) {
             PitMenu.x18 = 1;
         }
     }
+#endif
 }
 #endif
 
@@ -1838,8 +1858,33 @@ void Init_reibun(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 35
 static void chcnfg_reibun_set(s8 *src, int no) {
+#ifdef MHG_PS2
+    /* G: a byte copy of up to 44 bytes, then the short form by main 0x2277B0 (10 bytes) */
+    REIBUN *r = &str_tbl_reibun0[no & 0xFF];
+    int n;
+    s8 *d;
+    s8 *s;
+    s8 c;
+    s = src;
+    n = 44;
+    d = r->edit;
+
+    do {
+        c = *s;
+        if (c == 0) {
+            break;
+        }
+        *d = c;
+        n--;
+        s++;
+        d++;
+    } while (n > 0);
+    *d = 0;
+    func_002277B0((s8 *)r, 10, src);
+}
+#else
     REIBUN *r = &str_tbl_reibun0[no & 0xFF];
     u32 n = 0x16;
     s8 *d = r->edit;
@@ -1881,6 +1926,7 @@ static void chcnfg_reibun_set(s8 *src, int no) {
     } while (1);
 }
 #endif
+#endif
 
 int softkey_ck();
 
@@ -1900,13 +1946,24 @@ int Reibun_Edit_Start(int no) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 34
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
 
+#ifdef VERSION_MHG
+    u16 k = *(u16 *)((u8 *)&Psw + 4);
+
+    if (k & 0x4000) {       /* G: this button ends the edit */
+        SoftKeyboard_exit();
+        return 1;
+    }
+    buf[0] = 0;
+    r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), (s16)k);
+#else
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));
+#endif
     if (r != 0) {
         if (buf[0] != 0 && r > 0) {
             chcnfg_reibun_set(buf, no);

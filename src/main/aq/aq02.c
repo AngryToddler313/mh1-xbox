@@ -1,4 +1,5 @@
 /* AQ session layer (0x0022CD60-0x0022D2E8): init_AQWork, AQ_exec, AQ_exec_load, session init/wait, ck_exec_aq. See aq_nm.c. */
+#include "g_alias.h"
 #include "gwx.h"
 #include "types.h"
 
@@ -64,6 +65,9 @@ int CngNetAQSessionExit_online();
 int CngNetAQInit();
 u8 *CngNetAQcommandExec();
 int mcsls_get_error_code();
+#ifdef MHG_PS2
+extern char *D_002EC1D8;   /* G: AQ_exec_load passes this small-data word in place of the error code */
+#endif
 int set01_set2();
 int Quest_error_set();
 void get_AQdata(void);
@@ -276,7 +280,7 @@ void AQ_exec(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void AQ_exec_load(void) {
     AQW *w;
     u8 *p;
@@ -310,7 +314,11 @@ void AQ_exec_load(void) {
                     v = *p;
                     if (v != 0xFF) {
                         *p = 0xFF;
+                        #ifdef MHG_PS2
+                        sprintf(err_str, lit_182_0036C8F0, D_002EC1D8);
+#else
                         sprintf(err_str, lit_182_0036C8F0, mcsls_get_error_code(v));
+#endif
                         set01_set2(err_str);
                         Quest_error_set();
                     }

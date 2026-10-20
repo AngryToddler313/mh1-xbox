@@ -1,4 +1,5 @@
 /* menu33 - f_menu 0x001332F0-0x001333A4: data menu display */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -223,6 +224,9 @@ void disp_menu(int, PIT_W *);
 
 /* ===== wyvern ripple, data/option windows (0x132510-0x133A00) ===== */
 extern u8 pfl_menu_data[];
+#ifdef MHG_PS2
+extern u8 pfl_menu_data_g[];
+#endif
 extern u8 pf_mix_list_base[], pf_monster_list_base[];
 extern u8 lit_4947[], lit_4948[], lit_4949[], lit_4985[], lit_4986[], lit_4987[], lit_5012[], lit_5054[];
 extern u8 mix_level_color[];
@@ -311,15 +315,20 @@ void Pit_disp_data(void) {
     switch (lpPit->x42) {
     case 0:
         disp_menu(1, lpPit);
+#ifdef MHG_PS2
+        DispFrameList(pfl_menu_data_g, 0, lpPit->x43);   /* G: one frame list */
+#else
         DispFrameList(pfl_menu_data + game_w.x1DC * 0x18, 0, lpPit->x43);
+#endif
         break;
     case 1:
         switch (lpPit->x43) {
         case 0:
-            disp_mix_list(1, lpPit);
+            /* G's map has these two names the other way round */
+            GV(disp_mix_list, disp_monster_list)(1, lpPit);
             break;
         case 1:
-            disp_monster_list(1, lpPit);
+            GV(disp_monster_list, disp_mix_list)(1, lpPit);
             break;
         }
         break;

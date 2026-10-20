@@ -1,6 +1,7 @@
 /* Sprite list transfer. SLPM_654.95 0x0015AED0-0x0015B300 (f_trans).
  * Sprites queued by Put_sprite etc. sit in sprite_area (0x50 bytes each); trans_sprite()
  * draws them at the end of the frame, optionally depth sorted (softdip 0xAB). */
+#include "g_alias.h"
 #include "types.h"
 
 extern u8 *sprite_area;
@@ -29,7 +30,7 @@ void flps1600(void *);
 void trans_spr_sub(u8 *);
 void trans_sprite_sort(void);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void trans_sprite(void) {
     u8 m[64];
     int i;
@@ -37,10 +38,12 @@ void trans_sprite(void) {
 
     set_viewproj(0);
     flmatrStore(0x21, view_mat);
+#ifndef MHG_PS2     /* G has no sorted path */
     if (softdip_ck(0xAB) != 0) {
         trans_sprite_sort();
         return;
     }
+#endif
     flmatInit(m);
     flSetRenderState(0x1A, (int)m);
     flSetRenderState(0x60, 0);
