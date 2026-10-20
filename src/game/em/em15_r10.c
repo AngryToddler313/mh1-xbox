@@ -359,6 +359,11 @@ void em_cmd_ck(EMW *);
 void game_func_005F6260(EMW *em, EM15W *w);
 #endif
 
+#ifdef MHG_PS2
+#include "em_revive_g.h"
+void em15_act_set(EMW *em, int kind, u16 no, u16 arg);
+#endif
+
 #if !defined(G_PART) || G_PART == 1
 static void em_atk00_005C89A0(EMW *em, EM15W *w) {
     f32 temp_f1;
@@ -1168,7 +1173,7 @@ static void em_demo04_005C9F20(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void em_die00_005CA040(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1189,7 +1194,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1197,8 +1202,15 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x3:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1208,6 +1220,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -1220,7 +1233,7 @@ static void em_die00_005CA040(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static void em_die01_005CA1D0(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1239,7 +1252,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         break;
     case 0x1:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1247,8 +1260,15 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_WAIT(em, 1);
+#endif
         break;
     case 0x3:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1258,6 +1278,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
@@ -1270,7 +1291,7 @@ static void em_die01_005CA1D0(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_die02_005CA340(EMW *em, EM15W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1314,7 +1335,7 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         break;
     case 0x3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1323,8 +1344,19 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         break;
     case 0x4:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        if (Quest_enemy_revival_ck(em) != 0 && --em->work08 <= 0) {
+            em->x05 += 1;
+            Em_hagi_point_clr(em);
+            em->work08 = 150;
+        }
+#endif
         break;
     case 0x5:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em15_act_set);
+        break;
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1334,6 +1366,7 @@ static void em_die02_005CA340(EMW *em, EM15W *w) {
         }
         em->x798 = (f32) em->work08 / 150.0f;
         break;
+#endif
     case 0x63:
         if (em->x194 == 0) {
             em->x388 = 0;
