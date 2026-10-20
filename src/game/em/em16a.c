@@ -2732,13 +2732,27 @@ void em_move07_005D6BC0(EMW *em, EM16W *w) {
 
 void em16_main_sub(EMW *em, EM16W *w);
 
-#if !defined(G_PART)
+/* G: the monster turns to the hit direction before the damage act */
+#ifdef MHG_PS2
+#define GANG16(em, a) ((em)->ang[1] = (a))
+#else
+#define GANG16(em, a)
+#endif
+
+#if !defined(G_PART) || G_PART == 22
 void em16_main(EMW *em) {
     EM16W *w = (EM16W *)em->ex;
     u8 dmg[4];
     u8 pull = 1;
     int yobi;
     int d;
+#ifdef MHG_PS2
+    int d2;             /* G: one angle local per damage case */
+    int d3;
+#else
+#define d2 d
+#define d3 d
+#endif
     u8 r;
 
     em->act_spd = 1.2f;
@@ -2767,23 +2781,35 @@ void em16_main(EMW *em) {
         if (em->x388 == 2 && r == 1 && (em->x788[0] & 2)) {
             d = (u16)(em->dm_ang - em->ang[1]);
             if (d >= 0x6000 && d < 0xA000) {
+                GANG16(em, em->dm_ang + 0x8000);
                 em16_act_set(em, 5, 6, 0);
             } else if (d >= 0x2000 && d < 0x6000) {
+                GANG16(em, em->dm_ang - 0x4000);
                 em16_act_set(em, 5, 8, 0);
             } else if (d >= 0xA000 && d < 0xE000) {
+                GANG16(em, em->dm_ang + 0x4000);
                 em16_act_set(em, 5, 9, 0);
             } else {
+                GANG16(em, em->dm_ang);
                 em16_act_set(em, 5, 7, 0);
             }
         } else {
+#ifdef MHG_PS2
+            d2 = (u16)(em->dm_ang - em->ang[1]);
+#else
             d = (u16)(em->dm_ang - em->ang[1]);
-            if (d >= 0x6000 && d < 0xA000) {
+#endif
+            if (d2 >= 0x6000 && d2 < 0xA000) {
+                GANG16(em, em->dm_ang + 0x8000);
                 em16_act_set(em, 5, 0, 0);
-            } else if (d >= 0x2000 && d < 0x6000) {
+            } else if (d2 >= 0x2000 && d2 < 0x6000) {
+                GANG16(em, em->dm_ang - 0x4000);
                 em16_act_set(em, 5, 2, 0);
-            } else if (d >= 0xA000 && d < 0xE000) {
+            } else if (d2 >= 0xA000 && d2 < 0xE000) {
+                GANG16(em, em->dm_ang + 0x4000);
                 em16_act_set(em, 5, 3, 0);
             } else {
+                GANG16(em, em->dm_ang);
                 em16_act_set(em, 5, 1, 0);
             }
         }
@@ -2809,14 +2835,22 @@ void em16_main(EMW *em) {
         em16_act_set(em, 0, 8, 0);
         break;
     case 12:
+#ifdef MHG_PS2
+            d3 = (u16)(em->dm_ang - em->ang[1]);
+#else
             d = (u16)(em->dm_ang - em->ang[1]);
-            if (d >= 0x6000 && d < 0xA000) {
+#endif
+            if (d3 >= 0x6000 && d3 < 0xA000) {
+                GANG16(em, em->dm_ang + 0x8000);
                 em16_act_set(em, 4, 1, 0);
-            } else if (d >= 0x2000 && d < 0x6000) {
+            } else if (d3 >= 0x2000 && d3 < 0x6000) {
+                GANG16(em, em->dm_ang - 0x4000);
                 em16_act_set(em, 4, 3, 0);
-            } else if (d >= 0xA000 && d < 0xE000) {
+            } else if (d3 >= 0xA000 && d3 < 0xE000) {
+                GANG16(em, em->dm_ang + 0x4000);
                 em16_act_set(em, 4, 4, 0);
             } else {
+                GANG16(em, em->dm_ang);
                 em16_act_set(em, 4, 2, 0);
             }
         break;
@@ -2825,12 +2859,16 @@ void em16_main(EMW *em) {
         if (em->x388 == 2) {
             d = em->dm_ang;
             if (d >= 0x6000 && d < 0xA000) {
+                GANG16(em, d + 0x8000);
                 em16_act_set(em, 4, 1, 0);
             } else if (d >= 0x2000 && d < 0x6000) {
+                GANG16(em, d - 0x4000);
                 em16_act_set(em, 4, 3, 0);
             } else if (d >= 0xA000 && d < 0xE000) {
+                GANG16(em, d + 0x4000);
                 em16_act_set(em, 4, 4, 0);
             } else {
+                GANG16(em, (u16)d);
                 em16_act_set(em, 4, 2, 0);
             }
         } else {
@@ -2845,7 +2883,7 @@ void em16_main(EMW *em) {
         }
     }
     switch (quest_w.x08) {
-    case 0x88:
+    case GV(0x88, 10006):
         if (em->stg == 0x23 && Event_flag_ck(0xA) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 3, 0);
@@ -2853,7 +2891,7 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0x8A:
+    case GV(0x8A, 10010):
         if (em->stg == 0x28 && Event_flag_ck(0x13) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 4, 0);
@@ -2861,7 +2899,7 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0xAB:
+    case GV(0xAB, 10041):
         if (em->stg == 0x35 && Event_flag_ck(0x12) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 5, 0);
@@ -2869,6 +2907,16 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
+#ifdef MHG_PS2
+    case 10035:
+        if (em->stg == 0x36 && Event_flag_ck(0x16) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 6, 1);
+            }
+            break;
+        }
+        goto cmd;
+#endif
     default:
     cmd:
         if (em->x839 != 0) {
@@ -2883,6 +2931,10 @@ void em16_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#ifndef MHG_PS2
+#undef d2
+#undef d3
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 8
