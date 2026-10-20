@@ -2759,3 +2759,15 @@ sub_main 0x004EA570 0x004EA7A8 mhg/main/emw/emu03_p3
 sub_main 0x004C7790 0x004C78B0 mhg/main/ud/f_ud_p28
 main 0x002215A0 0x00221814 mhg/main/chat/f_chat_p37
 main 0x001E44E0 0x001E45DC mhg/main/boot/boot02_p2
+game 0x00547300 0x005474DC mhg/game/em/em_core_g_p4
+game 0x00579CB0 0x00579FEC mhg/game/eft/eft16_p8
+game 0x00576C60 0x00577204 mhg/game/eft/eft16_p9
+game 0x00578BB0 0x00579A58 mhg/game/eft/eft16_p10
+game 0x0060D470 0x0060D564 mhg/game/em/em17_r14_p4
+game 0x005D8690 0x005D8E44 mhg/game/em/em10_p9
+game 0x00598AD0 0x00598D78 mhg/game/em/em01_aif_p19
+game 0x00599A60 0x00599D08 mhg/game/em/em01_aif_p20
+game 0x00580F40 0x005814E8 mhg/game/eft/eft23_p7
+game 0x006682C0 0x0066863C mhg/game/shell/shell14_p7
+game 0x006689A0 0x00668A30 mhg/game/shell/shell14_p8
+game 0x0059E7C0 0x0059F2AC mhg/game/em/em01_aif_p21

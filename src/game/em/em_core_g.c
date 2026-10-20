@@ -1,5 +1,6 @@
 /* em_core_g - game.bin 0x00536C80-0x0053948C: target selection, kehai, area/escape/need checks, net_act_set, smoke/senko checks. Matching run of the f_em file
  * (whole file in em_core_nm.c). Meanings of fields are guesses. */
+#include "g_alias.h"
 #include "em_sys.h"
 #include "game.h"
 #include "pl.h"
@@ -981,11 +982,71 @@ void em17_local_area_move_init(EMW *);
 void em20_local_area_move_init(EMW *);
 void em21_local_area_move_init(EMW *);
 void em27_local_area_move_init(EMW *);
+#ifdef MHG_PS2
+void game_func_005902B0(EMW *);     /* em01 */
+void game_func_005C5E00(EMW *);     /* em08 */
+void game_func_005E0B10(EMW *);     /* em14 */
+void game_func_005EE180(EMW *);     /* em15 */
+void game_func_00606070(EMW *);     /* em17 */
+void game_func_0062D5A0(EMW *);     /* em21 */
+void game_func_0063B720(EMW *);     /* em27 */
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em_area_move_init(EMW *em) {
     em->x928 = -1;
     em->x929 = -1;
+#ifdef MHG_PS2 /* G: the G kinds too (G names of the per-monster functions) */
+    switch (em->kind) {
+    case 1:
+    case 42:
+    case 37:
+    case 11:
+    case 41:
+    case 49:
+        game_func_005902B0(em);
+        break;
+    case 7:
+    case 50:
+        em07_local_area_move_init(em);
+        break;
+    case 8:
+    case 34:
+        game_func_005C5E00(em);
+        break;
+    case 14:
+    case 43:
+    case 26:
+    case 44:
+        game_func_005E0B10(em);
+        break;
+    case 15:
+    case 45:
+        game_func_005EE180(em);
+        break;
+    case 17:
+    case 47:
+    case 22:
+    case 48:
+        game_func_00606070(em);
+        break;
+    case 6:
+    case 38:
+    case 20:
+    case 39:
+        em20_local_area_move_init(em);
+        break;
+    case 21:
+    case 46:
+        game_func_0062D5A0(em);
+        break;
+    case 27:
+    case 28:
+    case 31:
+        game_func_0063B720(em);
+        break;
+    }
+#else
     switch (em->kind) {
     case 1:
     case 11:
@@ -1022,6 +1083,7 @@ void em_area_move_init(EMW *em) {
         em27_local_area_move_init(em);
         break;
     }
+#endif
 }
 #endif
 

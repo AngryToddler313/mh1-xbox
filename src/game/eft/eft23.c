@@ -271,7 +271,10 @@ static void eft23_normal_mv(EFTW *ew, FISH *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+s32 Pl_Skill_ck(PLW *, int);
+#endif
+#if !defined(G_PART) || G_PART == 7
 static void eft23_atari_mv(EFTW *ew, FISH *w) {
     f32 v[3];
     f32 out[3];
@@ -295,6 +298,11 @@ static void eft23_atari_mv(EFTW *ew, FISH *w) {
     }
     switch (ew->stg) {
     case 0:
+#ifdef MHG_PS2
+        if (((PLW *)u->owner)->work88A == 0x6F) {
+            w->nibbles = 0;
+        } else
+#endif
         w->nibbles = (u16)ran_suu(1) & 3;
     case 1:
         if (w->nibbles-- <= 0) {
@@ -319,6 +327,11 @@ static void eft23_atari_mv(EFTW *ew, FISH *w) {
         if (--ew->timer <= 0) {
             if (ew->stg == 5) {
                 ((PLW *)u->owner)->x881 = kuituki_time_tbl[(u16)ran_suu(1) & 3];
+#ifdef MHG_PS2
+                if (Pl_Skill_ck((PLW *)u->owner, 0x66) == 1) {
+                    ((PLW *)u->owner)->x881 *= 2;
+                }
+#endif
                 w->bite_time = kuituki_time_tbl[(u16)ran_suu(1) & 3];
                 if (((u16)ran_suu(1) & 3) == 0) {
                     ((PLW *)u->owner)->x8EA = 0;

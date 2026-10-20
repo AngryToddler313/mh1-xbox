@@ -58,6 +58,21 @@ extern u16 map4_trade_sp[];
 extern EM10_TRADE map4_trade_nm[];
 extern u16 map6_trade_sp[];
 extern EM10_TRADE map6_trade_nm[];
+#ifdef MHG_PS2
+/* G trade rows: give_rare is given one time in five. */
+typedef struct EM10_TRADE_G {
+    u16 take;           /* 0x0 0xFFFF ends the list */
+    u16 give;           /* 0x2 */
+    u16 give_rare;      /* 0x4 */
+} EM10_TRADE_G;
+
+extern u16 em10_trade_sp2_g[4];
+extern u16 em10_trade_sp4_g[4];
+extern u16 em10_trade_sp6_g[4];
+extern EM10_TRADE_G em10_trade_nm2_g[];
+extern EM10_TRADE_G em10_trade_nm4_g[];
+extern EM10_TRADE_G em10_trade_nm6_g[];
+#endif
 extern EM10_POS em10_start_pos05[];
 extern EM10_POS em10_start_pos16[];
 extern EM10_POS em10_start_pos41[];
@@ -196,7 +211,212 @@ void em10_msg_set2(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if defined(G_PART) && G_PART != 7
+void em10_msg_set(EMW *em, u16 no); /* static of part 7 */
+#endif
+#if !defined(G_PART) || G_PART == 9
+#ifdef MHG_PS2
+int talk_move(EMW *em) {
+    u16 *sp;
+    EM10_TALK *t;
+    EM10_TRADE_G *nm;
+    u8 res;
+    int n;
+    PLW *pl;
+    EM10W *w;
+
+    pl = &player_work[game_w.master];
+    t = &talk_tbl[em->x2D8];
+    pl->x8C6 = 5;
+    w = (EM10W *)em->ex;
+    if (em->x2DA < 300) {
+        em->x2DA++;
+    } else {
+        em->x2DA = 300;
+    }
+    switch (em->x2D6) {
+    case 0:
+        if (NPC_Message(t->msg, em->x2DA, t->x03, w->sel) == 0) {
+            if (w->x1C != 0) {
+                w->x1C--;
+            }
+            if ((pl->sw.trg & 0x60) && w->x1A == 0 && w->x1C == 0) {
+                switch (t->kind) {
+                case 0:
+                    pl->x8C6 = 0;
+                    break;
+                case 3:
+                    switch (game_w.x2E) {
+                    default:
+                    case 2:
+                        sp = em10_trade_sp2_g;
+                        nm = em10_trade_nm2_g;
+                        break;
+                    case 4:
+                        sp = em10_trade_sp4_g;
+                        nm = em10_trade_nm4_g;
+                        break;
+                    case 6:
+                        sp = em10_trade_sp6_g;
+                        nm = em10_trade_nm6_g;
+                        break;
+                    }
+                    res = 0;
+                    if (Pl_item_num_ck(pl, 0x1C0) >= 0x63 && Pl_item_num_ck3(pl, 0x77) > 0) {
+                        em->x6E2 = 0x1C0;
+                        em->x6E0 = 0x77;
+                        res = 3;
+                    }
+                    if (res == 0) {
+                        while (*sp != 0xFFFF) {
+                            if (Pl_item_num_ck(pl, *sp) > 0) {
+                                em->x6E2 = *sp;
+                                em->x6E0 = 0x8B;
+                                if (Pl_item_num_ck3(pl, em->x6E0) > 0) {
+                                    res = 1;
+                                    break;
+                                }
+                            }
+                            sp++;
+                        }
+                    }
+                    if (res == 0) {
+                        while (nm->take != 0xFFFF) {
+                            if (Pl_item_num_ck(pl, nm->take) > 0) {
+                                em->x6E2 = nm->take;
+                                if ((u16)ran_suu(1) % 100 >= 20) {
+                                    em->x6E0 = nm->give;
+                                } else {
+                                    em->x6E0 = nm->give_rare;
+                                }
+                                if (Pl_item_num_ck3(pl, em->x6E0) > 0) {
+                                    res = 2;
+                                    break;
+                                }
+                            }
+                            nm++;
+                        }
+                    }
+                    switch (res) {
+                    case 0:
+                        em10_msg_set2(em);
+                        break;
+                    case 1:
+                        em10_msg_set(em, 6);
+                        break;
+                    case 2:
+                        em10_msg_set(em, 10);
+                        break;
+                    case 3:
+                        em10_msg_set(em, 0xE);
+                        break;
+                    }
+                    break;
+                case 6:
+                    em10_msg_set2(em);
+                    break;
+                case 7:
+                    pl->x8C6 = 0;
+                    Pl_item_stack(pl, em->x6E0, 1);
+                    set01_set(1, 0xD, em->x6E0);
+                    break;
+                case 4:
+                    if (w->sel == 0) {
+                        em_act_set(em, 0, 9);
+                        se_req(6, 0x21, Snd_em_id_conv_tbl[10]);
+                        switch (em->x2D8) {
+                        case 6:
+                            n = -1;
+                            em10_msg_set(em, 7);
+                            break;
+                        case 10:
+                            n = -1;
+                            em10_msg_set(em, 0xB);
+                            break;
+                        case 14:
+                            n = -0x63;
+                            em10_msg_set(em, 0xF);
+                            break;
+                        }
+                        Pl_item_stack(pl, em->x6E2, n);
+                        Pl_item_stack(pl, em->x6E0, 1);
+                        if ((s16)n != -0x63) {
+                            set01_set(1, 0x10, em->x6E2);
+                        } else {
+                            set01_set(1, 0x11, em->x6E2);
+                        }
+                        set01_set(1, 0xD, em->x6E0);
+                    } else {
+                        se_req(6, 0x20, Snd_em_id_conv_tbl[10]);
+                        em10_msg_set(em, 8);
+                    }
+                    break;
+                case 5:
+                    if (w->sel == 0) {
+                        se_req(6, 0x21, Snd_em_id_conv_tbl[10]);
+                        em10_msg_set2(em);
+                    } else {
+                        se_req(6, 0x20, Snd_em_id_conv_tbl[10]);
+                        pl->x8C6 = 0;
+                    }
+                    break;
+                case 1:
+                    if (w->sel == 0) {
+                        se_req(6, 0x21, Snd_em_id_conv_tbl[10]);
+                        if (t->yes != 0xFF) {
+                            em_act_set(em, 0, 9);
+                            em10_msg_set(em, t->yes);
+                        } else {
+                            pl->x8C6 = 0;
+                        }
+                    } else {
+                        se_req(6, 0x20, Snd_em_id_conv_tbl[10]);
+                        if (t->no != 0xFF) {
+                            em10_msg_set(em, t->no);
+                        } else {
+                            pl->x8C6 = 0;
+                        }
+                    }
+                    break;
+                case 2:
+                    if (t->yes != 0xFF) {
+                        em10_msg_set(em, t->yes);
+                    } else {
+                        pl->x8C6 = 0;
+                    }
+                    break;
+                case 8:
+                    em10_msg_set(em, (u16)ran_suu(1) % 20 + 0x10);
+                    break;
+                case 9:
+                    em10_msg_set(em, (u16)ran_suu(1) % 22 + 0x24);
+                    break;
+                }
+            } else {
+                switch (t->kind) {
+                case 1:
+                case 4:
+                case 5:
+                    if ((pl->sw.trg & 0x800) && w->sel != 0) {
+                        w->sel = 0;
+                        se_req(7, 0x16, 0);
+                    }
+                    if ((pl->sw.trg & 0x400) && w->sel == 0) {
+                        w->sel = 1;
+                        se_req(7, 0x16, 0);
+                    }
+                    break;
+                }
+            }
+        } else if ((pl->sw.trg & 0x60) && em->x2DA > 10) {
+            em->x2DA = 300;
+        }
+        break;
+    }
+    w->x1A = 0;
+    return 0;
+}
+#else
 int talk_move(EMW *em) {
     u16 *sp;
     EM10_TALK *t;
@@ -368,6 +588,7 @@ int talk_move(EMW *em) {
     w->x1A = 0;
     return 0;
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2

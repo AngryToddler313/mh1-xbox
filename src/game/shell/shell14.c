@@ -30,7 +30,11 @@ int em09_status_ck(EMW *);
 void flvecCopy(void *, void *);
 void se_req2(int, int, int, VEC3 *, int, int);
 void eft14_set(VEC3 *, int, f32);
+#ifdef MHG_PS2
+void Shell09_set(VEC3 *, int, int, int);
+#else
 void Shell09_set(VEC3 *, int, int);
+#endif
 void Eft02_set2(int, int, int, VEC3 *);
 void release_prim(s16);
 void flmatMakeScale(FLMAT *, f32, f32, f32);
@@ -128,17 +132,33 @@ static void shell14_i00(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void shell14_m00(SHLW *sh) {
     EMW *em = sh->owner;
 
     switch (sh->x05) {
     case 0:
+#ifdef MHG_PS2
+        if (sh->arg == 1) {
+            sh->rate[0] += 0.1f;
+        } else {
+            sh->rate[0] += 1.0f / 30.0f;
+        }
+        if (--sh->char0 <= 0) {
+            sh->x05++;
+            if (sh->arg == 1) {
+                sh->rate[0] = 3.0f;
+            } else {
+                sh->rate[0] = 1.0f;
+            }
+        }
+#else
         sh->rate[0] += 1.0f / 30.0f;
         if (--sh->char0 <= 0) {
             sh->x05++;
             sh->rate[0] = 1.0f;
         }
+#endif
         if (em09_status_ck(em) != 1) {
             sh->be_flag ^= 1;
             sh->mode++;
@@ -157,7 +177,15 @@ static void shell14_m00(SHLW *sh) {
         if (++sh->char0 >= 340 || em09_status_ck(em) != 1) {
             if (sh->stg == game_w.stage) {
                 eft14_set(&sh->pos2, 0, 1.0f);
+#ifdef MHG_PS2
+                if (sh->arg == 1) {
+                    Shell09_set(&sh->pos2, 2, sh->stg, 0);
+                } else {
+                    Shell09_set(&sh->pos2, 0, sh->stg, 0);
+                }
+#else
                 Shell09_set(&sh->pos2, 0, sh->stg);
+#endif
             }
             sh->be_flag ^= 1;
             sh->mode++;
@@ -211,9 +239,26 @@ static void shell14_i(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+void game_func_00668640(SHLW *sh); /* G: m of the new barrels */
+#endif
+#if !defined(G_PART) || G_PART == 8
 static void shell14_m(SHLW *sh) {
+#ifdef MHG_PS2
+    switch (sh->arg) {
+    case 0:
+    default:
+    case 1:
+        shell14_m00(sh);
+        break;
+    case 2:
+    case 3:
+        game_func_00668640(sh);
+        break;
+    }
+#else
     shell14_m00(sh);
+#endif
     if (sh->prim != 0) {
         flvecCopy(&sh->prim->pos, &sh->pos2);
         add_prim(ot1, sh->prim, 0x20, 0);
