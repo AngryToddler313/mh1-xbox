@@ -1962,3 +1962,13 @@ game 0x0057BFE0 0x0057DA0C game/eft/eft18b
 game:rodata 0x006D7660 0x006D76A8 game/eft/eft18b
 game 0x0057EDD0 0x00580108 game/eft/eft22
 game:rodata 0x006D76B0 0x006D76C8 game/eft/eft22
+game 0x00598540 0x00598ACC mhg/game/em/em01_aif_p1
+game 0x00598D80 0x00598F9C mhg/game/em/em01_aif_p2
+game 0x00599170 0x00599A60 mhg/game/em/em01_aif_p3
+game 0x00599D10 0x0059A324 mhg/game/em/em01_aif_p4
+game 0x0059AB20 0x0059ACD0 mhg/game/em/em01_aif_p5
+game 0x0059AF70 0x0059D6B8 mhg/game/em/em01_aif_p6
+game 0x0059DE10 0x0059E2F4 mhg/game/em/em01_aif_p7
+game 0x0059E510 0x0059E684 mhg/game/em/em01_aif_p8
+game 0x0059E720 0x0059E7B4 mhg/game/em/em01_aif_p9
+game 0x0059F2B0 0x0059F3B8 mhg/game/em/em01_aif_p10
