@@ -2188,3 +2188,8 @@ sub_main 0x004F3DE0 0x004F3E34 mhg/main/reward/f_reward_p5
 sub_main 0x004F3E40 0x004F3EC4 mhg/main/reward/f_reward_p6
 main 0x0011D5A0 0x0011D60C mhg/main/menu/menu12_p2
 main 0x00157880 0x001578AC mhg/main/fl/tarpad01_p3
+sub_main 0x004C4BE0 0x004C4C30 mhg/main/ud/f_ud_p21
+sub_main 0x004C50E0 0x004C5158 mhg/main/ud/f_ud_p22
+sub_main 0x004C5160 0x004C51F0 mhg/main/ud/f_ud_p23
+sub_main 0x004C75D0 0x004C7648 mhg/main/ud/f_ud_p24
+sub_main 0x004C7650 0x004C7714 mhg/main/ud/f_ud_p25
