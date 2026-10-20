@@ -75,6 +75,8 @@ G_MAIN = dict(off=0x200, size=0x1EF200, text_hi=0x23A280, mem_end=0x4A0C80)
 
 
 def load_mh1():
+    if not os.path.exists(P("disc/mh1/split/main.bin")):   # LOCAL PATCH: no JP MH1 disc
+        return {}
     mods = {"main": Mod("main", 0x100000, open(P("disc/mh1/split/main.bin"), "rb").read(),
                         0x100000, 0x293B80, 0x533980)}
     for o in MH1_OVL:
@@ -99,6 +101,8 @@ RMASK = {R26: 0x03FFFFFF, HI16: 0xFFFF, LO16: 0xFFFF, GPREL: 0xFFFF, R32: 0xFFFF
 
 def read_mh1_elf():
     """symtab [(name, value, size, type, module)], relocs {module: {addr: (type, symidx)}}"""
+    if not os.path.exists(P("disc/mh1/SLPM_654.95")):   # LOCAL PATCH: no JP MH1 disc
+        return [], collections.defaultdict(dict)
     d = open(P("disc/mh1/SLPM_654.95"), "rb").read()
     shoff, = struct.unpack_from("<I", d, 32)
     shnum, shstr = struct.unpack_from("<HH", d, 48)
