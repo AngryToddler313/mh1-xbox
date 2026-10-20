@@ -6,6 +6,7 @@
    were rewritten from the asm, agent B 12 Oct 2026). common_local_init / dummy_em_prog (0x23E4E0-0x23E4F8) stay in
    src/main/sys/empty_23E4E0.c. */
 
+#include "g_alias.h"
 #include "types.h"
 #include "fl.h"
 #include "clay.h"
@@ -151,7 +152,7 @@ static void npc_chr_sub();
 void npc_mk();
 static void npc_effect_move();
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 static void npc_trans(arg)
 u8 *arg;
 {
@@ -189,13 +190,27 @@ u8 *arg;
     flSetSkinTrans(B32(mdl, 0x24));
     flmatInit(&m4);
     flSetRenderState(0x19, (u32)&m4);
-    reload_tex(0xA, pl->kind * 0x14 + 0x9A);
+    reload_tex(0xA, pl->kind * 0x14 + GV(0x9A, 0xC1));
     for (i = 0; i < cnt; i++) {
         if (pl->kind != 0 || pl->parts[i] != 0) {
             flSetRenderState(0x67, -1);
             if (clay->handle != -1) {
                 for (j = 0; j < clay->num; j++) {
                     t = tbl + clay->mat[j] * 0x4C;
+#ifdef MHG_PS2
+                    switch (pl->kind) {
+                    case 1:
+                        if (pl->parts[j] == 0) {
+                            B32(t, 0x10) = 0;
+                        } else {
+                            BF(t, 0x10) = pl->f798;
+                        }
+                        break;
+                    default:
+                        BF(t, 0x10) = pl->f798;
+                        break;
+                    }
+#else
                     if (pl->kind == 1) {
                         if (pl->parts[j] == 0) {
                             B32(t, 0x10) = 0;
@@ -205,6 +220,7 @@ u8 *arg;
                     } else {
                         BF(t, 0x10) = pl->f798;
                     }
+#endif
                     flSetRenderState((j + 0x3A) & 0xFF, (u32)t);
                 }
                 clay_attr_set(clay->attr);

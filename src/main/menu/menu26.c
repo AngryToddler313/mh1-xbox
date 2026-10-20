@@ -155,6 +155,7 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#if !defined(G_PART)
 u8 *menu_equip_get_equip(u8 no) {
     u16 idx;
     u8 *u = User_data;
@@ -186,31 +187,45 @@ u8 *menu_equip_get_equip(u8 no) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 #ifdef VERSION_MHG
 /* G (main 0x11C720, PC build; G's name is menu_equip_get_equip): the six rows (weapon, head, body, arm, waist, leg) as a 6-byte equipment
  * entry {1, kind, id, w4} made from the hunter's own work (pl+0x35E weapon, pl+0x352.. the armour ids); NULL for an empty slot */
+typedef struct EQENT { u8 on; u8 kind; u16 id; u16 w4; } EQENT;
 u8 *menu_equip_get_equip_g(u8 *out, u8 no, PLW *pl) {
-    static const u8 kinds[5] = { 2, 3, 4, 5, 0 };
+    EQENT *e = (EQENT *)out;
 
-    *(u16 *)out = 0;
-    *(u16 *)(out + 4) = 0;
-    if (no == 0) {
-        *(u16 *)out = *(u16 *)((u8 *)pl + 0x35E);
-        *(u16 *)(out + 2) = *(u16 *)((u8 *)pl + 0x360);
-        *(u16 *)(out + 4) = *(u16 *)((u8 *)pl + 0x362);
-        out[0] = 1;
+    e->on = e->w4 = 0;
+    switch (no) {
+    case 0:
+        *e = *(EQENT *)((u8 *)pl + 0x35E);
+        e->on = 1;
         return out;
-    }
-    if (no > 5) {
+    case 1:
+        e->kind = 2;
+        break;
+    case 2:
+        e->kind = 3;
+        break;
+    case 3:
+        e->kind = 4;
+        break;
+    case 4:
+        e->kind = 5;
+        break;
+    case 5:
+        e->kind = 0;
+        break;
+    default:
         return 0;
     }
-    out[1] = kinds[no - 1];
-    *(u16 *)(out + 2) = ((u8 *)pl)[0x352 + out[1]];
-    if (*(u16 *)(out + 2) == 0) {
+    if ((e->id = pl->work352[e->kind]) == 0) {
         return 0;
     }
-    out[0] = 1;
+    e->on = 1;
     return out;
 }
+#endif
 #endif

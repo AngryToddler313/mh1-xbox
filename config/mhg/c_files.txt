@@ -2654,3 +2654,7 @@ sub_main 0x004EE610 0x004EEB70 main/pl/pl_normal2
 main 0x00115380 0x001154C0 main/model/crmdl01
 main 0x00101960 0x00101AB0 mhg/main/sys/adxs05_p2
 main 0x001E1790 0x001E1964 mhg/main/net/cng02_p3
+sub_main 0x004B2920 0x004B2B68 mhg/main/npc/npc_p2
+main 0x0011C720 0x0011C808 mhg/main/menu/menu26_p1
+main 0x001D6430 0x001D651C mhg/main/flfnt/flfnt04_p1
+main 0x00210A30 0x00210B50 mhg/main/hk/f_hk_p20

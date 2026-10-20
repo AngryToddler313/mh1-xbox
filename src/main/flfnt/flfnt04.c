@@ -1,4 +1,5 @@
 /* flfnt04 - 0x00217480-0x00217544: flfntPaletteTrans, flfntDrawStart. Whole file in flfnt_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef unsigned __int128 u128;
@@ -87,11 +88,38 @@ int flfntSjis2Index(u32 c);
 void flfntPaletteTrans();
 void flnecCheckFont(int idx);
 
+#if !defined(G_PART)
 void flfntPaletteTrans() {
     /* does nothing */
 }
+#endif
 
+#ifdef MHG_PS2
+void func_001D67F0(void);   /* G's texture reload */
+#define NPG(t, o) (*(t *)((u8 *)np + (o)))   /* G FNP tail: the DMA fields sit at 0x49BC.. */
+#endif
+#if !defined(G_PART) || G_PART == 1
 void flfntDrawStart(void) {
+#ifdef MHG_PS2
+    flSetRenderState(0x61, 0x1000000);
+    flSetRenderState(0x60, 0);
+    flSetRenderState(0x5F, 5);
+    system_w[0x2C] = 0xFF;
+    system_w[0x2D] = 0xFF;
+    SetTrnslMode(4, 5);
+    flSetRenderState(0x6C, 0);
+    np->x5C = -1;
+    flnecCheckString();
+    func_001D67F0();
+    NPG(s32, 0x49BC) = (*(u32 *)(flPs2State + 0x410) + 0xF) & ~0xF;
+    NPG(u32, 0x49C0) = NPG(s32, 0x49BC);
+    if (*(u32 *)(flPs2State + 0x40C) - NPG(u32, 0x49C0) >= 0x10) {
+        NPG(u32, 0x49C0) += 0x10;
+        NPG(s32, 0x49C4) = 0;
+        NPG(s32, 0x49C8) = 0;
+        NPG(s32, 0x49CC) = -1;
+    }
+#else
     np->x58 = -1;
     if (flnecCheckString() != 0) {
         flfntCacheFlush();
@@ -106,4 +134,6 @@ void flfntDrawStart(void) {
         np->dnum = 0;
         np->dx = -1;
     }
+#endif
 }
+#endif
