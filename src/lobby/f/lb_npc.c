@@ -1,3 +1,4 @@
+#include "g_alias.h"
 /* lb_npc - one translation unit 0x0059DB40-0x005A2A1C (lbtu3). */
 #include "lbsys_g.h"
 #include "lbnpc_proto.h"
@@ -208,7 +209,7 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void npcMvENJOY(em, kind)
 EMW *em;
 s8 kind;
@@ -236,7 +237,7 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void npcMvTALK(em, kind)
 EMW *em;
 s8 kind;
@@ -258,7 +259,7 @@ s8 kind;
         }
         break;
     case 1:
-        if (lb_sys.x68 == 6) {
+        if (lb_sys.x68 == GV(6, 7)) {
             Lb_act_set(em, 0, 0x74);
         }
         break;
@@ -284,7 +285,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 void npcMvDOWN(em, kind)
 EMW *em;
 s8 kind;
@@ -528,7 +529,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void npcMvBOARD(em, kind)
 EMW *em;
 s8 kind;
@@ -557,7 +558,7 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 void npcMvSHOP(em, kind)
 EMW *em;
 s8 kind;
@@ -587,7 +588,7 @@ s8 kind;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void npcMvBEER(em)
 EMW *em;
 {
@@ -704,7 +705,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 void npcMvWALL(em)
 EMW *em;
 {
@@ -731,7 +732,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void npcMvKEGA(em, kind)
 EMW *em;
 s8 kind;
@@ -856,7 +857,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 void lb_npc_bar_move(em)
 EMW *em;
 {
@@ -1010,7 +1011,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 void lb_npc_father_move(em)
 EMW *em;
 {
@@ -1109,7 +1110,7 @@ EMW *em;
             return;
         case 1:
             mv->x2D = 1;
-            if (lb_sys.x68 != 9) {
+            if (lb_sys.x68 != GV(9, 10)) {
                 Lb_pl_chr_set(em, 0x2A8, 0x10, 0);
                 em->x05++;
                 return;
@@ -1137,7 +1138,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 void lb_npc_old_material(em)
 EMW *em;
 {
@@ -1210,7 +1211,7 @@ EMW *em;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 void lb_npc_old_mix(em)
 EMW *em;
 {
@@ -1328,7 +1329,7 @@ asm void lb_npc_old_guild()
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 void npcCatSLEEP(em)
 EMW *em;
 {

@@ -1,5 +1,6 @@
 /* em02_ai, run 2: em_fly00_005803B0 .. em02_main_sub (game.bin 0x005803B0-0x00583928). Matching functions of em02_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -1237,7 +1238,7 @@ void em_die01_00582760(EMW *em, EM02W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void em_die02_005828E0(EMW *em, EM02W *w) {
     em->x40E = 5;
     Em_Mode_Chg(em, 0, 0);
@@ -1263,7 +1264,7 @@ void em_die02_005828E0(EMW *em, EM02W *w) {
         }
         break;
     case 2:
-        if (em_frame_check(em, 134.0f, 0)) {
+        if (em_frame_check(em, GV(134.0f, 100.0f), 0)) {
             em->x05++;
             em->act_spd = 0.0f;
             em->work08 = 0;

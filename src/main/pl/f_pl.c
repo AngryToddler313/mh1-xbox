@@ -9583,7 +9583,7 @@ static void pl_at102(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 54
 static void pl_attack(PLW *pl) {
     pl->work350 = 0;
     switch (pl->flag15) {
@@ -9822,7 +9822,7 @@ static void pl_attack(PLW *pl) {
         pl_at078(pl, 0);
         break;
     case 0x4F:
-        pl_at078(pl, 1);
+        GV(pl_at078, pl_at077)(pl, 1);
         break;
     case 0x50:
         pl_at049(pl, 2);

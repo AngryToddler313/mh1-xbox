@@ -4867,6 +4867,9 @@ extern char *check_tag_table_3534[11];
 extern u8 color_tbl_3745[16];
 extern f32 font_size_tbl_3746[16];
 char *strstr();
+#ifdef MHG_PS2
+char *func_00164448(); /* G calls this one (a 0x18-byte function right before G's strstr) */
+#endif
 void cnWrap_FontDisp(f32, f32, f32, char *);
 void Split_TagCode();
 void Analysis_TagCode();
@@ -4905,7 +4908,7 @@ found:
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 void Analysis_TagCode() {
     char buf[8];
     int i;
@@ -4914,7 +4917,7 @@ void Analysis_TagCode() {
     i = 0;
     t = check_tag_table_3534;
     do {
-        if (strstr(tag_buffer, *t) != 0) {
+        if (GV(strstr, func_00164448)(tag_buffer, *t) != 0) {
             break;
         }
         i++;

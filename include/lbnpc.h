@@ -20,13 +20,27 @@ typedef struct LB_NPCMV {
     LB_ROUTE *route;    /* 0x08 */
     s16 idx;            /* 0x0C current waypoint */
     u8 kind;            /* 0x0E npc kind (as LB_NPCW.kind) */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    u8 _pad0F;
+#else
     s8 f0F;
+#endif
     s32 cnt;            /* 0x10 frames waited at the waypoint */
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    u8 _pad14[0x30 - 0x14];
+    u16 x26;            /* G: 0x30 (MH1 0x26, LB_NPCW.item) */
+    s16 x28;            /* G: 0x32 (MH1 0x28, LB_NPCW.num) */
+    u8 _pad34[0x35 - 0x34];
+    s8 f0F;             /* G: 0x35 (MH1 0x0F) */
+    u8 _pad36[0x39 - 0x36];
+    s8 x2D;             /* G: 0x39 (MH1 0x2D) */
+#else
     u8 _pad14[0x26 - 0x14];
     u16 x26;            /* 0x26 (LB_NPCW.item) */
     s16 x28;            /* 0x28 (LB_NPCW.num) */
     u8 _pad2A[0x2D - 0x2A];
     s8 x2D;             /* 0x2D */
+#endif
 } LB_NPCMV;
 
 /* waiter cat: route/work at EMW+0x444 */
