@@ -30,7 +30,11 @@ typedef struct PS2CFG {
 
 extern TARPAD tarpad_root[2];
 extern PS2SLOT ps2slot[2];
+#ifdef MHG_PS2
+extern PS2CFG ps2pad_config[1];     /* G keeps it in small data (gp-14016) */
+#else
 extern PS2CFG ps2pad_config[2];
+#endif
 extern u8 flPadFixedAnalogSelectSwitch[2];
 extern u8 flPadFASS[2];
 extern u8 etclever_wrong_data[];
@@ -61,7 +65,7 @@ void tarPADFixedAnalogSelectSwitch(s8 v) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void flPADConfigSetACRtoXX(int port, s16 a, s16 b, s16 c) {
     ps2pad_config[port].x0 = a;
     ps2pad_config[port].lx = b;

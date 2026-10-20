@@ -74,17 +74,26 @@ void MapSignRequest(int no) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 int Menu_chatcnfg_i(void) {
     if (Online_ck() == 0) {
         return -1;
     }
+#ifdef VERSION_MHG
+    lpPit->x7F = 0;     /* G: the page byte moved to 0x7F, the cursor starts at 0 */
+    lpPit->x7E = 0;
+    PitMenu.x10 = 1;
+    PitMenu.x11 = 3;
+    PitMenu.x12 = 0;
+    PitMenu.x1B = 0;
+#else
     lpPit->x7D = 0;
     lpPit->x7E = 0;
     PitMenu.x10 = 1;
     PitMenu.x11 = 3;
     PitMenu.x12 = lpPit->x7D;
     PitMenu.x1B = 0;
+#endif
     return 0;
 }
 #endif
