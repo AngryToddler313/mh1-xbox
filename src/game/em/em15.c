@@ -4,6 +4,7 @@
  * senkai_pos_no (same code as em08's). Fly action 33 picks a ceiling point
  * near the target player (GetTenjoHit) to fly to; meanings are guesses. */
 #include "em.h"
+#include "version.h"
 #include "pl.h"
 
 /* em15's part of the per-monster work at EMW+0x444. */
@@ -664,7 +665,7 @@ void em15_senkai_sub(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 u8 em15_senkai_pos_no(EMW *em, f32 *out) {
     u32 i;
     EM_STG_POS *p;
@@ -676,7 +677,7 @@ u8 em15_senkai_pos_no(EMW *em, f32 *out) {
 
     pos = 0;
     p = em->area->stg_pos;
-    for (i = 0; i < 88; p++, i++) {
+    for (i = 0; i < STG_POS_N; p++, i++) {
         if (p->stg == -1 || em->area->stg_pos[i].stg == em->stg) {
             pos = em->area->stg_pos[i].pos;
             break;

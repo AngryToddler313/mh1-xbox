@@ -2135,3 +2135,8 @@ main 0x0013A7B0 0x0013A980 mhg/main/fl/fldma01_p6
 sub_main 0x004DBEA0 0x004DBF00 mhg/main/eft/eft26_p2
 sub_main 0x004DBF00 0x004DBF84 mhg/main/eft/eft26_p3
 sub_main 0x004DBF90 0x004DC028 mhg/main/eft/eft26_p4
+game 0x0062B020 0x0062B1E8 mhg/game/em/em20b_p2
+game 0x005D2EC0 0x005D304C mhg/game/em/em08_p5
+game 0x0063B590 0x0063B71C mhg/game/em/em21_p2
+game 0x005FC270 0x005FC3FC mhg/game/em/em15_p4
+game 0x005A6610 0x005A67D8 mhg/game/em/em01_p4

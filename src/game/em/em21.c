@@ -7,6 +7,7 @@
  * (x39A % 120 + 180) / 2 frames without a target. Meanings are guesses. */
 #include "em.h"
 #include "game.h"
+#include "version.h"
 
 #define EM21_STAGE_CK(em) \
     (em->x8C3 == 0 && game_w.stage == em->stg && em->x7E8 == 0)
@@ -504,7 +505,7 @@ u8 em21_fly_adjy2(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 u8 em21_senkai_pos_no(EMW *em, f32 *out) {
     u32 i;
     EM_STG_POS *p;
@@ -516,7 +517,7 @@ u8 em21_senkai_pos_no(EMW *em, f32 *out) {
 
     pos = 0;
     p = em->area->stg_pos;
-    for (i = 0; i < 88; p++, i++) {
+    for (i = 0; i < STG_POS_N; p++, i++) {
         if (p->stg == -1 || em->area->stg_pos[i].stg == em->stg) {
             pos = em->area->stg_pos[i].pos;
             break;

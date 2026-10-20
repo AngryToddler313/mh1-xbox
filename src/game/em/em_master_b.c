@@ -421,7 +421,7 @@ s32 st_mv_ptr_ck(EMW *em) {
             break;
         }
     }
-    for (i = 0; i < 88; i++, q++) {
+    for (i = 0; i < STG_POS_N; i++, q++) {
         if (q->stg == 0xFF || q->stg == em->stg) {
             return q->ok;
         }

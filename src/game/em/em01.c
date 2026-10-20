@@ -5,6 +5,7 @@
  * senkai_sub* take extra flags 8 (skip the turn-rate update) and 0x10 (skip
  * the animation change). Meanings of the constants are guesses. */
 #include "em.h"
+#include "version.h"
 #include "pl.h"
 #include "game.h"
 
@@ -491,7 +492,7 @@ void em01_act_set(EMW *em, int kind, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void ground_point_search(EMW *em) {
     u32 i;
     EM_STG_POS *p;
@@ -509,7 +510,7 @@ void ground_point_search(EMW *em) {
     }
     pos = 0;
     p = em->area->stg_pos;
-    for (i = 0; i < 88; p++, i++) {
+    for (i = 0; i < STG_POS_N; p++, i++) {
         if (p->stg == -1 || em->area->stg_pos[i].stg == em->stg) {
             pos = em->area->stg_pos[i].pos;
             break;
