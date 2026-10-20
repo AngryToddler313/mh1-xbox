@@ -8,6 +8,9 @@
 #include "plf.h"
 #include "quest.h"
 #include "em20.h"
+#ifdef MHG_PS2
+#include "em_revive_g.h"
+#endif
 
 typedef struct FLYNEED {
     u8 _pad00[0x14];
@@ -1268,7 +1271,7 @@ static void em_demo04_005F5870(EMW *em, EM20W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void em_die00_005F5990(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1289,7 +1292,7 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
             Em_set_quake_sub(em, 2);
         }
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1297,8 +1300,14 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_WAIT(em, 0);
+#endif
         break;
     case 0x3:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em20_act_set);
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1307,6 +1316,7 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
             return;
         }
         em->x798 = (f32) em->work08 / 150.0f;
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -1320,12 +1330,14 @@ static void em_die00_005F5990(EMW *em, EM20W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static void em_die01_005F5B30(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a0;
 
+#ifndef MHG_PS2
     em->x9EA = 5;
+#endif
     em->x40E = 5;
     Em_Mode_Chg(em, 0, 0);
     temp_a0 = em->x05;
@@ -1336,19 +1348,38 @@ static void em_die01_005F5B30(EMW *em, EM20W *w) {
         em->x3F4 = 0;
         em->x388 = 3;
         Quest_enemy_die(em);
+#ifdef MHG_PS2
+        em->x9EA = 5;
+#endif
         break;
     case 0x1:
+#ifdef MHG_PS2
+        em->x9EA = 5;
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+            em->work08 = EMG_CARVE_TIME;
+        }
+#else
         if (em->x194 == 0) {
             em->work08 = 0x1C2;
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
         }
+#endif
         break;
     case 0x2:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_WAIT(em, 1);
+#endif
         break;
     case 0x3:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em20_act_set);
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1357,6 +1388,7 @@ static void em_die01_005F5B30(EMW *em, EM20W *w) {
             return;
         }
         em->x798 = (f32) em->work08 / 150.0f;
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
@@ -1370,7 +1402,7 @@ static void em_die01_005F5B30(EMW *em, EM20W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void em_die02_005F5CB0(EMW *em, EM20W *w) {
     s32 temp_v1;
     u8 temp_a0;
@@ -1388,8 +1420,15 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
             em->adj_y = -50.0f;
         }
         em->x3C0[1] = -10.0f;
+#ifdef MHG_PS2
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+#endif
         break;
     case 0x1:
+#ifdef MHG_PS2
+        w->spd[1] = em->ang[1];
+#endif
         speed_add_g(em, w->spd);
         if (em->pos[1] <= em->x5AC) {
             em->x05 += 1;
@@ -1411,7 +1450,7 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
         break;
     case 0x3:
         if (em->x194 == 0) {
-            em->work08 = 0x1C2;
+            em->work08 = GV(0x1C2, EMG_CARVE_TIME);
             em->x05 += 1;
             Em_hagi_point_set(em, 0);
             em->ex[0x90] = 0;
@@ -1420,8 +1459,18 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
         break;
     case 0x4:
         Em_hagi_point_cnt_ck(em);
+#ifdef MHG_PS2
+        if (Quest_enemy_revival_ck(em) != 0 && --em->work08 <= 0) {
+            em->x05 += 1;
+            Em_hagi_point_clr(em);
+            em->work08 = 150;
+        }
+#endif
         break;
     case 0x5:
+#ifdef MHG_PS2
+        EMG_DIE_REVIVE_FADE(em, em20_act_set);
+#else
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
@@ -1430,6 +1479,7 @@ static void em_die02_005F5CB0(EMW *em, EM20W *w) {
             return;
         }
         em->x798 = (f32) em->work08 / 150.0f;
+#endif
         break;
     case 0x63:
         if (em->x194 == 0) {
