@@ -2679,3 +2679,6 @@ lobby 0x005C1750 0x005C17B8 lobby/b/lb_bz60
 lobby 0x00593220 0x005932A4 mhg/lobby/f/lb_e04_p1
 lobby 0x00583460 0x005834FC mhg/lobby/f/lb_cli_p78
 lobby 0x00583590 0x005835FC mhg/lobby/f/lb_cli_p79
+lobby 0x0059E480 0x0059E55C lobby/f/lb_gaf02
+lobby 0x0058D040 0x0058D140 mhg/lobby/b/lb_bz13_p1
+lobby 0x0058D2B0 0x0058D310 mhg/lobby/b/lb_bz13_p2
