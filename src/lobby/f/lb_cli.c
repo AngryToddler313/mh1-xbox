@@ -60,7 +60,7 @@ extern char ot2[];
 typedef struct { u8 pad0000[0x14]; int x0014; int x0018; int x001C; int x0020; } ARG_lbc_text_lobby_trans_arg0;
 extern char CnetWork[];
 extern char textLobbyTbl[];
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x1]; u8 x2C33; } CWS_text_lobby_trans_ot0;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C33) - CW_OFS(0x2C31) - 1]; u8 x2C33; } CWS_text_lobby_trans_ot0;
 typedef struct { u8 pad0000[0x18]; s32 x0018; } ARG_text_lobby_trans_ot0_arg0;
 extern u8 * pNet_c7;
 extern u8 dod_new_reguration_agree_type;
@@ -98,7 +98,7 @@ extern char CallBack_SendMiniData_o[];
 typedef struct { u8 pad0[2]; u8 x02; u8 pad03[0x12]; u8 x15; u8 pad16[0x2A]; } MINI40;
 #define MYMINI ((MINI40 *)&my_user_mini_data)
 extern CNW5 CnetWork_c17;
-typedef struct { u8 pad0000[0x2C33]; s8 x2C33; u8 x2C34; u8 pad2C35[0x10]; s8 x2C45; u8 pad2C46[0x98C]; u8 x35D2; u8 pad35D3[3]; s8 x35D6; s8 x35D7; } CWS_lbc_login_finish;
+typedef struct { u8 pad0000[CW_OFS(0x2C33)]; s8 x2C33; u8 x2C34; u8 pad2C35[CW_OFS(0x2C45) - CW_OFS(0x2C34) - 1]; s8 x2C45; u8 pad2C46[CW_OFS(0x35D2) - CW_OFS(0x2C45) - 1]; u8 x35D2; u8 pad35D3[CW_OFS(0x35D6) - CW_OFS(0x35D2) - 1]; s8 x35D6; s8 x35D7; } CWS_lbc_login_finish;
 #define CWX_c17 ((CWS_lbc_login_finish *)cw)
 extern CNW5 CnetWork_c18;
 extern char CallBack_Result_LoginTopInformation_o[];
@@ -127,7 +127,7 @@ int cnLBS_Get_RoomMemberList();
 extern u8 * pNet_c25;
 extern char tmpPersonalData_c25[];
 extern char BrPersonalData_c25[];
-typedef struct { u8 pad0000[0x2C43]; u8 x2C43; } CWS_lbc_browser_04;
+typedef struct { u8 pad0000[CW_OFS(0x2C43)]; u8 x2C43; } CWS_lbc_browser_04;
 extern s8 BsLbsErrNum_c26;
 extern char BrPersonalData_c27[];
 extern char CallBack_Result_LoginPersonalDataRegist2_o[];
@@ -157,7 +157,7 @@ extern PLI PlazaInfo_c37[];
 typedef struct { u8 pad0[0x2C08]; s8 x2C08; u8 pad2C09[0x2A]; s8 x2C33; s8 x2C34; } CWS_tm1;
 #define CWX_c37 ((CWS_tm1 *)cw)
 extern char CallBack_Result_Plaza_PlazaEntry_o[];
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x13]; u8 x2C45; } CWS_CallBack_Result_Plaza_PlazaEntry;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C45) - CW_OFS(0x2C31) - 1]; u8 x2C45; } CWS_CallBack_Result_Plaza_PlazaEntry;
 extern char CallBack_Result_Plaza_ReadAllocation_o[];
 int cnLBS_Get_PlazaStatus(u16 id, void *p);
 int cnLBS_Get_mhPlazaJoinUser(u16 id, void *a, void *b);
@@ -180,7 +180,7 @@ extern char CallBack_Result_Plaza_ReadLobbyAllocation_o[];
 extern char D_3EBCD0[];
 extern char text_lobby_trans_ot3_o[];
 typedef struct FRIENDENT { f32 f[12]; } FRIENDENT;      /* friend list entry (0x30 bytes), copied word-wise through the FPU */
-typedef struct { u8 pad0000[0x2C08]; s8 x2C08; u8 pad2C09[0x2C34 - 0x2C09]; u8 x2C34; } CWS_ip1;
+typedef struct { u8 pad0000[CW_OFS(0x2C08)]; s8 x2C08; u8 pad2C09[CW_OFS(0x2C34) - CW_OFS(0x2C08) - 1]; u8 x2C34; } CWS_ip1;
 int Lbs_plaza();
 extern char CallBack_Result_Plaza_LobbyEntry_o[];
 extern char CallBack_Result_Plaza_LobbyMember_o[];
@@ -191,9 +191,9 @@ extern char CallBack_Result_Plaza_LobbyMember2_o[];
 typedef struct { u8 pad0[0x2C45]; s8 x2C45; } CWS_gl;
 #define CWX_c56 ((CWS_gl *)cw)
 extern char tl_member_buff[];
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x13]; u8 x2C45; } CWS_LobbyMember2;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C45) - CW_OFS(0x2C31) - 1]; u8 x2C45; } CWS_LobbyMember2;
 extern char CallBack_Result_Plaza_PlazaExit_o[];
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x13]; u8 x2C45; } CWS_CallBack_Result_Plaza_PlazaExit;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C45) - CW_OFS(0x2C31) - 1]; u8 x2C45; } CWS_CallBack_Result_Plaza_PlazaExit;
 typedef struct { u8 pad0[0x2C33]; s8 x2C33; s8 x2C34; u8 pad2C35[7]; s8 x2C3C; u8 pad2C3D[0xF]; s32 x2C4C; } CWS_p4;
 #define CWX_c60 ((CWS_p4 *)cw)
 typedef struct { u8 pad0[0x2C31]; u8 x2C31; u8 pad2C32[2]; u8 x2C34; u8 pad2C35[0x10]; u8 x2C45; } CWS_rl;
@@ -239,7 +239,7 @@ extern RRH RoomRule;
 extern char CallBack_Result_Lobby_SetRoomRule_o[];
 typedef struct { u8 pad0[0x2C35]; u8 step; } CWS_sr;
 #define CWX_c82 ((CWS_sr *)cw)
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x3]; u8 x2C35; u8 pad2C36[0xF]; u8 x2C45; } CWS_CallBack_Result_Lobby_SetRoomRule;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C35) - CW_OFS(0x2C31) - 1]; u8 x2C35; u8 pad2C36[CW_OFS(0x2C45) - CW_OFS(0x2C35) - 1]; u8 x2C45; } CWS_CallBack_Result_Lobby_SetRoomRule;
 #pragma readonly_strings on
 /* sprite template for Put_2TF / Put_sprite_rotate (helpLineTbl entries, stride 0x14) */
 typedef struct { s16 x; s16 y; s16 w; s16 h; u8 pad08[4]; s16 u0; s16 v0; s16 u1; s16 v1; } DLGSPR;
@@ -257,7 +257,7 @@ typedef struct { u8 pad0[0x2C35]; u8 step; } CWS_gr;
 #define CWX_c85 ((CWS_gr *)cw)
 int cnLBS_Get_RoomRuleAllocation(u16, u8 *);
 int cnLBS_Read_RoomMemberList(u16, void *);
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x3]; u8 x2C35; u8 pad2C36[0xF]; u8 x2C45; } CWS_CallBack_Result_Lobby_GuestRoomMember;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C35) - CW_OFS(0x2C31) - 1]; u8 x2C35; u8 pad2C36[CW_OFS(0x2C45) - CW_OFS(0x2C35) - 1]; u8 x2C45; } CWS_CallBack_Result_Lobby_GuestRoomMember;
 extern char ClassInfo_c88[];
 extern char RoomRule_c88[];
 extern char CallBack_Result_Lobby_RoomEntry_o[];
@@ -267,12 +267,12 @@ extern char jtbl_2502[];
 extern char CallBack_Result_Lobby_LobbyExit_o[];
 typedef struct { u8 pad0[0x2C35]; u8 x2C35; u8 pad2C36[0xF]; s8 x2C45; u8 pad2C46[6]; s32 x2C4C; u8 pad2C50[0x985]; s8 x35D5; } CWS_l301;
 #define CWX_c93 ((CWS_l301 *)cw)
-typedef struct { u8 pad0000[0x2C35]; u8 x2C35; } CWS_Lbs_LobbyExit;
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x3]; u8 x2C35; u8 pad2C36[0xF]; u8 x2C45; } CWS_CallBack_Result_Lobby_LobbyExit;
+typedef struct { u8 pad0000[CW_OFS(0x2C35)]; u8 x2C35; } CWS_Lbs_LobbyExit;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C35) - CW_OFS(0x2C31) - 1]; u8 x2C35; u8 pad2C36[CW_OFS(0x2C45) - CW_OFS(0x2C35) - 1]; u8 x2C45; } CWS_CallBack_Result_Lobby_LobbyExit;
 extern char CallBack_Result_Lobby_RoomExit_o[];
 typedef struct { u8 pad0[0x2C35]; u8 x2C35; u8 pad2C36[0xF]; s8 x2C45; u8 pad2C46[6]; s32 x2C4C; } CWS_l302;
 #define CWX_c99 ((CWS_l302 *)cw)
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; u8 pad2C32[0x3]; u8 x2C35; u8 pad2C36[0xF]; u8 x2C45; } CWS_CallBack_Result_Lobby_RoomExit;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; u8 pad2C32[CW_OFS(0x2C35) - CW_OFS(0x2C31) - 1]; u8 x2C35; u8 pad2C36[CW_OFS(0x2C45) - CW_OFS(0x2C35) - 1]; u8 x2C45; } CWS_CallBack_Result_Lobby_RoomExit;
 int cnLBS_Read_RoomJoinUser(u16 id, void *cb);
 int cnLBS_Read_MatchEntryJoinUser(u16 id, void *cb);
 extern char ClassInfo_c103[];
@@ -282,7 +282,7 @@ extern char CallBack_Result_InRoom00_EntryJoinUser_o[];
 extern BRPD BrPersonalData_c104;
 extern BRPD tmpPersonalData_c104;
 extern u8 sendDat_c104[];
-typedef struct { u8 pad0000[0x2C31]; u8 x2C31; } CWS_im;
+typedef struct { u8 pad0000[CW_OFS(0x2C31)]; u8 x2C31; } CWS_im;
 extern LINFO RoomInfo_c105[];
 extern char RoomRule_c105[];
 extern u8 ClassInfo_c105[];
@@ -312,7 +312,7 @@ extern s8 net_game_invalid_flag;
 extern u16 System_timer;
 extern char CallBack_Result_Match_Logout_o[];
 extern char jtbl_2977[];
-typedef struct { u8 pad[0x2C31]; u8 x31; u8 x32; u8 x33; u8 x34; u8 x35; u8 pad2[0x2C45-0x2C36]; u8 x45; } CWS;
+typedef struct { u8 pad[CW_OFS(0x2C31)]; u8 x31; u8 x32; u8 x33; u8 x34; u8 x35; u8 pad2[CW_OFS(0x2C45) - CW_OFS(0x2C36)]; u8 x45; } CWS;
 #define CWX_c121 ((CWS *)cw)
 extern u8 * pNet_c126;
 extern u8 * pNet_c127;
@@ -620,7 +620,7 @@ s32 internet_lobby_act() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 64
 void Lbc_connect() {
     s32 var_s0;
 
@@ -629,7 +629,7 @@ void Lbc_connect() {
 loop_2:
         if (cnLBS_RecvData(*(s32 *)GV(0x4E36F4, 0x3E2164)) == 1) {
             var_s0 += 1;
-            F(s32, (u8 *)cw, CW_OFS(0x35F4)) = 0xE10;
+            F(s32, (u8 *)cw, GV(CW_OFS(0x35F4), 0xFA80)) = 0xE10;
             if (var_s0 < 0x64) {
                 goto loop_2;
             }
@@ -1134,7 +1134,7 @@ void lbc_login_users_personal_data() {
         if (memcmp(&tmpPersonalData, &BrPersonalData, 0x1D0) != 0) {
             CallBackWaitInit();
             CWX_c14->step++;
-            CWX_c14->x2C45 = 0xD;
+            CWX_c14->x2C45 = CBW(0xD);
             cnLBS_RegistPersonalData(&BrPersonalData, CallBack_Result_LoginPersonalDataRegist_o);
             return;
         }
@@ -1251,7 +1251,7 @@ void lbc_login_finish() {
         }
         mini->x02 = 0;
         mini->x15 = 0;
-        CWX_c17->x2C45 = 2;
+        CWX_c17->x2C45 = CBW(2);
         cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, &CallBack_SendMiniData_o);
         CWX_c17->x2C34++;
         return;
@@ -1693,7 +1693,7 @@ void lobby_return_to_lobby() {
     case 0:
         CWX_c30->x2C32++;
         CWX_c30->x2C08 = 0;
-        CWX_c30->x2C45 = 1;
+        CWX_c30->x2C45 = CBW(1);
         CallBackWaitInit();
         cnLBS_Read_CurrentPlace(&CallBack_ReadCurrentPlace_o);
         break;
@@ -1762,7 +1762,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(CNET_RES res) {
 void CallBack_ReadCurrentPlace(CNET_RES res) {
     u16 sp18[3];
 
-    if ((CWX_c32->x2C31 != 5) && (CWX_c32->x2C45 == 1)) {
+    if ((CWX_c32->x2C31 != 5) && (CWX_c32->x2C45 == CBW(1))) {
         CWX_c32->x2C45 = 0;
         if (res.val == 0) {
             CWX_c32->x2C32++;
@@ -1904,7 +1904,7 @@ void lbc_top_menu_02() {
 
 #if !defined(G_PART)
 void CallBack_Result_Plaza_PlazaEntry(CNET_RES res) {
-    if ((((CWS_CallBack_Result_Plaza_PlazaEntry *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Plaza_PlazaEntry *)cw)->x2C45 == 4)) {
+    if ((((CWS_CallBack_Result_Plaza_PlazaEntry *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Plaza_PlazaEntry *)cw)->x2C45 == CBW(4))) {
         ((CWS_CallBack_Result_Plaza_PlazaEntry *)cw)->x2C45 = 0U;
         if (res.val == 0) {
             To_EnterPlaza();
@@ -2028,7 +2028,7 @@ void CallBack_Result_Plaza_ReadAllocation(CNET_RES res) {
     int i;
     PLZ *p;
 
-    if ((CWX_c43->x2C31 != 5) && (CWX_c43->x2C45 == 6) && (res.val != 2) && (res.val == 0)) {
+    if ((CWX_c43->x2C31 != 5) && (CWX_c43->x2C45 == CBW(6)) && (res.val != 2) && (res.val == 0)) {
         CWX_c43->x2C45 = 0;
         CWX_c43->x2C33 = 1;
         CWX_c43->x2C34 = 0;
@@ -2392,7 +2392,7 @@ s16 arg0;
 {
     switch (((u8 *)pNet)[PNET_OFS(0x12)]) {
     case 0:
-        CWX_c56->x2C45 = 0xA;
+        CWX_c56->x2C45 = CBW(0xA);
         ((u8 *)pNet)[PNET_OFS(0x12)]++;
         cnLBS_Read_LobbyMemberList(arg0 + 1, &CallBack_Result_Plaza_LobbyMember2_o);
         break;
@@ -2413,7 +2413,7 @@ void CallBack_Result_Plaza_LobbyMember2(CNET_RES res) {
     int var_s0;
     int temp_a0;
 
-    if ((((CWS_LobbyMember2 *)cw)->x2C31 != 5) && (((CWS_LobbyMember2 *)cw)->x2C45 == 0xA)) {
+    if ((((CWS_LobbyMember2 *)cw)->x2C31 != 5) && (((CWS_LobbyMember2 *)cw)->x2C45 == CBW(0xA))) {
         ((CWS_LobbyMember2 *)cw)->x2C45 = 0U;
         if (res.val == 0) {
             var_s1 = 0;
@@ -2466,7 +2466,7 @@ void lbc_in_plaza_03() {
 
 #if !defined(G_PART)
 void CallBack_Result_Plaza_PlazaExit(CNET_RES res) {
-    if ((((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C45 == 9)) {
+    if ((((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C45 == CBW(9))) {
         ((CWS_CallBack_Result_Plaza_PlazaExit *)cw)->x2C45 = 0U;
         if (res.val == 0) {
             F(u8, (u8 *)cw, CW_OFS(0x2C31)) = 1U;
@@ -2501,7 +2501,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(CNET_RES res) {
     int i;
     PLZ *p;
 
-    if ((CWX_c61->x2C31 != 5) && (CWX_c61->x2C45 == 0xB)) {
+    if ((CWX_c61->x2C31 != 5) && (CWX_c61->x2C45 == CBW(0xB))) {
         if (res.val == 2 && res.id == 0xB) {
             cnLBS_Get_AllocationProgressCount(&sp3C);
             return;
@@ -2836,7 +2836,7 @@ void CallBack_Result_Lobby_ReadRoomAllocation(CNET_RES res) {
     int i;
     PLZ *p;
 
-    if ((CWX_c73->x2C31 != 5) && (CWX_c73->x2C45 == 0xE)) {
+    if ((CWX_c73->x2C31 != 5) && (CWX_c73->x2C45 == CBW(0xE))) {
         if (res.val == 2) {
             if (res.id == 0xB) {
                 cnLBS_Get_AllocationProgressCount(&sp3C);
@@ -2986,7 +2986,7 @@ s32 Lbc_ReserveRoom() {
         }
         (*st)++;
         CallBackWaitInit();
-        CWX_c79->x2C45 = 0xF;
+        CWX_c79->x2C45 = CBW(0xF);
         cnLBS_RoomCreate(cnLbc_CheckInFloorOrder(2) & 0xFFFF, &CallBack_Result_Lobby_RoomCreate_o);
         break;
     case 1:
@@ -3090,9 +3090,9 @@ s32 Lbc_SetRoomRule() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 65
 void CallBack_Result_Lobby_SetRoomRule() {
-    if ((((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C45 == 0x11)) {
+    if ((((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C45 == CBW(0x11))) {
         ((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C45 = 0U;
         ((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_SetRoomRule *)cw)->x2C35 + 1);
         F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 1;
@@ -3229,7 +3229,7 @@ void CallBack_Result_Lobby_GuestRuleAllocation(CNET_RES res) {
 
 #if !defined(G_PART)
 void CallBack_Result_Lobby_GuestRoomMember() {
-    if ((((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C45 == 0x14)) {
+    if ((((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C45 == CBW(0x14))) {
         ((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C45 = 0U;
         ((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_GuestRoomMember *)cw)->x2C35 + 1);
     }
@@ -3413,7 +3413,7 @@ void lbc_in_lobby_03_01() {
         case 2:
             CWX_c93->x2C35++;
             CallBackWaitInit();
-            CWX_c93->x2C45 = 0x16;
+            CWX_c93->x2C45 = CBW(0x16);
             cnLBS_LobbyExit(&CallBack_Result_Lobby_LobbyExit_o);
             return;
         }
@@ -3517,7 +3517,7 @@ s32 Lbs_LobbyExit() {
 
 #if !defined(G_PART)
 void CallBack_Result_Lobby_LobbyExit(CNET_RES res) {
-    if ((((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C45 == 0x16)) {
+    if ((((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C45 == CBW(0x16))) {
         ((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C45 = 0U;
         if (res.val == 0) {
             ((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 = (u8) (((CWS_CallBack_Result_Lobby_LobbyExit *)cw)->x2C35 + 1);
@@ -3546,7 +3546,7 @@ void lbc_in_lobby_03_02() {
         case 2:
             CWX_c99->x2C35++;
             CallBackWaitInit();
-            CWX_c99->x2C45 = 0x18;
+            CWX_c99->x2C45 = CBW(0x18);
             cnLBS_RoomExit(&CallBack_Result_Lobby_RoomExit_o);
             return;
         }
@@ -3595,9 +3595,9 @@ s32 Lbs_RoomExit() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 66
 void CallBack_Result_Lobby_RoomExit(CNET_RES res) {
-    if ((((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C45 == 0x18)) {
+    if ((((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C31 != 5) && (((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C45 == CBW(0x18))) {
         ((CWS_CallBack_Result_Lobby_RoomExit *)cw)->x2C45 = 0U;
         if (res.val == 0) {
             F(s8, (u8 *)cw, CW_OFS(0x35D3)) = 0;
@@ -3837,16 +3837,19 @@ int Lbs_MatchStart() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 67
 void lobby_client_game_ready() {
     if (Check_InterruptFlag() == 0) {
         ((int (**)())&lobby_client_game_ready_jmp_2838)[F(u8, (u8 *)cw, CW_OFS(0x2C33))]();
+#ifdef MHG_PS2
+        F(s8, pNet, PNET_G(0x10)) = 0;   /* G only */
+#endif
         Disp_NowLoading2(4);
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 68
 void To_ReadyBattle() {
     F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 4;
     F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
@@ -3855,7 +3858,9 @@ void To_ReadyBattle() {
     Init_InterruptFlag();
     F(s8, (u8 *)cw, CW_OFS(0x2C30)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x35D5)) = 0;
+#ifndef MHG_PS2
     cnLbc_EraseDialog(0x4C);
+#endif
 }
 #endif
 
@@ -3882,7 +3887,7 @@ void lbc_game_ready_00() {
     case 2:
         CWX_c115->x2C34++;
         CallBackWaitInit();
-        CWX_c115->x2C45 = 0x20;
+        CWX_c115->x2C45 = CBW(0x20);
         cnLBS_Read_MatchInfomation(CallBack_Result_Match_MatchInformation_o);
         break;
     case 3:
@@ -4066,9 +4071,9 @@ void lbc_game_ready_04() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 69
 void CallBack_Result_Match_Logout() {
-    if (CWX_c121->x31 != 5 && CWX_c121->x45 == 0x21) {
+    if (CWX_c121->x31 != 5 && CWX_c121->x45 == CBW(0x21)) {
         CWX_c121->x45 = 0;
         CWX_c121->x34++;
     }
@@ -4643,9 +4648,15 @@ void lbc_admin_message_01() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 70
 void lbc_admin_message_02() {
+#ifdef MHG_PS2
+    u8 *c = (u8 *)cw;
+    *(s32 *)0x355944 = 0;   /* G only */
+    F(s8, c, CW_OFS(0x2C5C)) = 0;
+#else
     F(s8, (u8 *)cw, CW_OFS(0x2C5C)) = 0;
+#endif
     F(s8, (u8 *)cw, CW_OFS(0x2F6E)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2F6F)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2F76)) = 0;
@@ -4745,7 +4756,7 @@ static asm int tk_logout_message_sub()
 #endif
 #endif
 
-typedef struct { u8 pad0000[0x2C45]; s8 x2C45; u8 pad2C46[6]; s32 x2C4C; } CWS_tk_logout;
+typedef struct { u8 pad0000[CW_OFS(0x2C45)]; s8 x2C45; u8 pad2C46[CW_OFS(0x2C4C) - CW_OFS(0x2C45) - 1]; s32 x2C4C; } CWS_tk_logout;
 #define TKCW ((CWS_tk_logout *)cw)
 
 #if !defined(G_PART)
@@ -4770,7 +4781,7 @@ int arg0;
             case 2:
             case 7:
                 COM_R_No_Logout_c142 = COM_R_No_Logout_t + 1;
-                TKCW->x2C45 = 0x26;
+                TKCW->x2C45 = CBW(0x26);
                 cnLBS_LogoutLobbyServer(CallBack_Logout_ShutDown);
                 break;
             case 1:
@@ -4778,7 +4789,7 @@ int arg0;
             case 4:
             case 5:
                 COM_R_No_Logout_c142 = COM_R_No_Logout_t + 1;
-                TKCW->x2C45 = 0x26;
+                TKCW->x2C45 = CBW(0x26);
                 cnLBS_ShutDownLobbyServer(CallBack_Logout_ShutDown);
                 break;
             case 6:
