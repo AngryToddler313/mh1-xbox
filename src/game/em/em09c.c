@@ -11,6 +11,10 @@
 #include "pl.h"
 #include "plf.h"
 #include "fl.h"
+#ifdef MHG_PS2
+#include "quest.h"
+int Event_flag_ck(int);
+#endif
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM09W {
@@ -1289,7 +1293,7 @@ static void em_die01_005AAF20(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void em_die_rev_005AB090(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -1305,11 +1309,20 @@ static void em_die_rev_005AB090(EMW *em) {
         Quest_enemy_revival_set(em);
         switch (em->stg) {
         case 6:
+#ifdef MHG_PS2
+        case 0x49:
+        case 0x4B:
+#endif
             Quest_enemy_escape(em);
             em->x04++;
             em->x01 = 0;
             break;
         default:
+#ifdef MHG_PS2      /* G: the kind 12 variant stands */
+            if (em->type == 12) {
+                em_act_set(em, 0, 1);
+            } else
+#endif
             if (em->type & 0x10) {
                 em09_act_set(em, 1, 2, 0);
             }
@@ -1332,7 +1345,7 @@ static void em_move05_005AB180(EMW *em) {
 
 void em09_main_sub(EMW *em);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void em09_main(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
     u8 dmg[4];
@@ -1428,6 +1441,13 @@ void em09_main(EMW *em) {
             w->x4B = 1;
         }
     }
+#ifdef MHG_PS2      /* G: quest 10028, kind 23 on stage 69, before event 20: scripted act */
+    if (quest_w.no == 10028 && em->kind == 23 && em->stg == 69 && !Event_flag_ck(20)) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em09_act_set(em, 6, 0, 1);
+        }
+    } else
+#endif
     switch (em->x734) {
     case 3:
         if (em->x839 != 0) {
