@@ -459,12 +459,18 @@ void _cnet_RecvFromLbs_AnswerAnnexExit(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 50
 void _cnet_RecvFromLbs_BothAnnexJoinUser(void) {
     if (CNW(s8, 0xFEC) == 0) {
+#ifdef MHG_PS2
+        _sub_ReceiveJoinUser((u8 *)&CnetSys_w + 0x43C8);   /* G: a join-user list, no MH1 counterpart offset */
+    }
+    _cnet_Return_CallBack(0x11);
+#else
         __cnet_Recv_Word(CNWP(0x302FC));
     }
     _cnet_Return_CallBack(0x23);
+#endif
 }
 #endif
 

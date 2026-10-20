@@ -1,4 +1,5 @@
 /* lb_dd05 - browser: BsBody03_PrsSrc 0x005F3300-0x005F34CC (state: page source parsed). Hand-written from the asm. */
+#include "g_alias.h"
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 extern s8 bsRetryCtr;
@@ -8,6 +9,9 @@ extern char BsPsw[];
 void MoveAndTransSet();
 u16 *BsParseCheck();
 void BsParseCancel();
+#ifdef MHG_PS2
+void http_test_19();
+#endif
 void RetryShadowPost();
 void BsBody03_PrsSrc() {
     u16 *r;
@@ -20,7 +24,7 @@ void BsBody03_PrsSrc() {
             BsDialogReq = 2;
             if (bsSys->x37 != 0 && ((bsSys->x18 & 0x20) >> 5) != 0 && (*(u16 *)(BsPsw + 4) & 0x8000) && bsFirstOpen == 0 && bsSys->x34 == 0) {
                 bsSys->x2E = 4;
-                BsParseCancel();
+                GV(BsParseCancel, http_test_19)();   /* G's map names this address http_test_19 */
                 bsSys->x01 = 1;
                 bsSys->x02 = 6;
                 return;
