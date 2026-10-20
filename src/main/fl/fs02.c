@@ -24,6 +24,9 @@ int mflRegister(int);
 void mflRelease(int);
 u8 *mflRetrieve(int);
 void flCompact(void);
+#ifdef MHG_PS2
+extern int ps2_v_counter_hi;
+#endif
 void flPS2DmaTerminate(void);
 void mflCompact(void);
 void flPS2ClayRetouchMaterialTag(void);
@@ -97,8 +100,11 @@ u8 *flPS2GetSystemBuffAdrs(int h) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void flCompact(void) {
+#ifdef MHG_PS2
+    ps2_v_counter_hi = 2;   /* G: as flPS2DmaTerminate's end (gp-14204) */
+#endif
     flPS2DmaTerminate();
     mflCompact();
     flPS2ClayRetouchMaterialTag();

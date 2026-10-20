@@ -2178,3 +2178,7 @@ sub_main 0x004BA2A0 0x004BA2E8 mhg/main/quest/f_quest_p20
 main 0x00135D60 0x00135E1C mhg/main/emw/gmat02_p2
 main 0x00235A20 0x00235C60 main/mc/netfile2g
 main 0x0012B580 0x0012B6B0 mhg/main/font/fprint01_p1
+main 0x00126BC0 0x00126C14 mhg/main/menu/menu18_p3
+main 0x00126E90 0x00126F7C mhg/main/menu/menu18_p4
+main 0x00127020 0x001270CC mhg/main/menu/menu18_p5
+main 0x0013B140 0x0013B170 mhg/main/fl/fs02_p3
