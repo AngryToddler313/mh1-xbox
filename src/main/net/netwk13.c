@@ -1,4 +1,5 @@
 /* netwk13 - network connection code 0x0026C400-0x0026C490: Ncm_spr_kill. Whole file in netwk_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct NETCW {
@@ -186,6 +187,9 @@ typedef struct SKMODE {
     s32 b;
 } SKMODE;
 extern SKMODE skey_mode_tbl_910[];
+#ifdef MHG_PS2
+void func_00218240(int);
+#endif
 
 
 
@@ -200,9 +204,15 @@ void Ncm_spr_kill(int m) {
         net_common_w.x3E = 0;
         net_common_w.x2C = net_common_w.x2C | 0x400000;
         net_common_w.x3F = 1;
+#ifdef MHG_PS2
+        func_00218240(0);
+#endif
     } else if (m == 0x100000) {
         net_common_w.x3E = 0;
         net_common_w.x2C = net_common_w.x2C | 0x800000;
         net_common_w.x3F = 1;
+#ifdef MHG_PS2
+        func_00218240(1);
+#endif
     }
 }

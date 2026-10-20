@@ -2267,3 +2267,4 @@ main 0x0012A180 0x0012A21C mhg/main/sprite/trans2_p2
 main 0x001175E0 0x0011767C mhg/main/option/option01_p9
 main 0x00119330 0x001193D0 mhg/main/menu/menu01_p4
 sub_main 0x004D18F0 0x004D19B8 mhg/main/eft/eft06b_p3
+main 0x002178B0 0x0021795C main/net/netwk13
