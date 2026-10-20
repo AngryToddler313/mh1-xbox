@@ -163,3 +163,4 @@ PROVIDE(D_002EC1B4 = 0x002EC1B4); /* small-data byte table, G Pit_disp_chat */
 PROVIDE(D_002EC628 = 0x002EC628); /* G Pit_disp_chat frame data pointer */
 PROVIDE(D_002FF29C = 0x002FF29C); /* G Pit_disp_chat */
 PROVIDE(func_00221F00 = 0x00221F00); /* disp_chat_log_sub, G 4-argument call */
+PROVIDE(gstr_002C3C28 = 0x002C3C28); /* G ncm_center_x marker string */

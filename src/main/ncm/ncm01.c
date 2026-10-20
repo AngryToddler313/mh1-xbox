@@ -1,4 +1,5 @@
 /* ncm01 - 0x002702D0-0x002703E8: ncm string helpers (char length, glyph counts, centring). Whole file in ncm_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 void flfntSetSize(int, int);
@@ -69,13 +70,36 @@ void ncm_get_char_size_num(u8 *s, int *wide, int *narrow) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+char *func_00164448(char *, char *);
+extern char gstr_002C3C28[];
+#endif
+#if !defined(G_PART) || G_PART == 2
 s16 ncm_center_x(char *s, int size) {
     int wide = 0;
     int narrow = 0;
     int half;
 
+#ifdef MHG_PS2
+    char *p;
+#endif
+
     ncm_get_char_size_num((u8 *)s, &wide, &narrow);
+#ifdef MHG_PS2
+    /* G: a marker string found in s (main 0x164448 with the string at 0x2C3C28) whose second byte is 'C' or 'B'
+     * takes 4 or 2 off the narrow count */
+    p = func_00164448(s, gstr_002C3C28);
+    if (p != 0) {
+        switch (p[1]) {
+        case 'B':
+            narrow -= 2;
+            break;
+        case 'C':
+            narrow -= 4;
+            break;
+        }
+    }
+#endif
     half = size / 2;
     return (640 - size * wide - narrow * half) / 2;
 }
