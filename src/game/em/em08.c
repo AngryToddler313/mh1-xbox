@@ -86,7 +86,7 @@ void em08_move_act_set(EMW *em, u16 no, u16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void em08_fly_act_set(EMW *em, u16 no, u16 arg) {
     EM08W *w = (EM08W *)em->ex;
     f32 pt[3];
@@ -112,7 +112,9 @@ void em08_fly_act_set(EMW *em, u16 no, u16 arg) {
     case 20:
     case 21:
     case 22:
+#ifndef VERSION_MHG
     case 23:
+#endif
         break;
     case 4:
     case 5:

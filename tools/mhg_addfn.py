@@ -31,6 +31,8 @@ def main():
         if r[1] not in sp:
             print('  %s: not found' % r[1]); continue
         a, b = sp[r[1]]
+        if lines[a].startswith('#if !defined(G_PART)'):   # spans() gave the whole guard block
+            a += 1
         if lines[a - 1] != '#if !defined(G_PART)':
             print('  %s: guard is %r' % (r[1], lines[a - 1])); continue
         ns = [int(x) for x in re.findall(r'G_PART == (\d+)', '\n'.join(lines))]
