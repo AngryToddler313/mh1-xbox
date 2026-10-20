@@ -153,6 +153,7 @@ static void eft12_se_req(EFTW *ew, s16 kind);
 static EFTW *eft12_pull_work(s16 arg);
 void Eft12_set3(f32 *pos, s16 ang, s16 arg, int stg);
 
+#if !defined(G_PART) || G_PART == 1
 static void eft12_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -169,7 +170,9 @@ static void eft12_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_i(EFTW *ew) {
     ew->mode++;
     ew->mode2 = 0;
@@ -203,7 +206,9 @@ static void eft12_i(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_m(EFTW *ew) {
     switch (ew->arg) {
     case 0:
@@ -227,7 +232,9 @@ static void eft12_m(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_t(PRIM *pr) {
     EFTW *ew = pr->owner;
 
@@ -253,7 +260,9 @@ static void eft12_t(PRIM *pr) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft12_i00(EFTW *ew) {
     PLW *pl = (PLW *)ew->owner;
 
@@ -275,7 +284,9 @@ static void eft12_i00(EFTW *ew) {
     }
     eft12_m(ew);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft12_m00(EFTW *ew) {
     if (ew->timer++ >= 300) {
         ew->mode++;
@@ -287,7 +298,9 @@ static void eft12_m00(EFTW *ew) {
         add_prim(ot1, ew->prim, 0x20, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft12_t00(EFTW *ew, PRIM *pr) {
     FLMAT m;
     EFT_MDLW *mw = eft_mdlw[0];
@@ -329,7 +342,9 @@ static void eft12_t00(EFTW *ew, PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft12_i01(EFTW *ew) {
     EFT12_WORK *w = ew->work;
     EFT12_PIECE *p;
@@ -369,7 +384,9 @@ static void eft12_i01(EFTW *ew) {
     }
     eft12_m(ew);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft12_m01(EFTW *ew) {
     f32 cam[3];
     f32 d[3];
@@ -458,7 +475,9 @@ static void eft12_m01(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft12_t01(EFTW *ew, PRIM *pr) {
     FLMAT m;
     FLMAT uv;
@@ -499,7 +518,9 @@ static void eft12_t01(EFTW *ew, PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_i02(EFTW *ew) {
     ew->mode2 = 0;
     ew->work14 = 0;
@@ -528,7 +549,9 @@ static void eft12_i02(EFTW *ew) {
     }
     eft12_m(ew);
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_m02(EFTW *ew) {
     EFT12_WORK *w = ew->work;
 
@@ -549,7 +572,9 @@ static void eft12_m02(EFTW *ew) {
     ew->prim->pos[2] = ew->pos[2];
     add_prim(ot1, ew->prim, 0x20, 0);
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_t02(EFTW *ew, PRIM *pr) {
     f32 v[3];
     f32 d[3];
@@ -665,7 +690,9 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft12_egg_pos_calc(f32 *out, FLMAT *m, f32 *v) {
     flvecApplyMat33_2(v, m);
     flmatGetTrans(out, m);
@@ -673,7 +700,9 @@ static void eft12_egg_pos_calc(f32 *out, FLMAT *m, f32 *v) {
     out[1] += v[1];
     out[2] += v[2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft12_i03(EFTW *ew) {
     ew->mode2 = 0;
     ew->stg = 0;
@@ -692,7 +721,9 @@ static void eft12_i03(EFTW *ew) {
     }
     eft12_m(ew);
 }
+#endif
 
+#if !defined(G_PART)
 static void eft12_m03(EFTW *ew) {
     EGG *egg = ew->work;
 
@@ -740,7 +771,9 @@ static void eft12_m03(EFTW *ew) {
     }
     add_prim(ot1, ew->prim, 0x20, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 static void eft12_t03(EFTW *ew, PRIM *pr) {
     FLMAT m;
     FLMAT uv;
@@ -827,7 +860,9 @@ static void eft12_t03(EFTW *ew, PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART)
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
 static void eft12_i04(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
@@ -894,7 +929,9 @@ static void eft12_i04(EFTW *ew) {     /* G 0x571830: arg 6 is one puff (no sound
     eft12_m(ew);
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
 static void eft12_m04(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
@@ -1022,7 +1059,9 @@ static void eft12_m04(EFTW *ew) {     /* G 0x571A50: arg 6 lives 60 ticks on key
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 #if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
 static void eft12_t04(EFTW *ew, PRIM *pr) {
     f32 sc[3];
@@ -1096,7 +1135,9 @@ static void eft12_t04(EFTW *ew, PRIM *pr) {   /* G 0x571ED0: arg 5 coloured by i
     }
 }
 #endif
+#endif
 
+#if !defined(G_PART)
 static void eft12_d(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 n;
@@ -1129,14 +1170,18 @@ static void eft12_d(EFTW *ew) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void eft12_e(EFTW *ew) {
     if (ew->arg == 3 && ew->x1E == game_w.master) {
         game_w.meat_num--;
     }
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 5
 static void eft12_se_req(EFTW *ew, s16 kind) {
     switch (ew->arg) {
     case 5:
@@ -1151,7 +1196,9 @@ static void eft12_se_req(EFTW *ew, s16 kind) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static EFTW *eft12_pull_work(s16 arg) {
     switch (arg) {
     case 1:
@@ -1167,7 +1214,9 @@ static EFTW *eft12_pull_work(s16 arg) {
         return pull_eft_work(0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void eft12_set(PLW *pl, s16 arg) {
     FLMAT jm;
     f32 v[3];
@@ -1266,7 +1315,9 @@ void eft12_set(PLW *pl, s16 arg) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void eft12_set_sh(SHLW *sh, s16 arg, int stg) {
     EFTW *ew;
 
@@ -1287,7 +1338,9 @@ void eft12_set_sh(SHLW *sh, s16 arg, int stg) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void Eft12_set3(f32 *pos, s16 ang, s16 arg, int stg) {
     EFTW *ew = eft12_pull_work(arg);
 
@@ -1300,7 +1353,9 @@ void Eft12_set3(f32 *pos, s16 ang, s16 arg, int stg) {
         flvecCopy(ew->pos, pos);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 6
 void Eft12_set4(PLW *pl, s16 arg, int stg) {
     f32 v[3];
     EFTW *ew;
@@ -1342,3 +1397,4 @@ void Eft12_set4(PLW *pl, s16 arg, int stg) {
         }
     }
 }
+#endif

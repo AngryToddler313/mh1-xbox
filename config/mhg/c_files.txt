@@ -1871,3 +1871,9 @@ game 0x005B9360 0x005B9404 mhg/game/em/em04_p3
 game 0x005B96A0 0x005B9C68 mhg/game/em/em04_p4
 game 0x005C6410 0x005C7520 mhg/game/em/em08_aic_p1
 game 0x005C76A0 0x005C7CE4 mhg/game/em/em08_aic_p2
+game 0x0056FDE0 0x0056FE64 mhg/game/eft/eft12_p1
+game 0x00570040 0x00570C18 mhg/game/eft/eft12_p2
+game 0x00571180 0x005712A8 mhg/game/eft/eft12_p3
+game 0x005714B0 0x00571830 mhg/game/eft/eft12_p4
+game 0x00572250 0x00572324 mhg/game/eft/eft12_p5
+game 0x005727D0 0x00572B10 mhg/game/eft/eft12_p6
