@@ -156,8 +156,14 @@ void em_fly23_005DE080(EMW *em, EM17W *w);
 void em_atk00_005DE2C0(EMW *em, EM17W *w);
 void em_atk02_005DE360(EMW *em, EM17W *w);
 void em_atk03_005DE370(EMW *em, EM17W *w);
+#ifdef MHG_PS2 /* G: atk04 and atk05 take a kind; attack 2 is G's own */
+void em_atk04_005DE3F0(EMW *em, EM17W *w, int kind);
+void em_atk05_005DE530(EMW *em, EM17W *w, int kind);
+void game_func_0060A580(EMW *em, EM17W *w);
+#else
 void em_atk04_005DE3F0(EMW *em, EM17W *w);
 void em_atk05_005DE530(EMW *em, EM17W *w);
+#endif
 void em_atk06_005DE710(EMW *em, EM17W *w);
 void em_atk07_005DE800(EMW *em, EM17W *w);
 void em_atk08_005DE9E0(EMW *em, EM17W *w);
@@ -539,7 +545,49 @@ void em_move02_005E1030(EMW *em, EM17W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
+#ifdef MHG_PS2 /* G: attacks 1, 2, 7, 10 and 11 (kinds of atk04/atk05) */
+void em_move03_005E11A0(EMW *em, EM17W *w) {
+    switch (em->x15) {
+    case 0:
+        em_atk00_005DE2C0(em, w);
+        break;
+    case 1:
+        em_atk07_005DE800(em, w);
+        break;
+    case 2:
+        game_func_0060A580(em, w);
+        break;
+    case 3:
+        em_atk03_005DE370(em, w);
+        break;
+    case 4:
+        em_atk04_005DE3F0(em, w, 0);
+        break;
+    case 5:
+        em_atk05_005DE530(em, w, 0);
+        break;
+    case 6:
+        em_atk06_005DE710(em, w);
+        break;
+    case 7:
+        em_atk05_005DE530(em, w, 1);
+        break;
+    case 8:
+        em_atk08_005DE9E0(em, w);
+        break;
+    case 9:
+        em_atk09_005DEAA0(em, w);
+        break;
+    case 10:
+        em_atk05_005DE530(em, w, 2);
+        break;
+    case 11:
+        em_atk04_005DE3F0(em, w, 1);
+        break;
+    }
+}
+#else
 void em_move03_005E11A0(EMW *em, EM17W *w) {
     u8 temp_v1;
 
@@ -576,6 +624,7 @@ void em_move03_005E11A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2

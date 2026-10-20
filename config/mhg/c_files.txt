@@ -2685,3 +2685,4 @@ game 0x00547300 0x005474DC mhg/game/em/em_core_g_p4
 game 0x00579CB0 0x00579FEC mhg/game/eft/eft16_p8
 game 0x00576C60 0x00577204 mhg/game/eft/eft16_p9
 game 0x00578BB0 0x00579A58 mhg/game/eft/eft16_p10
+game 0x0060D470 0x0060D564 mhg/game/em/em17_r14_p4
