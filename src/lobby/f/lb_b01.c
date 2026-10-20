@@ -91,3 +91,49 @@ u8 *lobby_func_00559D30(u8 i) {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+/* G only */
+extern s32 quest_price;
+void lobby_func_0055A140(u8 a) {
+    Gold_add(quest_price);
+    if (a == 0 && quest_price != 0) {
+        cnWrap_SoundRequest(8);
+    }
+    quest_price = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 4
+#ifdef MHG_PS2
+/* G only */
+u8 *lobby_func_00566380(u8 a) {
+    u8 *p = em_work;
+    u32 i;
+
+    for (i = 0; i < 20; i++, p += 2560) {
+        if (p[0] != 0 && p[1144] == a) {
+            return p;
+        }
+    }
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 5
+#ifdef MHG_PS2
+/* G only */
+void Lb_send_trade_start();
+void lobby_func_005975E0(u8 *a) {
+    a[2288] = 1;
+    if (a[2312] != 0) {
+        a[2315] = 1;
+        Lb_Pl_act_set2(a, 0, 45, 16);
+        Lb_send_trade_start(a);
+    }
+}
+#endif
+#endif

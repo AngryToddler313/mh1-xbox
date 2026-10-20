@@ -236,3 +236,4 @@ PROVIDE(g_sh_002EFAD4 = 0x002EFAD4); /* G small-data halfwords lobby_func_0059A1
 PROVIDE(g_sh_002EFAD8 = 0x002EFAD8);
 PROVIDE(g_sh_002EFADC = 0x002EFADC);
 PROVIDE(g_sh_002EFAE0 = 0x002EFAE0);
+PROVIDE(g_sd_002EFBC4 = 0x002EFBC4); /* G small-data word whose address lobby_func_0056ED00 passes to cnLBS_Get_ConditionSearchUser */
