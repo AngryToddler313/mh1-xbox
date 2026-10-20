@@ -2206,13 +2206,27 @@ void em_move07_006123A0(EMW *em, EM27W *w) {
 
 void em27_main_sub(EMW *em, EM27W *w);
 
-#if !defined(G_PART)
+/* G: the monster turns to the hit direction before the damage act */
+#ifdef MHG_PS2
+#define GANG(em, a) ((em)->ang[1] = (a))
+#else
+#define GANG(em, a)
+#endif
+
+#if !defined(G_PART) || G_PART == 18
 void em27_main(EMW *em) {
     EM27W *w = (EM27W *)em->ex;
     u8 dmg[4];
     s8 pn;
     int yobi;
     int d;
+#ifdef MHG_PS2
+    int d2;             /* G: one angle local per damage case */
+    int d3;
+#else
+#define d2 d
+#define d3 d
+#endif
 
     if (em->mode < 5) {
         em->x798 = 1.0f;
@@ -2255,12 +2269,16 @@ void em27_main(EMW *em) {
     case 2:
         d = (u16)(em->dm_ang - em->ang[1]);
         if (d >= 0x6000 && d < 0xA000) {
+            GANG(em, em->dm_ang + 0x8000);
             em27_act_set(em, 5, 0, 2);
         } else if (d >= 0x2000 && d < 0x6000) {
+            GANG(em, em->dm_ang - 0x4000);
             em27_act_set(em, 5, 2, 2);
         } else if (d >= 0xA000 && d < 0xE000) {
+            GANG(em, em->dm_ang + 0x4000);
             em27_act_set(em, 5, 3, 2);
         } else {
+            GANG(em, em->dm_ang);
             em27_act_set(em, 5, 1, 2);
         }
         break;
@@ -2269,14 +2287,22 @@ void em27_main(EMW *em) {
             || (em->mode == 4 && em->x15 == 4)) {
             break;
         }
+#ifdef MHG_PS2
+        d2 = (u16)(em->dm_ang - em->ang[1]);
+#else
         d = (u16)(em->dm_ang - em->ang[1]);
-        if (d >= 0x6000 && d < 0xA000) {
+#endif
+        if (d2 >= 0x6000 && d2 < 0xA000) {
+            GANG(em, em->dm_ang + 0x8000);
             em27_act_set(em, 4, 1, 2);
-        } else if (d >= 0x2000 && d < 0x6000) {
+        } else if (d2 >= 0x2000 && d2 < 0x6000) {
+            GANG(em, em->dm_ang - 0x4000);
             em27_act_set(em, 4, 3, 2);
-        } else if (d >= 0xA000 && d < 0xE000) {
+        } else if (d2 >= 0xA000 && d2 < 0xE000) {
+            GANG(em, em->dm_ang + 0x4000);
             em27_act_set(em, 4, 4, 2);
         } else {
+            GANG(em, em->dm_ang);
             em27_act_set(em, 4, 2, 2);
         }
         break;
@@ -2294,14 +2320,22 @@ void em27_main(EMW *em) {
         em27_act_set(em, 0, 8, 2);
         break;
     case 12:
+#ifdef MHG_PS2
+        d3 = (u16)(em->dm_ang - em->ang[1]);
+#else
         d = (u16)(em->dm_ang - em->ang[1]);
-        if (d >= 0x6000 && d < 0xA000) {
+#endif
+        if (d3 >= 0x6000 && d3 < 0xA000) {
+            GANG(em, em->dm_ang + 0x8000);
             em27_act_set(em, 4, 1, 2);
-        } else if (d >= 0x2000 && d < 0x6000) {
+        } else if (d3 >= 0x2000 && d3 < 0x6000) {
+            GANG(em, em->dm_ang - 0x4000);
             em27_act_set(em, 4, 3, 2);
-        } else if (d >= 0xA000 && d < 0xE000) {
+        } else if (d3 >= 0xA000 && d3 < 0xE000) {
+            GANG(em, em->dm_ang + 0x4000);
             em27_act_set(em, 4, 4, 2);
         } else {
+            GANG(em, em->dm_ang);
             em27_act_set(em, 4, 2, 2);
         }
         break;
@@ -2310,12 +2344,16 @@ void em27_main(EMW *em) {
         if (em->x388 == 2) {
             d = em->dm_ang;
             if (d >= 0x6000 && d < 0xA000) {
+                GANG(em, d + 0x8000);
                 em27_act_set(em, 4, 1, 2);
             } else if (d >= 0x2000 && d < 0x6000) {
+                GANG(em, d - 0x4000);
                 em27_act_set(em, 4, 3, 2);
             } else if (d >= 0xA000 && d < 0xE000) {
+                GANG(em, d + 0x4000);
                 em27_act_set(em, 4, 4, 2);
             } else {
+                GANG(em, (u16)d);
                 em27_act_set(em, 4, 2, 2);
             }
         } else {
@@ -2323,7 +2361,7 @@ void em27_main(EMW *em) {
         }
         break;
     }
-    if (quest_w.x08 == 0x89 && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
+    if (quest_w.x08 == GV(0x89, 10014) && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em27_act_set(em, 6, 0, 1);
         }
@@ -2337,6 +2375,10 @@ void em27_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#ifndef MHG_PS2
+#undef d2
+#undef d3
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 8
