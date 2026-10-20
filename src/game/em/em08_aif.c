@@ -275,6 +275,7 @@ void toride_eff_set(EMW *);
         ty[i] = 0xFF;     \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 void em_fly10_0059D720(EMW *em, EM08W *w) {
     s32 temp_v0;
     s32 temp_v0_3;
@@ -328,7 +329,9 @@ block_9:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_fly11_0059D960(EMW *em, EM08W *w) {
     s32 temp_v0;
     s32 temp_v0_3;
@@ -382,7 +385,9 @@ block_9:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_fly12_0059DBA0(EMW *em, EM08W *w) {
     s32 temp_v0;
 
@@ -413,7 +418,9 @@ void em_fly12_0059DBA0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_fly13_0059DCA0(EMW *em, EM08W *w) {
     s32 temp_v0;
 
@@ -444,7 +451,9 @@ void em_fly13_0059DCA0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_fly14_0059DDA0(EMW *em, EM08W *w) {
     u8 temp_a3;
 
@@ -494,7 +503,9 @@ void em_fly14_0059DDA0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_fly15_0059DF70(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -514,7 +525,9 @@ void em_fly15_0059DF70(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_fly16_0059E020(EMW *em, EM08W *w) {
     f32 temp_f0;
     s32 temp_v0;
@@ -609,7 +622,9 @@ void em_fly16_0059E020(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_fly17_0059E400(EMW *em, EM08W *w) {
     f32 temp_f0;
     s32 temp_v0;
@@ -707,7 +722,9 @@ void em_fly17_0059E400(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_fly18_0059E820(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -752,7 +769,9 @@ void em_fly18_0059E820(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_fly19_0059E9C0(EMW *em, EM08W *w) {
     s32 temp_v1_2;
 
@@ -782,7 +801,9 @@ void em_fly19_0059E9C0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_fly20_0059EA90(EMW *em, EM08W *w) {
     s32 temp_v1_2;
 
@@ -813,7 +834,9 @@ void em_fly20_0059EA90(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_fly21_0059EB70(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -832,7 +855,9 @@ void em_fly21_0059EB70(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_fly22_0059EC00(EMW *em, EM08W *w) {
     f32 temp_f3;
     s32 temp_v1;
@@ -875,7 +900,9 @@ void em_fly22_0059EC00(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_fly23_0059EDA0(EMW *em, EM08W *w) {
     f32 temp_f1;
     f32 temp_f1_2;
@@ -939,7 +966,9 @@ void em_fly23_0059EDA0(EMW *em, EM08W *w) {
         em->pos[1] = temp_f1_3;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_fly24_0059EFD0(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -959,7 +988,9 @@ void em_fly24_0059EFD0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_fly25_0059F070(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -979,7 +1010,9 @@ void em_fly25_0059F070(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_atk00_0059F110(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -997,7 +1030,9 @@ void em_atk00_0059F110(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_atk01_0059F190(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -1029,7 +1064,9 @@ void em_atk01_0059F190(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_atk02_0059F2F0(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -1057,15 +1094,21 @@ void em_atk02_0059F2F0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em_atk03_0059F3E0(EMW *em, EM08W *w) {
     em08_to_swim(em);
 }
+#endif
 
+#if !defined(G_PART)
 void em_atk04_0059F3F0(EMW *em, EM08W *w) {
     em08_to_swim(em);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_atk05_0059F400(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -1103,7 +1146,9 @@ void em_atk05_0059F400(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_atk06_0059F5C0(EMW *em, EM08W *w) {
     f32 temp_f0;
     s32 temp_v0;
@@ -1186,7 +1231,9 @@ void em_atk06_0059F5C0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_atk07_0059F890(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -1204,7 +1251,9 @@ void em_atk07_0059F890(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_atk08_0059F910(EMW *em, EM08W *w) {
 
     switch (em->x05) {
@@ -1245,7 +1294,9 @@ void em_atk08_0059F910(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_dmg00_0059FAB0(EMW *em, EM08W *w) {
     u8 temp_a2;
 
@@ -1271,3 +1322,4 @@ void em_dmg00_0059FAB0(EMW *em, EM08W *w) {
         break;
     }
 }
+#endif
