@@ -597,7 +597,7 @@ asm static void hk_cursor_mv(s16 dir)
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 17
 int hk_cursor_check(void) {
     u8 f;
 
@@ -605,6 +605,11 @@ int hk_cursor_check(void) {
         if (SKB(0x2F) != 0) {
             return 0;
         }
+#ifdef VERSION_MHG
+        if (*(u8 *)(lpSKey + 0x4B) & 2) {   /* G-only field (G offset) */
+            return 0;
+        }
+#endif
         f = SKB(0x1F);
         if (f == 4 && !(SKB(0x35) & 0xF)) {
             return 1;

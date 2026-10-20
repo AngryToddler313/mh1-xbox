@@ -68,7 +68,11 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#ifdef VERSION_MHG
+int Menu_data_i(void) {     /* G returns 0 (as the other menu init functions) */
+#else
 void Menu_data_i(void) {
+#endif
     lpPit->x42 = 0;
     lpPit->x43 = 0;
     lpPit->x81 = 0;
@@ -77,4 +81,7 @@ void Menu_data_i(void) {
     PitMenu.x10 = 1;
     PitMenu.x11 = 2;
     PitMenu.x12 = 0;
+#ifdef VERSION_MHG
+    return 0;
+#endif
 }

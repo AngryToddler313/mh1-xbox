@@ -2,6 +2,7 @@
  * into angle (radians and 1/360 steps via the soft-float library) and a magnitude capped at 127, zeroing everything below the dead zone;
  * lever_analog_to_digital maps a stick angle to a direction code; PADDeviceInit / PADPortOpen / PADDeviceDestroy open and close the pad2 library sockets.
  * Names are guesses. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef struct STICK {
@@ -122,7 +123,7 @@ void PADPortOpen(int port, int slot, PADSLOT *p) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void PADDeviceDestroy(void) {
     int i;
     PADSLOT *p;
@@ -135,7 +136,7 @@ void PADDeviceDestroy(void) {
         }
         i++;
         p++;
-    } while (i < 2);
+    } while (i < GV(2, 1));   /* G opens port 0 only (flPADInitialize) */
     scePad2End();
     sceDbcEnd();
 }

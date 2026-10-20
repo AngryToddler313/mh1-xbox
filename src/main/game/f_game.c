@@ -33,9 +33,18 @@ void game0(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+int func_0012D170(void);
+#endif
+#if !defined(G_PART) || G_PART == 3
 void game10(void) {
+#ifdef MHG_PS2
+    if (func_0012D170() == 0) {     /* G: main 0x12D170 first */
+        Disp_NowLoading2(4);
+    }
+#else
     Disp_NowLoading2(4);
+#endif
     if (game_w.x12 == 0) {
         all_reset();
         game_w.step++;

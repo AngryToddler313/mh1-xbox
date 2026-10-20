@@ -126,7 +126,7 @@ void Lbs_se_load(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Menu_snd_load(void) {
     void *p = data_load_ptr;
 
@@ -134,6 +134,13 @@ void Menu_snd_load(void) {
     FlushCache(0);
     load_bin(0x10002, p);
     flSndPackLoad(p, 1);
+#ifdef VERSION_MHG
+    /* G loads port 6 (0x10007) as well, before port 7 */
+    flSndPortStop(6);
+    FlushCache(0);
+    load_bin(0x10007, p);
+    flSndPackLoad(p, 6);
+#endif
     flSndPortStop(7);
     FlushCache(0);
     load_bin(0x10006, p);

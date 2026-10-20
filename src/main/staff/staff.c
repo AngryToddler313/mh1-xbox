@@ -2,7 +2,12 @@
  * Staff_main (page step machine with fades, skip with the pad), logo_disp
  * (draws a logo sprite from logo_tbl) and staff_disp (draws one page of
  * staff_tbl: text lines or logos). Field meanings are guesses. */
+#include "g_alias.h"
 #include "types.h"
+#ifdef MHG_PS2
+void func_001E4340(void);
+void sub_main_func_004E8C90(int);
+#endif
 
 typedef struct {
     u8 step;    /* 0x0 */
@@ -45,6 +50,18 @@ void staff_disp();
 
 void Staff_init(void)
 {
+#ifdef MHG_PS2
+    /* G (sub_main 0x4E88A0): starts at step 99 and sets up the first page */
+    staff_w.x1 = 0;
+    staff_w.x4 = 0;
+    staff_w.step = 0x63;
+    staff_w.page = 0;
+    staff_w.timer = 0;
+    staff_w.x8 = 0;
+    staff_w.xA = 0;
+    func_001E4340();
+    sub_main_func_004E8C90(staff_w.page);
+#else
     staff_w.step = 0;
     staff_w.x1 = 0;
     staff_w.x4 = 0;
@@ -52,5 +69,6 @@ void Staff_init(void)
     staff_w.timer = 0;
     staff_w.x8 = 0;
     staff_w.xA = 0;
+#endif
 }
 

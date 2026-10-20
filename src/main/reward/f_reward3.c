@@ -1,6 +1,11 @@
 /* Quest result screen, third part (0x292510-0x292D34): result display,
  * error and "bonus movie added" screens, reward screen init. */
+#include "g_alias.h"
 #include "reward.h"
+#ifdef MHG_PS2
+void func_0012BDD0(void *);  /* G: font_print_sp's place (main 0x12BDD0) */
+extern void *gptr_005262A8[], *gptr_005262AC[], *gptr_005262B0[], *gptr_005262B4[], *gptr_005262B8[];
+#endif
 
 #if !defined(G_PART)
 void result_disp(GAME_W *t)
@@ -93,21 +98,21 @@ void result_disp(GAME_W *t)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void error_disp(void)
 {
     font_set_palette(0);
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x113, 0x61);
-    font_print_sp(lit_658_00386910);
+    GV(font_print_sp, func_0012BDD0)(GSTR(lit_658_00386910, gptr_005262A8));
     flfntLocate(0xB0, 0x85);
-    font_print_sp(lit_659_00386920);
+    GV(font_print_sp, func_0012BDD0)(GSTR(lit_659_00386920, gptr_005262AC));
     flfntLocate(0xB0, 0x97);
-    font_print_sp(lit_660_00386940);
+    GV(font_print_sp, func_0012BDD0)(GSTR(lit_660_00386940, gptr_005262B0));
     flfntLocate(0xB0, 0xA9);
-    font_print_sp(lit_661_00386970);
+    GV(font_print_sp, func_0012BDD0)(GSTR(lit_661_00386970, gptr_005262B4));
     flfntLocate(0xB0, 0xBB);
-    font_print_sp(lit_662_00386990);
+    GV(font_print_sp, func_0012BDD0)(GSTR(lit_662_00386990, gptr_005262B8));
 }
 #endif
 

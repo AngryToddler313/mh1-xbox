@@ -1,4 +1,5 @@
 /* f_menu run (SLPM_654.95 0x00129470-0x001296A4): mix_item_chk, mix_item_2_chk, menu_mix_clear, Menu_mix_i. Whole file in menu_nm.c. */
+#include "g_alias.h"
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -117,15 +118,30 @@ void menu_mix_clear(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+int func_0011B640(void);
+void lobby_func_005831C0(void);
+#endif
+#if !defined(G_PART) || G_PART == 2
 int Menu_mix_i(void) {
+#ifdef MHG_PS2
+    if (func_0011B640() != 1) {     /* G: its own check (main 0x11B640) */
+        return -1;
+    }
+#else
     if (Item_ok_chk(lpPit->pl) == 0) {
         return -1;
     }
+#endif
     lpPit->x76 = -1;
     if ((s16)ItemPickingDeclaration(0, &lpPit->x76) < 0) {
         return -1;
     }
+#ifdef MHG_PS2
+    if (game_w.x1DC != 0) {
+        lobby_func_005831C0();      /* G: in the lobby, lobby 0x5831C0 first */
+    }
+#endif
     menu_mix_clear();
     PitMenu.x10 = 0;
     PitMenu.x11 = 1;

@@ -13,6 +13,9 @@ void flSndControll(int);
 void ADXM_ExecMain();
 void mwPlySwitchToIdle();
 void flAdxControll(int);
+#ifdef MHG_PS2
+void func_001D5270(void);
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 void flmwVSyncCallback(void) {
@@ -20,10 +23,24 @@ void flmwVSyncCallback(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void flmwFlip(void) {
     flSndControll(1);
     ADXM_ExecMain();
+#ifdef MHG_PS2
+    /* G (main 0x1D52A0): the wait flag is set by main 0x1D5270 (G only) */
+    if (*(int *)(flPs2State + 0x5C) <= *(int *)(flPs2State + 0x54)) {
+        unsigned long t = *(unsigned long *)0x12001000;
+        *(int *)(flPs2State + 0x4C) = (t >> 13) & 1;
+        func_001D5270();
+        do {
+            mwPlySwitchToIdle();
+        } while (*(int *)(flPs2State + 0x60) != 0);
+        return;
+    }
+    func_001D5270();
+    mwPlySwitchToIdle();
+#else
     if (*(int *)(flPs2State + 0x5C) <= *(int *)(flPs2State + 0x54)) {
         unsigned long t = *(unsigned long *)0x12001000;
         *(int *)(flPs2State + 0x60) = 1;
@@ -35,5 +52,6 @@ void flmwFlip(void) {
     }
     *(int *)(flPs2State + 0x60) = 1;
     mwPlySwitchToIdle();
+#endif
 }
 #endif

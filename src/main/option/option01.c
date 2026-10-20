@@ -58,6 +58,9 @@ void SetFilterMode();
 void Put_sprite_rotate();
 void opt_sub_disp(s16, char *);
 int strlen();
+#ifdef MHG_PS2
+int func_001D5970();
+#endif
 void *memcpy();
 
 void SetTrnslMode();
@@ -367,9 +370,13 @@ void option_exit(OPTTSK *t) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 void opt_sub_disp(s16 y, char *s) {
+#ifdef MHG_PS2
+    flfntLocate(0x1B8 - (func_001D5970(s) * 9) / 2, y);    /* G: its own length call, signed */
+#else
     flfntLocate(0x1B8 - ((u32)(strlen(s) * 9) >> 1), y);
+#endif
     font_print(lit_295_00358758, s);
 }
 #endif

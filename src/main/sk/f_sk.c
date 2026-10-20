@@ -32,6 +32,9 @@ static void setup_rw_sub(int);
 static void sk_board_ptr_replace(void);
 void sk_conv_init(char *);
 s8 sk_get_key_code();
+#ifdef MHG_PS2
+extern s8 gtbl_002A5FD4[];   /* G: row per key code (main data 0x2A5FD4) */
+#endif
 static void sk_kbd_act_exec(void);
 static void sk_kbd_act_kill();
 static void sk_skb_exec();
@@ -143,13 +146,21 @@ int Softkey_free_1(void *a, void *b, int c) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 s8 sk_get_key_code() {
     u8 *l;
 
     SKS8(0x2E) = *(s8 *)(*(u8 **)(SKP(0) + 8) + ((SKB(0x24) << 2) + SKB(0x25)));
     SKP(4) = *(u8 **)(SKP(0) + 4) + SKS8(0x2E) * 8;
     SKP(8) = *(u8 **)(SKP(0) + 0) + SKS8(0x2E) * 4;
+#ifdef MHG_PS2
+    /* G (main 0x208DC0): the row of the +0xC table comes from a byte table; no +0x10 mode byte */
+    if (*(u8 **)(SKP(0) + 0xC) != 0) {
+        SKP(0xC) = *(u8 **)(SKP(0) + 0xC) + gtbl_002A5FD4[SKS8(0x2E)] * 16;
+    } else {
+        SKP(0xC) = 0;
+    }
+#else
     if (*(u8 **)(SKP(0) + 0xC) != 0) {
         SKP(0xC) = *(u8 **)(SKP(0) + 0xC) + (SKS8(0x2E) - 12) * 16;
     } else {
@@ -158,14 +169,23 @@ s8 sk_get_key_code() {
     if (!(*(SKP(0) + 0x10) & 0x80)) {
         SKB(0x34) = *(SKP(0) + 0x10) & 0x7F;
     }
+#endif
     return SKS8(0x2E);
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+extern u8 D_002EF650;       /* G: a soft keyboard flag in small data (gp-13600) */
+void func_00208EB0(void);   /* G only (main 0x208EB0) */
+#endif
+#if !defined(G_PART) || G_PART == 11
 void SoftKeyboard_init(void) {
     lpSKey = softkeyboard;
     SKB(0x37) = 0;
+#ifdef MHG_PS2
+    D_002EF650 = 0;
+    func_00208EB0();
+#endif
     SoftkeyAppInit();
 }
 #endif
@@ -468,13 +488,27 @@ done:
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void sk_speaking(int a, int b, void *c) {
     if (SKB(0x158) != 0) {
         cmd_kakutei_all();
         SK_SE(0x16);
         return;
     }
+#ifdef VERSION_MHG
+    {
+        /* G (main 0x20A5B0): a word in G's 8 new bytes at 0x44: positive keeps the sound 0x15 and returns, negative is cleared */
+        s32 *w = (s32 *)(lpSKey + 0x44);
+        if (*w != 0) {
+            if (*w < 0) {
+                *w = 0;
+            } else {
+                SK_SE(0x15);
+                return;
+            }
+        }
+    }
+#endif
     SKS8(0x32) = 1;
     if (SKB(0x158) == 0 && SKB(0x44) == 0) {
         SK_SE(0x15);
@@ -828,10 +862,20 @@ void sk_daisyo_chg(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 void sk_palette_cursor_set(void) {
     u8 f = SKB(0x1F);
 
+#ifdef VERSION_MHG
+    /* G (main 0x20BE30): the table only for 4; 5 sets the cursor to (5, 0) */
+    if (f == 4) {
+        SKB(0x24) = palette_set_tbl[(u8)f * 2];
+        SKB(0x25) = palette_set_tbl[SKB(0x1F) * 2 + 1];
+    } else if (f == 5) {
+        SKB(0x24) = 5;
+        SKB(0x25) = 0;
+    }
+#else
     if (f != 4) {
         if (f == 5) {
             goto set;
@@ -841,11 +885,12 @@ set:
         SKB(0x24) = palette_set_tbl[(u8)f * 2];
         SKB(0x25) = palette_set_tbl[SKB(0x1F) * 2 + 1];
     }
+#endif
 }
 #endif
 
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 static void sk_board_ptr_replace(void) {
     u8 m = SKB(0x1D);
     u8 e;
@@ -889,7 +934,19 @@ static void sk_board_ptr_replace(void) {
         break;
     }
     if (SKB(0x1F) == 4 && (SKB(0x35) & 0xF)) {
+#ifdef VERSION_MHG
+        /* G (main 0x20BEA0): the board by the flags at +0x20 */
+        u32 f = SKS32(0x20);
+        if (!(f & 1)) {
+            *(u8 **)lpSKey = board_tbl[0];
+        } else if (!(f & 0x8000)) {
+            *(u8 **)lpSKey = board_tbl[15];
+        } else {
+            *(u8 **)lpSKey = board_tbl[7];
+        }
+#else
         *(u8 **)lpSKey = board_tbl[0];
+#endif
     }
 }
 #endif
