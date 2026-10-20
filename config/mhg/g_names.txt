@@ -65,6 +65,7 @@ PROVIDE(gptr_005284A0 = 0x005284A0); /* disp_edit_spr text */
 PROVIDE(gstr_002B17B0 = 0x002B17B0); /* "%-8.8s" (player_name_id_print) */
 PROVIDE(D_002EF374 = 0x002EF374); /* u16, gp-14332: Load_userdata copies User_data+0xD0A here */
 PROVIDE(D_002EF650 = 0x002EF650); /* u8, gp-13600: cleared by SoftKeyboard_init */
+PROVIDE(gtbl_002A5FD4 = 0x002A5FD4); /* s8 table, sk_get_key_code */
 PROVIDE(ps2_v_counter_hi = 0x002EF3F4); /* G: word cleared by system_work_init (gp-14204) */
 PROVIDE(ot9 = 0x002EF31C); /* G: tenth ot list (prim_free_top+4, gp-14420) */
 PROVIDE(func_00171FD0 = 0x00171FD0); /* the symbol file calls this atan2f; G's flExp jumps here */
