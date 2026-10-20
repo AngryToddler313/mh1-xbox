@@ -1931,3 +1931,5 @@ game 0x0062D2D0 0x0062D5A0 mhg/game/em/em20_horm_p1
 game 0x005902F0 0x00590328 mhg/game/em/em01_ai_p1
 game 0x005909D0 0x00590B90 mhg/game/em/em01_ai_p2
 game 0x00590D80 0x00590E04 mhg/game/em/em01_ai_p3
+game 0x0062DA30 0x0062DB54 mhg/game/em/em21_r02_p1
+game 0x0062DBD0 0x0062DCA8 mhg/game/em/em21_r02_p2
