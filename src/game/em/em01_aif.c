@@ -1,5 +1,6 @@
 /* em01 AI, run 6: em_atk12_0056E6F0 .. em01_main_sub (game.bin 0x0056E6F0-0x00574AC8). Matching functions of em01_ai_nm.c (that file holds the
  * whole AI including the near-matches). See em01_ai_nm.c for the description. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -259,6 +260,10 @@ void em01_reset_char_set();
         tm[i] = 0xFFFF; \
         ty[i] = 0xFF; \
     } while (0)
+
+#ifdef MHG_PS2
+void game_func_0059DD80(EMW *em, EM01W *w);
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 void em_atk12_0056E6F0(EMW *em, EM01W *w) {
@@ -2470,7 +2475,7 @@ void em_move04_00573DF0(EMW *em, EM01W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 void em_move05_00573F70(EMW *em, EM01W *w) {
     switch (em->x15) {
     case 0:
@@ -2482,6 +2487,11 @@ void em_move05_00573F70(EMW *em, EM01W *w) {
     case 2:
         em_die02_00573480(em, w);
         break;
+#ifdef MHG_PS2
+    case 3:
+        game_func_0059DD80(em, w);
+        break;
+#endif
     }
 }
 #endif
