@@ -2156,3 +2156,14 @@ lobby 0x005631A0 0x00563204 mhg/lobby/f/lb_npc_p18
 game 0x005AE200 0x005AE454 mhg/game/em/em02_aib_p9
 game 0x0055D370 0x0055DA34 mhg/main/pl/f_pl_p54
 lobby 0x00585680 0x005859D8 mhg/lobby/f/lb_cli_p17
+game 0x0056FE70 0x0056FF1C mhg/game/eft/eft12_p7
+game 0x0056FF20 0x0056FFA4 mhg/game/eft/eft12_p8
+game 0x0056FFB0 0x0057003C mhg/game/eft/eft12_p9
+game 0x005712B0 0x005714B0 mhg/game/eft/eft12_p10
+game 0x00623950 0x006239DC mhg/game/em/em17_r14_p3
+game 0x005F6B50 0x005F6BEC mhg/game/em/em15_r10_p6
+game 0x006239E0 0x00623A7C mhg/game/em/em20_r18_p4
+game 0x00665B20 0x00665C48 mhg/game/shell/shell09_p1
+game 0x00665D90 0x00665E44 mhg/game/shell/shell09_p2
+game 0x006662B0 0x00666348 mhg/game/shell/shell09_p3
+game 0x005D6B60 0x005D6C14 mhg/game/em/em09c_p6

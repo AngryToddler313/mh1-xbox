@@ -1,4 +1,5 @@
 /* em17_r14 - monster 17 AI 0x005E0D20-0x005E152C: em_move00_005E0D20, em_move01_005E0F60, em_move02_005E1030, em_move03_005E11A0, em_move04_005E1270, em_move05_005E1400, em_move06_005E1490. Whole file in em17_nm.c. */
+#include "g_alias.h"
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -188,6 +189,9 @@ void em_die00_005E07A0(EMW *em, EM17W *w);
 void em_die01_005E08A0(EMW *em, EM17W *w);
 void em_die02_005E09C0(EMW *em, EM17W *w);
 void em_die03_005E0B90(EMW *em, EM17W *w);
+#ifdef MHG_PS2
+void game_func_00622FE0(EMW *em, EM17W *w);
+#endif
 void em17_soukou_dm_sel_set(EMW *em);
 void em_move00_005E0D20(EMW *em, EM17W *w);
 void em_move01_005E0F60(EMW *em, EM17W *w);
@@ -649,7 +653,7 @@ void em_move04_005E1270(EMW *em, EM17W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void em_move05_005E1400(EMW *em, EM17W *w) {
     u8 temp_a2;
 
@@ -666,7 +670,7 @@ void em_move05_005E1400(EMW *em, EM17W *w) {
         em_die02_005E09C0(em, w);
         break;
     case 3:
-        em_die03_005E0B90(em, w);
+        GV(em_die03_005E0B90, game_func_00622FE0)(em, w);
         break;
     }
 }

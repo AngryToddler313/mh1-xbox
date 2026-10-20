@@ -4,6 +4,7 @@
  * shells, damage reactions, death and revival), em09_main (damage system), em09_main_sub
  * (mode dispatch) and the per-animation sound/effect script ef_move_sub. Names of the steps
  * follow the split; field meanings are guesses. */
+#include "g_alias.h"
 #include "version.h"
 #include "em.h"
 #include "game.h"
@@ -63,6 +64,9 @@ int shell02_set(EMW *, int);
 void em_rate_add_g(EMW *);
 void flvecRotY(f32 *, f32);
 void em09_act_set();
+#ifdef MHG_PS2
+void game_func_005D6680(EMW *em);     /* G: em09 mode 6 has its own handler */
+#endif
 void em_escape_mind_set(EMW *, u8, u8);
 void em_cmd_reset(EMW *);
 void em_ikari_add(EMW *, s16);
@@ -1420,7 +1424,7 @@ void em09_main(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 void em09_main_sub(EMW *em) {
     switch (em->mode) {
     case 0: em_move00_005A90A0(em); break;
@@ -1429,7 +1433,7 @@ void em09_main_sub(EMW *em) {
     case 3: em_move03_005AA670(em); break;
     case 4: em_move04_005AAC30(em); break;
     case 5: em_move05_005AB180(em); break;
-    case 6: em_move00_005A90A0(em); break;
+    case 6: GV(em_move00_005A90A0, game_func_005D6680)(em); break;
     case 7: em_move00_005A90A0(em); break;
     }
 }

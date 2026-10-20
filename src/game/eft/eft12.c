@@ -5,6 +5,7 @@
  * eft12_meat_col/bone_col and turns to face a player who checks it), 4 a
  * thrown egg that falls and breaks (spawning eft14 and Shell09) and 5 a
  * puff of steam. */
+#include "g_alias.h"
 #include "eft.h"
 #include "game.h"
 #include "pl.h"
@@ -125,7 +126,13 @@ void push_smell(SMOKE *);
 void pull_smell(SMOKE *);
 void se_req2(int, int, int, f32 *, int, int);
 void eft14_set(f32 *, s16, f32);
+#ifdef MHG_PS2
+void Shell09_set(f32 *, int, int, int);     /* G: 4th argument, the bomber skill flag */
+#define SHELL09_SET(p, a, s) Shell09_set(p, a, s, 0)
+#else
 void Shell09_set(f32 *, int, int);
+#define SHELL09_SET(p, a, s) Shell09_set(p, a, s)
+#endif
 
 static void eft12_move(EFTW *ew);
 static void eft12_i(EFTW *ew);
@@ -172,7 +179,7 @@ static void eft12_move(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 static void eft12_i(EFTW *ew) {
     ew->mode++;
     ew->mode2 = 0;
@@ -184,14 +191,23 @@ static void eft12_i(EFTW *ew) {
     case 1:
         eft12_i01(ew);
         break;
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
-    case 2:             /* G (game 0x56FE70): the spit set down on stage 21 is gone */
+#if defined(VERSION_MHG)
+    case 3:             /* G (game 0x56FE70): the spit set down on stage 21 (arg 2) is gone */
+        eft12_i02(ew);
+        break;
+    case 4:
+        eft12_i03(ew);
+        break;
+    case 5:
+    case 6:
+        eft12_i04(ew);
+        break;
+    case 2:
     default:
         eft12_e(ew);
         break;
 #else
     case 2:
-#endif
     case 3:
         eft12_i02(ew);
         break;
@@ -199,16 +215,14 @@ static void eft12_i(EFTW *ew) {
         eft12_i03(ew);
         break;
     case 5:
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
-    case 6:
-#endif
         eft12_i04(ew);
         break;
+#endif
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 static void eft12_m(EFTW *ew) {
     switch (ew->arg) {
     case 0:
@@ -225,7 +239,7 @@ static void eft12_m(EFTW *ew) {
         eft12_m03(ew);
         break;
     case 5:
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#if defined(VERSION_MHG)
     case 6:
 #endif
         eft12_m04(ew);
@@ -234,7 +248,7 @@ static void eft12_m(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 static void eft12_t(PRIM *pr) {
     EFTW *ew = pr->owner;
 
@@ -253,7 +267,7 @@ static void eft12_t(PRIM *pr) {
         eft12_t03(ew, pr);
         break;
     case 5:
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#if defined(VERSION_MHG)
     case 6:
 #endif
         eft12_t04(ew, pr);
@@ -723,7 +737,7 @@ static void eft12_i03(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void eft12_m03(EFTW *ew) {
     EGG *egg = ew->work;
 
@@ -755,7 +769,7 @@ static void eft12_m03(EFTW *ew) {
                 if (ew->x07 == game_w.stage) {
                     eft14_set(ew->prim->pos, 0, 1.0f);
                 }
-                Shell09_set(ew->prim->pos, 0, ew->x07);
+                SHELL09_SET(ew->prim->pos, 0, ew->x07);
                 return;
             }
         }
