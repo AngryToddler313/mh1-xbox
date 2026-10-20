@@ -2686,3 +2686,7 @@ lobby 0x0058CE30 0x0058CE98 lobby/b/lb_bz11
 lobby 0x0058D310 0x0058D378 lobby/b/lb_bz79
 lobby 0x005D4970 0x005D4A10 mhg/lobby/f/lb_au06_p2
 lobby 0x00566C30 0x00566D7C lobby/f/lb_gab02
+lobby 0x00566F00 0x00566F78 mhg/lobby/f/lb_f02_p2
+lobby 0x005797C0 0x00579834 mhg/lobby/f/lb_plz3_p13
+lobby 0x00579B00 0x00579B30 mhg/lobby/f/lb_plz3_p14
+lobby 0x00579B30 0x00579B60 mhg/lobby/f/lb_plz3_p15

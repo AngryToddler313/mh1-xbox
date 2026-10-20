@@ -1293,16 +1293,24 @@ void Lb_on_dialog() {
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void plaza_trans_ot1(a)
 u8 *a;
 {
     font_set_stack_no(*(int *)(a + 0x18));
+#ifdef MHG_PS2
+    if (((u8 *)CW)[0xBC4] == 0 && SoftKeyboard_alive_check() != 0) {   /* G: not while cw+0xBC4 is set */
+#else
     if (SoftKeyboard_alive_check() != 0) {
+#endif
         DispSoftkeyboard(1);
     }
     if (pNet->x0C == 1) {
+#ifdef MHG_PS2
+        DispDialogData();
+#else
         DispDialogData(pNet->x0C);
+#endif
         Lb_on_dialog();
         pNet->x0C = 0;
     }
@@ -1349,19 +1357,30 @@ void put_main_cursor2(int x, int y, s32 n) {
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
+#ifdef MHG_PS2
+extern char lit_2316[];
+#endif
 void Get_PlazaName(dst)
 char *dst;
 {
+#ifdef MHG_PS2
+    sprintf(dst, lit_2316, (char *)&PlazaInfo[ClassInfo.plaza - 1] + 0x1A);   /* G: the name alone, at +0x1A */
+#else
     sprintf(dst, lit_193_0065DBE8, Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
+#endif
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 void Get_LobbyName(dst)
 char *dst;
 {
+#ifdef MHG_PS2
+    sprintf(dst, lit_2316, (char *)&LobbyInfo[ClassInfo.lobby - 1] + 0x1A);   /* G: the name alone, at +0x1A */
+#else
     sprintf(dst, lit_193_0065DBE8, Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
+#endif
 }
 #endif
 
