@@ -1,4 +1,5 @@
 /* lb_bz09 - lobby UI/client 0x005B2C20-0x005B2CA4: cnLbc_LoadNetModel, cnLbc_LoadModelWait, cnWrap_IsBBConnect, cnWrap_GetConnectType, cnWrap_IsAccessMemoryCard, cnLbc_SetIspRestTime, lm_place_i (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_f.h"
 
 #if !defined(G_PART) || G_PART == 1
@@ -25,9 +26,9 @@ s32 cnWrap_GetConnectType(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 s32 cnWrap_IsAccessMemoryCard(void) {
-    return *(s8 *)0x3F36CC != 0;
+    return *(s8 *)GV(0x3F36CC, 0x35F00C) != 0;
 }
 #endif
 

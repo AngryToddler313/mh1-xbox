@@ -1,8 +1,9 @@
 /* lb_em04 - lobby.bin 0x0053E350-0x0053E848. Same for lobby NPC model em04. */
+#include "g_alias.h"
 #include "lobby.h"
 #include "em.h"
 
-typedef struct { u8 pad[0x2A]; s8 eff; } LBEFW;
+typedef struct { u8 pad[GV(0x2A, 0x36)]; s8 eff; } LBEFW;   /* G: the effect step at +0x36 */
 
 int em_frame_check(EMW *, f32, int);
 int em_frame_check3(EMW *, int, f32, f32);

@@ -1,6 +1,10 @@
 /* lb_cli - one translation unit 0x005B7020-0x005C1B5C (lbtu3): the lobby client, the small HTML text renderer (nwDispStr_Html), the mail / comment requests and the server notice callbacks. */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #include "g_alias.h"
+int cnLBS_Read_PlazaName();
+#ifdef MHG_PS2
+int lobby_func_005E3480();
+#endif
 #ifdef MHG_PS2
 void cnLBS_Send_ChatMessageTU();
 #endif
@@ -478,9 +482,9 @@ int To_PlazaExit_k();
 int check_top_information_level_k();
 int check_warning_level_k();
 int lbc_text_lobby_trans_k();
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 33
 s32 internet_connect_minimum_cleanup() {
-    CpInetTcpAbort(*(s32 *)0x4E36F4);
+    CpInetTcpAbort(*(s32 *)GV(0x4E36F4, 0x3E2164));
     CpInetTcpDelete(&D_4E36F4);
     return 2;
 }
@@ -521,7 +525,7 @@ s32 internet_lobby_act() {
     i = 0;
     if (*(s8 *)0x3F36CC == 0) {
         do {
-            if (cnLBS_RecvData(*(s32 *)0x4E36F4) != 1) {
+            if (cnLBS_RecvData(*(s32 *)GV(0x4E36F4, 0x3E2164)) != 1) {
                 break;
             }
             i++;
@@ -603,7 +607,7 @@ void Lbc_connect() {
     if (Online_ck() == 1) {
         var_s0 = 0;
 loop_2:
-        if (cnLBS_RecvData(*(s32 *)0x4E36F4) == 1) {
+        if (cnLBS_RecvData(*(s32 *)GV(0x4E36F4, 0x3E2164)) == 1) {
             var_s0 += 1;
             F(s32, (u8 *)cw, CW_OFS(0x35F4)) = 0xE10;
             if (var_s0 < 0x64) {
@@ -3918,12 +3922,12 @@ void CallBack_Result_Match_MatchInformation(CNET_RES res) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 27
 void lbc_game_ready_01() {
     void *temp_a0;
 
     temp_a0 = (u8 *)cw;
-    F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
+    F(u8, temp_a0, CW_OFS(0x2C33)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C33)) + 1);
     F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
 }
 #endif
@@ -3973,12 +3977,12 @@ void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 28
 void lbc_game_ready_03() {
     void *temp_a0;
 
     temp_a0 = (u8 *)cw;
-    F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
+    F(u8, temp_a0, CW_OFS(0x2C33)) = (u8) (F(u8, temp_a0, CW_OFS(0x2C33)) + 1);
     F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
 }
 #endif
@@ -4282,7 +4286,7 @@ void lbc_logout_00() {
         F(s8, pNet, PNET_OFS(0xC)) = 1;
         if (tk_logout(CWX_c132->x2C46) != 0) {
             CWX_c132->x2C34++;
-            CpInetTcpAbort(*(s32 *)0x4E36F4);
+            CpInetTcpAbort(*(s32 *)GV(0x4E36F4, 0x3E2164));
             CpInetTcpDelete(&D_4E36F4);
         }
         break;
@@ -4400,7 +4404,7 @@ void lbc_logout_01() {
             } else {
                 CWX_c133->x2C34++;
             }
-            CpInetTcpAbort(*(s32 *)0x4E36F4);
+            CpInetTcpAbort(*(s32 *)GV(0x4E36F4, 0x3E2164));
             CpInetTcpDelete(&D_4E36F4);
         }
         break;
@@ -5418,15 +5422,15 @@ void CallBack_Event_LobbyFull(CNET_RES res) {
 /* ---- formerly b/lb_bz51.c ---- */
 /* lb_bz51 - lobby UI/client 0x005C0A90-0x005C0AC0: CallBack_Event_ShutDownOpponent (first drafted by tools/lbauto.py). */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 29
 void CallBack_Event_ShutDownOpponent(void) {
     u8 temp_a0;
     void *temp_a1;
 
     temp_a1 = (u8 *)cw;
-    temp_a0 = F(u8, temp_a1, 0x2C31);
+    temp_a0 = F(u8, temp_a1, CW_OFS(0x2C31));
     if ((temp_a0 != 5) && (temp_a0 == 4)) {
-        F(s8, temp_a1, 0x2C0D) = 1;
+        F(s8, temp_a1, CW_OFS(0x2C0D)) = 1;
     }
 }
 #endif
@@ -5639,14 +5643,14 @@ void CallBack_Event_RecvMail(CNET_RES res) {
 /* ---- formerly b/lb_by04.c ---- */
 /* lb_by04 - agent B promoted near-match 0x005C1130-0x005C1178: CallBack_Event_AdminMessage (first drafted by tools/lbauto.py). */
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 30
 void CallBack_Event_AdminMessage(CNET_RES res) {
     char sp20[32];
     int temp_v0;
 
     memset((u8 *)cw + CW_OFS(0x2C5C), 0, 0x31C);
     temp_v0 = (int)cw;
-    cnLBS_Get_RecvMessage(&sp20, temp_v0 + 0x2C5D, temp_v0 + 0x2C6E);
+    cnLBS_Get_RecvMessage(&sp20, temp_v0 + CW_OFS(0x2C5D), temp_v0 + CW_OFS(0x2C6E));
     F(s8, (u8 *)cw, CW_OFS(0x2C5C)) = 1;
 }
 #endif
@@ -5655,12 +5659,12 @@ void CallBack_Event_AdminMessage(CNET_RES res) {
 /* lb_bz52 - lobby UI/client 0x005C1180-0x005C11C0: CallBack_Event_PlazaName (first drafted by tools/lbauto.py). */
 extern char PlazaInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 31
 void CallBack_Event_PlazaName(void) {
     u16 sp1E;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Read_PlazaName(sp1E, (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C) + 0x14);
+    GV(cnLBS_Read_PlazaName, lobby_func_005E3480)(sp1E, (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C) + GV(0x14, 0x1A));   /* G: the name at +0x1A */
 }
 #endif
 
@@ -5939,9 +5943,9 @@ asm void CallBack_Event_RoomLeaver(CNET_RES res)
 
 /* ---- formerly b/lb_by06.c ---- */
 /* lb_by06 - agent B promoted near-match 0x005C1B00-0x005C1B5C: CallBack_Event_LbsBinary (first drafted by tools/lbauto.py). */
-typedef struct { u8 pad0000[0x2C0C]; s8 x2C0C; u8 pad2C0D[0x24]; u8 x2C31; } CWS_CallBack_Event_LbsBinary_by06;
+typedef struct { u8 pad0000[CW_OFS(0x2C0C)]; s8 x2C0C; u8 pad2C0D[0x24]; u8 x2C31; } CWS_CallBack_Event_LbsBinary_by06;
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 32
 void CallBack_Event_LbsBinary(CNET_RES res) {
     char sp20[784];
     u8 temp_a0;
