@@ -2129,3 +2129,6 @@ main 0x00146950 0x00146AB8 mhg/main/flps/fladdm_p4
 main 0x0014EB20 0x0014EBCC mhg/main/fl/flsys02_p3
 main 0x00154CB0 0x001552C8 mhg/main/fl/amo_all_p2
 main 0x001552D0 0x001559E8 mhg/main/fl/amo_all_p3
+main 0x00139EB0 0x00139F5C mhg/main/fl/fldma01_p4
+main 0x0013A490 0x0013A7AC mhg/main/fl/fldma01_p5
+main 0x0013A7B0 0x0013A980 mhg/main/fl/fldma01_p6

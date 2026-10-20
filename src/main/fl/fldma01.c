@@ -40,7 +40,7 @@ int flPS2DmaInterrupt(int);
 int IntGsStoreImageHandler();
 
 /* IntGsStoreImageHandler (0x0016E6E0, 172 bytes): original bytes, ends with `ei`. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static asm int IntGsStoreImageHandler()
 {
 #include "IntGsStoreImageHandler.inc"
@@ -169,14 +169,14 @@ fail:
 #endif
 
 /* flPS2DmaInterrupt (0x0016EAE0, 796 bytes) and flPS2DmaSend (0x0016EE00, 464 bytes): original bytes. */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 asm int flPS2DmaInterrupt(int arg)
 {
 #include "flPS2DmaInterrupt.inc"
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 asm void flPS2DmaSend(void)
 {
 #include "flPS2DmaSend.inc"
