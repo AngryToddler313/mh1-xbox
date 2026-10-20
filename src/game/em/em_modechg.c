@@ -8,6 +8,7 @@
 extern s16 em01_stay_timer_tbl[];
 extern s16 em01_runaway_timer_tbl[];
 
+#if !defined(G_PART) || G_PART == 1
 int Em_Mode_Chg(EMW *em, int mode, s16 mode2) {
     s8 i;
 
@@ -35,8 +36,11 @@ int Em_Mode_Chg(EMW *em, int mode, s16 mode2) {
     }
     return 1;
 }
+#endif
 
+#if !defined(G_PART)
 void em01_local_area_move_init(EMW *em) {
     em->stay_tm = em01_stay_timer_tbl[em->stg];
     em->runaway_tm = em01_runaway_timer_tbl[em->stg];
 }
+#endif
