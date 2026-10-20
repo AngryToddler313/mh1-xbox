@@ -1640,7 +1640,7 @@ static void move_default_0058A9B0(EMW *em) {
 /* Sound and effect script per animation (sound_call_0058A950(em, frame, se, joint)
  * plays a sound at the joint's position once the animation reaches the
  * frame; Eft13_set_em_scl and shell02_set spawn effects). */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
     f32 v[3];
 
@@ -1710,8 +1710,13 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
     case 0x3F4:
     case 0x3F5:
         sound_call_0058A950(em, 12, 1, 0);
+#ifdef MHG_PS2
+        sound_call_0058A950(em, 32, 19, 0);
+        sound_call_0058A950(em, 36, 19, 0);
+#else
         sound_call_0058A950(em, 10, 19, 0);
         sound_call_0058A950(em, 14, 19, 0);
+#endif
         if (w->anim == 0x3F7) {
             if (em_frame_check(em, 0, 12.0f)) {
                 Eft13_set_em_scl(em, 21, 0.9f, 3);
@@ -1826,7 +1831,12 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 34, 0, 0);
         break;
     case 0x426:
+#ifdef MHG_PS2
+        sound_call_0058A950(em, 4, 1, 23);
+        sound_call_0058A950(em, 4, 5, 0);
+#else
         sound_call_0058A950(em, 4, 12, 23);
+#endif
         break;
     case 0x427:
         sound_call_0058A950(em, 4, 6, 0);

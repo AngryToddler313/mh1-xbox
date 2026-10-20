@@ -2694,3 +2694,4 @@ game 0x006682C0 0x0066863C mhg/game/shell/shell14_p7
 game 0x006689A0 0x00668A30 mhg/game/shell/shell14_p8
 game 0x0059E7C0 0x0059F2AC mhg/game/em/em01_aif_p21
 game 0x005CDFD0 0x005CE900 mhg/game/em/em08_aih_p8
+game 0x005B7110 0x005B7F54 mhg/game/em/em03_p14
