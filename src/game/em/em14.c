@@ -48,12 +48,15 @@ void em14_act_set(EMW *em, int kind, u16 no, u16 arg);
         w->dist = 0.0f;             \
     }
 
+#if !defined(G_PART) || G_PART == 1
 void em14_act_act_set(EMW *em, u16 no, u16 arg) {
     em->act_spd = 1.0f;
     em->x388 = 0;
     em_act_set2(em, 0, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em14_move_act_set(EMW *em, u16 no, u16 arg) {
     EM14W *w = (EM14W *)em->ex;
 
@@ -162,7 +165,9 @@ void em14_move_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 1, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em14_fly_act_set(EMW *em, u16 no, u16 arg) {
     EM14W *w = (EM14W *)em->ex;
 
@@ -263,7 +268,9 @@ void em14_fly_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 2, no, arg);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em14_atk_act_set(EMW *em, u16 no, u16 arg) {
     EM14W *w = (EM14W *)em->ex;
 
@@ -300,7 +307,9 @@ void em14_atk_act_set(EMW *em, u16 no, u16 arg) {
     }
     em_act_set2(em, 3, no, arg);
 }
+#endif
 
+#if !defined(G_PART)
 void em14_act_set(EMW *em, int kind, u16 no, u16 arg) {
     if (em->x8C3 == 0) {
         em_cdm_act_flag_ck(em);
@@ -326,7 +335,9 @@ void em14_act_set(EMW *em, int kind, u16 no, u16 arg) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 u16 em14_senkai_target(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
     int a;
@@ -358,7 +369,9 @@ u16 em14_senkai_target(EMW *em) {
     em->ang[1] = (u16)em->ang[1];
     return ret;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em14_tossin_move(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
     f32 v[3];
@@ -381,7 +394,9 @@ void em14_tossin_move(EMW *em) {
     mot_miration_ret(em, v);
     w->dist -= v[2];
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em14_fly_adjy(EMW *em, int type) {
     f32 (*tbl)[2] = fly_adjy_hosei_tbl_0065EE60[type];
     EM14W *w = (EM14W *)em->ex;
@@ -413,7 +428,9 @@ void em14_fly_adjy(EMW *em, int type) {
         speed_add(em, w->spd);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em14_fly_adjy2_init(EMW *em, u8 type) {
     EM14W *w = (EM14W *)em->ex;
 
@@ -465,11 +482,15 @@ void em14_fly_adjy2_init(EMW *em, u8 type) {
     }
     em_rate_clear(em);
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subx(EMW *em, EM14W *w) {
     return 0;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_suby(EMW *em, EM14W *w) {
     int i;
     f32 (*tbl)[2] = fly_adjy2_hosei_tbl_0065F260[w->adj_type];
@@ -506,7 +527,9 @@ static u8 fly_adjy2_suby(EMW *em, EM14W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 static u8 fly_adjy2_subz(EMW *em, EM14W *w) {
     f32 (*tbl)[2] = fly_adjz2_hosei_tbl_0065F420[w->adj_type];
     u8 ret = 0;
@@ -535,7 +558,9 @@ static u8 fly_adjy2_subz(EMW *em, EM14W *w) {
     }
     return ret;
 }
+#endif
 
+#if !defined(G_PART)
 u8 em14_fly_adjy2(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
     u8 ret = 0;
@@ -558,3 +583,4 @@ u8 em14_fly_adjy2(EMW *em) {
     }
     return ret;
 }
+#endif

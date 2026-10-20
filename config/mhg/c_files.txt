@@ -1882,3 +1882,5 @@ game 0x00604DD0 0x00605A38 mhg/game/em/em17_p2
 game 0x005FAFC0 0x005FBB18 mhg/game/em/em15_p1
 game 0x005FBC60 0x005FBEB0 mhg/game/em/em15_p2
 game 0x005FC1A0 0x005FC268 mhg/game/em/em15_p3
+game 0x005EC950 0x005ED508 mhg/game/em/em14_p1
+game 0x005ED640 0x005EDA68 mhg/game/em/em14_p2
