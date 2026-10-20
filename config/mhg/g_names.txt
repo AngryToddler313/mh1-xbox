@@ -230,3 +230,5 @@ PROVIDE(g_str_00654E00 = 0x00654E00); /* string lobby_func_0059F6C0 copies into 
 PROVIDE(g_tbl_00300AC0 = 0x00300AC0); /* 0x200-byte blocks of lobby_func_00559D30 */
 PROVIDE(g_cn_00700EA2 = 0x00700EA2); /* CnetSys_w+0x669A: u16 per 356-byte entry (lobby_func_005AC230) */
 PROVIDE(g_cn_00700E98 = 0x00700E98); /* CnetSys_w+0x6690: u32 per 356-byte entry (lobby_func_005AC580) */
+PROVIDE(g_cn_006FEA7A = 0x006FEA7A); /* CnetSys_w+0x4272, u16 per 356-byte entry */
+PROVIDE(g_cn_006FEA7C = 0x006FEA7C); /* CnetSys_w+0x4274, u16 per 356-byte entry */
