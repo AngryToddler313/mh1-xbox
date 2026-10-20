@@ -7,6 +7,7 @@
  * em04b.c / em04c.c (em04_nm.c holds the whole file, with the near-matches). */
 #include "em04.h"
 
+#if !defined(G_PART) || G_PART == 1
 void em04_next_act_set(EMW *em) {
     if (em->x734 == 3) {
         em->x839 = 1;
@@ -15,10 +16,14 @@ void em04_next_act_set(EMW *em) {
         em_act_set(em, 0, em_act_search(em04_act_tbl));
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act00(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act01(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -36,7 +41,9 @@ static void em_act01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act02(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -58,7 +65,9 @@ static void em_act02(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act03(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -74,7 +83,9 @@ static void em_act03(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act04(EMW *em, int n) {
     switch (em->x05) {
     case 0:
@@ -95,7 +106,9 @@ static void em_act04(EMW *em, int n) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act05(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -110,7 +123,9 @@ static void em_act05(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act06(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -125,7 +140,9 @@ static void em_act06(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act07(EMW *em) {
     f32 v[3];
 
@@ -149,7 +166,9 @@ static void em_act07(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act08(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -167,7 +186,9 @@ static void em_act08(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act09(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -182,7 +203,9 @@ static void em_act09(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act10(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -197,7 +220,9 @@ static void em_act10(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em_move00_0058C350(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -217,7 +242,9 @@ void em_move00_0058C350(EMW *em) {
     case 11: em_act08(em); break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov00(EMW *em, int flag) {
     EM04W *w = (EM04W *)em->ex;
     u32 d;
@@ -274,7 +301,9 @@ static void em_mov00(EMW *em, int flag) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov01(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -293,7 +322,9 @@ static void em_mov01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov02(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -312,7 +343,9 @@ static void em_mov02(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov03(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -331,7 +364,9 @@ static void em_mov03(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov04(EMW *em) {
     u32 a;
 
@@ -355,7 +390,9 @@ static void em_mov04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov05(EMW *em) {
     EM04W *w = (EM04W *)em->ex;
 
@@ -379,7 +416,9 @@ static void em_mov05(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 void em_move01_0058CBD0(EMW *em) {
     switch (em->x15) {
     case 0: em_mov00(em, 0); break;
@@ -391,7 +430,9 @@ void em_move01_0058CBD0(EMW *em) {
     case 6: em_mov00(em, 1); break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk00(EMW *em, int kind) {
     FLMAT mat;
     f32 in[3];
@@ -448,7 +489,9 @@ static void em_atk00(EMW *em, int kind) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void em_move03_0058CF10(EMW *em) {
     switch (em->x15) {
     case 0: em_atk00(em, 0); break;
@@ -459,7 +502,9 @@ void em_move03_0058CF10(EMW *em) {
     case 5: em_atk00(em, 5); break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void em_dm00_0058CFB0(EMW *em) {
     s32 a;
 
@@ -484,7 +529,9 @@ void em_dm00_0058CFB0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void em_dm01_0058D0A0(EMW *em) {
     FLMAT mat;
     f32 in[3];
@@ -547,7 +594,9 @@ void em_dm01_0058D0A0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void em_dm02_0058D2E0(EMW *em) {
     FLMAT mat;
     f32 in[3];
@@ -604,3 +653,4 @@ void em_dm02_0058D2E0(EMW *em) {
         break;
     }
 }
+#endif
