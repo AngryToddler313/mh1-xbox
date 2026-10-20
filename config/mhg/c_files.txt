@@ -1889,3 +1889,7 @@ game 0x005807F0 0x00580910 mhg/game/eft/eft23_p1
 game 0x00580B30 0x00580F3C mhg/game/eft/eft23_p2
 game 0x005814F0 0x00581C88 mhg/game/eft/eft23_p3
 game 0x00581E30 0x00581F44 mhg/game/eft/eft23_p4
+game 0x005CCA10 0x005CD5A8 mhg/game/em/em08_aih_p1
+game 0x005CDA90 0x005CDB14 mhg/game/em/em08_aih_p2
+game 0x005CDCD0 0x005CDD94 mhg/game/em/em08_aih_p3
+game 0x005CDEE0 0x005CDFCC mhg/game/em/em08_aih_p4
