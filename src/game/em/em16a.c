@@ -136,8 +136,8 @@ extern s16 em_atk_mode_timer_tbl[];
 #endif
 
 #ifdef MHG_PS2
-/* G: em_atk04_005D2500 with a kind argument (config/mhg/g_names.txt) */
-void em16_atk04_g(EMW *em, EM16W *w, int kind);
+/* G: em_atk04_005D2500 takes a kind */
+static void em_atk04_005D2500(EMW *em, EM16W *w, int kind);
 #endif
 
 #if !defined(G_PART) || G_PART == 1
@@ -1035,7 +1035,36 @@ static void em_atk03_005D2400(EMW *em, EM16W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 23
+#ifdef MHG_PS2
+/* G: the shell kind comes from the caller (attack 4: 0, attack 13: 2) */
+static void em_atk04_005D2500(EMW *em, EM16W *w, int kind) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x1A, 0, 0);
+        break;
+    case 1:
+        switch (kind) {
+        case 0:
+        default:
+            if (em_frame_check(em, 80.0f, 0) != 0) {
+                Shell08_set_ang(em, 0xF, 9, 0, 0xF8E5, 0);
+            }
+            break;
+        case 1:
+            if (em_frame_check(em, 80.0f, 0) != 0) {
+                Shell08_set_ang(em, 0xF, 9, 2, 0xF8E5, 0);
+            }
+            break;
+        }
+        if (em->x194 == 0) {
+            em16_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#else
 static void em_atk04_005D2500(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
@@ -1052,6 +1081,7 @@ static void em_atk04_005D2500(EMW *em, EM16W *w) {
         break;
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 18
@@ -1466,7 +1496,7 @@ void em_move03_005D3660(EMW *em, EM16W *w) {
     case 2: em_atk02_005D2110(em, w); break;
     case 3: em_atk03_005D2400(em, w); break;
 #ifdef MHG_PS2     /* G: this attack takes a kind */
-    case 4: em16_atk04_g(em, w, 0); break;
+    case 4: em_atk04_005D2500(em, w, 0); break;
 #else
     case 4: em_atk04_005D2500(em, w); break;
 #endif
@@ -1479,7 +1509,7 @@ void em_move03_005D3660(EMW *em, EM16W *w) {
     case 11: em_atk11_005D3280(em, w); break;
     case 12: em_atk12_005D3510(em, w); break;
 #ifdef MHG_PS2
-    case 13: em16_atk04_g(em, w, 1); break;
+    case 13: em_atk04_005D2500(em, w, 1); break;
 #endif
     }
 }
