@@ -2170,3 +2170,9 @@ nethttp 0x00A08710 0x00A087A4 lobby/f/lb_gdr01
 nethttp 0x00A062B0 0x00A0636C lobby/f/lb_gdr08
 select 0x00544720 0x00544840 mhg/select/edit00_p1
 select 0x00544850 0x00544A24 mhg/select/edit00_p2
+select 0x00545040 0x00545398 select/edit11
+select:rodata 0x0054D230 0x0054D248 select/edit11
+main 0x00119430 0x001194C4 mhg/main/menu/menu01_p3
+main 0x0013AA00 0x0013AA9C mhg/main/fl/fldma01_p7
+sub_main 0x004BA2A0 0x004BA2E8 mhg/main/quest/f_quest_p20
+main 0x00135D60 0x00135E1C mhg/main/emw/gmat02_p2

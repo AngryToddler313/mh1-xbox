@@ -1,5 +1,10 @@
 /* edit11 - select.bin 0x00534E30-0x00535188: disp_edit_spr (character edit menu: flashing bar, labels and values per row; jump table at 0x53B660). Whole file in edit_nm.c. */
+#include "g_alias.h"
 #include "select.h"
+#ifdef MHG_PS2
+void func_0012DD90(f32, int, int, int, int);
+extern void *gptr_005284A0[];
+#endif
 #define PSWV(i) (*(volatile u16 *)&Psw[i])
 
 typedef struct { s16 x, y, w, h; u32 col[4]; } SPR5;
@@ -12,7 +17,7 @@ void disp_edit_spr(STASK *t, u8 *w) {
     flSetRenderState(0x6C, 0);
     Sel_menu_disp(4);
     y = 0x60;
-    if (t->step < 5) {
+    if (t->step < GV(5, 6)) {
         sn = flSin(0.0000958738f * (f32)(u32)(((System_timer & 0x3F) << 10) & 0xFFFF));
         s.x = 8;
         s.y = w[2] * 32 + 0x5B;
@@ -53,7 +58,7 @@ void disp_edit_spr(STASK *t, u8 *w) {
         }
         }
     }
-    Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
-    font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+    GV(Disp_button, func_0012DD90)(1.0f, 0x12, 0x206, 0x60, 8);
+    font_print_ex(0x220, 0x60, 0, GSTR(lit_322_0053B658, gptr_005284A0));
     flSetRenderState(0x6C, 1);
 }

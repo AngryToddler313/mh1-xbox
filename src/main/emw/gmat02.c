@@ -56,7 +56,7 @@ extern u8 st36_ground_shagami[];
 #endif
 f32 flvecCalcDistance(f32 *, f32 *);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
     u8 *out = &w->shagami;
     GKIND *k;
@@ -66,10 +66,15 @@ void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
     if (!idx) {
         *out = 0;
 #ifdef VERSION_MHG
-    } else if (w->stg != 36) {  /* G: only stage 36 has shagami areas (its own table); 9 instructions off G (branch layout) */
-        *out = 0;
     } else {
-        a = (GAREA *)(st36_ground_shagami + idx * 16);
+        u8 *t;
+        if (w->stg == 36) {     /* G: only stage 36 has shagami areas (its own table) */
+            t = st36_ground_shagami;
+        } else {
+            *out = 0;
+            return;
+        }
+        a = (GAREA *)(t + idx * 16);
 #else
     } else if (shagami_tbl_add[w->stg] == 0) {
         *out = 0;
