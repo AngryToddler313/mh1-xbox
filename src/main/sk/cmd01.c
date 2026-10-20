@@ -1,4 +1,5 @@
 /* Soft keyboard conversion (SLPM_654.95 0x00262A90-0x00262D10): sk_conv_init, kata_kouho_set, get_kouho_suu. See cmd_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 #include "sk_g.h"
 
@@ -94,17 +95,26 @@ void sk_conv_init(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void kata_kouho_set(void) {
     char a[0x100];
     char b[0x100];
     int i;
 
     if (SKS8(0x36) == 0) {
+#ifdef VERSION_MHG
+        strncpy(a, (char *)lpSKey + SKO(0x458), 0xFF);
+        a[0xFE] = 0;
+#else
         strcpy(a, (char *)lpSKey + SKO(0x458));
+#endif
         apiask_37_FirstHenkanToKata(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
         SKS32(0x14C) = apiask_21_NextKouho(lpSKey + SKO(0x458), lpSKey + SKO(0x558));
+#ifdef VERSION_MHG
+        strncpy(b, (char *)lpSKey + SKO(0x458), 0xFF);
+#else
         strcpy(b, (char *)lpSKey + SKO(0x458));
+#endif
         if (strcmp((char *)lpSKey + SKO(0x458), a) != 0) {
             i = 0;
             if (SKS32(0x14C) != 0) {
@@ -118,14 +128,14 @@ void kata_kouho_set(void) {
                         return;
                     }
                     i++;
-                } while (i < 0x100);
+                } while (i < GV(0x100, 0xFF));
             }
         }
     }
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 int get_kouho_suu(void) {
     char a[0x100];
     char b[0x100];
@@ -141,10 +151,18 @@ int get_kouho_suu(void) {
             n = 0x1F;
         }
     } else {
+#ifdef VERSION_MHG
+        strncpy(a, (char *)lpSKey + SKO(0x458), 0xFF);
+#else
         strcpy(a, (char *)lpSKey + SKO(0x458));
+#endif
         n = 0;
         SKS32(0x14C) = apiask_21_NextKouho(c, d);
+#ifdef VERSION_MHG
+        strncpy(b, c, 0xFF);
+#else
         strcpy(b, c);
+#endif
         n++;
         if (strcmp(c, a) != 0) {
             i = 0;
@@ -161,7 +179,7 @@ int get_kouho_suu(void) {
                         break;
                     }
                     i++;
-                } while (i < 0x100);
+                } while (i < GV(0x100, 0xFF));
             }
         }
     }

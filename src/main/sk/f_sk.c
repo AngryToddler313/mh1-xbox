@@ -106,6 +106,12 @@ void kbd_disp_input(f32, s16);
 int hk_cursor_check();
 typedef struct KM { u8 b0; u8 b1; union { u16 w; struct { u8 lo; u8 hi; } s; } v; } KM;
 static int key_mask_check(KM *);
+#ifdef MHG_PS2
+int func_0020C3B0(KM *);    /* G: per-palette character masks */
+int func_0020C400(KM *);
+int func_0020C450(KM *);
+int func_0020C520(KM *);
+#endif
 extern u8 moji_size[][4];
 extern char lit_1221_0036E5C8[];
 void flps0008(void *);
@@ -1035,7 +1041,7 @@ int yn_mask_char_check(u8 *p) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 18
 static int key_mask_check(KM *k) {
     int r = 0;
     u8 m;
@@ -1053,6 +1059,35 @@ static int key_mask_check(KM *k) {
             r = 1;
         }
     } else {
+#ifdef MHG_PS2
+        if (k->b0 != 0xD1 && k->b0 != 0x7D) {
+        m = SKB(0x1D);
+        switch (m) {
+        case 15:
+            if (mh_char_make_check((u8 *)k) != 0) {
+                r = 1;
+            }
+            break;
+        case 1:
+        case 5:
+        case 2:
+            if (func_0020C3B0(k) != 0) {
+                r = 1;
+            }
+            break;
+        case 7:
+            if (func_0020C520(k) != 0) {
+                r = 1;
+            }
+            break;
+        case 6:
+            if (func_0020C400(k) == 0 && func_0020C450(k) == 0) {
+                r = 1;
+            }
+            break;
+        }
+        }
+#else
         m = SKB(0x1D);
         switch (m) {
         case 15:
@@ -1068,6 +1103,7 @@ static int key_mask_check(KM *k) {
             }
             break;
         }
+#endif
     }
     return r;
 }

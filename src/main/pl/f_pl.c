@@ -394,7 +394,11 @@ static void pl_horm_sub(PLW *pl);
 
 
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+int func_0012D170(void);
+extern s16 *pl_supp_tbl_g[];    /* G: supply lists used when main 0x12D170 says so */
+#endif
+#if !defined(G_PART) || G_PART == 56
 static void Pl_item_charge(PLW *pl) {
     s16 i;
     s16 *p;
@@ -406,6 +410,18 @@ static void Pl_item_charge(PLW *pl) {
         pl->item[i].id = 0;
         pl->item[i].num = 0;
     }
+#ifdef MHG_PS2
+    if (func_0012D170() == 1) {
+        p = pl_supp_tbl_g[pl->work8BF];
+    } else {
+        p = pl_supp_tbl[pl->work8BF + pl->kind * 6];
+    }
+    while ((n = *p) != -1) {
+        u16 a = p[1];
+        p += 2;
+        Pl_item_supply(pl, 0, a, n);
+    }
+#else
     p = pl_supp_tbl[pl->work8BF + pl->kind * 6];
     n = *p;
     while (n != -1) {
@@ -414,6 +430,7 @@ static void Pl_item_charge(PLW *pl) {
         Pl_item_supply(pl, 0, a, n);
         n = *p;
     }
+#endif
 }
 #endif
 

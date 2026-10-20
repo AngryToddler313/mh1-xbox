@@ -2661,3 +2661,7 @@ main 0x00210A30 0x00210B50 mhg/main/hk/f_hk_p20
 main 0x00238860 0x00238A60 main/aq/aq10
 sub_main 0x004CCBA0 0x004CCD24 main/pl/pl_slash
 main 0x00220F90 0x0022109C mhg/main/chat/f_chat_p36
+sub_main 0x004F0B60 0x004F0C6C mhg/main/pl/f_pl_p56
+main 0x0020C5F0 0x0020C700 mhg/main/sk/cmd01_p2
+main 0x0020C700 0x0020C838 mhg/main/sk/cmd01_p3
+main 0x0020C1D0 0x0020C360 mhg/main/sk/f_sk_p18
