@@ -1127,7 +1127,6 @@ main 0x00237C50 0x00237C64 mhg/main/net/patch02_p1
 main 0x001F1300 0x001F15C4 mhg/main/pad/usbkbdm_p1
 main 0x001F1760 0x001F17E0 mhg/main/pad/usbkbdm_p2
 sub_main 0x004EE390 0x004EE49C mhg/main/pl/normal_char_set_p1
-sub_main 0x004EE610 0x004EE6C8 mhg/main/pl/pl_normal2_p1
 sub_main 0x004F7FE0 0x004F8034 mhg/main/reward/f_reward3_p1
 sub_main 0x004E1230 0x004E12B4 mhg/main/set/set06_p1
 sub_main 0x004E17E0 0x004E1808 mhg/main/set/set06_p2
@@ -1628,8 +1627,6 @@ main 0x00146AC0 0x00146AE8 mhg/main/flps/fladdm_p2
 main 0x00146AF0 0x00146B48 mhg/main/flps/fladdm_p3
 main 0x0021DBD0 0x0021DC30 main/menu/pitx01
 sub_main 0x004B2B70 0x004B3584 mhg/main/npc/npc_p1
-sub_main 0x004EE8F0 0x004EE934 mhg/main/pl/pl_normal2_p2
-sub_main 0x004EE940 0x004EEB70 mhg/main/pl/pl_normal2_p3
 sub_main 0x004A9BE0 0x004A9F48 mhg/main/pl/pl_snd01_p1
 sub_main 0x004E11E0 0x004E1228 mhg/main/set/set06_p3
 sub_main 0x004F0940 0x004F09E8 mhg/main/set/set12_p3
@@ -2653,3 +2650,7 @@ main 0x0012D360 0x0012D3F4 main/font/disp1_01
 main 0x0011DDE0 0x0011DEA8 mhg/main/menu/menu20_p4
 main 0x0021B710 0x0021B7F0 mhg/main/ncm/ncm01_p2
 main 0x001D5B20 0x001D5BC0 mhg/main/flfnt/flfnt03_p1
+sub_main 0x004EE610 0x004EEB70 main/pl/pl_normal2
+main 0x00115380 0x001154C0 main/model/crmdl01
+main 0x00101960 0x00101AB0 mhg/main/sys/adxs05_p2
+main 0x001E1790 0x001E1964 mhg/main/net/cng02_p3

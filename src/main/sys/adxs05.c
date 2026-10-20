@@ -131,7 +131,7 @@ void SetTrnslMode(int, int);
 void SetOpeMode(int);
 void Eft_rendope_set(int);
 /* Builds a scale / rotation / translation matrix: flags & 0xE picks the rotation axes (8 = X, 4 = Y, 2 = Z, 0xE = all). */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 2
 void make_mat_srt(f32 *scale, f32 *rot, f32 *pos, int flags, void *mat) {
     f32 px = pos[0];
     f32 py = pos[1];
@@ -142,6 +142,12 @@ void make_mat_srt(f32 *scale, f32 *rot, f32 *pos, int flags, void *mat) {
     case 0xE:
         flmatRotXYZ33(mat, rot[0], rot[1], rot[2]);
         break;
+#ifdef VERSION_MHG
+    case 0xC:
+        flmatRotX33(mat, rot[0]);
+        flmatRotY33(mat, rot[1]);
+        break;
+#endif
     case 8:
         flmatRotX33(mat, rot[0]);
         break;

@@ -71,13 +71,22 @@ void armor_model_free(PLM *pl) {
             if (*h != 0) {
                 clr_used_mdlw(i, 1);
             }
+#ifndef VERSION_MHG
             pl->mdl_ptr = 0;
             pl->mdl_no = 0;
+#endif
             i++;
+#ifndef VERSION_MHG
             pl->mdl_n = 0;
+#endif
             h++;
         } while (i < pl->mdl_no + pl->mdl_n);
     }
+#ifdef VERSION_MHG
+    pl->mdl_ptr = 0;
+    pl->mdl_no = 0;
+    pl->mdl_n = 0;
+#endif
     k = 0;
     a = (u8 *)pl;
     b = (u8 *)pl;

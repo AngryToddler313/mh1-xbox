@@ -1,12 +1,17 @@
 /* Player: return to the normal state, part 2: SLPM_654.95
  * 0x0014F330-0x0014F850. Pad input (sw_set_sub) is here too. */
+#include "g_alias.h"
 #include "pl.h"
 #include "game.h"
 
 
 void pl_st_set(PLW *, s8);
 void to_normal_fly(PLW *, s16, int);
+#ifdef MHG_PS2
+void to_normal(); /* G passes a 4th flag argument */
+#else
 void to_normal(PLW *, int, int);
+#endif
 void action_timer_calc(PLW *, int);
 int Online_ck(void);
 int Cockpit_menu_chk(void);
@@ -20,13 +25,10 @@ extern u16 Plan_pow[2][2];
 
 static void sw_set_sub(int no);
 
-#if !defined(G_PART) || G_PART == 1
 static void pl_to_normal_clr_etc(PLW *pl) {
     pl->work4E0 = 0;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void pl_to_normal_clr(PLW *pl) {
     pl->work04 = 0;
     pl->work2F4 = 0;
@@ -55,9 +57,7 @@ void pl_to_normal_clr(PLW *pl) {
     pl->chr_spd0 = 2.0f;
     pl->chr_spd1 = 2.0f;
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 1
 void pl_to_normal_clr2(PLW *pl) {
     pl->vel[0] = 0.0f;
     pl->vel[1] = 0.0f;
@@ -67,10 +67,11 @@ void pl_to_normal_clr2(PLW *pl) {
     pl->acc[2] = 0.0f;
     pl->act_flag &= 0x104;
 }
-#endif
 
-#if !defined(G_PART)
 void pl_to_normal(PLW *pl, int st, int blend, int tm) {
+#ifdef MHG_PS2
+    int f = st & 0x80;
+#endif
     pl_to_normal_clr(pl);
     pl_to_normal_clr_etc(pl);
     pl->work720[0] = 0;
@@ -86,7 +87,11 @@ void pl_to_normal(PLW *pl, int st, int blend, int tm) {
     pl->work724[3] = 0;
     pl->work72C[3] = 0;
     pl->work8F0 = 1;
+#ifdef MHG_PS2
+    if ((st & ~0x80) != 2) {
+#else
     if (st != 2) {
+#endif
         pl_to_normal_clr2(pl);
         pl->st = 0;
     } else {
@@ -94,7 +99,11 @@ void pl_to_normal(PLW *pl, int st, int blend, int tm) {
     }
     switch (pl->st) {
     default:
+#ifdef MHG_PS2
+        to_normal(pl, blend, tm, f);
+#else
         to_normal(pl, blend, tm);
+#endif
         break;
     case 2:
         to_normal_fly(pl, blend, tm);
@@ -104,13 +113,18 @@ void pl_to_normal(PLW *pl, int st, int blend, int tm) {
     }
     action_timer_calc(pl, 0);
 }
-#endif
 
-#if !defined(G_PART)
 void pl_to_normal_b(PLW *pl, int st, int blend, int tm) {
+#ifdef MHG_PS2
+    int f = st & 0x80;
+#endif
     pl_to_normal_clr(pl);
     pl_to_normal_clr_etc(pl);
+#ifdef MHG_PS2
+    if ((st & ~0x80) != 2) {
+#else
     if (st != 2) {
+#endif
         pl_to_normal_clr2(pl);
         pl->st = 0;
     } else {
@@ -118,7 +132,11 @@ void pl_to_normal_b(PLW *pl, int st, int blend, int tm) {
     }
     switch (pl->st) {
     default:
+#ifdef MHG_PS2
+        to_normal(pl, blend, tm, f);
+#else
         to_normal(pl, blend, tm);
+#endif
         break;
     case 2:
         to_normal_fly(pl, blend, tm);
@@ -128,9 +146,7 @@ void pl_to_normal_b(PLW *pl, int st, int blend, int tm) {
     }
     action_timer_calc(pl, 0);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 2
 void pl_sw_set(void) {
     if (Online_ck() == 0) {
         sw_set_sub(0);
@@ -138,9 +154,7 @@ void pl_sw_set(void) {
     }
     sw_set_sub(game_w.master);
 }
-#endif
 
-#if !defined(G_PART) || G_PART == 3
 static void sw_set_sub(int no) {
     PLW *pl = &player_work[no];
     PLSW *sw = &pl->sw;
@@ -201,4 +215,3 @@ static void sw_set_sub(int no) {
     sw->pad08[3] = 0;
     sw->chg = 0;
 }
-#endif
