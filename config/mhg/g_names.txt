@@ -48,6 +48,7 @@ PROVIDE(Equip_moji_color_rare_g = 0x0021EA20);
 PROVIDE(param_change_sub_g = 0x005462E0);
 PROVIDE(gptr_002EC620 = 0x002EC620); /* help text item level format */
 PROVIDE(gptr_002EC62C = 0x002EC62C); /* chat_log_name format */
+PROVIDE(gptr_002EC61C = 0x002EC61C); /* Disp_name_or_id text */
 PROVIDE(gptr_00527ED4 = 0x00527ED4); /* Put_shousai text */
 PROVIDE(gptr_00528410 = 0x00528410); /* trade_get_ck message */
 PROVIDE(gptr_00528414 = 0x00528414); /* pick_set_sub message */
