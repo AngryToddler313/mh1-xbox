@@ -339,6 +339,7 @@ extern u8 *em17_act_add[3];
 
 
 
+#if !defined(G_PART)
 static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl) {
     EM17W *w = (EM17W *)em->ex;
     u16 *p;
@@ -353,7 +354,9 @@ static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl) {
     }
     return p;
 }
+#endif
 
+#if !defined(G_PART)
 void act_dist_select_005DA5C0(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
     u16 *p;
@@ -399,7 +402,9 @@ void act_dist_select_005DA5C0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em17_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x734 != 0) {
         act_dist_select_005DA5C0(em);
@@ -432,7 +437,9 @@ void em17_to_normal(EMW *em, s16 a, s16 b) {
     em->x3F4 = 0;
     em17_act_set(em, 0, 1, 0);
 }
+#endif
 
+#if !defined(G_PART)
 void em17_to_fly(EMW *em, int flag) {
     if (em->x734 != 3) {
         act_dist_select_005DA5C0(em);
@@ -446,7 +453,9 @@ void em17_to_fly(EMW *em, int flag) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em17_frame_reset(EMW *em, int i) {
     if (EM_LYR(em, i) == 0) {
         switch (i) {
@@ -462,7 +471,9 @@ void em17_frame_reset(EMW *em, int i) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em_act00_005DA9F0(EMW *em, EM17W *w) {
     s32 temp_v1_2;
     u8 temp_v1;
@@ -491,3 +502,4 @@ void em_act00_005DA9F0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
