@@ -2275,3 +2275,4 @@ main 0x0010ECD0 0x0010EDA4 main/model/light02
 main 0x0014E8A0 0x0014E954 mhg/main/fl/flsys02_p4
 main 0x0010EE80 0x0010EF44 main/load/lf04
 main 0x0020A050 0x0020A10C mhg/main/sk/f_sk_p17
+sub_main 0x004C5C10 0x004C5CCC mhg/main/ud/f_ud_p26
