@@ -1948,3 +1948,4 @@ game 0x005BAE20 0x005BAE28 mhg/game/em/em04d_p1
 game 0x0056CAF0 0x0056D364 game/eft/eft07
 main 0x002175B0 0x00217884 main/net/netname01
 main:rodata 0x002C0C50 0x002C0C78 main/net/netname01
+game 0x00544300 0x00544584 game/em/em_core_r90
