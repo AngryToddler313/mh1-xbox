@@ -2660,3 +2660,5 @@ game 0x005CDDA0 0x005CDED4 mhg/game/em/em08_aih_p6
 game 0x005CD8B0 0x005CDA84 mhg/game/em/em08_aih_p7
 game 0x00598FA0 0x00599164 mhg/game/em/em01_aif_p17
 game 0x0059E300 0x0059E504 mhg/game/em/em01_aif_p18
+game 0x005D3670 0x005D3838 mhg/game/em/em09c_p12
+game 0x005D4100 0x005D4204 mhg/game/em/em09c_p13

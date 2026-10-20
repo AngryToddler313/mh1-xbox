@@ -118,7 +118,7 @@ void game_func_005D58B0(EMW *em);
 void game_func_005D4210(EMW *em);
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
     int list[20];
     int n;
@@ -131,13 +131,23 @@ static int item_theft_005A8540(EMW *em, PLW *pl, EM09W *w) {
     if (Quest_clear_ck(1)) {
         return 0;
     }
-    if (Pl_Skill_ck(pl, 0x2B) == 1) {
+    if (Pl_Skill_ck(pl, GV(0x2B, 0x2A)) == 1) {
         return 0;
     }
+#ifdef MHG_PS2 /* G: item numbers of G, and a second item it takes first */
+    if ((s16)Pl_item_num_ck(pl, 0x87) > 0) {
+        w->item = 0x87;
+        w->item_num = -1;
+    } else if ((s16)Pl_item_num_ck(pl, 0xB2) > 0) {
+        w->item = 0xB2;
+        w->item_num = -1;
+    } else {
+#else
     if (Pl_item_num_ck(pl, 0x47) > 0) {
         w->item = 0x47;
         w->item_num = -1;
     } else {
+#endif
         i = 0;
         n = 0;
         for (; i < 20; i++) {
@@ -433,7 +443,7 @@ static void em_act13_005A8F00(EMW *em) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 static void em_act14_005A8F90(EMW *em) {
     EM09W *w;
     switch (em->x05) {
@@ -447,10 +457,24 @@ static void em_act14_005A8F90(EMW *em) {
         }
         break;
     case 2:
+#ifndef MHG_PS2
         w = (EM09W *)em->ex;
+#endif
         em->x40C = 10;
         em->x40E = 10;
         if (em->x194 == 0) {
+#ifdef MHG_PS2 /* G: the thief comes back instead of leaving */
+            w = (EM09W *)em->ex;
+            if (w->x4B == 1) {
+                pull_em_yobi(w->x28);
+            }
+            if (w->item != -1) {
+                Item_stolen((s32)w->pl, (u16)w->item, w->item_num);
+            }
+            em_status_init(em);
+            em09_init(em);
+            Quest_enemy_revival_set(em);
+#else
             Quest_enemy_escape(em);
             em->x04++;
             em->x01 = 0;
@@ -460,6 +484,7 @@ static void em_act14_005A8F90(EMW *em) {
             if (w->item != -1) {
                 Item_stolen((s32)w->pl, (u16)w->item, w->item_num);
             }
+#endif
         }
         break;
     }
