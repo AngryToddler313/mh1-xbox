@@ -2280,3 +2280,4 @@ sub_main 0x004C5B40 0x004C5C0C mhg/main/ud/f_ud_p27
 main 0x0012D360 0x0012D3F4 main/font/disp1_01
 main 0x0011DDE0 0x0011DEA8 mhg/main/menu/menu20_p4
 main 0x0021B710 0x0021B7F0 mhg/main/ncm/ncm01_p2
+main 0x001D5B20 0x001D5BC0 mhg/main/flfnt/flfnt03_p1
