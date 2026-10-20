@@ -788,13 +788,17 @@ int cnLBS_Get_TimingValue(int *arg0) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 49
 void _cnet_RecvFromLbs_BothTimingValue(void) {
     s32 v;
 
     if (CnetSys_w.rres == 0) {
+#ifdef MHG_PS2
+        __cnet_Recv_Long((u8 *)&CnetSys_w + 0x3A5D8);   /* G receives in place (0x734DE0) */
+#else
         __cnet_Recv_Long(&v);
         CNW(s32, 0x3BA54) = v;
+#endif
     }
     _cnet_Return_CallBack(0x2B);
 }
