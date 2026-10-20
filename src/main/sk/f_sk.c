@@ -837,13 +837,31 @@ s8 sk_daisyo_check(u8 a) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 void sk_daisyo_chg(void) {
     int snd = 0x15;
     s8 t = sk_daisyo_check(SKB(0x1E));
     u8 x;
     u8 y;
 
+#ifdef VERSION_MHG
+    /* G: no 0x29 refresh; the sound is set in each branch */
+    if (t >= 0) {
+        x = SKB(0x24);
+        y = SKB(0x25);
+        SKB(0x1E) = t;
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        sk_set_yn_kigou_f();
+        SK_SE(0x16);
+        SKB(0x24) = x;
+        SKB(0x25) = y;
+        sk_get_key_code();
+    } else {
+        SK_SE(0x15);
+    }
+#else
     if (t >= 0) {
         x = SKB(0x24);
         y = SKB(0x25);
@@ -859,6 +877,7 @@ void sk_daisyo_chg(void) {
         sk_get_key_code();
     }
     SK_SE(snd);
+#endif
 }
 #endif
 
