@@ -2049,3 +2049,24 @@ void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
     CnetSys_w.burst[2].res = 2;
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 119
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC510(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 120
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD370(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 8) = 0;
+    *(int *)(a + 0xC) = 0;
+}
+#endif
+#endif

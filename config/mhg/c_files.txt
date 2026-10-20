@@ -2779,3 +2779,11 @@ lobby 0x0059F6E0 0x0059F6E8 mhg/lobby/f/lb_ui_p12
 lobby 0x0059F740 0x0059F74C mhg/lobby/f/lb_ui_p13
 lobby 0x005509A0 0x005509A8 mhg/lobby/lb/lbem10_p3
 lobby 0x005509B0 0x005509B8 mhg/lobby/lb/lbem10_p4
+lobby 0x00559D30 0x00559D50 mhg/lobby/f/lb_b01_p2
+lobby 0x0055FA20 0x0055FA40 mhg/lobby/f/lb_n07_p2
+lobby 0x0059A800 0x0059A814 mhg/lobby/f/lb_d01_p5
+lobby 0x0059F410 0x0059F424 mhg/lobby/f/lb_ui_p14
+lobby 0x0059F6C0 0x0059F6DC mhg/lobby/f/lb_ui_p15
+lobby 0x0059F750 0x0059F764 mhg/lobby/f/lb_ui_p16
+lobby 0x005BC510 0x005BC524 mhg/lobby/cnet/cnlbs_p119
+lobby 0x005BD370 0x005BD388 mhg/lobby/cnet/cnlbs_p120

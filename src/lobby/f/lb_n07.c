@@ -55,3 +55,13 @@ int Lb_guild_check_requireF(void) {
     return 0;
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 2
+#ifdef MHG_PS2
+/* G only */
+int get_questLevelNum();
+int lobby_func_0055FA20() {
+    return get_questLevelNum(30) != 0;
+}
+#endif
+#endif

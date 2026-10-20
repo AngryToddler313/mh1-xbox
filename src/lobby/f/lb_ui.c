@@ -812,3 +812,35 @@ void lobby_func_0059F740(int a) {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 14
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_buf_00654CD0[];
+void lobby_func_0059F410() {
+    memset(g_buf_00654CD0, 0, 24);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 15
+#ifdef MHG_PS2
+/* G only */
+extern int g_word_002EFAE8;
+extern char g_str_00654E00[];
+void lobby_func_0059F6C0(char *s) {
+    g_word_002EFAE8 = 0xB000240A;
+    strcpy(g_str_00654E00, s);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 16
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_0059F750(s16 a, s16 b) {
+    *(s16 *)0x654CFC = a;
+    *(s16 *)0x654CFE = b;
+}
+#endif
+#endif

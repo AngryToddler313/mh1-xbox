@@ -225,3 +225,6 @@ PROVIDE(lb_pl_mv094 = 0x00596810); /* the map: disp_lm_room_member */
 PROVIDE(g_SetDialogHtml1_0059F3B0 = 0x0059F3B0); /* G: SetDialogData_HTML with html kind 1 (the map: Lb_eat_to_bell) */
 PROVIDE(lit_g_0063E908 = 0x0063E908); /* format string of lobby_func_0058EDD0 */
 PROVIDE(g_word_002EFAE8 = 0x002EFAE8); /* G small-data word lobby_func_0059F6E0 stores */
+PROVIDE(g_buf_00654CD0 = 0x00654CD0); /* 24 bytes lobby_func_0059F410 clears */
+PROVIDE(g_str_00654E00 = 0x00654E00); /* string lobby_func_0059F6C0 copies into */
+PROVIDE(g_tbl_00300AC0 = 0x00300AC0); /* 0x200-byte blocks of lobby_func_00559D30 */
