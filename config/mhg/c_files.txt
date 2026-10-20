@@ -1990,3 +1990,5 @@ game 0x005CEA10 0x005D1FE4 mhg/game/em/em08_aij_p1
 game 0x005D2070 0x005D227C game/em/em08_aik
 game 0x005D2330 0x005D2458 game/em/em08_ail
 game 0x005E37D0 0x005E4404 game/em/em14_r06
+game 0x0062A340 0x0062AE28 game/em/em20
+game:rodata 0x006DA040 0x006DA160 game/em/em20
