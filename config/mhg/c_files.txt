@@ -1994,3 +1994,4 @@ game 0x0062A340 0x0062AE28 game/em/em20
 game:rodata 0x006DA040 0x006DA160 game/em/em20
 game 0x00624610 0x00629D60 game/em/em20_r20
 game:rodata 0x006D9E80 0x006DA034 game/em/em20_r20
+game 0x00636E20 0x0063A3DC game/em/em21_r12
