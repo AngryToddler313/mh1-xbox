@@ -1951,3 +1951,4 @@ main:rodata 0x002C0C50 0x002C0C78 main/net/netname01
 game 0x00544300 0x00544584 game/em/em_core_r90
 lobby 0x005CD7A0 0x005CD864 lobby/f/lb_z52
 game 0x0058BC80 0x0058BD00 game/em/em_cmd_r99
+game 0x0056B410 0x0056BB24 game/eft/eft04b
