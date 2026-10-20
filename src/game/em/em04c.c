@@ -4,6 +4,7 @@
  * is a near-match in em04_nm.c and stays as assembly. */
 #include "em04.h"
 
+#if !defined(G_PART) || G_PART == 1
 void em04_effect_move_0058F3E0(EMW *em) {
     EM04W *w = (EM04W *)em->ex;
 
@@ -16,13 +17,18 @@ void em04_effect_move_0058F3E0(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void sound_call_0058F430(EMW *em, int frame, int se) {
     if (em_frame_check(em, 0, (f32)frame)) {
         Em_se_req2(em, se, 0, em->pos, 6, 0);
     }
 }
+#endif
 
 /* A file static in the original; data tables point at it. */
+#if !defined(G_PART)
 void dummy_em_prog_0058F490(void) {
 }
+#endif
