@@ -1917,3 +1917,6 @@ game 0x00578B10 0x00578BA8 mhg/game/eft/eft16_p2
 game 0x00579A60 0x00579AD0 mhg/game/eft/eft16_p3
 game 0x00579B20 0x00579CAC mhg/game/eft/eft16_p4
 game 0x00579FF0 0x0057A090 mhg/game/eft/eft16_p5
+game 0x0060E1C0 0x0060E3B4 mhg/game/em/em17_r26_p1
+game 0x0060E460 0x0060E4FC mhg/game/em/em17_r26_p2
+game 0x0060E5C0 0x0060E65C mhg/game/em/em17_r26_p3

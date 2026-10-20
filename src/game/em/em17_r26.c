@@ -206,6 +206,7 @@ void em17_main_sub(EMW *em, EM17W *w);
         em->uvty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void em17_uvmove(EMW *em) {
     int i;
 
@@ -248,6 +249,7 @@ static void em17_uvmove(EMW *em) {
         }
     }
 }
+#endif
 
 static void sound_call_sub_005E1F80(EMW *em, int se, int joint);
 static void sound_call_005E1FF0(EMW *em, int frame, int se, int joint);
@@ -389,13 +391,16 @@ extern u8 *em17_act_add[3];
 
 
 
+#if !defined(G_PART)
 static void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void sound_call_005E1FF0(EMW *em, int frame, int se, int joint) {
     int add;
 
@@ -409,7 +414,9 @@ static void sound_call_005E1FF0(EMW *em, int frame, int se, int joint) {
         sound_call_sub_005E1F80(em, se + add, joint);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void sound_call_parts_005E2090(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
@@ -418,13 +425,17 @@ static void sound_call_parts_005E2090(EMW *em, int frame, int se, int joint, u8 
         Em_se_req2(em, se, 0, pos, 3, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void quake_call_005E2130(EMW *em, int frame, int arg) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         Em_set_quake_sub(em, arg);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void move_default_005E2180(EMW *em) {
     M2C_FIELD(em, s32 *, 0x5C0) = 0;
     M2C_FIELD(em, s32 *, 0x5C4) = 0;
@@ -443,7 +454,9 @@ static void move_default_005E2180(EMW *em) {
     M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 static void ef_move_sub_005E21D0(EMW *em, EM17W *w) {
     f32 sp50[3];
     f32 v[3];
@@ -1435,7 +1448,9 @@ block_381:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em17_effect_move(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
 
@@ -1449,3 +1464,4 @@ void em17_effect_move(EMW *em) {
     }
     em17_uvmove(em);
 }
+#endif
