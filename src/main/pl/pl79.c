@@ -16,20 +16,29 @@ void set01_set(int, int, int);
    (MH1 30) and the herb 10 with the skills; most items also run food_bonus. work917 = 15 (MH1 1). */
 void Pl_poison_add(PLW *, int);
 
-/* G sub_main 0x4F2730: skill 0x5A, one time in three: max stamina +75. G calls ran_suu with the PLW pointer
-   left in a0 as the stream number (it steps a word far past Rnd_w); the PC keeps its own state instead. */
+/* G sub_main 0x4F2730: skill 0x5A, one time in three: max stamina +75. G calls ran_suu(1) (the PS2 build,
+   byte-checked); the PC keeps its own state instead. */
+#if !defined(G_PART) || G_PART == 1
 static void food_bonus_004F2730(PLW *pl) {
+#ifdef __MWERKS__
+    if (Pl_master_ck(pl) == 1 && Pl_Skill_ck(pl, 0x5A) == 1) {
+        if ((u16)ran_suu(1) % 3 == 0) {
+#else
     static u16 rnd = 1;
     if (Pl_master_ck(pl) == 1 && Pl_Skill_ck(pl, 0x5A) == 1) {
         rnd = (u16)((u32)(rnd ? rnd : 1) * 0xB0 % 0xFF53);
         if (rnd % 3 == 0) {
+#endif
             Pl_max_stamina_calc(pl, 0x4B);
         }
     }
 }
+#endif
 
+#if !defined(G_PART)
 static int share_ok(PLW *pl, PLW *t) { return Pl_master_ck(pl) == 0 && pl->stg == t->stg; }
 
+#if !defined(G_PART)
 void Basic_item_set(PLW *pl) {
     PLW *t = &player_work[game_w.master];
     pl->work917 = 15;
@@ -281,7 +290,9 @@ steak:
     if (Game_clear_ck(1) == 0) {
         Pl_item_stack(pl, pl->work88A, -1);
     }
+#endif
 }
+#endif
 #else
 void Basic_item_set(PLW *pl) {
     PLW *t = &player_work[game_w.master];

@@ -2246,3 +2246,4 @@ main 0x002385C0 0x00238770 mhg/main/aq/aq02_p3
 main 0x00222AB0 0x00222BC0 mhg/main/chat/f_chat_p32
 main 0x0011A630 0x0011A724 mhg/main/menu/menu05_p3
 main 0x0011A840 0x0011A8D4 mhg/main/menu/menu05_p4
+sub_main 0x004F2730 0x004F27A8 mhg/main/pl/pl79_p1
