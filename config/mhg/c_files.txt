@@ -1869,3 +1869,5 @@ game 0x005B8450 0x005B84B8 mhg/game/em/em04_p1
 game 0x005B8AE0 0x005B8BF4 mhg/game/em/em04_p2
 game 0x005B9360 0x005B9404 mhg/game/em/em04_p3
 game 0x005B96A0 0x005B9C68 mhg/game/em/em04_p4
+game 0x005C6410 0x005C7520 mhg/game/em/em08_aic_p1
+game 0x005C76A0 0x005C7CE4 mhg/game/em/em08_aic_p2
