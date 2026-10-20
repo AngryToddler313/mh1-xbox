@@ -206,6 +206,7 @@ void em_move06_005CAE00(EMW *em, EM15W *w);
         em->uvty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void em15_uvmove(EMW *em) {
     int i;
 
@@ -248,6 +249,7 @@ static void em15_uvmove(EMW *em) {
         }
     }
 }
+#endif
 
 static void sound_call_sub_005CBA30(EMW *em, int se, int joint);
 static void sound_call_005CBAA0(EMW *em, int frame, int se, int joint);
@@ -400,19 +402,24 @@ void em_cmd_ck(EMW *);
 
 
 
+#if !defined(G_PART)
 static void sound_call_sub_005CBA30(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void sound_call_005CBAA0(EMW *em, int frame, int se, int joint) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         sound_call_sub_005CBA30(em, se, joint);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
@@ -421,13 +428,17 @@ static void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 
         Em_se_req2(em, se, 0, pos, 3, 0);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void quake_call_005CBBA0(EMW *em, int frame, int arg) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         Em_set_quake_sub(em, arg);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void move_default_005CBBF0(EMW *em) {
     M2C_FIELD(em, s32 *, 0x5C0) = 0;
     M2C_FIELD(em, s32 *, 0x5C4) = 0;
@@ -446,7 +457,9 @@ static void move_default_005CBBF0(EMW *em) {
     M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
+#endif
 
+#if !defined(G_PART)
 static void ef_move_sub_005CBC40(EMW *em, EM15W *w) {
     f32 v[3];
     f32 v2[3];
@@ -1256,7 +1269,9 @@ block_259:
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em15_effect_move(EMW *em) {
     EM15W *w = (EM15W *)em->ex;
 
@@ -1270,3 +1285,4 @@ void em15_effect_move(EMW *em) {
     }
     em15_uvmove(em);
 }
+#endif
