@@ -2689,3 +2689,4 @@ game 0x0060D470 0x0060D564 mhg/game/em/em17_r14_p4
 game 0x005D8690 0x005D8E44 mhg/game/em/em10_p9
 game 0x00598AD0 0x00598D78 mhg/game/em/em01_aif_p19
 game 0x00599A60 0x00599D08 mhg/game/em/em01_aif_p20
+game 0x00580F40 0x005814E8 mhg/game/eft/eft23_p7
