@@ -1,5 +1,9 @@
 /* lb_j14 - lobby move handlers 0x005D2CC0-0x005D2FE4: lb_pl_mv097, lb_pl_mv098, lb_pl_mv099. Whole file in lb_j.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
+#ifdef MHG_PS2
+void event_eat_set_msg();
+#endif
 
 
 
@@ -71,7 +75,7 @@ void lb_pl_mv097(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void lb_pl_mv098(PLW *pl) {
     u16 r;
     int t;
@@ -87,7 +91,12 @@ void lb_pl_mv098(PLW *pl) {
         return;
     case 1:
         if (F(s32, pl, 0x194) <= 0) {
+#ifdef MHG_PS2
+            event_eat_set_msg();   /* G only */
+            pl->x05 = pl->x05 + 1;
+#else
             pl->x05 = s + 1;
+#endif
             Lb_pl_chr_set(pl, 0xD2, 0, 0x92);
             *(u16 *)&pl->ang_y = *(u16 *)&pl->ang_y + 0x4000;
             pl->ang[1] = pl->ang[1] + 0x4000;

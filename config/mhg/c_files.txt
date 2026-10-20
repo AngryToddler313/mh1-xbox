@@ -2398,3 +2398,6 @@ lobby 0x005947E0 0x00594900 mhg/lobby/f/lb_j02_p3
 lobby 0x00594900 0x005949B8 mhg/lobby/f/lb_j02_p4
 lobby 0x00594A80 0x00594B68 mhg/lobby/f/lb_j02_p5
 lobby 0x00567410 0x0056754C mhg/lobby/f/lb_tu_act_p9
+lobby 0x0059A070 0x0059A1E4 lobby/f/lb_z134
+lobby:rodata 0x0063EAE0 0x0063EB24 lobby/f/lb_z134
+lobby 0x00596D60 0x00596E80 mhg/lobby/f/lb_j14_p3
