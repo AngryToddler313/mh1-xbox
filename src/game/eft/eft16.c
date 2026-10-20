@@ -99,6 +99,9 @@ void se_req2(int, int, int, f32 *, int, int);
 static void eft16_move(EFTW *ew);
 static void eft16_i(EFTW *ew);
 static void eft16_m(EFTW *ew);
+#ifdef MHG_PS2
+void func_00101FE0(f32 *sc);     /* G: called on the scale of a size-0 blood splash */
+#endif
 static void eft16_d(EFTW *ew);
 static void eft16_e(EFTW *ew);
 static void eft16_t(PRIM *pr);
@@ -698,7 +701,7 @@ static void eft16_e(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 10
 static void eft16_t(PRIM *pr) {
     f32 rot[3];
     f32 sc[3];
@@ -723,10 +726,18 @@ static void eft16_t(PRIM *pr) {
         b = 0xFF;
         switch (ew->arg) {
         case 0:
+#ifdef MHG_PS2
+            flSetRenderState(0x6C, 0);
+#endif
             rot[2] = DEG2RAD(ANG2DEG(p->rot));
             sc[0] = p->scale[0] * (p->size * eft16_scale_tbl[ew->mode2 & 0xF]);
             sc[1] = p->scale[1] * (p->size * eft16_scale_tbl[ew->mode2 & 0xF]);
             sc[2] = p->scale[2] * (p->size * eft16_scale_tbl[ew->mode2 & 0xF]);
+#ifdef MHG_PS2
+            if ((ew->mode2 & 0xF) == 0) {
+                func_00101FE0(sc);
+            }
+#endif
             cl = &mw->clay[97];
             make_mat_srt(sc, rot, pr->pos, 2, &m);
             flmatMakeTrans(&uv, 0.125f * (f32)(p->uv & 1), 0.125f * (f32)(p->uv >> 1), 0.0f);
@@ -743,6 +754,9 @@ static void eft16_t(PRIM *pr) {
             }
             break;
         case 2:
+#ifdef MHG_PS2
+            flSetRenderState(0x6C, 0);
+#endif
             sc[0] = p->size * p->scale[0];
             sc[1] = p->size * p->scale[1];
             sc[2] = p->size * p->scale[2];
@@ -756,6 +770,27 @@ static void eft16_t(PRIM *pr) {
                 rot[2] = DEG2RAD(ANG2DEG(p->rot));
                 cl = &mw->clay[p->no] + 32;
             }
+#ifdef MHG_PS2 /* G: the scale goes through func_00101FE0 for the blood colours; the matrix after */
+            if (ew->stg == 1) {
+                r = 0xFF;
+                g = 0xFF;
+                flag |= 2;
+                b = 0xFF;
+                if (pr->no == 0) {
+                    flmatMakeTrans(&uv, 0.125f, 0.0f, 0.0f);
+                } else {
+                    flmatMakeTrans(&uv, 0.25f, 0.0f, 0.0f);
+                }
+            } else {
+                func_00101FE0(sc);
+                c = eft16_col_type_sel(ew->mode2);
+                r = Eft_blood_rgb[c][0];
+                g = Eft_blood_rgb[c][1];
+                b = Eft_blood_rgb[c][2];
+                flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
+            }
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+#else
             make_mat_srt(sc, rot, pr->pos, 2, &m);
             if (ew->stg == 1) {
                 r = 0xFF;
@@ -774,9 +809,13 @@ static void eft16_t(PRIM *pr) {
                 b = Eft_blood_rgb[c][2];
                 flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
             }
+#endif
             flSetRenderState(0x19, (u32)&uv);
             break;
         case 5:
+#ifdef MHG_PS2
+            flSetRenderState(0x6C, 0);
+#endif
             sc[0] = p->size * p->scale[0];
             sc[1] = p->size * p->scale[1];
             sc[2] = p->size * p->scale[2];
@@ -786,6 +825,27 @@ static void eft16_t(PRIM *pr) {
             } else {
                 cl = &mw->clay[p->no] + 31;
             }
+#ifdef MHG_PS2 /* G: the scale goes through func_00101FE0 for the blood colours; the matrix after */
+            if (ew->stg == 1) {
+                r = 0xFF;
+                flag |= 2;
+                g = 0xFF;
+                b = 0xFF;
+                if (p->no == 0) {
+                    flmatMakeTrans(&uv, 0.125f, 0.0f, 0.0f);
+                } else {
+                    flmatMakeTrans(&uv, 0.25f, 0.0f, 0.0f);
+                }
+            } else {
+                func_00101FE0(sc);
+                c = eft16_col_type_sel(ew->mode2);
+                r = Eft_blood_rgb[c][0];
+                g = Eft_blood_rgb[c][1];
+                b = Eft_blood_rgb[c][2];
+                flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
+            }
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+#else
             make_mat_srt(sc, rot, pr->pos, 2, &m);
             if (ew->stg == 1) {
                 r = 0xFF;
@@ -804,6 +864,7 @@ static void eft16_t(PRIM *pr) {
                 b = Eft_blood_rgb[c][2];
                 flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
             }
+#endif
             flSetRenderState(0x19, (u32)&uv);
             break;
         case 6:
@@ -823,6 +884,9 @@ static void eft16_t(PRIM *pr) {
             }
             break;
         case 8:
+#ifdef MHG_PS2 /* G: kind 15 too */
+        case 15:
+#endif
             flag |= 2;
             sc[0] = 0.5f * p->size * p->scale[0];
             sc[1] = 0.5f * p->size * p->scale[1];
