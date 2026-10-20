@@ -34,9 +34,12 @@ void Eft20_set(EMW *, int, int, f32);
 
 void em18_main_sub(EMW *em);
 
+#if !defined(G_PART)
 static void em_act00(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act01(EMW *em) {
     u16 no;
 
@@ -62,7 +65,9 @@ static void em_act01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_act02(EMW *em) {
     s32 t;
 
@@ -88,7 +93,9 @@ static void em_act02(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move00(EMW *em) {
     em->mode_old = em->mode;
     em->x15_old = em->x15;
@@ -104,7 +111,9 @@ static void em_move00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov00(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -128,7 +137,9 @@ static void em_mov00(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov01(EMW *em) {
     if (*(u8 *)&((PLW *)player_work)[em->x616].flag14 != 4) {
         em->x04++;
@@ -154,7 +165,9 @@ static void em_mov01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov02(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -186,7 +199,9 @@ static void em_mov02(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_mov03(EMW *em) {
     switch (em->x05) {
     case 0:
@@ -208,7 +223,9 @@ static void em_mov03(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move01(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -225,13 +242,19 @@ static void em_move01(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move02(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_atk00(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move03(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -239,10 +262,14 @@ static void em_move03(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void em_dm00(EMW *em) {
 }
+#endif
 
+#if !defined(G_PART)
 static void em_move04(EMW *em) {
     switch (em->x15) {
     case 0:
@@ -250,7 +277,9 @@ static void em_move04(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em18_main(EMW *em) {
     EM18W *w = (EM18W *)em->ex;
 
@@ -272,7 +301,9 @@ void em18_main(EMW *em) {
         em->x6FF = 0;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 void em18_main_sub(EMW *em) {
     switch (em->mode) {
     case 0:
@@ -301,13 +332,17 @@ void em18_main_sub(EMW *em) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void sound_call(EMW *em, int frame, int code, int x) {
     if (em_frame_check(em, 0, frame) != 0) {
         Em_se_req2(em, code, 0, em->pos, 6, 0);
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void ef_move_sub(EMW *em, EM18W *w) {
     if (em->char0 != w->char0) {
         w->char0 = em->char0;
@@ -339,7 +374,9 @@ static void ef_move_sub(EMW *em, EM18W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 void em18_effect_move(EMW *em) {
     EM18W *w = (EM18W *)em->ex;
 
@@ -352,8 +389,11 @@ void em18_effect_move(EMW *em) {
         break;
     }
 }
+#endif
 
 /* A file static in the original; named by its address because data outside
  * this file (the monster program tables) points at it. */
+#if !defined(G_PART) || G_PART == 2
 void dummy_em_prog_005E7910(void) {
 }
+#endif

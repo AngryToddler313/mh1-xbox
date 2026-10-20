@@ -1898,3 +1898,5 @@ game 0x005CB7C0 0x005CC2F8 mhg/game/em/em08_aig_p2
 game 0x005D2460 0x005D25E4 mhg/game/em/em08_p1
 game 0x005D2980 0x005D29F4 mhg/game/em/em08_p2
 game 0x005D2B20 0x005D2BB8 mhg/game/em/em08_p3
+game 0x00613CA0 0x00613DE4 mhg/game/em/em18b_p1
+game 0x00614080 0x006140D8 mhg/game/em/em18b_p2
