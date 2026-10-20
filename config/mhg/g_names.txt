@@ -146,3 +146,4 @@ PROVIDE(func_0010EF50 = 0x0010EF50);
 PROVIDE(Lb_make_price_str_g = 0x0054A000); /* Lb_make_price_str, called with three arguments in lb_put_shopHelp */
 PROVIDE(bs_strtbl_err_dialog_g = 0x006387E0); /* bs_strtbl_err_dialog, G table (lb_tu_browser BsStrtblGet) */
 PROVIDE(flfntLocate_a2 = 0x001D5890); /* flfntLocate called with a sign-extended y (MH1 alias, lb_sh1a) */
+PROVIDE(yes_or_no_g = 0x002EC5D8); /* yes_or_no, G table outside the small data (lb_tu_ib yes_no_disp_sub) */

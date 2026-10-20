@@ -90,6 +90,10 @@ int itembox_sellout();
 extern char frame_itembox_cmd[];
 extern u32 D_3C733C[];
 extern char *yes_or_no[2];
+#ifdef MHG_PS2
+extern char *yes_or_no_g[];   /* G: outside the small data (0x2EC5D8) */
+int func_0012BDD0();
+#endif
 extern char lit_2148[];
 extern char lit_2149[];
 extern char lit_2150[];
@@ -1031,11 +1035,11 @@ int selling_price_disp_sub(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 8
 int yes_no_disp_sub(void) {
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x1B0, 0x18E);
-    return font_print_sp(yes_or_no[F(u8, ib, IBO(0x21))]);
+    return GV(font_print_sp, func_0012BDD0)(GV(yes_or_no, yes_or_no_g)[F(u8, ib, IBO(0x21))]);
 }
 #endif
 

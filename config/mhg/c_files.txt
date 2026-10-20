@@ -2352,3 +2352,8 @@ lobby 0x0059E1C0 0x0059E26C lobby/f/lb_e09
 lobby 0x00599440 0x005994D8 mhg/lobby/f/lb_k01_p3
 lobby 0x0059A4F0 0x0059A584 lobby/f/lb_gad01
 lobby 0x00589750 0x00589820 lobby/b/lb_cip01
+lobby 0x005581E0 0x0055822C mhg/lobby/f/lb_tu_ib_p8
+lobby 0x00599BA0 0x00599C58 mhg/lobby/f/lb_k03_p1
+lobby 0x0054B1A0 0x0054B288 mhg/lobby/f/lb_sh1a_p9
+lobby 0x005903D0 0x005904F8 lobby/b/lb_by122
+lobby 0x0058D3C0 0x0058D424 lobby/b/lb_bz14

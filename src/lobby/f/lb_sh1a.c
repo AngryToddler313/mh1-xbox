@@ -701,7 +701,7 @@ void lb_process_tag_decide01() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 9
 void Lb_make_mySrcEquip(int arg0) {
     F(s8, &lbShop, LBSHOP_OFS(0x55)) = (s8) arg0;
     switch ((s16)arg0) {
@@ -710,19 +710,19 @@ void Lb_make_mySrcEquip(int arg0) {
         *(S3 *)((u8 *)&lbShop + LBSHOP_OFS(0x54)) = *(S3 *)&D_3C738C;
         break;
     case 2:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7393;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7393, 0x32CE8B);
         break;
     case 3:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7394;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7394, 0x32CE8C);
         break;
     case 4:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7395;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7395, 0x32CE8D);
         break;
     case 5:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7396;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7396, 0x32CE8E);
         break;
     case 0:
-        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)0x3C7392;
+        F(s16, &lbShop, LBSHOP_OFS(0x56)) = *(u8 *)GV(0x3C7392, 0x32CE8A);
         break;
     }
     F(s8, &lbShop, LBSHOP_OFS(0x54)) = 1;
