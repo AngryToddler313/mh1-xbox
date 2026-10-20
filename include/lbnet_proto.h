@@ -376,6 +376,7 @@ int lobby_func_005AE230();
 int lobby_func_005AE360();
 void lobby_func_005E3BE0();
 void lobby_func_005BF910();
+void lobby_func_005B02C0();
 void lobby_func_005BF8D0();
 int g_SendReq_005BCE20();   /* G 0x5BCE20 (the map calls it _cnet_RecvFromLbs_AnswerRoomNamePermission): the request of G's cnLBS_Set_RoomRuleFinish; config/mhg/g_names.txt */
 #endif

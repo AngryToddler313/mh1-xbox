@@ -991,7 +991,7 @@ void _cnet_RecvFromLbs_RequestFirstData(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 47
 void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
     int t = (CnetSys_w.rcnt * 0x10) & 0xFFFF;
 
@@ -1003,6 +1003,9 @@ void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
     }
     CnetSys_w.firstdata.h[14] = (u32)CnetSys_w.echo_sum >> 2;
     __cnet_SendSet_FirstData(t);
+#ifdef MHG_PS2
+    lobby_func_005B02C0();   /* G only */
+#endif
 }
 #endif
 

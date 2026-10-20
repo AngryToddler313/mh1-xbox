@@ -965,14 +965,14 @@ int c;
 #endif
 
 /* amount selector: two-digit number with up/down arrows */
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 7
 int kosuu_disp_sub(void) {
     s8 buf[8];
     u8 *w;
     if (F(s16, ib, IBO(0x1A)) != 0x270F) {
         flfntSetSize(0x12, 0x12);
         font_set_palette(0);
-        flfntLocate(0x22E, 0x17A);
+        flfntLocate(GV(0x22E, 0x23A), 0x17A);
         w = ib;
         buf[0] = 0x82;
         buf[1] = F(s16, w, IBO(0x1A)) / 10 + 0x4F;
@@ -981,13 +981,13 @@ int kosuu_disp_sub(void) {
         buf[4] = 0;
         font_print_uf(buf, 0xA, w, -0x7E);
         SetFilterMode(1);
-        reload_tex(1, 0x11A);
-        SetTextureStage(0x11A);
+        reload_tex(1, GSLOT(0x11A, 0x141));
+        SetTextureStage(GSLOT(0x11A, 0x141));
         if (F(u8, ib, IBO(0x1C)) == 0) {
-            PutArrow(0x234, 0x168, 0x18, 0x12, 0xFF20FF28, 2);
+            PutArrow(GV(0x234, 0x240), 0x168, 0x18, 0x12, 0xFF20FF28, 2);
         }
         if (F(s16, ib, IBO(0x1A)) != 1) {
-            PutArrow(0x234, 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
+            PutArrow(GV(0x234, 0x240), 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
         }
     }
 }

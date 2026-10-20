@@ -1388,7 +1388,7 @@ void _cnet_RecvFromLbs_NoticeRoomLeaver(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 114
 void _sub_InOutRoomMember(kind)
 int kind;
 {
@@ -1409,22 +1409,22 @@ int kind;
     if (CnetSys_w.rcat == 0x10) {
         switch (kind & 0xFF) {
         case 0:
-            _cnet_Return_CallBack(0x26);
+            _cnet_Return_CallBack(GV(0x26, 0x1A));
             break;
         case 1:
-            _cnet_Return_CallBack(0x27);
+            _cnet_Return_CallBack(GV(0x27, 0x1B));
             break;
         case 2:
-            _cnet_Return_CallBack(0x1F);
+            _cnet_Return_CallBack(GV(0x1F, 0x24));
             break;
         case 3:
-            _cnet_Return_CallBack(0x20);
+            _cnet_Return_CallBack(GV(0x20, 0x25));
             break;
         case 4:
-            _cnet_Return_CallBack(0x24);
+            _cnet_Return_CallBack(GV(0x24, 0x29));
             break;
         case 5:
-            _cnet_Return_CallBack(0x25);
+            _cnet_Return_CallBack(GV(0x25, 0x2A));
             break;
         }
     }

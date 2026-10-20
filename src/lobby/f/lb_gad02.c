@@ -1,4 +1,5 @@
 /* lb_gad02 - near-match fixes 0x005D7D60-0x005D7E34: Lb_check_hotel. Whole file in lb_ad.c. */
+#include "g_alias.h"
 #include "lobby_f.h"
 #include "lbsys_g.h"
 extern PLW player_work[];
@@ -6,6 +7,9 @@ extern u8 *St_unique_tbl[];
 extern u8 chatIDList[];
 extern u8 npc_dialog_table[];
 extern u8 room_price[];
+#ifdef MHG_PS2
+int get_questLevelNum();
+#endif
 extern char lit_220_00664EA0[];
 extern char lit_221_00664ED0[];
 extern char lit_1026_00665D68[];
@@ -36,8 +40,8 @@ int Lb_check_hotel(int a) {
     int rank;
     int v;
     s0 = a - 0x51;
-    rank = (s8)Lb_get_lb_rank(*(u8 *)0x3C733B);
-    if (Event_flag_ck(4) == 0) {
+    rank = (s8)Lb_get_lb_rank(*(u8 *)GV(0x3C733B, 0x32CE33));
+    if (GV(Event_flag_ck, get_questLevelNum)(GV(4, 1)) == 0) {
         return 0;
     }
     v = 1;
@@ -45,7 +49,7 @@ int Lb_check_hotel(int a) {
         return 2;
     }
     if ((s8)rank >= s0) {
-        if (*(s32 *)0x3C6FE0 >= ((s32 *)room_price)[s0]) {
+        if (*(s32 *)GV(0x3C6FE0, 0x32C230) >= ((s32 *)room_price)[s0]) {
             return v;
         } else {
             return 3;

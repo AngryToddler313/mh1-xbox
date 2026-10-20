@@ -2332,3 +2332,12 @@ lobby 0x005BDFB0 0x005BDFE4 mhg/lobby/cnet/cnlbs_p111
 lobby 0x005BE180 0x005BE1F4 mhg/lobby/cnet/cnlbs_p112
 lobby 0x005E37F0 0x005E3874 mhg/lobby/cnet/cnlbs_p113
 lobby 0x005AF470 0x005AF4A8 mhg/lobby/cnet/cnlbse_p46
+lobby 0x0058EBE0 0x0058EC08 lobby/b/lb_bz19
+lobby 0x0058F0B0 0x0058F0F4 mhg/lobby/f/lb_z102_p2
+lobby 0x00557FC0 0x005580EC mhg/lobby/f/lb_tu_ib_p7
+lobby 0x005BA860 0x005BA950 lobby/b/lb_dsi01
+lobby 0x0059DE10 0x0059DE34 lobby/f/lb_c03
+lobby 0x0059D160 0x0059D23C lobby/f/lb_gad02
+lobby 0x005AC9A0 0x005ACAE0 mhg/lobby/cnet/cnlbs_p114
+lobby 0x005AF4F0 0x005AF584 mhg/lobby/cnet/cnlbse_p47
+lobby 0x005B6B90 0x005B6C70 mhg/lobby/f/lb_tu_browser_p27

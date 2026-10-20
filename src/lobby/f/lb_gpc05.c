@@ -5,8 +5,8 @@ extern char PitMenu[];
 /* plaza chat log state bytes (bss 0x39DADE..) */
 #define PZ_HEAD (*(u8 *)0x39DADE)   /* newest entry index */
 #define PZ_COUNT (*(u8 *)0x39DADF)  /* number of entries */
-#define PZ_TOP (*(u8 *)0x39DAE0)    /* first visible entry */
-#define PZ_ATEND (*(u8 *)0x39DAE1)  /* window shows the last entry */
+#define PZ_TOP (*(u8 *)GV(0x39DAE0, 0x2FF2B7))    /* first visible entry */
+#define PZ_ATEND (*(u8 *)GV(0x39DAE1, 0x2FF2B8))  /* window shows the last entry */
 #define PZ_ARROWS (*(u8 *)0x39DAE2) /* bit0 scroll down arrow, bit1 scroll up arrow, bit2/3 scrolled this frame */
 void SoftKeyboard_pos_set(f32, int);
 int SoftKeyboard_set();
