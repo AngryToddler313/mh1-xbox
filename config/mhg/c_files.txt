@@ -2229,3 +2229,6 @@ sub_main 0x004D43B0 0x004D4424 mhg/main/eft/eft13b_p4
 yn 0x00A063B0 0x00A06450 yn/nc06
 sub_main 0x004E88A0 0x004E8900 main/staff/staff
 main 0x0012D600 0x0012D6E8 mhg/main/font/disp102_p1
+sub_main 0x004E5F40 0x004E5FB4 mhg/main/set/set13_p3
+main 0x00102720 0x0010278C mhg/main/game/f_game_p3
+main 0x001D52A0 0x001D533C mhg/main/sound/flmw01_p2
