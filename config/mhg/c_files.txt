@@ -2084,3 +2084,4 @@ lobby 0x005E1D50 0x005E23A8 mhg/lobby/cnet/cnlbsh_p2
 lobby 0x0054F370 0x0054F3F4 mhg/lobby/f/lb_arm_p1
 lobby 0x0054F5A0 0x0054F6B4 mhg/lobby/f/lb_arm_p2
 lobby 0x00581B10 0x00581B40 mhg/lobby/f/lb_cli_p5
+lobby 0x00551910 0x00551940 mhg/lobby/f/lb_ui_p1
