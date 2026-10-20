@@ -2671,3 +2671,4 @@ game 0x005F4F90 0x005F5104 mhg/game/em/em15_r10_p12
 game 0x00666440 0x00666570 mhg/game/shell/shell10_p3
 game 0x00666720 0x00666848 mhg/game/shell/shell10_p4
 game 0x00666940 0x00666A10 mhg/game/shell/shell10_p5
+game 0x0065F0E0 0x0065F29C mhg/game/shell/shell06b_p4
