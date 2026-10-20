@@ -2019,3 +2019,4 @@ game 0x0065F780 0x00660DFC game/shell/shell08
 game:rodata 0x006DADB0 0x006DAE00 game/shell/shell08
 game 0x006648A0 0x006651E8 game/shell/shell08c
 game:rodata 0x006DAF50 0x006DAF80 game/shell/shell08c
+sub_main 0x004F4190 0x004F41A8 mhg/lobby/b/lb_bz73_p2
