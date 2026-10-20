@@ -1,4 +1,5 @@
 /* boot02 - 0x0022FE10-0x00230060: path helper, network debug stub and lobby-to-MCS network setup. Whole file in boot_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 void mwInit(void);
@@ -59,8 +60,13 @@ void LobbyToMcsInitSocket(s32 sock) {
 }
 #endif
 
-#if !defined(G_PART)
-void LobbyToMcsInit(s8 a, s8 b, char *name) {
+#ifdef MHG_PS2
+#define LTM_P                   /* G: no name argument (the atoi is gone) */
+#else
+#define LTM_P , char *name
+#endif
+#if !defined(G_PART) || G_PART == 2
+void LobbyToMcsInit(s8 a, s8 b LTM_P) {
     *(s32 *)(PppStatusv + 8) = 0x1863C;
     switch (*CurDevice) {
     case 2:
@@ -82,6 +88,8 @@ void LobbyToMcsInit(s8 a, s8 b, char *name) {
     *(s16 *)(InetGame + 14) = 0;
     *(s16 *)(InetGame + 16) = 0;
     *(s16 *)(InetGame + 18) = *(s32 *)(PppStatusv + 8) / 100;
+#ifndef MHG_PS2
     atoi(name + 5);
+#endif
 }
 #endif

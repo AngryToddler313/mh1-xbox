@@ -790,16 +790,16 @@ int Warehouse_equip_erase(UDW *u, u16 idx) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 28
 static void Equip_idx_renew(UDW *u) {
     u8 m = 0;
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
     if (u->wkind == 7) { m |= 8; } else { m |= 4; }
-    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * 0x14))) { u->widx[2] = UD_NONE; }
-    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * 0x14))) { u->widx[3] = UD_NONE; }
-    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * 0x14))) { u->widx[5] = UD_NONE; }
-    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * 0x14))) { u->widx[4] = UD_NONE; }
-    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * 0x14))) { u->widx[1] = UD_NONE; }
+    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * GV(0x14, 0x20)))) { u->widx[2] = UD_NONE; }
+    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * GV(0x14, 0x20)))) { u->widx[3] = UD_NONE; }
+    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * GV(0x14, 0x20)))) { u->widx[5] = UD_NONE; }
+    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * GV(0x14, 0x20)))) { u->widx[4] = UD_NONE; }
+    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * GV(0x14, 0x20)))) { u->widx[1] = UD_NONE; }
 }
 #endif
 

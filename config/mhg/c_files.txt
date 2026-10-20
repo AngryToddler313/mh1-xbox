@@ -2669,3 +2669,6 @@ main 0x00117850 0x00117990 mhg/main/option/option01_p10
 main 0x0022AB10 0x0022AC68 mhg/main/mc/savesel_p1
 sub_main 0x004EA3E0 0x004EA528 mhg/main/emw/emu03_p2
 sub_main 0x004EA570 0x004EA7A8 mhg/main/emw/emu03_p3
+sub_main 0x004C7790 0x004C78B0 mhg/main/ud/f_ud_p28
+main 0x002215A0 0x00221814 mhg/main/chat/f_chat_p37
+main 0x001E44E0 0x001E45DC mhg/main/boot/boot02_p2
