@@ -20,6 +20,26 @@ LIST = os.path.join(ROOT, 'config/mhg/c_files.txt')
 ENV = dict(os.environ, VERSION='mhg')
 
 
+def compiles(path, ver):
+    """True when the file compiles for VERSION=ver. Compile only: check.py exits 1 for a mixed file whose other
+    functions differ, and the MH1 comparison needs the MH1 disc."""
+    import tempfile
+    sys.path.insert(0, os.path.join(ROOT, 'tools'))
+    flags = ['-c', '-O4,p', '-nostdinc', '-stderr', '-Iinclude', '-Ibuild/mhg/raw', '-Ibuild/raw', '-pragma', 'divbyzerocheck on']
+    if ver == 'mhg':
+        flags.append('-DVERSION_MHG')
+    with tempfile.TemporaryDirectory(dir=os.path.join(ROOT, 'build')) as tmp:
+        obj = os.path.relpath(os.path.join(tmp, 'c.o'), ROOT)
+        try:
+            r = subprocess.run([os.path.join(ROOT, 'tools/compilers/wibo'),
+                                os.path.join(ROOT, 'tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe')] + flags
+                               + [os.path.relpath(os.path.join(ROOT, path), ROOT), '-o', obj],
+                               cwd=ROOT, capture_output=True, text=True, timeout=180)
+        except subprocess.TimeoutExpired:
+            return False
+        return r.returncode == 0 and '###' not in r.stdout
+
+
 def check(path):
     r = subprocess.run(['python3', 'tools/check.py', path], cwd=ROOT, capture_output=True, text=True, env=ENV, timeout=300)
     rows = []
@@ -44,9 +64,31 @@ def covered():
     return cov
 
 
+DEF = re.compile(r'^[A-Za-z_][^;{}=#]*?[ \*](\w+)\s*\(')
+
+
+def regions(lines):
+    """(first, last) line of every top-level #if ... #endif block"""
+    out, depth, start = [], 0, None
+    for i, l in enumerate(lines):
+        t = l.strip()
+        if re.match(r'#\s*if', t):
+            if depth == 0:
+                start = i
+            depth += 1
+        elif re.match(r'#\s*endif', t) and depth:
+            depth -= 1
+            if depth == 0:
+                out.append((start, i))
+    return out
+
+
 def spans(lines, names):
-    """name -> (first line, last line) of the first definition of each function"""
+    """name -> (first line, last line) of the first definition of each function. A definition inside a top-level
+    #if block that defines nothing but this function (e.g. `#ifndef VERSION_MHG` MH1 body `#else` G body, or
+    `#ifdef __MWERKS__` asm stand-in `#else` C) spans the whole block, so a guard covers every variant."""
     out = {}
+    regs = regions(lines)
     for n in names:
         pat = re.compile(r'^[A-Za-z_][^;{}=]*?[ \*]%s\s*\(' % re.escape(n))
         for i, l in enumerate(lines):
@@ -56,6 +98,16 @@ def spans(lines, names):
                     j += 1
                 if j < len(lines):
                     out[n] = (i, j)
+                    for a, b in regs:
+                        if a < i <= b:
+                            defs = set()
+                            for x in lines[a:b + 1]:
+                                m = DEF.match(x)
+                                if m and not x.rstrip().endswith(';'):
+                                    defs.add(m.group(1))
+                            if defs == {n} and b >= j:
+                                out[n] = (a, b)
+                            break
                 break
     return out
 
@@ -104,8 +156,17 @@ def strip_parts(path):
     while i < len(src):
         if re.fullmatch(r'#if !defined\(G_PART\)( \|\| G_PART == \d+)?', src[i]):
             j = i + 1
-            while src[j] != '}':
-                j += 1
+            if re.match(r'#\s*if', src[j].strip()):
+                d = 0
+                while True:
+                    t = src[j].strip()
+                    d += 1 if re.match(r'#\s*if', t) else -1 if re.match(r'#\s*endif', t) else 0
+                    if d == 0:
+                        break
+                    j += 1
+            else:
+                while src[j] != '}':
+                    j += 1
             if src[j + 1] != '#endif':
                 raise RuntimeError('unexpected guard layout in %s' % path)
             out += src[i + 1:j + 1]
@@ -183,8 +244,7 @@ def process(path, dry):
                 bad += [n for n in want]       # part holds other functions than planned
         # the file itself (no G_PART) must still compile in both versions: a guard inserted into an #if block of the file can break it
         for ver in ('mhg', 'mh1'):
-            r = subprocess.run(['python3', 'tools/check.py', path], cwd=ROOT, capture_output=True, text=True, env=dict(os.environ, VERSION=ver))
-            if '###' in r.stdout or r.returncode:
+            if not compiles(path, ver):
                 open(os.path.join(ROOT, path), 'w').write(src)
                 for f in os.listdir(os.path.join(ROOT, wdir)):
                     if f.startswith(base + '_p'):
