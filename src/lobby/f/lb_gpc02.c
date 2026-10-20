@@ -105,3 +105,14 @@ void plaza_name_sprint(s8 *dst, s8 *src) {
     dst[12] = 0;
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 2
+#ifdef MHG_PS2
+/* G only */
+extern char lit_g_0063E908[];
+int sprintf(char *, const char *, ...);
+void lobby_func_0058EDD0(char *d, char *s) {
+    sprintf(d, lit_g_0063E908, s);
+}
+#endif
+#endif

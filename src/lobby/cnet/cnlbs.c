@@ -1291,6 +1291,23 @@ int arg1;
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 118
+#ifdef MHG_PS2
+/* G 0x5BC5B0 (the map calls it cnLBS_Read_RoomRuleAllocation): a menu step on a net window */
+void g_step_005BC5B0(u8 *a) {
+    u8 st = a[0x23];
+
+    if (st == 1) {
+        a[0x22]++;
+        a[0x23] = 0;
+    } else if (st == 2) {
+        a[0x21] = 11;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
 #if !defined(G_PART) || G_PART == 19
 void _cnet_RecvFromLbs_AnswerRoomEntry(void) {
     if (CNW(s8, 0xFEC) == 0) {
@@ -2031,4 +2048,752 @@ void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
     }
     CnetSys_w.burst[2].res = 2;
 }
+#endif
+
+#if !defined(G_PART) || G_PART == 119
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC510(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 120
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD370(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 8) = 0;
+    *(int *)(a + 0xC) = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 124
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD8A0(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 8) = 0;
+    *(int *)(a + 0xC) = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 125
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BDA40(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 0xC) = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 126
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005C02B0();
+void _cnet_CallBack_Result_PersonalDataChange();
+void lobby_func_005BFBA0(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    lobby_func_005C02B0(_cnet_CallBack_Result_PersonalDataChange);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 127
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005E3420(u16 *p) {
+    *p = *(u16 *)((u8 *)&CnetSys_w + 0x43B4);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 128
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E3CD0(f32);
+void lobby_func_005E3C20() {
+    lobby_func_005E3CD0(1.0f);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 129
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005E6680(u8 **p) {
+    *p = (u8 *)&CnetSys_w + 0x38E5E;
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 130
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005E6EC0(u8 **p) {
+    *p = (u8 *)&CnetSys_w + 0x39632;
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 121
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ABA60(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 122
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ABC40(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    if (*(u16 *)((u8 *)&CnetSys_w + 0x43B6) == 0) {
+        a[0x21] = 1;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 123
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_cn_00700EA2[];
+int lobby_func_005AC230(u16 i, u16 *out) {
+    *out = *(u16 *)(g_cn_00700EA2 + i * 356);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 132
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ADF20(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 133
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE6F0(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 136
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC4A0(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 137
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD210(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 138
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BFB30(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 139
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BFF10(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 142
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E2F10(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 135
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BB0C0(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    if (*(u16 *)((u8 *)&CnetSys_w + 0x43B8) == 0) {
+        a[0x21] = 1;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 143
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E30F0(u8 *a) {
+    a[0x22]++;
+    a[0x23] = 0;
+    if (*(u16 *)((u8 *)&CnetSys_w + 0x43B4) == 0) {
+        a[0x21] = 1;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 131
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_cn_00700E98[];
+int lobby_func_005AC580(u16 i, u32 *out) {
+    *out = *(u32 *)(g_cn_00700E98 + i * 356);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 134
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE760(u8 *a) {
+    a[0x22]++;
+    *(u16 *)((u8 *)&CnetSys_w + 0x1032) = 0;
+    *(int *)(a + 8) = 1;
+    *(int *)(a + 0xC) = 1;
+    a[0x23] = 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 140
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005C0580() {
+    __cnet_Recv_ServerMessage();
+    _cnet_Return_CallBack(45);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 141
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_005C0620(u8 *a, u8 **b) {
+    if (a != 0) {
+        *a = *(u8 *)((u8 *)&CnetSys_w + 0x3A5EC);
+    }
+    if (b != 0) {
+        *b = (u8 *)&CnetSys_w + 0x3A5F4;
+    }
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 145
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ADF50(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 146
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE0B0(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xE38;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x1;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 147
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE0F0(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xE38;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x2;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 148
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE130(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xE38;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x4;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 150
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE720(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 151
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE9D0(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xEB0;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x1;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 152
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AEA10(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xEB0;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x2;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 153
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AEA50(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xEB0;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x4;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 154
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AEA90(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xEB0;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x4;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 155
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC4D0(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 156
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD240(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 157
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BFB60(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 158
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BFF40(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 159
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005C00A0(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xFA0;
+
+    if (res.val == 0) {
+        b[0x23] |= 0x1;
+    } else {
+        b[0x23] |= 0x80;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 160
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E2F40(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 161
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_cn_006FEA7A[];
+int lobby_func_005E36A0(i, out)
+u16 i;
+u16 *out;
+{
+    *out = *(u16 *)(g_cn_006FEA7A + i * 356);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 162
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_cn_006FEA7C[];
+int lobby_func_005E36D0(i, out)
+u16 i;
+u16 *out;
+{
+    *out = *(u16 *)(g_cn_006FEA7C + i * 356);
+    return 0;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 163
+#ifdef MHG_PS2
+/* G only */
+void __cnet_Recv_MailMessage();
+void lobby_func_005E5C20() {
+    __cnet_Recv_MailMessage();
+    _cnet_Return_CallBack(3);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 144
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005ACE90() {
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_ServerMessage();
+    }
+    _cnet_Return_CallBack(9);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 149
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AE450() {
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte((u8 *)&CnetSys_w + 0x33862);
+    }
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 164
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005AEFC0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 165
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005B07F0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 166
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005B0BA0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 169
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCB80() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 170
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCC90() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 171
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCDA0() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 172
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCE70() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 175
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BF830() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 181
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E6C00() {
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 177
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E1CE0() {
+    _cnet_Return_CallBack(5);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 167
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC770(u8 *a) {
+    a[0x22]++;
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 168
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCA70() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 178
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E27B0() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 179
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E27C0() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 180
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005E27D0() {
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 173
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCEC0() {
+    _sub_InOutRoomMember(2);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 174
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BCED0() {
+    _sub_InOutRoomMember(3);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 176
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BF880(void *a) {
+    GetRecvData16(a, recv_work);
+}
+#endif
 #endif

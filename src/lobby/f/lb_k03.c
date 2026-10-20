@@ -256,3 +256,13 @@ void lb_pl_chat16(PLW *pl) {
     }
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 8
+#ifdef MHG_PS2
+/* G only */
+void Lb_pl_to_normal();
+void lobby_func_0059A060(int a) {
+    Lb_pl_to_normal(a, 0, 4, 0);
+}
+#endif
+#endif

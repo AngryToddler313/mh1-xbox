@@ -1215,7 +1215,11 @@ void lbc_login_error() {
         CWX_c16->x2C34++;
         fade_set(2);
         CWX_c16->x2C4C = 0x258;
+#ifdef MHG_PS2
         SETDLG_HTML((u8 *)cw + CW_SRVMSG);
+#else
+        SETDLG_HTML((s32)cw + CW_OFS(0x32D1));
+#endif
         break;
     case 1:
         F(s8, pNet, PNET_OFS(0xC)) = 1;
@@ -2487,6 +2491,26 @@ void lbc_in_plaza_03() {
         Check_CallBackWait();
     }
 }
+#endif
+
+#if !defined(G_PART) || G_PART == 84
+#ifdef MHG_PS2
+/* G 0x57FB20 (the map calls it CallBack_Result_Plaza_PlazaExit): wait id 19, next step or the server message */
+void g_CallBack_0057FB20(CNET_RES res) {
+    u8 *w = (u8 *)cw;
+
+    if (F(u8, w, CW_OFS(0x2C31)) != 5 && F(u8, w, CW_OFS(0x2C45)) == 19) {
+        F(u8, w, CW_OFS(0x2C45)) = 0;
+        if (res.val == 0) {
+            u8 *t = (u8 *)cw;
+            F(u8, t, CW_OFS(0x2C35)) = F(u8, t, CW_OFS(0x2C35)) + 1;
+            return;
+        }
+        F(u8, (u8 *)cw, CW_OFS(0x2C35)) = 99;
+        cnLBS_Get_ServerMessage((u8 *)cw + CW_SRVMSG, w, w + CW_OFS(0x2C45));
+    }
+}
+#endif
 #endif
 
 #if !defined(G_PART)
@@ -4145,7 +4169,7 @@ int arg0;
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 85
 void lbc_matching_failed_00() {
     void *temp_v1;
 
@@ -4153,7 +4177,11 @@ void lbc_matching_failed_00() {
     F(u8, temp_v1, CW_OFS(0x2C33)) = (u8) (F(u8, temp_v1, CW_OFS(0x2C33)) + 1);
     cnWrap_BgmVolume(0);
     Lbc_init_network_work();
+#ifdef MHG_PS2
+    Lbc_set_prim((s32)put_back, 0, 0, 0);
+#else
     Lbc_set_prim_k(&put_back, 0, 0);
+#endif
     fade_set(0xA);
 }
 #endif
@@ -4277,12 +4305,25 @@ void Lbs_LogOutRequest() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 86
 void Set_ErrorDialog(int arg0) {
     int temp_v1;
 
     temp_v1 = (s8)arg0;
     switch (temp_v1) {
+#ifdef MHG_PS2
+    /* G: its own message numbers, one argument */
+    case 1:
+        SetDialogData(10);
+        return;
+    case 3:
+        SetDialogData(8);
+        return;
+    case 4:
+    case 6:
+        SetDialogData(11);
+        return;
+#else
     case 1:
         SetDialogData(9, 5);
         return;
@@ -4293,9 +4334,10 @@ void Set_ErrorDialog(int arg0) {
     case 6:
         SetDialogData(0xA, 3);
         return;
+#endif
     case 5:
     case 7:
-        SETDLG_HTML((s32)cw + CW_OFS(0x32D1));
+        SETDLG_HTML((u8 *)cw + CW_SRVMSG);
         /* fallthrough */
     default:
         return;

@@ -123,7 +123,7 @@ void lb_pl_mv092(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void lb_pl_mv094(PLW *pl) {
     u8 s;
     s = pl->x05;

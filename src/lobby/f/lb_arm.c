@@ -566,3 +566,12 @@ void armor_shop_trans() {
 }
 #endif
 
+#if !defined(G_PART) || G_PART == 6
+#ifdef MHG_PS2
+/* G only */
+void Lb_put_shopYesNo();
+void lobby_func_0054FC60() {
+    Lb_put_shopYesNo();
+}
+#endif
+#endif

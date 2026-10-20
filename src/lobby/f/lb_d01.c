@@ -153,3 +153,12 @@ void Lb_send_chair_release(void) {
     lb_send_data(1, 9, &lb_sys.x66);
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 5
+#ifdef MHG_PS2
+/* G only */
+int lobby_func_0059A800() {
+    return *(u8 *)0x35ED5C == 1;
+}
+#endif
+#endif

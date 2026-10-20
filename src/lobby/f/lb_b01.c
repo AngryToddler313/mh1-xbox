@@ -1,4 +1,5 @@
 /* lb_b01 - lobby quest money / guild end 0x005C5D50-0x005C5F30: Lb_check_money, get_quest_info, Lb_get_quest_str, Lb_get_quest_str2, Lb_back_money, lb_guild_end. Whole file in lb_b.c. */
+#include "g_alias.h"
 #include "lbsys_g.h"
 #include "lobby_f.h"
 #define USER_GOLD (*(s32 *)0x3C6FE0)
@@ -78,4 +79,15 @@ void lb_guild_end(void) {
     Lbc_init_network_work(1);
     NPCZoomInCameraCancel();
 }
+#endif
+
+#if !defined(G_PART) || G_PART == 2
+#ifdef MHG_PS2
+/* G only */
+extern u8 g_tbl_00300AC0[];
+u8 *lobby_func_00559D30(u8 i) {
+    u8 *p = g_tbl_00300AC0 + i * 0x200;
+    return (u8 *)(*(int *)p + (int)p);
+}
+#endif
 #endif

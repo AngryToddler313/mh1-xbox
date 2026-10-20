@@ -126,3 +126,21 @@ void em10_local_init_0053DCE0(EMW *em) {
 void dummy_em_prog_0053DCF0(void) {
 }
 #endif
+
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+/* G only */
+void eft01_set();
+void lobby_func_005509A0(int a) {
+    eft01_set(a, 0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 4
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005509B0() {
+}
+#endif
+#endif
