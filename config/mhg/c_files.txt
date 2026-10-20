@@ -1958,3 +1958,5 @@ game 0x00574E70 0x00576B24 game/eft/eft15
 game:rodata 0x006D74C0 0x006D7594 game/eft/eft15
 game 0x00563980 0x00567F64 game/eft/eft17
 game:rodata 0x006D7080 0x006D71F4 game/eft/eft17
+game 0x0057BFE0 0x0057DA0C game/eft/eft18b
+game:rodata 0x006D7660 0x006D76A8 game/eft/eft18b
