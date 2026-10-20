@@ -107,6 +107,7 @@ static void eft23_e(EFTW *ew);
 static void eft23_t(PRIM *pr);
 static s8 fish_type_set(EFTW *ew);
 
+#if !defined(G_PART) || G_PART == 1
 static void eft23_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
@@ -123,7 +124,9 @@ static void eft23_move(EFTW *ew) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void eft23_i(EFTW *ew) {
     ew->mode++;
     ew->mode2 = 0;
@@ -139,7 +142,9 @@ static void eft23_i(EFTW *ew) {
     }
     eft23_m(ew);
 }
+#endif
 
+#if !defined(G_PART)
 static EFTW *uki_serch(EFTW *ew, FISH *w, int mode) {
     s32 i;
     EFTW *e;
@@ -163,7 +168,9 @@ static EFTW *uki_serch(EFTW *ew, FISH *w, int mode) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft23_toujyou_mv(EFTW *ew, FISH *w) {
     FISH_DATA *fd = &fish_type_data[w->type];
 
@@ -197,7 +204,9 @@ static void eft23_toujyou_mv(EFTW *ew, FISH *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void eft23_normal_mv(EFTW *ew, FISH *w) {
     f32 v[3];
     f32 out[3];
@@ -244,7 +253,9 @@ static void eft23_normal_mv(EFTW *ew, FISH *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART)
 static void eft23_atari_mv(EFTW *ew, FISH *w) {
     f32 v[3];
     f32 out[3];
@@ -357,7 +368,9 @@ static void eft23_atari_mv(EFTW *ew, FISH *w) {
     }
     em09_dir_calc(&w->rot[1], &w->tgt_ang, 0x100);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft23_turare_mv(EFTW *ew, FISH *w) {
     EFTW *u = w->uki;
 
@@ -391,7 +404,9 @@ static void eft23_turare_mv(EFTW *ew, FISH *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft23_m(EFTW *ew) {
     f32 d[3];
     FISH *w = ew->work;
@@ -425,16 +440,22 @@ static void eft23_m(EFTW *ew) {
     ew->prim->pos[2] = ew->pos[2];
     add_prim(ot1, ew->prim, 0x20, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft23_d(EFTW *ew) {
     ew->mode++;
     release_prim(ew->prim_no);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft23_e(EFTW *ew) {
     push_eft_work(ew);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 3
 static void eft23_t(PRIM *pr) {
     FLMAT m;
     EFTW *ew = pr->owner;
@@ -486,7 +507,9 @@ static void eft23_t(PRIM *pr) {
         clay_attr_reset();
     }
 }
+#endif
 
+#if !defined(G_PART)
 static s8 fish_type_set(EFTW *ew) {
     FISH_CHANCE *p;
     u16 total = 0;
@@ -533,7 +556,9 @@ static s8 fish_type_set(EFTW *ew) {
     }
     return 0;
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 4
 void Eft23_set(int arg, f32 *pos) {
     EFTW *ew = pull_eft_work(1);
     FISH *w;
@@ -550,6 +575,7 @@ void Eft23_set(int arg, f32 *pos) {
         w->range = *pos;
     }
 }
+#endif
 
 /* Fish spot: centre, range, fish type (negative ends the list) and how
  * many fish of that type to spawn. */
@@ -563,6 +589,7 @@ typedef struct FISH_SPOT {
 extern FISH_SPOT *Fish_hani_tbl[];
 
 /* Spawns every fish of a stage's spot table (stage argument). */
+#if !defined(G_PART) || G_PART == 4
 void Fish_set(int stage) {
     FISH_SPOT *sp = Fish_hani_tbl[stage];
     int n;
@@ -581,3 +608,4 @@ void Fish_set(int stage) {
         }
     }
 }
+#endif
