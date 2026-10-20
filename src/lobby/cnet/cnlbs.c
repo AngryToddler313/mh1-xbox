@@ -2797,3 +2797,140 @@ void lobby_func_005BF880(void *a) {
 }
 #endif
 #endif
+
+#if !defined(G_PART) || G_PART == 182
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BAED0(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    a[0x22] = 0;
+    res.val = 0;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 183
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BAF10(u8 *a) {
+    R7 res;
+
+    a[0x20] = 0;
+    a[0x21] = 0;
+    a[0x22] = 0;
+    res.val = -1;
+    (*(void (**)())(a + 4))(res, &res);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 189
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BDDC0() {
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte((u8 *)&CnetSys_w + 0xA3BF);
+    }
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 190
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BDEF0() {
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte((u8 *)&CnetSys_w + 0xA3BC);
+    }
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 191
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BF6B0() {
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte((u8 *)&CnetSys_w + 0xA3BE);
+    }
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 184
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC200() {
+    if (CnetSys_w.rres == 0) {
+        __cnet_SetEntryFloorInfo(2);
+    }
+    _cnet_Return_CallBack(0);
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 186
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC9A0(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xE88;
+
+    if (res.val == 0) {
+        b[0x23] = 1;
+    } else {
+        b[0x23] = 2;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 188
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BDC20(CNET_RES res) {
+    u8 *b = (u8 *)&CnetSys_w + 0xE60;
+
+    if (res.val == 0) {
+        b[0x23] = 1;
+    } else {
+        b[0x23] = 2;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 185
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BC960(u8 *a) {
+    if (a[0x23] == 1) {
+        a[0x21] = 10;
+        a[0x22] = 0;
+    } else if (a[0x23] == 2) {
+        a[0x21] = 11;
+        a[0x22] = 0;
+    }
+}
+#endif
+#endif
+
+#if !defined(G_PART) || G_PART == 187
+#ifdef MHG_PS2
+/* G only */
+void lobby_func_005BD280(u8 *a) {
+    a[0x22]++;
+    *(int *)(a + 8) = 1;
+    *(int *)(a + 12) = 1;
+    a[0x23] = 0;
+    *(s16 *)((u8 *)&CnetSys_w + 0x1032) = 0;
+    memset((u8 *)&CnetSys_w + 0xA3BC, 0, 0x294A4);
+}
+#endif
+#endif
