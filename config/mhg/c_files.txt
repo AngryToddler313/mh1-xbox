@@ -1910,3 +1910,5 @@ game 0x0060CFF0 0x0060D46C mhg/game/em/em17_r14_p1
 game 0x0060D570 0x0060D6F4 mhg/game/em/em17_r14_p2
 game 0x005E4E70 0x005E5130 mhg/game/em/em14_r09_p1
 game 0x005E5300 0x005E5588 mhg/game/em/em14_r09_p2
+game 0x005AF6C0 0x005AF97C mhg/game/em/em02_aic_p1
+game 0x005B3630 0x005B3750 mhg/game/em/em02_aic_p2

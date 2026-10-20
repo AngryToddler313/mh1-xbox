@@ -205,6 +205,7 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w);
         em->uvty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void em02_uvmove(EMW *em) {
     int i;
 
@@ -247,6 +248,7 @@ static void em02_uvmove(EMW *em) {
         }
     }
 }
+#endif
 
 static void em_uvset(EMW *em, u32 frame, u16 idx, s8 type);
 void Em_set_quake_sub(EMW *, int);
@@ -321,6 +323,7 @@ void flmatGetTrans(f32 *, void *);
         ty[i] = 0xFF; \
     } while (0)
 
+#if !defined(G_PART) || G_PART == 1
 static void em_uvset(EMW *em, u32 frame, u16 idx, s8 type) {
     if (em->x19C == (f32)frame) {
         if (em->x1C4 == 0) {
@@ -329,7 +332,9 @@ static void em_uvset(EMW *em, u32 frame, u16 idx, s8 type) {
         }
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 1
 static void move_default_00583BA0(EMW *em) {
     f32 (*uv)[3] = (f32 (*)[3])((u8 *)em + 0x5C0);
     u16 *tm = (u16 *)((u8 *)em + 0x5F0);
@@ -352,9 +357,11 @@ static void move_default_00583BA0(EMW *em) {
     tm[3] = 0xFFFF;
     ty[3] = 0xFF;
 }
+#endif
 
 /* Sound and effect script per animation (sound_call(em, frame, se, joint) plays a sound at the joint once the
  * animation reaches the frame). Generated from the asm with tools/genef.py. */
+#if !defined(G_PART)
 static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
 
     if (em->char0 != w->anim) {
@@ -1105,26 +1112,34 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         break;
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void quake_call_00587230(EMW *em, int frame, int v) {
     if (em_frame_check(em, (f32)frame, 0)) {
         Em_set_quake_sub(em, v);
     }
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void sound_call_sub_00587280(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, (u8 *)em->mdl->bone + joint * 400);
     Em_se_req2(em, se, 0, pos, 8, 0);
 }
+#endif
 
+#if !defined(G_PART) || G_PART == 2
 static void sound_call_005872F0(EMW *em, int frame, int se, int joint) {
     if (em_frame_check(em, (f32)frame, 0)) {
         sound_call_sub_00587280(em, se, joint);
     }
 }
+#endif
 
+#if !defined(G_PART)
 void em02_effect_move(EMW *em) {
     EM02W *w = (EM02W *)em->ex;
 
@@ -1138,3 +1153,4 @@ void em02_effect_move(EMW *em) {
     }
     em02_uvmove(em);
 }
+#endif
