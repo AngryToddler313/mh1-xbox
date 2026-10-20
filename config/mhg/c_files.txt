@@ -2125,3 +2125,4 @@ game 0x00669260 0x006696E0 mhg/game/shell/shell00_p4
 game 0x0054C520 0x0054CB9C mhg/main/pl/f_pl_p51
 game 0x0055E030 0x0055E33C mhg/main/pl/f_pl_p52
 game 0x0055E580 0x0055E88C mhg/main/pl/f_pl_p53
+main 0x00146950 0x00146AB8 mhg/main/flps/fladdm_p4

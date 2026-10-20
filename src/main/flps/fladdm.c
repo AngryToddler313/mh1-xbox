@@ -170,7 +170,7 @@ static asm u32 *flPS2SHADER_ADD_SVEC2(void *dst, void *a, void *b)
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static asm u32 *PS2SHADER_ADD_LIGHTCOL3(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3.inc"
