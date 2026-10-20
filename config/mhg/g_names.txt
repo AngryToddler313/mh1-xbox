@@ -149,3 +149,4 @@ PROVIDE(flfntLocate_a2 = 0x001D5890); /* flfntLocate called with a sign-extended
 PROVIDE(yes_or_no_g = 0x002EC5D8); /* yes_or_no, G table outside the small data (lb_tu_ib yes_no_disp_sub) */
 PROVIDE(Lb_put_icon_p7 = 0x00592F70); /* Lb_put_icon (MH1 alias, config/lobby_aliases.txt) */
 PROVIDE(flfntLocate_k = 0x001D5890); /* flfntLocate (MH1 alias, config/lobby_aliases.txt) */
+PROVIDE(my_job_str_g = 0x002EF048); /* my_job_str, G table outside the small data (lb_arm Lb_put_my_job) */

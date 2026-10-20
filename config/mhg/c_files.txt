@@ -2371,3 +2371,9 @@ lobby 0x005ADA90 0x005ADAC4 mhg/lobby/cnet/cnlbse_p49
 lobby 0x0058CEA0 0x0058CEF4 lobby/b/lb_bz78
 lobby 0x00595380 0x00595488 mhg/lobby/f/lb_j03_p3
 lobby 0x00593D50 0x00593DD0 lobby/f/lb_i03
+lobby 0x0057DA60 0x0057DAB8 mhg/lobby/f/lb_cli_p72
+lobby 0x00584B90 0x00584BCC mhg/lobby/f/lb_cli_p73
+lobby 0x005867F0 0x00586858 mhg/lobby/f/lb_cli_p74
+lobby 0x00587160 0x005871C8 mhg/lobby/f/lb_cli_p75
+lobby 0x005C2090 0x005C2114 lobby/b/lb_by22
+lobby 0x0054FE50 0x0054FECC mhg/lobby/f/lb_arm_p3

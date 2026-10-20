@@ -1,4 +1,5 @@
 /* lb_by22 - agent B promoted near-match 0x005C30C0-0x005C314C: Get_ServerColor (first drafted by tools/lbauto.py). */
+#include "g_alias.h"
 #include "lobby_a.h"
 extern char BsLbsInfo[];
 extern char ConnectLbsId[];
@@ -20,8 +21,15 @@ loop_1:
             goto loop_1;
         }
     }
+#ifdef MHG_PS2
+    if (var_s1 < 0xA) {
+        return var_s1;   /* G returns the server's index */
+    }
+    return 0;
+#else
     if (var_s1 < 0xA) {
         return ((int *)&netr_sub01_col)[var_s1];
     }
     return -1;
+#endif
 }

@@ -1816,15 +1816,21 @@ void lbc_top_menu() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 72
 void To_TopMenu() {
     F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 1;
     F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2C33)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
+#ifdef MHG_PS2
+    Init_InterruptFlag();
+    SetDialogData(0x19);   /* G: opens the dialog, shown once (pNet x0C) */
+    F(s8, pNet, PNET_G(0xC)) = 1;
+#else
     F(s8, (u8 *)cw, CW_OFS(0x2C3F)) = 0;
     Init_InterruptFlag();
+#endif
 }
 #endif
 
@@ -4474,7 +4480,7 @@ void lbc_logout_01() {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 73
 void To_GoToTop() {
     F(s8, (u8 *)cw, CW_OFS(0x2C31)) = 7;
     F(s8, (u8 *)cw, CW_OFS(0x2C32)) = 0;
@@ -4482,6 +4488,9 @@ void To_GoToTop() {
     F(s8, (u8 *)cw, CW_OFS(0x2C34)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2C35)) = 0;
     F(s8, (u8 *)cw, CW_OFS(0x2C36)) = 0;
+#ifdef MHG_PS2
+    SetDialogData(0x19);   /* G opens the dialog here */
+#endif
 }
 #endif
 
@@ -5413,7 +5422,7 @@ void CallBack_Result_netCommentSend(void) {
 /* lb_by39 - agent B promoted near-match 0x005C09B0-0x005C0A08: cnLbc_CheckInFloorOrder (first drafted by tools/lbauto.py). */
 extern u8 ClassInfo_by39[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 74
 s32 cnLbc_CheckInFloorOrder(s32 arg0) {
     s32 r;
     switch (arg0 & 0xFF) {
@@ -5426,6 +5435,11 @@ s32 cnLbc_CheckInFloorOrder(s32 arg0) {
     case 2:
         r = ClassInfo_by39[8];
         break;
+#ifdef MHG_PS2
+    default:
+        r = 0;   /* G */
+        break;
+#endif
     }
     return r;
 }
@@ -5717,14 +5731,20 @@ void CallBack_Event_PlazaName(void) {
 /* lb_bz53 - lobby UI/client 0x005C11C0-0x005C1204: CallBack_Event_PlazaJoinUser (first drafted by tools/lbauto.py). */
 extern char PlazaInfo[];
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 75
 void CallBack_Event_PlazaJoinUser(void) {
     u16 sp1E;
     int temp_v0;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
+#ifdef MHG_PS2
+    /* G: the counts at +6 / +0x12 (the G map's name of the getter is shifted), and one more value at +0x14 */
+    cnLBS_Get_mhRoomJoinUser(sp1E, ((struct { u8 b[0x15C]; } *)&PlazaInfo)[sp1E - 1].b + 6, ((struct { u8 b[0x15C]; } *)&PlazaInfo)[sp1E - 1].b + 0x12);
+    lobby_func_005E36D0(sp1E, ((struct { u8 b[0x15C]; } *)&PlazaInfo)[sp1E - 1].b + 0x14);
+#else
     temp_v0 = (int)&PlazaInfo + ((sp1E - 1) * 0x15C);
     cnLBS_Get_mhPlazaJoinUser(sp1E, (void *)(temp_v0 + 2), (void *)(temp_v0 + 0xE));
+#endif
 }
 #endif
 

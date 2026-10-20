@@ -1,4 +1,5 @@
 /* lb_arm - one translation unit 0x0053C520-0x0053D7CC (lbtu3). */
+#include "g_alias.h"
 #include "lobby_s.h"
 #include "lbsys_g.h"
 extern char User_data[];
@@ -23,6 +24,9 @@ extern u8 D_3C7004_c10[];
 extern char lit_543_00655878[];
 extern char *shop_warning[];
 extern char *my_job_str[2];
+#ifdef MHG_PS2
+extern char *my_job_str_g[];   /* G: outside the small data (0x2EF048) */
+#endif
 extern char lit_551_00655880[];
 extern char lit_585_00655888[];
 extern char lb_shop_msg[];
@@ -454,15 +458,15 @@ void Lb_put_job_limit(u16 kind, s16 id) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Lb_put_my_job() {
     font_set_palette(5);
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x124, 0x3C);
-    if (*(u8 *)0x3C738D == 7) {
-        font_print(lit_551_00655880, my_job_str[0]);
+    if (*(u8 *)GV(0x3C738D, 0x32CE85) == 7) {
+        font_print(lit_551_00655880, GV(my_job_str, my_job_str_g)[0]);
     } else {
-        font_print(lit_551_00655880, my_job_str[1]);
+        font_print(lit_551_00655880, GV(my_job_str, my_job_str_g)[1]);
     }
 }
 #endif
