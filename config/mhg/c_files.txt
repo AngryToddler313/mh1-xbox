@@ -2234,3 +2234,5 @@ main 0x00102720 0x0010278C mhg/main/game/f_game_p3
 main 0x001D52A0 0x001D533C mhg/main/sound/flmw01_p2
 main 0x001512B0 0x00151304 mhg/main/fl/flpad01_p3
 main 0x0011B800 0x0011B8AC mhg/main/menu/menu06_p2
+nethttp 0x00A084B0 0x00A08520 lobby/f/lb_gt01
+main 0x001581D0 0x00158214 mhg/main/fl/tarpad03_p2
