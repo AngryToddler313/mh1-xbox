@@ -35,6 +35,34 @@ typedef struct LBPIT_B {          /* lb_pit (0xC bytes): current NPC talk script
 } LBPIT_B;
 extern LBPIT_B lb_pit;
 
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+/* PS2 G's layout, the same as LB_NETW in lbui.h: the s16 fields moved in front, the bytes start at +0x22 */
+typedef struct LBNETW_B {
+    u8 _g00[0x18];
+    s16 idx;                      /* 0x18 */
+    u8 _g1A[0x1C - 0x1A];
+    s16 x24;                      /* 0x1C */
+    s16 x26;                      /* 0x1E */
+    s16 x28;                      /* 0x20 */
+    u8 depth;                     /* 0x22 */
+    u8 step;                      /* 0x23 */
+    u8 x04;                       /* 0x24 */
+    u8 x05;                       /* 0x25 */
+    u8 _g26;
+    s8 x06;                       /* 0x27 */
+    u8 sel;                       /* 0x28 */
+    u8 menu;                      /* 0x29 */
+    u8 cur;                       /* 0x2A */
+    s8 x0A;                       /* 0x2B */
+    u8 _pad0B;                    /* 0x2C */
+    u8 x0C;                       /* 0x2D */
+    s8 x0D;                       /* 0x2E */
+    u8 _pad0E;                    /* 0x2F */
+    u8 yesno;                     /* 0x30 */
+    u8 x10;                       /* 0x31 */
+    s8 x12;                       /* 0x32 */
+} LBNETW_B;
+#else
 typedef struct LBNETW_B {         /* pNet: network window state */
     s16 idx;                      /* 0x00 */
     u8 depth;                     /* 0x02 */
@@ -59,6 +87,7 @@ typedef struct LBNETW_B {         /* pNet: network window state */
     s16 x26;
     s16 x28;
 } LBNETW_B;
+#endif
 extern LBNETW_B *pNet;
 typedef struct CNET_RES {         /* result/event record passed by value (8 bytes, spilled to the stack) */
     s8 val;                       /* 0x00 result (0 ok, -1 error) */

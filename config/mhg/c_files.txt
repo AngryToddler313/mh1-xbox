@@ -2690,3 +2690,4 @@ lobby 0x00566F00 0x00566F78 mhg/lobby/f/lb_f02_p2
 lobby 0x005797C0 0x00579834 mhg/lobby/f/lb_plz3_p13
 lobby 0x00579B00 0x00579B30 mhg/lobby/f/lb_plz3_p14
 lobby 0x00579B30 0x00579B60 mhg/lobby/f/lb_plz3_p15
+lobby 0x005BACA0 0x005BAD1C lobby/b/lb_tos01
