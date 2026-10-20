@@ -481,7 +481,7 @@ f32 rand_sub2(u16 seed, u16 bits) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 void shell06_se_req(SHLW *sh, s16 kind) {
     s16 v;
 
@@ -504,11 +504,15 @@ void shell06_se_req(SHLW *sh, s16 kind) {
          * (1: 5, else 6); the sound class is the recoil class */
         if (sh->arg != 31) {
             if (Pl_silencer_ck(sh->owner)) {
-                v = ((PLW *)sh->owner)->kind == 1 ? 5 : 6;
+                if (((PLW *)sh->owner)->kind == 1) {
+                    v = 5;
+                } else {
+                    v = 6;
+                }
             } else {
                 v = 0;
             }
-            switch (sub_main_func_004CE8E0((PLW *)sh->owner, sh->arg)) {
+            switch ((s16)sub_main_func_004CE8E0((PLW *)sh->owner, sh->arg)) {
 #else
         if (sh->arg != 15) {
             v = Pl_silencer_ck(sh->owner) ? 5 : 0;

@@ -502,7 +502,7 @@ static void em_atk04_005C8CB0(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 11
 static void em_atk05_005C8D30(EMW *em, EM15W *w) {
     u8 temp_a1;
 
@@ -515,6 +515,18 @@ static void em_atk05_005C8D30(EMW *em, EM15W *w) {
         em_char_set(em, 0x2F, 0, 0);
         break;
     case 1:
+#ifdef MHG_PS2 /* G: three breath shells at frame 176, the spread from x39A */
+        if (em_frame_check(em, 0, 176.0f) != 0) {
+            Shell08_set_ang(em, 0x22, 6, 0, 0, 0);
+            if (em->x39A & 0x30) {
+                Shell08_set_ang(em, 0x22, 6, 0, 0, 0xE39);
+                Shell08_set_ang(em, 0x22, 6, 0, 0, 0xF1C8);
+            } else {
+                Shell08_set_ang(em, 0x22, 6, 0, 0, 0x71C);
+                Shell08_set_ang(em, 0x22, 6, 0, 0, 0xF8E5);
+            }
+        }
+#endif
         if (em_frame_check(em, 0, 254.0f) != 0) {
             em->x05 += 1;
             em_char_set(em, 0x73, 0, 0);
@@ -829,7 +841,7 @@ static void em_dmg05_005C9510(EMW *em, EM15W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static void em_dmg08_005C9630(EMW *em, EM15W *w) {
     u8 temp_a2;
 
@@ -861,7 +873,17 @@ static void em_dmg08_005C9630(EMW *em, EM15W *w) {
             em_rate_clear(em);
         }
         break;
+#ifdef MHG_PS2 /* G: a get-up motion before the normal state */
     case 2:
+        if (em->x194 == 0) {
+            em->x05 = temp_a2 + 1;
+            em_char_set(em, 0x47, 0, 0);
+        }
+        break;
+    case 3:
+#else
+    case 2:
+#endif
         if (em->x194 == 0) {
             em->x05 = temp_a2 + 1;
             em15_to_normal(em);

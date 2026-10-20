@@ -534,11 +534,18 @@ static void eft12_t01(EFTW *ew, PRIM *pr) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 14
 static void eft12_i02(EFTW *ew) {
     ew->mode2 = 0;
     ew->work14 = 0;
     ew->timer = 0;
+#ifdef VERSION_MHG /* G: no spit set down on stage 21 (arg 2); the prim kind follows prim2 */
+    if (ew->prim2 == 0) {
+        ew->prim_no = get_prim();
+    } else {
+        ew->prim_no = get_prim2();
+    }
+#else
     if (ew->arg == 2) {
         ew->pos[0] = eft12_st21_set_pos[ew->stg][0];
         ew->pos[1] = eft12_st21_set_pos[ew->stg][1];
@@ -549,6 +556,7 @@ static void eft12_i02(EFTW *ew) {
     } else if (ew->arg == 3) {
         ew->prim_no = get_prim2();
     }
+#endif
     if (ew->prim_no != -1) {
         if (ew->prim2 == 0) {
             ew->prim = get_prim_ptr(ew->prim_no);
@@ -565,11 +573,20 @@ static void eft12_i02(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 15
 static void eft12_m02(EFTW *ew) {
     EFT12_WORK *w = ew->work;
 
     ew->timer++;
+#ifdef VERSION_MHG /* G: only the spit of arg 3 is left (no arg 2) */
+    if (ew->timer > 5400 || w->smoke.done != 0) {
+        ew->mode++;
+        ew->be_flag = 0;
+        pull_smell(&w->smoke);
+        return;
+    }
+    ew->mode2 = 0;
+#else
     if (ew->arg == 2) {
         ew->mode2 = 1;
     } else {
@@ -581,6 +598,7 @@ static void eft12_m02(EFTW *ew) {
         }
         ew->mode2 = 0;
     }
+#endif
     ew->prim->pos[0] = ew->pos[0];
     ew->prim->pos[1] = ew->pos[1];
     ew->prim->pos[2] = ew->pos[2];
@@ -588,7 +606,7 @@ static void eft12_m02(EFTW *ew) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 16
 static void eft12_t02(EFTW *ew, PRIM *pr) {
     f32 v[3];
     f32 d[3];
@@ -609,6 +627,14 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
     if (ew->x07 == game_w.stage && mw != 0 && mw->flag != 0) {
         cl = &mw->clay[58];
         flmatMakeTrans(&m, ew->pos[0], ew->pos[1], ew->pos[2]);
+#ifdef VERSION_MHG /* G: only the spit of arg 3, coloured by its kind (stg) */
+        mr = eft12_sp_meat_col[ew->stg][0];
+        mg = eft12_sp_meat_col[ew->stg][1];
+        mb = eft12_sp_meat_col[ew->stg][2];
+        br = eft12_sp_bone_col[ew->stg][0];
+        bg = eft12_sp_bone_col[ew->stg][1];
+        bb = eft12_sp_bone_col[ew->stg][2];
+#else
         switch (ew->arg) {
         case 2:
             mr = eft12_meat_col[ew->mode2][0];
@@ -659,6 +685,7 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
             bb = eft12_sp_bone_col[ew->stg][2];
             break;
         }
+#endif
         flmatRotY33(&m, DEG2RAD(ANG2DEG(ew->u0A.joint)));
         flSetRenderState(0x1A, (u32)&m);
         flSetRenderState(0x67, -1);
@@ -683,6 +710,7 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
             clay_attr_set(cl->attr);
             flExecuteClay(cl->handle, 0);
         }
+#ifndef VERSION_MHG
         if (ew->arg == 2) {
             v[0] = -52.0f;
             v[1] = 0.0f;
@@ -701,6 +729,7 @@ static void eft12_t02(EFTW *ew, PRIM *pr) {
                 flExecuteClay(cl->handle, 0);
             }
         }
+#endif
         clay_attr_reset();
     }
 }
@@ -877,7 +906,7 @@ static void eft12_t03(EFTW *ew, PRIM *pr) {
 #endif
 
 #if !defined(G_PART)
-#if !defined(VERSION_MHG) || defined(__MWERKS__)    /* MH1; G on the PC after #else */
+#if !defined(VERSION_MHG)    /* MH1; G after #else */
 static void eft12_i04(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 i;
@@ -911,27 +940,37 @@ static void eft12_i04(EFTW *ew) {     /* G 0x571830: arg 6 is one puff (no sound
     ew->work14 = 0;
     ew->timer = 0;
     ew->u0A.joint = 0;
-    if (ew->arg != 6) {
+    switch (ew->arg) {
+    case 5:
+    default:
         eft12_se_req(ew, 0);
         n = 6;
-    } else {
+        break;
+    case 6:
         n = 1;
+        break;
     }
     for (i = 0; i < n; i++, p++) {
         p->prim_no = get_prim();
         if (p->prim_no != -1) {
-            p->no = i;
-            if (ew->arg != 6) {
+            switch (ew->arg) {
+            case 5:
+            default:
+                p->no = i;
                 p->lag = -i * 5;
                 p->rot = ran_suu(1);
-            } else {
+                flvecCopy(p->pos, ew->pos);
+                break;
+            case 6:
+                p->no = i;
                 p->lag = 0;
                 p->rot = ran_suu(1);
                 p->drot = ((u16)ran_suu(1) & 0x1FF) - 0x100;
                 p->fade = 0.15f;
                 p->size = (f32)(1.6 + (double)(0.6f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF))));
+                flvecCopy(p->pos, ew->pos);
+                break;
             }
-            flvecCopy(p->pos, ew->pos);
             p->prim = get_prim_ptr(p->prim_no);
             p->prim->owner = ew;
             p->prim->no = i;
@@ -1151,7 +1190,7 @@ static void eft12_t04(EFTW *ew, PRIM *pr) {   /* G 0x571ED0: arg 5 coloured by i
 #endif
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 12
 static void eft12_d(EFTW *ew) {
     EFT12_PIECE *p = ew->work;
     s16 n;
@@ -1172,7 +1211,7 @@ static void eft12_d(EFTW *ew) {
     case 5:
         n = 6;
         break;
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#ifdef VERSION_MHG
     case 6:
         n = 1;
         break;
@@ -1230,7 +1269,7 @@ static EFTW *eft12_pull_work(s16 arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 13
 void eft12_set(PLW *pl, s16 arg) {
     FLMAT jm;
     f32 v[3];
@@ -1312,13 +1351,16 @@ void eft12_set(PLW *pl, s16 arg) {
                 flmatRotXYZ33(&egg->mat, rx, ry, rz);
                 flmatMul33_2(&egg->mat, &jm);
                 break;
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#if defined(VERSION_MHG)
             case 6:     /* G 0x5726F0: a puff between the hands (joints 14 and 18), 15 up */
                 get_joint_pos(pl, 0xE, ew->pos);
                 get_joint_pos(pl, 0x12, v);
-                ew->pos[0] = 0.5f * (ew->pos[0] + v[0]);
-                ew->pos[1] = 0.5f * (ew->pos[1] + v[1]);
-                ew->pos[2] = 0.5f * (ew->pos[2] + v[2]);
+                ew->pos[0] += v[0];
+                ew->pos[1] += v[1];
+                ew->pos[2] += v[2];
+                ew->pos[0] *= 0.5f;
+                ew->pos[1] *= 0.5f;
+                ew->pos[2] *= 0.5f;
                 ew->pos[1] += 15.0f;
                 break;
 #endif

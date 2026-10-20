@@ -1,6 +1,7 @@
 /* shell14 - game.bin 0x00635680-0x00635E68. em09's charge attack: a ball
  * that grows between two joints for ~320 frames, flickers and crackles,
  * then explodes (effect 14 + a shell09 blast). Ends early if em09 stops. */
+#include "g_alias.h"
 #include "shell.h"
 #include "game.h"
 #include "prim.h"
@@ -64,14 +65,22 @@ void shell14_set(EMW *em, int arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void shell14_pos_get(SHLW *sh, EMW *em) {
     VEC3 a, b;
 
     get_joint_pos_em(em, 6, &a);
     get_joint_pos_em(em, 9, &b);
     sh->pos2.x = (a.x + b.x) / 2.0f;
+#ifdef MHG_PS2 /* G: kind 1 rises with its scale */
+    if (sh->arg == 1) {
+        sh->pos2.y = 20.0f * sh->rate[0] + (a.y + b.y) / 2.0f;
+    } else {
+        sh->pos2.y = 20.0f + (a.y + b.y) / 2.0f;
+    }
+#else
     sh->pos2.y = 20.0f + (a.y + b.y) / 2.0f;
+#endif
     sh->pos2.z = (a.z + b.z) / 2.0f;
     sh->ang[0] = em->ang[0];
     sh->ang[1] = em->ang[1];
@@ -229,7 +238,7 @@ static void shell14_e(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 6
 static void shell14_trans(PRIM *pr) {
     FLMAT mat;
     SHLW *sh;
@@ -246,7 +255,11 @@ static void shell14_trans(PRIM *pr) {
         m = mw->mat;
         flmatMakeScale(&mat, sh->rate[0], sh->rate[0], sh->rate[0]);
         flmatSetTrans(&mat, pr->pos[0], pr->pos[1], pr->pos[2]);
+#ifdef MHG_PS2 /* G: the shell's own facing */
+        flmatRotXYZ33(&mat, 0.0f, DEG2RAD(ANG2DEG(sh->ang[1])), 0.0f);
+#else
         flmatRotXYZ33(&mat, 0.0f, DEG2RAD(ANG2DEG(em->ang[1])), 0.0f);
+#endif
         cl = &mw->clay[item_chr_tbl_00389C10[sh->arg]];
         flSetRenderState(0x1A, (u32)&mat);
         if (cl != 0 && cl->handle != -1) {

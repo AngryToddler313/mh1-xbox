@@ -1,6 +1,7 @@
 /* shell10 - game.bin 0x00633B50-0x00634040. A dropped object (model 55 of the
  * effect model set) that lasts up to 9000 frames; on contact it spawns
  * effect 14 and a shell09. */
+#include "g_alias.h"
 #include "shell.h"
 #include "game.h"
 #include "pl.h"
@@ -23,12 +24,19 @@ extern struct {
 extern s32 shell10_body_tbl[1];
 
 int Pl_master_ck(PLW *);
+#ifdef MHG_PS2
+int Pl_Skill_ck(PLW *, int);
+#endif
 s16 get_prim2(void);
 PRIM *get_prim_ptr2(s16);
 void release_prim2(s16);
 void flvecCopy(void *, void *);
 void eft14_set(VEC3 *, int, f32);
+#ifdef MHG_PS2
+void Shell09_set(VEC3 *, int, int, int);
+#else
 void Shell09_set(VEC3 *, int, int);
+#endif
 void flmatMakeScale(FLMAT *, f32, f32, f32);
 void Material_set_sub(s32, CLAY *);
 
@@ -39,7 +47,7 @@ static void shell10_d(SHLW *sh);
 static void shell10_e(SHLW *sh);
 static void shell10_trans(PRIM *pr);
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
 void Shell10_set(f32 *pos, int arg, int stg, PLW *pl) {
     SHLW *sh;
 
@@ -54,11 +62,29 @@ void Shell10_set(f32 *pos, int arg, int stg, PLW *pl) {
         sh->pos2.z = pos[2];
         sh->stg = stg;
         sh->x09 = 1;
+#ifdef MHG_PS2 /* G: kinds other than 0 float higher; x06 is the hunter's skill 0x53 (passed on to the burst) */
+        if (sh->arg == 0) {
+            sh->pos2.y += 50.0f;
+        } else {
+            sh->pos2.y += 75.0f;
+        }
+        sh->x06 = 0;
+        if (pl != 0) {
+            if (Pl_master_ck(pl) != 0) {
+                game_w.shl10_num++;
+                sh->x07 = 1;
+            }
+            if (Pl_Skill_ck(pl, 0x53) == 1) {
+                sh->x06 = 1;
+            }
+        }
+#else
         sh->pos2.y += 50.0f;
         if (pl != 0 && Pl_master_ck(pl) != 0) {
             game_w.shl10_num++;
             sh->x07 = 1;
         }
+#endif
     }
 }
 #endif
@@ -121,7 +147,7 @@ static void shell10_i(SHLW *sh) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
 static void shell10_m(SHLW *sh) {
     if (++sh->char0 > 9000) {
         sh->xB = 0;
@@ -130,10 +156,24 @@ static void shell10_m(SHLW *sh) {
     }
     if (sh->xB4 != 0) {
         sh->mode++;
+#ifdef MHG_PS2 /* G: kinds other than 0 burst bigger into poison (shell09 kind 0x16); x06 goes along */
+        if (sh->arg == 0) {
+            if (game_w.stage == sh->stg) {
+                eft14_set(&sh->pos2, 0, 2.0f);
+            }
+            Shell09_set(&sh->pos2, 2, sh->stg, sh->x06);
+        } else {
+            if (game_w.stage == sh->stg) {
+                eft14_set(&sh->pos2, 0, 3.0f);
+            }
+            Shell09_set(&sh->pos2, 0x16, sh->stg, sh->x06);
+        }
+#else
         if (game_w.stage == sh->stg) {
             eft14_set(&sh->pos2, 0, 2.0f);
         }
         Shell09_set(&sh->pos2, 2, sh->stg);
+#endif
     }
     if (sh->prim != 0) {
         flvecCopy(&sh->prim->pos, &sh->pos2);
@@ -174,7 +214,7 @@ static void disp_sub(CLAY *cl, FLMAT *mat, s32 m) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 5
 static void shell10_trans(PRIM *pr) {
     FLMAT mat;
     SHLW *sh = pr->owner;
@@ -185,7 +225,15 @@ static void shell10_trans(PRIM *pr) {
         mw = eft_mdlw.p;
         if (mw != 0 && mw->flag != 0) {
             m = mw->mat;
+#ifdef MHG_PS2 /* G: kinds other than 0 are drawn bigger */
+            if (sh->arg == 0) {
+                flmatMakeScale(&mat, 3.0f, 3.0f, 3.0f);
+            } else {
+                flmatMakeScale(&mat, 4.5f, 4.5f, 4.5f);
+            }
+#else
             flmatMakeScale(&mat, 3.0f, 3.0f, 3.0f);
+#endif
             flmatSetTrans(&mat, sh->pos2.x, sh->pos2.y, sh->pos2.z);
             disp_sub(&mw->clay[55], &mat, m);
         }
