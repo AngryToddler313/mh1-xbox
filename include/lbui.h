@@ -21,10 +21,11 @@ typedef struct LB_DIALOG {
 /* net window state pointed to by pNet (main .sbss); also the argument of tl_menu_cursor_up/down */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 /* PS2 G's layout (from tl_exit_sub_menu and the plaza menus): the three s16 fields moved in front of the bytes, which
-   start at +0x22; idx is not placed from G yet */
+   start at +0x22 */
 typedef struct LB_NETW {
-    s16 idx;            /* 0x00 (not checked against G) */
-    u8 _g02[0x1C - 0x2];
+    u8 _g00[0x18];
+    s16 idx;            /* 0x18 */
+    u8 _g1A[0x1C - 0x1A];
     s16 x24;            /* 0x1C */
     s16 x26;            /* 0x1E */
     s16 x28;            /* 0x20 */

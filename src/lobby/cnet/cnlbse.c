@@ -635,7 +635,7 @@ void _cnet_RecvFromLbs_AnswerMatchEntryUser(void) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 48
 void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
     int id;
     u8 *s0;
@@ -643,10 +643,10 @@ void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
     if (CnetSys_w.rres == 0) {
         id = CNW(u8, 0x4060);
         s0 = (u8 *)&CnetSys_w + ((id - 1) * 0x164);
-        GetRecvData16(s0 + CNO(0x61DE), GetRecvData16(s0 + 0x61DC, recv_work));
+        GetRecvData16(s0 + GV(CNO(0x61DE), 0x9960), GetRecvData16(s0 + GV(0x61DC, 0x995E), recv_work));   /* G: room[].ma / mb two bytes on */
         CnetSys_w.last_id = id;
     }
-    _cnet_Return_CallBack(0x21);
+    _cnet_Return_CallBack(GV(0x21, 0x26));
 }
 #endif
 

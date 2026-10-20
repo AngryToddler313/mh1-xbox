@@ -2357,3 +2357,12 @@ lobby 0x00599BA0 0x00599C58 mhg/lobby/f/lb_k03_p1
 lobby 0x0054B1A0 0x0054B288 mhg/lobby/f/lb_sh1a_p9
 lobby 0x005903D0 0x005904F8 lobby/b/lb_by122
 lobby 0x0058D3C0 0x0058D424 lobby/b/lb_bz14
+lobby 0x00573470 0x005737B8 mhg/lobby/f/lb_plz3_p10
+lobby 0x00574460 0x0057474C mhg/lobby/f/lb_plz3_p11
+lobby 0x005598F0 0x005599F0 mhg/lobby/f/lb_a03_p3
+lobby 0x0055CCD0 0x0055CD0C mhg/lobby/f/lb_c01_p2
+lobby 0x0059A7A0 0x0059A7E8 mhg/lobby/f/lb_d01_p3
+lobby 0x0059AD30 0x0059AD8C mhg/lobby/f/lb_d01_p4
+lobby 0x005888E0 0x00588940 lobby/b/lb_bz01
+lobby 0x005BF310 0x005BF394 mhg/lobby/cnet/cnlbse_p48
+lobby 0x00590C50 0x00590DB0 lobby/b/lb_by136
