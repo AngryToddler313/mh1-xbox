@@ -24,6 +24,8 @@ import sys
 
 LINE = re.compile(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?\s*(?:size:0x([0-9A-Fa-f]+))?)?")
 CAST = re.compile(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*0x([0-9A-Fa-f]{6,8})\b")
+# VERSION=mhg: `(T *)GV(0xMH1, 0xG)` (include/g_alias.h) is the same kind of literal, with G's address given
+GVCAST = re.compile(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*GV\(\s*0x([0-9A-Fa-f]{6,8})\s*,\s*0x([0-9A-Fa-f]{6,8})\s*\)")
 
 
 def main_mhg(src):
@@ -50,7 +52,7 @@ def main_mhg(src):
 
     def fix(m):
         a = int(m.group(2), 16)
-        g = tr.get(a)
+        g = int(m.group(3), 16) if m.re is GVCAST else tr.get(a)
         if g is None:
             i = bisect.bisect_right(tk, a) - 1
             if i < 0 or a - tk[i] > 0x40:
@@ -66,7 +68,7 @@ def main_mhg(src):
         used[name] = 1
         return "(%s)(rt_abs_%s + 0x%X)" % (m.group(1), name, g - va)
 
-    return CAST.sub(fix, src), used
+    return CAST.sub(fix, GVCAST.sub(fix, src)), used
 
 
 def main():
