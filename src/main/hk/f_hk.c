@@ -787,16 +787,28 @@ static void hk_key_henkan(void) {
     }
     if (SKB(0x2F) == 0) {
         if (SKS8(0x36) != 0) {
+#if defined(VERSION_MHG)
+            sk_henkan_sub();
+#else
             sk_henkan_sub(lpSKey);
+#endif
             return;
         }
         if (SKB(0x158) != 0) {
+#if defined(VERSION_MHG)
+            cmd_henkan();
+#else
             cmd_henkan(lpSKey);
+#endif
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
             SK_SE(0x16);
         }
+#if defined(VERSION_MHG)
+    } else if (SKB(0x2F) == 1) {
+#else
     } else {
+#endif
         SK_SE(0x16);
         if (hk_shift_key_ck() != 0) {
             cmd_prev_kouho();

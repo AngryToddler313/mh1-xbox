@@ -426,6 +426,8 @@ segments:
       - [0x05027C, asm, text/pl_init]
       - [0x050420, c, mhg/main/pl/f_pl_p38]
       - [0x050594, asm, text/skill_hp_calc_00134FF0]
+      - [0x0505A0, c, mhg/main/pl/f_pl_p57]
+      - [0x050688, asm, text/sub_main_func_004F1310]
       - [0x0516E0, c, mhg/main/pl/f_pl_p39]
       - [0x0518F0, asm, text/pl_chr_sub]
       - [0x051AB0, c, mhg/main/pl/pl79_p1]

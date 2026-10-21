@@ -259,3 +259,5 @@ PROVIDE(shell09_tbl = 0x002EEA38);
 PROVIDE(shop_process00_tag = 0x002EF050);
 PROVIDE(stage_hit_area_w = 0x002EF390);
 PROVIDE(text_lobby_msg = 0x00636C10);
+PROVIDE(sfd_wp = 0x002EF540);
+PROVIDE(sfd_work_g = 0x003EDC20);

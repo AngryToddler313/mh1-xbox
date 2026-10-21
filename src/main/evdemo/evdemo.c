@@ -41,7 +41,11 @@ typedef struct EMS {
     u8 x0;
     u8 x1;
     u8 x2;
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+    u8 _pad[0xA00 - 3];     /* G: EMW is 0xA00 bytes */
+#else
     u8 _pad[0xA10 - 3];
+#endif
 } EMS;
 
 /* game_w and player_work by offset (file-local views) */
@@ -80,6 +84,9 @@ void Event_flag_set();
 void Event_flag_clear();
 int evdemo_init_sub();
 void evdemo_camera_request();
+#ifdef MHG_PS2
+int sub_main_func_004C8910();   /* G: species of an enemy kind */
+#endif
 void DemoCameraRequest();
 int DemoCameraCheck();
 void DemoCameraCancel();
@@ -373,6 +380,8 @@ u8 id;
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
         extern u8 *em_species_tbl[];    /* G 0x54AA80: id is a species (sub_main 0x4C8910) */
         if (e->x0 != 0 && *em_species_tbl[e->x2] == id) {
+#elif defined(MHG_PS2)
+        if (e->x0 != 0 && (u8)sub_main_func_004C8910(e->x2) == id) {
 #else
         if (e->x0 != 0 && e->x2 == id) {
 #endif

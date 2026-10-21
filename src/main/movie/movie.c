@@ -166,7 +166,29 @@ int add;
 }
 #endif
 
-#if !defined(G_PART)
+#ifdef MHG_PS2
+/* G reworked the work area: a gp pointer to it, with the player first. */
+typedef struct {
+    MWPLY *ply;     /* 0x00 */
+    u8 _p04[0x9C];
+    u8 _pA0[4];
+} SFD_WG;
+extern SFD_WG *sfd_wp;
+extern SFD_WG sfd_work_g;
+void func_001E2F20();
+void func_001E3AA0();
+#endif
+
+#if !defined(G_PART) || G_PART == 2
+#ifdef MHG_PS2
+void movie_add_list(t)
+SFD_TBL *t;
+{
+    sfd_wp = &sfd_work_g;
+    /* G's player call here is mwPlyStartAfs */
+    mwPlyStartAfs(sfd_wp->ply, 0, t->file);
+}
+#else
 void movie_add_list(no)
 int no;
 {
@@ -174,8 +196,20 @@ int no;
     mwPlyEntryAfs(w->ply, 0, sfd_tbl[no].file);
 }
 #endif
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 3
+#ifdef MHG_PS2
+void movie_stop(void)
+{
+    MWPLY *p;
+    sfd_wp = &sfd_work_g;
+    p = sfd_wp->ply;
+    if (p != 0) {
+        p->vt->x1C(p);
+    }
+}
+#else
 void movie_stop(void)
 {
     SFD_W *w = &sfd_work;
@@ -185,8 +219,25 @@ void movie_stop(void)
     }
 }
 #endif
+#endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 4
+#ifdef MHG_PS2
+void movie_exit(void)
+{
+    MWPLY *p;
+    sfd_wp = &sfd_work_g;
+    p = sfd_wp->ply;
+    if (p != 0) {
+        p->vt->x1C(p);
+        p = sfd_wp->ply;
+        p->vt->x14(p);
+        sfd_wp->ply = 0;
+    }
+    func_001E2F20();
+    func_001E3AA0();
+}
+#else
 void movie_exit(void)
 {
     SFD_W *w = &sfd_work;
@@ -200,6 +251,7 @@ void movie_exit(void)
     }
     movie_reset();
 }
+#endif
 #endif
 
 #if !defined(G_PART)

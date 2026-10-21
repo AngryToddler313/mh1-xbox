@@ -302,11 +302,19 @@ void stage_m(STGW *w)
         }
         break;
     }
+#if defined(VERSION_MHG)
+    /* G: skipped while game_w byte 0x2B is set (stage_mv_ck still runs) */
+    if (PL8(&game_w, 0x2B) == 0) {
+#endif
     it = Stage_item_data_get(game_w.stage);
     if (it != 0) {
         for (; it->pos[0] != -1.0f; it++) {
             if (it->num > 0) {
+#if defined(VERSION_MHG)
+                if (it->kind == 0x19) {
+#else
                 if (it->kind == 0x1A || it->kind == 0x52) {
+#endif
                     if ((*(u16 *)&game_w.x1E & 0x7F) == 0) {
                         pos[0] = it->pos[0];
                         pos[1] = 65.0f + it->pos[1];
@@ -327,6 +335,9 @@ void stage_m(STGW *w)
         }
     }
     stage_se_move(w);
+#if defined(VERSION_MHG)
+    }
+#endif
     stage_mv_ck();
 }
 #endif

@@ -723,10 +723,31 @@ asm s16 Get_bowgun_atk(u8 *w)
 #endif
 
 
+#ifdef MHG_PS2
+u16 sub_main_func_004C7470(int n);  /* G: quest number -> clear-bit index, 0xFFFF if none */
+
+#if !defined(G_PART)
+void Quest_clear_bit_set(int n) {
+    UDW *u = User_data;
+    u16 b = sub_main_func_004C7470(n);
+    u16 bit;
+    u16 idx;
+
+    if (b != 0xFFFF) {
+        bit = b % 32;
+        idx = (u32)b / 32;
+        u->qclear[idx] |= 1LL << bit;
+    }
+}
+#endif
+
+#else
 #if !defined(G_PART)
 void Quest_clear_bit_set(int n) {
     User_data->qclear[n / 32] |= 1LL << (n % 32);
 }
+#endif
+
 #endif
 
 #if !defined(G_PART)

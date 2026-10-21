@@ -80,6 +80,31 @@ next:
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
 void sub_main_func_004DC5F0(EMW *em, int part, int base);
 #endif
+#if defined(VERSION_MHG) && defined(__MWERKS__)
+/* G sub_main 0x4DC5D0 / 0x4DC5F0 (PC copy in emsrch_nm.c). em_dur_init needs 0x4DC5F0 defined above it as a
+ * static: the original keeps em and the loop values in t registers across the call */
+#if !defined(G_PART)
+void sub_main_func_004DC5D0(EMW *em, int part) {
+    em->dur_lv_bits |= (u16)(1 << part);
+}
+#endif
+
+#if !defined(G_PART)
+static void sub_main_func_004DC5F0(EMW *em, int part, s16 base) {
+    f32 r;
+
+    if (!(em->dur_lv_bits & (1 << part))) {
+        return;
+    }
+    if (em->lv < 9) {
+        return;
+    }
+    r = (f32)(em->lv - 9) / 3.0f;
+    base = base * (0.33f + 0.08f * r);
+    ((s16 *)((u8 *)em + 0x308))[part * 4] += base;
+}
+#endif
+#endif
 /* Sets up the nine durability slots (EMW+0x304, 8 bytes each: on, no, 0, 0, hp s16, 0) from em_dur_tbl[type]. */
 #if !defined(G_PART)
 void em_dur_init(EMW *em) {
@@ -97,8 +122,8 @@ void em_dur_init(EMW *em) {
             slot[0x306] = 0;
             slot[0x307] = 0;
             *(s16 *)(slot + 0x308) = *t;
-#if defined(VERSION_MHG) && !defined(__MWERKS__)
-            sub_main_func_004DC5F0(em, i, *t);      /* G (sub_main 0x4DC6A0): level bonus, PC only */
+#if defined(VERSION_MHG)
+            sub_main_func_004DC5F0(em, i, *t);      /* G (sub_main 0x4DC6A0): level bonus */
 #endif
             slot[0x30A] = 0;
         } else {

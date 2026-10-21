@@ -105,6 +105,55 @@ void load_bin_req(u32 id, void *dst) {
 void next_que_set(LOADQ *q);
 void call_func(LOADQ *q);
 #if !defined(G_PART)
+#if defined(VERSION_MHG)
+void load_task(void) {
+    LOADW *w = &load_w;
+    LOADQ *q = &load_q[load_w.rd];
+
+    switch (w->state) {
+    case 0:
+        if (w->busy == 0) {
+            return;
+        }
+        if (w->handle != 0) {
+            ADXF_Stop(w->handle);
+            ADXF_Close(w->handle);
+        }
+        if (q->kind == 0) {
+            w->handle = ADXF_OpenAfs((q->id >> 16) & 0xFFFF, q->id & 0xFFFF);
+            if (w->handle == 0) {
+                return;
+            }
+            ADXF_ReadNw(w->handle, ADXF_GetFsizeSct(w->handle), q->dst);
+            w->state++;
+        } else if (q->kind == 2) {
+            call_func(q);
+            next_que_set(q);
+        } else if (q->kind == 1) {
+            w->handle = ADXF_Open(q->arg, 0);
+            if (w->handle == 0) {
+                return;
+            }
+            ADXF_ReadNw(w->handle, ADXF_GetFsizeSct(w->handle), q->dst);
+            w->state++;
+        }
+        break;
+    case 1: {
+        int st = ADXF_GetStat(w->handle);
+
+        if (st != 2) {
+            ADXF_Close(w->handle);
+            w->handle = 0;
+            if (st != 4) {
+                next_que_set(q);
+                w->state = 0;
+            }
+        }
+        break;
+    }
+    }
+}
+#else
 void load_task(void) {
     LOADW *w = &load_w;
     LOADQ *q = &load_q[load_w.rd];
@@ -152,6 +201,7 @@ void load_task(void) {
     }
     }
 }
+#endif
 #endif
 #if !defined(G_PART) || G_PART == 2
 void next_que_set(LOADQ *q) {

@@ -184,7 +184,7 @@ void Set_KouhoTableSub(int start, int rev) {
     int cnt;
     int i;
 
-    memset(kouho_work, 0, 0x10100);
+    memset(kouho_work, 0, GV(0x10100, 0xFFFF));
     memset(kouhogun, 0, 0x300);
     if (rev == 0) {
         if (SKS32(0x150) >= start + 3) {

@@ -2860,3 +2860,14 @@ sub_main:rodata 0x00537310 0x0053732C mhg/main/reward/f_reward_p8
 game 0x005CDFD0 0x005CE900 mhg/game/em/em08_aih_p8
 game:rodata 0x006D8AE0 0x006D8B00 mhg/game/em/em08_aih_p8
 game:rodata 0x006D8B00 0x006D8B40 mhg/game/em/em08_aih_p8
+main 0x001E3D90 0x001E3DB0 mhg/main/movie/movie_p2
+main 0x001E3DB0 0x001E3DF4 mhg/main/movie/movie_p3
+main 0x001E3E00 0x001E3E74 mhg/main/movie/movie_p4
+sub_main 0x004F1220 0x004F1308 mhg/main/pl/f_pl_p57
+game 0x0054F830 0x0054FD78 mhg/main/pl/f_pl_p58
+game 0x00554B50 0x00554CA0 mhg/main/pl/f_pl_p59
+game 0x005590D0 0x00559288 mhg/main/pl/f_pl_p60
+game 0x00560A30 0x00560BB8 mhg/main/pl/f_pl_p61
+game 0x005611A0 0x005612C8 mhg/main/pl/f_pl_p62
+game 0x00561F10 0x00562000 mhg/main/pl/f_pl_p63
+game 0x00562110 0x00562200 mhg/main/pl/f_pl_p64

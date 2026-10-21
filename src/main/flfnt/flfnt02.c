@@ -1,4 +1,5 @@
 /* flfnt02 - 0x00216890-0x0021691C: font pen/size/palette setters. Whole file in flfnt_nm.c. */
+#include "g_alias.h"
 #include "types.h"
 
 typedef unsigned __int128 u128;
@@ -108,9 +109,30 @@ void flfntSetZ(f32 z) {
 #endif
 
 #if !defined(G_PART)
+#ifdef MHG_PS2
+void flfntSetPalData(s16 n, u32 a, u32 b, u32 c, u32 d);
+
+/* G: palettes 0, 18, 19 and 1 are reset to a single colour before selecting, and the % 32 is gone */
+void flfntSetPalette(int pal) {
+    s16 p = pal;
+
+    switch (p) {
+    case 0:
+    case 18:
+    case 19:
+        flfntSetPalData(p, 0, 0, 0, 0xFFFFFFFF);
+        break;
+    case 1:
+        flfntSetPalData(p, 0, 0, 0, 0xFF000000);
+        break;
+    }
+    np->pal = pal;
+}
+#else
 void flfntSetPalette(int pal) {
     np->pal = (s16)pal % 32;
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2

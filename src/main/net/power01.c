@@ -90,8 +90,15 @@ void PowerOffThread()
         do {
         } while (sceDevctl(lit_234_00386420, 0x4402, 0, 0, 0, 0) < 0);
     }
+#if defined(VERSION_MHG)
     do {
     } while (!sceCdPowerOff(&sp1C) || sp1C != 0);
+    for (;;) {
+    }
+#else
+    do {
+    } while (!sceCdPowerOff(&sp1C) || sp1C != 0);
+#endif
 }
 #endif
 

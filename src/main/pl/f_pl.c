@@ -600,11 +600,21 @@ void Pl_ofs_set(PLW *pl, f32 *pos, int ang) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 57
 static int skill_hp_calc_00134FF0(PLW *pl) {
+#ifdef MHG_PS2
+    /* G renumbered the skills and added the negative ones */
+    if (Pl_Skill_ck(pl, 0x21) == 1) return 10;
+    if (Pl_Skill_ck(pl, 0x22) == 1) return 20;
+    if (Pl_Skill_ck(pl, 0x23) == 1) return 30;
+    if (Pl_Skill_ck(pl, 0x39) == 1) return -10;
+    if (Pl_Skill_ck(pl, 0x3A) == 1) return -20;
+    if (Pl_Skill_ck(pl, 0x3B) == 1) return -30;
+#else
     if (Pl_Skill_ck(pl, 0x22) == 1) return 10;
     if (Pl_Skill_ck(pl, 0x23) == 1) return 20;
     if (Pl_Skill_ck(pl, 0x24) == 1) return 30;
+#endif
     return 0;
 }
 #endif
@@ -3210,7 +3220,7 @@ static void pl_mv000(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 58
 static void pl_mv001(PLW *pl, u32 arg1) {
     u8 p;
     u8 t;
@@ -3245,6 +3255,9 @@ static void pl_mv001(PLW *pl, u32 arg1) {
             case 1:
             case 4:
             case 5:
+#ifdef MHG_PS2
+            case 6:
+#endif
                 pl_chr_set2(pl, 0x3EC, 6, 0);
                 break;
             }
@@ -3338,6 +3351,11 @@ go:
         if (t != 0) {
             pl->ang_y = stick_dir_set(pl, 0);
         }
+#ifdef MHG_PS2
+        if (Pl_master_ck(pl) == 0) {
+            return;
+        }
+#endif
         if (arg1 != 8) {
             basic_com_ck(pl);
         } else {
@@ -5609,7 +5627,7 @@ static void pl_mv077(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 59
 static void fish_com_ck(PLW *pl) {
     if (Pl_master_ck(pl) != 0) {
         if (pl->flag14 != 0) {
@@ -5634,6 +5652,7 @@ static void fish_com_ck(PLW *pl) {
                 Pl_act_set2(pl, 0, 0x54, 0);
             }
             break;
+#ifndef MHG_PS2
         case 0x4E:
             if (pl->sw.trg & 0x20) {
                 Pl_act_set(pl, 0, 0x4F, 0);
@@ -5642,12 +5661,16 @@ static void fish_com_ck(PLW *pl) {
                 pl_to_normal(pl, 0, 4, 0);
             }
             break;
+#endif
         case 0x51:
         case 0x52:
             if (pl->sw.trg & 0x20) {
                 Pl_act_set2(pl, 0, 0x53, 0);
             }
             break;
+#ifdef MHG_PS2
+        case 0x4E:
+#endif
         case 0x4F:
         case 0x53:
             break;
@@ -7817,7 +7840,7 @@ static void tame_release(PLW *pl) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 60
 static void tame_com_ck(PLW *pl) {
     if (Pl_master_ck(pl) != 0) {
         if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
@@ -7832,7 +7855,11 @@ static void tame_com_ck(PLW *pl) {
                 } else {
                     pl->ang_y = stick_dir_set(pl, 0);
                 }
-            } else if ((act_ck(pl, 1, 0x18) == 0) && (act_ck(pl, 1, 0x1B) == 0) && (act_ck(pl, 1, 0x4C) == 0)) {
+            } else if ((act_ck(pl, 1, 0x18) == 0) && (act_ck(pl, 1, 0x1B) == 0) && (act_ck(pl, 1, 0x4C) == 0)
+#ifdef MHG_PS2
+                       && (act_ck(pl, 1, 0x67) == 0)
+#endif
+                       ) {
                 Pl_act_set(pl, 1, 0x1B, 0);
             }
             if ((pl->sw.an_trg & 0x20) && (pl->work88C == 0)) {
@@ -11316,7 +11343,7 @@ static void pl_demo004(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 61
 static void pl_demo005(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 v;
@@ -11346,7 +11373,11 @@ static void pl_demo005(PLW *pl, s32 unused_arg) {
             pl->work56B = v & 0xF0;
             func_549200(pl, 4);
         }
+#ifdef MHG_PS2
+        if ((Online_ck() != 1 || game_w.pl_state[game_w.master] == 1) && Pl_master_ck(pl) == 1) {
+#else
         if (Pl_master_ck(pl) == 1) {
+#endif
             PlayerDieCameraRequest();
         }
         break;
@@ -11552,7 +11583,7 @@ static void pl_egg00(PLW *pl, s32 arg1) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 62
 static void pl_egg01(PLW *pl, s32 unused_arg) {
     s32 w;
     u8 s;
@@ -11570,6 +11601,18 @@ static void pl_egg01(PLW *pl, s32 unused_arg) {
         pl_flag_set(pl, 0x1000);
         break;
     case 1:
+#ifdef MHG_PS2
+        if (Pl_Skill_ck(pl, 0x6D)) {
+            f32 in[3];
+            f32 out[3];
+            in[0] = 0.0f;
+            in[1] = 0.0f;
+            in[2] = 2.0f;
+            flvecApplyMat33(out, in, (f32 *)((u8 *)pl + 0x20));
+            pl->pos[0] = pl->pos[0] + out[0];
+            pl->pos[2] = pl->pos[2] + out[2];
+        }
+#endif
         w = pl->work08;
         if (w > 0) {
             pl->work08 = w - 1;
@@ -11943,7 +11986,7 @@ static void pl_chat03(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 63
 static void pl_chat04(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -11958,11 +12001,22 @@ static void pl_chat04(PLW *pl, s32 unused_arg) {
     case 1:
         if (pl->work194 == 0) {
             pl->x05 = s + 1;
+#ifdef MHG_PS2
+            pl_flag_set(pl, 0x20000);
+            pl_chr_set2(pl, 0xCF, -4, 0x3C);
+#else
             pl_chr_set2(pl, 0xCF, 4, 0x3C);
+#endif
         }
         break;
     case 2:
+#ifdef MHG_PS2
+        pl_flag_set(pl, 0x20000);
+#endif
         if (pl->work194 == 0) {
+#ifdef MHG_PS2
+            pl_flag_clr(pl, 0x20000);
+#endif
             pl_to_normal(pl, 0, 4, 0);
         }
         break;
@@ -11997,7 +12051,7 @@ static void pl_chat05(PLW *pl, s32 unused_arg) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) || G_PART == 64
 static void pl_chat06(PLW *pl, s32 unused_arg) {
     u8 s;
 
@@ -12012,11 +12066,22 @@ static void pl_chat06(PLW *pl, s32 unused_arg) {
     case 1:
         if (pl->work194 == 0) {
             pl->x05 = s + 1;
+#ifdef MHG_PS2
+            pl_flag_set(pl, 0x20000);
+            pl_chr_set2(pl, 0xD8, -4, 0x36);
+#else
             pl_chr_set2(pl, 0xD8, 4, 0x36);
+#endif
         }
         break;
     case 2:
+#ifdef MHG_PS2
+        pl_flag_set(pl, 0x20000);
+#endif
         if (pl->work194 == 0) {
+#ifdef MHG_PS2
+            pl_flag_clr(pl, 0x20000);
+#endif
             pl_to_normal(pl, 0, 4, 0);
         }
         break;

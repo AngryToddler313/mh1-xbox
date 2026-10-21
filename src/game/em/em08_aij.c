@@ -396,6 +396,27 @@ static void move_default_005A3E00(EMW *em) {
 }
 #endif
 
+/* G: em08_effect_move sits above the asm ef_move_sub_005A3E50 so MWCC does not use the asm body's register usage
+ * (the original keeps em/w in s1/s0 across the calls); the MH1 copy is at the end of the file */
+#if !defined(G_PART) && defined(VERSION_MHG) && defined(__MWERKS__)
+void hire_move_005A6EB0(EMW *em, EM08W *w);
+void em08_effect_move(EMW *em) {
+    EM08W *w = (EM08W *)em->ex;
+    u8 e = em->ex[0];
+
+    switch (e) {
+    case 0:
+        *(u8 *)w = e + 1;
+        break;
+    case 1:
+        ef_move_sub_005A3E50(em, w);
+        hire_move_005A6EB0(em, w);
+        break;
+    }
+    em08_uvmove(em);
+}
+#endif
+
 /* G: original bytes (build/mhg/raw/ef_move_sub_005A3E50.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
 #if !defined(G_PART) || G_PART == 1
 #if defined(VERSION_MHG) && defined(__MWERKS__)
@@ -1241,7 +1262,7 @@ void hire_move_005A6EB0(EMW *em, EM08W *w) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) && !(defined(VERSION_MHG) && defined(__MWERKS__))
 void em08_effect_move(EMW *em) {
     EM08W *w = (EM08W *)em->ex;
     u8 e = em->ex[0];

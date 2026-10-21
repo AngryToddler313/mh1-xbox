@@ -523,39 +523,30 @@ int arg;
         for (tbl = t; *tbl != 0xFF; tbl += 2) {
             tot += *tbl;
         }
-        arg = (u16)arg;
-        if (arg == 0xFF) {
+        if ((u16)arg == 0xFF) {
             r = quest_w.rnd[game_w.master] % tot;
         } else {
-            r = quest_w.rnd[arg] % tot;
+            r = quest_w.rnd[(u16)arg] % tot;
         }
-        if (*t != 0xFF) {
-            tot = 0;
-            for (;;) {
-                tot += *t++;
-                if (r < tot) {
-                    break;
-                }
-                t++;
-                if (*t == 0xFF) {
-                    break;
-                }
+        for (tot = 0; *t != 0xFF; t++) {
+            if (r < (tot += *t++)) {
+                break;
             }
         }
-        if (arg == 0xFF) {
+        if ((u16)arg == 0xFF) {
             game_w.x15 = game_w.stage = *t;
         } else {
-            player_work[arg].stg = *t;
+            player_work[(u16)arg].stg = *t;
         }
-        return;
-    }
-    tbl = (u8 *)(*(s32 *)(mission_area + 4) + (int)mission_area);
-    arg = (u16)arg;
-    if (arg == 0xFF) {
-        tbl += game_w.master * 0x10;
-        game_w.x15 = game_w.stage = *(s32 *)tbl;
     } else {
-        player_work[arg].stg = *(s32 *)(tbl + arg * 0x10);
+        tbl = (u8 *)(*(s32 *)(mission_area + 4) + (int)mission_area);
+        arg = (u16)arg;
+        if (arg == 0xFF) {
+            tbl += game_w.master * 0x10;
+            game_w.x15 = game_w.stage = *(s32 *)tbl;
+        } else {
+            player_work[arg].stg = *(s32 *)(tbl + arg * 0x10);
+        }
     }
 }
 #endif
@@ -1945,8 +1936,8 @@ static int sub_main_func_004B7920(s16 kind)
 #endif
 
 /* G (sub_main 0x4B7BA0): as MH1, plus each monster's size (QEM+0x30, percent): the mission's
- * base size (header 0x40) times a random size for the kinds above when the work byte or the
- * quest's event flag allows it; 100 otherwise */
+ * base size (header 0x40) times a random size for the kinds above, unless the work byte is set
+ * or the quest's event flag does not allow it; 100 otherwise */
 #if !defined(G_PART)
 static void quest_em_init_sub(p, cnt)
 s32 *p;
@@ -1970,7 +1961,7 @@ int *cnt;
                 if (sub_main_func_004B7920(e->id) == 1) {
                     e->x30 = *(s16 *)((u8 *)quest_w.x64 + 0x40);
                     e->x30 = (u16)e->x30 * sub_main_func_004B7810() / 100;
-                    if (func_0012D1B0() != 1 && sub_main_func_004F3B00(quest_w.no) != 1) {
+                    if (func_0012D1B0() == 1 || sub_main_func_004F3B00(quest_w.no) != 1) {
                         e->x30 = 100;
                     }
                 } else {
@@ -2151,10 +2142,17 @@ static void station_em_set(void)
                 break;
             }
             if ((em = Em_direct_set(e)) != 0) {
+#if defined(VERSION_MHG)
+                /* G: kind 0x24 too, and no stage copy */
+                if ((em->kind == 2 || em->kind == 0x24) && Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0) {
+                    quest_w.x14C = em->x302;
+                }
+#else
                 if (em->kind == 2 && Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0) {
                     quest_w.x14C = em->x302;
                 }
                 em->stg = e->x07;
+#endif
             }
             e++;
         }
