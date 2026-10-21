@@ -7,13 +7,14 @@
 # Matches are saved under build/mhg/matches/ (FILE path in the first line), not written into src/: applying them
 # and the 7/7 link check is a separate step. Progress lines go to build/mhg/llm/run.txt (shown by watch.ps1).
 # Parallel: SHARD=I/N takes every Nth queue entry (I = 0..N-1); PJ = permuter threads per worker (default 16).
+# MODE=perm runs only step 2 (any diff count; CPU), MODE=llm only steps 3-4 (GPU), default both.
 cd /root/mh1-xbox
 secs=${1:-600}; shift
 lists=${*:-docs/handoff/near_A.txt docs/handoff/near_C.txt docs/handoff/near_B.txt}
 mkdir -p build/mhg/matches build/mhg/llm
 shard=${SHARD:-0/1}; si=${shard%/*}; sn=${shard#*/}; pj=${PJ:-16}; k=-1
-cur=build/mhg/llm/current_$si.txt
-log() { echo "$(date +%H:%M:%S) [w$si] $*" | tee -a build/mhg/llm/run.txt; }
+wid=${WID:-$si}; cur=build/mhg/llm/current_$wid.txt
+log() { echo "$(date +%H:%M:%S) [w$wid] $*" | tee -a build/mhg/llm/run.txt; }
 for l in $lists; do
   while read -r rank diff file func mod addr; do
     k=$((k+1)); [ $((k % sn)) -eq "$si" ] || continue
@@ -23,8 +24,9 @@ for l in $lists; do
     line=$(VERSION=mhg timeout 240 python3 tools/check.py "$file" < /dev/null 2>/dev/null | awk -v f="$func" '$2==f')
     case "$line" in OK*) continue;; "") log "SKIP $func ($file: no result from check.py)"; continue;; esac
     nd=$(echo "$line" | sed -n 's/.*(\([0-9]*\)\/\([0-9]*\) instructions differ).*/\1/p'); nd=${nd:-999}
-    echo "w$si permuter $func ($file, $nd differ)" > $cur
-    if [ "$nd" -le 12 ] && python3 tools/local/perm_setup.py "$file" "$func" "$mod" > /dev/null 2>&1 < /dev/null; then
+    echo "w$wid permuter $func ($file, $nd differ)" > $cur
+    mode=${MODE:-both}
+    if [ "$mode" != llm ] && { [ "$mode" = perm ] || [ "$nd" -le 12 ]; } && python3 tools/local/perm_setup.py "$file" "$func" "$mod" > /dev/null 2>&1 < /dev/null; then
       d=build/mhg/perm/$func
       timeout "$secs" .venv/bin/python tools/permuter/permuter.py "$d" -j$pj --stop-on-zero > "$d/permuter.log" 2>&1 < /dev/null
       # a permuter "zero" that drops a call or jumps over code is a different function, not a match (tools/local/perm_sane.py)
@@ -34,11 +36,12 @@ for l in $lists; do
         log "MATCH permuter $func ($file)"; continue
       fi
     fi
-    echo "w$si local model $func ($file, $nd differ)" > $cur
+    [ "$mode" = perm ] && continue
+    echo "w$wid local model $func ($file, $nd differ)" > $cur
     out=$(timeout 1800 python3 tools/local/llm_match.py "$file" "$func" --model qwen3-coder:30b --rounds 3 --save build/mhg/matches < /dev/null 2>&1 | tail -1)
     case "$out" in MATCH*) log "MATCH local-model $func ($file)"; continue;; esac
     echo "$func $file $mod $nd :: $out" >> build/mhg/llm/snags.txt
     log "SNAG $func ($file, $nd differ) -> Claude queue"
   done < "$l"
 done
-log "queue finished"; echo "w$si idle (queue finished)" > $cur
+log "queue finished"; echo "w$wid idle (queue finished)" > $cur

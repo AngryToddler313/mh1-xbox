@@ -5,6 +5,8 @@ cd /root/mh1-xbox
 n=${1:-4}; secs=${2:-300}
 pj=$(( ($(nproc) - 2) / n )); [ $pj -lt 1 ] && pj=1
 echo "$n workers, $pj permuter threads each, permuter budget ${secs}s per function"
-for i in $(seq 0 $((n-1))); do SHARD=$i/$n PJ=$pj tools/local/pipeline.sh "$secs" & done
+# n permuter workers on the CPU, one local-model worker on the GPU over the whole queue
+for i in $(seq 0 $((n-1))); do SHARD=$i/$n PJ=$pj MODE=perm tools/local/pipeline.sh "$secs" & done
+SHARD=0/1 WID=llm MODE=llm tools/local/pipeline.sh "$secs" &
 wait
 echo "all workers finished"
