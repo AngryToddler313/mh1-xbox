@@ -553,6 +553,8 @@ static void shell09_i(SHLW *sh) {
 }
 
 static void shell09_m(SHLW *sh) {
+    s16 limit;
+
     if ((sh->arg == 1 || sh->arg == 4 || sh->arg == 18) && sh->x61 <= 0) {
         shell09_kaze_oto_set(sh);
         sh->x61 = 0;

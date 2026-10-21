@@ -245,3 +245,17 @@ PROVIDE(g_sh_002EFAE0 = 0x002EFAE0);
 PROVIDE(result_w_g = 0x00542490); /* result_w, accessed absolutely in G */
 PROVIDE(gptr_005284F0 = 0x005284F0); /* G cont_trans button text pointer */
 PROVIDE(g_sd_002EFBC4 = 0x002EFBC4); /* G small-data word whose address lobby_func_0056ED00 passes to cnLBS_Get_ConditionSearchUser */
+/* G data names from config/mhg/data_map.txt, needed once the split is regenerated */
+PROVIDE(fish_type_tbl = 0x0067E510);
+PROVIDE(lb_set01_msg = 0x00636BC0);
+PROVIDE(lit_333_0065E1E0 = 0x0063E770);
+PROVIDE(option_max_kind = 0x0025D6A0);
+PROVIDE(pl_supp_tbl = 0x0050A2F0);
+PROVIDE(ps2pad_config = 0x002EF4B0);
+PROVIDE(retire_str = 0x002EC5F8);
+PROVIDE(retire_yesno_str = 0x00527C64);
+PROVIDE(shell00_body_tbl = 0x006C7CD0);
+PROVIDE(shell09_tbl = 0x002EEA38);
+PROVIDE(shop_process00_tag = 0x002EF050);
+PROVIDE(stage_hit_area_w = 0x002EF390);
+PROVIDE(text_lobby_msg = 0x00636C10);

@@ -5,7 +5,8 @@ import os, re, subprocess, sys
 ROOT = os.environ.get('ROOT', '/root/mh1-xbox'); os.chdir(ROOT)
 ENV = dict(os.environ, VERSION='mhg')
 def build_ok():
-    b = subprocess.run(['python3', 'tools/build.py'], env=ENV, capture_output=True, text=True, timeout=3600).stdout
+    # tools/rebuild.sh regenerates the split (linker scripts) from c_files.txt first; plain build.py would link a stale script
+    b = subprocess.run(['tools/rebuild.sh'], env=ENV, capture_output=True, text=True, timeout=5400).stdout
     return len([l for l in b.splitlines() if re.match(r'^\w+\s+OK\s', l)]) == 7, b
 for path in sys.argv[1:]:
     snap = subprocess.run(['git', 'stash', 'create'], capture_output=True, text=True).stdout.strip()

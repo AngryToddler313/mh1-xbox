@@ -1,10 +1,11 @@
 # MH G matching decompile: handoff to local PC
 
-State as of 2026-10-21 01:35Z. This was written by the cloud thread "MH G decompilation".
+State as of 2026-10-21 (link fix). This was written by the cloud thread "MH G decompilation".
 
 ## Where things are
 - **Code:** github.com/AngryToddler313/mh1-xbox, branch `claude/mhg-decomp-tjvfyr`, HEAD `385b007e`. Every verified match is pushed, and nothing unpushed is left in the cloud.
-- **Progress:** `VERSION=mhg python3 tools/progress.py` reports **34.010%** (1332628 of 3918368 bytes). The starting point was 20.56% upstream.
+- **Progress:** **28.112%** (1101516 of 3918368 bytes), link-verified: a clean `VERSION=mhg tools/rebuild.sh` prints all 7 modules OK. The starting point was 20.56% upstream.
+- **Correction:** the earlier 34.01% was not link-verified. `tools/build.py` links with `build/mhg/<module>.ld`, which only `tools/rebuild.sh` (setup_split + splat) regenerates, and the cloud loop never re-ran it. Registrations made after that point were byte-checked per function by check.py but never linked. 300 of them did not link byte-identical and were dropped; they are listed with reasons in `dropped_registrations.txt`. Most can be re-added after fixing them: give their .rodata a slot, add the missing PROVIDE, or fix the wrong data address.
 - **Commit `40868405 LOCAL: ...`** patches tools/mhg_map.py and tools/mhg_pcmeta.py so the G tools run without a JP MH1 disc. It is for the fork only: drop it from any upstream PR. It is fork-only, and so is this docs/handoff/ folder.
 - **Game files:** JP MH G v1.01 (SLPM_658.69 and AFS_DATA.AFS) go in `disc/mhg/`. Never commit them.
 
@@ -12,7 +13,7 @@ State as of 2026-10-21 01:35Z. This was written by the cloud thread "MH G decomp
 - **PS2 binutils 2.47** from ftp.gnu.org: `./configure --target=mips64r5900el-ps2-elf`, then build and link the result as `tools/binutils`. On Windows, use WSL2 or MSYS2. The repo's own README covers the native-Windows route.
 - **Compiler:** https://github.com/decompme/compilers/releases/download/compilers/mwcps2-3.0b52-030722.tar.gz, extracted to `tools/compilers/mwcps2-3.0b52-030722/`. It is run through **wibo** on Linux (https://github.com/decompals/wibo/releases/latest/download/wibo-x86_64), or natively on Windows.
 - **Python:** a venv with splat64[mips] and the repo's requirements.
-- **Build:** run `VERSION=mhg tools/rebuild.sh` once (splits the ELF and builds raw .inc files), then `VERSION=mhg python3 tools/build.py`. All seven modules must print OK: main, sub_main, select, game, yn, lobby, nethttp. A full build took more than 30 minutes on 4 cloud cores.
+- **Build:** always verify with `VERSION=mhg tools/rebuild.sh`. It regenerates the yaml files and linker scripts from c_files.txt, re-splits, and builds. Plain `tools/build.py` links a stale linker script after c_files.txt changes, so a passing result from it does not mean the new entries were linked. All seven modules must print OK: main, sub_main, select, game, yn, lobby, nethttp. A full build took more than 30 minutes on 4 cloud cores.
 
 ## Tooling quirks
 - **mwcc hangs** forever after a missing include. tools/build.py now has a 180 s timeout per step (in the fork). Also kill any mwccps2 process running longer than 3 minutes; `watchdog2.sh` does this.
@@ -31,9 +32,15 @@ State as of 2026-10-21 01:35Z. This was written by the cloud thread "MH G decomp
 - **STG_POS_N:** from `include/version.h`.
 - **New G addresses:** add PROVIDEs to `config/mhg/g_names.txt`.
 
+## Diagnosing a failed rebuild
+- `linkerr.sh MODULE` prints the full ld errors (build.py cuts them at 4000 characters).
+- **A module larger than expected** means a C object has .rodata with no slot. That rodata lands after all data (`<module>_RODATA_START` in the map), so every address after it moves.
+- `shiftfind.py MODULE` finds the points where address-named symbols (D_/jtbl_/func_) start sitting at the wrong address.
+- `diffmap.py MODULE` groups differing bytes by c_files entry.
+
 ## Helper scripts in this folder
 These run in the cloud container. Paths point to /root/mh1-xbox; set the `ROOT` environment variable to change that.
-- `reg.py FILE...` registers whatever now matches in each file, rebuilds, and keeps the registration only if all 7 modules are OK. It does not commit.
+- `reg.py FILE...` registers whatever now matches in each file, runs `tools/rebuild.sh`, and keeps the registration only if all 7 modules are OK. It does not commit.
 - `dn.sh FILE FUNC [N]` shows the differing lines between G and our build for one function.
 - `merge.sh` merges the worktree branches g-work-A, B and C, verifies all 7 OK, and pushes.
 - `watchdog2.sh` kills hung compiles, prints a heartbeat every 5 minutes, and runs merge.sh every 30 minutes.
